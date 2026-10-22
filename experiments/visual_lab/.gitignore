@@ -1,0 +1,4 @@
+local/
+captures/
+*.blend1
+__pycache__/

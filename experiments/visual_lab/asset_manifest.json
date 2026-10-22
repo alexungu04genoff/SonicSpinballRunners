@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "experiment": "Green Hill Visual Lab",
+  "branch": "experiment/green-hill-visual-lab",
+  "base_commit": "a099f340bf7d54ce779fc37375123adb73faf832",
+  "inspected_on": "2026-10-22",
+  "path_base": "experiments/visual_lab",
+  "asset_policy": {
+    "third_party_assets_local_only": true,
+    "redistribution_permission": "not established; review required before any publication",
+    "rights_holder_attribution": "SEGA / Sonic Team",
+    "copyright_license": null,
+    "terms_pages": [
+      "https://models.spriters-resource.com/page/help/",
+      "https://models.spriters-resource.com/page/tou/"
+    ],
+    "terms_summary": "Original rights holders retain copyright. The host does not grant a copyright license. Noncommercial-use guidance does not establish redistribution permission; commercial use and marketplace redistribution are disallowed by the site's guidance.",
+    "ignored_directories": ["local/", "captures/"],
+    "download_method": "Manual browser download from the source page; CLI requests encountered a Cloudflare challenge.",
+    "execute_bundled_scripts": false
+  },
+  "sources": [
+    {
+      "id": "sonic_runners_collection",
+      "title": "Sonic Runners collection",
+      "url": "https://models.spriters-resource.com/mobile/sonicrunners/",
+      "status": "page inspected only",
+      "runtime_dependency": false
+    },
+    {
+      "id": "sonic_runners_sonic",
+      "title": "Sonic Runners — Sonic",
+      "url": "https://models.spriters-resource.com/mobile/sonicrunners/asset/293026/",
+      "page_uploader": "Kawasuzu",
+      "page_contributor": "Howall",
+      "archive_dae_author": "Hallow",
+      "credit_note": "Different author/contributor strings are preserved as observed; no equivalence is assumed.",
+      "original_rights_holder": "SEGA / Sonic Team",
+      "status": "downloaded and used locally",
+      "runtime_dependency": true,
+      "archive_path": "local/sonic.zip",
+      "archive_sha256": "4DE42CC9627DAEA795F6E4EDCB77A2BB5E44A11AED10C8968B977BB18E9DB2E8",
+      "extraction_root": "local/source/sonic/",
+      "used_files": [
+        "**/chr_sonic.smd",
+        "**/chr_sonic_body_dif.png",
+        "**/chr_sonic_eye_dif.png",
+        "**/chr_sonic_mouth_dif.png"
+      ],
+      "inspected_alternative_formats": ["**/chr_sonic.fbx", "**/chr_sonic.dae"],
+      "source_animation_clips": 0,
+      "source_skeleton_frames": [0],
+      "import_note": "Blender's FBX importer rejects version 6100. The repository-authored preparation script reads SMD v1 as data and preserves the hierarchy and skin weights.",
+      "rig_inspection": {
+        "retained_bones": 54,
+        "unique_vertices": 2211,
+        "triangles": 3318,
+        "material_assignments": 5,
+        "unweighted_vertices": 0,
+        "max_weight_sum_error_approx": 0.000001,
+        "diagnostic_report": "local/rig_report.json"
+      },
+      "derived_outputs": [
+        "local/runtime/sonic.glb",
+        "local/sonic_prepared.blend",
+        "local/blender_idle.png",
+        "local/blender_jump.png",
+        "local/blender_trick.png",
+        "captures/"
+      ]
+    },
+    {
+      "id": "sa2_green_hill_palm",
+      "title": "Green Hill palm tree — Sonic Adventure 2: Battle",
+      "url": "https://models.spriters-resource.com/gamecube/sonicadventure2battle/asset/349881/",
+      "page_uploader": "lemurboy12",
+      "original_rights_holder": "SEGA / Sonic Team",
+      "status": "downloaded for reference only; not used in runtime",
+      "runtime_dependency": false,
+      "archive_path": "local/palm.zip",
+      "archive_sha256": "95AC908609F771CA660A85787A6388AA3303E7F838221E91CFD61F09B8F86EC9",
+      "used_files": []
+    },
+    {
+      "id": "generations_green_hill_act_1",
+      "title": "Green Hill Zone Act 1 — Sonic Generations",
+      "url": "https://models.spriters-resource.com/pc_computer/sonicgenerations/asset/296339/",
+      "page_uploader": "DatHax",
+      "original_rights_holder": "SEGA / Sonic Team",
+      "status": "page inspected only; full stage not downloaded or used",
+      "runtime_dependency": false,
+      "used_files": []
+    }
+  ],
+  "authored_elements": {
+    "scenery": "Procedural checkerboard terrain, grass caps, palms, flowers, rocks, materials and lighting generated in repository-authored Godot code.",
+    "character_presentation": "Procedural spin-ball and contact marker; separate upright transform; paused pedestal study offsets only the character visual, while the marker stays at the physical ball; no gameplay colliders or root-motion control.",
+    "experimental_clips": ["idle", "jump", "trick"],
+    "clip_scope": "New in-place pose studies with small one-second variation, looped by the visual adapter; not original game clips or production locomotion.",
+    "asset_payload_embedded_in_scripts": false
+  },
+  "preparation": {
+    "script": "tools/prepare_sonic.py",
+    "blender_version": "5.2.3 LTS",
+    "godot_version": "4.7.2 stable",
+    "runtime_format": "GLB",
+    "runtime_model": "local/runtime/sonic.glb",
+    "source_scan_ignore": "local/.gdignore",
+    "runtime_loading": "GLTFDocument loads the local GLB directly.",
+    "standing_height_m": 1.0,
+    "instructions": "README.md"
+  }
+}

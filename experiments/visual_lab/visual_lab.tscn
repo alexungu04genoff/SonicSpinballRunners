@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://experiments/visual_lab/visual_lab.gd" id="1_lab"]
+
+[node name="GreenHillVisualLab" type="Node"]
+script = ExtResource("1_lab")
+generation_seed = 1
