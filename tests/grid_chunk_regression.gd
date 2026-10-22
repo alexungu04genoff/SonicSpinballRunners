@@ -8,10 +8,6 @@ const V6_GEOMETRY := {
  "0/8": "1f090310adc1e99bb277b22818db584755eafd221798fc175da037c9b7dea344",
  "0/18": "1f090310adc1e99bb277b22818db584755eafd221798fc175da037c9b7dea344",
  "0/23": "08c2ae9fcaa370b0498c7b4fbeed021cddbcfc59e0addec24b84a96729010580",
- "1/1": "cbdeb0b3342ad32035e0fd7bf28a329726eecc4ae158e7301e1c3c511c484492",
- "1/8": "e15a4f493441f11df4d2fed3bf106023d5608d84a9b7fb14f14828e7f6d512ba",
- "1/18": "faf0d9a5eb2bbdf12be43861af47652728d28f99c18d068d1309337d7a1de8f2",
- "1/23": "057e838cd778ed62601dc82ef767dfb9f65befeeb62133fdc503586c2250c7a4",
  "2/1": "cda3263b40932d8067cb0b48e95fdebee2cec052bcf8142341d5a6aedfd3c56c",
  "2/8": "c46af4ab67bce252107fc01aa394a3e98d30fd0f56de421613ddb8d712c05816",
  "2/18": "3a2aeb4d1187d6d4d6185c1593ac8c495c5271dc76541291c5caf08ddfc04800",
@@ -123,7 +119,7 @@ func run() -> void:
  for key: String in V6_GEOMETRY:
   var parts := key.split("/")
   legacy_preserved = legacy_preserved and geometry_hash(TableGenerator.generate(int(parts[1]), int(parts[0]))) == V6_GEOMETRY[key]
- check(legacy_preserved, "Default generation preserves v6 complete geometry and paddle placement for 12 sampled layouts")
+ check(legacy_preserved, "Easy/Hard preserve v6 complete geometry and paddle placement for eight layouts; v8 intentionally changes Normal")
  var compiled: Array[ChunkData] = []
  var source_snapshots: Array[String] = []
  var reproducible := true
@@ -339,7 +335,7 @@ func grid_regeneration_check() -> void:
    await process_frame
   intact = intact and paused and game.generation_grid_mode == mode and game.tuning.effective == values and game.presentation.camera_preset == TablePresentation.CameraPreset.DRAMATIC_PINBALL and game.presentation.camera_settings == camera_settings and game.presentation.camera_follow_enabled and game.presentation.physics_overlay.visible and game.presentation.construction_grid_overlay.visible and not is_instance_valid(old_middle) and not is_instance_valid(old_ring) and game.ring_field.pickup_claimed.get_connections().size() == 1 and game.flippers.size() == 4 and game.ball.serve_pending and game.flippers[0].get_instance_id() == bottom_ids[0] and game.flippers[1].get_instance_id() == bottom_ids[1]
   if mode == 0:
-   intact = intact and geometry_hash(game.layout) == V6_GEOMETRY["1/8"]
+   intact = intact and geometry_hash(game.layout) == geometry_hash(TableGenerator.generate(8, TableGenerator.Difficulty.NORMAL))
   else:
    intact = intact and game.chunks[1].data.chunk_id == RECIPES[mode - 1].recipe_id
  check(intact, "Grid base, variant and legacy regeneration preserve tuning, camera, overlays, pause and bottom paddles without stale visuals/listeners")

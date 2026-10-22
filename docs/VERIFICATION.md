@@ -2,6 +2,24 @@
 
 Date: 2026-10-22. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: OpenGL Compatibility on NVIDIA GeForce RTX 4060.
 
+## Normal flow pass (generator v8)
+
+Normal now constructs both joins before rating the course. It excludes raw stepped closures and generated facets with `abs(dx / dy) > 0.75`, tries the other style and other candidates, and explicitly reports a flowing alternative if its requested tier is unavailable. Authored interior corners remain. Easy/Hard selection and all chunk resources are unchanged; the separate visual experiment worktree was not modified.
+
+- `tests/normal_flow_regression.gd`: **16 checks passed**. Twenty-two Normal configurations, including both grid recipes, reproduce valid in-tier geometry and estimates with no generated closure shoulders. Default seeds cover at least four top designs, all three middle designs and six pairings. Checks also cover source preservation, partial/shallow transition rejection and the explicitly easier aligned fallback.
+- Native passive contact probes compare incoming and outgoing velocity in pixels per second. Normal 18's straight bank redirects `(0, -800)` to approximately `(391.7, -677.6)`; Normal 23's curve redirects it to `(-258.9, -749.4)`. Both retain upward movement, with no sampled speed above 800. Gravity and rolling acceleration are disabled only in these contact fixtures to isolate the existing wall response; gameplay physics are unchanged.
+- Oblique misses remain possible: seed 18 redirects `(-700, -180)` to about `(485.0, 190.3)`, and seed 23 redirects `(700, -180)` to `(-518.0, 57.9)`. Neither adds speed. Low-speed contacts fall free under normal gravity. Separate uninterrupted Balanced trials recover from a downward bank rebound to above the join through timed ordinary flipper input, with one strike in each successful witness. Failed timings are retained in the diagnostic report; there are no post-launch position corrections or rescue forces.
+- `tests/connector_transition_regression.gd`: **31 checks passed**, including eight preserved Easy/Hard static fingerprints, high-speed bank endpoint contacts, old shelf comparisons and full serve-to-top-to-return witnesses on Normal 18/23.
+- `tests/flipper_recovery_regression.gd`: **12 checks passed**, preserving real drain/respawn/relaunch behavior, resting tip clearance, held-cradle release, 30 upward passage samples through resting/raised/moving paddles and timed recovery for all three middle designs.
+- `tests/grid_chunk_regression.gd`: **23 checks passed** across 24 layouts generated twice. Eight complete Easy/Hard v6 fingerprints remain unchanged. Normal fingerprints intentionally change with v8. Grid compilation, mirrored/shifted geometry, invalid recipe rollback, seam shots up to 8000 px/s, recovery and drain checks pass. The rollback fixture deliberately logs one expected invalid-recipe error.
+- A graphical capture fixture passed **24 checks** across default Normal 18/23, Grid base Normal 18 and Grid variant Normal 23. Twelve overview/junction screenshots were saved; four representative images were inspected. Final physics outlines follow both bank styles and match the raised rails; paddles and rings remain aligned, and full overviews fit.
+
+Total: **106 passing checks**. Logs, capture fixtures and `normal-flow-report.json` are under ignored `test-results/`. Recommended playtests: default Normal **18** (Bank/Bank, 46), **23** (Curve/Aligned, 55), **1** (side recovery, 55), **5** (Curve/Curve, 55), and **8** in each grid mode (Curve/Curve, 38.6). Grid base Normal 18 built in approximately 0.335 seconds in one local sample; the former v7 result was 18.756 seconds with retained steps.
+
+Final headless editor import completed successfully. A fresh Godot MCP run exposed a local-variable shadow warning; after renaming that fallback variable, the next launch returned `PLAYGROUND_READY` for v8 Normal seed 1 with an empty errors array. The game was left open for manual playtesting.
+
+These are representative physical witnesses and geometric checks, not exhaustive trajectory guarantees. Unfavorable approaches can still fall back or drain. Difficulty, low-speed edge cases outside the samples, controller timing, Floaty/modifier extremes and long-session feel remain manual playtesting work. The historical results below describe their named generator versions, not current seed mappings.
+
 ## Optional construction grid (generator v7, kit v1)
 
 The preceding drain/recovery correction is preserved in commit `a099f34`. This experiment adds two Resource-authored 50 px grid recipes that compile into the same collision and presentation descriptors as existing chunks. Default legacy generation is unchanged apart from its version number.

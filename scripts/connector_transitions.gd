@@ -6,6 +6,28 @@ const BANK := "Bank"
 const CURVE := "Curve"
 const ALIGNED := "Aligned"
 const COLLAR := 160.0
+## Normal banks remain steeper than 53 degrees above horizontal. A vertical
+## incoming shot therefore retains upward velocity after an ideal passive bounce.
+const NORMAL_MAX_GRADE := 0.75 # Absolute horizontal displacement / vertical travel.
+
+static func maximum_grade(paths: Array) -> float:
+ var grade := 0.0
+ for path: PackedVector2Array in paths:
+  for i in range(path.size() - 1):
+   var delta := path[i + 1] - path[i]
+   if absf(delta.y) < 0.001:
+    return INF
+   grade = maxf(grade, absf(delta.x / delta.y))
+ return grade
+
+static func normal_flow_issues(transition: Dictionary) -> PackedStringArray:
+ var issues := PackedStringArray()
+ for i in transition.junction_styles.size():
+  if transition.junction_styles[i] not in [ALIGNED, BANK, CURVE]:
+   issues.append("Join %d retains a closure shoulder" % [i + 1])
+  elif maximum_grade(transition.junction_paths[i]) > NORMAL_MAX_GRADE + 0.0001:
+   issues.append("Join %d has a bank too shallow for Normal upward flow" % [i + 1])
+ return issues
 
 static func reshape(sources: Array[ChunkData], style: String) -> Dictionary:
  var chunks: Array[ChunkData] = []
@@ -61,8 +83,11 @@ static func _reshape_junction(upper: ChunkData, lower: ChunkData, style: String)
   var a: Vector2 = upper_boundary.tail[0]
   var b: Vector2 = lower_boundary.tail[0]
   var middle := (a + b) * 0.5
-  if not is_equal_approx(middle.x, snappedf(middle.x, 5.0)) or not _inside_width(upper, middle) or not _inside_width(lower, middle):
-   result.note = "Collar midpoint falls outside a footprint or connector authoring grid"
+  # Only the generated seam point is rounded (at most 2.5 px). This joins the
+  # 50 px construction grid to legacy 55 px insets without moving authored parts.
+  middle.x = snappedf(middle.x, 5.0)
+  if not _inside_width(upper, middle) or not _inside_width(lower, middle):
+   result.note = "Collar midpoint falls outside a footprint"
    return result
   var path := PackedVector2Array([a])
   if style == CURVE:
@@ -192,8 +217,8 @@ static func _segment_distance(a: Vector2, b: Vector2, c: Vector2, d: Vector2) ->
 
 static func _flippers_clear(paths: Array, chunks: Array[ChunkData]) -> bool:
  # At most 6px between sampled tips; an extra 4px covers the unsampled arc.
- # Keep room for the ball plus the existing 6px static margin beside each paddle.
- var required := PlaygroundFlipper.RADIUS + ChunkData.RAIL_RADIUS + PlaygroundBall.RADIUS + 10.0
+ # Keep a complete ball passage plus 6px per surface, including between samples.
+ var required := PlaygroundFlipper.RADIUS + ChunkData.RAIL_RADIUS + 2.0 * (PlaygroundBall.RADIUS + 6.0) + 4.0
  for chunk: ChunkData in chunks:
   for flipper: Dictionary in chunk.world_flippers():
    for step in 21:
