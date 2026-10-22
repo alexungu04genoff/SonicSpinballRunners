@@ -2,7 +2,7 @@
 
 - Build with Godot 4 and GDScript. Target Windows first; Android is a possible later platform.
 - Read `docs/GAME_DESIGN.md` before major gameplay features or architectural changes. Keep it current with agreed decisions, and distinguish confirmed direction from tentative mechanics and tuning values.
-- The implemented baseline is Phase 1: Physics Playground. Work autonomously within the agreed scope of the next phase, including Phase 2A once its deliverables are defined. Discuss substantial changes to the agreed gameplay vision before committing to that direction.
+- The implemented baseline is Phase 1: Physics Playground. Work autonomously within the agreed task scope in any phase. Discuss substantial changes to the agreed gameplay vision before committing to that direction.
 - Keep gameplay physics independent of presentation. An invisible 2D ball owns collisions; collisionless 3D models, scenery, and animations must not control them.
 - Resolve physics through shared profiles and centralized modifiers, not scattered character-specific checks. Start with Balanced and Floaty test profiles.
 - Prefer clear, maintainable code and existing conventions. Add extensibility only for concrete needs; avoid premature abstractions and unrelated refactors.
