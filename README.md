@@ -37,7 +37,7 @@ Both flippers can be held simultaneously. Special input currently displays a sta
 - Two physical flippers with a short, edge-triggered launch window. Holding a flipper keeps it raised; it does not repeatedly award launch impulses.
 - Rings award 25 points; bumpers award 100. Clearing all rings awards 500 and restores the ring rack after one second.
 - Rings contribute five special-meter points and bumpers two, scaled by the profile. Meter caps at 100; specials remain future work.
-- Rings stay at their authored positions and collect immediately inside the configurable magnetic radius. Collection checks the ball's swept path and never alters ball momentum.
+- Rings stay at their authored positions until the configurable magnetic radius claims them. Score and meter update immediately; their visuals accelerate toward the moving ball over 0.20 seconds. Collection checks the ball's swept path and never alters ball momentum.
 - Automatic drain recovery, a fixed serve, two test profiles, an example Chao modifier, and live tuning.
 
 ## Runtime structure
@@ -138,9 +138,11 @@ These values are provisional, not approved character balance.
 
 ### Ring collection
 
-The magnetic radius is an immediate collection distance, similar to an electric shield. Rings remain fixed until collected and disappear immediately; there is no pull animation in this lightweight version. Every physics tick checks the closest point on the ball's previous-to-current position segment, so a fast pass can collect a nearby ring even when both tick endpoints are outside its radius.
+The magnetic radius is an immediate collection distance, similar to an electric shield. Rings remain fixed until claimed, then their collisionless 3D visuals fly toward the moving ball. Every physics tick checks the closest point on the ball's previous-to-current position segment, so a fast pass can collect a nearby ring even when both tick endpoints are outside its radius.
 
-Direct contact retains its existing 26-pixel center-distance threshold (14-pixel ball radius plus 12-pixel ring allowance). The effective pickup radius is the larger of that contact threshold and the configured magnet radius. A ring becomes inactive before its score/meter event is emitted, preventing duplicate awards until a new rack resets it. Waiting at serve does not collect rings. The unused attraction-speed stat was removed; radius remains in the centralized profile/modifier schema and Live Physics Lab for future Chao upgrades. Neither collection nor a future cosmetic effect may alter ball movement.
+Direct contact retains its existing 26-pixel center-distance threshold (14-pixel ball radius plus 12-pixel ring allowance), including swept contact at high speeds. The effective pickup radius is the larger of that contact threshold and the configured magnet radius. `RingField` deactivates each ring before notifying presentation and scoring, preventing duplicate awards until a new rack resets it. Score, ring total, meter, and rack bonuses never wait for the animation. Waiting at serve does not collect rings. The unused attraction-speed stat is already removed; radius remains in the centralized profile/modifier schema and Live Physics Lab for future Chao upgrades.
+
+`TablePresentation` owns the cosmetic flight: a provisional **0.20-second quadratic ease-in** from the authored ring position toward the ball's current visible position, with a small scale-down during the final 30%. Multiple rings animate independently and remain claimed even if the ball leaves range or the radius changes. `RING_PICKUP_DURATION` is presentation tuning, separate from character physics. Pause freezes flights. Drain/reset cancels unfinished visuals while retaining earned rewards; a new rack restores position and scale, and table regeneration frees the old presentation and its signal listeners. Neither collection nor animation changes ball movement or creates 3D collision objects.
 
 ### Steering strength and the provisional default
 

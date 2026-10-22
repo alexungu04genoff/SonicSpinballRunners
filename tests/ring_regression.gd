@@ -47,6 +47,9 @@ func run() -> void:
  game.ball.freeze = true
  field = game.ring_field
  field.set_physics_process(false)
+ # This scoring fixture replaces the ring list without rebuilding presentation.
+ field.pickup_claimed.disconnect(game.presentation._on_ring_claimed)
+ field.rack_reset.disconnect(game.presentation.clear_ring_pickups)
  field.collected.connect(func(where: Vector2): events.append(where))
  check(PhysicsTuning.BALANCED.ring_magnet_radius == 50.0 and PhysicsTuning.FLOATY.ring_magnet_radius == 50.0 and not PhysicsProfile.FIELDS.has("ring_magnet_strength"), "Both profiles use 50 px; obsolete attraction-speed control removed")
 
@@ -74,6 +77,11 @@ func run() -> void:
   field._physics_process(1.0 / 120.0)
   swept_both_ways = swept_both_ways and not field.rings[0].active and field.rings[1].active and events.size() == 1
  check(swept_both_ways, "Swept magnet collects between distant endpoints in both directions without widening radius")
+
+ prepare(PackedVector2Array([Vector2(2100, 526), Vector2(2100, 527)]), 0)
+ game.ball.position = Vector2(2200, 500)
+ field._physics_process(1.0 / 120.0)
+ check(not field.rings[0].active and field.rings[1].active and events.size() == 1, "Swept direct contact stays reliable at high speed with magnetism disabled")
 
  prepare(PackedVector2Array([Vector2(2040, 500)]), 0)
  field._physics_process(1.0 / 120.0)

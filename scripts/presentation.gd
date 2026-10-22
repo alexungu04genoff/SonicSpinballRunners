@@ -4,6 +4,8 @@ extends Node3D
 const SCALE: float = 0.01
 const BALL_HEIGHT: float = 0.16
 const RING_HEIGHT: float = 0.23
+## Cosmetic timing only; character profiles control pickup radius, never flight speed.
+const RING_PICKUP_DURATION: float = 0.20
 const OVERLAY_HEIGHT: float = 0.015
 enum CameraPreset { TOP_DOWN, REAL_PINBALL, DRAMATIC_PINBALL }
 const CAMERA_NAMES: Array[String] = ["Top-down reference", "Real Pinball", "Dramatic Pinball"]
@@ -14,6 +16,7 @@ var ring_field: RingField
 var ball_visual: MeshInstance3D
 var flipper_visuals: Array[Node3D] = []
 var ring_visuals: Array[MeshInstance3D] = []
+var ring_pickups: Dictionary = {}
 var physics_overlay: Node3D
 var chunk_overlay: Node3D
 var connector_overlay: Node3D
@@ -183,6 +186,9 @@ func build(chunks: Array[TableChunk], passage: Rect2 = Rect2()) -> void:
   torus.rings = 16
   torus.ring_segments = 8
   ring_visuals.append(mesh_node(torus, gold, map_point(ring.position, RING_HEIGHT)))
+ ring_field.pickup_claimed.connect(_on_ring_claimed)
+ ring_field.rack_reset.connect(clear_ring_pickups)
+ clear_ring_pickups()
  for flipper: PlaygroundFlipper in flippers:
   var pivot := Node3D.new()
   pivot.position = map_point(flipper.position)
@@ -289,6 +295,42 @@ func _prism(points: PackedVector2Array, height: float, side_mat: Material, top_m
 func flash_bumper(body: Node) -> void:
  flash_times[body.get_instance_id()] = 0.12
 
+func _on_ring_claimed(index: int) -> void:
+ var visual := ring_visuals[index]
+ # Start from the authored position even if the rack reset and pickup share a frame.
+ visual.position = map_point(ring_field.rings[index].position, RING_HEIGHT)
+ visual.scale = Vector3.ONE
+ visual.visible = true
+ ring_pickups[index] = {"start": visual.position, "elapsed": 0.0}
+
+func clear_ring_pickups() -> void:
+ # Reset/drain cancels only presentation; already awarded rings stay collected.
+ ring_pickups.clear()
+ for i in ring_visuals.size():
+  ring_visuals[i].visible = ring_field.rings[i].active
+  ring_visuals[i].position = map_point(ring_field.rings[i].position, RING_HEIGHT)
+  ring_visuals[i].scale = Vector3.ONE
+
+func _update_ring_visuals(delta: float) -> void:
+ for i in ring_visuals.size():
+  var visual := ring_visuals[i]
+  if ring_pickups.has(i):
+   var pickup: Dictionary = ring_pickups[i]
+   pickup.elapsed = minf(float(pickup.elapsed) + delta, RING_PICKUP_DURATION)
+   var progress: float = pickup.elapsed / RING_PICKUP_DURATION
+   # Quadratic ease-in accelerates toward the current visible ball every frame.
+   # Once claimed, neither distance nor the gameplay radius can interrupt flight.
+   visual.position = (pickup.start as Vector3).lerp(ball_visual.position, progress * progress)
+   visual.scale = Vector3.ONE * lerpf(1.0, 0.25, smoothstep(0.7, 1.0, progress))
+   if progress >= 1.0:
+    visual.visible = false
+    ring_pickups.erase(i)
+  else:
+   visual.visible = ring_field.rings[i].active
+   if visual.visible:
+    visual.position = map_point(ring_field.rings[i].position, RING_HEIGHT)
+    visual.scale = Vector3.ONE
+
 func _process(delta: float) -> void:
  if get_tree().paused:
   delta = 0.0
@@ -301,9 +343,7 @@ func _process(delta: float) -> void:
  _last_ball_position = ball.position
  for i in flippers.size():
   flipper_visuals[i].rotation.y = -flippers[i].rotation
- for i in ring_visuals.size():
-  ring_visuals[i].visible = ring_field.rings[i].active
-  ring_visuals[i].position = map_point(ring_field.rings[i].position, RING_HEIGHT)
+ _update_ring_visuals(delta)
  for id: int in flash_times.keys():
   flash_times[id] -= delta
   var mesh: Node3D = bumper_visuals[id]

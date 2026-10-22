@@ -217,6 +217,7 @@ func launch_ball() -> void:
 
 func reset_ball(relaunch: bool = false) -> void:
  respawn_time = -1.0
+ presentation.clear_ring_pickups()
  ball.teleport_to(ball.serve_position, Vector2.ZERO, true)
  ring_field.previous_ball_position = ball.serve_position
  auto_launch_time = 0.25 if relaunch else -1.0
@@ -251,6 +252,7 @@ func _physics_process(delta: float) -> void:
  elif not ball.serve_pending and (ball.position.y > 1450.0 or absf(ball.position.x - 400.0) > 650.0 or ball.position.y < -200.0):
   ball_number += 1
   respawn_time = 0.65
+  presentation.clear_ring_pickups()
   status_message = "DRAIN — automatic respawn"
  if auto_launch_time >= 0:
   auto_launch_time -= delta

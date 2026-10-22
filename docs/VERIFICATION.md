@@ -2,6 +2,19 @@
 
 Date: 2026-10-22. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: OpenGL Compatibility on NVIDIA GeForce RTX 4060.
 
+## Cosmetic ring attraction follow-up
+
+Ring claims still award score, ring total, and meter immediately. Presentation now runs a separate 0.20-second quadratic ease-in toward the moving visible ball, with a small final shrink. This supersedes the immediate-disappearance presentation described in the historical magnet section below. Magnet strength was already absent from profiles, modifiers, and the tuning schema; radius remains configurable.
+
+- `tests/ring_regression.gd`: **11 checks passed, zero failures**, including the existing 24000 px/s pass with unchanged ball velocity and a new swept direct-contact boundary check with magnetism disabled.
+- `tests/ring_presentation_smoke.gd`: **14 headless checks passed**, then **17 graphical checks passed**, including three image saves. Covers stationary unclaimed rings, three simultaneous swept claims with immediate rewards, accelerating flight, moving targets outside range, disabling magnetism after claim, pause, arrival without duplicate rewards, reset, drain/respawn, rack reuse within one frame, long frames, and regeneration during flight with no stale visual/listener or 3D collider.
+- Existing **38 physics** and **eight profile** checks passed. The physics suite includes scoring, flippers, high-speed collisions, automatic drain recovery, and 20 seconds of simulated play. Headless editor import completed without script errors. Final logs contain no errors or warnings.
+- Inspected graphical captures `test-results/pickup-claimed.png`, `pickup-chasing.png`, and `pickup-arrived.png`: multiple rings remain visible after claim, travel toward the relocated ball, and disappear on arrival. Godot MCP launched the normal graphical game with an empty errors array. A live launch through Computer Use confirmed ring totals and meter advancing during play. The user then stopped Computer Use with Escape; no further UI input was sent.
+
+The graphical fixture pauses physics while awaiting screenshot rendering, so its manually positioned ball cannot be resynchronized by the physics server between assertions. An initial fixture check also used an oversized respawn timestep that advanced through both respawn and relaunch; it now steps at the game's 120 Hz. Neither correction changed gameplay. Logs are ignored local `test-results/pickup-*.log` files.
+
+Run the new visual check with `Godot.exe --path . --script res://tests/ring_presentation_smoke.gd` (add `--headless` to skip captures). Human playtesting still decides whether the provisional 0.20-second pull and final shrink feel satisfying, especially during fast passes and dense pickups. No physical gamepad was tested.
+
 ## Raised primitives and stationary perspective cameras
 
 - Graphical `tests/presentation_smoke.gd`: **26 checks passed, zero failures**. Covers the default/UI selection, absence of 3D collision objects, shadow configuration, outward triangle normals for both polygon windings, whole-board framing (including the slab and a 0.55-unit height envelope), and natural near/far perspective ratios of **1.00 / 1.41 / 1.74**. Camera changes preserve the seed signature, serve position, velocity and effective physics. Both flipper tips stay aligned during simultaneous press and release; a moving ball follows the existing mapping while the camera remains stationary.
