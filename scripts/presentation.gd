@@ -10,6 +10,17 @@ const OVERLAY_HEIGHT: float = 0.015
 enum CameraPreset { TOP_DOWN, REAL_PINBALL, DRAMATIC_PINBALL }
 const CAMERA_NAMES: Array[String] = ["Top-down reference", "Real Pinball", "Dramatic Pinball"]
 var camera_preset: int = CameraPreset.REAL_PINBALL
+var camera_follow_enabled: bool = true
+## Distances are physics pixels, speed is pixels/second, response is inverse seconds.
+var camera_settings: Dictionary = {"dead_zone_y": 100.0, "look_ahead": 100.0, "vertical_response": 5.0, "horizontal_response": 2.0, "max_speed": 1800.0}
+const CAMERA_LIMITS: Dictionary = {"dead_zone_y": Vector2(0, 250), "look_ahead": Vector2(0, 250), "vertical_response": Vector2(0.5, 12), "horizontal_response": Vector2(0.25, 6), "max_speed": Vector2(400, 4000)}
+const FOLLOW_HEIGHT: float = 1100.0
+const HORIZONTAL_TRAVEL: float = 55.0
+var table_bounds: Rect2
+var camera_target: Vector2
+var camera_focus: Vector2
+var _camera_offset: Vector3
+var _camera_viewport_size: Vector2
 var ball: PlaygroundBall
 var flippers: Array[PlaygroundFlipper] = []
 var ring_field: RingField
@@ -27,10 +38,10 @@ var _last_ball_position: Vector2
 var dynamic_geometry: ImmediateMesh
 
 static func map_point(point: Vector2, height: float = 0.0) -> Vector3:
- return Vector3((point.x - 400.0) * SCALE, height, (point.y - 700.0) * SCALE)
+ return Vector3(point.x * SCALE, height, point.y * SCALE)
 
 static func unmap_point(point: Vector3) -> Vector2:
- return Vector2(point.x / SCALE + 400.0, point.z / SCALE + 700.0)
+ return Vector2(point.x / SCALE, point.z / SCALE)
 
 func material(color: Color, glow: float = 0.0) -> StandardMaterial3D:
  var result := StandardMaterial3D.new()
@@ -82,8 +93,13 @@ func line(a: Vector2, b: Vector2, radius: float, height: float, mat: Material, p
  instance.quaternion = Quaternion(Vector3.UP, (end - start).normalized())
  return instance
 
-func build(chunks: Array[TableChunk], passage: Rect2 = Rect2()) -> void:
+func build(chunks: Array[TableChunk], junctions: Variant = [], bounds: Rect2 = Rect2()) -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
+ table_bounds = bounds
+ if not table_bounds.has_area():
+  for chunk: TableChunk in chunks:
+   var chunk_bounds := chunk.data.world_rect(Rect2(Vector2.ZERO, Vector2(chunk.data.grid_dimensions) * ChunkData.GRID_SIZE))
+   table_bounds = table_bounds.merge(chunk_bounds) if table_bounds.has_area() else chunk_bounds
  var environment := WorldEnvironment.new()
  environment.environment = Environment.new()
  environment.environment.background_mode = Environment.BG_COLOR
@@ -98,18 +114,19 @@ func build(chunks: Array[TableChunk], passage: Rect2 = Rect2()) -> void:
  light.light_energy = 1.15
  light.shadow_enabled = true
  light.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
- light.directional_shadow_max_distance = 40.0
+ light.directional_shadow_max_distance = maxf(40.0, table_bounds.size.length() * SCALE * 2.5)
  light.shadow_bias = 0.1
  light.shadow_normal_bias = 2.0
  add_child(light)
  camera = Camera3D.new()
- camera.name = "StationaryTableCamera"
+ camera.name = "TableCamera"
  add_child(camera)
  set_camera_preset(camera_preset)
  camera.current = true
  var floor_mesh := BoxMesh.new()
- floor_mesh.size = Vector3(8.15, 0.32, 14.5)
- var floor_visual := mesh_node(floor_mesh, material(Color("153c4b")), Vector3(0, -0.16, 0))
+ floor_mesh.size = Vector3((table_bounds.size.x + 15.0) * SCALE, 0.32, (table_bounds.size.y + 50.0) * SCALE)
+ var floor_visual := mesh_node(floor_mesh, material(Color("153c4b")), map_point(table_bounds.get_center(), -0.16))
+ floor_visual.name = "TableFloor"
  # Receive object shadows without self-shadow artifacts on the large, flat slab.
  floor_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  var rail_mat := material(Color("267f81"))
@@ -118,10 +135,10 @@ func build(chunks: Array[TableChunk], passage: Rect2 = Rect2()) -> void:
  var bumper_top := material(Color("ff8962"))
  var gold := material(Color("ffd568"), 0.08)
  var grid_mat := material(Color("1b414c"))
- for x in range(100, 800, 100):
-  _floor_line(Vector2(x, 80), Vector2(x, 1370), grid_mat)
- for y in range(100, 1400, 100):
-  _floor_line(Vector2(65, y), Vector2(735, y), grid_mat)
+ for x in range(int(table_bounds.position.x + 100), int(table_bounds.end.x), 100):
+  _floor_line(Vector2(x, table_bounds.position.y + 80), Vector2(x, table_bounds.end.y - 30), grid_mat)
+ for y in range(int(table_bounds.position.y + 100), int(table_bounds.end.y), 100):
+  _floor_line(Vector2(table_bounds.position.x + 65, y), Vector2(table_bounds.end.x - 65, y), grid_mat)
  physics_overlay = Node3D.new()
  physics_overlay.name = "PhysicsGeometryOverlay"
  add_child(physics_overlay)
@@ -171,14 +188,23 @@ func build(chunks: Array[TableChunk], passage: Rect2 = Rect2()) -> void:
      bumper_visuals[item.body.get_instance_id()] = body_visual
      for i in item.points.size():
       line(item.position + item.points[i], item.position + item.points[(i + 1) % item.points.size()], 0.012, OVERLAY_HEIGHT, debug_mat, physics_overlay)
-  var bounds := chunk.data.world_rect(Rect2(Vector2.ZERO, Vector2(chunk.data.grid_dimensions) * ChunkData.GRID_SIZE))
-  _rect_outline(bounds, boundary_mat, chunk_overlay)
+  var chunk_bounds := chunk.data.world_rect(Rect2(Vector2.ZERO, Vector2(chunk.data.grid_dimensions) * ChunkData.GRID_SIZE))
+  _rect_outline(chunk_bounds, boundary_mat, chunk_overlay)
   for connection: Rect2 in [chunk.data.top_connection, chunk.data.bottom_connection]:
    if connection.size.x > 0:
     _rect_outline(chunk.data.world_rect(connection), boundary_mat, connector_overlay)
-  _label(chunk.data.title, chunk.data.world_point(Vector2(chunk.data.grid_dimensions.x * 50.0, 95 if chunk == chunks[0] else 40)), 18, Color("71cbbf"))
- if passage.has_area():
-  _rect_outline(passage, debug_mat, connector_overlay)
+  var title := chunk.data.title
+  var title_parts := title.split(" / ", true, 1)
+  if title_parts.size() == 2 and title_parts[0].is_valid_int():
+   title = title_parts[1]
+  _label("%02d / %s" % [chunks.find(chunk) + 1, title], chunk.data.world_point(Vector2(chunk.data.grid_dimensions.x * 50.0, 95 if chunk == chunks[0] else 40)), 18, Color("71cbbf"))
+ if junctions is Rect2:
+  if junctions.has_area():
+   _rect_outline(junctions, debug_mat, connector_overlay)
+ else:
+  for junction: Dictionary in junctions:
+   if junction.passage.has_area():
+    _rect_outline(junction.passage, debug_mat, connector_overlay)
  for ring: Dictionary in ring_field.rings:
   var torus := TorusMesh.new()
   torus.inner_radius = 0.075
@@ -203,28 +229,95 @@ func build(chunks: Array[TableChunk], passage: Rect2 = Rect2()) -> void:
  stripe.outer_radius = 0.146
  mesh_node(stripe, material(Color("e5f4ff")), Vector3.ZERO, ball_visual)
  # Drain and serve guides have no gameplay collision.
- line(Vector2(360, 1395), Vector2(440, 1395), 0.035, 0.01, material(Color("ef6473"), 0.4))
- _label("DRAIN", Vector2(400, 1360), 18, Color("ee8693"))
+ for chunk: TableChunk in chunks:
+  if chunk.data.markers.has("drain"):
+   var drain := chunk.data.world_point(chunk.data.markers.drain)
+   line(drain + Vector2(-40, -25), drain + Vector2(40, -25), 0.035, 0.01, material(Color("ef6473"), 0.4))
+   _label("DRAIN", drain + Vector2(0, -60), 18, Color("ee8693"))
 
 func set_camera_preset(index: int) -> void:
  camera_preset = clampi(index, CameraPreset.TOP_DOWN, CameraPreset.DRAMATIC_PINBALL)
+ reset_camera()
+
+func set_camera_follow(enabled: bool) -> void:
+ camera_follow_enabled = enabled
+ reset_camera()
+
+func set_camera_value(key: String, value: float) -> void:
+ if not CAMERA_LIMITS.has(key):
+  return
+ var limits: Vector2 = CAMERA_LIMITS[key]
+ camera_settings[key] = clampf(value, limits.x, limits.y)
+
+func reset_camera(at: Vector2 = Vector2.INF) -> void:
+ if not is_instance_valid(camera):
+  return
+ var point := ball.position if at == Vector2.INF else at
+ point.x = table_bounds.get_center().x + (point.x - table_bounds.get_center().x) * 0.18
+ camera_focus = _clamp_focus(point + Vector2(0, -float(camera_settings.look_ahead))) if camera_follow_enabled else table_bounds.get_center()
+ camera_target = camera_focus
+ _configure_camera()
+
+func _clamp_focus(point: Vector2) -> Vector2:
+ var center := table_bounds.get_center()
+ var half_window := minf(FOLLOW_HEIGHT, table_bounds.size.y) * 0.5
+ return Vector2(clampf(point.x, center.x - HORIZONTAL_TRAVEL, center.x + HORIZONTAL_TRAVEL), clampf(point.y, table_bounds.position.y + half_window, table_bounds.end.y - half_window))
+
+func _configure_camera() -> void:
+ # Fit the floor and raised-object envelope mathematically at the current aspect.
+ # Follow mode fits a local window; overview fits the complete generated bounds.
+ _camera_viewport_size = Vector2(camera.get_viewport().size)
+ var aspect := _camera_viewport_size.x / maxf(1.0, _camera_viewport_size.y)
+ var size := table_bounds.size + Vector2(15, 50)
+ if camera_follow_enabled:
+  size = Vector2(size.x + HORIZONTAL_TRAVEL * 2.0, minf(FOLLOW_HEIGHT, table_bounds.size.y) + 50.0)
  camera.near = 0.1
- camera.far = 50.0
  camera.keep_aspect = Camera3D.KEEP_HEIGHT
  if camera_preset == CameraPreset.TOP_DOWN:
   camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-  camera.size = 15.6
-  camera.position = Vector3(0, 20, 0)
-  camera.look_at(Vector3.ZERO, Vector3.FORWARD)
+  camera.size = maxf(size.y, size.x / aspect) * SCALE / 0.94
+  _camera_offset = Vector3(0, maxf(20.0, table_bounds.size.y * SCALE), 0)
+  camera.position = map_point(camera_focus) + _camera_offset
+  camera.look_at(map_point(camera_focus), Vector3.FORWARD)
  else:
   camera.projection = Camera3D.PROJECTION_PERSPECTIVE
   var dramatic := camera_preset == CameraPreset.DRAMATIC_PINBALL
   var elevation := deg_to_rad(50.0 if dramatic else 60.0)
-  var distance := 16.0 if dramatic else 20.0
   camera.fov = 52.0 if dramatic else 40.0
-  var target := Vector3(0, 0, 1.0)
-  camera.position = target + Vector3(0, sin(elevation), cos(elevation)) * distance
-  camera.look_at(target)
+  var normal := Vector3(0, sin(elevation), cos(elevation))
+  var screen_up := Vector3(0, cos(elevation), -sin(elevation))
+  var tan_y := tan(deg_to_rad(camera.fov) * 0.5) * 0.94
+  var tan_x := tan_y * aspect
+  var distance := 1.0
+  for x: float in [-size.x * SCALE * 0.5, size.x * SCALE * 0.5]:
+   for z: float in [-size.y * SCALE * 0.5, size.y * SCALE * 0.5]:
+    for height: float in [-0.32, 0.60]:
+     var point := Vector3(x, height, z)
+     distance = maxf(distance, point.dot(normal) + maxf(absf(point.x) / tan_x, absf(point.dot(screen_up)) / tan_y))
+  _camera_offset = normal * distance
+  camera.position = map_point(camera_focus) + _camera_offset
+  camera.look_at(map_point(camera_focus))
+ camera.far = _camera_offset.length() + table_bounds.size.length() * SCALE + 10.0
+
+func _update_camera(delta: float) -> void:
+ if Vector2(camera.get_viewport().size) != _camera_viewport_size:
+  _configure_camera()
+ if not camera_follow_enabled or delta <= 0.0:
+  return
+ # The ball only supplies observations. No transform or impulse is written to physics.
+ var center := table_bounds.get_center()
+ var desired := Vector2(center.x + clampf((ball.position.x - center.x) * 0.18, -HORIZONTAL_TRAVEL, HORIZONTAL_TRAVEL), ball.position.y - float(camera_settings.look_ahead))
+ camera_target = Vector2(desired.x, camera_focus.y)
+ var vertical_error := desired.y - camera_focus.y
+ if absf(vertical_error) > float(camera_settings.dead_zone_y):
+  camera_target.y = desired.y - signf(vertical_error) * float(camera_settings.dead_zone_y)
+ camera_target = _clamp_focus(camera_target)
+ # Exponential response is frame-rate independent; the speed limit bounds impact jumps.
+ var step := minf(delta, 0.05)
+ var next := Vector2(lerpf(camera_focus.x, camera_target.x, 1.0 - exp(-float(camera_settings.horizontal_response) * step)), lerpf(camera_focus.y, camera_target.y, 1.0 - exp(-float(camera_settings.vertical_response) * step)))
+ camera_focus += (next - camera_focus).limit_length(float(camera_settings.max_speed) * step)
+ camera_focus = _clamp_focus(camera_focus)
+ camera.position = map_point(camera_focus) + _camera_offset
 
 func _paddle(length: float, radius: float, height: float, base: float, mat: Material, parent: Node3D) -> void:
  # Extrude the exact 2D capsule footprint; only the inset top trim is smaller.
@@ -336,6 +429,7 @@ func _process(delta: float) -> void:
   delta = 0.0
  if not is_instance_valid(ball_visual):
   return
+ _update_camera(delta)
  ball_visual.position = map_point(ball.position, BALL_HEIGHT)
  var travel: Vector2 = ball.position - _last_ball_position
  if travel.length() > 0.001 and travel.length() < 100:

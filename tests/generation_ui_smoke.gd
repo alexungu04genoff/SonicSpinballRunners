@@ -56,7 +56,7 @@ func run() -> void:
   ui.difficulty_selector.select(preference)
   ui.generation_buttons[0].pressed.emit()
   await create_timer(0.25).timeout
-  check(game.generation_seed == 1 and game.generation_difficulty == preference and game.layout.preference_available and game.layout.difficulty_estimate.band == preference and ui.generation_summary.text.contains(game.layout.upper.chunk_id) and ui.generation_summary.text.contains("Largest ledge") and ui.generation_summary.text.contains("Estimate:"), "Preference %s displays a matching layout, estimate and reasons" % TableGenerator.DIFFICULTY_NAMES[preference])
+  check(game.generation_seed == 1 and game.generation_difficulty == preference and game.layout.preference_available and game.layout.difficulty_estimate.band == preference and ui.generation_summary.text.contains(game.layout.chunks[0].chunk_id) and ui.generation_summary.text.contains("Largest ledge") and ui.generation_summary.text.contains("Estimate:"), "Preference %s displays a matching layout, estimate and reasons" % TableGenerator.DIFFICULTY_NAMES[preference])
   if DisplayServer.get_name() != "headless":
    await RenderingServer.frame_post_draw
    check(root.get_texture().get_image().save_png("res://test-results/table-difficulty-%d.png" % preference) == OK, "Rendered preference %d captured" % preference)
@@ -64,7 +64,7 @@ func run() -> void:
  # Exercise the summary presenter with an intentionally limited catalogue, then
  # restore the actual scene's layout before taking any collision-overlay capture.
  var actual_layout: Dictionary = game.layout
- game.layout = TableGenerator.generate(1, TableGenerator.Difficulty.HARD, [TableGenerator.CATALOGUE[0]])
+ game.layout = TableGenerator.generate_pair(1, TableGenerator.Difficulty.HARD, [TableGenerator.CATALOGUE[0]])
  ui.refresh_generation()
  await create_timer(0.15).timeout
  check(ui.generation_summary.text.contains("No valid Hard candidate; using") and ui.generation_summary.text.contains(TableGenerator.DIFFICULTY_NAMES[game.layout.difficulty_estimate.band]) and ui.generation_panel.get_global_rect().end.y < 835, "Missing tier is explicit and its longer notice remains visible")

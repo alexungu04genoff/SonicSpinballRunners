@@ -121,11 +121,11 @@ func representative_layouts(preference: int) -> Array[Dictionary]:
   return layouts
  var sampled_chunks := PackedStringArray()
  for seed_value: int in [1, 2]:
-  var layout := TableGenerator.generate(seed_value, preference)
+  var layout := TableGenerator.generate_pair(seed_value, preference)
   layouts.append(layout)
   sampled_chunks.append(layout.upper.chunk_id)
  for seed_value in range(3, 25):
-  var layout := TableGenerator.generate(seed_value, preference)
+  var layout := TableGenerator.generate_pair(seed_value, preference)
   if not sampled_chunks.has(layout.upper.chunk_id):
    layouts.append(layout)
    break

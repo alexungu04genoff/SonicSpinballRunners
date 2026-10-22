@@ -24,17 +24,20 @@ func framing_valid(presentation: TablePresentation) -> bool:
  var camera := presentation.camera
  var rect := Rect2(Vector2(8, 8), Vector2(camera.get_viewport().size) - Vector2(16, 16))
  # Include the board slab and taller-than-rendered bumper envelope, not just centers.
- for x in [-4.075, 4.075]:
-  for z in [-7.25, 7.25]:
+ var bounds := presentation.table_bounds.grow_individual(7.5, 25.0, 7.5, 25.0)
+ for x: float in [bounds.position.x, bounds.end.x]:
+  for z: float in [bounds.position.y, bounds.end.y]:
    for y in [-0.32, 0.55]:
-    var point := Vector3(x, y, z)
+    var point := TablePresentation.map_point(Vector2(x, z), y)
     if camera.is_position_behind(point) or not rect.has_point(camera.unproject_position(point)):
      return false
  return true
 
-func perspective_ratio(camera: Camera3D) -> float:
- var near_width := camera.unproject_position(Vector3(4, 0, 7)).distance_to(camera.unproject_position(Vector3(-4, 0, 7)))
- var far_width := camera.unproject_position(Vector3(4, 0, -7)).distance_to(camera.unproject_position(Vector3(-4, 0, -7)))
+func perspective_ratio(presentation: TablePresentation) -> float:
+ var camera := presentation.camera
+ var bounds := presentation.table_bounds
+ var near_width := camera.unproject_position(TablePresentation.map_point(bounds.end)).distance_to(camera.unproject_position(TablePresentation.map_point(Vector2(bounds.position.x, bounds.end.y))))
+ var far_width := camera.unproject_position(TablePresentation.map_point(Vector2(bounds.end.x, bounds.position.y))).distance_to(camera.unproject_position(TablePresentation.map_point(bounds.position)))
  return near_width / far_width
 
 func flippers_aligned(game: Node) -> bool:
@@ -67,8 +70,10 @@ func prism_faces_outward(presentation: TablePresentation) -> bool:
 func run() -> void:
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results"))
  var game: Node = load("res://scenes/playground.tscn").instantiate()
+ game.legacy_pair_fixture = true # Retain the original stationary-view comparison fixture.
  root.add_child(game)
  await create_timer(0.25).timeout
+ game.presentation.set_camera_follow(false)
  var ui: PlaygroundDebugPanel = game.debug_panel
  var original_signature: String = game.layout.signature
  var original_position: Vector2 = game.ball.position
@@ -85,7 +90,7 @@ func run() -> void:
   ui.camera_presets.item_selected.emit(preset)
   await create_timer(0.1).timeout
   check(framing_valid(game.presentation), "%s keeps the entire board and height envelope inside the viewport" % TablePresentation.CAMERA_NAMES[preset])
-  ratios.append(perspective_ratio(game.presentation.camera))
+  ratios.append(perspective_ratio(game.presentation))
   await capture(names[preset])
  check(is_equal_approx(ratios[0], 1.0) and ratios[1] > 1.2 and ratios[2] > ratios[1] + 0.2, "Perspective naturally enlarges the near edge; Dramatic strengthens the effect")
  print("CAMERA_WIDTH_RATIOS | ", ratios)

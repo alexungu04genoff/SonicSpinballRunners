@@ -119,6 +119,11 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
   state.angular_velocity = 0.0
   _teleport_pending = false
  if serve_pending:
+  # Waiting at serve is an explicit reset state, not an active physics trajectory.
+  # Clear residual contact recovery after a long teleport until launch releases it.
+  state.transform = Transform2D(0.0, _teleport_position)
+  state.linear_velocity = Vector2.ZERO
+  state.angular_velocity = 0.0
   gravity_scale = 0.0
   steering_mode = "Idle"
   steering_target = 0.0

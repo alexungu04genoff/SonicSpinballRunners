@@ -17,6 +17,8 @@ const RAIL_RADIUS := 12.0
 @export var bumpers: Array[Dictionary] = []
 @export var rings: PackedVector2Array = PackedVector2Array()
 @export var markers: Dictionary = {}
+## Local pivot positions; side +1 is a left flipper and -1 is a right flipper.
+@export var flipper_placements: Array[Dictionary] = []
 @export var visual_attachment: Dictionary = {"theme": "practice", "height": 0.0}
 ## Closed navigable footprint and representative routes for coarse clearance validation.
 @export var playfield_outline: PackedVector2Array = PackedVector2Array()
@@ -40,6 +42,17 @@ func world_polygon(points: PackedVector2Array) -> PackedVector2Array:
  var result := PackedVector2Array()
  for point: Vector2 in points:
   result.append(world_point(point))
+ return result
+
+func world_flippers() -> Array[Dictionary]:
+ var result: Array[Dictionary] = []
+ for placement: Dictionary in flipper_placements:
+  result.append({"position": world_point(placement.position), "side": -float(placement.side) if mirrored else float(placement.side)})
+ if flipper_placements.is_empty():
+  for marker_name: String in ["left_flipper", "right_flipper"]:
+   if markers.has(marker_name):
+    var side := 1.0 if marker_name == "left_flipper" else -1.0
+    result.append({"position": world_point(markers[marker_name]), "side": -side if mirrored else side})
  return result
 
 func gameplay_descriptors() -> Array[Dictionary]:

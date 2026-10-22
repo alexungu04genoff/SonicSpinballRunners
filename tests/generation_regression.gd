@@ -50,8 +50,8 @@ func run() -> void:
  for preference in 3:
   var tier_ids: Dictionary = {}
   for seed_value in range(1, 25):
-   var a := TableGenerator.generate(seed_value, preference)
-   var b := TableGenerator.generate(seed_value, preference)
+   var a := TableGenerator.generate_pair(seed_value, preference)
+   var b := TableGenerator.generate_pair(seed_value, preference)
    deterministic = deterministic and a.signature == b.signature and a.difficulty_preference == preference and a.difficulty_estimate == b.difficulty_estimate and a.junction_rails == b.junction_rails and a.upper.gameplay_descriptors() == b.upper.gameplay_descriptors()
    no_fallback = no_fallback and not a.used_fallback
    tier_ids[a.upper.chunk_id] = true
@@ -99,9 +99,9 @@ func run() -> void:
  rated = TableGenerator.CATALOGUE[0].duplicate(true)
  rated.bumpers.append({"kind": "circle", "position": Vector2(400, 600), "radius": 25.0})
  check(TableGenerator.estimate_difficulty(rated, TableGenerator.LOWER).approach_blocked > base_estimate.approach_blocked and TableGenerator.validate(rated, TableGenerator.LOWER).valid, "Nearby obstacle affects approach estimate while the critical passage remains valid")
- var hard_request := TableGenerator.generate(1, TableGenerator.Difficulty.HARD)
+ var hard_request := TableGenerator.generate_pair(1, TableGenerator.Difficulty.HARD)
  check(hard_request.preference_available and hard_request.difficulty_preference == TableGenerator.Difficulty.HARD and hard_request.difficulty_estimate.band == TableGenerator.Difficulty.HARD, "Default catalogue supplies actual Hard geometry")
- var missing_tier := TableGenerator.generate(1, TableGenerator.Difficulty.HARD, [TableGenerator.CATALOGUE[0]])
+ var missing_tier := TableGenerator.generate_pair(1, TableGenerator.Difficulty.HARD, [TableGenerator.CATALOGUE[0]])
  check(missing_tier.valid and not missing_tier.used_fallback and not missing_tier.preference_available and missing_tier.difficulty_estimate.band != TableGenerator.Difficulty.HARD and missing_tier.selection_note.contains("No valid Hard candidate; using"), "Missing requested tier explicitly reports the closest valid available band")
  var bad: ChunkData = transformed.duplicate(true)
  bad.horizontal_shift_cells = 2
@@ -123,9 +123,9 @@ func run() -> void:
  bad = TableGenerator.CATALOGUE[0].duplicate(true)
  bad.rails.append(PackedVector2Array([Vector2(100, 220), Vector2(100, 480), Vector2(200, 480), Vector2(200, 220), Vector2(100, 220)]))
  check(not TableGenerator.validate(bad, TableGenerator.LOWER).valid, "Closed pocket containing a route probe rejected")
- var fallback := TableGenerator.generate(9, TableGenerator.Difficulty.HARD, [bad])
+ var fallback := TableGenerator.generate_pair(9, TableGenerator.Difficulty.HARD, [bad])
  check(fallback.valid and fallback.used_fallback and fallback.upper.chunk_id == "classic_garden" and fallback.rejected.size() == 4, "Rejected candidates fall back to validated original layout")
- var valid_alternative := TableGenerator.generate(9, TableGenerator.Difficulty.EASY, [bad, TableGenerator.CATALOGUE[0]])
+ var valid_alternative := TableGenerator.generate_pair(9, TableGenerator.Difficulty.EASY, [bad, TableGenerator.CATALOGUE[0]])
  check(valid_alternative.upper.chunk_id == "bumper_garden" and TableGenerator.validate(valid_alternative.upper, TableGenerator.LOWER).valid and not valid_alternative.used_fallback, "Difficulty preference cannot select a trapped candidate over a valid alternative")
  check(not TableGenerator.CATALOGUE[1].mirrored and TableGenerator.CATALOGUE[1].horizontal_shift_cells == 0 and TableGenerator.CATALOGUE[0].rails.size() == 1, "Generation never mutates catalogue resources")
  for profile: PhysicsProfile in [PhysicsTuning.BALANCED, PhysicsTuning.FLOATY]:
@@ -135,6 +135,7 @@ func run() -> void:
   check(matches, profile.display_name + " starts with Quick / Tight")
 
  game = load("res://scenes/playground.tscn").instantiate()
+ game.legacy_pair_fixture = true # Preserve v3 two-section geometry and shot fixtures.
  root.add_child(game)
  await frames(5)
  var lower_id: int = game.chunks[1].get_instance_id()

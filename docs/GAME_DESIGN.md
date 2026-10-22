@@ -13,9 +13,9 @@ This document records the project's intended direction, not a claim that its sys
 
 The current product is an endlessly replayable physics sandbox with deliberately simple, blocky N64-style visuals. Current exploration covers physics/flippers/steering, profiles and modifiers, seeded chunks, connector compatibility and estimated difficulty, and primitive 3D geometry, perspective, shadows, and depth perception. It does not include acts, zones, branching progression, win conditions, finished Sonic characters, or elaborate environment artwork.
 
-The repository contains a playable two-section generator with reproducible difficulty preferences and rough estimates, shared physics profiles/modifiers, scoring and rings, automatic drain recovery, debug tuning, and collisionless primitive 3D rendering. Generator validation and regression results are documented in `VERIFICATION.md`; subjective difficulty remains a playtesting question.
+The repository contains the **Vertical Traversal Playground**: a seeded three-section course with reusable dual-connector middle chunks, two pairs of flippers, reproducible difficulty preferences, a following perspective camera and fixed overview. Shared physics profiles/modifiers, scoring, swept ring collection with cosmetic flight, automatic bottom respawn and live tuning remain intact. Generator validation and regression results are documented in `VERIFICATION.md`; subjective difficulty remains a playtesting question.
 
-The stationary depth experiment now implements Real Pinball perspective as the default, a lower Dramatic Pinball perspective preset, and a top-down orthographic reference. Raised primitive meshes, contrasting tops/sides, and directional shadows provide depth without changing 2D physics or mapping. The debug selector and collision overlays work while paused and survive regeneration. Following comes later. README records the provisional camera/height values; this document owns the long-term design. The historical sections below retain earlier implementation and verification context.
+The depth experiment retains Real Pinball perspective as the default, a lower Dramatic preset and a top-down orthographic reference. Follow mode adds bounded, damped translation with a vertical dead zone, upward lead and gentle horizontal response, without rotating during play. Overview fits the complete generated course. Raised meshes, contrasting materials and shadows remain collisionless; floor, overlays and cameras derive their extent from generated bounds. README records provisional camera values; this document owns the long-term design. Historical sections below retain earlier implementation and verification context.
 
 ### Phase 1 implementation history — 2026-10-22
 
@@ -32,7 +32,7 @@ Observed implementation:
 
 No existing gameplay source was changed for this documentation task. A small standalone regression script was added at `tests/profile_regression.gd`; it requires no testing dependency or framework. The missing scene script is recorded for the ongoing prototype work rather than replaced with an unrelated implementation.
 
-Completion update: the missing script was supplied by the prototype implementation. The earlier missing-script finding below is historical and resolved. See `../README.md` for the runtime architecture, controls, current tuning interpretation, and modifier rules, and `VERIFICATION.md` for the completed physics checks and manual-test limits. The current runtime mapping is `(x, y) -> ((x - 400) * 0.01, visual_height, (y - 700) * 0.01)`. These are provisional implementation choices, not final art or balance decisions.
+Completion update: the missing script was supplied by the prototype implementation. The earlier missing-script finding below is historical and resolved. See `../README.md` for current runtime architecture, controls, tuning and modifier rules, and `VERIFICATION.md` for checks and manual-test limits. The original centered mapping was replaced during vertical traversal with `(x, y) -> (x * 0.01, visual_height, y * 0.01)`; all collisionless visuals use that same mapping.
 
 ## Vision
 
@@ -40,9 +40,9 @@ Completion update: the missing script was supplied by the prototype implementati
 
 The game should be accessible and immediately fun while supporting deep combinations of character physics, passive abilities, collectible Chao, scoring modifiers, and character-specific specials. Windows is the initial platform; Android is a potential later target. Development uses Godot 4 and GDScript.
 
-## Current scope: Phase 2A — Modular Chunk Generation
+## Current scope: Vertical Traversal Playground
 
-**Confirmed playground scope:** Modular generation is still part of an endlessly replayable experimental physics sandbox, not an infinitely tall world. Do not add acts, zones, branching progression, win conditions, limited lives, bosses, or complete roguelite progression yet. The serve counter and automatic respawn support unrestricted experimentation. Prioritize fun physics, flippers, bumpers, steering, character profiles, modifiers, seeded layouts, connector compatibility, and estimated difficulty. Deliberately simple, blocky N64-style graphics support experiments with raised primitive geometry, perspective, shadows, and depth perception before camera following. Polished graphics, finished Sonic characters, and elaborate environment artwork are unnecessary. Progression ideas below remain long-term direction only.
+**Confirmed playground scope:** Generate three connected sections: the familiar bottom launch deck, a reusable middle with top/bottom openings and recovery flippers, and a capped upper section. Follow the ball upward, horizontally and back down. Falling between chunks is normal gameplay; a drain always returns to the bottom, with no checkpoint. This remains an endlessly replayable physics sandbox, not an infinitely tall world. No acts, zones, branching progression, win conditions, limited lives, bosses or complete roguelite progression. Primitive N64-style visuals are sufficient; progression ideas below remain long-term direction only.
 
 **Completed foundation:** The Physics Playground supplies:
 
@@ -51,11 +51,11 @@ The game should be accessible and immediately fun while supporting deep combinat
 - Configurable physics with Balanced and Floaty test profiles.
 - A debug tuning panel for rapid experimentation.
 
-**Confirmed Phase 2A scope:** Preserve that foundation and the fixed lower deck, flippers, drain, and serve. Choose among eight hand-authored upper sections using a reproducible seed, difficulty preference, optional horizontal mirroring, and compatible grid shifts. Include forgiving open sections, moderate target routes, and demanding but traversable necks. Transform connectors into world coordinates, validate their shared opening and static route clearance, and visibly close unused spans. Provide safe regeneration and layout diagnostics in the debug UI. No rotations, arbitrary table height, or endless scrolling.
+**Implemented traversal scope:** Preserve the launch deck's geometry, flippers, drain and serve relative to its footprint. Choose among eight capped top sections and three dual-connector middle sections. Open Relay and Bank Relay offer broad routes; Rebound Relay adds asymmetric positioning. Resource-defined middle flippers use the existing left/right actions simultaneously with the bottom pair. No rotations, runtime streaming or arbitrary-height UI is introduced.
 
-**Implemented baseline choices:** Upper footprints are 7 × 7 or 8 × 7 cells, the lower deck is 8 × 7, and each cell is 100 physics pixels. There are 28 upper/mirror/shift combinations and a validated original-table fallback. Full-width Easy sections stay aligned; narrower sections retain both shifts. Regeneration requires pause or serve and clears playground counters, rings, timers, and ball state while retaining tuning and pause state. See [Generation contract](GENERATION.md) for version-specific connector rules, sample seeds, validation limits, and expansion concerns. Generator v3 intentionally changes earlier seed mappings.
+**Implemented baseline choices:** Top/middle footprints are 7 × 7 or 8 × 7 cells, the bottom is 8 × 7, and cells are 100 physics pixels. Ordered sections occupy rows 0, 7 and 14; two adjacent junctions connect the current 800 × 2100 course. Full-width sections stay aligned; narrower sections retain both shifts and mirroring. Regeneration requires pause or serve, resets counters/rings/timers/ball/camera state, and preserves tuning, camera mode/settings, overlays and pause. Its fallback also has three sections. See [Generation contract](GENERATION.md) for version-specific rules and validation limits. Generator v4 changes seed mappings; v3 remains a regression fixture.
 
-**Difficulty-aware experimentation:** Generator v3 accepts Easy / Normal / Hard preferences and reproduces a layout from seed plus preference. Its provisional estimate is the maximum of intrinsic chunk, connector and approach scores, accounting for opening width, offset, ledges, contiguous ball-center clearance, turns and nearby obstacles. A challenging join cannot be diluted by averaging. Select a valid candidate within the requested tier in seeded order; report a shortage explicitly before using the closest valid alternative. Difficulty never relaxes collision validation or changes character physics.
+**Difficulty-aware experimentation:** Generator v4 retains the v3 maximum-of-components formula across all sections and junctions. Intrinsic chunk challenge, connector widths/offsets/ledges and sampled approach clearance/turns/obstacles remain distinct from validity. A challenging join cannot be diluted by averaging. Select a valid course within the requested tier in seeded order; report a shortage explicitly before using the closest valid alternative. Difficulty never relaxes collision validation or changes character physics.
 
 **Provisional tuning:** User playtesting selected Quick / Tight for both Balanced and Floaty: strength 0.10, normal acceleration 2200, counter deceleration 4000, contribution limit 120, and release deceleration 3000. Original, Air control, and Stronger brake remain selectable. Phase 2A does not change steering/release semantics.
 
@@ -65,11 +65,11 @@ Complete characters, specials, Chao drafting, themed artwork, Android controls, 
 
 **Confirmed direction:** View the vertical playfield as if standing in front of a real pinball machine, through a moderately tilted **perspective camera**. The bottom appears larger and closer; the top recedes and appears slightly narrower. Think of a much less extreme Temple Run-style perspective combined with Sonic Mania's pinball gameplay. This supersedes the earlier orthographic design preference. The eventual colorful, relatively simple Sonic Runners-inspired presentation remains compatible with today's blocky sandbox visuals.
 
-**Future camera behavior:** Follow the ball vertically within an act, gently adjust horizontally for shifted chunks, and provide enough look-ahead to anticipate obstacles. Keep flipper shots, bumpers, and collision geometry readable. Avoid excessive camera movement during rebounds.
+**Implemented camera experiment:** Follow the ball vertically through the current sandbox, gently adjust horizontally, and provide upward look-ahead. A tunable dead zone, separate response rates and speed cap soften rebounds. Upper/lower bounds prevent following beyond the course. Rotation stays fixed during movement. A debug toggle selects the fixed overview; pause freezes tracking and reset reframes the bottom.
 
-**Tentative tuning:** Tilt, field of view, distance, follow smoothing, horizontal response, and look-ahead need experimentation and playtesting. Current work explores primitive geometry, perspective, shadows, and depth perception before following. No particular follow algorithm is mandated.
+**Tentative tuning:** Follow defaults are a 100-pixel vertical dead zone, 100-pixel upward lead, 5/s vertical response, 2/s horizontal response and 1800 px/s speed cap. Horizontal target movement is 18% of the ball's offset from course center, capped at 55 pixels. Follow framing covers a local 1100-pixel window; view distance is derived from projection/aspect and the object-height envelope. These are playtesting values, not final camera behavior.
 
-**Implemented depth experiment:** Top-down reference uses orthographic projection. Real Pinball uses a 60° elevation above the board and 40° vertical FOV; Dramatic Pinball uses 50° and 52°. Both perspective presets frame the complete existing two-section table from its front end. Geometry footprints remain derived from 2D descriptors, including mirrored triangles and closure rails. The ball remains a sphere, not a character model. Heights and camera settings are provisional; validate ball visibility behind bumpers and distant-lane readability before adding following, look-ahead or taller tables.
+**Implemented depth experiment:** Top-down reference uses orthographic projection. Real Pinball uses a 60° elevation above the board and 40° vertical FOV; Dramatic uses 50° and 52°. Each preset supports following and full-course overview. Geometry footprints remain derived from 2D descriptors, including mirrored triangles and closure rails. The ball remains a sphere. Heights and camera settings are provisional; human playtesting must judge visibility, distant-lane readability and rebound tracking.
 
 An invisible 2D physics ball owns collisions and gameplay movement. A collisionless 3D character model follows its position and animates independently. The physical ball continues moving during every visible animation. Character models, themed scenery, and animation timing never determine physical collision geometry.
 
@@ -193,7 +193,7 @@ Horizontal shifts, mirroring, and flexible grid-based connection regions remain 
 
 **Future possibilities:** True vertical loops and multi-height tracks may need guided movement modules. They are unnecessary for the first prototype.
 
-Phase 2A implements seeded selection of one upper section above the fixed lower deck. Multi-junction layouts, arbitrary heights, guided loops, and themed attachments remain future work.
+Vertical traversal implements one generated middle and one generated top above the launch deck, using two junctions. Arbitrary heights, runtime streaming, guided loops and themed attachments remain future work.
 
 ## Lightweight verification and playtesting
 
@@ -240,7 +240,7 @@ Manual feel, camera readability, flipper timing, and visual polish are outside u
 
 ## Open decisions and change discipline
 
-Near-term decisions include physics tuning, connector difficulty calibration, and perspective/depth readability with primitive geometry. Camera tilt, field of view, following, look-ahead, and rebound stability need playtesting; following is later work. Existing steering and modifier behavior is documented above, while further changes should follow observed gameplay needs.
+Near-term decisions include physics tuning, connector difficulty calibration and follow-camera readability with primitive geometry. Tilt, field of view, look-ahead and rebound stability need playtesting. Existing steering and modifier behavior is documented above; further changes should follow observed gameplay needs.
 
 Later decisions include Chao drafting and stacking limits, campaign scoring and combos, special charging and target eligibility, act completion thresholds, lives/retries/run failure, checkpoint persistence, optional branching exits and rewards, validation for larger procedural acts, Android support, and Arcade Mode.
 

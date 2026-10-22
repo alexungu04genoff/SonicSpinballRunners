@@ -1,6 +1,6 @@
-# Sonic Spinball Runners — Modular Physics Playground
+# Sonic Spinball Runners — Vertical Traversal Playground
 
-A local Godot 4/GDScript pinball prototype. Gameplay uses an invisible 2D rigid body and 2D collision geometry. A separate, collisionless 3D scene renders raised primitives through a stationary perspective camera, with an orthographic reference preset. No external artwork or dependencies are required.
+A local Godot 4/GDScript pinball prototype. Gameplay uses an invisible 2D rigid body and 2D collision geometry. Three connected sections form a tall course; a separate, collisionless 3D scene renders raised primitives with a smooth following perspective camera or fixed overview. No external artwork or dependencies are required.
 
 This remains an endless experimental physics playground, including the modular generator. There are no acts, zones, win conditions, lives, bosses, or roguelite progression. The ball number is a serve counter, not a lives limit. Primitive, blocky N64-style visuals are sufficient while we tune physics, flippers, bumpers, steering, profiles, modifiers, and layouts.
 
@@ -14,7 +14,7 @@ For this machine, PowerShell can launch it with:
 & 'C:\Program Files\Godot\Godot.exe' --path 'E:\Sonic Spinball Runners'
 ```
 
-The ball starts at the serve marker. Press **Enter** or gamepad **X** to launch. Draining automatically respawns and relaunches the ball. There is no lives limit in the playground.
+The ball starts on the bottom launch deck. Press **Enter** or gamepad **X** to launch. Time the middle flippers to gain height into the top section, then recover as the ball falls. Both left paddles share Q/LB; both right paddles share E/RB. Falling between sections is normal. Draining automatically respawns and relaunches at the bottom, without checkpoints or a lives limit.
 
 | Action | Keyboard | Windows gamepad |
 | --- | --- | --- |
@@ -31,10 +31,10 @@ Both flippers can be held simultaneously. Special input currently displays a sta
 
 ## What is playable
 
-- A fixed lower deck and eight hand-authored upper layouts, selected by a reproducible seed and difficulty preference with optional mirroring and horizontal shifting.
-- Wide aligned Easy sections, Normal gardens/return lanes/target routes, and Hard tapered or offset necks. All joins meet at physics `y = 700` with visible closure rails where openings differ.
-- Segmented curved rails, circular and triangular bumpers, and 16 rings per generated table. The original 17-ring layout remains a validated fallback.
-- Two physical flippers with a short, edge-triggered launch window. Holding a flipper keeps it raised; it does not repeatedly award launch impulses.
+- A fixed bottom deck, three reusable middle layouts with two openings, and eight upper layouts, selected by a reproducible seed and difficulty preference with optional mirroring and horizontal shifting.
+- Wide aligned Easy sections, Normal gardens/return lanes/target routes, and Hard tapered or offset necks. Joins meet at physics `y = 700` and `y = 1400` with visible closure rails where openings differ.
+- Open, gently banked and asymmetric rebound middle sections, each with two bumpers and recovery paddles. Segmented rails, circular/triangular bumpers and collectible rings retain the primitive presentation.
+- Four physical flippers with a short, edge-triggered launch window. Holding a flipper keeps it raised; it does not repeatedly award launch impulses. Side routes and the center gap allow downward traversal.
 - Rings award 25 points; bumpers award 100. Clearing all rings awards 500 and restores the ring rack after one second.
 - Rings contribute five special-meter points and bumpers two, scaled by the profile. Meter caps at 100; specials remain future work.
 - Rings stay at their authored positions until the configurable magnetic radius claims them. Score and meter update immediately; their visuals accelerate toward the moving ball over 0.20 seconds. Collection checks the ball's swept path and never alters ball momentum.
@@ -49,42 +49,44 @@ PhysicsPlayground                         scripts/game.gd
 ├── PhysicsTuning                         base profile + overrides + modifiers
 ├── InputRouter                           named input actions / virtual-input seam
 ├── PhysicsWorld (Node2D)
-│   ├── UpperChunk                        static 2D rails, bumpers, Marker2D nodes
-│   ├── LowerChunk                        static 2D rails, bumpers, Marker2D nodes
+│   ├── Section_0 / Section_1 / Section_2  ordered top, middle, bottom collision sections
 │   ├── PlayerPhysics (RigidBody2D)        invisible circle, radius 14 px
-│   ├── LeftFlipper (AnimatableBody2D)
-│   └── RightFlipper (AnimatableBody2D)
+│   └── FourFlippers (AnimatableBody2D)    resource placements, shared left/right actions
 ├── Rings                                 stationary pickups and swept collection
 ├── TableView / Collisionless3DViewport
 │   └── Presentation                      camera, lights, meshes, debug geometry
 └── DebugAndHUD (CanvasLayer)              live tuning, telemetry, score, pause
 ```
 
-Authoritative layout is in `data/chunks/*.tres` and the fixed `data/lower_chunk.tres`. `scripts/table_generator.gd` selects and validates a layout before the controller builds it. `data/upper_chunk.tres` preserves the original fallback and physics-test fixture. Character defaults are in `data/balanced.tres` and `data/floaty.tres`. The example modifier is `data/practice_chao.tres`.
+Authoritative layout is in `data/chunks/*.tres`, `data/middle_chunks/*.tres` and `data/lower_chunk.tres`. `scripts/table_generator.gd` returns ordered chunks, junctions and their combined bounds after validation. `data/upper_chunk.tres` remains the fallback top and original physics-test fixture. Character defaults are in `data/balanced.tres` and `data/floaty.tres`. The example modifier is `data/practice_chao.tres`.
 
 Physics lives in `scripts/ball.gd`, `scripts/flipper.gd`, and `scripts/table_chunk.gd`. `scripts/ring_field.gd` owns collectibles. `scripts/game.gd` handles score, meter, drain/serve, and signal wiring. Rendering is isolated in `scripts/presentation.gd`. Future models can replace `ball_visual` and listen to existing bumper/flipper signals without changing collisions.
 
 ### Coordinate mapping
 
-The table is 800 × 1400 physics pixels. Positive 2D Y points down the table. One physics pixel is 0.01 3D world units:
+The current course is 800 × 2100 physics pixels, derived from its three footprints. Positive 2D Y points down the table. One physics pixel is 0.01 3D world units:
 
 ```text
-3D position = ((physics_x - 400) × 0.01, visual_height, (physics_y - 700) × 0.01)
+3D position = (physics_x × 0.01, visual_height, physics_y × 0.01)
 ```
 
 All geometry and gameplay visuals use `TablePresentation.map_point()`. Height is cosmetic. No `CollisionObject3D` exists in the presentation tree. Flipper visual rotation is the negative of the physical angle around the 3D Y axis. Camera projection never changes gameplay geometry or its scale.
 
-### Depth and camera experiment
+### Follow camera and overview
 
-Use **Camera** in the Live Physics Lab, including while paused:
+Use **Follow ball** in the Live Physics Lab to compare tracking with a fixed full-course overview. **Camera** retains three projection presets, including while paused:
 
-| Preset | Projection | Elevation above the board | Framing |
+| Preset | Projection | Elevation above the board | Vertical FOV |
 | --- | --- | --- | --- |
-| Top-down reference | Orthographic | 90° | Size 15.6; equal scale throughout |
-| Real Pinball (default) | Perspective | 60° | Vertical FOV 40°; distance 20; near edge about 1.41× the far edge |
-| Dramatic Pinball | Perspective | 50° | Vertical FOV 52°; distance 16; near edge about 1.74× the far edge |
+| Top-down reference | Orthographic | 90° | Not applicable |
+| Real Pinball (default) | Perspective | 60° | 40° |
+| Dramatic Pinball | Perspective | 50° | 52° |
 
-Perspective views look at `(0, 0, 1)` from the positive-Z/front end. All three cameras remain stationary and show the entire current board. The viewport reserves space beside both debug panels; there is no follow, scrolling, dynamic zoom, or gameplay scaling. The selected preset survives table regeneration but is not saved across restarts. Real Pinball is the recommended starting point: Dramatic compresses distant lanes and increases occlusion at bumper edges.
+Perspective views look along the table from its positive-Z/front end. Overview distance or orthographic size fits the full generated bounds and raised-object envelope. Follow mode fits a 1100-pixel local window, keeps rotation/projection fixed, and translates smoothly. Vertical tracking has a dead zone and constant upward look-ahead. Horizontal tracking responds to 18% of the ball's offset from the course center, capped at ±55 px. Exponential damping and a movement-speed limit soften rebounds; a 50 ms update cap prevents a long frame from producing a large camera jump. Only explicit reset/mode/preset changes snap to the new view.
+
+Expand **Camera follow tuning** in the lab's scroll area to edit vertical dead zone (100 px), upward look-ahead (100 px), vertical response (5/s), horizontal response (2/s) and movement cap (1800 px/s). Higher response follows sooner; a larger dead zone tolerates more movement before tracking. Bounds keep the bottom paddles and upper cap available. Pause freezes following. Reset returns the view to the bottom; regeneration preserves the preset, follow toggle and tuning, then resets its tracking state. Settings last for this session. The left panel shows the current chunk and camera target; scroll its layout details for each junction.
+
+Real Pinball is the recommended starting point. Dramatic increases height parallax and occlusion; overview makes the ball smaller but helps inspect the whole course. No camera parameter writes to the physics ball, scales gameplay geometry or changes its velocity.
 
 Circular bumpers have beveled cylinder tops, triangular bumpers are solid prisms, and rails/flippers extrude their exact capsule footprints with smaller inset top trim. Sides and tops use distinct simple materials. The floor surface is at visual Y = 0, above a 0.32-unit slab. Rails are 0.325 units tall, circular bumpers 0.42, triangular bumpers 0.34, and paddles 0.265 (0.285 at the pivot cap). The ball keeps its 0.14-unit radius and 0.16-unit center height; rings sit at 0.23. Bumper hit pulses change only visual height.
 
@@ -92,11 +94,11 @@ One directional light casts real shadows from the ball, bumpers, rings and rails
 
 **Physics** shows green X-ray collider footprints on the board plane, including moving flippers and the ball. **Chunks** and **Connectors** retain their independent overlays. Raised tops naturally project away from these ground footprints in perspective; this is height parallax, not a collision offset. Debug lines do not cast shadows. The pause notice stays above the table so it cannot hide the connection being inspected.
 
-For reproducible screenshots, run `tests/presentation_smoke.gd` graphically. Captures are written to ignored `test-results/depth-*.png`; see [verification and visual limits](docs/VERIFICATION.md).
+For follow/overview screenshots, run `tests/vertical_camera_smoke.gd` graphically. `tests/presentation_smoke.gd` retains the earlier two-section depth fixture. Captures go to ignored `test-results/`; see [verification and visual limits](docs/VERIFICATION.md).
 
 ### Chunk contract
 
-`ChunkData` stores an ID, grid position and dimensions (100 pixels per cell), top/bottom connection rectangles, rail polylines, bumpers, ring positions, spawn markers, visual attachment metadata, a navigable footprint, and route probes. Upper sections are 7 × 7 or 8 × 7 cells; the fixed lower deck is 8 × 7. Full-width sections stay aligned; narrower sections retain both horizontal shifts. All fit the existing 800 × 1400 table and camera.
+`ChunkData` stores an ID, grid position and dimensions (100 pixels per cell), top/bottom connection rectangles, rail polylines, bumpers, rings, markers, flipper placements, visual attachment metadata, a navigable footprint, and route probes. Top/middle sections are 7 × 7 or 8 × 7 cells; the fixed bottom deck is 8 × 7. Full-width sections stay aligned; narrower sections retain both horizontal shifts. Sections occupy rows 0, 7 and 14. The original capped upper resources are never used as middle sections.
 
 Horizontal mirroring and cell shifts apply consistently to collision descriptors, connectors, objects, markers, and debug bounds through `ChunkData.world_point()` / `world_rect()`. There is no rotation field. Compatibility uses overlapping opening spans at the same world boundary, never connector IDs. Unused opening spans receive capsule rails; the shared passage remains open. A coarse static reachability check rejects obvious disconnected routes. See [Generation contract and limits](docs/GENERATION.md).
 
@@ -106,9 +108,9 @@ Visual attachment metadata is a future theme hook. The current renderer uses pri
 
 Use the **Table Generator** panel on the left. At serve, or after pausing with **Escape / Menu**, enter a seed, choose an **Easy / Normal / Hard** preference, and click **Build seed + preference**. **Next seed** increments the current seed using the selected preference. **Repeat current layout** restores the current seed and preference even if controls contain unbuilt edits. Different configurations can select the same layout. Generation resets the ball to serve, score, rings, meter, timers, and ball count, while preserving physics tuning, the Chao toggle, overlays, camera preset, and pause state. Resume if paused, then press **Enter / X** to launch.
 
-For generator **v3**, try **1 + Easy** (Gentle Banks), **3 + Easy** (Open Meadow), **1 + Normal** (Outer Return), **4 + Normal** (Risk Route), **1 / 2 + Hard** (opposing Offset Neck arrangements), and **3 + Hard** (Tapered Throat). Earlier seed mappings have changed. The panel and log record the seed, preference, IDs, transformations, and actual estimated difficulty. Reasons separate intrinsic chunk, connector and approach scores, checked opening width, largest ledge, ball-center approach clearance, and sharpest turn. **Chunks** and **Connectors** have independent overlays. F1 hides both development panels. Settings are not saved across restarts.
+For generator **v4**, start with **1 + Easy** (Open Meadow / Open Relay), then **2 + Easy** (Gentle Banks / Bank Relay), **2 + Normal** (Bumper Garden / mirrored Rebound Relay), **1 + Hard** (Offset Neck / Rebound Relay), and **3 + Hard** (Tapered Throat / Bank Relay). Version 3's two-section seed mappings remain only in the legacy regression fixture. The panel and log record ordered chunks and their mirror/shift transforms. Scroll the left panel for both junctions' checked widths, largest ledges and estimates. **Chunks** and **Connectors** have independent overlays. F1 hides both development panels. Settings are not saved across restarts.
 
-Difficulty is a rough geometry preference, not a physics mode or safety override. Easy removes closure ledges and opens recovery space; Normal retains moderate shoulders and target approaches; Hard uses large shoulders and narrow, sometimes sideways-bending necks that reject imprecise upward shots. Hard adds no extra bumpers. Current estimates span **Easy 25–28, Normal 40–60, and Hard 84–100**. The hardest component sets the estimate so an easy chunk cannot average away a severe join. Selection preserves seeded variety within the requested band; an unavailable band explicitly reports the closest valid alternative. See [difficulty scoring and limits](docs/GENERATION.md).
+Difficulty is a rough geometry preference, not a physics mode or safety override. Easy removes closure ledges and opens recovery space; Normal retains moderate shoulders and target approaches; Hard uses large shoulders and narrow, sometimes sideways-bending necks that reject imprecise upward shots. Hard adds no extra bumpers. The hardest component across every chunk and junction sets the course estimate, so an easy section cannot average away a severe join. Selection preserves seeded variety within the requested band; an unavailable band explicitly reports the closest valid alternative. See [difficulty scoring and limits](docs/GENERATION.md).
 
 ## Physics and live tuning
 
@@ -185,14 +187,17 @@ From PowerShell, using the installed executable:
 & 'C:\Program Files\Godot\Godot.exe' --headless --path 'E:\Sonic Spinball Runners' --script res://tests/steering_regression.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path 'E:\Sonic Spinball Runners' --script res://tests/generation_regression.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path 'E:\Sonic Spinball Runners' --script res://tests/ring_regression.gd
+& 'C:\Program Files\Godot\Godot.exe' --headless --path 'E:\Sonic Spinball Runners' --fixed-fps 120 --script res://tests/vertical_traversal_regression.gd
+& 'C:\Program Files\Godot\Godot.exe' --headless --path 'E:\Sonic Spinball Runners' --fixed-fps 120 --script res://tests/vertical_shot_survey.gd
+& 'C:\Program Files\Godot\Godot.exe' --path 'E:\Sonic Spinball Runners' --script res://tests/vertical_camera_smoke.gd
 & 'C:\Program Files\Godot\Godot.exe' --path 'E:\Sonic Spinball Runners' --script res://tests/generation_ui_smoke.gd
 ```
 
 The regression scripts use Godot directly, with no testing dependency. `tests/profile_regression.gd` protects resource resolution and reset behavior. `tests/physics_regression.gd` exercises real physics, both flippers, high-speed rail and bumper impacts, chunk crossings, scoring, collection, pause, live tuning, drain recovery, and 20 seconds of simulated play. See `docs/VERIFICATION.md` for results and practical limits.
 
-`tests/generation_regression.gd` checks all 28 authored transformations, tier selection and shortages, seed reproduction, rejected layouts/fallback, safe reset, real seam crossings, closure collisions, and short play simulations. `tests/generation_ui_smoke.gd` exercises generation controls and captures all three tiers when run graphically. Capture scripts create the ignored `test-results/` directory when needed.
+`tests/vertical_traversal_regression.gd` checks seeded three-section courses, both junctions, four paddles, pause/reset/drain and regeneration cleanup. `tests/vertical_shot_survey.gd` exercises actual flipper shots and continuous upward/downward play. `tests/vertical_camera_smoke.gd` checks tracking and captures follow/overview views. `tests/generation_regression.gd` retains the v3 two-section geometry fixtures through `generate_pair()`; `tests/generation_ui_smoke.gd` exercises current three-section controls. Capture scripts create the ignored `test-results/` directory when needed.
 
-Run `tests/flipper_access_survey.gd` with `--headless --fixed-fps 120` for a controlled comparison using real flipper presses and unchanged Balanced physics. Add `-- --all-hard` to sample every Hard transformation. JSON results record upper-section access and optional diagnostic target hits; these are opening-shot samples, not player success rates or win conditions. All eight Hard transformations reached their upper target in the current samples. Easy and Normal overlap on initial shots, so recovery and later shots still need playtesting.
+`tests/flipper_access_survey.gd` remains the earlier two-section diagnostic; use the vertical survey for the current course. Its optional diagnostic targets and recorded shot results are sandbox evidence, not win conditions or player success rates. Static connectivity and sampled trajectories cannot prove every shot, profile or modifier combination is playable.
 
 Use **Physics** for collision outlines, **Chunks** for transformed section bounds, and **Connectors** for opening rectangles (purple) plus the checked clear passage (green). Outlines are raised slightly above the board for readability; their X/Z footprint derives from gameplay coordinates.
 

@@ -1,7 +1,8 @@
 class_name TableGenerator
 extends RefCounted
-## Phase 2A: one fixed lower deck and one validated, hand-authored upper section.
-const VERSION := 3
+## Ordered top / relay / launch sections. Transform resources are local to each layout.
+const VERSION := 4
+const PAIR_VERSION := 3
 enum Difficulty { EASY, NORMAL, HARD }
 const DIFFICULTY_NAMES := ["Easy", "Normal", "Hard"]
 const DIFFICULTY_TARGETS := [25.0, 50.0, 75.0]
@@ -17,6 +18,11 @@ const CATALOGUE: Array[ChunkData] = [
  preload("res://data/chunks/tapered_throat.tres"),
  preload("res://data/chunks/offset_neck.tres"),
 ]
+const MIDDLE_CATALOGUE: Array[ChunkData] = [
+ preload("res://data/middle_chunks/open_relay.tres"),
+ preload("res://data/middle_chunks/bank_relay.tres"),
+ preload("res://data/middle_chunks/rebound_relay.tres"),
+]
 const TABLE_BOUNDS := Rect2(0, 0, 800, 1400)
 const MIN_OVERLAP := 300.0
 const CLEARANCE := 20.0 # Radius 14 plus 6 pixels of static clearance.
@@ -29,11 +35,138 @@ const APPROACH_REFERENCE_WIDTH := 300.0
 static func allowed_shifts(source: ChunkData) -> Array[int]:
  var shifts: Array[int] = []
  # Full-width sections stay aligned; narrower sections retain grid shifts.
- for shift in range(maxi(1, floori(TABLE_BOUNDS.size.x / ChunkData.GRID_SIZE) - source.grid_dimensions.x + 1)):
+ for shift in range(maxi(1, LOWER.grid_dimensions.x - source.grid_dimensions.x + 1)):
   shifts.append(shift)
  return shifts
 
-static func generate(seed_value: int, preference: int = Difficulty.NORMAL, catalogue: Array[ChunkData] = CATALOGUE) -> Dictionary:
+static func generate(seed_value: int, preference: int = Difficulty.NORMAL, catalogue: Array[ChunkData] = CATALOGUE, middle_catalogue: Array[ChunkData] = MIDDLE_CATALOGUE) -> Dictionary:
+ preference = clampi(preference, Difficulty.EASY, Difficulty.HARD)
+ var rng := RandomNumberGenerator.new()
+ rng.seed = seed_value
+ var candidates: Array[Dictionary] = []
+ var tops := _transforms(catalogue, 0)
+ var middles := _transforms(middle_catalogue, 7)
+ var bottom: ChunkData = LOWER.duplicate(true)
+ bottom.grid_position = Vector2i(0, 14)
+ for top: ChunkData in tops:
+  for middle: ChunkData in middles:
+   var chunks: Array[ChunkData] = [top, middle, bottom]
+   candidates.append({"chunks": chunks})
+ for i in range(candidates.size() - 1, 0, -1):
+  var j := rng.randi_range(0, i)
+  var temporary := candidates[i]
+  candidates[i] = candidates[j]
+  candidates[j] = temporary
+ var rejected := PackedStringArray()
+ var junction_cache: Dictionary = {}
+ var estimate_cache: Dictionary = {}
+ # Lazy estimates avoid evaluating the entire Cartesian library for ordinary builds.
+ # Exhausting the requested tier still evaluates every candidate before a fallback.
+ for i in candidates.size():
+  var candidate: Dictionary = candidates[i]
+  candidate.order = i
+  candidate.estimate = _course_estimate(candidate.chunks, estimate_cache)
+  candidate.distance = absf(float(candidate.estimate.score) - DIFFICULTY_TARGETS[preference])
+  if candidate.estimate.band == preference and _validate_course_candidate(candidate, junction_cache, rejected):
+   return _course_layout(seed_value, preference, candidate, false, rejected)
+ candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+  return a.order < b.order if is_equal_approx(a.distance, b.distance) else a.distance < b.distance
+ )
+ for candidate: Dictionary in candidates:
+  if _validate_course_candidate(candidate, junction_cache, rejected):
+   return _course_layout(seed_value, preference, candidate, false, rejected)
+ # A catalogue failure never silently shrinks the course back to two sections.
+ var top: ChunkData = FALLBACK.duplicate(true)
+ top.grid_position = Vector2i.ZERO
+ var middle: ChunkData = MIDDLE_CATALOGUE[0].duplicate(true)
+ middle.grid_position = Vector2i(0, 7)
+ var fallback_chunks: Array[ChunkData] = [top, middle, bottom]
+ var fallback := {"chunks": fallback_chunks, "estimate": _course_estimate(fallback_chunks, {})}
+ if not _validate_course_candidate(fallback, junction_cache, rejected):
+  return {"valid": false, "errors": fallback.validation.errors, "rejected": rejected}
+ return _course_layout(seed_value, preference, fallback, true, rejected)
+
+static func _transforms(catalogue: Array[ChunkData], row: int) -> Array[ChunkData]:
+ var result: Array[ChunkData] = []
+ for source: ChunkData in catalogue:
+  for mirror: bool in [false, true]:
+   for shift: int in allowed_shifts(source):
+    var chunk: ChunkData = source.duplicate(true)
+    chunk.grid_position = Vector2i(0, row)
+    chunk.mirrored = mirror
+    chunk.horizontal_shift_cells = shift
+    result.append(chunk)
+ return result
+
+static func course_bounds(chunks: Array[ChunkData]) -> Rect2:
+ var bounds := Rect2()
+ for i in chunks.size():
+  var chunk := chunks[i]
+  var footprint := chunk.world_rect(Rect2(Vector2.ZERO, Vector2(chunk.grid_dimensions) * ChunkData.GRID_SIZE))
+  bounds = footprint if i == 0 else bounds.merge(footprint)
+ return bounds
+
+static func _transform_key(chunk: ChunkData) -> String:
+ return "%s@%d,%d:%s:%d" % [chunk.chunk_id, chunk.grid_position.x, chunk.grid_position.y, chunk.mirrored, chunk.horizontal_shift_cells]
+
+static func _junction_key(upper: ChunkData, lower: ChunkData) -> String:
+ # Instance IDs avoid aliasing two caller-supplied resources with the same authored ID.
+ return "%d/%d" % [upper.get_instance_id(), lower.get_instance_id()]
+
+static func _course_estimate(chunks: Array[ChunkData], cache: Dictionary) -> Dictionary:
+ var estimates: Array[Dictionary] = []
+ var worst: Dictionary = {}
+ var worst_index := 0
+ for i in range(chunks.size() - 1):
+  var key := _junction_key(chunks[i], chunks[i + 1])
+  if not cache.has(key):
+   cache[key] = estimate_difficulty(chunks[i], chunks[i + 1])
+  var estimate: Dictionary = cache[key]
+  estimates.append(estimate)
+  if worst.is_empty() or float(estimate.score) > float(worst.score):
+   worst = estimate
+   worst_index = i
+ var result := worst.duplicate(true)
+ result.junction_estimates = estimates
+ result.worst_junction = worst_index
+ var reasons := PackedStringArray(["Whole course: hardest component wins"])
+ for i in estimates.size():
+  reasons.append("Join %d: %.0f (%s)" % [i + 1, estimates[i].score, DIFFICULTY_NAMES[estimates[i].band]])
+ reasons.append_array(PackedStringArray([
+  "Hardest join checked width: %.0f px" % result.clear_width,
+  "Hardest approach lane: %.0f px" % result.approach_clear_width,
+  "Largest ledge at hardest join: %.0f px" % result.largest_ledge,
+ ]))
+ result.reasons = reasons
+ return result
+
+static func _validate_course_candidate(candidate: Dictionary, cache: Dictionary, rejected: PackedStringArray) -> bool:
+ if candidate.has("validation"):
+  return candidate.validation.valid
+ candidate.validation = validate_course(candidate.chunks, cache)
+ if not candidate.validation.valid:
+  rejected.append("%s: %s" % [_transform_key(candidate.chunks[0]) + " / " + _transform_key(candidate.chunks[1]), "; ".join(candidate.validation.errors)])
+ return candidate.validation.valid
+
+static func _course_layout(seed_value: int, preference: int, candidate: Dictionary, fallback: bool, rejected: PackedStringArray) -> Dictionary:
+ var estimate: Dictionary = candidate.estimate
+ var matched: bool = not fallback and estimate.band == preference
+ var note := "Requested tier matched." if matched else "No valid %s course; using %s." % [DIFFICULTY_NAMES[preference], DIFFICULTY_NAMES[estimate.band]]
+ if fallback:
+  note = "Catalogue exhausted; validated three-section %s fallback." % DIFFICULTY_NAMES[estimate.band]
+ var transforms := PackedStringArray()
+ for chunk: ChunkData in candidate.chunks:
+  transforms.append(_transform_key(chunk))
+ var junctions: Array[Dictionary] = candidate.validation.junctions
+ for i in junctions.size():
+  junctions[i].difficulty_estimate = estimate.junction_estimates[i]
+ return {"valid": true, "seed": seed_value, "version": VERSION, "chunks": candidate.chunks,
+  "junctions": junctions, "bounds": course_bounds(candidate.chunks),
+  "used_fallback": fallback, "rejected": rejected, "difficulty_preference": preference,
+  "difficulty_estimate": estimate, "preference_available": matched, "selection_note": note,
+  "signature": "v%d seed=%d preference=%s chunks=%s estimate=%.1f" % [VERSION, seed_value, DIFFICULTY_NAMES[preference], " > ".join(transforms), estimate.score]}
+
+static func generate_pair(seed_value: int, preference: int = Difficulty.NORMAL, catalogue: Array[ChunkData] = CATALOGUE) -> Dictionary:
  preference = clampi(preference, Difficulty.EASY, Difficulty.HARD)
  var rng := RandomNumberGenerator.new()
  rng.seed = seed_value
@@ -90,11 +223,14 @@ static func _layout(seed_value: int, preference: int, upper: ChunkData, validati
  var selection_note := "Requested tier matched." if matched else "No valid %s candidate; using %s." % [DIFFICULTY_NAMES[preference], DIFFICULTY_NAMES[estimate.band]]
  if fallback:
   selection_note = "Catalogue exhausted; validated %s fallback." % DIFFICULTY_NAMES[estimate.band]
- return {"valid": true, "seed": seed_value, "version": VERSION, "upper": upper,
+ var chunks: Array[ChunkData] = [upper, LOWER]
+ var junctions: Array[Dictionary] = [{"upper_index": 0, "lower_index": 1, "junction_rails": validation.junction_rails, "passage": validation.passage, "difficulty_estimate": estimate}]
+ return {"valid": true, "seed": seed_value, "version": PAIR_VERSION, "upper": upper,
   "lower": LOWER, "junction_rails": validation.junction_rails, "passage": validation.passage,
+  "chunks": chunks, "junctions": junctions, "bounds": course_bounds(chunks),
   "used_fallback": fallback, "rejected": rejected, "difficulty_preference": preference, "difficulty_estimate": estimate,
   "preference_available": matched, "selection_note": selection_note,
-  "signature": "v%d seed=%d preference=%s upper=%s mirror=%s shift=%d lower=%s estimate=%.1f" % [VERSION, seed_value, DIFFICULTY_NAMES[preference], upper.chunk_id, upper.mirrored, upper.horizontal_shift_cells, LOWER.chunk_id, estimate.score]}
+  "signature": "v%d seed=%d preference=%s upper=%s mirror=%s shift=%d lower=%s estimate=%.1f" % [PAIR_VERSION, seed_value, DIFFICULTY_NAMES[preference], upper.chunk_id, upper.mirrored, upper.horizontal_shift_cells, LOWER.chunk_id, estimate.score]}
 
 static func difficulty_band(score: float) -> int:
  return Difficulty.EASY if score < 37.5 else (Difficulty.NORMAL if score < 62.5 else Difficulty.HARD)
@@ -152,11 +288,12 @@ static func _measure_approach(upper: ChunkData, geometry: Array[Dictionary]) -> 
  # Multiple parallel routes are alternatives, not one combined fictitious opening.
  var outline := upper.world_polygon(upper.playfield_outline)
  var seam := upper.world_rect(upper.bottom_connection).end.y
- var tightest := TABLE_BOUNDS.size.x
+ var course_width := float(LOWER.grid_dimensions.x) * ChunkData.GRID_SIZE
+ var tightest := course_width
  for y in range(int(seam - 250.0), int(seam - 49.0), 25):
   var best := 0.0
   var run := 0.0
-  for x in range(0, int(TABLE_BOUNDS.end.x) + 1, 10):
+  for x in range(0, int(course_width) + 1, 10):
    var point := Vector2(x, y)
    if Geometry2D.is_point_in_polygon(point, outline) and point_clear(point, geometry, PlaygroundBall.RADIUS):
     run += 10.0
@@ -176,17 +313,48 @@ static func _measure_approach(upper: ChunkData, geometry: Array[Dictionary]) -> 
  return {"width": tightest, "turn": sharpest}
 
 static func validate(upper: ChunkData, lower: ChunkData) -> Dictionary:
+ var result := validate_junction(upper, lower)
+ if lower.grid_position != Vector2i(0, 7) or lower.mirrored or lower.horizontal_shift_cells != 0 or upper.grid_position.y != 0:
+  result.errors.append("Legacy pair requires the fixed lower deck and an upper section at row zero")
+  result.valid = false
+ return result
+
+static func validate_course(chunks: Array[ChunkData], junction_cache: Dictionary = {}) -> Dictionary:
+ var errors := PackedStringArray()
+ var junctions: Array[Dictionary] = []
+ if chunks.size() < 2:
+  return {"valid": false, "errors": PackedStringArray(["A course needs at least two ordered sections"]), "junctions": junctions}
+ var geometry: Array[Dictionary] = []
+ for chunk: ChunkData in chunks:
+  geometry.append_array(chunk.gameplay_descriptors())
+ for i in range(chunks.size() - 1):
+  var key := _junction_key(chunks[i], chunks[i + 1])
+  if not junction_cache.has(key):
+   junction_cache[key] = validate_junction(chunks[i], chunks[i + 1])
+  var validation: Dictionary = junction_cache[key]
+  if not validation.valid:
+   for error: String in validation.errors:
+    errors.append("Join %d: %s" % [i + 1, error])
+  var junction := {"upper_index": i, "lower_index": i + 1, "passage": validation.passage, "junction_rails": validation.junction_rails}
+  junctions.append(junction)
+  geometry.append_array(validation.junction_rails)
+ if errors.is_empty():
+  _check_routes(chunks, geometry, errors)
+ return {"valid": errors.is_empty(), "errors": errors, "junctions": junctions}
+
+static func validate_junction(upper: ChunkData, lower: ChunkData) -> Dictionary:
  var errors := PackedStringArray()
  var closures: Array[Dictionary] = []
  var result := {"valid": false, "errors": errors, "junction_rails": closures, "passage": Rect2()}
- for chunk: ChunkData in [upper, lower]:
+ var chunks: Array[ChunkData] = [upper, lower]
+ var pair_bounds := course_bounds(chunks)
+ var permitted_bounds := Rect2(0.0, pair_bounds.position.y, LOWER.grid_dimensions.x * ChunkData.GRID_SIZE, pair_bounds.size.y)
+ for chunk: ChunkData in chunks:
   var bounds := chunk.world_rect(Rect2(Vector2.ZERO, Vector2(chunk.grid_dimensions) * ChunkData.GRID_SIZE))
-  if chunk.grid_dimensions.x <= 0 or chunk.grid_dimensions.y != 7 or not TABLE_BOUNDS.encloses(bounds):
+  if chunk.grid_dimensions.x <= 0 or chunk.grid_dimensions.y != 7 or not permitted_bounds.encloses(bounds):
    errors.append("Invalid footprint or horizontal offset: " + chunk.chunk_id)
   if chunk.playfield_outline.size() < 3:
    errors.append("Missing navigable footprint: " + chunk.chunk_id)
- if lower.grid_position != Vector2i(0, 7) or lower.mirrored or lower.horizontal_shift_cells != 0 or upper.grid_position.y != 0:
-  errors.append("Phase 2A requires the fixed lower deck and an upper section at row zero")
  _check_connection(upper, upper.bottom_connection, false, errors)
  _check_connection(lower, lower.top_connection, true, errors)
  var up := upper.world_rect(upper.bottom_connection)
@@ -218,7 +386,7 @@ static func validate(upper: ChunkData, lower: ChunkData) -> Dictionary:
   if not errors.is_empty():
    break
  if errors.is_empty():
-  _check_routes(upper, lower, geometry, errors)
+  _check_routes(chunks, geometry, errors)
  result.valid = errors.is_empty()
  result.errors = errors
  result.junction_rails = closures
@@ -266,19 +434,28 @@ static func point_clear(point: Vector2, geometry: Array[Dictionary], clearance: 
       return false
  return true
 
-static func _check_routes(upper: ChunkData, lower: ChunkData, geometry: Array[Dictionary], errors: PackedStringArray) -> void:
+static func _check_routes(chunks: Array[ChunkData], geometry: Array[Dictionary], errors: PackedStringArray) -> void:
  # Coarse static connectivity, not a promise about dynamic trajectories or gravity.
- var outlines: Array[PackedVector2Array] = [upper.world_polygon(upper.playfield_outline), lower.world_polygon(lower.playfield_outline)]
+ var outlines: Array[PackedVector2Array] = []
+ for chunk: ChunkData in chunks:
+  outlines.append(chunk.world_polygon(chunk.playfield_outline))
+ var bounds := course_bounds(chunks)
  var free_cells: Dictionary = {}
- for y in range(2, 56):
-  for x in range(1, 32):
+ for y in range(ceili(bounds.position.y / SAMPLE_STEP), ceili(bounds.end.y / SAMPLE_STEP)):
+  for x in range(floori(bounds.position.x / SAMPLE_STEP) + 1, ceili(bounds.end.x / SAMPLE_STEP)):
    var cell := Vector2i(x, y)
    var point := Vector2(cell) * SAMPLE_STEP
-   if (Geometry2D.is_point_in_polygon(point, outlines[0]) or Geometry2D.is_point_in_polygon(point, outlines[1])) and point_clear(point, geometry):
+   var inside := false
+   for outline: PackedVector2Array in outlines:
+    if Geometry2D.is_point_in_polygon(point, outline):
+     inside = true
+     break
+   if inside and point_clear(point, geometry):
     free_cells[cell] = true
- var start := _nearest_cell(lower.world_point(lower.markers.get("serve", Vector2(665, 420))), free_cells)
+ var lower: ChunkData = chunks[chunks.size() - 1]
+ var start := _nearest_cell(lower.world_point(lower.markers.get("serve", lower.markers.get("entry", Vector2(lower.grid_dimensions) * ChunkData.GRID_SIZE * 0.5))), free_cells)
  if start == Vector2i(-1, -1):
-  errors.append("Serve has no clear navigable cell")
+  errors.append("Lower-section entry has no clear navigable cell")
   return
  var queue: Array[Vector2i] = [start]
  var reached: Dictionary = {start: true}
@@ -291,10 +468,10 @@ static func _check_routes(upper: ChunkData, lower: ChunkData, geometry: Array[Di
    if free_cells.has(adjacent) and not reached.has(adjacent) and point_clear((Vector2(cell) + Vector2(adjacent)) * SAMPLE_STEP * 0.5, geometry):
     reached[adjacent] = true
     queue.append(adjacent)
- for chunk: ChunkData in [upper, lower]:
+ for chunk: ChunkData in chunks:
   var targets := chunk.navigation_probes.duplicate()
   targets.append_array(chunk.rings)
-  for marker_name: String in ["entry", "test_target"]:
+  for marker_name: String in ["entry", "exit", "test_target"]:
    if chunk.markers.has(marker_name):
     targets.append(chunk.markers[marker_name])
   for target: Vector2 in targets:

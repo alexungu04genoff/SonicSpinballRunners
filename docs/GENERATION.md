@@ -1,4 +1,40 @@
-# Phase 2A: modular chunk generation
+# Vertical Traversal Playground: generation contract
+
+## Current generator v4
+
+The default game generates three seven-row sections: a capped top at row 0, a reusable middle at row 7, and the familiar launch deck at row 14. The resulting bounds are currently 800 × 2100 physics pixels. `layout.chunks` is ordered **top to bottom**; `layout.junctions` holds adjacent section indices, world-space closure rails, checked passage rectangles and difficulty estimates. Bounds merge the resource footprints. Runtime construction, overlays, floor, drain detection and camera framing consume that data rather than assuming two sections.
+
+The eight v3 top sections retain their geometry and ratings. Middle resources in `data/middle_chunks/` have genuine top **and** bottom openings:
+
+| Middle | Width | Gameplay geometry |
+| --- | --- | --- |
+| Open Relay | 8 cells | Aligned broad openings, clear center route, two separated side bumpers. |
+| Bank Relay | 8 cells | Aligned openings with gently banked side walls and different rebound placements. |
+| Rebound Relay | 7 cells | Mirroring/shifting, an asymmetric wall bank and short internal return rail, two offset bumpers. |
+
+Each middle defines a pair of `flipper_placements`. `world_flippers()` transforms positions and reverses paddle side under mirroring; the original deck's named markers remain supported. All left paddles use the existing left action and all right paddles use the right action. No new launch force, spring, checkpoint or character-specific physics is added. The middle's central gap and side lanes allow falling back through the course. Stationary validation checks rail/bumper clearance; moving paddles are verified separately through real physics tests.
+
+There are 28 top transforms and eight middle transforms, forming 224 combinations. A catalogue audit found 220 technically valid combinations: 16 Easy, 144 Normal and 60 Hard. Four fail the unchanged 300-pixel minimum raw connector overlap. Difficult geometry receives no validation exemptions. Candidates are shuffled by a local seeded RNG; select the first valid candidate in the requested band. Estimates and adjacent-junction checks are cached only within that build. If a tier is unavailable, explicitly report the closest valid alternative. Exhausting the catalogue uses a separately validated **three-section** fallback, never a silent two-section layout.
+
+The v3 component formula below applies to each adjacent pair. The whole-course estimate is their maximum, preserving the distinction between authored challenge, connector geometry and sampled approach clearance. Route flood validation runs across all ordered outlines and closures, from the bottom serve to rings, probes and entry/exit/test markers. Each junction retains the same 90-pixel clear seam band and safety margin. Chunk rotation remains unsupported.
+
+Regeneration replaces generated sections and middle paddles, retaining the bottom deck and its two paddles. It frees the old presentation before repopulating rings, then rebuilds meshes and signal listeners. Scores, timers and ball state reset; physics overrides, modifier, camera settings/preset/follow mode, overlays and pause persist. The ball and camera return to the bottom. Falling between sections does not reset progress or trigger a checkpoint.
+
+| Seed | Preference | Top / middle | Purpose |
+| --- | --- | --- | --- |
+| 1 | Easy | Open Meadow / Open Relay | Start with the broadest recovery space. |
+| 2 | Easy | Gentle Banks / Bank Relay | Compare gentle side-bank rebounds. |
+| 2 | Normal | Bumper Garden / Rebound Relay | Shifted, mirrored middle positioning. |
+| 1 | Hard | Offset Neck / Rebound Relay | Sideways upper approach and sharper shoulders. |
+| 3 | Hard | Tapered Throat / Bank Relay | Precision through a centered upper neck. |
+
+Reproduction requires generator version, engine, resource catalogue, seed and difficulty. Version 4 intentionally has new mappings. `generate_pair()` retains version 3 for the existing collision fixtures and earlier diagnostic; it is not a player-facing generation mode. There is still no runtime streaming, arbitrary section count UI, branching route or progression.
+
+Run `tests/vertical_traversal_regression.gd`, `tests/vertical_shot_survey.gd` (headless with `--fixed-fps 120`) and graphical `tests/vertical_camera_smoke.gd` for current verification. The shot survey uses actual flipper impulses, including uninterrupted bottom-to-top traversal and falling recovery. Its controlled inputs are evidence of sample routes, not guaranteed reachability for every transform or a difficulty success probability. See [executed results and limitations](VERIFICATION.md).
+
+## Retained v3 pair contract and shared difficulty formula
+
+The sections below document the original two-section catalogue and `generate_pair()` fixture. Component scoring, resource transforms and clearance principles are also reused by v4; the current runtime lifecycle and course-wide representation are described above.
 
 ## Scope and controls
 

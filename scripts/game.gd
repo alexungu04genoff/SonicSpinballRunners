@@ -21,6 +21,8 @@ var ring_reset_time: float = -1.0
 @export_enum("Easy", "Normal", "Hard") var generation_difficulty: int = TableGenerator.Difficulty.NORMAL
 ## Legacy layout remains available for the original physics regression fixture.
 @export var generation_enabled: bool = true
+## Keep earlier two-section regression fixtures reproducible, outside the debug UI.
+@export var legacy_pair_fixture: bool = false
 var layout: Dictionary = {}
 var generation_pending: bool = false
 var view: SubViewport
@@ -35,42 +37,24 @@ func _ready() -> void:
  world = Node2D.new()
  world.name = "PhysicsWorld"
  add_child(world)
- var catalogue: Array[ChunkData] = []
- if generation_enabled:
-  catalogue.assign(TableGenerator.CATALOGUE)
- layout = TableGenerator.generate(generation_seed, generation_difficulty, catalogue)
+ layout = _generate_layout(generation_seed, generation_difficulty)
  generation_difficulty = int(layout.get("difficulty_preference", generation_difficulty))
  if not layout.valid:
   push_error("No safe table layout: " + str(layout.errors))
   set_physics_process(false)
   return
- for resource: ChunkData in [layout.upper, layout.lower]:
-  var chunk := TableChunk.new()
-  chunk.data = resource
-  chunk.name = "UpperChunk" if chunks.is_empty() else "LowerChunk"
-  if chunks.is_empty():
-   chunk.junction_rails.assign(layout.junction_rails)
-  world.add_child(chunk)
-  chunk.build()
-  chunks.append(chunk)
+ for index in layout.chunks.size():
+  chunks.append(_build_chunk(index))
  ball = PlaygroundBall.new()
  ball.name = "PlayerPhysics"
- ball.serve_position = chunks[1].get_node("serve").global_position
+ ball.serve_position = chunks.back().get_node("serve").global_position
  ball.position = ball.serve_position
  ball.tuning = tuning
  ball.controls = controls
  world.add_child(ball)
  ball.teleport_to(ball.position, Vector2.ZERO, true)
- for side: int in [1, -1]:
-  var flipper := PlaygroundFlipper.new()
-  flipper.name = "LeftFlipper" if side > 0 else "RightFlipper"
-  flipper.side = float(side)
-  flipper.position = chunks[1].get_node("left_flipper" if side > 0 else "right_flipper").global_position
-  flipper.ball = ball
-  flipper.controls = controls
-  flipper.tuning = tuning
-  world.add_child(flipper)
-  flippers.append(flipper)
+ for index in range(chunks.size() - 1, -1, -1):
+  _add_chunk_flippers(chunks[index])
  ring_field = RingField.new()
  ring_field.name = "Rings"
  ring_field.ball = ball
@@ -98,6 +82,44 @@ func _ready() -> void:
  tuning.changed.connect(_apply_tuning)
  _apply_tuning()
  print("PLAYGROUND_READY | Godot %s | 120 Hz | 2D collisions / 3D presentation | %s" % [Engine.get_version_info().string, layout.signature])
+
+func _generate_layout(seed_value: int, preference: int) -> Dictionary:
+ if not generation_enabled:
+  return TableGenerator.generate_pair(seed_value, preference, [])
+ if legacy_pair_fixture:
+  return TableGenerator.generate_pair(seed_value, preference)
+ return TableGenerator.generate(seed_value, preference)
+
+func _build_chunk(index: int) -> TableChunk:
+ var chunk := TableChunk.new()
+ chunk.data = layout.chunks[index]
+ chunk.name = "Section_%d_%s" % [index, chunk.data.chunk_id]
+ for junction: Dictionary in layout.junctions:
+  if junction.upper_index == index:
+   chunk.junction_rails.append_array(junction.junction_rails)
+ world.add_child(chunk)
+ chunk.build()
+ return chunk
+
+func _add_chunk_flippers(chunk: TableChunk) -> void:
+ for placement: Dictionary in chunk.data.world_flippers():
+  var flipper := PlaygroundFlipper.new()
+  flipper.name = "%s_%sFlipper" % [chunk.data.chunk_id, "Left" if placement.side > 0 else "Right"]
+  flipper.side = placement.side
+  flipper.position = placement.position
+  flipper.ball = ball
+  flipper.controls = controls
+  flipper.tuning = tuning
+  world.add_child(flipper)
+  flippers.append(flipper)
+
+func current_chunk_index() -> int:
+ for i in chunks.size():
+  var data := chunks[i].data
+  var bounds := data.world_rect(Rect2(Vector2.ZERO, Vector2(data.grid_dimensions) * ChunkData.GRID_SIZE))
+  if bounds.has_point(ball.position):
+   return i
+ return -1
 
 func _populate_rings() -> void:
  ring_field.rings.clear()
@@ -132,7 +154,7 @@ func _build_presentation() -> void:
  presentation.flippers = flippers
  presentation.ring_field = ring_field
  view.add_child(presentation)
- presentation.build(chunks, layout.passage)
+ presentation.build(chunks, layout.junctions, layout.bounds)
 
 func can_regenerate() -> bool:
  return not generation_pending and (get_tree().paused or ball.serve_pending)
@@ -152,7 +174,7 @@ func _regenerate(seed_value: int, preference: int) -> void:
   generation_pending = false
   status_message = "Generation cancelled because play resumed. Pause and try again."
   return
- var candidate := TableGenerator.generate(seed_value, preference)
+ var candidate := _generate_layout(seed_value, preference)
  if not candidate.valid:
   status_message = "Generation failed; current table preserved."
   push_error(str(candidate.errors))
@@ -160,22 +182,29 @@ func _regenerate(seed_value: int, preference: int) -> void:
   return
  var overlays: Array[bool] = [presentation.physics_overlay.visible, presentation.chunk_overlay.visible, presentation.connector_overlay.visible]
  var camera_preset: int = presentation.camera_preset
+ var camera_follow: bool = presentation.camera_follow_enabled
+ var camera_settings: Dictionary = presentation.camera_settings.duplicate()
  ball.freeze = true
  ball.position = ball.serve_position
  ball.linear_velocity = Vector2.ZERO
  ball.teleport_to(ball.serve_position, Vector2.ZERO, true)
  presentation.free()
- chunks[0].free()
+ # The launch deck and its paddles stay put. Replace every generated section.
+ var lower: TableChunk = chunks.back()
+ for i in range(chunks.size() - 1):
+  chunks[i].free()
+ chunks.clear()
+ for i in range(flippers.size() - 1, 1, -1):
+  flippers[i].free()
+  flippers.remove_at(i)
  layout = candidate
  generation_seed = seed_value
  generation_difficulty = preference
- var upper := TableChunk.new()
- upper.name = "UpperChunk"
- upper.data = layout.upper
- upper.junction_rails.assign(layout.junction_rails)
- world.add_child(upper)
- upper.build()
- chunks[0] = upper
+ for i in range(layout.chunks.size() - 1):
+  chunks.append(_build_chunk(i))
+ chunks.append(lower)
+ for i in range(chunks.size() - 2, -1, -1):
+  _add_chunk_flippers(chunks[i])
  _apply_tuning()
  _populate_rings()
  for flipper: PlaygroundFlipper in flippers:
@@ -198,6 +227,10 @@ func _regenerate(seed_value: int, preference: int) -> void:
  presentation.chunk_overlay.visible = overlays[1]
  presentation.connector_overlay.visible = overlays[2]
  presentation.set_camera_preset(camera_preset)
+ for key: String in camera_settings:
+  presentation.set_camera_value(key, camera_settings[key])
+ presentation.set_camera_follow(camera_follow)
+ presentation.reset_camera(ball.serve_position)
  ball.freeze = false
  generation_pending = false
  debug_panel.refresh_generation()
@@ -219,6 +252,7 @@ func reset_ball(relaunch: bool = false) -> void:
  respawn_time = -1.0
  presentation.clear_ring_pickups()
  ball.teleport_to(ball.serve_position, Vector2.ZERO, true)
+ presentation.reset_camera(ball.serve_position)
  ring_field.previous_ball_position = ball.serve_position
  auto_launch_time = 0.25 if relaunch else -1.0
  status_message = "Ready to launch"
@@ -249,7 +283,7 @@ func _physics_process(delta: float) -> void:
   respawn_time -= delta
   if respawn_time <= 0:
    reset_ball(true)
- elif not ball.serve_pending and (ball.position.y > 1450.0 or absf(ball.position.x - 400.0) > 650.0 or ball.position.y < -200.0):
+ elif not ball.serve_pending and (ball.position.y > layout.bounds.end.y + 50.0 or ball.position.x < layout.bounds.position.x - 250.0 or ball.position.x > layout.bounds.end.x + 250.0 or ball.position.y < layout.bounds.position.y - 200.0):
   ball_number += 1
   respawn_time = 0.65
   presentation.clear_ring_pickups()

@@ -9,11 +9,14 @@ var seed_field: SpinBox
 var difficulty_selector: OptionButton
 var generation_summary: Label
 var generation_hint: Label
+var traversal_telemetry: Label
 var generation_buttons: Array[Button] = []
 var telemetry: Label
 var steering_telemetry: Label
 var steering_presets: OptionButton
 var camera_presets: OptionButton
+var camera_follow: CheckButton
+var camera_fields: Dictionary = {}
 var score_label: Label
 var message_label: Label
 var pause_label: Label
@@ -143,12 +146,20 @@ func _ready() -> void:
  for camera_name: String in TablePresentation.CAMERA_NAMES:
   camera_presets.add_item("Camera: " + camera_name)
  camera_presets.select(game.presentation.camera_preset)
- camera_presets.tooltip_text = "Stationary views. Top-down is orthographic; Pinball presets use perspective. Physics is unchanged."
+ camera_presets.tooltip_text = "Top-down is orthographic; Pinball presets use perspective. Follow mode changes only camera position."
  camera_presets.item_selected.connect(func(index: int):
   game.presentation.set_camera_preset(index)
   camera_presets.release_focus()
  )
  stack.add_child(camera_presets)
+ camera_follow = CheckButton.new()
+ camera_follow.text = "Follow ball (off: fixed overview)"
+ camera_follow.button_pressed = game.presentation.camera_follow_enabled
+ camera_follow.toggled.connect(func(enabled: bool):
+  game.presentation.set_camera_follow(enabled)
+  camera_follow.release_focus()
+ )
+ stack.add_child(camera_follow)
  telemetry = Label.new()
  telemetry.add_theme_font_size_override("font_size", 13)
  stack.add_child(telemetry)
@@ -165,6 +176,35 @@ func _ready() -> void:
  fields.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  fields.add_theme_constant_override("separation", 5)
  scroll.add_child(fields)
+ var camera_controls := VBoxContainer.new()
+ var camera_fold := CheckButton.new()
+ camera_fold.text = "Camera follow tuning"
+ camera_fold.toggled.connect(func(enabled: bool):
+  camera_controls.visible = enabled
+  camera_fold.release_focus()
+ )
+ fields.add_child(camera_fold)
+ fields.add_child(camera_controls)
+ camera_controls.visible = false
+ var camera_specs := {
+  "dead_zone_y": [0.0, 250.0, 5.0, "Vertical dead zone [px]"],
+  "look_ahead": [0.0, 250.0, 5.0, "Upward look-ahead [px]"],
+  "vertical_response": [1.0, 12.0, 0.25, "Vertical response [1/s]"],
+  "horizontal_response": [0.25, 6.0, 0.25, "Horizontal response [1/s]"],
+  "max_speed": [600.0, 4000.0, 100.0, "Camera speed limit [px/s]"],
+ }
+ for key: String in camera_specs:
+  var spec: Array = camera_specs[key]
+  _label(camera_controls, spec[3], 12)
+  var spin := SpinBox.new()
+  spin.min_value = spec[0]
+  spin.max_value = spec[1]
+  spin.step = spec[2]
+  spin.value = game.presentation.camera_settings[key]
+  spin.value_changed.connect(func(value: float): game.presentation.set_camera_value(key, value))
+  spin.get_line_edit().text_submitted.connect(func(_text: String): spin.get_line_edit().release_focus())
+  camera_controls.add_child(spin)
+  camera_fields[key] = spin
  _label(fields, "Base values + session edits (before Chao)", 13)
  for key: String in PhysicsProfile.FIELDS:
   var spec: Array = PhysicsProfile.FIELDS[key]
@@ -198,7 +238,7 @@ func _ready() -> void:
 func _build_generation_panel() -> void:
  generation_panel = PanelContainer.new()
  generation_panel.position = Vector2(18, 148)
- generation_panel.size.x = 204
+ generation_panel.size = Vector2(204, 680)
  add_child(generation_panel)
  var margin := MarginContainer.new()
  for side: String in ["left", "right", "top", "bottom"]:
@@ -228,9 +268,18 @@ func _build_generation_panel() -> void:
  ))
  generation_buttons.append(_button(stack, "Next seed", func(): game.request_generation((game.generation_seed + 1) % 2147483648, difficulty_selector.selected)))
  generation_buttons.append(_button(stack, "Repeat current layout", func(): game.request_generation(game.generation_seed, game.generation_difficulty)))
- generation_summary = _label(stack, "", 12)
+ traversal_telemetry = _label(stack, "", 12)
+ traversal_telemetry.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ traversal_telemetry.custom_minimum_size.x = 184
+ var summary_scroll := ScrollContainer.new()
+ summary_scroll.custom_minimum_size.y = 210
+ summary_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+ summary_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+ stack.add_child(summary_scroll)
+ generation_summary = _label(summary_scroll, "", 12)
  generation_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
- generation_summary.custom_minimum_size.x = 184
+ generation_summary.custom_minimum_size.x = 168
+ generation_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  generation_hint = _label(stack, "", 12)
  generation_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  generation_hint.modulate = Color("ffcf52")
@@ -239,9 +288,16 @@ func _build_generation_panel() -> void:
 func refresh_generation() -> void:
  seed_field.value = game.generation_seed
  difficulty_selector.select(game.generation_difficulty)
- var upper: ChunkData = game.layout.upper
  var estimate: Dictionary = game.layout.difficulty_estimate
- generation_summary.text = "CURRENT SEED  %d\nUpper: %s\nMirror: %s   Shift: %d cell\nLower: launch_deck (fixed)\nPreference: %s\nEstimate: %s %.1f / 100\n%s\nFallback: %s\nRough geometry estimate" % [game.generation_seed, upper.chunk_id, "yes" if upper.mirrored else "no", upper.horizontal_shift_cells, TableGenerator.DIFFICULTY_NAMES[game.generation_difficulty], TableGenerator.DIFFICULTY_NAMES[estimate.band], estimate.score, "\n".join(estimate.reasons), "yes" if game.layout.used_fallback else "no"]
+ generation_summary.text = "CURRENT SEED  %d\nPreference: %s\nEstimate: %s %.1f / 100\n" % [game.generation_seed, TableGenerator.DIFFICULTY_NAMES[game.generation_difficulty], TableGenerator.DIFFICULTY_NAMES[estimate.band], estimate.score]
+ for i in game.layout.chunks.size():
+  var chunk: ChunkData = game.layout.chunks[i]
+  generation_summary.text += "\n%d. %s\nMirror: %s  Shift: %d\n" % [i + 1, chunk.chunk_id, "yes" if chunk.mirrored else "no", chunk.horizontal_shift_cells]
+ for i in game.layout.junctions.size():
+  var junction: Dictionary = game.layout.junctions[i]
+  var rating: Dictionary = junction.difficulty_estimate
+  generation_summary.text += "\nJoin %d: y %.0f\nChecked width: %.0f px\nLargest ledge: %.0f px\n%s %.0f / 100\n" % [i + 1, junction.passage.get_center().y, junction.passage.size.x, rating.largest_ledge, TableGenerator.DIFFICULTY_NAMES[rating.band], rating.score]
+ generation_summary.text += "\nFallback: %s\nRough geometry estimate" % ("yes" if game.layout.used_fallback else "no")
  generation_summary.text += "\n" + game.layout.selection_note
  generation_summary.tooltip_text = "Estimate is the maximum of authored chunk challenge, connector severity, and sampled approach difficulty. Checked join includes a safety margin. Approach lane is the narrowest sampled contiguous ball-center route, not total space across separate lanes. These are geometry heuristics, not measured player success rates."
 
@@ -298,6 +354,9 @@ func _process(delta: float) -> void:
  for button: Button in generation_buttons:
   button.disabled = not safe
  generation_hint.text = "Ready to build. Resets score, rings and ball; keeps tuning." if safe else "Pause (Escape / Menu) to generate safely."
+ var chunk_index: int = game.current_chunk_index()
+ var chunk_name: String = game.chunks[chunk_index].data.chunk_id if chunk_index >= 0 else "Outside course"
+ traversal_telemetry.text = "Ball: %s\nCamera: %s\nTarget: %.0f, %.0f px" % [chunk_name, "Follow" if game.presentation.camera_follow_enabled else "Overview", game.presentation.camera_target.x, game.presentation.camera_target.y]
  var velocity: Vector2 = game.ball.linear_velocity
  score_label.text = "%06d   /   %02d RINGS   /   BALL %02d" % [game.score, game.rings_collected, game.ball_number]
  message_label.text = game.status_message
