@@ -1,0 +1,74 @@
+class_name TableChunk
+extends Node2D
+## Authoritative collision geometry; descriptors feed a separate renderer.
+var data: ChunkData
+var descriptors: Array[Dictionary] = []
+var wall_material: PhysicsMaterial
+var bumper_material: PhysicsMaterial
+
+func build() -> void:
+ position = Vector2(data.grid_position) * 100.0
+ wall_material = PhysicsMaterial.new()
+ wall_material.friction = 0.0
+ wall_material.bounce = 0.72
+ bumper_material = PhysicsMaterial.new()
+ bumper_material.friction = 0.0
+ bumper_material.bounce = 0.85
+ for rail: PackedVector2Array in data.rails:
+  for i in range(rail.size() - 1):
+   _rail(data.map_point(rail[i]), data.map_point(rail[i + 1]))
+ for bumper: Dictionary in data.bumpers:
+  _bumper(bumper)
+ for point: Vector2 in data.rings:
+  descriptors.append({"kind": "ring", "position": position + data.map_point(point)})
+ for marker_name: String in data.markers:
+  var marker := Marker2D.new()
+  marker.name = marker_name
+  marker.position = data.map_point(data.markers[marker_name])
+  add_child(marker)
+
+func _body() -> StaticBody2D:
+ var body := StaticBody2D.new()
+ body.collision_layer = 1
+ body.collision_mask = 2
+ add_child(body)
+ return body
+
+func _rail(a: Vector2, b: Vector2) -> void:
+ var body := _body()
+ body.name = "Rail"
+ body.physics_material_override = wall_material
+ body.position = (a + b) / 2.0
+ var collision := CollisionShape2D.new()
+ var shape := CapsuleShape2D.new()
+ shape.radius = 12.0
+ shape.height = a.distance_to(b) + 24.0
+ collision.shape = shape
+ collision.rotation = (b - a).angle() + PI / 2.0
+ body.add_child(collision)
+ descriptors.append({"kind": "rail", "a": a + position, "b": b + position, "radius": 12.0})
+
+func _bumper(item: Dictionary) -> void:
+ var body := _body()
+ body.name = "Bumper"
+ body.position = data.map_point(item.position)
+ body.physics_material_override = bumper_material
+ body.set_meta("bumper", true)
+ var descriptor: Dictionary = item.duplicate(true)
+ descriptor.position = body.position + position
+ descriptor["body"] = body
+ if item.kind == "circle":
+  var collision := CollisionShape2D.new()
+  var circle := CircleShape2D.new()
+  circle.radius = item.radius
+  collision.shape = circle
+  body.add_child(collision)
+ else:
+  var polygon := CollisionPolygon2D.new()
+  var points := PackedVector2Array()
+  for point: Vector2 in item.points:
+   points.append(Vector2(-point.x if data.mirrored else point.x, point.y))
+  polygon.polygon = points
+  body.add_child(polygon)
+  descriptor.points = points
+ descriptors.append(descriptor)
