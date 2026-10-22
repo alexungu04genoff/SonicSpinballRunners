@@ -7,6 +7,15 @@ This document records the project's intended direction, not a claim that its sys
 - **Confirmed direction:** agreed design goals and constraints. These may belong to a later phase rather than the current prototype.
 - **Tentative:** proposed mechanics, examples, and balancing values that need validation.
 - **Future:** explicitly outside the current phase; not a commitment to implement now.
+- **Implemented:** behavior observed in repository source or documented verification. This is distinct from proposed experiments and does not imply new testing during a documentation update.
+
+### Current design and implementation snapshot — 2026-10-22
+
+The current product is an endlessly replayable physics sandbox with deliberately simple, blocky N64-style visuals. Current exploration covers physics/flippers/steering, profiles and modifiers, seeded chunks, connector compatibility and estimated difficulty, and primitive 3D geometry, perspective, shadows, and depth perception. It does not include acts, zones, branching progression, win conditions, finished Sonic characters, or elaborate environment artwork.
+
+The repository contains a playable two-section generator, shared physics profiles/modifiers, scoring and rings, automatic drain recovery, debug tuning, and collisionless primitive 3D rendering. At this documentation inspection, separate development had uncommitted generator/UI/test changes introducing difficulty preferences and estimates. Those changes were inspected, not modified or verified here. Their presence is not evidence of completed playtesting.
+
+The desired camera is now moderately tilted perspective. The inspected `scripts/presentation.gd` still sets `PROJECTION_ORTHOGONAL` with a fixed camera, so perspective and raised-geometry/depth experiments are ongoing direction, not a completed camera migration. Following comes later. README and generation details describe their implementation versions; this document owns the long-term design. The historical sections below retain earlier implementation and verification context.
 
 ### Phase 1 implementation history — 2026-10-22
 
@@ -33,7 +42,7 @@ The game should be accessible and immediately fun while supporting deep combinat
 
 ## Current scope: Phase 2A — Modular Chunk Generation
 
-**Confirmed playground scope:** Modular generation is still part of an endless experimental physics sandbox. Do not add acts, zones, win conditions, limited lives, bosses, or complete roguelite progression yet. The serve counter and automatic respawn support unrestricted experimentation. Prioritize fun physics, flippers, bumpers, steering, character profiles, modifiers, and generated layouts. Primitive, blocky N64-style graphics are sufficient; basic material/lighting experiments are acceptable, but polished graphics and Sonic assets are unnecessary. Progression ideas below remain long-term direction only.
+**Confirmed playground scope:** Modular generation is still part of an endlessly replayable experimental physics sandbox, not an infinitely tall world. Do not add acts, zones, branching progression, win conditions, limited lives, bosses, or complete roguelite progression yet. The serve counter and automatic respawn support unrestricted experimentation. Prioritize fun physics, flippers, bumpers, steering, character profiles, modifiers, seeded layouts, connector compatibility, and estimated difficulty. Deliberately simple, blocky N64-style graphics support experiments with raised primitive geometry, perspective, shadows, and depth perception before camera following. Polished graphics, finished Sonic characters, and elaborate environment artwork are unnecessary. Progression ideas below remain long-term direction only.
 
 **Completed foundation:** The Physics Playground supplies:
 
@@ -44,7 +53,7 @@ The game should be accessible and immediately fun while supporting deep combinat
 
 **Confirmed Phase 2A scope:** Preserve that foundation and the fixed lower deck, flippers, drain, and serve. Choose among four spacious, hand-authored upper sections using a reproducible seed, optional horizontal mirroring, and compatible grid shifts. Transform connectors into world coordinates, validate their shared opening and static route clearance, and visibly close unused spans. Provide safe regeneration and layout diagnostics in the debug UI. No rotations, arbitrary table height, or endless scrolling.
 
-**Implemented choices:** Upper footprints are 7 × 7 cells, the lower deck is 8 × 7, and each cell is 100 physics pixels. The generator tries 16 upper/mirror/shift combinations, then validates the original table as fallback. Regeneration requires pause or serve and clears playground counters, rings, timers, and ball state while retaining tuning and pause state. See [Generation contract](GENERATION.md) for connector rules, sample seeds, validation limits, and expansion concerns.
+**Implemented baseline choices:** Upper footprints are 7 × 7 cells, the lower deck is 8 × 7, and each cell is 100 physics pixels. There are 16 upper/mirror/shift combinations and a validated original-table fallback. Regeneration requires pause or serve and clears playground counters, rings, timers, and ball state while retaining tuning and pause state. See [Generation contract](GENERATION.md) for version-specific connector rules, sample seeds, validation limits, and expansion concerns. Concurrent difficulty-selection work may change seed results and candidate selection; do not treat version-1 examples as promises for later versions.
 
 **Provisional tuning:** User playtesting selected Quick / Tight for both Balanced and Floaty: strength 0.10, normal acceleration 2200, counter deceleration 4000, contribution limit 120, and release deceleration 3000. Original, Air control, and Stronger brake remain selectable. Phase 2A does not change steering/release semantics.
 
@@ -52,7 +61,11 @@ Complete characters, specials, Chao drafting, themed artwork, Android controls, 
 
 ## Presentation and camera
 
-**Confirmed direction:** The playfield is vertically oriented and viewed through a slightly angled orthographic camera, similar to Sonic Mania's pinball bonus stage. Stylized, colorful, relatively simple 3D should evoke Sonic Runners, with Sonic Mania-like pinball environments.
+**Confirmed direction:** View the vertical playfield as if standing in front of a real pinball machine, through a moderately tilted **perspective camera**. The bottom appears larger and closer; the top recedes and appears slightly narrower. Think of a much less extreme Temple Run-style perspective combined with Sonic Mania's pinball gameplay. This supersedes the earlier orthographic design preference. The eventual colorful, relatively simple Sonic Runners-inspired presentation remains compatible with today's blocky sandbox visuals.
+
+**Future camera behavior:** Follow the ball vertically within an act, gently adjust horizontally for shifted chunks, and provide enough look-ahead to anticipate obstacles. Keep flipper shots, bumpers, and collision geometry readable. Avoid excessive camera movement during rebounds.
+
+**Tentative tuning:** Tilt, field of view, distance, follow smoothing, horizontal response, and look-ahead need experimentation and playtesting. Current work explores primitive geometry, perspective, shadows, and depth perception before following. No particular follow algorithm is mandated.
 
 An invisible 2D physics ball owns collisions and gameplay movement. A collisionless 3D character model follows its position and animates independently. The physical ball continues moving during every visible animation. Character models, themed scenery, and animation timing never determine physical collision geometry.
 
@@ -62,7 +75,7 @@ An invisible 2D physics ball owns collisions and gameplay movement. A collisionl
 2. A jump animation following flipper launches.
 3. Brief signature poses following exciting bumper impacts or other physics events.
 
-Exact camera angle, mapping from physics coordinates to the 3D presentation, animation timing, and transition rules remain open. Complete character animation is not required for Phase 1.
+Exact camera tuning, presentation mapping, animation timing, and transition rules remain open. Complete character animation is outside the current sandbox scope.
 
 ## Characters and physics
 
@@ -72,7 +85,7 @@ Exact camera angle, mapping from physics coordinates to the 3D presentation, ani
 
 Configurable physics should cover steering acceleration, steering deceleration, steering responsiveness, maximum steering contribution, gravity, downward speed limits, rolling behavior, flipper launch power, wall and bumper recoil, ring magnetism, and related properties as needed.
 
-**Confirmed architecture:** A centralized stats system resolves character defaults, Chao upgrades, temporary effects, and game-mode rules. Use shared profiles and modifiers rather than scattered hard-coded character checks. Introduce only the pieces needed by implemented features. Modifier stacking, ordering, limits, and reset behavior must be predictable; their exact formulas remain undecided.
+**Confirmed architecture:** A centralized stats system resolves character defaults, Chao upgrades, temporary effects, and game-mode rules. Use shared profiles and modifiers rather than scattered hard-coded character checks. Introduce only the pieces needed by implemented features. Modifier stacking, ordering, limits, and reset behavior must be predictable. The sandbox's additive-then-multiplicative resolver is implemented; future Chao limits and campaign reset rules remain undecided.
 
 ## Controls and steering
 
@@ -104,7 +117,7 @@ Chao can reinforce a character's strengths, compensate for weaknesses, or enable
 
 **Tentative choices and examples:** Offer approximately 3–5 options per draft. Ice Chao could affect steering and drifting; Spring Chao could boost flipper launches; Magnet Chao could attract rings. Other Chao could alter combo rules or special abilities. Exact effects, rarity, stacking caps, and draft timing details remain open.
 
-Chao drafting is outside Phase 1. Future Chao may modify character specials through the same established systems.
+Chao drafting is outside the current sandbox scope. Future Chao may modify character specials through the same established systems.
 
 ## Character specials
 
@@ -121,15 +134,29 @@ All abilities and values below are concepts, not final balancing requirements:
 | Knuckles | Horizontal glide toward a side wall or bumper, then a vertical shockwave that collects or activates eligible targets | Approximately ×2 |
 | Shadow | Large-radius Chaos Blast that collects or activates many bonuses | Ordinary ×1 value |
 
-Target eligibility, effect ranges, interaction with combos, and special-specific movement rules need design and playtesting. Specials are outside Phase 1.
+Target eligibility, effect ranges, interaction with combos, and special-specific movement rules need design and playtesting. Specials are outside the current sandbox scope.
 
 ## Run progression
 
-**Confirmed long-term direction:** A run consists of randomly selected Sonic-inspired zones, each with three acts. Acts have increasing score requirements. The core table layout should generally remain recognizable across a zone's three acts so players can learn shots and refine strategy while acquiring Chao.
+**Confirmed long-term direction:** A roguelite run visits randomly selected Sonic-inspired zones, each with three acts. Each act is a self-contained generated pinball level made from approximately **2–3 vertically connected procedural chunks**. It is not a segment of one infinitely tall tower. The approximate chunk count is a design target, not a fixed generator requirement.
+
+Within an act, the ball can move upward and downward between chunks. Falling into lower chunks is normal play. Flippers, springs, launchers, and other recovery mechanisms may appear throughout the level, supporting route exploration and recovery from missed shots.
+
+Completing an act advances the player to the next act. **Completed acts effectively become checkpoints:** after reaching Act 2, a drain respawns the player within Act 2 rather than returning them to Act 1. Avoid Jump King-style punishment that sends players back through previously completed acts. Exact lives, retry budgets, run-failure conditions, and checkpoint persistence across restarts remain undecided; this checkpoint direction does not imply unlimited campaign retries or saved progress.
+
+This supersedes the earlier preference to retain substantially the same table layout across all three acts. Acts can have distinct generated layouts while sharing a zone's visual identity and familiar gameplay elements.
 
 After Act 3, players advance to another zone while retaining their run build.
 
 **Tentative:** Acts may add objectives or hazards. Score requirements may grow multiplicatively, but tuning must account for achievable character and Chao combinations. Exact thresholds, run length, failure conditions, and between-act reset rules remain open.
+
+Increasing score requirements remain the intended campaign direction; exact completion/win rules are future design work, not sandbox functionality.
+
+### Future possibility: branching routes
+
+An open Act 1 could offer two exits leading to alternative Act 2 layouts with different geometry, difficulty, rewards, or gameplay opportunities. These can be separate generated levels connected by progression choices; they need not coexist in one enormous continuous physical world.
+
+Keep future act selection flexible enough to represent alternative destinations without building branching infrastructure now. Branches are optional future design, not mandatory for the first campaign version or the current sandbox.
 
 ## Modular levels and procedural generation
 
@@ -142,6 +169,16 @@ Connection and transformation constraints:
 - Use grid-based connection regions. Compatible openings may connect at different valid offsets; do not require rigid exact-match connector IDs.
 - Chunks may be shifted horizontally or mirrored horizontally. **Rotations are not allowed.**
 - Preserve continuous collision boundaries and avoid trapped balls, unreachable routes, and disconnected sections.
+
+### Connector geometry and difficulty
+
+**Confirmed direction:** Do not automatically turn every connector into a smooth slope. Intentional corners and protruding ledges are valid gameplay features. Distinguish deliberately difficult geometry from technically broken geometry: unintended traps, collider gaps, and impassable connections are not acceptable.
+
+**Tentative difficulty examples:** Wide aligned openings may be easier; gentle slopes may offer moderate challenge; longer or more complex slopes may be harder. Sharp corners and ledges may be challenging, while large corners combined with narrow openings may be very difficult. These are hypotheses, not fixed rankings. Actual challenge depends on approach direction, ball velocity, geometry, character physics, and other factors.
+
+**Future direction:** Difficulty preferences may favor combinations of chunks, connector geometry, and obstacles. Estimated difficulty must stay separate from technical validity; a harder preference must not admit broken connections. The inspected in-progress generator already experiments with Easy/Normal/Hard preferences and static estimates based on chunk ratings, opening width/offset, ledges, and approach crowding. These are heuristics, not proof of trajectory difficulty, and this documentation pass does not verify that implementation.
+
+Horizontal shifts, mirroring, and flexible grid-based connection regions remain required. Rotations remain disallowed. Additional connector types and difficulty models should follow playtesting rather than an elaborate framework.
 
 **Confirmed layout goal:** Chunks offer around 2–3 broad gameplay lanes. Phase 2A uses 100-pixel placement cells, overlapping connector spans, and coarse static clearance plus selected physics simulations. Exact widths and validation thresholds remain provisional tuning choices.
 
@@ -164,7 +201,7 @@ As relevant systems are implemented, add a handful of simple regression checks c
 
 Use Godot's available headless checks for script parsing, project startup, and scene loading/validation. Run the game when possible and inspect its output through Godot MCP or local tools. Report commands/checks actually executed and their results; headless success does not establish gameplay quality.
 
-Avoid substantial test dependencies and custom testing frameworks for Phase 1.
+Avoid substantial test dependencies and custom testing frameworks for the sandbox.
 
 ### Phase 1 verification history — 2026-10-22
 
@@ -196,8 +233,8 @@ Manual feel, camera readability, flipper timing, and visual polish are outside u
 
 ## Open decisions and change discipline
 
-Near-term decisions are physics values for Balanced/Floaty, the meaning and calibration of steering influence, camera/presentation mapping, and modifier resolution/reset rules as needed by the playground.
+Near-term decisions include physics tuning, connector difficulty calibration, and perspective/depth readability with primitive geometry. Camera tilt, field of view, following, look-ahead, and rebound stability need playtesting; following is later work. Existing steering and modifier behavior is documented above, while further changes should follow observed gameplay needs.
 
-Later decisions include Chao drafting and stacking limits, scoring and combo formulas, special charging and target eligibility, progression thresholds and failure rules, validation for larger procedural layouts, Android support, and Arcade Mode.
+Later decisions include Chao drafting and stacking limits, campaign scoring and combos, special charging and target eligibility, act completion thresholds, lives/retries/run failure, checkpoint persistence, optional branching exits and rewards, validation for larger procedural acts, Android support, and Arcade Mode.
 
 Keep tentative values labeled until validated. Record implementation differences here when they arise, with their impact and a proposed next step. Do not interrupt the current phase or refactor unrelated code merely to satisfy a future design concept.
