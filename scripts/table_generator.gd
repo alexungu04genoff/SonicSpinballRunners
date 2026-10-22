@@ -1,7 +1,7 @@
 class_name TableGenerator
 extends RefCounted
 ## Ordered top / relay / launch sections. Transform resources are local to each layout.
-const VERSION := 4
+const VERSION := 5
 const PAIR_VERSION := 3
 enum Difficulty { EASY, NORMAL, HARD }
 const DIFFICULTY_NAMES := ["Easy", "Normal", "Hard"]
@@ -41,6 +41,7 @@ static func allowed_shifts(source: ChunkData) -> Array[int]:
 
 static func generate(seed_value: int, preference: int = Difficulty.NORMAL, catalogue: Array[ChunkData] = CATALOGUE, middle_catalogue: Array[ChunkData] = MIDDLE_CATALOGUE) -> Dictionary:
  preference = clampi(preference, Difficulty.EASY, Difficulty.HARD)
+ var transition_requested := transition_preference(seed_value, preference)
  var rng := RandomNumberGenerator.new()
  rng.seed = seed_value
  var candidates: Array[Dictionary] = []
@@ -60,6 +61,7 @@ static func generate(seed_value: int, preference: int = Difficulty.NORMAL, catal
  var rejected := PackedStringArray()
  var junction_cache: Dictionary = {}
  var estimate_cache: Dictionary = {}
+ var first_matching_step: Dictionary = {}
  # Lazy estimates avoid evaluating the entire Cartesian library for ordinary builds.
  # Exhausting the requested tier still evaluates every candidate before a fallback.
  for i in candidates.size():
@@ -68,13 +70,24 @@ static func generate(seed_value: int, preference: int = Difficulty.NORMAL, catal
   candidate.estimate = _course_estimate(candidate.chunks, estimate_cache)
   candidate.distance = absf(float(candidate.estimate.score) - DIFFICULTY_TARGETS[preference])
   if candidate.estimate.band == preference and _validate_course_candidate(candidate, junction_cache, rejected):
-   return _course_layout(seed_value, preference, candidate, false, rejected)
+   if transition_requested == ConnectorTransitions.STEP:
+    return _course_layout(seed_value, preference, candidate, false, rejected, transition_requested)
+   if first_matching_step.is_empty():
+    first_matching_step = candidate
+   var shaped := ConnectorTransitions.reshape(candidate.chunks, transition_requested)
+   if shaped.changed:
+    var shaped_candidate := {"chunks": shaped.chunks, "transition": shaped, "estimate": _course_estimate(shaped.chunks, {})}
+    if shaped_candidate.estimate.band == preference and _validate_course_candidate(shaped_candidate, {}, rejected):
+     return _course_layout(seed_value, preference, shaped_candidate, false, rejected, transition_requested)
+ # Preserve a valid requested tier if none of its banked variants is appropriate.
+ if not first_matching_step.is_empty():
+  return _course_layout(seed_value, preference, first_matching_step, false, rejected, transition_requested)
  candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
   return a.order < b.order if is_equal_approx(a.distance, b.distance) else a.distance < b.distance
  )
  for candidate: Dictionary in candidates:
   if _validate_course_candidate(candidate, junction_cache, rejected):
-   return _course_layout(seed_value, preference, candidate, false, rejected)
+   return _course_layout(seed_value, preference, candidate, false, rejected, transition_requested)
  # A catalogue failure never silently shrinks the course back to two sections.
  var top: ChunkData = FALLBACK.duplicate(true)
  top.grid_position = Vector2i.ZERO
@@ -84,7 +97,15 @@ static func generate(seed_value: int, preference: int = Difficulty.NORMAL, catal
  var fallback := {"chunks": fallback_chunks, "estimate": _course_estimate(fallback_chunks, {})}
  if not _validate_course_candidate(fallback, junction_cache, rejected):
   return {"valid": false, "errors": fallback.validation.errors, "rejected": rejected}
- return _course_layout(seed_value, preference, fallback, true, rejected)
+ return _course_layout(seed_value, preference, fallback, true, rejected, transition_requested)
+
+static func transition_preference(seed_value: int, preference: int) -> String:
+ if preference != Difficulty.NORMAL:
+  return ConnectorTransitions.STEP
+ # Eight-seed comparison cycle: 25% Step, 37.5% Bank, 37.5% Curve.
+ # Separate from the catalogue RNG, preserving v4 Easy/Hard geometry exactly.
+ var bucket := posmod(seed_value, 8)
+ return ConnectorTransitions.STEP if bucket < 2 else (ConnectorTransitions.BANK if bucket < 5 else ConnectorTransitions.CURVE)
 
 static func _transforms(catalogue: Array[ChunkData], row: int) -> Array[ChunkData]:
  var result: Array[ChunkData] = []
@@ -148,7 +169,7 @@ static func _validate_course_candidate(candidate: Dictionary, cache: Dictionary,
   rejected.append("%s: %s" % [_transform_key(candidate.chunks[0]) + " / " + _transform_key(candidate.chunks[1]), "; ".join(candidate.validation.errors)])
  return candidate.validation.valid
 
-static func _course_layout(seed_value: int, preference: int, candidate: Dictionary, fallback: bool, rejected: PackedStringArray) -> Dictionary:
+static func _course_layout(seed_value: int, preference: int, candidate: Dictionary, fallback: bool, rejected: PackedStringArray, transition_requested: String = ConnectorTransitions.STEP) -> Dictionary:
  var estimate: Dictionary = candidate.estimate
  var matched: bool = not fallback and estimate.band == preference
  var note := "Requested tier matched." if matched else "No valid %s course; using %s." % [DIFFICULTY_NAMES[preference], DIFFICULTY_NAMES[estimate.band]]
@@ -158,13 +179,25 @@ static func _course_layout(seed_value: int, preference: int, candidate: Dictiona
  for chunk: ChunkData in candidate.chunks:
   transforms.append(_transform_key(chunk))
  var junctions: Array[Dictionary] = candidate.validation.junctions
+ var styles := PackedStringArray()
  for i in junctions.size():
   junctions[i].difficulty_estimate = estimate.junction_estimates[i]
+  junctions[i].transition_style = ConnectorTransitions.ALIGNED if junctions[i].junction_rails.is_empty() else ConnectorTransitions.STEP
+  junctions[i].transition_paths = []
+  if candidate.has("transition"):
+   junctions[i].transition_style = candidate.transition.junction_styles[i]
+   junctions[i].transition_paths = candidate.transition.junction_paths[i]
+  styles.append("J%d %s" % [i + 1, junctions[i].transition_style])
+ var transition_summary := "Requested %s; %s" % [transition_requested, " / ".join(styles)]
+ if transition_requested != ConnectorTransitions.STEP and not candidate.has("transition"):
+  transition_summary += "; no compatible bank in this tier"
  return {"valid": true, "seed": seed_value, "version": VERSION, "chunks": candidate.chunks,
   "junctions": junctions, "bounds": course_bounds(candidate.chunks),
   "used_fallback": fallback, "rejected": rejected, "difficulty_preference": preference,
   "difficulty_estimate": estimate, "preference_available": matched, "selection_note": note,
-  "signature": "v%d seed=%d preference=%s chunks=%s estimate=%.1f" % [VERSION, seed_value, DIFFICULTY_NAMES[preference], " > ".join(transforms), estimate.score]}
+  "transition_requested": transition_requested, "transition_summary": transition_summary,
+  "transition_notes": candidate.transition.notes if candidate.has("transition") else PackedStringArray(),
+  "signature": "v%d seed=%d preference=%s chunks=%s estimate=%.1f transition=%s actual=%s" % [VERSION, seed_value, DIFFICULTY_NAMES[preference], " > ".join(transforms), estimate.score, transition_requested, "/".join(styles)]}
 
 static func generate_pair(seed_value: int, preference: int = Difficulty.NORMAL, catalogue: Array[ChunkData] = CATALOGUE) -> Dictionary:
  preference = clampi(preference, Difficulty.EASY, Difficulty.HARD)
@@ -242,7 +275,8 @@ static func estimate_difficulty(upper: ChunkData, lower: ChunkData) -> Dictionar
  var down := lower.world_rect(lower.top_connection)
  var left := maxf(up.position.x, down.position.x)
  var right := minf(up.end.x, down.end.x)
- var clear_width := maxf(0.0, right - left - PASSAGE_INSET * 2.0)
+ var corridor := _passage_interval(upper, lower, left, right)
+ var clear_width := maxf(0.0, corridor.y - corridor.x - PASSAGE_INSET * 2.0)
  var reference_width := maxf(1.0, down.size.x - PASSAGE_INSET * 2.0)
  var offset := absf(up.get_center().x - down.get_center().x)
  var largest_ledge := maxf(absf(up.position.x - down.position.x), absf(up.end.x - down.end.x))
@@ -252,7 +286,7 @@ static func estimate_difficulty(upper: ChunkData, lower: ChunkData) -> Dictionar
  const APPROACH_SAMPLES := 42
  for dy: float in [-150.0, -100.0, -50.0, 50.0, 100.0, 150.0]:
   for column in 7:
-   var point := Vector2(left + PASSAGE_INSET + clear_width * (column + 0.5) / 7.0, down.position.y + dy)
+   var point := Vector2(corridor.x + PASSAGE_INSET + clear_width * (column + 0.5) / 7.0, down.position.y + dy)
    if not point_clear(point, geometry):
     blocked += 1
  var crowding := float(blocked) / APPROACH_SAMPLES
@@ -377,7 +411,10 @@ static func validate_junction(upper: ChunkData, lower: ChunkData) -> Dictionary:
  geometry.append_array(lower.gameplay_descriptors())
  geometry.append_array(closures)
  # Clear central band includes ball radius, rail cap radius and a safety margin.
- var passage := Rect2(left + PASSAGE_INSET, seam - 45.0, right - left - PASSAGE_INSET * 2.0, 90.0)
+ var corridor := _passage_interval(upper, lower, left, right)
+ var passage := Rect2(corridor.x + PASSAGE_INSET, seam - 45.0, corridor.y - corridor.x - PASSAGE_INSET * 2.0, 90.0)
+ if corridor.y - corridor.x < MIN_OVERLAP:
+  errors.append("Insufficient clearance across the full connector band")
  for x in range(ceili(passage.position.x), floori(passage.end.x) + 1, 10):
   for y in range(ceili(passage.position.y), floori(passage.end.y) + 1, 10):
    if not point_clear(Vector2(x, y), geometry):
@@ -392,6 +429,40 @@ static func validate_junction(upper: ChunkData, lower: ChunkData) -> Dictionary:
  result.junction_rails = closures
  result.passage = passage
  return result
+
+static func _passage_interval(upper: ChunkData, lower: ChunkData, left: float, right: float) -> Vector2:
+ # A sloped boundary changes x within the band. Claim only a rectangle that lies
+ # inside both outlines throughout its height, then retain all physical checks.
+ var seam := lower.world_rect(lower.top_connection).position.y
+ for chunk: ChunkData in [upper, lower]:
+  var outline := chunk.world_polygon(chunk.playfield_outline)
+  var start := seam - 45.0 if chunk == upper else seam
+  var end := seam if chunk == upper else seam + 45.0
+  var heights: Array[float] = [start, end]
+  for point: Vector2 in outline:
+   if point.y > start and point.y < end:
+    heights.append(point.y)
+  # Polygon edges are linear; extrema occur at band edges or polygon vertices.
+  for y: float in heights:
+   var row_left := INF
+   var row_right := -INF
+   for i in outline.size():
+    var a := outline[i]
+    var b := outline[(i + 1) % outline.size()]
+    if y < minf(a.y, b.y) or y > maxf(a.y, b.y):
+     continue
+    if is_equal_approx(a.y, b.y):
+     row_left = minf(row_left, minf(a.x, b.x))
+     row_right = maxf(row_right, maxf(a.x, b.x))
+    else:
+     var x := lerpf(a.x, b.x, (y - a.y) / (b.y - a.y))
+     row_left = minf(row_left, x)
+     row_right = maxf(row_right, x)
+   if not is_finite(row_left) or not is_finite(row_right):
+    return Vector2(left, left)
+   left = maxf(left, row_left)
+   right = minf(right, row_right)
+ return Vector2(left, right)
 
 static func _check_connection(chunk: ChunkData, connection: Rect2, top: bool, errors: PackedStringArray) -> void:
  var size := Vector2(chunk.grid_dimensions) * ChunkData.GRID_SIZE

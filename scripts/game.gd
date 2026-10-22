@@ -189,8 +189,9 @@ func _regenerate(seed_value: int, preference: int) -> void:
  ball.linear_velocity = Vector2.ZERO
  ball.teleport_to(ball.serve_position, Vector2.ZERO, true)
  presentation.free()
- # The launch deck and its paddles stay put. Replace every generated section.
+ # Paddles stay put. A shaped lower junction can change the deck's top wall collar.
  var lower: TableChunk = chunks.back()
+ var keep_lower_geometry: bool = lower.data.gameplay_descriptors() == candidate.chunks.back().gameplay_descriptors()
  for i in range(chunks.size() - 1):
   chunks[i].free()
  chunks.clear()
@@ -202,6 +203,11 @@ func _regenerate(seed_value: int, preference: int) -> void:
  generation_difficulty = preference
  for i in range(layout.chunks.size() - 1):
   chunks.append(_build_chunk(i))
+ if keep_lower_geometry:
+  lower.data = layout.chunks.back()
+ else:
+  lower.free()
+  lower = _build_chunk(layout.chunks.size() - 1)
  chunks.append(lower)
  for i in range(chunks.size() - 2, -1, -1):
   _add_chunk_flippers(chunks[i])

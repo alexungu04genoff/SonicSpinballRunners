@@ -32,7 +32,7 @@ Both flippers can be held simultaneously. Special input currently displays a sta
 ## What is playable
 
 - A fixed bottom deck, three reusable middle layouts with two openings, and eight upper layouts, selected by a reproducible seed and difficulty preference with optional mirroring and horizontal shifting.
-- Wide aligned Easy sections, Normal gardens/return lanes/target routes, and Hard tapered or offset necks. Joins meet at physics `y = 700` and `y = 1400` with visible closure rails where openings differ.
+- Wide aligned Easy sections, flowing Normal gardens/return lanes/target routes, and Hard tapered or offset necks. Joins meet at physics `y = 700` and `y = 1400`. Normal usually reshapes mismatched outer walls into passive banks or faceted curves, retaining occasional stepped closures.
 - Open, gently banked and asymmetric rebound middle sections, each with two bumpers and recovery paddles. Segmented rails, circular/triangular bumpers and collectible rings retain the primitive presentation.
 - Four physical flippers with a short, edge-triggered launch window. Holding a flipper keeps it raised; it does not repeatedly award launch impulses. Side routes and the center gap allow downward traversal.
 - Rings award 25 points; bumpers award 100. Clearing all rings awards 500 and restores the ring rack after one second.
@@ -58,7 +58,7 @@ PhysicsPlayground                         scripts/game.gd
 └── DebugAndHUD (CanvasLayer)              live tuning, telemetry, score, pause
 ```
 
-Authoritative layout is in `data/chunks/*.tres`, `data/middle_chunks/*.tres` and `data/lower_chunk.tres`. `scripts/table_generator.gd` returns ordered chunks, junctions and their combined bounds after validation. `data/upper_chunk.tres` remains the fallback top and original physics-test fixture. Character defaults are in `data/balanced.tres` and `data/floaty.tres`. The example modifier is `data/practice_chao.tres`.
+Authoritative layout is in `data/chunks/*.tres`, `data/middle_chunks/*.tres` and `data/lower_chunk.tres`. `scripts/table_generator.gd` returns ordered chunks, junctions and their combined bounds after validation. `scripts/connector_transitions.gd` shapes Normal's adjoining wall collars on private resource copies; the resulting descriptors drive both 2D collisions and 3D meshes. `data/upper_chunk.tres` remains the fallback top and original physics-test fixture. Character defaults are in `data/balanced.tres` and `data/floaty.tres`. The example modifier is `data/practice_chao.tres`.
 
 Physics lives in `scripts/ball.gd`, `scripts/flipper.gd`, and `scripts/table_chunk.gd`. `scripts/ring_field.gd` owns collectibles. `scripts/game.gd` handles score, meter, drain/serve, and signal wiring. Rendering is isolated in `scripts/presentation.gd`. Future models can replace `ball_visual` and listen to existing bumper/flipper signals without changing collisions.
 
@@ -108,9 +108,9 @@ Visual attachment metadata is a future theme hook. The current renderer uses pri
 
 Use the **Table Generator** panel on the left. At serve, or after pausing with **Escape / Menu**, enter a seed, choose an **Easy / Normal / Hard** preference, and click **Build seed + preference**. **Next seed** increments the current seed using the selected preference. **Repeat current layout** restores the current seed and preference even if controls contain unbuilt edits. Different configurations can select the same layout. Generation resets the ball to serve, score, rings, meter, timers, and ball count, while preserving physics tuning, the Chao toggle, overlays, camera preset, and pause state. Resume if paused, then press **Enter / X** to launch.
 
-For generator **v4**, start with **1 + Easy** (Open Meadow / Open Relay), then **2 + Easy** (Gentle Banks / Bank Relay), **2 + Normal** (Bumper Garden / mirrored Rebound Relay), **1 + Hard** (Offset Neck / Rebound Relay), and **3 + Hard** (Tapered Throat / Bank Relay). Version 3's two-section seed mappings remain only in the legacy regression fixture. The panel and log record ordered chunks and their mirror/shift transforms. Scroll the left panel for both junctions' checked widths, largest ledges and estimates. **Chunks** and **Connectors** have independent overlays. F1 hides both development panels. Settings are not saved across restarts.
+For generator **v5**, start with **1 + Easy** (Open Meadow / Open Relay), **18 + Normal** (Outer Return / Rebound Relay, two banked joins), **23 + Normal** (Risk Route / Bank Relay, curved upper join), **1 + Hard** (Offset Neck / Rebound Relay), and **3 + Hard** (Tapered Throat / Bank Relay). Easy and Hard preserve v4 selection/geometry; Normal mappings intentionally change. Version 3's two-section seed mappings remain only in the legacy regression fixture. The panel and log record ordered chunks, transforms, requested transition and actual junction styles. Scroll the left panel for checked widths, largest ledges and estimates. **Chunks** and **Connectors** have independent overlays. F1 hides both development panels. Settings are not saved across restarts.
 
-Difficulty is a rough geometry preference, not a physics mode or safety override. Easy removes closure ledges and opens recovery space; Normal retains moderate shoulders and target approaches; Hard uses large shoulders and narrow, sometimes sideways-bending necks that reject imprecise upward shots. Hard adds no extra bumpers. The hardest component across every chunk and junction sets the course estimate, so an easy section cannot average away a severe join. Selection preserves seeded variety within the requested band; an unavailable band explicitly reports the closest valid alternative. See [difficulty scoring and limits](docs/GENERATION.md).
+Difficulty is a rough geometry preference, not a physics mode or safety override. Easy removes closure ledges and opens recovery space; Normal favors banks and curves with occasional corners; Hard uses large shoulders and narrow, sometimes sideways-bending necks that reject imprecise upward shots. Hard adds no extra bumpers. Normal's eight-seed comparison cycle prefers Step for remainders 0/1, Bank for 2/3/4 and Curve for 5/6/7. Unsupported shaping retains valid steps and reports the actual result. Ordinary banks redirect momentum through existing wall collisions and never add a powered impulse. The hardest component across every chunk and junction sets the recomputed course estimate, so an easy section cannot average away a severe join. An unavailable band explicitly reports the closest valid alternative. See [difficulty scoring and limits](docs/GENERATION.md).
 
 ## Physics and live tuning
 
@@ -189,6 +189,7 @@ From PowerShell, using the installed executable:
 & 'C:\Program Files\Godot\Godot.exe' --headless --path 'E:\Sonic Spinball Runners' --script res://tests/ring_regression.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path 'E:\Sonic Spinball Runners' --fixed-fps 120 --script res://tests/vertical_traversal_regression.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path 'E:\Sonic Spinball Runners' --fixed-fps 120 --script res://tests/vertical_shot_survey.gd
+& 'C:\Program Files\Godot\Godot.exe' --headless --path 'E:\Sonic Spinball Runners' --fixed-fps 120 --script res://tests/connector_transition_regression.gd
 & 'C:\Program Files\Godot\Godot.exe' --path 'E:\Sonic Spinball Runners' --script res://tests/vertical_camera_smoke.gd
 & 'C:\Program Files\Godot\Godot.exe' --path 'E:\Sonic Spinball Runners' --script res://tests/generation_ui_smoke.gd
 ```

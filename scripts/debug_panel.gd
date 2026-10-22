@@ -290,16 +290,21 @@ func refresh_generation() -> void:
  difficulty_selector.select(game.generation_difficulty)
  var estimate: Dictionary = game.layout.difficulty_estimate
  generation_summary.text = "CURRENT SEED  %d\nPreference: %s\nEstimate: %s %.1f / 100\n" % [game.generation_seed, TableGenerator.DIFFICULTY_NAMES[game.generation_difficulty], TableGenerator.DIFFICULTY_NAMES[estimate.band], estimate.score]
+ if game.layout.has("transition_summary"):
+  generation_summary.text += "Transitions: %s\n" % game.layout.transition_summary
  for i in game.layout.chunks.size():
   var chunk: ChunkData = game.layout.chunks[i]
   generation_summary.text += "\n%d. %s\nMirror: %s  Shift: %d\n" % [i + 1, chunk.chunk_id, "yes" if chunk.mirrored else "no", chunk.horizontal_shift_cells]
  for i in game.layout.junctions.size():
   var junction: Dictionary = game.layout.junctions[i]
   var rating: Dictionary = junction.difficulty_estimate
-  generation_summary.text += "\nJoin %d: y %.0f\nChecked width: %.0f px\nLargest ledge: %.0f px\n%s %.0f / 100\n" % [i + 1, junction.passage.get_center().y, junction.passage.size.x, rating.largest_ledge, TableGenerator.DIFFICULTY_NAMES[rating.band], rating.score]
+  var style: String = junction.get("transition_style", "Aligned" if junction.junction_rails.is_empty() else "Step")
+  generation_summary.text += "\nJoin %d: %s\ny %.0f; checked %.0f px\nLargest ledge: %.0f px\n%s %.0f / 100\n" % [i + 1, style, junction.passage.get_center().y, junction.passage.size.x, rating.largest_ledge, TableGenerator.DIFFICULTY_NAMES[rating.band], rating.score]
  generation_summary.text += "\nFallback: %s\nRough geometry estimate" % ("yes" if game.layout.used_fallback else "no")
  generation_summary.text += "\n" + game.layout.selection_note
  generation_summary.tooltip_text = "Estimate is the maximum of authored chunk challenge, connector severity, and sampled approach difficulty. Checked join includes a safety margin. Approach lane is the narrowest sampled contiguous ball-center route, not total space across separate lanes. These are geometry heuristics, not measured player success rates."
+ for note: String in game.layout.get("transition_notes", PackedStringArray()):
+  generation_summary.tooltip_text += "\n" + note
 
 func _label(parent: Node, text: String, font_size: int) -> Label:
  var label := Label.new()

@@ -28,6 +28,7 @@ func run() -> void:
  ui.generation_buttons[0].pressed.emit()
  await create_timer(0.2).timeout
  check(game.generation_seed == 12 and game.generation_difficulty == TableGenerator.Difficulty.NORMAL and game.layout.signature == TableGenerator.generate(12).signature, "Build button commits entered seed and selected preference")
+ check(ui.generation_summary.text.contains("Transitions: " + game.layout.transition_summary) and ui.generation_summary.text.contains("Join 1: " + game.layout.junctions[0].transition_style), "Generator panel reports requested and actual connector styles")
  check(game.presentation.camera_preset == TablePresentation.CameraPreset.DRAMATIC_PINBALL and ui.camera_presets.selected == TablePresentation.CameraPreset.DRAMATIC_PINBALL, "Generating a new difficulty layout preserves the selected perspective camera")
  ui.difficulty_selector.select(TableGenerator.Difficulty.HARD)
  ui.generation_buttons[1].pressed.emit()
