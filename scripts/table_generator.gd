@@ -1,7 +1,7 @@
 class_name TableGenerator
 extends RefCounted
 ## Ordered top / relay / launch sections. Transform resources are local to each layout.
-const VERSION := 6
+const VERSION := 7
 const PAIR_VERSION := 3
 enum Difficulty { EASY, NORMAL, HARD }
 const DIFFICULTY_NAMES := ["Easy", "Normal", "Hard"]

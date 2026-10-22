@@ -32,6 +32,7 @@ Both flippers can be held simultaneously. Special input currently displays a sta
 ## What is playable
 
 - A fixed bottom deck, three reusable middle layouts with two openings, and eight upper layouts, selected by a reproducible seed and difficulty preference with optional mirroring and horizontal shifting.
+- An optional 50 px construction-grid experiment: choose **Grid base** or **Grid variant** in Table Generator, then build while paused or at serve. Enable **Construction grid** for local coordinates and piece footprints. **Existing catalogue** keeps the original levels available. See [grid authoring and the two-edit variant](docs/GRID_AUTHORING.md).
 - Wide aligned Easy sections, flowing Normal gardens/return lanes/target routes, and Hard tapered or offset necks. Joins meet at physics `y = 700` and `y = 1400`. Normal usually reshapes mismatched outer walls into passive banks or faceted curves, retaining occasional stepped closures.
 - Open, gently banked and asymmetric rebound middle sections, each with two bumpers and recovery paddles. Segmented rails, circular/triangular bumpers and collectible rings retain the primitive presentation.
 - Four physical flippers with authored lengths and a short, edge-triggered launch window. Bottom paddles leave a genuine drain gap. Middle layouts offer side-mounted, staggered and shorter traditional recovery arrangements. Holding a flipper keeps it raised; it does not repeatedly award launch impulses.
@@ -58,7 +59,7 @@ PhysicsPlayground                         scripts/game.gd
 └── DebugAndHUD (CanvasLayer)              live tuning, telemetry, score, pause
 ```
 
-Authoritative layout is in `data/chunks/*.tres`, `data/middle_chunks/*.tres` and `data/lower_chunk.tres`. `scripts/table_generator.gd` returns ordered chunks, junctions and their combined bounds after validation. `scripts/connector_transitions.gd` shapes Normal's adjoining wall collars on private resource copies; the resulting descriptors drive both 2D collisions and 3D meshes. `data/upper_chunk.tres` remains the fallback top and original physics-test fixture. Character defaults are in `data/balanced.tres` and `data/floaty.tres`. The example modifier is `data/practice_chao.tres`.
+Authoritative legacy layouts are in `data/chunks/*.tres`, `data/middle_chunks/*.tres` and `data/lower_chunk.tres`. Optional grid layouts live only in `data/grid_chunks/*.tres`; `GridChunkCompiler` creates their runtime geometry from `GridPieceKit`. `scripts/table_generator.gd` returns ordered chunks, junctions and their combined bounds after validation. `scripts/connector_transitions.gd` shapes Normal's adjoining wall collars on private resource copies; the resulting descriptors drive both 2D collisions and 3D meshes. `data/upper_chunk.tres` remains the fallback top and original physics-test fixture. Character defaults are in `data/balanced.tres` and `data/floaty.tres`. The example modifier is `data/practice_chao.tres`.
 
 Physics lives in `scripts/ball.gd`, `scripts/flipper.gd`, and `scripts/table_chunk.gd`. `scripts/ring_field.gd` owns collectibles. `scripts/game.gd` handles score, meter, drain/serve, and signal wiring. Rendering is isolated in `scripts/presentation.gd`. Future models can replace `ball_visual` and listen to existing bumper/flipper signals without changing collisions.
 

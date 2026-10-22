@@ -1,6 +1,6 @@
 # Vertical Traversal Playground: generation contract
 
-## Current generator v6
+## Current generator v7
 
 The default game generates three seven-row sections: a capped top at row 0, a reusable middle at row 7, and the familiar launch deck at row 14. The resulting bounds are currently 800 × 2100 physics pixels. `layout.chunks` is ordered **top to bottom**; `layout.junctions` holds adjacent section indices, world-space closure rails, checked passage rectangles and difficulty estimates. Bounds merge the resource footprints. Runtime construction, overlays, floor, drain detection and camera framing consume that data rather than assuming two sections.
 
@@ -33,6 +33,8 @@ Regeneration replaces generated sections and middle paddles, retaining the botto
 Reproduction requires generator version, engine, resource catalogue, seed and difficulty. Version 5 intentionally changes Normal mappings to prefer passive transitions; Easy and Hard retain v4 selection and geometry. `generate_pair()` retains version 3 for the existing collision fixtures and earlier diagnostic; it is not a player-facing generation mode. There is still no runtime streaming, arbitrary section count UI, branching route or progression.
 
 Version 6 records the drain/recovery placement change. Static rails, bumpers, rings and connectors are preserved; flipper lengths and middle pivots intentionally differ. Existing static difficulty ratings are unchanged and do not yet model the timing demands of individual recovery arrangements. Compare Normal 1 (side), Normal 23 (staggered) and Normal 8 (traditional); all have distinct tested recovery and upward routes. The shot diagnostic samples contact positions as fractions of each actual paddle length. It records attempts at three input timings, including real drains, while retaining the requirement for a full traversal witness through every middle design. No diagnostic controller runs in gameplay.
+
+Version 7 adds an explicit middle-catalogue mode without changing existing catalogue selection or geometry. **Grid base** and **Grid variant** compile a 50 px Resource-authored construction grid into fresh `ChunkData`, then pass that one middle resource through the same mirror/shift, selection, transition, difficulty and collision validation paths. The mode and kit version are recorded in game layout metadata and grid signatures; repeat uses the current mode. Closest-tier reporting still applies. Failed grid compilation preserves the active table. The two recipes and shared construction kit are documented in [Grid authoring](GRID_AUTHORING.md).
 
 Run `tests/vertical_traversal_regression.gd`, `tests/vertical_shot_survey.gd` (headless with `--fixed-fps 120`) and graphical `tests/vertical_camera_smoke.gd` for current verification. The shot survey uses actual flipper impulses, including uninterrupted bottom-to-top traversal and falling recovery. Its controlled inputs are evidence of sample routes, not guaranteed reachability for every transform or a difficulty success probability. See [executed results and limitations](VERIFICATION.md).
 

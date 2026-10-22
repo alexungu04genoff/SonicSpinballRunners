@@ -24,6 +24,8 @@ const RAIL_RADIUS := 12.0
 ## Closed navigable footprint and representative routes for coarse clearance validation.
 @export var playfield_outline: PackedVector2Array = PackedVector2Array()
 @export var navigation_probes: PackedVector2Array = PackedVector2Array()
+## Optional construction recipe metadata; generated descriptors remain the runtime geometry.
+@export var construction_grid: Dictionary = {}
 
 func map_point(point: Vector2) -> Vector2:
  var mapped := point
