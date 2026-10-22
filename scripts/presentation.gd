@@ -10,6 +10,7 @@ var flipper_visuals: Array[Node3D] = []
 var ring_visuals: Array[MeshInstance3D] = []
 var physics_overlay: Node3D
 var chunk_overlay: Node3D
+var connector_overlay: Node3D
 var bumper_visuals: Dictionary = {}
 var flash_times: Dictionary = {}
 var camera: Camera3D
@@ -63,7 +64,7 @@ func line(a: Vector2, b: Vector2, radius: float, height: float, mat: Material, p
  instance.quaternion = Quaternion(Vector3.UP, (end - start).normalized())
  return instance
 
-func build(chunks: Array[TableChunk]) -> void:
+func build(chunks: Array[TableChunk], passage: Rect2 = Rect2()) -> void:
  var environment := WorldEnvironment.new()
  environment.environment = Environment.new()
  environment.environment.background_mode = Environment.BG_COLOR
@@ -107,6 +108,10 @@ func build(chunks: Array[TableChunk]) -> void:
  chunk_overlay.name = "ChunkBoundaryOverlay"
  add_child(chunk_overlay)
  chunk_overlay.visible = false
+ connector_overlay = Node3D.new()
+ connector_overlay.name = "ConnectorRegionOverlay"
+ add_child(connector_overlay)
+ connector_overlay.visible = false
  var debug_mat := material(Color("70ff85"), 0.7)
  var boundary_mat := material(Color("d8a9ff"), 0.7)
  for chunk: TableChunk in chunks:
@@ -127,13 +132,14 @@ func build(chunks: Array[TableChunk]) -> void:
      bumper_visuals[item.body.get_instance_id()] = body_visual
      for i in item.points.size():
       line(item.position + item.points[i], item.position + item.points[(i + 1) % item.points.size()], 0.018, 0.37, debug_mat, physics_overlay)
-  var origin: Vector2 = chunk.position
-  var size: Vector2 = Vector2(chunk.data.grid_dimensions) * 100.0
-  line(origin, origin + Vector2(size.x, 0), 0.018, 0.38, boundary_mat, chunk_overlay)
-  line(origin + Vector2(0, size.y), origin + size, 0.018, 0.38, boundary_mat, chunk_overlay)
+  var bounds := chunk.data.world_rect(Rect2(Vector2.ZERO, Vector2(chunk.data.grid_dimensions) * ChunkData.GRID_SIZE))
+  _rect_outline(bounds, boundary_mat, chunk_overlay)
   for connection: Rect2 in [chunk.data.top_connection, chunk.data.bottom_connection]:
    if connection.size.x > 0:
-    line(origin + connection.position, origin + connection.position + Vector2(connection.size.x, 0), 0.04, 0.39, debug_mat, chunk_overlay)
+    _rect_outline(chunk.data.world_rect(connection), boundary_mat, connector_overlay)
+  _label(chunk.data.title, chunk.data.world_point(Vector2(chunk.data.grid_dimensions.x * 50.0, 95 if chunk == chunks[0] else 40)), 18, Color("71cbbf"))
+ if passage.has_area():
+  _rect_outline(passage, debug_mat, connector_overlay)
  for ring: Dictionary in ring_field.rings:
   var torus := TorusMesh.new()
   torus.inner_radius = 0.075
@@ -159,9 +165,12 @@ func build(chunks: Array[TableChunk]) -> void:
  mesh_node(stripe, material(Color("e5f4ff")), Vector3.ZERO, ball_visual)
  # Drain and serve guides have no gameplay collision.
  line(Vector2(360, 1395), Vector2(440, 1395), 0.035, 0.01, material(Color("ef6473"), 0.4))
- _label("SKY GARDEN", Vector2(400, 95), 22, Color("71cbbf"))
- _label("LAUNCH DECK", Vector2(400, 740), 18, Color("678eaa"))
  _label("DRAIN", Vector2(400, 1360), 18, Color("ee8693"))
+
+func _rect_outline(rect: Rect2, mat: Material, parent: Node3D) -> void:
+ var points: Array[Vector2] = [rect.position, Vector2(rect.end.x, rect.position.y), rect.end, Vector2(rect.position.x, rect.end.y)]
+ for i in 4:
+  line(points[i], points[(i + 1) % 4], 0.018, 0.40, mat, parent)
 
 func _label(text: String, point: Vector2, font_size: int, color: Color) -> void:
  var label := Label3D.new()

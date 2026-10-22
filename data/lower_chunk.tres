@@ -2,6 +2,9 @@
 [ext_resource type="Script" path="res://scripts/chunk_data.gd" id="1"]
 [resource]
 script = ExtResource("1")
+chunk_id = "launch_deck"
+playfield_outline = PackedVector2Array(55, 0, 55, 330, 75, 400, 125, 460, 235, 560, 380, 700, 420, 700, 565, 560, 675, 460, 725, 400, 745, 330, 745, 0)
+navigation_probes = PackedVector2Array(170, 180, 630, 180, 400, 400, 310, 520, 490, 520)
 title = "02 / LAUNCH DECK"
 grid_position = Vector2i(0, 7)
 bottom_connection = Rect2(380, 680, 40, 20)

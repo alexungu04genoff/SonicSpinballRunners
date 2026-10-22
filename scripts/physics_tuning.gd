@@ -5,7 +5,7 @@ signal changed
 const BALANCED = preload("res://data/balanced.tres")
 const FLOATY = preload("res://data/floaty.tres")
 const EXAMPLE_MODIFIER = preload("res://data/practice_chao.tres")
-# Session experiments only. Character resources keep the original startup tuning.
+# Session experiments. Character resources start with provisional Quick / Tight tuning.
 const STEERING_PRESETS: Array[Dictionary] = [
  {"name": "Original (6.5%)", "values": {"steering_strength": 0.065, "steering_acceleration": 1000.0, "counter_steering_deceleration": 1000.0, "max_steering_speed": 120.0, "steering_deceleration": 1400.0}},
  {"name": "Quick / tight", "values": {"steering_strength": 0.1, "steering_acceleration": 2200.0, "counter_steering_deceleration": 4000.0, "max_steering_speed": 120.0, "steering_deceleration": 3000.0}},

@@ -17,6 +17,12 @@ var status_message: String = "Press Enter / gamepad X to launch"
 var respawn_time: float = -1.0
 var auto_launch_time: float = -1.0
 var ring_reset_time: float = -1.0
+@export var generation_seed: int = 1
+## Legacy layout remains available for the original physics regression fixture.
+@export var generation_enabled: bool = true
+var layout: Dictionary = {}
+var generation_pending: bool = false
+var view: SubViewport
 
 func _ready() -> void:
  tuning = PhysicsTuning.new()
@@ -28,10 +34,20 @@ func _ready() -> void:
  world = Node2D.new()
  world.name = "PhysicsWorld"
  add_child(world)
- for resource: ChunkData in [preload("res://data/upper_chunk.tres"), preload("res://data/lower_chunk.tres")]:
+ var catalogue: Array[ChunkData] = []
+ if generation_enabled:
+  catalogue.assign(TableGenerator.CATALOGUE)
+ layout = TableGenerator.generate(generation_seed, catalogue)
+ if not layout.valid:
+  push_error("No safe table layout: " + str(layout.errors))
+  set_physics_process(false)
+  return
+ for resource: ChunkData in [layout.upper, layout.lower]:
   var chunk := TableChunk.new()
   chunk.data = resource
   chunk.name = "UpperChunk" if chunks.is_empty() else "LowerChunk"
+  if chunks.is_empty():
+   chunk.junction_rails.assign(layout.junction_rails)
   world.add_child(chunk)
   chunk.build()
   chunks.append(chunk)
@@ -59,10 +75,7 @@ func _ready() -> void:
  ring_field.tuning = tuning
  ring_field.previous_ball_position = ball.position
  add_child(ring_field)
- for chunk: TableChunk in chunks:
-  for descriptor: Dictionary in chunk.descriptors:
-   if descriptor.kind == "ring":
-    ring_field.add_ring(descriptor.position)
+ _populate_rings()
  _build_view()
  debug_panel = PlaygroundDebugPanel.new()
  debug_panel.name = "DebugAndHUD"
@@ -74,6 +87,7 @@ func _ready() -> void:
  controls.pause_requested.connect(toggle_pause)
  controls.debug_requested.connect(func():
   debug_panel.panel.visible = not debug_panel.panel.visible
+  debug_panel.generation_panel.visible = debug_panel.panel.visible
   get_viewport().gui_release_focus()
  )
  controls.special_requested.connect(func(): status_message = "Special reserved for Phase 2 — meter is ready for abilities")
@@ -81,7 +95,15 @@ func _ready() -> void:
  ring_field.collected.connect(_on_ring_collected)
  tuning.changed.connect(_apply_tuning)
  _apply_tuning()
- print("PLAYGROUND_READY | Godot %s | 120 Hz | 2D collisions / 3D presentation | 2 connected chunks" % Engine.get_version_info().string)
+ print("PLAYGROUND_READY | Godot %s | 120 Hz | 2D collisions / 3D presentation | %s" % [Engine.get_version_info().string, layout.signature])
+
+func _populate_rings() -> void:
+ ring_field.rings.clear()
+ ring_field.previous_ball_position = ball.serve_position
+ for chunk: TableChunk in chunks:
+  for descriptor: Dictionary in chunk.descriptors:
+   if descriptor.kind == "ring":
+    ring_field.add_ring(descriptor.position)
 
 func _build_view() -> void:
  var container := SubViewportContainer.new()
@@ -91,26 +113,95 @@ func _build_view() -> void:
  container.stretch = true
  container.mouse_filter = Control.MOUSE_FILTER_IGNORE
  add_child(container)
- var viewport := SubViewport.new()
- viewport.name = "Collisionless3DViewport"
- viewport.size = Vector2i(870, 750)
- viewport.own_world_3d = true
- viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
- container.add_child(viewport)
+ view = SubViewport.new()
+ view.name = "Collisionless3DViewport"
+ view.size = Vector2i(870, 750)
+ view.own_world_3d = true
+ view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+ container.add_child(view)
+ _build_presentation()
+
+func _build_presentation() -> void:
  presentation = TablePresentation.new()
  presentation.name = "Presentation"
  presentation.ball = ball
  presentation.flippers = flippers
  presentation.ring_field = ring_field
- viewport.add_child(presentation)
- presentation.build(chunks)
+ view.add_child(presentation)
+ presentation.build(chunks, layout.passage)
+
+func can_regenerate() -> bool:
+ return not generation_pending and (get_tree().paused or ball.serve_pending)
+
+func request_generation(seed_value: int) -> bool:
+ if not can_regenerate():
+  status_message = "Pause before generating a table, or wait at serve."
+  return false
+ generation_pending = true
+ call_deferred("_regenerate", clampi(seed_value, 0, 2147483647))
+ return true
+
+func _regenerate(seed_value: int) -> void:
+ # Validate before touching the active scene; swap outside physics callbacks.
+ if not (get_tree().paused or ball.serve_pending):
+  generation_pending = false
+  status_message = "Generation cancelled because play resumed. Pause and try again."
+  return
+ var candidate := TableGenerator.generate(seed_value)
+ if not candidate.valid:
+  status_message = "Generation failed; current table preserved."
+  push_error(str(candidate.errors))
+  generation_pending = false
+  return
+ var overlays: Array[bool] = [presentation.physics_overlay.visible, presentation.chunk_overlay.visible, presentation.connector_overlay.visible]
+ ball.freeze = true
+ ball.position = ball.serve_position
+ ball.linear_velocity = Vector2.ZERO
+ ball.teleport_to(ball.serve_position, Vector2.ZERO, true)
+ presentation.free()
+ chunks[0].free()
+ layout = candidate
+ generation_seed = seed_value
+ var upper := TableChunk.new()
+ upper.name = "UpperChunk"
+ upper.data = layout.upper
+ upper.junction_rails.assign(layout.junction_rails)
+ world.add_child(upper)
+ upper.build()
+ chunks[0] = upper
+ _apply_tuning()
+ _populate_rings()
+ for flipper: PlaygroundFlipper in flippers:
+  flipper.rotation = flipper.rest_angle()
+  flipper.held = false
+  flipper.swing_remaining = 0.0
+  flipper.struck_this_swing = false
+  flipper.strikes = 0
+ score = 0
+ rings_collected = 0
+ ball_number = 1
+ special_meter = 0.0
+ respawn_time = -1.0
+ auto_launch_time = -1.0
+ ring_reset_time = -1.0
+ ball.bumper_hit_count = 0
+ ball.sweep_rebounds = 0
+ _build_presentation()
+ presentation.physics_overlay.visible = overlays[0]
+ presentation.chunk_overlay.visible = overlays[1]
+ presentation.connector_overlay.visible = overlays[2]
+ ball.freeze = false
+ generation_pending = false
+ debug_panel.refresh_generation()
+ status_message = "Table ready. Resume if paused, then Enter / X to launch."
+ print("TABLE_GENERATED | " + layout.signature + " | fallback=" + str(layout.used_fallback))
 
 func _apply_tuning() -> void:
  for chunk: TableChunk in chunks:
   chunk.wall_material.bounce = tuning.effective.wall_restitution
 
 func launch_ball() -> void:
- if respawn_time > 0:
+ if respawn_time > 0 or generation_pending:
   return
  ball.launch()
  auto_launch_time = -1.0

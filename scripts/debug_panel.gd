@@ -4,6 +4,11 @@ extends CanvasLayer
 var game: Node
 var tuning: PhysicsTuning
 var panel: PanelContainer
+var generation_panel: PanelContainer
+var seed_field: SpinBox
+var generation_summary: Label
+var generation_hint: Label
+var generation_buttons: Array[Button] = []
 var telemetry: Label
 var steering_telemetry: Label
 var steering_presets: OptionButton
@@ -123,6 +128,14 @@ func _ready() -> void:
   boundaries.release_focus()
  )
  overlays.add_child(boundaries)
+ var connectors := CheckButton.new()
+ connectors.text = "Connectors"
+ connectors.add_theme_font_size_override("font_size", 12)
+ connectors.toggled.connect(func(on: bool):
+  game.presentation.connector_overlay.visible = on
+  connectors.release_focus()
+ )
+ overlays.add_child(connectors)
  telemetry = Label.new()
  telemetry.add_theme_font_size_override("font_size", 13)
  stack.add_child(telemetry)
@@ -167,6 +180,48 @@ func _ready() -> void:
  _label(fields, "Space / A: reserved special; no ability yet.\nRings charge meter. New rack after all collected.\nEnter commits a field and returns game controls.", 12)
  tuning.changed.connect(refresh_effective)
  refresh_effective()
+ _build_generation_panel()
+
+func _build_generation_panel() -> void:
+ generation_panel = PanelContainer.new()
+ generation_panel.position = Vector2(18, 148)
+ generation_panel.size.x = 204
+ add_child(generation_panel)
+ var margin := MarginContainer.new()
+ for side: String in ["left", "right", "top", "bottom"]:
+  margin.add_theme_constant_override("margin_" + side, 10)
+ generation_panel.add_child(margin)
+ var stack := VBoxContainer.new()
+ stack.custom_minimum_size.x = 184
+ stack.add_theme_constant_override("separation", 8)
+ margin.add_child(stack)
+ _label(stack, "TABLE GENERATOR", 16)
+ _label(stack, "Seed (generator v1)", 12)
+ seed_field = SpinBox.new()
+ seed_field.min_value = 0
+ seed_field.max_value = 2147483647
+ seed_field.step = 1
+ seed_field.get_line_edit().text_submitted.connect(func(_text: String): seed_field.get_line_edit().release_focus())
+ stack.add_child(seed_field)
+ generation_buttons.append(_button(stack, "Build entered seed", func():
+  seed_field.apply()
+  game.request_generation(int(seed_field.value))
+ ))
+ generation_buttons.append(_button(stack, "Next seed", func(): game.request_generation((game.generation_seed + 1) % 2147483648)))
+ generation_buttons.append(_button(stack, "Repeat current seed", func(): game.request_generation(game.generation_seed)))
+ generation_summary = _label(stack, "", 12)
+ generation_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ generation_summary.custom_minimum_size.x = 184
+ generation_hint = _label(stack, "", 12)
+ generation_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ generation_hint.modulate = Color("ffcf52")
+ refresh_generation()
+
+func refresh_generation() -> void:
+ seed_field.value = game.generation_seed
+ var upper: ChunkData = game.layout.upper
+ var passage: Rect2 = game.layout.passage
+ generation_summary.text = "CURRENT SEED  %d\nUpper: %s\nMirror: %s   Shift: %d cell\nLower: launch_deck (fixed)\nClear join: %.0f px\nFallback: %s" % [game.generation_seed, upper.chunk_id, "yes" if upper.mirrored else "no", upper.horizontal_shift_cells, passage.size.x, "yes" if game.layout.used_fallback else "no"]
 
 func _label(parent: Node, text: String, font_size: int) -> Label:
  var label := Label.new()
@@ -175,7 +230,7 @@ func _label(parent: Node, text: String, font_size: int) -> Label:
  parent.add_child(label)
  return label
 
-func _button(parent: Node, text: String, callback: Callable) -> void:
+func _button(parent: Node, text: String, callback: Callable) -> Button:
  var button := Button.new()
  button.text = text
  button.add_theme_font_size_override("font_size", 13)
@@ -184,6 +239,7 @@ func _button(parent: Node, text: String, callback: Callable) -> void:
   button.release_focus()
  )
  parent.add_child(button)
+ return button
 
 func refresh_fields() -> void:
  _refreshing = true
@@ -216,6 +272,10 @@ func _process(delta: float) -> void:
  if _telemetry_elapsed < 0.10:
   return
  _telemetry_elapsed = 0.0
+ var safe: bool = game.can_regenerate()
+ for button: Button in generation_buttons:
+  button.disabled = not safe
+ generation_hint.text = "Ready to build. Resets score, rings and ball; keeps tuning." if safe else "Pause (Escape / Menu) to generate safely."
  var velocity: Vector2 = game.ball.linear_velocity
  score_label.text = "%06d   /   %02d RINGS   /   BALL %02d" % [game.score, game.rings_collected, game.ball_number]
  message_label.text = game.status_message

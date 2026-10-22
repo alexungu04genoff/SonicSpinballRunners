@@ -13,6 +13,7 @@ func check(condition: bool, label: String) -> void:
   push_error(label)
 
 func run() -> void:
+ DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results"))
  var game: Node = load("res://scenes/playground.tscn").instantiate()
  root.add_child(game)
  await create_timer(0.2).timeout
@@ -25,7 +26,7 @@ func run() -> void:
  check(game.debug_panel.steering_presets.selected == 0, "Independent field editing labels the preset as custom")
  game.tuning.select_profile(1)
  game.debug_panel.refresh_fields()
- check(game.debug_panel.steering_presets.selected == 1 and game.tuning.effective.counter_steering_deceleration == 1000.0, "Profile switch restores original steering and keeps UI selection truthful")
+ check(game.debug_panel.steering_presets.selected == 2 and game.tuning.effective.counter_steering_deceleration == 4000.0, "Profile switch restores Quick / Tight steering and keeps UI selection truthful")
  game.tuning.select_profile(0)
  game.debug_panel.steering_presets.item_selected.emit(3)
  # Show a reproducible airborne counter-steering state without injecting OS input.

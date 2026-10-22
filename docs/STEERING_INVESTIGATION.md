@@ -1,5 +1,7 @@
 # Steering investigation
 
+Phase 2A update: user playtesting selected **Quick / Tight** as the provisional startup tuning for both test profiles. Original remains a comparison preset. No steering integration, collision, contribution-cap, or release behavior changed in Phase 2A.
+
 ## Finding
 
 The original steering code did apply horizontal impulses against existing velocity. It did not disable steering while descending. Its weak counter-steering came from a slow response rate combined with a small, temporary contribution budget.
@@ -39,7 +41,7 @@ There is no air drag. Contact rolling drag acts along supporting surfaces, so it
 
 ## Scoped implementation change
 
-Added `counter_steering_deceleration` to the shared profile schema, resolver limits, and live editor. It is expressed in px/s² at strength 1.0, like normal acceleration and release deceleration. Its bounds are 0–8000. The original character defaults use 1000, matching their old counter-steering rate; startup behavior remains the baseline.
+The steering investigation added `counter_steering_deceleration` to the shared profile schema, resolver limits, and live editor. It is expressed in px/s² at strength 1.0, like normal acceleration and release deceleration. Its bounds are 0–8000. Original uses 1000, matching the old counter-steering rate; Phase 2A profile resources use 4000 as part of Quick / Tight.
 
 When input and the requested steering impulse oppose the body's total horizontal motion, the new rate controls how quickly the contribution changes. It uses `velocity.x`, not just the sign of the contribution. When a braking step reaches zero horizontal velocity, only the remaining portion of that tick uses normal steering acceleration. This prevents the stronger braking rate from powering through zero into a stronger reversal.
 
@@ -47,7 +49,7 @@ The contribution cap, release semantics, collision response, flipper impulses, g
 
 ## Presets for comparison
 
-Use the new **Steering** dropdown in the Live Physics Lab. Presets edit only the five steering settings as session overrides. They work with either character profile. The selected label changes to Custom when values no longer match. Switching character profiles or restoring profile defaults returns to original steering. Base resources remain unchanged.
+Use the **Steering** dropdown in the Live Physics Lab. Presets edit only the five steering settings as session overrides. They work with either character profile. The selected label changes to Custom when values no longer match. Switching character profiles or restoring profile defaults now returns to Quick / Tight. Runtime edits never mutate the base resources.
 
 | Preset | Strength | Normal acceleration | Counter deceleration | Release deceleration | Contribution limit |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -65,7 +67,7 @@ The three acceleration columns are pre-strength px/s². Their effective full-inp
 | Air control | 180 | 360 | 220 | 0.50 s |
 | Stronger brake | 200 | 600 | 260 | 0.37 s |
 
-Start with **Air control**: it separates normal and counter response while limiting the maximum isolated change to 180 px/s. Compare **Quick / tight** to feel a faster response with the original 120 px/s budget. Use **Stronger brake** as an upper comparison, not an approved new default. Against a −1400 px/s shot, their eventual capped velocities are −1220, −1280, and −1180 respectively, assuming zero initial contribution and no intervening contact. Reversing an existing contribution can span twice its magnitude.
+Start with the user-preferred **Quick / Tight**: a faster response with the original 120 px/s budget. **Air control** increases the maximum isolated change to 180 px/s. **Stronger brake** is an upper comparison. Against a −1400 px/s shot, Quick / Tight, Air control, and Stronger brake eventually reach −1280, −1220, and −1180 respectively, assuming zero initial contribution and no intervening contact. Reversing an existing contribution can span twice its magnitude.
 
 To tune independently: adjust normal acceleration for initial response, counter deceleration for opposing-motion response, contribution limit for maximum authority, and release deceleration for how quickly assistance unwinds. Increasing a rate cannot overcome a reached contribution limit.
 
@@ -83,7 +85,7 @@ The automated preset comparison requested 30 physics ticks of right input agains
 
 Manual checklist:
 
-1. Reset/relaunch, then compare Original and Air control while ascending and descending.
+1. Reset/relaunch, then compare the Quick / Tight default with Original while ascending and descending.
 2. Hold against a fast lateral shot. Watch Counter, signed acceleration, and contribution target; note when braking stops at the cap.
 3. Release, then reverse input after a rebound. Watch Release and the last reset reason.
 4. Compare Quick/tight and Stronger brake. Judge useful correction versus excessive control, using both keyboard and a physical gamepad.

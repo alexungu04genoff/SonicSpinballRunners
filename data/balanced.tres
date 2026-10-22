@@ -3,3 +3,7 @@
 [resource]
 script = ExtResource("1")
 display_name = "Balanced"
+steering_acceleration = 2200.0
+counter_steering_deceleration = 4000.0
+steering_deceleration = 3000.0
+steering_strength = 0.1

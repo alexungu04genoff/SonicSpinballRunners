@@ -5,6 +5,8 @@ var data: ChunkData
 var descriptors: Array[Dictionary] = []
 var wall_material: PhysicsMaterial
 var bumper_material: PhysicsMaterial
+## World-space closure rails produced by the connector validator.
+var junction_rails: Array[Dictionary] = []
 
 func build() -> void:
  position = Vector2(data.grid_position) * 100.0
@@ -14,13 +16,15 @@ func build() -> void:
  bumper_material = PhysicsMaterial.new()
  bumper_material.friction = 0.0
  bumper_material.bounce = 0.85
- for rail: PackedVector2Array in data.rails:
-  for i in range(rail.size() - 1):
-   _rail(data.map_point(rail[i]), data.map_point(rail[i + 1]))
- for bumper: Dictionary in data.bumpers:
-  _bumper(bumper)
- for point: Vector2 in data.rings:
-  descriptors.append({"kind": "ring", "position": position + data.map_point(point)})
+ var geometry := data.gameplay_descriptors()
+ geometry.append_array(junction_rails)
+ for item: Dictionary in geometry:
+  if item.kind == "rail":
+   _rail(item.a - position, item.b - position)
+  elif item.kind == "ring":
+   descriptors.append(item)
+  else:
+   _bumper(item)
  for marker_name: String in data.markers:
   var marker := Marker2D.new()
   marker.name = marker_name
@@ -51,7 +55,7 @@ func _rail(a: Vector2, b: Vector2) -> void:
 func _bumper(item: Dictionary) -> void:
  var body := _body()
  body.name = "Bumper"
- body.position = data.map_point(item.position)
+ body.position = item.position - position
  body.physics_material_override = bumper_material
  body.set_meta("bumper", true)
  var descriptor: Dictionary = item.duplicate(true)
@@ -65,10 +69,6 @@ func _bumper(item: Dictionary) -> void:
   body.add_child(collision)
  else:
   var polygon := CollisionPolygon2D.new()
-  var points := PackedVector2Array()
-  for point: Vector2 in item.points:
-   points.append(Vector2(-point.x if data.mirrored else point.x, point.y))
-  polygon.polygon = points
+  polygon.polygon = item.points
   body.add_child(polygon)
-  descriptor.points = points
  descriptors.append(descriptor)

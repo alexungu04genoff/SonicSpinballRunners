@@ -6,9 +6,9 @@ This document records the project's intended direction, not a claim that its sys
 
 - **Confirmed direction:** agreed design goals and constraints. These may belong to a later phase rather than the current prototype.
 - **Tentative:** proposed mechanics, examples, and balancing values that need validation.
-- **Future:** explicitly outside Phase 1; not a commitment to implement now.
+- **Future:** explicitly outside the current phase; not a commitment to implement now.
 
-### Implementation baseline — 2026-10-22
+### Phase 1 implementation history — 2026-10-22
 
 The workspace was empty at initial inspection, but prototype files appeared during this documentation pass. This baseline describes the files subsequently inspected; development appears to be ongoing. The directory was not a Git repository at inspection.
 
@@ -31,16 +31,22 @@ Completion update: the missing script was supplied by the prototype implementati
 
 The game should be accessible and immediately fun while supporting deep combinations of character physics, passive abilities, collectible Chao, scoring modifiers, and character-specific specials. Windows is the initial platform; Android is a potential later target. Development uses Godot 4 and GDScript.
 
-## Current scope: Phase 1 — Physics Playground
+## Current scope: Phase 2A — Modular Chunk Generation
 
-**Confirmed scope:** Build one simple playable table to discover whether the game feels good. Use manually arranged chunks and include:
+**Completed foundation:** The Physics Playground supplies:
 
 - An invisible 2D physics ball, two flippers, bumpers, walls, and basic collectibles.
 - A tilted 3D presentation independent of physical collisions.
 - Configurable physics with Balanced and Floaty test profiles.
 - A debug tuning panel for rapid experimentation.
 
-Do not implement complete characters, character specials, Chao drafting, procedural generation, or elaborate level art in this phase. The full vision below guides future compatibility without requiring those systems now. Do not refactor unrelated work merely to align it with long-term plans; record differences for discussion.
+**Confirmed Phase 2A scope:** Preserve that foundation and the fixed lower deck, flippers, drain, and serve. Choose among four spacious, hand-authored upper sections using a reproducible seed, optional horizontal mirroring, and compatible grid shifts. Transform connectors into world coordinates, validate their shared opening and static route clearance, and visibly close unused spans. Provide safe regeneration and layout diagnostics in the debug UI. No rotations, arbitrary table height, or endless scrolling.
+
+**Implemented choices:** Upper footprints are 7 × 7 cells, the lower deck is 8 × 7, and each cell is 100 physics pixels. The generator tries 16 upper/mirror/shift combinations, then validates the original table as fallback. Regeneration requires pause or serve and clears playground counters, rings, timers, and ball state while retaining tuning and pause state. See [Generation contract](GENERATION.md) for connector rules, sample seeds, validation limits, and expansion concerns.
+
+**Provisional tuning:** User playtesting selected Quick / Tight for both Balanced and Floaty: strength 0.10, normal acceleration 2200, counter deceleration 4000, contribution limit 120, and release deceleration 3000. Original, Air control, and Stronger brake remain selectable. Phase 2A does not change steering/release semantics.
+
+Complete characters, specials, Chao drafting, themed artwork, Android controls, and three-act progression remain outside this milestone. The full vision below guides future compatibility without requiring those systems now. Avoid unrelated refactors.
 
 ## Presentation and camera
 
@@ -80,7 +86,7 @@ Steering should resemble slight air control in traditional Sonic games. It shoul
 
 **Tentative tuning:** Approximately 5–8% steering influence is a starting idea for calibration and playtesting. Current code uses `steering_strength = 0.065` to scale acceleration/deceleration toward a separately capped steering contribution. This is not a measured percentage of total ball motion. Whether that interpretation achieves the desired feel remains open; do not treat the percentage as an acceptance threshold.
 
-**Steering investigation:** Playtesting found weak response against existing lateral momentum. The implementation was applying counteracting impulses, but the original 65 px/s² rate and 120 px/s contribution cap limited their effect. Steering was not disabled on descent. An independent counter-steering deceleration setting and three optional comparison presets now accompany the original baseline; no new default has been approved. Counter-steering remains bounded assistance, and release unwinds that assistance rather than permanently dissipating external momentum. Collision bookkeeping resets remain unchanged. See [the steering investigation](STEERING_INVESTIGATION.md) for the exact trace, telemetry, proposed settings, and manual comparisons.
+**Steering investigation:** Playtesting found weak response against existing lateral momentum. The implementation was applying counteracting impulses, but the original 65 px/s² rate and 120 px/s contribution cap limited their effect. Steering was not disabled on descent. An independent counter-steering deceleration setting and comparison presets were added; subsequent playtesting selected Quick / Tight as the Phase 2A provisional default. Counter-steering remains bounded assistance, and release unwinds that assistance rather than permanently dissipating external momentum. Collision bookkeeping resets remain unchanged. See [the steering investigation](STEERING_INVESTIGATION.md) for the exact trace, telemetry, and comparisons.
 
 **Future Android plan:** A virtual analog stick on the left, with two flipper buttons and a special button on the right.
 
@@ -121,7 +127,7 @@ After Act 3, players advance to another zone while retaining their run build.
 
 **Tentative:** Acts may add objectives or hazards. Score requirements may grow multiplicatively, but tuning must account for achievable character and Chao combinations. Exact thresholds, run length, failure conditions, and between-act reset rules remain open.
 
-## Modular levels and future procedural generation
+## Modular levels and procedural generation
 
 **Confirmed long-term direction:** Assemble tables from hand-tested, reusable gameplay chunks. Prefer spacious, interesting vertical pinball sections over small arbitrary shapes. Chunks contain walls, rails, bumpers, launchers, collectible routes, and other pinball elements.
 
@@ -133,13 +139,13 @@ Connection and transformation constraints:
 - Chunks may be shifted horizontally or mirrored horizontally. **Rotations are not allowed.**
 - Preserve continuous collision boundaries and avoid trapped balls, unreachable routes, and disconnected sections.
 
-**Tentative sizing:** Chunks are around 2–3 gameplay lanes wide. Grid scale, lane width, connection compatibility rules, and validation methods remain open.
+**Confirmed layout goal:** Chunks offer around 2–3 broad gameplay lanes. Phase 2A uses 100-pixel placement cells, overlapping connector spans, and coarse static clearance plus selected physics simulations. Exact widths and validation thresholds remain provisional tuning choices.
 
 **Confirmed theme separation:** Themes skin the same gameplay geometry. Green Hill could use checkerboard cliffs, grass, palms, sunflowers, and distant scenery; Chemical Plant could use industrial geometry, pipes, and machinery. These are visual examples, not Phase 1 asset requirements.
 
 **Future possibilities:** True vertical loops and multi-height tracks may need guided movement modules. They are unnecessary for the first prototype.
 
-Procedural generation belongs to a future phase. Phase 1 uses manually arranged chunks; do not build a generator now.
+Phase 2A implements seeded selection of one upper section above the fixed lower deck. Multi-junction layouts, arbitrary heights, guided loops, and themed attachments remain future work.
 
 ## Lightweight verification and playtesting
 
@@ -156,7 +162,7 @@ Use Godot's available headless checks for script parsing, project startup, and s
 
 Avoid substantial test dependencies and custom testing frameworks for Phase 1.
 
-### Verification recorded on 2026-10-22
+### Phase 1 verification history — 2026-10-22
 
 - Document presence, internal design link, and key scope/approval constraints were checked.
 - Godot MCP project inspection and installed-version discovery completed.
@@ -168,6 +174,8 @@ Avoid substantial test dependencies and custom testing frameworks for Phase 1.
 Run a headless editor import before the standalone regression script so Godot discovers global script classes. On this machine the executable is `C:\Program Files\Godot\Godot.exe`; the commands above use `godot` as shorthand. Recheck startup and manual playtesting once the ongoing prototype supplies its main scene script. Scoring tests should be added when a scoring implementation exists.
 
 Subsequent prototype verification on the same date supersedes the startup failures above: headless import/startup succeeded, MCP launched the complete table with an empty errors array, and 38 physics regression checks passed. Those checks include scoring events, both flippers, high-speed collisions, steering momentum, profile differences, chunk crossings, pause, and respawn. Native CCD misses at high speeds were repaired with a conservative 2D shape sweep; it can rebound one physics tick early. Final-build visual and controller feel checks remain manual because Computer Use was stopped with Escape. See `VERIFICATION.md` for evidence and limitations.
+
+Phase 2A adds 39 generation checks and 17 graphical generation-UI checks, all passing, and reruns the 38 physics, 12 steering, eight profile, and four headless steering-UI checks. Four sample layouts and transformed overlays were rendered and visually inspected. This supersedes the earlier lack of final rendered inspection; subjective feel and physical controller checks remain manual. Full results and limits are in [Verification](VERIFICATION.md).
 
 ### Short manual checklist for the playable prototype
 
@@ -186,6 +194,6 @@ Manual feel, camera readability, flipper timing, and visual polish are outside u
 
 Near-term decisions are physics values for Balanced/Floaty, the meaning and calibration of steering influence, camera/presentation mapping, and modifier resolution/reset rules as needed by the playground.
 
-Later decisions include Chao drafting and stacking limits, scoring and combo formulas, special charging and target eligibility, progression thresholds and failure rules, procedural connection validation, Android support, and Arcade Mode.
+Later decisions include Chao drafting and stacking limits, scoring and combo formulas, special charging and target eligibility, progression thresholds and failure rules, validation for larger procedural layouts, Android support, and Arcade Mode.
 
 Keep tentative values labeled until validated. Record implementation differences here when they arise, with their impact and a proposed next step. Do not interrupt the current phase or refactor unrelated code merely to satisfy a future design concept.

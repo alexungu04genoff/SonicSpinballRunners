@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ChunkData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/chunk_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+chunk_id = "risk_route"
+title = "RISK ROUTE"
+grid_dimensions = Vector2i(7, 7)
+top_connection = Rect2(0, 0, 0, 0)
+bottom_connection = Rect2(55, 680, 540, 20)
+rails = Array[PackedVector2Array]([PackedVector2Array(55, 700, 55, 190, 65, 140, 90, 95, 135, 65, 190, 55, 510, 55, 565, 65, 610, 95, 635, 140, 645, 190, 645, 540, 595, 700), PackedVector2Array(470, 185, 525, 230, 545, 310)])
+playfield_outline = PackedVector2Array(55, 700, 55, 190, 65, 140, 90, 95, 135, 65, 190, 55, 510, 55, 565, 65, 610, 95, 635, 140, 645, 190, 645, 540, 595, 700)
+bumpers = Array[Dictionary]([{"kind": "circle", "position": Vector2(190, 285), "radius": 40.0}, {"kind": "circle", "position": Vector2(460, 400), "radius": 43.0}, {"kind": "triangle", "position": Vector2(290, 500), "points": PackedVector2Array(-40, 35, 0, -50, 40, 35)}])
+rings = PackedVector2Array(570, 180, 590, 255, 595, 355, 530, 500, 120, 400, 180, 520, 350, 195, 350, 320, 380, 610)
+markers = {"entry": Vector2(325, 670)}
+navigation_probes = PackedVector2Array(120, 400, 350, 200, 590, 285, 530, 500, 380, 610)

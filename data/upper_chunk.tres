@@ -2,6 +2,9 @@
 [ext_resource type="Script" path="res://scripts/chunk_data.gd" id="1"]
 [resource]
 script = ExtResource("1")
+chunk_id = "classic_garden"
+playfield_outline = PackedVector2Array(55, 700, 55, 190, 65, 140, 90, 95, 135, 65, 190, 55, 610, 55, 665, 65, 710, 95, 735, 140, 745, 190, 745, 700)
+navigation_probes = PackedVector2Array(150, 300, 400, 190, 650, 400, 400, 640)
 title = "01 / SKY GARDEN"
 grid_position = Vector2i(0, 0)
 top_connection = Rect2(0, 0, 0, 0)

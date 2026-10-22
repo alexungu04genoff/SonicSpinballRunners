@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ChunkData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/chunk_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+chunk_id = "central_targets"
+title = "CENTRAL TARGETS"
+grid_dimensions = Vector2i(7, 7)
+top_connection = Rect2(0, 0, 0, 0)
+bottom_connection = Rect2(55, 680, 590, 20)
+rails = Array[PackedVector2Array]([PackedVector2Array(55, 700, 55, 190, 65, 140, 90, 95, 135, 65, 190, 55, 510, 55, 565, 65, 610, 95, 635, 140, 645, 190, 645, 700)])
+playfield_outline = PackedVector2Array(55, 700, 55, 190, 65, 140, 90, 95, 135, 65, 190, 55, 510, 55, 565, 65, 610, 95, 635, 140, 645, 190, 645, 700)
+bumpers = Array[Dictionary]([{"kind": "circle", "position": Vector2(350, 290), "radius": 44.0}, {"kind": "circle", "position": Vector2(260, 430), "radius": 36.0}, {"kind": "circle", "position": Vector2(440, 430), "radius": 36.0}])
+rings = PackedVector2Array(140, 265, 140, 400, 140, 520, 560, 265, 560, 400, 560, 520, 350, 160, 350, 420, 350, 565)
+markers = {"entry": Vector2(350, 670)}
+navigation_probes = PackedVector2Array(140, 330, 350, 160, 560, 330, 350, 550, 350, 420)

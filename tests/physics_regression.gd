@@ -45,6 +45,7 @@ func run() -> void:
  fixture = Node2D.new()
  root.add_child(fixture)
  test_tuning = PhysicsTuning.new()
+ test_tuning.apply_steering_preset(0) # Keep the original 6.5% calibration fixture.
  fixture.add_child(test_tuning)
  test_input = PlaygroundInput.new()
  fixture.add_child(test_input)
@@ -87,6 +88,7 @@ func run() -> void:
  await frames(3)
 
  game = load("res://scenes/playground.tscn").instantiate()
+ game.generation_enabled = false # Preserve exact legacy geometry for existing shot fixtures.
  root.add_child(game)
  await frames(5)
  check(game.ball.position.distance_to(game.ball.serve_position) < 1.0, "Serve marker does not overlap geometry", str(game.ball.position))
@@ -163,7 +165,7 @@ func run() -> void:
  check(is_equal_approx(game.chunks[0].wall_material.bounce, 0.5) and is_equal_approx(game.chunks[1].wall_material.bounce, 0.5), "Live tuning updates both chunks")
  game.tuning.modifier_enabled = true
  game.tuning.rebuild()
- check(is_equal_approx(game.tuning.effective.steering_acceleration, 1250.0) and is_equal_approx(game.tuning.effective.flipper_launch_strength, 1207.5), "Example Chao boosts effective stats")
+ check(is_equal_approx(game.tuning.effective.steering_acceleration, 2750.0) and is_equal_approx(game.tuning.effective.flipper_launch_strength, 1207.5), "Example Chao boosts Quick / Tight effective stats")
  game.tuning.modifier_enabled = false
  game.tuning.select_profile(0)
  game.toggle_pause()
