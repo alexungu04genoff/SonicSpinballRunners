@@ -2,11 +2,34 @@
 
 ## Scope and controls
 
-Generator version 1 chooses one of four upper sections, one mirror state, and a horizontal shift of zero or one 100-pixel cell. The lower launch deck, serve, flippers, and drain remain fixed. There are 16 authored combinations; symmetric geometry means some may feel similar. Seeds range from 0 to 2147483647 in the debug UI. A local `RandomNumberGenerator` shuffles candidates deterministically, independent of gameplay randomness.
+Generator version 2 chooses one of four upper sections, one mirror state, and a horizontal shift of zero or one 100-pixel cell, guided by an Easy / Normal / Hard preference. The lower launch deck, serve, flippers, and drain remain fixed. There are 16 authored combinations; symmetric geometry means some may feel similar. Seeds range from 0 to 2147483647 in the debug UI. A local `RandomNumberGenerator` shuffles candidates deterministically, independent of gameplay randomness. The seed and preference together define the generation configuration.
 
 Build at serve or while paused. Regeneration is deferred out of physics callbacks and checks safety again before replacing anything. It validates first, then replaces the upper collision section and collisionless presentation, repopulates rings, resets score/meter/ball count and all pending playground timers, and returns the ball to serve. The lower section and flippers remain the same instances. Profile, session overrides, modifier toggle, pause state, and overlays persist. A paused rebuild stays paused; resume before launching.
 
-The current seed, chunk IDs, mirror flag, shift, clear join width, and fallback status appear beside the table. The output log records generator version and the same layout signature. Repeat reproduces the current seed, even if the seed field contains an unbuilt edit. Next increments the seed and may produce the same combination. No seed or run persistence is included.
+The panel displays the current seed, preference, actual estimate, reasons, chunk IDs, mirror flag, shift, and fallback status. The output log records generator version and the same layout signature. Build applies the entered seed and selected preference. Next increments the current seed with the selected preference. Repeat restores both current settings, even if controls contain unbuilt edits. No configuration or run persistence is included. Changing character or modifier tuning does not silently alter the generation configuration or its estimate.
+
+## Difficulty estimation and selection
+
+Technical validity and mechanical challenge are separate. The validator still requires aligned, closed collision boundaries, sufficient clearance, and coarse connectivity. The preference never changes those rules. Traversable corners and ledges are intentional possible challenges; this implementation does not replace them with ramps or alter any authored collider.
+
+Each `ChunkData` exposes an authored `estimated_difficulty` rating from 0 to 100. Initial values are Bumper Garden 20, Central Targets 40, Outer Return 45, Risk Route 65, and lower/fallback sections 25. These are provisional authoring judgments, not measured success rates. The weighted chunk component uses 75% upper and 25% lower, since the lower section is fixed.
+
+The connector component uses world-space geometry:
+
+| Factor | Calculation | Maximum points |
+| --- | --- | ---: |
+| Narrowing | Lost checked width relative to the lower opening's checked width | 30 |
+| Opening offset | Absolute difference between opening centers, normalized by one 100-pixel cell | 15 |
+| Largest ledge | Largest closure shoulder, normalized by six ball diameters (168 px) | 40 |
+| Approach clutter | Fraction of 42 clearance samples blocked by rails or bumpers | 15 |
+
+Each normalized factor clamps to 0–1. Approach samples use seven evenly spaced columns across the checked opening and rows at 50/100/150 pixels above and below the join. They are separate from the stricter critical-passage validity check. The displayed estimate is `0.5 × weighted_chunk_rating + 0.5 × connector_score`, clamped to 0–100. Easy is below 37.5, Normal is 37.5 to below 62.5, and Hard is 62.5 or higher. Labels indicate estimate bands, not guarantees about a player's experience.
+
+Preference targets are 25, 50, and 75. Selection first finds the smallest distance from that target among technically valid candidates. It then selects the first valid candidate in seeded order whose distance is at most eight points above that minimum. This small variety allowance keeps multiple authored layouts available. A tested-invalid candidate cannot win, and raising a preference cannot turn a collider error into acceptable difficulty. Only candidates needed to establish the nearest distance or select a winner are validated; rejected entries record those tested failures.
+
+The existing library spans approximately **29.4–55.3**, so it does not yet contain a Hard-rated result. A Hard request still displays the selected Normal estimate and an explicit preference-mismatch note. Normal and Hard selections overlap. For seeds 1–24, mean selected scores were **33.8 / 50.7 / 52.1** for Easy / Normal / Hard. These figures show that selection responds to the preference, not that difficulty is calibrated.
+
+Current transitions all use horizontal closure shoulders. The estimator accounts for their protrusion but does not classify hypothetical smooth ramps, curved joins, or multi-turn slopes. Actual upward-shot difficulty, incoming velocity, gravity, profile differences, and moving geometry require playtesting or future targeted measurements. This milestone adds no trajectory simulation, progression, or difficulty framework.
 
 ## Data and coordinate contract
 
@@ -27,19 +50,19 @@ The checked passage extends 45 pixels above and below the seam, inset 36 pixels 
 
 The validator also checks table footprint bounds, allowed vertical placement, positive connector dimensions, authoring-grid alignment, and opening/rail alignment. It builds a 25-pixel static clearance grid within the two navigable outlines, then floods from serve using four neighbors and midpoint clearance checks. All route probes, rings, and the upper entry must have a reachable clear cell within 36 pixels. More than four disconnected clear cells rejects an obvious pocket.
 
-Rejected combinations are recorded and the next shuffled candidate is tried. If all fail, the original upper/lower pair is validated and used. If even that fails, generation reports failure and preserves the existing table; startup reports an error rather than running invalid geometry.
+If all candidates fail, the original upper/lower pair is validated and used, with its actual difficulty estimate. If even that fails, generation reports failure and preserves the existing table; startup reports an error rather than running invalid geometry.
 
-## Sample seeds (version 1, Godot 4.7.2)
+## Sample configurations (version 2, Godot 4.7.2)
 
-| Seed | Upper section | Mirrored | Shift | Clear join |
-| --- | --- | --- | --- | --- |
-| 1 | Central Targets | Yes | 0 cells | 518 px |
-| 2 | Risk Route | Yes | 0 cells | 468 px |
-| 10 | Bumper Garden | Yes | 1 cell right | 518 px |
-| 12 | Outer Return | No | 1 cell right | 468 px |
-| 13 | Outer Return | No | 0 cells | 468 px |
+| Seed | Preference | Upper section | Mirrored | Shift | Estimate |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Easy | Central Targets | Yes | 0 cells | Easy 36.9 |
+| 10 | Easy | Bumper Garden | Yes | 1 cell right | Easy 29.4 |
+| 6 | Normal | Outer Return | No | 1 cell right | Normal 47.7 |
+| 1 | Normal | Risk Route | No | 0 cells | Normal 55.3 |
+| 1 | Hard | Risk Route | No | 0 cells | Normal 55.3 |
 
-Seed reproduction applies to the current engine, catalogue ordering, resources, and generator version. Editing layouts or changing the RNG implementation may change a seed's result; signatures record transformations to help diagnose that. There is no serialized layout format or cross-version replay guarantee yet.
+Reproduction requires the same seed, preference, engine, catalogue, ratings, scoring rules, and generator version. Version 2 intentionally changes the version 1 seed mappings. Signatures record the version, preference, and transformations to diagnose differences. There is no serialized layout format or cross-version replay guarantee yet.
 
 ## Validation limits and next expansion
 

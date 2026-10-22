@@ -1,7 +1,11 @@
 class_name TableGenerator
 extends RefCounted
 ## Phase 2A: one fixed lower deck and one validated, hand-authored upper section.
-const VERSION := 1
+const VERSION := 2
+enum Difficulty { EASY, NORMAL, HARD }
+const DIFFICULTY_NAMES := ["Easy", "Normal", "Hard"]
+const DIFFICULTY_TARGETS := [25.0, 50.0, 75.0]
+const DIFFICULTY_VARIETY := 8.0 # Maximum extra distance from the closest valid score.
 const LOWER: ChunkData = preload("res://data/lower_chunk.tres")
 const FALLBACK: ChunkData = preload("res://data/upper_chunk.tres")
 const CATALOGUE: Array[ChunkData] = [
@@ -14,8 +18,10 @@ const TABLE_BOUNDS := Rect2(0, 0, 800, 1400)
 const MIN_OVERLAP := 300.0
 const CLEARANCE := 20.0 # Radius 14 plus 6 pixels of static clearance.
 const SAMPLE_STEP := 25.0
+const PASSAGE_INSET := 36.0
 
-static func generate(seed_value: int, catalogue: Array[ChunkData] = CATALOGUE) -> Dictionary:
+static func generate(seed_value: int, preference: int = Difficulty.NORMAL, catalogue: Array[ChunkData] = CATALOGUE) -> Dictionary:
+ preference = clampi(preference, Difficulty.EASY, Difficulty.HARD)
  var rng := RandomNumberGenerator.new()
  rng.seed = seed_value
  var candidates: Array[ChunkData] = []
@@ -33,22 +39,88 @@ static func generate(seed_value: int, catalogue: Array[ChunkData] = CATALOGUE) -
   candidates[i] = candidates[j]
   candidates[j] = temporary
  var rejected := PackedStringArray()
+ var rated_candidates: Array[Dictionary] = []
+ var closest_distance := INF
  for candidate: ChunkData in candidates:
+  var estimate := estimate_difficulty(candidate, LOWER)
+  var distance := absf(float(estimate.score) - DIFFICULTY_TARGETS[preference])
+  var rated := {"chunk": candidate, "estimate": estimate, "distance": distance}
+  rated_candidates.append(rated)
+  # Find the closest VALID score first. Keep validation independent of preference.
+  if distance >= closest_distance:
+   continue
   var validation := validate(candidate, LOWER)
+  rated["validation"] = validation
   if validation.valid:
-   return _layout(seed_value, candidate, validation, false, rejected)
-  rejected.append("%s mirror=%s shift=%d: %s" % [candidate.chunk_id, candidate.mirrored, candidate.horizontal_shift_cells, "; ".join(validation.errors)])
+   closest_distance = distance
+  else:
+   rejected.append("%s mirror=%s shift=%d: %s" % [candidate.chunk_id, candidate.mirrored, candidate.horizontal_shift_cells, "; ".join(validation.errors)])
+ # Keep seeded variety inside a small band of that closest valid distance.
+ # The first valid entry in the seeded order wins; no collision rules are relaxed.
+ for rated: Dictionary in rated_candidates:
+  if float(rated.distance) > closest_distance + DIFFICULTY_VARIETY:
+   continue
+  var candidate: ChunkData = rated.chunk
+  if not rated.has("validation"):
+   rated.validation = validate(candidate, LOWER)
+   if not rated.validation.valid:
+    rejected.append("%s mirror=%s shift=%d: %s" % [candidate.chunk_id, candidate.mirrored, candidate.horizontal_shift_cells, "; ".join(rated.validation.errors)])
+  if rated.validation.valid:
+   return _layout(seed_value, preference, candidate, rated.validation, rated.estimate, false, rejected)
  var fallback: ChunkData = FALLBACK.duplicate(true)
  var fallback_validation := validate(fallback, LOWER)
  if not fallback_validation.valid:
   return {"valid": false, "errors": fallback_validation.errors, "rejected": rejected}
- return _layout(seed_value, fallback, fallback_validation, true, rejected)
+ return _layout(seed_value, preference, fallback, fallback_validation, estimate_difficulty(fallback, LOWER), true, rejected)
 
-static func _layout(seed_value: int, upper: ChunkData, validation: Dictionary, fallback: bool, rejected: PackedStringArray) -> Dictionary:
+static func _layout(seed_value: int, preference: int, upper: ChunkData, validation: Dictionary, estimate: Dictionary, fallback: bool, rejected: PackedStringArray) -> Dictionary:
  return {"valid": true, "seed": seed_value, "version": VERSION, "upper": upper,
   "lower": LOWER, "junction_rails": validation.junction_rails, "passage": validation.passage,
-  "used_fallback": fallback, "rejected": rejected,
-  "signature": "v%d seed=%d upper=%s mirror=%s shift=%d lower=%s" % [VERSION, seed_value, upper.chunk_id, upper.mirrored, upper.horizontal_shift_cells, LOWER.chunk_id]}
+  "used_fallback": fallback, "rejected": rejected, "difficulty_preference": preference, "difficulty_estimate": estimate,
+  "signature": "v%d seed=%d preference=%s upper=%s mirror=%s shift=%d lower=%s estimate=%.1f" % [VERSION, seed_value, DIFFICULTY_NAMES[preference], upper.chunk_id, upper.mirrored, upper.horizontal_shift_cells, LOWER.chunk_id, estimate.score]}
+
+static func difficulty_band(score: float) -> int:
+ return Difficulty.EASY if score < 37.5 else (Difficulty.NORMAL if score < 62.5 else Difficulty.HARD)
+
+static func estimate_difficulty(upper: ChunkData, lower: ChunkData) -> Dictionary:
+ # A static selection heuristic, not a trajectory simulation or a validity test.
+ # Current transitions are horizontal closure shoulders. Keep their sharp corners.
+ var up := upper.world_rect(upper.bottom_connection)
+ var down := lower.world_rect(lower.top_connection)
+ var left := maxf(up.position.x, down.position.x)
+ var right := minf(up.end.x, down.end.x)
+ var clear_width := maxf(0.0, right - left - PASSAGE_INSET * 2.0)
+ var reference_width := maxf(1.0, down.size.x - PASSAGE_INSET * 2.0)
+ var offset := absf(up.get_center().x - down.get_center().x)
+ var largest_ledge := maxf(absf(up.position.x - down.position.x), absf(up.end.x - down.end.x))
+ var geometry := upper.gameplay_descriptors()
+ geometry.append_array(lower.gameplay_descriptors())
+ var blocked := 0
+ const APPROACH_SAMPLES := 42
+ for dy: float in [-150.0, -100.0, -50.0, 50.0, 100.0, 150.0]:
+  for column in 7:
+   var point := Vector2(left + PASSAGE_INSET + clear_width * (column + 0.5) / 7.0, down.position.y + dy)
+   if not point_clear(point, geometry):
+    blocked += 1
+ var crowding := float(blocked) / APPROACH_SAMPLES
+ var connector_score := (
+  30.0 * clampf(1.0 - clear_width / reference_width, 0.0, 1.0)
+  + 15.0 * clampf(offset / ChunkData.GRID_SIZE, 0.0, 1.0)
+  + 40.0 * clampf(largest_ledge / (6.0 * PlaygroundBall.RADIUS * 2.0), 0.0, 1.0)
+  + 15.0 * crowding
+ )
+ var chunk_score := 0.75 * clampf(upper.estimated_difficulty, 0.0, 100.0) + 0.25 * clampf(lower.estimated_difficulty, 0.0, 100.0)
+ var score := clampf(0.5 * chunk_score + 0.5 * connector_score, 0.0, 100.0)
+ return {"score": score, "band": difficulty_band(score), "chunk_score": chunk_score,
+  "connector_score": connector_score, "clear_width": clear_width, "offset": offset,
+  "largest_ledge": largest_ledge, "approach_blocked": crowding,
+  "reasons": PackedStringArray([
+   "Clear join: %.0f px" % clear_width,
+   "Opening offset: %.0f px" % offset,
+   "Largest ledge: %.0f px" % largest_ledge,
+   "Approach blocked: %.0f%%" % (crowding * 100.0),
+   "Chunk ratings: %.0f / %.0f" % [upper.estimated_difficulty, lower.estimated_difficulty],
+  ])}
 
 static func validate(upper: ChunkData, lower: ChunkData) -> Dictionary:
  var errors := PackedStringArray()
@@ -84,7 +156,7 @@ static func validate(upper: ChunkData, lower: ChunkData) -> Dictionary:
  geometry.append_array(lower.gameplay_descriptors())
  geometry.append_array(closures)
  # Clear central band includes ball radius, rail cap radius and a safety margin.
- var passage := Rect2(left + 36.0, seam - 45.0, right - left - 72.0, 90.0)
+ var passage := Rect2(left + PASSAGE_INSET, seam - 45.0, right - left - PASSAGE_INSET * 2.0, 90.0)
  for x in range(ceili(passage.position.x), floori(passage.end.x) + 1, 10):
   for y in range(ceili(passage.position.y), floori(passage.end.y) + 1, 10):
    if not point_clear(Vector2(x, y), geometry):

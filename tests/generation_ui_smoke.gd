@@ -25,15 +25,17 @@ func run() -> void:
  ui.seed_field.get_line_edit().text = "12"
  ui.generation_buttons[0].pressed.emit()
  await create_timer(0.2).timeout
- check(game.generation_seed == 12 and game.layout.upper.chunk_id == "outer_return", "Build button commits an entered seed without requiring Enter first")
+ check(game.generation_seed == 12 and game.generation_difficulty == TableGenerator.Difficulty.NORMAL and game.layout.signature == TableGenerator.generate(12).signature, "Build button commits entered seed and selected preference")
+ ui.difficulty_selector.select(TableGenerator.Difficulty.HARD)
  ui.generation_buttons[1].pressed.emit()
  await create_timer(0.2).timeout
- check(game.generation_seed == 13, "Next seed advances current seed")
+ check(game.generation_seed == 13 and game.generation_difficulty == TableGenerator.Difficulty.HARD, "Next seed advances current seed and applies selected preference")
  var signature: String = game.layout.signature
  ui.seed_field.value = 42
+ ui.difficulty_selector.select(TableGenerator.Difficulty.EASY)
  ui.generation_buttons[2].pressed.emit()
  await create_timer(0.2).timeout
- check(game.layout.signature == signature and ui.seed_field.value == 13, "Repeat uses current seed rather than an unbuilt edit")
+ check(game.layout.signature == signature and ui.seed_field.value == 13 and ui.difficulty_selector.selected == TableGenerator.Difficulty.HARD, "Repeat restores current seed and difficulty despite unbuilt edits")
  game.launch_ball()
  await create_timer(0.2).timeout
  check(ui.generation_buttons[0].disabled and not game.can_regenerate(), "Generation buttons disable during flight")
@@ -44,14 +46,16 @@ func run() -> void:
  await create_timer(0.2).timeout
  check(paused and game.ball.serve_pending, "UI rebuild safely resets a paused table")
  game.toggle_pause()
- for seed_value: int in [1, 2, 10, 12]:
-  ui.seed_field.get_line_edit().text = str(seed_value)
+ for preference in 3:
+  ui.seed_field.get_line_edit().text = "1"
+  ui.difficulty_selector.select(preference)
   ui.generation_buttons[0].pressed.emit()
   await create_timer(0.25).timeout
-  check(game.generation_seed == seed_value and ui.generation_summary.text.contains(game.layout.upper.chunk_id), "Seed %d summary matches selected layout" % seed_value)
+  check(game.generation_seed == 1 and game.generation_difficulty == preference and ui.generation_summary.text.contains(game.layout.upper.chunk_id) and ui.generation_summary.text.contains("Largest ledge") and ui.generation_summary.text.contains("Estimate:"), "Preference %s displays actual layout, estimate and reasons" % TableGenerator.DIFFICULTY_NAMES[preference])
   if DisplayServer.get_name() != "headless":
    await RenderingServer.frame_post_draw
-   check(root.get_texture().get_image().save_png("res://test-results/table-seed-%d.png" % seed_value) == OK, "Rendered seed %d captured" % seed_value)
+   check(root.get_texture().get_image().save_png("res://test-results/table-difficulty-%d.png" % preference) == OK, "Rendered preference %d captured" % preference)
+ check(ui.generation_summary.text.contains("Preference differs; best effort.") and ui.generation_panel.get_global_rect().end.y < 835 and ui.generation_panel.get_global_rect().end.x <= 225, "Estimate mismatch is explicit and all expanded controls fit beside the table")
  game.presentation.physics_overlay.visible = true
  game.presentation.chunk_overlay.visible = true
  game.presentation.connector_overlay.visible = true

@@ -18,6 +18,7 @@ var respawn_time: float = -1.0
 var auto_launch_time: float = -1.0
 var ring_reset_time: float = -1.0
 @export var generation_seed: int = 1
+@export_enum("Easy", "Normal", "Hard") var generation_difficulty: int = TableGenerator.Difficulty.NORMAL
 ## Legacy layout remains available for the original physics regression fixture.
 @export var generation_enabled: bool = true
 var layout: Dictionary = {}
@@ -37,7 +38,8 @@ func _ready() -> void:
  var catalogue: Array[ChunkData] = []
  if generation_enabled:
   catalogue.assign(TableGenerator.CATALOGUE)
- layout = TableGenerator.generate(generation_seed, catalogue)
+ layout = TableGenerator.generate(generation_seed, generation_difficulty, catalogue)
+ generation_difficulty = int(layout.get("difficulty_preference", generation_difficulty))
  if not layout.valid:
   push_error("No safe table layout: " + str(layout.errors))
   set_physics_process(false)
@@ -133,21 +135,22 @@ func _build_presentation() -> void:
 func can_regenerate() -> bool:
  return not generation_pending and (get_tree().paused or ball.serve_pending)
 
-func request_generation(seed_value: int) -> bool:
+func request_generation(seed_value: int, preference: int = -1) -> bool:
  if not can_regenerate():
   status_message = "Pause before generating a table, or wait at serve."
   return false
  generation_pending = true
- call_deferred("_regenerate", clampi(seed_value, 0, 2147483647))
+ var requested := generation_difficulty if preference < 0 else clampi(preference, TableGenerator.Difficulty.EASY, TableGenerator.Difficulty.HARD)
+ call_deferred("_regenerate", clampi(seed_value, 0, 2147483647), requested)
  return true
 
-func _regenerate(seed_value: int) -> void:
+func _regenerate(seed_value: int, preference: int) -> void:
  # Validate before touching the active scene; swap outside physics callbacks.
  if not (get_tree().paused or ball.serve_pending):
   generation_pending = false
   status_message = "Generation cancelled because play resumed. Pause and try again."
   return
- var candidate := TableGenerator.generate(seed_value)
+ var candidate := TableGenerator.generate(seed_value, preference)
  if not candidate.valid:
   status_message = "Generation failed; current table preserved."
   push_error(str(candidate.errors))
@@ -162,6 +165,7 @@ func _regenerate(seed_value: int) -> void:
  chunks[0].free()
  layout = candidate
  generation_seed = seed_value
+ generation_difficulty = preference
  var upper := TableChunk.new()
  upper.name = "UpperChunk"
  upper.data = layout.upper

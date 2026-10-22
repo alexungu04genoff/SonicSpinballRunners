@@ -84,9 +84,11 @@ Visual attachment metadata is a future theme hook. The current renderer uses pri
 
 ### Generate a table
 
-Use the **Table Generator** panel on the left. At serve, or after pausing with **Escape / Menu**, enter a seed and choose **Build entered seed**. **Next seed** increments the current seed; **Repeat current seed** reproduces it. Different seeds can select the same layout. Generation resets the ball to serve, score, rings, meter, timers, and ball count, while preserving physics tuning, the Chao toggle, overlays, and pause state. Resume if paused, then press **Enter / X** to launch.
+Use the **Table Generator** panel on the left. At serve, or after pausing with **Escape / Menu**, enter a seed, choose an **Easy / Normal / Hard** preference, and click **Build seed + preference**. **Next seed** increments the current seed using the selected preference. **Repeat current layout** restores the current seed and preference even if controls contain unbuilt edits. Different configurations can select the same layout. Generation resets the ball to serve, score, rings, meter, timers, and ball count, while preserving physics tuning, the Chao toggle, overlays, and pause state. Resume if paused, then press **Enter / X** to launch.
 
-Try **1** (central targets), **2** (mirrored risk route), **10** (shifted bumper garden), and **12** (shifted outer return). The panel and debug log record IDs, mirror state, shift, seed, and generator version. **Chunks** and **Connectors** have independent overlays. F1 hides both development panels. Seeds and session edits are not saved across restarts.
+For generator **v2**, try **1 + Easy** (Central Targets), **10 + Easy** (Bumper Garden), **6 + Normal** (Outer Return), and **1 + Hard** (Risk Route). Version 1 seed mappings have changed. The panel and log record the seed, preference, IDs, transformations, and actual estimated difficulty. Reasons include clear opening width, offset, largest ledge, sampled approach clutter, and authored chunk ratings. **Chunks** and **Connectors** have independent overlays. F1 hides both development panels. Settings are not saved across restarts.
+
+Difficulty is a rough selection preference, not a physics mode or safety override. Valid ledges and sharp corners remain. The current library estimates range from about **29–55 / 100**, so Hard selects a nearby valid candidate and still reports its actual **Normal** estimate. Normal and Hard may select the same layout. A small eight-point selection band retains seed variety around the closest valid score. See [difficulty scoring and limits](docs/GENERATION.md).
 
 ## Physics and live tuning
 

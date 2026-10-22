@@ -55,6 +55,8 @@ The game should be accessible and immediately fun while supporting deep combinat
 
 **Implemented baseline choices:** Upper footprints are 7 × 7 cells, the lower deck is 8 × 7, and each cell is 100 physics pixels. There are 16 upper/mirror/shift combinations and a validated original-table fallback. Regeneration requires pause or serve and clears playground counters, rings, timers, and ball state while retaining tuning and pause state. See [Generation contract](GENERATION.md) for version-specific connector rules, sample seeds, validation limits, and expansion concerns. Concurrent difficulty-selection work may change seed results and candidate selection; do not treat version-1 examples as promises for later versions.
 
+**Difficulty-aware experimentation:** Generator v2 accepts Easy / Normal / Hard preferences and reproduces a layout from seed plus preference. Its provisional estimate combines authored chunk ratings with opening width, offset, ledge size, and sampled nearby obstacles. The nearest valid score defines a small selection band to preserve variety. The panel displays the actual estimated level and reasons even when the preference cannot be met. Difficulty never relaxes collision validation or changes character physics.
+
 **Provisional tuning:** User playtesting selected Quick / Tight for both Balanced and Floaty: strength 0.10, normal acceleration 2200, counter deceleration 4000, contribution limit 120, and release deceleration 3000. Original, Air control, and Stronger brake remain selectable. Phase 2A does not change steering/release semantics.
 
 Complete characters, specials, Chao drafting, themed artwork, Android controls, and three-act progression remain outside this milestone. The full vision below guides future compatibility without requiring those systems now. Avoid unrelated refactors.
@@ -179,8 +181,11 @@ Connection and transformation constraints:
 **Future direction:** Difficulty preferences may favor combinations of chunks, connector geometry, and obstacles. Estimated difficulty must stay separate from technical validity; a harder preference must not admit broken connections. The inspected in-progress generator already experiments with Easy/Normal/Hard preferences and static estimates based on chunk ratings, opening width/offset, ledges, and approach crowding. These are heuristics, not proof of trajectory difficulty, and this documentation pass does not verify that implementation.
 
 Horizontal shifts, mirroring, and flexible grid-based connection regions remain required. Rotations remain disallowed. Additional connector types and difficulty models should follow playtesting rather than an elaborate framework.
+- Preserve intentional, reasonably traversable corners, ledges, sharp turns, and tighter passages as possible difficulty features. Distinguish them from collider gaps, unintended traps, and unreachable connections; do not automatically replace every corner with a ramp.
 
 **Confirmed layout goal:** Chunks offer around 2–3 broad gameplay lanes. Phase 2A uses 100-pixel placement cells, overlapping connector spans, and coarse static clearance plus selected physics simulations. Exact widths and validation thresholds remain provisional tuning choices.
+
+**Tentative difficulty interpretation:** Straight/wide, smooth-offset, extended-slope, pronounced-corner, and tight/sharp connections may offer different challenges. Shape alone does not determine their ranking: incoming velocity, upward traversal, gravity, character physics, clearance, and nearby obstacles matter. The current lightweight estimator covers the existing shoulder geometry and authored chunk ratings; future transition types will need their own calibration. The current catalogue has Easy/Normal estimates only, so a Hard request selects a nearby valid result and reports the mismatch. No acts or progression are introduced.
 
 **Confirmed theme separation:** Themes skin the same gameplay geometry. Green Hill could use checkerboard cliffs, grass, palms, sunflowers, and distant scenery; Chemical Plant could use industrial geometry, pipes, and machinery. These are visual examples, not Phase 1 asset requirements.
 

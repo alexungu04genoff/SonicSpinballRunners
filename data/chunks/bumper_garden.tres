@@ -4,6 +4,7 @@
 script = ExtResource("1")
 chunk_id = "bumper_garden"
 title = "BUMPER GARDEN"
+estimated_difficulty = 20.0
 grid_dimensions = Vector2i(7, 7)
 top_connection = Rect2(0, 0, 0, 0)
 bottom_connection = Rect2(55, 680, 590, 20)

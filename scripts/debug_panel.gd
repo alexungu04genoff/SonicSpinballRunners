@@ -6,6 +6,7 @@ var tuning: PhysicsTuning
 var panel: PanelContainer
 var generation_panel: PanelContainer
 var seed_field: SpinBox
+var difficulty_selector: OptionButton
 var generation_summary: Label
 var generation_hint: Label
 var generation_buttons: Array[Button] = []
@@ -196,19 +197,25 @@ func _build_generation_panel() -> void:
  stack.add_theme_constant_override("separation", 8)
  margin.add_child(stack)
  _label(stack, "TABLE GENERATOR", 16)
- _label(stack, "Seed (generator v1)", 12)
+ _label(stack, "Seed (generator v%d)" % TableGenerator.VERSION, 12)
  seed_field = SpinBox.new()
  seed_field.min_value = 0
  seed_field.max_value = 2147483647
  seed_field.step = 1
  seed_field.get_line_edit().text_submitted.connect(func(_text: String): seed_field.get_line_edit().release_focus())
  stack.add_child(seed_field)
- generation_buttons.append(_button(stack, "Build entered seed", func():
+ _label(stack, "Preference (apply on build)", 12)
+ difficulty_selector = OptionButton.new()
+ for difficulty_name: String in TableGenerator.DIFFICULTY_NAMES:
+  difficulty_selector.add_item(difficulty_name)
+ difficulty_selector.item_selected.connect(func(_index: int): difficulty_selector.release_focus())
+ stack.add_child(difficulty_selector)
+ generation_buttons.append(_button(stack, "Build seed + preference", func():
   seed_field.apply()
-  game.request_generation(int(seed_field.value))
+  game.request_generation(int(seed_field.value), difficulty_selector.selected)
  ))
- generation_buttons.append(_button(stack, "Next seed", func(): game.request_generation((game.generation_seed + 1) % 2147483648)))
- generation_buttons.append(_button(stack, "Repeat current seed", func(): game.request_generation(game.generation_seed)))
+ generation_buttons.append(_button(stack, "Next seed", func(): game.request_generation((game.generation_seed + 1) % 2147483648, difficulty_selector.selected)))
+ generation_buttons.append(_button(stack, "Repeat current layout", func(): game.request_generation(game.generation_seed, game.generation_difficulty)))
  generation_summary = _label(stack, "", 12)
  generation_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  generation_summary.custom_minimum_size.x = 184
@@ -219,9 +226,12 @@ func _build_generation_panel() -> void:
 
 func refresh_generation() -> void:
  seed_field.value = game.generation_seed
+ difficulty_selector.select(game.generation_difficulty)
  var upper: ChunkData = game.layout.upper
- var passage: Rect2 = game.layout.passage
- generation_summary.text = "CURRENT SEED  %d\nUpper: %s\nMirror: %s   Shift: %d cell\nLower: launch_deck (fixed)\nClear join: %.0f px\nFallback: %s" % [game.generation_seed, upper.chunk_id, "yes" if upper.mirrored else "no", upper.horizontal_shift_cells, passage.size.x, "yes" if game.layout.used_fallback else "no"]
+ var estimate: Dictionary = game.layout.difficulty_estimate
+ generation_summary.text = "CURRENT SEED  %d\nUpper: %s\nMirror: %s   Shift: %d cell\nLower: launch_deck (fixed)\nPreference: %s\nEstimate: %s %.1f / 100\n%s\nFallback: %s\nRough geometry estimate" % [game.generation_seed, upper.chunk_id, "yes" if upper.mirrored else "no", upper.horizontal_shift_cells, TableGenerator.DIFFICULTY_NAMES[game.generation_difficulty], TableGenerator.DIFFICULTY_NAMES[estimate.band], estimate.score, "\n".join(estimate.reasons), "yes" if game.layout.used_fallback else "no"]
+ if estimate.band != game.generation_difficulty:
+  generation_summary.text += "\nPreference differs; best effort."
 
 func _label(parent: Node, text: String, font_size: int) -> Label:
  var label := Label.new()

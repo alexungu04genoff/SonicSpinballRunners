@@ -5,6 +5,8 @@ const GRID_SIZE := 100.0
 const RAIL_RADIUS := 12.0
 @export var chunk_id: String = "section"
 @export var title: String = "Section"
+## Provisional authored gameplay rating, independent of technical validity or character stats.
+@export_range(0.0, 100.0, 1.0) var estimated_difficulty: float = 25.0
 @export var grid_position: Vector2i = Vector2i.ZERO
 @export var grid_dimensions: Vector2i = Vector2i(8, 7)
 @export var top_connection: Rect2 = Rect2(55, 0, 690, 20)
