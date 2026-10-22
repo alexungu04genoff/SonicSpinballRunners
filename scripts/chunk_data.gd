@@ -18,6 +18,7 @@ const RAIL_RADIUS := 12.0
 @export var rings: PackedVector2Array = PackedVector2Array()
 @export var markers: Dictionary = {}
 ## Local pivot positions; side +1 is a left flipper and -1 is a right flipper.
+## Optional length is the pivot-to-tip distance in physics pixels; legacy placements use 150.
 @export var flipper_placements: Array[Dictionary] = []
 @export var visual_attachment: Dictionary = {"theme": "practice", "height": 0.0}
 ## Closed navigable footprint and representative routes for coarse clearance validation.
@@ -47,12 +48,12 @@ func world_polygon(points: PackedVector2Array) -> PackedVector2Array:
 func world_flippers() -> Array[Dictionary]:
  var result: Array[Dictionary] = []
  for placement: Dictionary in flipper_placements:
-  result.append({"position": world_point(placement.position), "side": -float(placement.side) if mirrored else float(placement.side)})
+  result.append({"position": world_point(placement.position), "side": -float(placement.side) if mirrored else float(placement.side), "length": float(placement.get("length", PlaygroundFlipper.LENGTH))})
  if flipper_placements.is_empty():
   for marker_name: String in ["left_flipper", "right_flipper"]:
    if markers.has(marker_name):
     var side := 1.0 if marker_name == "left_flipper" else -1.0
-    result.append({"position": world_point(markers[marker_name]), "side": -side if mirrored else side})
+    result.append({"position": world_point(markers[marker_name]), "side": -side if mirrored else side, "length": PlaygroundFlipper.LENGTH})
  return result
 
 func gameplay_descriptors() -> Array[Dictionary]:

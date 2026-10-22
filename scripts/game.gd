@@ -106,6 +106,7 @@ func _add_chunk_flippers(chunk: TableChunk) -> void:
   var flipper := PlaygroundFlipper.new()
   flipper.name = "%s_%sFlipper" % [chunk.data.chunk_id, "Left" if placement.side > 0 else "Right"]
   flipper.side = placement.side
+  flipper.length = placement.length
   flipper.position = placement.position
   flipper.ball = ball
   flipper.controls = controls

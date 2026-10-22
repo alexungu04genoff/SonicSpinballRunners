@@ -12,4 +12,5 @@ rails = Array[PackedVector2Array]([PackedVector2Array(55, 0, 55, 330, 75, 400, 1
 bumpers = Array[Dictionary]([{"position": Vector2(400, 120), "radius": 40.0, "kind": "circle"}, {"position": Vector2(205, 315), "kind": "triangle", "points": PackedVector2Array(-40, 35, -15, -55, 45, 35)}, {"position": Vector2(595, 315), "kind": "triangle", "points": PackedVector2Array(-45, 35, 15, -55, 40, 35)}])
 rings = PackedVector2Array(170, 75, 170, 170, 630, 75, 630, 170, 305, 315, 495, 315, 400, 430)
 markers = {"serve": Vector2(665, 420), "left_flipper": Vector2(235, 560), "right_flipper": Vector2(565, 560), "drain": Vector2(400, 720)}
+flipper_placements = Array[Dictionary]([{"position": Vector2(235, 560), "side": 1.0, "length": 130.0}, {"position": Vector2(565, 560), "side": -1.0, "length": 130.0}])
 visual_attachment = {"theme": "launch_deck", "accent": Color(0.2, 0.5, 1, 1), "height": 0.0}

@@ -4,6 +4,7 @@ extends AnimatableBody2D
 signal struck
 const LENGTH: float = 150.0
 const RADIUS: float = 13.0
+var length: float = LENGTH
 var side: float = 1.0
 var ball: PlaygroundBall
 var controls: PlaygroundInput
@@ -21,9 +22,9 @@ func _ready() -> void:
  var collision := CollisionShape2D.new()
  var capsule := CapsuleShape2D.new()
  capsule.radius = RADIUS
- capsule.height = LENGTH + RADIUS * 2.0
+ capsule.height = length + RADIUS * 2.0
  collision.shape = capsule
- collision.position.x = LENGTH / 2.0
+ collision.position.x = length / 2.0
  collision.rotation = PI / 2.0
  add_child(collision)
  physics_material_override = PhysicsMaterial.new()
@@ -38,7 +39,7 @@ func active_angle() -> float:
  return -0.48 if side > 0.0 else PI + 0.48
 
 func tip() -> Vector2:
- return global_position + Vector2.RIGHT.rotated(rotation) * LENGTH
+ return global_position + Vector2.RIGHT.rotated(rotation) * length
 
 func _physics_process(delta: float) -> void:
  var pressed: bool = controls.left_held if side > 0.0 else controls.right_held
@@ -55,7 +56,7 @@ func _physics_process(delta: float) -> void:
    var old_nearest: Vector2 = Geometry2D.get_closest_point_to_segment(ball.global_position, global_position, old_tip)
    var distance: float = minf(ball.global_position.distance_to(nearest), ball.global_position.distance_to(old_nearest))
    if distance < RADIUS + PlaygroundBall.RADIUS + 9.0 and ball.global_position.y < global_position.y + 35.0:
-    var leverage: float = clampf(nearest.distance_to(global_position) / LENGTH, 0.35, 1.0)
+    var leverage: float = clampf(nearest.distance_to(global_position) / length, 0.35, 1.0)
     var direction := Vector2(side * 0.25, -1.0).normalized()
     ball.apply_central_impulse(direction * float(tuning.effective.flipper_launch_strength) * (0.65 + 0.35 * leverage) * ball.mass)
     struck_this_swing = true

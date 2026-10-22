@@ -43,7 +43,7 @@ func perspective_ratio(presentation: TablePresentation) -> float:
 func flippers_aligned(game: Node) -> bool:
  for i in game.flippers.size():
   var visual: Node3D = game.presentation.flipper_visuals[i]
-  var visual_tip: Vector3 = visual.to_global(Vector3(PlaygroundFlipper.LENGTH * TablePresentation.SCALE, 0, 0))
+  var visual_tip: Vector3 = visual.to_global(Vector3(game.flippers[i].length * TablePresentation.SCALE, 0, 0))
   if TablePresentation.unmap_point(visual_tip).distance_to(game.flippers[i].tip()) > 0.01:
    return false
  return true

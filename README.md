@@ -34,7 +34,7 @@ Both flippers can be held simultaneously. Special input currently displays a sta
 - A fixed bottom deck, three reusable middle layouts with two openings, and eight upper layouts, selected by a reproducible seed and difficulty preference with optional mirroring and horizontal shifting.
 - Wide aligned Easy sections, flowing Normal gardens/return lanes/target routes, and Hard tapered or offset necks. Joins meet at physics `y = 700` and `y = 1400`. Normal usually reshapes mismatched outer walls into passive banks or faceted curves, retaining occasional stepped closures.
 - Open, gently banked and asymmetric rebound middle sections, each with two bumpers and recovery paddles. Segmented rails, circular/triangular bumpers and collectible rings retain the primitive presentation.
-- Four physical flippers with a short, edge-triggered launch window. Holding a flipper keeps it raised; it does not repeatedly award launch impulses. Side routes and the center gap allow downward traversal.
+- Four physical flippers with authored lengths and a short, edge-triggered launch window. Bottom paddles leave a genuine drain gap. Middle layouts offer side-mounted, staggered and shorter traditional recovery arrangements. Holding a flipper keeps it raised; it does not repeatedly award launch impulses.
 - Rings award 25 points; bumpers award 100. Clearing all rings awards 500 and restores the ring rack after one second.
 - Rings contribute five special-meter points and bumpers two, scaled by the profile. Meter caps at 100; specials remain future work.
 - Rings stay at their authored positions until the configurable magnetic radius claims them. Score and meter update immediately; their visuals accelerate toward the moving ball over 0.20 seconds. Collection checks the ball's swept path and never alters ball momentum.
@@ -108,7 +108,7 @@ Visual attachment metadata is a future theme hook. The current renderer uses pri
 
 Use the **Table Generator** panel on the left. At serve, or after pausing with **Escape / Menu**, enter a seed, choose an **Easy / Normal / Hard** preference, and click **Build seed + preference**. **Next seed** increments the current seed using the selected preference. **Repeat current layout** restores the current seed and preference even if controls contain unbuilt edits. Different configurations can select the same layout. Generation resets the ball to serve, score, rings, meter, timers, and ball count, while preserving physics tuning, the Chao toggle, overlays, camera preset, and pause state. Resume if paused, then press **Enter / X** to launch.
 
-For generator **v5**, start with **1 + Easy** (Open Meadow / Open Relay), **18 + Normal** (Outer Return / Rebound Relay, two banked joins), **23 + Normal** (Risk Route / Bank Relay, curved upper join), **1 + Hard** (Offset Neck / Rebound Relay), and **3 + Hard** (Tapered Throat / Bank Relay). Easy and Hard preserve v4 selection/geometry; Normal mappings intentionally change. Version 3's two-section seed mappings remain only in the legacy regression fixture. The panel and log record ordered chunks, transforms, requested transition and actual junction styles. Scroll the left panel for checked widths, largest ledges and estimates. **Chunks** and **Connectors** have independent overlays. F1 hides both development panels. Settings are not saved across restarts.
+For generator **v6**, compare **1 + Normal** (Open Relay's side recovery), **23 + Normal** (Bank Relay's staggered recovery), and **8 + Normal** (Rebound Relay's shorter traditional pair). **18 + Normal** retains two banked joins. **1 + Easy** and **1 + Hard** retain their contrasting static geometry. Version 6 changes flipper geometry; rails, bumpers, rings and connector styles remain as in v5. Version 3's two-section seed mappings remain only in the legacy regression fixture. The panel and log record ordered chunks, transforms, requested transition and actual junction styles. Scroll the left panel for checked widths, largest ledges and estimates. **Chunks** and **Connectors** have independent overlays. F1 hides both development panels. Settings are not saved across restarts.
 
 Difficulty is a rough geometry preference, not a physics mode or safety override. Easy removes closure ledges and opens recovery space; Normal favors banks and curves with occasional corners; Hard uses large shoulders and narrow, sometimes sideways-bending necks that reject imprecise upward shots. Hard adds no extra bumpers. Normal's eight-seed comparison cycle prefers Step for remainders 0/1, Bank for 2/3/4 and Curve for 5/6/7. Unsupported shaping retains valid steps and reports the actual result. Ordinary banks redirect momentum through existing wall collisions and never add a powered impulse. The hardest component across every chunk and junction sets the recomputed course estimate, so an easy section cannot average away a severe join. An unavailable band explicitly reports the closest valid alternative. See [difficulty scoring and limits](docs/GENERATION.md).
 
@@ -162,6 +162,21 @@ The ball uses shape CCD, thick capsule rails, 120 Hz physics, and contact report
 
 Flippers rotate at 12 rad/s upward and 7 rad/s on release. A press opens a 0.11-second strike window, applies at most one boost to a nearby ball, and scales it by contact leverage. The normal moving-body response remains active. The launch-strength stat controls the extra boost, not total post-collision speed. This makes tuning explicit while keeping passive physical contact.
 
+### Drain and recovery geometry
+
+Flipper placements carry an optional pivot-to-tip `length`; omitted values retain the original 150 px default. Collision capsules, mesh bodies, visual tips, launch leverage and connector swing checks use the same instance length. Radius remains 13 px; input, angular speed, strike window and launch-strength formulas are unchanged.
+
+| Section | Local pivots | Lengths | Arrangement |
+| --- | --- | --- | --- |
+| Launch Deck | (235,560), (565,560) | 130 / 130 px | Familiar bottom pair with an open drain |
+| Open Relay | (135,550), (665,550) | 115 / 115 px | Side recovery and broad central passage |
+| Bank Relay | (175,500), (615,590) | 125 / 115 px | Staggered recovery at different heights |
+| Rebound Relay | (185,560), (545,560) | 110 / 110 px | Shorter, slightly offset traditional pair with a narrower central route |
+
+The old bottom paddles left only 19.23 px between their resting capsule tips, blocking the 28 px ball. The revised pair leaves 57.20 px at rest and at least 44 px throughout the swing. Failed shots can now fall through; unlimited automatic respawn/relaunch is unchanged. The minimum horizontal surface corridors for Open, Bank and Rebound are respectively 274, 174 and 114 px. Mirroring transforms placements and left/right input sides without changing length. Normal 8's Rebound passage admits both its x350 chunk center and the x400 lower-deck centerline.
+
+Holding a bottom paddle raised can still cradle a ball against the incoming wall near its pivot. Releasing clears that cradle. The existing 9 px assisted-strike margin can catch a near-tip shot during a press even when the capsule itself would clear it; this behavior is unchanged. No nudges, position corrections, automatic rescue flips or new ball forces are used to open a route. See [actual failure/recovery checks](docs/VERIFICATION.md).
+
 ### Modifier stacking and limits
 
 For each property:
@@ -190,6 +205,7 @@ From PowerShell, using the installed executable:
 & 'C:\Program Files\Godot\Godot.exe' --headless --path 'E:\Sonic Spinball Runners' --fixed-fps 120 --script res://tests/vertical_traversal_regression.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path 'E:\Sonic Spinball Runners' --fixed-fps 120 --script res://tests/vertical_shot_survey.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path 'E:\Sonic Spinball Runners' --fixed-fps 120 --script res://tests/connector_transition_regression.gd
+& 'C:\Program Files\Godot\Godot.exe' --headless --path 'E:\Sonic Spinball Runners' --fixed-fps 120 --script res://tests/flipper_recovery_regression.gd
 & 'C:\Program Files\Godot\Godot.exe' --path 'E:\Sonic Spinball Runners' --script res://tests/vertical_camera_smoke.gd
 & 'C:\Program Files\Godot\Godot.exe' --path 'E:\Sonic Spinball Runners' --script res://tests/generation_ui_smoke.gd
 ```
@@ -198,7 +214,7 @@ The regression scripts use Godot directly, with no testing dependency. `tests/pr
 
 `tests/vertical_traversal_regression.gd` checks seeded three-section courses, both junctions, four paddles, pause/reset/drain and regeneration cleanup. `tests/vertical_shot_survey.gd` exercises actual flipper shots and continuous upward/downward play. `tests/vertical_camera_smoke.gd` checks tracking and captures follow/overview views. `tests/generation_regression.gd` retains the v3 two-section geometry fixtures through `generate_pair()`; `tests/generation_ui_smoke.gd` exercises current three-section controls. Capture scripts create the ignored `test-results/` directory when needed.
 
-`tests/flipper_access_survey.gd` remains the earlier two-section diagnostic; use the vertical survey for the current course. Its optional diagnostic targets and recorded shot results are sandbox evidence, not win conditions or player success rates. Static connectivity and sampled trajectories cannot prove every shot, profile or modifier combination is playable.
+`tests/flipper_access_survey.gd` remains the earlier two-section diagnostic with the original 150 px paddles; use the vertical and flipper-recovery diagnostics for current resource-authored geometry. Its optional diagnostic targets and recorded shot results are sandbox evidence, not win conditions or player success rates. Static connectivity and sampled trajectories cannot prove every shot, profile or modifier combination is playable.
 
 Use **Physics** for collision outlines, **Chunks** for transformed section bounds, and **Connectors** for opening rectangles (purple) plus the checked clear passage (green). Outlines are raised slightly above the board for readability; their X/Z footprint derives from gameplay coordinates.
 

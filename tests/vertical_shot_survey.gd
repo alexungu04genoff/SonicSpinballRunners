@@ -2,8 +2,9 @@ extends SceneTree
 ## Real Balanced flipper shots; diagnostic coverage, not difficulty calibration.
 ## Run with --headless --fixed-fps 120 --script res://tests/vertical_shot_survey.gd.
 ## No teleport or velocity edits occur between the opening press and shot completion.
-const CONTACT_DISTANCES: Array[float] = [55.0, 75.0, 95.0, 135.0]
+const CONTACT_FRACTIONS: Array[float] = [55.0 / 150.0, 0.5, 95.0 / 150.0, 0.9]
 const INCOMING_SPEEDS: Array[float] = [-200.0, 0.0, 200.0]
+const CONTINUOUS_TRIGGER_DISTANCES: Array[float] = [58.0, 48.0, 42.0]
 var game: Node
 var checks := 0
 var failures := 0
@@ -83,13 +84,13 @@ func sample_shot(paddle: int, distance: float, incoming_x: float) -> Dictionary:
  result.strikes = flipper.strikes - strikes_before
  return result
 
-func continuous_run(seconds: int = 40) -> Dictionary:
+func continuous_run(seconds: int = 40, trigger_distance: float = 58.0) -> Dictionary:
  game.controls.virtual_left = false
  game.controls.virtual_right = false
  prepare_ball(game.ball.serve_position, Vector2.ZERO, true)
  await frames(20)
  game.ball.launch()
- var result := {"minimum_y": game.ball.serve_position.y, "middle": false, "top": false, "fell_from_top": false, "drained": false, "frames": 0, "strikes": []}
+ var result := {"trigger_distance": trigger_distance, "minimum_y": game.ball.serve_position.y, "middle": false, "top": false, "fell_from_top": false, "drained": false, "frames": 0, "strikes": []}
  var initial: Array[int] = []
  for flipper: PlaygroundFlipper in game.flippers:
   initial.append(flipper.strikes)
@@ -101,8 +102,8 @@ func continuous_run(seconds: int = 40) -> Dictionary:
   game.controls.virtual_right = cooldown > 15
   if cooldown == 0 and game.ball.linear_velocity.y > 0:
    for flipper: PlaygroundFlipper in game.flippers:
-    var nearest := Geometry2D.get_closest_point_to_segment(game.ball.position, flipper.global_position, flipper.global_position + Vector2.RIGHT.rotated(flipper.rest_angle()) * PlaygroundFlipper.LENGTH)
-    if game.ball.position.y < flipper.position.y + 15 and nearest.distance_to(game.ball.position) < 58:
+    var nearest := Geometry2D.get_closest_point_to_segment(game.ball.position, flipper.global_position, flipper.global_position + Vector2.RIGHT.rotated(flipper.rest_angle()) * flipper.length)
+    if game.ball.position.y < flipper.position.y + 15 and nearest.distance_to(game.ball.position) < trigger_distance:
      cooldown = 30
      game.controls.virtual_left = true
      game.controls.virtual_right = true
@@ -119,6 +120,18 @@ func continuous_run(seconds: int = 40) -> Dictionary:
  for i in game.flippers.size():
   result.strikes.append(game.flippers[i].strikes - initial[i])
  return result
+
+func continuous_trials() -> Array[Dictionary]:
+ # Distinct paddle placements need distinct timing. Preserve every attempted
+ # run, including genuine drains, and still require a full traversal witness.
+ # Each trial starts from the normal serve and changes only button inputs.
+ var trials: Array[Dictionary] = []
+ for distance: float in CONTINUOUS_TRIGGER_DISTANCES:
+  var result := await continuous_run(40, distance)
+  trials.append(result)
+  if result.top and result.fell_from_top and result.strikes[0] + result.strikes[1] > 0 and result.strikes[2] + result.strikes[3] > 0:
+   break
+ return trials
 
 func run() -> void:
  var report := {"description": "Controlled actual flipper launches and continuous serve-to-drain samples. Not player success rates or proof of every possible trajectory.", "profile": "Balanced", "steering": 0.0, "modifier_enabled": false, "incoming_vy": 100.0, "press_frames": 15, "layouts": []}
@@ -137,8 +150,9 @@ func run() -> void:
    for pair in 2:
     var samples := {"pair": "bottom" if pair == 0 else "middle", "entries": 0, "chambers": 0, "shots": [], "witness": {}}
     for side in 2:
-     for distance in CONTACT_DISTANCES:
+     for fraction in CONTACT_FRACTIONS:
       for speed in INCOMING_SPEEDS:
+       var distance: float = game.flippers[pair * 2 + side].length * fraction
        var shot := await sample_shot(pair * 2 + side, distance, speed)
        total_shots += 1
        total_strikes += int(shot.strikes == 1)
@@ -152,12 +166,13 @@ func run() -> void:
     summary.pairs.append(samples)
     print("VERTICAL ACCESS | ", game.layout.signature, " | ", samples.pair, " | entries=", samples.entries, "/", samples.shots.size(), " | chambers=", samples.chambers, "/", samples.shots.size(), " | witness=", samples.witness)
     check(samples.chambers > 0, "Real " + samples.pair + " flipper shot reaches the next chamber: " + game.layout.signature)
-   summary.continuous = await continuous_run()
+   summary["continuous_trials"] = await continuous_trials()
+   summary.continuous = summary.continuous_trials.back()
    var middle_id: String = game.layout.chunks[1].chunk_id
    var traversal: Dictionary = summary.continuous
    var complete: bool = traversal.top and traversal.fell_from_top and traversal.strikes[0] + traversal.strikes[1] > 0 and traversal.strikes[2] + traversal.strikes[3] > 0
    continuous_witnesses[middle_id] = continuous_witnesses.get(middle_id, false) or complete
-   print("CONTINUOUS | ", game.layout.signature, " | ", summary.continuous)
+   print("CONTINUOUS | ", game.layout.signature, " | ", summary.continuous_trials)
    report.layouts.append(summary)
    game.queue_free()
    await frames(3)

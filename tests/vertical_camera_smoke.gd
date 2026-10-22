@@ -40,7 +40,7 @@ func overview_framed(presentation: TablePresentation) -> bool:
 func aligned() -> bool:
  var p: TablePresentation = game.presentation
  for i in game.flippers.size():
-  var tip := p.flipper_visuals[i].to_global(Vector3(PlaygroundFlipper.LENGTH * TablePresentation.SCALE, 0, 0))
+  var tip := p.flipper_visuals[i].to_global(Vector3(game.flippers[i].length * TablePresentation.SCALE, 0, 0))
   if TablePresentation.unmap_point(tip).distance_to(game.flippers[i].tip()) > 0.01:
    return false
  for i in p.ring_visuals.size():

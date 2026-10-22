@@ -200,7 +200,7 @@ static func _flippers_clear(paths: Array, chunks: Array[ChunkData]) -> bool:
     var angle := lerpf(0.32, -0.48, step / 20.0)
     if flipper.side < 0.0:
      angle = PI - angle
-    var tip: Vector2 = flipper.position + Vector2.RIGHT.rotated(angle) * PlaygroundFlipper.LENGTH
+    var tip: Vector2 = flipper.position + Vector2.RIGHT.rotated(angle) * float(flipper.length)
     for path: PackedVector2Array in paths:
      for i in range(path.size() - 1):
       if _segment_distance(flipper.position, tip, path[i], path[i + 1]) < required:

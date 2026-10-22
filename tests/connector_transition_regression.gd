@@ -2,26 +2,27 @@ extends "res://tests/vertical_shot_survey.gd"
 ## Focused passive-bank geometry and real 2D collision checks. Reuses the traversal
 ## diagnostic's frame stepping and uninterrupted shared-input play sample.
 const TRANSITIONS = preload("res://scripts/connector_transitions.gd")
-const V4_GEOMETRY := {
- "0/1": "e8f16e1f62022dff536635af3158db90b7a31710dd28062d94272a134a679edb",
- "0/2": "00d88f2c65b77974a330f86c48d0eded75b89aeb18e1174048eb99dd00adca32",
- "0/18": "e8f16e1f62022dff536635af3158db90b7a31710dd28062d94272a134a679edb",
- "0/23": "00d88f2c65b77974a330f86c48d0eded75b89aeb18e1174048eb99dd00adca32",
- "2/1": "fc0610478ad05f601adc7d7ed34924102bd787e5cf48e2be631d110731c297c9",
- "2/2": "ff95e16f7d9cb07f013c4aa02851416730f6848a44155eb7c97268b8d6869cae",
- "2/18": "b177ac4446ce9ec93aa25ca043e5aed79049440013fa80e0a8a6490640a38df5",
- "2/23": "7e947a1fd2b96ea77b8c9f35d3f4e63be4da9a122653c34099c008a86e39876c",
+const V5_STATIC_GEOMETRY := {
+ "0/1": "5a71f6e49e4264b4bb5108e771e0d8cee97a2f66fd2c6d8945db40b02e6953dd",
+ "0/2": "0fac537fdde3e4ee5dbadeabc23c3c7f50316380e1ac5d997ae1a0d40046b242",
+ "0/18": "5a71f6e49e4264b4bb5108e771e0d8cee97a2f66fd2c6d8945db40b02e6953dd",
+ "0/23": "0fac537fdde3e4ee5dbadeabc23c3c7f50316380e1ac5d997ae1a0d40046b242",
+ "2/1": "89d4235fa8981f936b44592e57e3096dd18db3fbeae8b1987b826f0f5887267f",
+ "2/2": "eb76494c81902364bedd80bbd5be7cac2d024f4a133bca9ed4cefefdfcee74fe",
+ "2/18": "f87f57ee02a32343f70eae870fc89bce4f63a83f5417ae9a7517d8c5104acd26",
+ "2/23": "c0c6140f85a56c02594cb762b9e5387759d56dc249a0b26d2aae092af38f2104",
 }
 var fixture: Node2D
 var passive_tuning: PhysicsTuning
 var passive_controls: PlaygroundInput
 var passive_ball: PlaygroundBall
 
-func geometry_hash(layout: Dictionary) -> String:
+func geometry_hash(layout: Dictionary, include_flippers: bool = true) -> String:
  var geometry: Array = []
  for chunk: ChunkData in layout.chunks:
   geometry.append(chunk.gameplay_descriptors())
-  geometry.append(chunk.world_flippers())
+  if include_flippers:
+   geometry.append(chunk.world_flippers())
  for junction: Dictionary in layout.junctions:
   geometry.append(junction.passage)
   geometry.append(junction.junction_rails)
@@ -87,12 +88,14 @@ func collider_rails_match(chunk: TableChunk, expected: Array) -> bool:
  return matched == expected.size()
 
 func run() -> void:
- # These fingerprints were captured from committed a1a0138, before transition edits.
+ # Static fingerprints were captured before the drain/recovery flipper changes.
+ # Flipper placements intentionally change; their actual collision checks live
+ # in flipper_recovery_regression.gd. Keep all other geometry protected here.
  var unaffected := true
- for key: String in V4_GEOMETRY:
+ for key: String in V5_STATIC_GEOMETRY:
   var parts := key.split("/")
-  unaffected = unaffected and geometry_hash(TableGenerator.generate(int(parts[1]), int(parts[0]))) == V4_GEOMETRY[key]
- check(unaffected, "Easy and Hard retain committed v4 collider, ring, paddle and junction geometry for eight sampled layouts")
+  unaffected = unaffected and geometry_hash(TableGenerator.generate(int(parts[1]), int(parts[0])), false) == V5_STATIC_GEOMETRY[key]
+ check(unaffected, "Easy and Hard retain v5 static rails, bumpers, rings and junctions for eight sampled layouts")
  var reproducible := true
  var valid := true
  var styles: Dictionary = {}
@@ -146,9 +149,10 @@ func run() -> void:
 
  for seed_value: int in [18, 23]:
   await create_game(seed_value, TableGenerator.Difficulty.NORMAL)
-  var traversal := await continuous_run()
-  print("BANK PLAY | ", game.layout.signature, " | ", traversal)
-  check(traversal.top and traversal.fell_from_top, "Normal %d supports an uninterrupted serve-to-top-to-bottom run" % seed_value)
+  var trials := await continuous_trials()
+  var traversal: Dictionary = trials.back()
+  print("BANK PLAY | ", game.layout.signature, " | ", trials)
+  check(traversal.top and traversal.fell_from_top and traversal.strikes[0] + traversal.strikes[1] > 0 and traversal.strikes[2] + traversal.strikes[3] > 0, "Normal %d supports an uninterrupted serve-to-top-to-bottom run using both paddle pairs" % seed_value)
   var lower: TableChunk = game.chunks.back()
   var old_lower_geometry := lower.data.gameplay_descriptors()
   var old_lower_id := lower.get_instance_id()

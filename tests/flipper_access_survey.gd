@@ -3,6 +3,8 @@ extends SceneTree
 ## Run with --headless --fixed-fps 120 --script res://tests/flipper_access_survey.gd.
 ## Append -- --all-hard to survey every Hard catalogue transform instead of sample seeds.
 ## Uses real paddles and Balanced physics, with no steering, modifiers, or auto-serve.
+## Retains the original 150 px paddles for historical v3 comparisons; use the
+## vertical and recovery diagnostics for current resource-authored placements.
 const CONTACT_DISTANCES: Array[float] = [55.0, 95.0, 135.0]
 const INCOMING_SPEEDS: Array[float] = [-200.0, 0.0, 200.0]
 const SHOT_FRAMES := 480
