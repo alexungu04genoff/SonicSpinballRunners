@@ -31,8 +31,8 @@ Both flippers can be held simultaneously. Special input currently displays a sta
 
 ## What is playable
 
-- A fixed lower deck and four hand-authored upper layouts, selected by a reproducible seed with optional mirroring and horizontal shifting.
-- Spacious bumper gardens, a curved return lane, central targets, and an asymmetric risk route. All joins meet at physics `y = 700` with visible closure rails where openings differ.
+- A fixed lower deck and eight hand-authored upper layouts, selected by a reproducible seed and difficulty preference with optional mirroring and horizontal shifting.
+- Wide aligned Easy sections, Normal gardens/return lanes/target routes, and Hard tapered or offset necks. All joins meet at physics `y = 700` with visible closure rails where openings differ.
 - Segmented curved rails, circular and triangular bumpers, and 16 rings per generated table. The original 17-ring layout remains a validated fallback.
 - Two physical flippers with a short, edge-triggered launch window. Holding a flipper keeps it raised; it does not repeatedly award launch impulses.
 - Rings award 25 points; bumpers award 100. Clearing all rings awards 500 and restores the ring rack after one second.
@@ -96,7 +96,7 @@ For reproducible screenshots, run `tests/presentation_smoke.gd` graphically. Cap
 
 ### Chunk contract
 
-`ChunkData` stores an ID, grid position and dimensions (100 pixels per cell), top/bottom connection rectangles, rail polylines, bumpers, ring positions, spawn markers, visual attachment metadata, a navigable footprint, and route probes. Upper sections are 7 × 7 cells; the fixed lower deck is 8 × 7. They fit the existing 800 × 1400 table and camera.
+`ChunkData` stores an ID, grid position and dimensions (100 pixels per cell), top/bottom connection rectangles, rail polylines, bumpers, ring positions, spawn markers, visual attachment metadata, a navigable footprint, and route probes. Upper sections are 7 × 7 or 8 × 7 cells; the fixed lower deck is 8 × 7. Full-width sections stay aligned; narrower sections retain both horizontal shifts. All fit the existing 800 × 1400 table and camera.
 
 Horizontal mirroring and cell shifts apply consistently to collision descriptors, connectors, objects, markers, and debug bounds through `ChunkData.world_point()` / `world_rect()`. There is no rotation field. Compatibility uses overlapping opening spans at the same world boundary, never connector IDs. Unused opening spans receive capsule rails; the shared passage remains open. A coarse static reachability check rejects obvious disconnected routes. See [Generation contract and limits](docs/GENERATION.md).
 
@@ -106,9 +106,9 @@ Visual attachment metadata is a future theme hook. The current renderer uses pri
 
 Use the **Table Generator** panel on the left. At serve, or after pausing with **Escape / Menu**, enter a seed, choose an **Easy / Normal / Hard** preference, and click **Build seed + preference**. **Next seed** increments the current seed using the selected preference. **Repeat current layout** restores the current seed and preference even if controls contain unbuilt edits. Different configurations can select the same layout. Generation resets the ball to serve, score, rings, meter, timers, and ball count, while preserving physics tuning, the Chao toggle, overlays, camera preset, and pause state. Resume if paused, then press **Enter / X** to launch.
 
-For generator **v2**, try **1 + Easy** (Central Targets), **10 + Easy** (Bumper Garden), **6 + Normal** (Outer Return), and **1 + Hard** (Risk Route). Version 1 seed mappings have changed. The panel and log record the seed, preference, IDs, transformations, and actual estimated difficulty. Reasons include clear opening width, offset, largest ledge, sampled approach clutter, and authored chunk ratings. **Chunks** and **Connectors** have independent overlays. F1 hides both development panels. Settings are not saved across restarts.
+For generator **v3**, try **1 + Easy** (Gentle Banks), **3 + Easy** (Open Meadow), **1 + Normal** (Outer Return), **4 + Normal** (Risk Route), **1 / 2 + Hard** (opposing Offset Neck arrangements), and **3 + Hard** (Tapered Throat). Earlier seed mappings have changed. The panel and log record the seed, preference, IDs, transformations, and actual estimated difficulty. Reasons separate intrinsic chunk, connector and approach scores, checked opening width, largest ledge, ball-center approach clearance, and sharpest turn. **Chunks** and **Connectors** have independent overlays. F1 hides both development panels. Settings are not saved across restarts.
 
-Difficulty is a rough selection preference, not a physics mode or safety override. Valid ledges and sharp corners remain. The current library estimates range from about **29–55 / 100**, so Hard selects a nearby valid candidate and still reports its actual **Normal** estimate. Normal and Hard may select the same layout. A small eight-point selection band retains seed variety around the closest valid score. See [difficulty scoring and limits](docs/GENERATION.md).
+Difficulty is a rough geometry preference, not a physics mode or safety override. Easy removes closure ledges and opens recovery space; Normal retains moderate shoulders and target approaches; Hard uses large shoulders and narrow, sometimes sideways-bending necks that reject imprecise upward shots. Hard adds no extra bumpers. Current estimates span **Easy 25–28, Normal 40–60, and Hard 84–100**. The hardest component sets the estimate so an easy chunk cannot average away a severe join. Selection preserves seeded variety within the requested band; an unavailable band explicitly reports the closest valid alternative. See [difficulty scoring and limits](docs/GENERATION.md).
 
 ## Physics and live tuning
 
@@ -190,7 +190,9 @@ From PowerShell, using the installed executable:
 
 The regression scripts use Godot directly, with no testing dependency. `tests/profile_regression.gd` protects resource resolution and reset behavior. `tests/physics_regression.gd` exercises real physics, both flippers, high-speed rail and bumper impacts, chunk crossings, scoring, collection, pause, live tuning, drain recovery, and 20 seconds of simulated play. See `docs/VERIFICATION.md` for results and practical limits.
 
-`tests/generation_regression.gd` checks all 16 authored transformations, seed reproduction, rejected layouts/fallback, safe reset, real seam crossings, closure collisions, and short play simulations. `tests/generation_ui_smoke.gd` exercises generation controls and captures all four sample tables when run graphically. Capture scripts create the ignored `test-results/` directory when needed.
+`tests/generation_regression.gd` checks all 28 authored transformations, tier selection and shortages, seed reproduction, rejected layouts/fallback, safe reset, real seam crossings, closure collisions, and short play simulations. `tests/generation_ui_smoke.gd` exercises generation controls and captures all three tiers when run graphically. Capture scripts create the ignored `test-results/` directory when needed.
+
+Run `tests/flipper_access_survey.gd` with `--headless --fixed-fps 120` for a controlled comparison using real flipper presses and unchanged Balanced physics. Add `-- --all-hard` to sample every Hard transformation. JSON results record upper-section access and optional diagnostic target hits; these are opening-shot samples, not player success rates or win conditions. All eight Hard transformations reached their upper target in the current samples. Easy and Normal overlap on initial shots, so recovery and later shots still need playtesting.
 
 Use **Physics** for collision outlines, **Chunks** for transformed section bounds, and **Connectors** for opening rectangles (purple) plus the checked clear passage (green). Outlines are raised slightly above the board for readability; their X/Z footprint derives from gameplay coordinates.
 

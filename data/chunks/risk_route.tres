@@ -4,7 +4,7 @@
 script = ExtResource("1")
 chunk_id = "risk_route"
 title = "RISK ROUTE"
-estimated_difficulty = 65.0
+estimated_difficulty = 55.0
 grid_dimensions = Vector2i(7, 7)
 top_connection = Rect2(0, 0, 0, 0)
 bottom_connection = Rect2(55, 680, 540, 20)

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ChunkData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/chunk_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+chunk_id = "gentle_banks"
+title = "GENTLE BANKS"
+estimated_difficulty = 28.0
+grid_dimensions = Vector2i(8, 7)
+top_connection = Rect2(0, 0, 0, 0)
+bottom_connection = Rect2(55, 680, 690, 20)
+rails = Array[PackedVector2Array]([PackedVector2Array(55, 700, 55, 570, 95, 430, 80, 240, 80, 170, 100, 120, 145, 80, 205, 55, 595, 55, 655, 80, 700, 120, 720, 170, 720, 240, 705, 430, 745, 570, 745, 700)])
+playfield_outline = PackedVector2Array(55, 700, 55, 570, 95, 430, 80, 240, 80, 170, 100, 120, 145, 80, 205, 55, 595, 55, 655, 80, 700, 120, 720, 170, 720, 240, 705, 430, 745, 570, 745, 700)
+bumpers = Array[Dictionary]([{"kind": "circle", "position": Vector2(400, 300), "radius": 44.0}, {"kind": "circle", "position": Vector2(500, 450), "radius": 36.0}])
+rings = PackedVector2Array(175, 220, 170, 360, 170, 500, 400, 150, 320, 400, 360, 560, 625, 250, 625, 410, 540, 570)
+markers = {"entry": Vector2(400, 670), "test_target": Vector2(280, 270)}
+navigation_probes = PackedVector2Array(170, 300, 170, 500, 280, 270, 400, 550, 625, 300, 625, 500, 400, 670)

@@ -242,8 +242,8 @@ func refresh_generation() -> void:
  var upper: ChunkData = game.layout.upper
  var estimate: Dictionary = game.layout.difficulty_estimate
  generation_summary.text = "CURRENT SEED  %d\nUpper: %s\nMirror: %s   Shift: %d cell\nLower: launch_deck (fixed)\nPreference: %s\nEstimate: %s %.1f / 100\n%s\nFallback: %s\nRough geometry estimate" % [game.generation_seed, upper.chunk_id, "yes" if upper.mirrored else "no", upper.horizontal_shift_cells, TableGenerator.DIFFICULTY_NAMES[game.generation_difficulty], TableGenerator.DIFFICULTY_NAMES[estimate.band], estimate.score, "\n".join(estimate.reasons), "yes" if game.layout.used_fallback else "no"]
- if estimate.band != game.generation_difficulty:
-  generation_summary.text += "\nPreference differs; best effort."
+ generation_summary.text += "\n" + game.layout.selection_note
+ generation_summary.tooltip_text = "Estimate is the maximum of authored chunk challenge, connector severity, and sampled approach difficulty. Checked join includes a safety margin. Approach lane is the narrowest sampled contiguous ball-center route, not total space across separate lanes. These are geometry heuristics, not measured player success rates."
 
 func _label(parent: Node, text: String, font_size: int) -> Label:
  var label := Label.new()

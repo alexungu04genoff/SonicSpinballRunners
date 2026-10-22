@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ChunkData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/chunk_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+chunk_id = "tapered_throat"
+title = "TAPERED THROAT"
+estimated_difficulty = 68.0
+grid_dimensions = Vector2i(7, 7)
+top_connection = Rect2(0, 0, 0, 0)
+bottom_connection = Rect2(185, 680, 340, 20)
+rails = Array[PackedVector2Array]([PackedVector2Array(185, 700, 185, 620, 260, 575, 260, 520, 140, 440, 55, 280, 55, 190, 65, 140, 90, 95, 135, 65, 190, 55, 510, 55, 565, 65, 610, 95, 635, 140, 645, 190, 645, 280, 560, 440, 440, 520, 440, 575, 525, 620, 525, 700)])
+playfield_outline = PackedVector2Array(185, 700, 185, 620, 260, 575, 260, 520, 140, 440, 55, 280, 55, 190, 65, 140, 90, 95, 135, 65, 190, 55, 510, 55, 565, 65, 610, 95, 635, 140, 645, 190, 645, 280, 560, 440, 440, 520, 440, 575, 525, 620, 525, 700)
+bumpers = Array[Dictionary]([{"kind": "circle", "position": Vector2(230, 260), "radius": 36.0}, {"kind": "circle", "position": Vector2(470, 320), "radius": 40.0}])
+rings = PackedVector2Array(140, 220, 140, 340, 350, 145, 350, 300, 350, 430, 350, 550, 560, 200, 560, 335, 355, 645)
+markers = {"entry": Vector2(355, 670), "test_target": Vector2(350, 270)}
+navigation_probes = PackedVector2Array(140, 220, 175, 380, 350, 270, 350, 430, 350, 550, 560, 200, 540, 380, 355, 670)

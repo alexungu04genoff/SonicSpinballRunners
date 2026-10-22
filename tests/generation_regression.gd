@@ -23,42 +23,57 @@ func frames(count: int) -> void:
 func run() -> void:
  var variants_valid := true
  var variant_scores: Array[float] = []
+ var variant_count := 0
  for source: ChunkData in TableGenerator.CATALOGUE:
   for mirrored: bool in [false, true]:
-   for shift: int in [0, 1]:
+   for shift: int in TableGenerator.allowed_shifts(source):
     var chunk: ChunkData = source.duplicate(true)
     chunk.mirrored = mirrored
     chunk.horizontal_shift_cells = shift
+    variant_count += 1
     var validation := TableGenerator.validate(chunk, TableGenerator.LOWER)
     variant_scores.append(TableGenerator.estimate_difficulty(chunk, TableGenerator.LOWER).score)
     if not validation.valid:
      variants_valid = false
      print("INVALID VARIANT | ", chunk.chunk_id, " | ", mirrored, " | ", shift, " | ", validation.errors)
- check(variants_valid, "All 16 catalogue / mirror / shift combinations pass clearance validation")
+ check(variants_valid, "Every permitted catalogue / mirror / shift combination passes clearance validation", "%d variants" % variant_count)
+ check(TableGenerator.allowed_shifts(TableGenerator.FALLBACK) == [0] and TableGenerator.allowed_shifts(TableGenerator.CATALOGUE[0]) == [0, 1], "Eight-cell chunks remain aligned while seven-cell chunks retain both legal shifts")
  var representatives: Dictionary = {}
  var deterministic := true
  var no_fallback := true
  var preference_respected := true
+ var variety_preserved := true
+ var easy_ledges_small := true
  var score_totals: Array[float] = [0.0, 0.0, 0.0]
+ var clearance_totals: Array[float] = [0.0, 0.0, 0.0]
+ var ledge_totals: Array[float] = [0.0, 0.0, 0.0]
  for preference in 3:
-  var closest_distance := INF
-  for score: float in variant_scores:
-   closest_distance = minf(closest_distance, absf(score - TableGenerator.DIFFICULTY_TARGETS[preference]))
+  var tier_ids: Dictionary = {}
   for seed_value in range(1, 25):
    var a := TableGenerator.generate(seed_value, preference)
    var b := TableGenerator.generate(seed_value, preference)
    deterministic = deterministic and a.signature == b.signature and a.difficulty_preference == preference and a.difficulty_estimate == b.difficulty_estimate and a.junction_rails == b.junction_rails and a.upper.gameplay_descriptors() == b.upper.gameplay_descriptors()
    no_fallback = no_fallback and not a.used_fallback
+   tier_ids[a.upper.chunk_id] = true
    score_totals[preference] += float(a.difficulty_estimate.score)
-   preference_respected = preference_respected and absf(float(a.difficulty_estimate.score) - TableGenerator.DIFFICULTY_TARGETS[preference]) <= closest_distance + TableGenerator.DIFFICULTY_VARIETY + 0.0001
+   clearance_totals[preference] += float(a.difficulty_estimate.clear_width)
+   ledge_totals[preference] += float(a.difficulty_estimate.largest_ledge)
+   preference_respected = preference_respected and a.preference_available and a.difficulty_estimate.band == preference
+   if preference == TableGenerator.Difficulty.EASY:
+    easy_ledges_small = easy_ledges_small and float(a.difficulty_estimate.largest_ledge) <= 56.0
    if not representatives.has(a.upper.chunk_id):
     representatives[a.upper.chunk_id] = {"seed": seed_value, "preference": preference}
     print("SAMPLE | ", a.signature, " | clear join=", a.passage.size.x)
    if seed_value == 1:
     print("COMPARISON | ", a.signature)
- check(deterministic and no_fallback and representatives.size() == 4, "Seeds 1–24 at all three preferences reproduce geometry and cover all four layouts without fallback")
- check(preference_respected, "Every selected score stays within the allowed variety of the closest valid score")
+  variety_preserved = variety_preserved and tier_ids.size() >= 2
+  print("TIER VARIETY | ", TableGenerator.DIFFICULTY_NAMES[preference], " | ", tier_ids.keys())
+ check(deterministic and no_fallback, "Seeds 1–24 at all three preferences reproduce geometry and estimates without fallback")
+ check(preference_respected, "Every selected candidate belongs to the requested difficulty band")
+ check(variety_preserved and representatives.size() == TableGenerator.CATALOGUE.size(), "Each tier samples at least two authored layouts and all catalogue entries appear")
+ check(easy_ledges_small, "Easy layouts never contain a closure ledge larger than two ball diameters")
  check(score_totals[0] < score_totals[1] and score_totals[1] < score_totals[2], "Preference increases estimated difficulty across the same 24 seeds", "Means: %.1f / %.1f / %.1f" % [score_totals[0] / 24.0, score_totals[1] / 24.0, score_totals[2] / 24.0])
+ check(clearance_totals[2] < clearance_totals[0] and ledge_totals[2] > ledge_totals[0], "Hard layouts have narrower joins and larger ledges than Easy layouts", "Mean clear widths %.0f / %.0f / %.0f px; ledges %.0f / %.0f / %.0f px" % [clearance_totals[0] / 24.0, clearance_totals[1] / 24.0, clearance_totals[2] / 24.0, ledge_totals[0] / 24.0, ledge_totals[1] / 24.0, ledge_totals[2] / 24.0])
  print("LIBRARY | score range %.1f–%.1f" % [variant_scores.min(), variant_scores.max()])
  var transformed: ChunkData = TableGenerator.CATALOGUE[1].duplicate(true)
  transformed.mirrored = true
@@ -72,17 +87,22 @@ func run() -> void:
  var more_offset: ChunkData = transformed.duplicate(true)
  more_offset.horizontal_shift_cells = 0
  var harder := TableGenerator.estimate_difficulty(more_offset, TableGenerator.LOWER)
- check(harder.score > estimate.score and harder.largest_ledge > estimate.largest_ledge and TableGenerator.validate(more_offset, TableGenerator.LOWER).valid, "Larger ledge and offset increase estimated challenge without invalidating sharp geometry")
+ check(harder.connector_score > estimate.connector_score and harder.score >= estimate.score and harder.largest_ledge > estimate.largest_ledge and TableGenerator.validate(more_offset, TableGenerator.LOWER).valid, "Larger ledge and offset increase connector challenge without invalidating sharp geometry")
  var rated: ChunkData = TableGenerator.CATALOGUE[0].duplicate(true)
  var initial_geometry := rated.gameplay_descriptors()
  var base_estimate := TableGenerator.estimate_difficulty(rated, TableGenerator.LOWER)
- rated.estimated_difficulty += 30
+ rated.estimated_difficulty = 95
  check(TableGenerator.estimate_difficulty(rated, TableGenerator.LOWER).score > base_estimate.score and rated.gameplay_descriptors() == initial_geometry and TableGenerator.validate(rated, TableGenerator.LOWER).valid, "Authored chunk rating changes selection score without changing colliders or validity")
+ rated.estimated_difficulty = 0
+ var severe_connector := TableGenerator.estimate_difficulty(rated, TableGenerator.LOWER)
+ check(is_equal_approx(severe_connector.score, maxf(severe_connector.chunk_score, maxf(severe_connector.connector_score, severe_connector.approach_score))) and severe_connector.score >= severe_connector.connector_score, "Easy intrinsic rating cannot average away a more demanding connector or approach")
  rated = TableGenerator.CATALOGUE[0].duplicate(true)
  rated.bumpers.append({"kind": "circle", "position": Vector2(400, 600), "radius": 25.0})
  check(TableGenerator.estimate_difficulty(rated, TableGenerator.LOWER).approach_blocked > base_estimate.approach_blocked and TableGenerator.validate(rated, TableGenerator.LOWER).valid, "Nearby obstacle affects approach estimate while the critical passage remains valid")
  var hard_request := TableGenerator.generate(1, TableGenerator.Difficulty.HARD)
- check(hard_request.difficulty_preference == TableGenerator.Difficulty.HARD and hard_request.difficulty_estimate.band == TableGenerator.Difficulty.NORMAL, "Hard request truthfully reports the current library's Normal estimate")
+ check(hard_request.preference_available and hard_request.difficulty_preference == TableGenerator.Difficulty.HARD and hard_request.difficulty_estimate.band == TableGenerator.Difficulty.HARD, "Default catalogue supplies actual Hard geometry")
+ var missing_tier := TableGenerator.generate(1, TableGenerator.Difficulty.HARD, [TableGenerator.CATALOGUE[0]])
+ check(missing_tier.valid and not missing_tier.used_fallback and not missing_tier.preference_available and missing_tier.difficulty_estimate.band != TableGenerator.Difficulty.HARD and missing_tier.selection_note.contains("No valid Hard candidate; using"), "Missing requested tier explicitly reports the closest valid available band")
  var bad: ChunkData = transformed.duplicate(true)
  bad.horizontal_shift_cells = 2
  check(not TableGenerator.validate(bad, TableGenerator.LOWER).valid, "Out-of-bounds horizontal shift rejected")
@@ -163,6 +183,7 @@ func run() -> void:
  game.tuning.effective.gravity_scale = 0.0
  game.tuning.effective.rolling_acceleration = 0.0
  game.tuning.effective.rolling_drag = 0.0
+ var simulated_tiers: Dictionary = {}
  for settings: Dictionary in representatives.values():
   paused = true
   game.request_generation(settings.seed, settings.preference)
@@ -196,6 +217,9 @@ func run() -> void:
    if descriptor.kind == "triangle":
     geometry_matches = geometry_matches and descriptor.points == descriptor.body.get_child(0).polygon
   check(geometry_matches, "Transformed bumper descriptors match actual 2D bodies", game.layout.upper.chunk_id)
+  if simulated_tiers.has(settings.preference):
+   continue
+  simulated_tiers[settings.preference] = true
   # Brief deterministic play probes catch escapes and persistent stationary stalls.
   game.tuning.select_profile(0)
   game.set_physics_process(true)

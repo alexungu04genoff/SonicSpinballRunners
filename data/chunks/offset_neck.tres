@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ChunkData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/chunk_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+chunk_id = "offset_neck"
+title = "OFFSET NECK"
+estimated_difficulty = 72.0
+grid_dimensions = Vector2i(7, 7)
+top_connection = Rect2(0, 0, 0, 0)
+bottom_connection = Rect2(135, 680, 300, 20)
+rails = Array[PackedVector2Array]([PackedVector2Array(135, 700, 135, 620, 330, 560, 330, 500, 245, 410, 55, 190, 65, 140, 90, 95, 135, 65, 190, 55, 510, 55, 565, 65, 610, 95, 635, 140, 645, 190, 590, 410, 470, 500, 470, 560, 435, 620, 435, 700)])
+playfield_outline = PackedVector2Array(135, 700, 135, 620, 330, 560, 330, 500, 245, 410, 55, 190, 65, 140, 90, 95, 135, 65, 190, 55, 510, 55, 565, 65, 610, 95, 635, 140, 645, 190, 590, 410, 470, 500, 470, 560, 435, 620, 435, 700)
+bumpers = Array[Dictionary]([{"kind": "circle", "position": Vector2(225, 270), "radius": 36.0}, {"kind": "circle", "position": Vector2(520, 315), "radius": 40.0}])
+rings = PackedVector2Array(160, 170, 350, 145, 340, 290, 350, 410, 400, 525, 380, 610, 560, 190, 535, 410, 285, 670)
+markers = {"entry": Vector2(285, 670), "test_target": Vector2(400, 280)}
+navigation_probes = PackedVector2Array(160, 170, 290, 350, 400, 280, 350, 410, 400, 525, 380, 610, 560, 190, 535, 410, 285, 670)

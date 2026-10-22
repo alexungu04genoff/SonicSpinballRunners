@@ -2,6 +2,34 @@
 
 Date: 2026-10-22. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: OpenGL Compatibility on NVIDIA GeForce RTX 4060.
 
+## Distinct geometry tiers (generator v3)
+
+Four new upper sections expand the catalogue to eight shapes and 28 valid mirror/shift combinations. Easy uses full-width aligned openings with no closure ledges. Normal retains the original moderate shoulders and target routes. Hard adds tapered and sideways-bending necks, without increasing bumper counts or changing ball/flipper physics. The displayed estimate uses the hardest chunk, connector or approach component; selection requires the requested band when available and explicitly reports shortages.
+
+- `tests/generation_regression.gd`: **64 checks passed, zero failures**. All 28 transformations passed static clearance/connectivity validation. Seeds 1–24 across all three tiers reproduced geometry and estimates when generated twice (144 builds), covered all eight upper sections and at least two shapes per tier, and always matched the requested band. Mean estimates were **25.9 / 52.5 / 93.3**, checked join widths **618 / 487 / 248 px**, and largest ledges **0 / 119 / 258 px** for Easy / Normal / Hard. Invalid geometry, explicit unavailable-tier fallback, resource immutability and safe regeneration remain covered.
+- Real 2D checks crossed three seam lanes in both directions at 1200 px/s for every authored shape, checked closure rails at 8000 px/s, and verified transformed bumper positions. One layout per tier completed eight seconds of scripted play without a side/top escape or a stationary stall lasting two seconds. This is sampled coverage, not proof against all traps or trajectories.
+- Graphical `tests/generation_ui_smoke.gd`: **18 checks passed, zero failures**. Build/Next/Repeat, flight/pause gating, camera preservation, matched-tier summaries and unavailable-tier notices work. Three seed-1 tier captures and a Hard collision/chunk/connector overlay were visually inspected: geometry differences are visible, ground footprints match the meshes, and the full table and diagnostics fit. Existing perspective cameras and raised primitives are retained.
+- Existing `tests/physics_regression.gd`: **38 checks passed, zero failures**, including both flippers, high-speed collisions, scoring, pause, live tuning, respawn and 20 seconds of simulated play.
+- `tests/flipper_access_survey.gd`: **four checks passed** across 162 controlled real-flipper shots on nine seeded layouts. The `--all-hard` mode added **12 passing checks** across 144 shots covering all eight Hard transformations. Every sample received exactly one actual flipper strike and remained finite. Every Hard transformation reached both y450 and its authored diagnostic target at least once.
+
+Representative survey results below count arrivals out of 18 shots per layout. Physics is unchanged Balanced, with no steering, modifier or rescue flips. The target radius is 70 px; the script follows swept movement and records inputs/results in JSON. Seeds 1 and 2 select the same shape/transform in the Easy and Normal samples, which is valid seeded behavior.
+
+| Preference + seed | Upper section | Cross y650 | Reach y450 | Target hits |
+| --- | --- | ---: | ---: | ---: |
+| Easy 1 / 2 | Gentle Banks | 11 | 9 | 4 |
+| Easy 3 | Open Meadow | 11 | 10 | 6 |
+| Normal 1 / 2 | Outer Return | 11 | 9 | Not authored |
+| Normal 4 | Risk Route | 11 | 7 | Not authored |
+| Hard 1 | Offset Neck, mirrored | 9 | 2 | 1 |
+| Hard 2 | Offset Neck | 5 | 1 | 1 |
+| Hard 3 | Tapered Throat | 8 | 3 | 3 |
+
+Across all eight Hard transforms, y450 arrivals ranged from **1–4 of 18**, versus **7–10** in the representative Easy/Normal designs. This supports the narrow-neck challenge and provides successful sample routes. It is not a player success probability, exhaustive reachability proof, generator validity gate or scoring input. The fixed lower bumper influences these opening shots. Easy and Normal overlap on initial access; recovery room, subsequent shots and subjective challenge still need human playtesting. Floaty, modifier extremes, long sessions and physical gamepad timing were not assessed by this survey.
+
+Total: **136 passing checks**, including image saves. Headless editor import completed without script errors. Godot MCP launched the graphical playground and returned `PLAYGROUND_READY` for generator v3 with an empty errors array. Logs are ignored `test-results/tier-*.log`; captures are `table-difficulty-0.png`, `table-difficulty-1.png`, `table-difficulty-2.png` and `table-connectors.png`. Diagnostic reports are `flipper-access-survey.json` and `flipper-access-all-hard.json`. Normal Windows cache access was required for clean Godot runs; earlier restricted-shell attempts emitted certificate/settings permission errors.
+
+See [generation rules and sample configurations](GENERATION.md) for reproduction. Version 3 changes earlier seed mappings. Existing authored collision geometry, profiles, steering and flipper code are unchanged; Risk Route's authored estimate was recalibrated from 65 to 55 against the new restrictive designs. No camera following, taller tables, progression or external artwork is added. The separately developed ring animation is preserved.
+
 ## Cosmetic ring attraction follow-up
 
 Ring claims still award score, ring total, and meter immediately. Presentation now runs a separate 0.20-second quadratic ease-in toward the moving visible ball, with a small final shrink. This supersedes the immediate-disappearance presentation described in the historical magnet section below. Magnet strength was already absent from profiles, modifiers, and the tuning schema; radius remains configurable.
