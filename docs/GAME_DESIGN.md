@@ -33,6 +33,8 @@ The game should be accessible and immediately fun while supporting deep combinat
 
 ## Current scope: Phase 2A — Modular Chunk Generation
 
+**Confirmed playground scope:** Modular generation is still part of an endless experimental physics sandbox. Do not add acts, zones, win conditions, limited lives, bosses, or complete roguelite progression yet. The serve counter and automatic respawn support unrestricted experimentation. Prioritize fun physics, flippers, bumpers, steering, character profiles, modifiers, and generated layouts. Primitive, blocky N64-style graphics are sufficient; basic material/lighting experiments are acceptable, but polished graphics and Sonic assets are unnecessary. Progression ideas below remain long-term direction only.
+
 **Completed foundation:** The Physics Playground supplies:
 
 - An invisible 2D physics ball, two flippers, bumpers, walls, and basic collectibles.
@@ -84,7 +86,7 @@ Configurable physics should cover steering acceleration, steering deceleration, 
 
 Steering should resemble slight air control in traditional Sonic games. It should not provide full character movement. Responsiveness, acceleration, deceleration, and maximum contribution must be independently configurable.
 
-**Tentative tuning:** Approximately 5–8% steering influence is a starting idea for calibration and playtesting. Current code uses `steering_strength = 0.065` to scale acceleration/deceleration toward a separately capped steering contribution. This is not a measured percentage of total ball motion. Whether that interpretation achieves the desired feel remains open; do not treat the percentage as an acceptance threshold.
+**Tentative tuning:** Approximately 5–8% steering influence was the initial calibration idea; Original retains `steering_strength = 0.065`. Both test profiles now use Quick / Tight at 0.10. Strength scales acceleration/deceleration toward a separately capped steering contribution, not a measured percentage of total ball motion. Do not treat the original percentage as an acceptance threshold.
 
 **Steering investigation:** Playtesting found weak response against existing lateral momentum. The implementation was applying counteracting impulses, but the original 65 px/s² rate and 120 px/s contribution cap limited their effect. Steering was not disabled on descent. An independent counter-steering deceleration setting and comparison presets were added; subsequent playtesting selected Quick / Tight as the Phase 2A provisional default. Counter-steering remains bounded assistance, and release unwinds that assistance rather than permanently dissipating external momentum. Collision bookkeeping resets remain unchanged. See [the steering investigation](STEERING_INVESTIGATION.md) for the exact trace, telemetry, and comparisons.
 
@@ -93,6 +95,8 @@ Steering should resemble slight air control in traditional Sonic games. It shoul
 **Future possibility:** A separate Arcade Mode could allow nearly complete movement control for a relaxed, chaotic experience. It is outside the first prototype.
 
 ## Chao and build crafting
+
+**Current ring magnet:** Collect stationary rings immediately when their centers enter the swept magnetic radius around the ball. The provisional default is 50 physics pixels. Direct-contact collection still works with magnetism disabled, score/meter events occur once per ring per rack, and collection never changes ball movement. Radius remains tunable through the shared profile/modifier schema. The old attraction-speed setting is removed; the current presentation hides collected rings immediately. Any future quick pull effect must be cosmetic and happen after logical collection. This does not introduce an electric-shield ability or Chao inventory.
 
 **Confirmed long-term direction:** Chao are collectible upgrades offered between acts. Players choose one from a randomly presented selection. Chao should affect both scoring and gameplay physics, changing how players play rather than merely increasing score numbers.
 

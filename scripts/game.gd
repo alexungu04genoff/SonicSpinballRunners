@@ -90,7 +90,7 @@ func _ready() -> void:
   debug_panel.generation_panel.visible = debug_panel.panel.visible
   get_viewport().gui_release_focus()
  )
- controls.special_requested.connect(func(): status_message = "Special reserved for Phase 2 — meter is ready for abilities")
+ controls.special_requested.connect(func(): status_message = "Special reserved for future experiments — no ability implemented yet")
  ball.bumper_hit.connect(_on_bumper_hit)
  ring_field.collected.connect(_on_ring_collected)
  tuning.changed.connect(_apply_tuning)

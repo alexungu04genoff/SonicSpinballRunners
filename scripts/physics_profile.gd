@@ -20,8 +20,7 @@ extends Resource
 @export var bumper_rebound_multiplier: float = 1.0
 @export var wall_restitution: float = 0.72
 @export_group("Collectibles and abilities")
-@export var ring_magnet_radius: float = 85.0
-@export var ring_magnet_strength: float = 180.0
+@export var ring_magnet_radius: float = 50.0
 @export var special_meter_charge_multiplier: float = 1.0
 
 # key: [minimum, maximum, step, label, unit]. This is also the tuning UI schema.
@@ -40,7 +39,6 @@ const FIELDS: Dictionary = {
  "bumper_rebound_multiplier": [0.25, 2.5, 0.05, "Bumper rebound multiplier", "×"],
  "wall_restitution": [0.0, 0.95, 0.05, "Wall restitution", "ratio"],
  "ring_magnet_radius": [0.0, 220.0, 5.0, "Ring magnet radius", "px"],
- "ring_magnet_strength": [0.0, 800.0, 10.0, "Ring attraction speed", "px/s"],
  "special_meter_charge_multiplier": [0.0, 5.0, 0.1, "Special meter charge", "×"],
 }
 

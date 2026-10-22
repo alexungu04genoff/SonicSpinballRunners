@@ -37,7 +37,7 @@ Raw action telemetry uses Godot's [get_action_raw_strength](https://docs.godoten
 | Zero strength or selected rate | No change in the ledger. The panel reports the reason when it prevents a change. |
 | Contribution target reached | No sustained steering force until the input/target changes or a contact clears the ledger. This can happen at a partial-stick target below the full configured cap. |
 
-There is no air drag. Contact rolling drag acts along supporting surfaces, so it can compete with or assist horizontal steering there. At its default 0.10/s it can be appreciable at high tangential speeds. Downhill rolling assistance and collision impulses also affect the contact trajectory. Gravity and the downward limiter act vertically; ring attraction moves rings rather than the ball. These mechanisms were not changed.
+There is no air drag. Contact rolling drag acts along supporting surfaces, so it can compete with or assist horizontal steering there. At its default 0.10/s it can be appreciable at high tangential speeds. Downhill rolling assistance and collision impulses also affect the contact trajectory. Gravity and the downward limiter act vertically; ring collection never changes ball momentum. These mechanisms were not changed by the steering investigation. The later magnet update replaces moving rings with immediate swept-radius collection.
 
 ## Scoped implementation change
 

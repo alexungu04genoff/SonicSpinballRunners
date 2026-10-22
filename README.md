@@ -2,6 +2,8 @@
 
 A local Godot 4/GDScript pinball prototype. Gameplay uses an invisible 2D rigid body and 2D collision geometry. A separate, collisionless 3D scene renders the table through a tilted orthographic camera. No external artwork or dependencies are required.
 
+This remains an endless experimental physics playground, including the modular generator. There are no acts, zones, win conditions, lives, bosses, or roguelite progression. The ball number is a serve counter, not a lives limit. Primitive, blocky N64-style visuals are sufficient while we tune physics, flippers, bumpers, steering, profiles, modifiers, and layouts.
+
 ## Run
 
 Open `project.godot` in Godot 4 and press **F6** from `scenes/playground.tscn`, or **F5** to run the project. The prototype was tested with **Godot 4.7.2** on Windows, using the Compatibility renderer.
@@ -35,7 +37,7 @@ Both flippers can be held simultaneously. Special input currently displays a sta
 - Two physical flippers with a short, edge-triggered launch window. Holding a flipper keeps it raised; it does not repeatedly award launch impulses.
 - Rings award 25 points; bumpers award 100. Clearing all rings awards 500 and restores the ring rack after one second.
 - Rings contribute five special-meter points and bumpers two, scaled by the profile. Meter caps at 100; specials remain future work.
-- Rings move toward the ball within the magnet radius. Magnetism does not alter ball momentum.
+- Rings stay at their authored positions and collect immediately inside the configurable magnetic radius. Collection checks the ball's swept path and never alters ball momentum.
 - Automatic drain recovery, a fixed serve, two test profiles, an example Chao modifier, and live tuning.
 
 ## Runtime structure
@@ -52,7 +54,7 @@ PhysicsPlayground                         scripts/game.gd
 │   ├── PlayerPhysics (RigidBody2D)        invisible circle, radius 14 px
 │   ├── LeftFlipper (AnimatableBody2D)
 │   └── RightFlipper (AnimatableBody2D)
-├── Rings                                 collection and attraction state
+├── Rings                                 stationary pickups and swept collection
 ├── TableView / Collisionless3DViewport
 │   └── Presentation                      camera, lights, meshes, debug geometry
 └── DebugAndHUD (CanvasLayer)              live tuning, telemetry, score, pause
@@ -107,11 +109,16 @@ The panel edits session values before modifiers. Its **Active values** section s
 | Flipper launch strength | 1050 | 1050 | Impulse divided by mass, before leverage factor |
 | Bumper rebound multiplier | 1.0 | 1.0 | Scales the target outward normal speed |
 | Wall restitution | 0.72 | 0.72 | Rail normal-speed retention |
-| Ring magnet radius | 85 | 85 | px |
-| Ring attraction speed | 180 | 180 | px/s |
+| Ring magnet radius | 50 | 50 | px from ball center to ring center; 0 disables magnetism |
 | Special meter charge | 1.0 | 1.0 | Multiplier on earned charge |
 
 These values are provisional, not approved character balance.
+
+### Ring collection
+
+The magnetic radius is an immediate collection distance, similar to an electric shield. Rings remain fixed until collected and disappear immediately; there is no pull animation in this lightweight version. Every physics tick checks the closest point on the ball's previous-to-current position segment, so a fast pass can collect a nearby ring even when both tick endpoints are outside its radius.
+
+Direct contact retains its existing 26-pixel center-distance threshold (14-pixel ball radius plus 12-pixel ring allowance). The effective pickup radius is the larger of that contact threshold and the configured magnet radius. A ring becomes inactive before its score/meter event is emitted, preventing duplicate awards until a new rack resets it. Waiting at serve does not collect rings. The unused attraction-speed stat was removed; radius remains in the centralized profile/modifier schema and Live Physics Lab for future Chao upgrades. Neither collection nor a future cosmetic effect may alter ball movement.
 
 ### Steering strength and the provisional default
 
@@ -153,6 +160,7 @@ From PowerShell, using the installed executable:
 & 'C:\Program Files\Godot\Godot.exe' --headless --path 'E:\Sonic Spinball Runners' --script res://tests/physics_regression.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path 'E:\Sonic Spinball Runners' --script res://tests/steering_regression.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path 'E:\Sonic Spinball Runners' --script res://tests/generation_regression.gd
+& 'C:\Program Files\Godot\Godot.exe' --headless --path 'E:\Sonic Spinball Runners' --script res://tests/ring_regression.gd
 & 'C:\Program Files\Godot\Godot.exe' --path 'E:\Sonic Spinball Runners' --script res://tests/generation_ui_smoke.gd
 ```
 

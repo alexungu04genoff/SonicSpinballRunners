@@ -1,7 +1,8 @@
 class_name RingField
 extends Node
-## Rings are gameplay objects. Their attraction never pulls the ball off its trajectory.
+## Rings stay at their authored positions. Collection never applies force to the ball.
 signal collected(position: Vector2)
+const CONTACT_RADIUS := PlaygroundBall.RADIUS + 12.0
 var rings: Array[Dictionary] = []
 var ball: PlaygroundBall
 var tuning: PhysicsTuning
@@ -15,19 +16,20 @@ func reset_rings() -> void:
   ring.position = ring.home
   ring.active = true
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
  if ball.serve_pending:
   previous_ball_position = ball.position
   return
+ # Radius is measured from the swept ball center to the stationary ring center.
+ # A disabled or small magnet must never shrink the existing direct-contact pickup.
+ var radius := maxf(CONTACT_RADIUS, float(tuning.effective.ring_magnet_radius))
  for ring: Dictionary in rings:
   if not ring.active:
    continue
-  var offset: Vector2 = ball.position - Vector2(ring.position)
-  var distance: float = offset.length()
-  if distance < float(tuning.effective.ring_magnet_radius):
-   ring.position = Vector2(ring.position).move_toward(ball.position, float(tuning.effective.ring_magnet_strength) * delta)
   var closest: Vector2 = Geometry2D.get_closest_point_to_segment(ring.position, previous_ball_position, ball.position)
-  if closest.distance_to(ring.position) < PlaygroundBall.RADIUS + 12.0:
+  if closest.distance_squared_to(ring.position) <= radius * radius:
+   # Deactivate before notifying score/meter listeners, so overlapping pickup
+   # methods and subsequent ticks cannot award this ring twice in one rack.
    ring.active = false
    collected.emit(ring.position)
  previous_ball_position = ball.position
