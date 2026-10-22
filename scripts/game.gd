@@ -110,15 +110,17 @@ func _populate_rings() -> void:
 func _build_view() -> void:
  var container := SubViewportContainer.new()
  container.name = "TableView"
- container.position = Vector2(0, 85)
- container.size = Vector2(870, 750)
+ # Reserve the generator's left margin so a perspective near edge cannot hide behind it.
+ container.position = Vector2(225, 85)
+ container.size = Vector2(645, 750)
  container.stretch = true
  container.mouse_filter = Control.MOUSE_FILTER_IGNORE
  add_child(container)
  view = SubViewport.new()
  view.name = "Collisionless3DViewport"
- view.size = Vector2i(870, 750)
+ view.size = Vector2i(645, 750)
  view.own_world_3d = true
+ view.msaa_3d = Viewport.MSAA_4X
  view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
  container.add_child(view)
  _build_presentation()
@@ -157,6 +159,7 @@ func _regenerate(seed_value: int, preference: int) -> void:
   generation_pending = false
   return
  var overlays: Array[bool] = [presentation.physics_overlay.visible, presentation.chunk_overlay.visible, presentation.connector_overlay.visible]
+ var camera_preset: int = presentation.camera_preset
  ball.freeze = true
  ball.position = ball.serve_position
  ball.linear_velocity = Vector2.ZERO
@@ -194,6 +197,7 @@ func _regenerate(seed_value: int, preference: int) -> void:
  presentation.physics_overlay.visible = overlays[0]
  presentation.chunk_overlay.visible = overlays[1]
  presentation.connector_overlay.visible = overlays[2]
+ presentation.set_camera_preset(camera_preset)
  ball.freeze = false
  generation_pending = false
  debug_panel.refresh_generation()

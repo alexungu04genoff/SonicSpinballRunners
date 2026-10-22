@@ -1,6 +1,6 @@
 # Sonic Spinball Runners — Modular Physics Playground
 
-A local Godot 4/GDScript pinball prototype. Gameplay uses an invisible 2D rigid body and 2D collision geometry. A separate, collisionless 3D scene renders the table through a tilted orthographic camera. No external artwork or dependencies are required.
+A local Godot 4/GDScript pinball prototype. Gameplay uses an invisible 2D rigid body and 2D collision geometry. A separate, collisionless 3D scene renders raised primitives through a stationary perspective camera, with an orthographic reference preset. No external artwork or dependencies are required.
 
 This remains an endless experimental physics playground, including the modular generator. There are no acts, zones, win conditions, lives, bosses, or roguelite progression. The ball number is a serve counter, not a lives limit. Primitive, blocky N64-style visuals are sufficient while we tune physics, flippers, bumpers, steering, profiles, modifiers, and layouts.
 
@@ -72,7 +72,27 @@ The table is 800 × 1400 physics pixels. Positive 2D Y points down the table. On
 3D position = ((physics_x - 400) × 0.01, visual_height, (physics_y - 700) × 0.01)
 ```
 
-All geometry and gameplay visuals use `TablePresentation.map_point()`. Height is cosmetic. No `CollisionObject3D` exists in the presentation tree. The orthographic camera sits at `(0, 18, 6.5)` and looks at the table center. Flipper visual rotation is the negative of the physical angle around the 3D Y axis.
+All geometry and gameplay visuals use `TablePresentation.map_point()`. Height is cosmetic. No `CollisionObject3D` exists in the presentation tree. Flipper visual rotation is the negative of the physical angle around the 3D Y axis. Camera projection never changes gameplay geometry or its scale.
+
+### Depth and camera experiment
+
+Use **Camera** in the Live Physics Lab, including while paused:
+
+| Preset | Projection | Elevation above the board | Framing |
+| --- | --- | --- | --- |
+| Top-down reference | Orthographic | 90° | Size 15.6; equal scale throughout |
+| Real Pinball (default) | Perspective | 60° | Vertical FOV 40°; distance 20; near edge about 1.41× the far edge |
+| Dramatic Pinball | Perspective | 50° | Vertical FOV 52°; distance 16; near edge about 1.74× the far edge |
+
+Perspective views look at `(0, 0, 1)` from the positive-Z/front end. All three cameras remain stationary and show the entire current board. The viewport reserves space beside both debug panels; there is no follow, scrolling, dynamic zoom, or gameplay scaling. The selected preset survives table regeneration but is not saved across restarts. Real Pinball is the recommended starting point: Dramatic compresses distant lanes and increases occlusion at bumper edges.
+
+Circular bumpers have beveled cylinder tops, triangular bumpers are solid prisms, and rails/flippers extrude their exact capsule footprints with smaller inset top trim. Sides and tops use distinct simple materials. The floor surface is at visual Y = 0, above a 0.32-unit slab. Rails are 0.325 units tall, circular bumpers 0.42, triangular bumpers 0.34, and paddles 0.265 (0.285 at the pivot cap). The ball keeps its 0.14-unit radius and 0.16-unit center height; rings sit at 0.23. Bumper hit pulses change only visual height.
+
+One directional light casts real shadows from the ball, bumpers, rings and rails onto the board. Ambient light preserves readability, and 4× MSAA smooths small primitive edges. No textures, custom shaders, post-processing or 3D collision shapes are used. The floor and flat grid markings receive shadows without casting their own.
+
+**Physics** shows green X-ray collider footprints on the board plane, including moving flippers and the ball. **Chunks** and **Connectors** retain their independent overlays. Raised tops naturally project away from these ground footprints in perspective; this is height parallax, not a collision offset. Debug lines do not cast shadows. The pause notice stays above the table so it cannot hide the connection being inspected.
+
+For reproducible screenshots, run `tests/presentation_smoke.gd` graphically. Captures are written to ignored `test-results/depth-*.png`; see [verification and visual limits](docs/VERIFICATION.md).
 
 ### Chunk contract
 
@@ -84,7 +104,7 @@ Visual attachment metadata is a future theme hook. The current renderer uses pri
 
 ### Generate a table
 
-Use the **Table Generator** panel on the left. At serve, or after pausing with **Escape / Menu**, enter a seed, choose an **Easy / Normal / Hard** preference, and click **Build seed + preference**. **Next seed** increments the current seed using the selected preference. **Repeat current layout** restores the current seed and preference even if controls contain unbuilt edits. Different configurations can select the same layout. Generation resets the ball to serve, score, rings, meter, timers, and ball count, while preserving physics tuning, the Chao toggle, overlays, and pause state. Resume if paused, then press **Enter / X** to launch.
+Use the **Table Generator** panel on the left. At serve, or after pausing with **Escape / Menu**, enter a seed, choose an **Easy / Normal / Hard** preference, and click **Build seed + preference**. **Next seed** increments the current seed using the selected preference. **Repeat current layout** restores the current seed and preference even if controls contain unbuilt edits. Different configurations can select the same layout. Generation resets the ball to serve, score, rings, meter, timers, and ball count, while preserving physics tuning, the Chao toggle, overlays, camera preset, and pause state. Resume if paused, then press **Enter / X** to launch.
 
 For generator **v2**, try **1 + Easy** (Central Targets), **10 + Easy** (Bumper Garden), **6 + Normal** (Outer Return), and **1 + Hard** (Risk Route). Version 1 seed mappings have changed. The panel and log record the seed, preference, IDs, transformations, and actual estimated difficulty. Reasons include clear opening width, offset, largest ledge, sampled approach clutter, and authored chunk ratings. **Chunks** and **Connectors** have independent overlays. F1 hides both development panels. Settings are not saved across restarts.
 

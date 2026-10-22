@@ -2,6 +2,12 @@ class_name TablePresentation
 extends Node3D
 ## No CollisionObject3D exists in this tree. This mapping is used for every visual.
 const SCALE: float = 0.01
+const BALL_HEIGHT: float = 0.16
+const RING_HEIGHT: float = 0.23
+const OVERLAY_HEIGHT: float = 0.015
+enum CameraPreset { TOP_DOWN, REAL_PINBALL, DRAMATIC_PINBALL }
+const CAMERA_NAMES: Array[String] = ["Top-down reference", "Real Pinball", "Dramatic Pinball"]
+var camera_preset: int = CameraPreset.REAL_PINBALL
 var ball: PlaygroundBall
 var flippers: Array[PlaygroundFlipper] = []
 var ring_field: RingField
@@ -33,11 +39,20 @@ func material(color: Color, glow: float = 0.0) -> StandardMaterial3D:
   result.emission_energy_multiplier = glow
  return result
 
+func debug_material(color: Color) -> StandardMaterial3D:
+ var result := material(color)
+ result.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+ result.no_depth_test = true
+ result.render_priority = 1
+ return result
+
 func mesh_node(mesh: Mesh, mat: Material, where: Vector3, parent: Node = self) -> MeshInstance3D:
  var instance := MeshInstance3D.new()
  instance.mesh = mesh
  instance.material_override = mat
  instance.position = where
+ if mat is BaseMaterial3D and mat.no_depth_test:
+  instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  parent.add_child(instance)
  return instance
 
@@ -65,36 +80,45 @@ func line(a: Vector2, b: Vector2, radius: float, height: float, mat: Material, p
  return instance
 
 func build(chunks: Array[TableChunk], passage: Rect2 = Rect2()) -> void:
+ process_mode = Node.PROCESS_MODE_ALWAYS
  var environment := WorldEnvironment.new()
  environment.environment = Environment.new()
  environment.environment.background_mode = Environment.BG_COLOR
  environment.environment.background_color = Color("08121e")
  environment.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
  environment.environment.ambient_light_color = Color("a6d1ed")
- environment.environment.ambient_light_energy = 0.65
+ environment.environment.ambient_light_energy = 0.45
  add_child(environment)
  var light := DirectionalLight3D.new()
- light.rotation_degrees = Vector3(-65, -25, 0)
- light.light_energy = 1.4
+ light.name = "TableKeyLight"
+ light.rotation_degrees = Vector3(-50, -30, 0)
+ light.light_energy = 1.15
+ light.shadow_enabled = true
+ light.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
+ light.directional_shadow_max_distance = 40.0
+ light.shadow_bias = 0.1
+ light.shadow_normal_bias = 2.0
  add_child(light)
  camera = Camera3D.new()
- camera.projection = Camera3D.PROJECTION_ORTHOGONAL
- camera.size = 15.4
- camera.position = Vector3(0, 18, 6.5)
+ camera.name = "StationaryTableCamera"
  add_child(camera)
- camera.look_at(Vector3.ZERO)
+ set_camera_preset(camera_preset)
  camera.current = true
  var floor_mesh := BoxMesh.new()
- floor_mesh.size = Vector3(8.15, 0.18, 14.5)
- mesh_node(floor_mesh, material(Color("102b38")), Vector3(0, -0.17, 0))
- var rail_mat := material(Color("40bba9"), 0.15)
- var bumper_mat := material(Color("ed6a53"), 0.12)
- var gold := material(Color("ffcf52"), 0.5)
+ floor_mesh.size = Vector3(8.15, 0.32, 14.5)
+ var floor_visual := mesh_node(floor_mesh, material(Color("153c4b")), Vector3(0, -0.16, 0))
+ # Receive object shadows without self-shadow artifacts on the large, flat slab.
+ floor_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+ var rail_mat := material(Color("267f81"))
+ var rail_top := material(Color("64d6bd"))
+ var bumper_mat := material(Color("b34039"))
+ var bumper_top := material(Color("ff8962"))
+ var gold := material(Color("ffd568"), 0.08)
  var grid_mat := material(Color("1b414c"))
  for x in range(100, 800, 100):
-  line(Vector2(x, 80), Vector2(x, 1370), 0.009, -0.065, grid_mat)
+  _floor_line(Vector2(x, 80), Vector2(x, 1370), grid_mat)
  for y in range(100, 1400, 100):
-  line(Vector2(65, y), Vector2(735, y), 0.009, -0.065, grid_mat)
+  _floor_line(Vector2(65, y), Vector2(735, y), grid_mat)
  physics_overlay = Node3D.new()
  physics_overlay.name = "PhysicsGeometryOverlay"
  add_child(physics_overlay)
@@ -102,7 +126,8 @@ func build(chunks: Array[TableChunk], passage: Rect2 = Rect2()) -> void:
  dynamic_geometry = ImmediateMesh.new()
  var dynamic_debug := MeshInstance3D.new()
  dynamic_debug.mesh = dynamic_geometry
- dynamic_debug.material_override = material(Color("70ff85"), 0.7)
+ dynamic_debug.material_override = debug_material(Color("70ff85"))
+ dynamic_debug.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  physics_overlay.add_child(dynamic_debug)
  chunk_overlay = Node3D.new()
  chunk_overlay.name = "ChunkBoundaryOverlay"
@@ -112,26 +137,37 @@ func build(chunks: Array[TableChunk], passage: Rect2 = Rect2()) -> void:
  connector_overlay.name = "ConnectorRegionOverlay"
  add_child(connector_overlay)
  connector_overlay.visible = false
- var debug_mat := material(Color("70ff85"), 0.7)
- var boundary_mat := material(Color("d8a9ff"), 0.7)
+ var debug_mat := debug_material(Color("70ff85"))
+ var boundary_mat := debug_material(Color("d8a9ff"))
  for chunk: TableChunk in chunks:
   for item: Dictionary in chunk.descriptors:
    match item.kind:
     "rail":
-     line(item.a, item.b, 0.12, 0.12, rail_mat)
-     mesh_node(sphere(0.12), rail_mat, map_point(item.a, 0.12))
-     mesh_node(sphere(0.12), rail_mat, map_point(item.b, 0.12))
-     _capsule_outline(item.a, item.b, 12.0, debug_mat)
+     var rail := Node3D.new()
+     rail.position = map_point(item.a)
+     rail.rotation.y = -(item.b - item.a).angle()
+     add_child(rail)
+     var length: float = item.a.distance_to(item.b) * SCALE
+     _paddle(length, item.radius * SCALE, 0.30, 0.0, rail_mat, rail)
+     _paddle(length, item.radius * SCALE * 0.68, 0.025, 0.30, rail_top, rail)
+     _capsule_outline(item.a, item.b, item.radius, debug_mat)
     "circle":
-     var body_visual := mesh_node(cylinder(float(item.radius) * SCALE, 0.30), bumper_mat, map_point(item.position, 0.15))
+     var body_visual := Node3D.new()
+     body_visual.position = map_point(item.position)
+     add_child(body_visual)
+     var radius: float = item.radius * SCALE
+     mesh_node(cylinder(radius, 0.32), bumper_mat, Vector3(0, 0.16, 0), body_visual)
+     var bevel := cylinder(radius, 0.08)
+     bevel.top_radius = radius * 0.88
+     mesh_node(bevel, bumper_top, Vector3(0, 0.36, 0), body_visual)
+     mesh_node(cylinder(radius * 0.60, 0.02), gold, Vector3(0, 0.41, 0), body_visual)
      bumper_visuals[item.body.get_instance_id()] = body_visual
-     mesh_node(cylinder(float(item.radius) * SCALE * 0.7, 0.05), gold, map_point(item.position, 0.325))
      _circle_outline(item.position, item.radius, debug_mat)
     "triangle":
-     var body_visual := mesh_node(_prism(item.points, 0.30), bumper_mat, map_point(item.position))
+     var body_visual := mesh_node(_prism(item.points, 0.34, bumper_mat, bumper_top), null, map_point(item.position))
      bumper_visuals[item.body.get_instance_id()] = body_visual
      for i in item.points.size():
-      line(item.position + item.points[i], item.position + item.points[(i + 1) % item.points.size()], 0.018, 0.37, debug_mat, physics_overlay)
+      line(item.position + item.points[i], item.position + item.points[(i + 1) % item.points.size()], 0.012, OVERLAY_HEIGHT, debug_mat, physics_overlay)
   var bounds := chunk.data.world_rect(Rect2(Vector2.ZERO, Vector2(chunk.data.grid_dimensions) * ChunkData.GRID_SIZE))
   _rect_outline(bounds, boundary_mat, chunk_overlay)
   for connection: Rect2 in [chunk.data.top_connection, chunk.data.bottom_connection]:
@@ -146,19 +182,16 @@ func build(chunks: Array[TableChunk], passage: Rect2 = Rect2()) -> void:
   torus.outer_radius = 0.135
   torus.rings = 16
   torus.ring_segments = 8
-  ring_visuals.append(mesh_node(torus, gold, map_point(ring.position, 0.18)))
+  ring_visuals.append(mesh_node(torus, gold, map_point(ring.position, RING_HEIGHT)))
  for flipper: PlaygroundFlipper in flippers:
   var pivot := Node3D.new()
-  pivot.position = map_point(flipper.position, 0.13)
+  pivot.position = map_point(flipper.position)
   add_child(pivot)
-  var flipper_mat := material(Color("6ab8ff"), 0.2)
-  var bar := BoxMesh.new()
-  bar.size = Vector3(PlaygroundFlipper.LENGTH * SCALE, 0.23, PlaygroundFlipper.RADIUS * 2 * SCALE)
-  mesh_node(bar, flipper_mat, Vector3(0.75, 0, 0), pivot)
-  mesh_node(cylinder(0.13, 0.23), flipper_mat, Vector3.ZERO, pivot)
-  mesh_node(cylinder(0.13, 0.23), flipper_mat, Vector3(1.5, 0, 0), pivot)
+  _paddle(PlaygroundFlipper.LENGTH * SCALE, PlaygroundFlipper.RADIUS * SCALE, 0.23, 0.0, material(Color("307ac3")), pivot)
+  _paddle(PlaygroundFlipper.LENGTH * SCALE, PlaygroundFlipper.RADIUS * SCALE * 0.72, 0.035, 0.23, material(Color("b0e6ff")), pivot)
+  mesh_node(cylinder(0.06, 0.02), gold, Vector3(0, 0.275, 0), pivot)
   flipper_visuals.append(pivot)
- ball_visual = mesh_node(sphere(PlaygroundBall.RADIUS * SCALE), material(Color("4f97ff"), 0.25), map_point(ball.position, 0.16))
+ ball_visual = mesh_node(sphere(PlaygroundBall.RADIUS * SCALE), material(Color("4f97ff"), 0.12), map_point(ball.position, BALL_HEIGHT))
  var stripe := TorusMesh.new()
  stripe.inner_radius = 0.134
  stripe.outer_radius = 0.146
@@ -167,10 +200,46 @@ func build(chunks: Array[TableChunk], passage: Rect2 = Rect2()) -> void:
  line(Vector2(360, 1395), Vector2(440, 1395), 0.035, 0.01, material(Color("ef6473"), 0.4))
  _label("DRAIN", Vector2(400, 1360), 18, Color("ee8693"))
 
+func set_camera_preset(index: int) -> void:
+ camera_preset = clampi(index, CameraPreset.TOP_DOWN, CameraPreset.DRAMATIC_PINBALL)
+ camera.near = 0.1
+ camera.far = 50.0
+ camera.keep_aspect = Camera3D.KEEP_HEIGHT
+ if camera_preset == CameraPreset.TOP_DOWN:
+  camera.projection = Camera3D.PROJECTION_ORTHOGONAL
+  camera.size = 15.6
+  camera.position = Vector3(0, 20, 0)
+  camera.look_at(Vector3.ZERO, Vector3.FORWARD)
+ else:
+  camera.projection = Camera3D.PROJECTION_PERSPECTIVE
+  var dramatic := camera_preset == CameraPreset.DRAMATIC_PINBALL
+  var elevation := deg_to_rad(50.0 if dramatic else 60.0)
+  var distance := 16.0 if dramatic else 20.0
+  camera.fov = 52.0 if dramatic else 40.0
+  var target := Vector3(0, 0, 1.0)
+  camera.position = target + Vector3(0, sin(elevation), cos(elevation)) * distance
+  camera.look_at(target)
+
+func _paddle(length: float, radius: float, height: float, base: float, mat: Material, parent: Node3D) -> void:
+ # Extrude the exact 2D capsule footprint; only the inset top trim is smaller.
+ var bar := BoxMesh.new()
+ bar.size = Vector3(length, height, radius * 2.0)
+ mesh_node(bar, mat, Vector3(length * 0.5, base + height * 0.5, 0), parent)
+ mesh_node(cylinder(radius, height), mat, Vector3(0, base + height * 0.5, 0), parent)
+ mesh_node(cylinder(radius, height), mat, Vector3(length, base + height * 0.5, 0), parent)
+
+func _floor_line(a: Vector2, b: Vector2, mat: Material) -> void:
+ # Flat markings avoid tiny cylinder silhouettes and shadows flickering at shallow angles.
+ var plane := PlaneMesh.new()
+ plane.size = Vector2(a.distance_to(b) * SCALE, 0.014)
+ var marking := mesh_node(plane, mat, map_point((a + b) * 0.5, 0.006))
+ marking.rotation.y = -(b - a).angle()
+ marking.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
 func _rect_outline(rect: Rect2, mat: Material, parent: Node3D) -> void:
  var points: Array[Vector2] = [rect.position, Vector2(rect.end.x, rect.position.y), rect.end, Vector2(rect.position.x, rect.end.y)]
  for i in 4:
-  line(points[i], points[(i + 1) % 4], 0.018, 0.40, mat, parent)
+  line(points[i], points[(i + 1) % 4], 0.018, OVERLAY_HEIGHT, mat, parent)
 
 func _label(text: String, point: Vector2, font_size: int, color: Color) -> void:
  var label := Label3D.new()
@@ -180,41 +249,52 @@ func _label(text: String, point: Vector2, font_size: int, color: Color) -> void:
  label.modulate = color
  label.outline_size = 0
  label.rotation.x = -PI / 2.0
- label.position = map_point(point, -0.05)
+ label.position = map_point(point, 0.01)
  add_child(label)
 
 func _circle_outline(center: Vector2, radius: float, mat: Material) -> void:
  for i in 32:
-  line(center + Vector2.from_angle(i * TAU / 32) * radius, center + Vector2.from_angle((i + 1) * TAU / 32) * radius, 0.012, 0.37, mat, physics_overlay)
+  line(center + Vector2.from_angle(i * TAU / 32) * radius, center + Vector2.from_angle((i + 1) * TAU / 32) * radius, 0.012, OVERLAY_HEIGHT, mat, physics_overlay)
 
 func _capsule_outline(a: Vector2, b: Vector2, radius: float, mat: Material) -> void:
  var normal := (b - a).normalized().orthogonal() * radius
- line(a + normal, b + normal, 0.012, 0.37, mat, physics_overlay)
- line(a - normal, b - normal, 0.012, 0.37, mat, physics_overlay)
+ line(a + normal, b + normal, 0.012, OVERLAY_HEIGHT, mat, physics_overlay)
+ line(a - normal, b - normal, 0.012, OVERLAY_HEIGHT, mat, physics_overlay)
  _circle_outline(a, radius, mat)
  _circle_outline(b, radius, mat)
 
-func _prism(points: PackedVector2Array, height: float) -> ArrayMesh:
+func _prism(points: PackedVector2Array, height: float, side_mat: Material, top_mat: Material) -> ArrayMesh:
+ # Mirrored chunks reverse polygon winding; normalize only the visual copy.
+ points = points.duplicate()
+ if Geometry2D.is_polygon_clockwise(points):
+  points.reverse()
  var surface := SurfaceTool.new()
  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+ surface.set_material(top_mat)
  var indices: PackedInt32Array = Geometry2D.triangulate_polygon(points)
  for index in indices:
   surface.add_vertex(Vector3(points[index].x * SCALE, height, points[index].y * SCALE))
+ surface.generate_normals()
+ var mesh := surface.commit()
+ surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+ surface.set_material(side_mat)
  for i in points.size():
   var a := Vector3(points[i].x * SCALE, 0, points[i].y * SCALE)
   var b := Vector3(points[(i + 1) % points.size()].x * SCALE, 0, points[(i + 1) % points.size()].y * SCALE)
-  for vertex: Vector3 in [a, a + Vector3.UP * height, b, b, a + Vector3.UP * height, b + Vector3.UP * height]:
+  for vertex: Vector3 in [a, b, a + Vector3.UP * height, b, b + Vector3.UP * height, a + Vector3.UP * height]:
    surface.add_vertex(vertex)
  surface.generate_normals()
- return surface.commit()
+ return surface.commit(mesh)
 
 func flash_bumper(body: Node) -> void:
  flash_times[body.get_instance_id()] = 0.12
 
 func _process(delta: float) -> void:
+ if get_tree().paused:
+  delta = 0.0
  if not is_instance_valid(ball_visual):
   return
- ball_visual.position = map_point(ball.position, 0.16)
+ ball_visual.position = map_point(ball.position, BALL_HEIGHT)
  var travel: Vector2 = ball.position - _last_ball_position
  if travel.length() > 0.001 and travel.length() < 100:
   ball_visual.rotate(Vector3(travel.y, 0, -travel.x).normalized(), travel.length() / PlaygroundBall.RADIUS)
@@ -223,10 +303,10 @@ func _process(delta: float) -> void:
   flipper_visuals[i].rotation.y = -flippers[i].rotation
  for i in ring_visuals.size():
   ring_visuals[i].visible = ring_field.rings[i].active
-  ring_visuals[i].position = map_point(ring_field.rings[i].position, 0.18)
+  ring_visuals[i].position = map_point(ring_field.rings[i].position, RING_HEIGHT)
  for id: int in flash_times.keys():
   flash_times[id] -= delta
-  var mesh: MeshInstance3D = bumper_visuals[id]
+  var mesh: Node3D = bumper_visuals[id]
   mesh.scale.y = 1.0 + maxf(0, float(flash_times[id])) * 2.0
   if flash_times[id] <= 0:
    mesh.scale.y = 1.0
@@ -243,12 +323,12 @@ func _draw_dynamic_geometry() -> void:
   var b: Vector2 = flipper.tip()
   var offset := (b - a).normalized().orthogonal() * PlaygroundFlipper.RADIUS
   for point: Vector2 in [a + offset, b + offset, a - offset, b - offset]:
-   dynamic_geometry.surface_add_vertex(map_point(point, 0.40))
+   dynamic_geometry.surface_add_vertex(map_point(point, OVERLAY_HEIGHT))
   _debug_circle(a, PlaygroundFlipper.RADIUS)
   _debug_circle(b, PlaygroundFlipper.RADIUS)
  dynamic_geometry.surface_end()
 
 func _debug_circle(center: Vector2, radius: float) -> void:
  for i in 32:
-  dynamic_geometry.surface_add_vertex(map_point(center + Vector2.from_angle(i * TAU / 32) * radius, 0.40))
-  dynamic_geometry.surface_add_vertex(map_point(center + Vector2.from_angle((i + 1) * TAU / 32) * radius, 0.40))
+  dynamic_geometry.surface_add_vertex(map_point(center + Vector2.from_angle(i * TAU / 32) * radius, OVERLAY_HEIGHT))
+  dynamic_geometry.surface_add_vertex(map_point(center + Vector2.from_angle((i + 1) * TAU / 32) * radius, OVERLAY_HEIGHT))

@@ -13,9 +13,9 @@ This document records the project's intended direction, not a claim that its sys
 
 The current product is an endlessly replayable physics sandbox with deliberately simple, blocky N64-style visuals. Current exploration covers physics/flippers/steering, profiles and modifiers, seeded chunks, connector compatibility and estimated difficulty, and primitive 3D geometry, perspective, shadows, and depth perception. It does not include acts, zones, branching progression, win conditions, finished Sonic characters, or elaborate environment artwork.
 
-The repository contains a playable two-section generator, shared physics profiles/modifiers, scoring and rings, automatic drain recovery, debug tuning, and collisionless primitive 3D rendering. At this documentation inspection, separate development had uncommitted generator/UI/test changes introducing difficulty preferences and estimates. Those changes were inspected, not modified or verified here. Their presence is not evidence of completed playtesting.
+The repository contains a playable two-section generator with reproducible difficulty preferences and rough estimates, shared physics profiles/modifiers, scoring and rings, automatic drain recovery, debug tuning, and collisionless primitive 3D rendering. Generator validation and regression results are documented in `VERIFICATION.md`; subjective difficulty remains a playtesting question.
 
-The desired camera is now moderately tilted perspective. The inspected `scripts/presentation.gd` still sets `PROJECTION_ORTHOGONAL` with a fixed camera, so perspective and raised-geometry/depth experiments are ongoing direction, not a completed camera migration. Following comes later. README and generation details describe their implementation versions; this document owns the long-term design. The historical sections below retain earlier implementation and verification context.
+The stationary depth experiment now implements Real Pinball perspective as the default, a lower Dramatic Pinball perspective preset, and a top-down orthographic reference. Raised primitive meshes, contrasting tops/sides, and directional shadows provide depth without changing 2D physics or mapping. The debug selector and collision overlays work while paused and survive regeneration. Following comes later. README records the provisional camera/height values; this document owns the long-term design. The historical sections below retain earlier implementation and verification context.
 
 ### Phase 1 implementation history — 2026-10-22
 
@@ -68,6 +68,8 @@ Complete characters, specials, Chao drafting, themed artwork, Android controls, 
 **Future camera behavior:** Follow the ball vertically within an act, gently adjust horizontally for shifted chunks, and provide enough look-ahead to anticipate obstacles. Keep flipper shots, bumpers, and collision geometry readable. Avoid excessive camera movement during rebounds.
 
 **Tentative tuning:** Tilt, field of view, distance, follow smoothing, horizontal response, and look-ahead need experimentation and playtesting. Current work explores primitive geometry, perspective, shadows, and depth perception before following. No particular follow algorithm is mandated.
+
+**Implemented depth experiment:** Top-down reference uses orthographic projection. Real Pinball uses a 60° elevation above the board and 40° vertical FOV; Dramatic Pinball uses 50° and 52°. Both perspective presets frame the complete existing two-section table from its front end. Geometry footprints remain derived from 2D descriptors, including mirrored triangles and closure rails. The ball remains a sphere, not a character model. Heights and camera settings are provisional; validate ball visibility behind bumpers and distant-lane readability before adding following, look-ahead or taller tables.
 
 An invisible 2D physics ball owns collisions and gameplay movement. A collisionless 3D character model follows its position and animates independently. The physical ball continues moving during every visible animation. Character models, themed scenery, and animation timing never determine physical collision geometry.
 

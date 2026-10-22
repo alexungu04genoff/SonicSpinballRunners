@@ -13,6 +13,7 @@ var generation_buttons: Array[Button] = []
 var telemetry: Label
 var steering_telemetry: Label
 var steering_presets: OptionButton
+var camera_presets: OptionButton
 var score_label: Label
 var message_label: Label
 var pause_label: Label
@@ -49,9 +50,9 @@ func _ready() -> void:
  help.mouse_filter = Control.MOUSE_FILTER_IGNORE
  add_child(help)
  pause_label = Label.new()
- pause_label.position = Vector2(240, 410)
+ pause_label.position = Vector2(600, 48)
  pause_label.text = "PAUSED\nEscape / Menu to resume"
- pause_label.add_theme_font_size_override("font_size", 28)
+ pause_label.add_theme_font_size_override("font_size", 14)
  pause_label.visible = false
  add_child(pause_label)
  panel = PanelContainer.new()
@@ -122,6 +123,7 @@ func _ready() -> void:
   geometry.release_focus()
  )
  overlays.add_child(geometry)
+ geometry.tooltip_text = "X-ray outlines of the actual 2D collider footprints on the board surface."
  var boundaries := CheckButton.new()
  boundaries.text = "Chunks"
  boundaries.toggled.connect(func(on: bool):
@@ -137,6 +139,16 @@ func _ready() -> void:
   connectors.release_focus()
  )
  overlays.add_child(connectors)
+ camera_presets = OptionButton.new()
+ for camera_name: String in TablePresentation.CAMERA_NAMES:
+  camera_presets.add_item("Camera: " + camera_name)
+ camera_presets.select(game.presentation.camera_preset)
+ camera_presets.tooltip_text = "Stationary views. Top-down is orthographic; Pinball presets use perspective. Physics is unchanged."
+ camera_presets.item_selected.connect(func(index: int):
+  game.presentation.set_camera_preset(index)
+  camera_presets.release_focus()
+ )
+ stack.add_child(camera_presets)
  telemetry = Label.new()
  telemetry.add_theme_font_size_override("font_size", 13)
  stack.add_child(telemetry)
