@@ -34,7 +34,7 @@ func run() -> void:
  check(not game.debug_panel.visible and game.presentation.camera.current, "Dedicated play view starts without the physics debug panels")
  var actor: Node3D = game.character
  var local_model_exists := FileAccess.file_exists(ProjectSettings.globalize_path(actor.MODEL_PATH))
- if local_model_exists:
+ if local_model_exists and not OS.get_cmdline_user_args().has("--no-model"):
   check(actor.model_available, "Prepared Sonic GLB loads at runtime")
   check(actor._clips.has("idle") and actor._clips.has("jump") and actor._clips.has("trick"), "Imported animation player exposes all three authored clips")
   var skeletons: Array[Node] = actor.model.find_children("*", "Skeleton3D", true, false)
@@ -62,7 +62,7 @@ func run() -> void:
     actor.capture_hold = false
     actor.select_preview("roll")
  else:
-  print("SKIP | Local Sonic GLB absent; fallback visual only")
+  check(not actor.model_available and actor.spin_root.visible and not actor.upright.visible, "Missing or disabled local model uses a visible spin-ball fallback")
  var original_position: Vector2 = game.ball.position
  game._set_close_view(true)
  game._select_pose("jump")

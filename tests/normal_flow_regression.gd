@@ -160,7 +160,10 @@ func run() -> void:
   var recovery := await missed_bank_recovery(seed_value)
   print("MISSED BANK RECOVERY | ", recovery)
   check(recovery.recovered, "A missed bank approach can recover above the join using ordinary timed flippers: %d" % seed_value)
+ DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results"))
  var output := FileAccess.open("res://test-results/normal-flow-report.json", FileAccess.WRITE)
- output.store_string(JSON.stringify(flow_report, " "))
+ check(output != null, "Normal-flow diagnostic report can be written in a fresh checkout")
+ if output != null:
+  output.store_string(JSON.stringify(flow_report, " "))
  print("RESULT | Normal flow | %d checks | %d failures" % [checks, failures])
  quit(0 if failures == 0 else 1)

@@ -93,9 +93,9 @@ func _floor_line(_a: Vector2, _b: Vector2, _mat: Material) -> void:
  # The procedural grass is the visual surface; the diagnostic overlay is unchanged.
  pass
 
-func _label(text: String, point: Vector2, font_size: int, color: Color) -> void:
- if text == "DRAIN":
-  super._label(text, point, font_size, color)
+func _label(text: String, point: Vector2, font_size: int, color: Color, parent: Node3D = self) -> void:
+ if text == "DRAIN" or parent != self:
+  super._label(text, point, font_size, color, parent)
 
 func _configure_camera() -> void:
  super._configure_camera()

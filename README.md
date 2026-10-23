@@ -4,7 +4,13 @@ A local Godot 4/GDScript pinball prototype. Gameplay uses an invisible 2D rigid 
 
 This remains an endless experimental physics playground, including the modular generator. There are no acts, zones, win conditions, lives, bosses, or roguelite progression. The ball number is a serve counter, not a lives limit. Primitive, blocky N64-style visuals are sufficient while we tune physics, flippers, bumpers, steering, profiles, modifiers, and layouts.
 
-## Run
+## Play Green Hill
+
+On `experiment/green-hill-visual-lab`, double-click **Play Green Hill.cmd** to play the themed version. **Physics Playground.cmd** opens the original debug presentation. Green Hill includes the same current generator, 50 px kit, Normal-flow connections, flippers, ring collection and unlimited drain recovery. Third-party Sonic assets remain local and ignored; a procedural spin-ball works without them.
+
+Use **Enter** to launch, **Q/E** to flip, **Escape** to pause, **O** for overview and **F1** for tuning/seeds. The footer supplies Normal seeds 18/23 and both grid variants. Build while paused or at serve. See [Green Hill launch, assets and verification](experiments/visual_lab/README.md).
+
+## Run the physics playground
 
 Open `project.godot` in Godot 4 and press **F6** from `scenes/playground.tscn`, or **F5** to run the project. The prototype was tested with **Godot 4.7.2** on Windows, using the Compatibility renderer.
 

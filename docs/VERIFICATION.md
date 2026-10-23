@@ -249,3 +249,13 @@ Executed against the updated source:
 - Godot MCP launched the updated game. `get_debug_output` reported `PLAYGROUND_READY` and an empty errors array.
 
 The new input checks use synthetic keyboard/gamepad events. No physical controller or subjective playtesting was performed for this follow-up. The rendered UI smoke scene programmatically supplied steering for inspection; it does not validate human interaction timing. No collision geometry, flipper response, or world rendering changes were part of the steering work.
+
+## Green Hill playable integration — 2026-10-23
+
+The experiment branch merged main through `1e24223`. Godot 4.7.2 checks: Green Hill playable integration 25/25, original visual adapter 19/19 with Sonic and 14/14 with the fallback, shared physics 38/38, grid construction 23/23, Normal flow 17/17. No physics tuning or collision implementation changed in this integration. The Normal-flow test now creates `test-results/` and handles report-open failure in fresh worktrees.
+
+Normal seeds 18 and 23, Grid base at 18 and Grid variant at 23 each completed a continuous normal-serve, ordinary-flipper-input run through all three sections and back, including bumper hits, ring attraction, drain and automatic relaunch. Real quick-build buttons, replacement scenery, surviving bottom-paddle listeners, new middle-paddle listeners, camera/tuning/pause preservation, collisionless models and aligned rendered contact/ring anchors were checked. A separate controlled miss verifies drain recovery. Earlier fixed timing failed some routes; varied input timing established witnesses without changing physics.
+
+Headless import, PowerShell syntax and launcher execution passed. Actual graphical play/overview captures were produced for all four layouts and remain ignored. Footer clipping found in visual review was repaired. The short capture mode stops after a live frame; it does not claim a complete graphical traversal run. The grid regression intentionally reports an invalid recipe as part of its preservation check.
+
+See [Green Hill instructions](../experiments/visual_lab/README.md) for commands and local capture filenames. Manual flipper feel, gamepad hardware and camera comfort remain user playtesting tasks.

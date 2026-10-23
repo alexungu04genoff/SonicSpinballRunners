@@ -77,11 +77,7 @@ func _ready() -> void:
  controls.launch_requested.connect(launch_ball)
  controls.reset_requested.connect(func(): reset_ball(true))
  controls.pause_requested.connect(toggle_pause)
- controls.debug_requested.connect(func():
-  debug_panel.panel.visible = not debug_panel.panel.visible
-  debug_panel.generation_panel.visible = debug_panel.panel.visible
-  get_viewport().gui_release_focus()
- )
+ controls.debug_requested.connect(toggle_debug)
  controls.special_requested.connect(func(): status_message = "Special reserved for future experiments — no ability implemented yet")
  ball.bumper_hit.connect(_on_bumper_hit)
  ring_field.collected.connect(_on_ring_collected)
@@ -289,6 +285,11 @@ func reset_ball(relaunch: bool = false) -> void:
  ring_field.previous_ball_position = ball.serve_position
  auto_launch_time = 0.25 if relaunch else -1.0
  status_message = "Ready to launch"
+
+func toggle_debug() -> void:
+ debug_panel.panel.visible = not debug_panel.panel.visible
+ debug_panel.generation_panel.visible = debug_panel.panel.visible
+ get_viewport().gui_release_focus()
 
 func toggle_pause() -> void:
  get_tree().paused = not get_tree().paused

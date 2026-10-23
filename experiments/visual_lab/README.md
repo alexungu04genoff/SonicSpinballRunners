@@ -1,18 +1,20 @@
 # Green Hill Visual Lab
 
-A separately runnable presentation experiment for the committed sandbox snapshot `a099f340bf7d54ce779fc37375123adb73faf832`. The experiment lives on `experiment/green-hill-visual-lab`; it does not change the normal project entry point. It is not a new zone, progression system, or physics redesign.
+A playable Green Hill presentation of the shared physics sandbox, integrated with `main` through `1e24223` (generator v8, the 50 px construction kit, varied recovery flippers and Normal-flow banks/curves). The experiment lives on `experiment/green-hill-visual-lab`. The normal physics-playground entry point remains available. There are no acts, lives, checkpoints or campaign progression.
 
 The scene wraps the existing sandbox and its generated layout. Original procedural checkerboard terrain, grass, palms, flowers, distant rocks, sunlight, rings, bumpers, and flippers dress the same playfield. A locally prepared Sonic Runners model supplies upright poses. The invisible 2D ball remains authoritative; the character and scenery are collisionless. A contact marker tracks the physical ball independently of the visual hop. Upright poses and spin-ball rotation use separate transforms.
 
 ## Launch
 
-Run PowerShell from this worktree's repository root:
+Double-click **Play Green Hill.cmd** in this worktree's repository root. **Physics Playground.cmd** opens the original debugging presentation. Both launchers use the same physics, generator, profiles and scoring code. The local prepared Sonic model is reused automatically; preparation is not repeated at launch.
+
+Alternatively, run PowerShell from this worktree's repository root:
 
 ```powershell
 .\experiments\visual_lab\launch.ps1
 ```
 
-The launcher resolves a Godot executable, registers script classes in a dedicated headless import process, then opens only `experiments/visual_lab/visual_lab.tscn`. It does not stop existing processes or change `project.godot`. If Sonic has not been prepared, the scene still opens with a clearly reported spin-ball fallback.
+The launcher resolves a Godot executable, waits for a dedicated headless import and checks its diagnostics, then opens only `experiments/visual_lab/visual_lab.tscn`. It does not stop existing processes or change `project.godot`. If Sonic has not been prepared, the scene still opens with a clearly reported spin-ball fallback.
 
 To choose the exact executable used for this experiment:
 
@@ -24,18 +26,33 @@ Discovered tools: **Godot 4.7.2 stable**, **Blender 5.2.3 LTS**. The launcher al
 
 | Control | Action |
 | --- | --- |
-| Enter | Launch the served ball |
-| Q / E | Left / right flippers |
-| Left / right arrows | Existing limited steering |
-| 1 / Rolling button | Show the spin-ball and re-enable automatic jump/trick events during gameplay |
-| 2 / Idle button | Hold the idle preview |
-| 3 / Jump button | Hold the jump preview |
-| 4 / Trick button | Hold the trick preview |
-| C / camera button | Enter or leave the dedicated character-study pedestal; study mode pauses physics |
-| Escape | Pause gameplay, or leave the close-up |
-| R | Reset the existing sandbox |
+| Enter / gamepad X | Launch from the bottom serve |
+| Q / E or LB / RB | Left / right flippers in both pairs |
+| Left / right arrows or left stick | Existing limited steering |
+| Escape / Menu | Pause or resume; leave character study |
+| R / Back | Reset and relaunch |
+| F1 / Tuning button | Open the complete existing physics, camera, seed and construction-grid controls |
+| O / Overview button | Toggle full-course overview and ball-follow camera |
+| Normal 18 / Normal 23 | Build the requested catalogue layout while paused or at serve |
+| Grid base / Grid variant | Build seed 18 base / seed 23 variant while paused or at serve |
+| C / Character close-up | Enter or leave the optional paused study pedestal |
+| 1–4 in character study | Preview rolling, idle, jump and trick |
 
-Automatic presentation uses a brief jump after a flipper strike and a brief trick after a bumper hit. A manual preview overrides those events until `1` is pressed. Idle, jump, and trick preview clips loop while physics is paused. The spin-ball also rotates in the paused study view. The dedicated close-up moves only the character visual onto a study pedestal with its own foot shadow; the physical ball and its contact marker remain at their actual playfield position. Returning from the close-up restores the prior pause state and automatic event presentation.
+The quick-build buttons disable during live play. Use Escape first, build, then resume and launch. F1 provides any other seed, preference, profile, tuning or grid combination. Regeneration preserves tuning, camera settings, overlays and pause, resets the run, and rebuilds terrain from the final mirrored/shifted/shaped chunk outlines. Surviving bottom paddles and newly generated middle paddles bind to the new character adapter exactly once.
+
+Ordinary gameplay automatically switches between serve idle, spin-ball, a 0.46-second flipper jump and a 0.52-second bumper trick. Short cyan motion beads and expanding impact/pickup circles improve tracking. The physical-radius contact marker stays at the authoritative ball anchor. Ring collection retains the sandbox's 0.20-second attraction flight to that anchor. Cosmetic hops and animations never change physical position, momentum, collider size or scoring.
+
+Pose previews are confined to character study so a forgotten preview cannot suppress gameplay feedback. Returning restores the previous pause state and automatic animation. Regeneration is unavailable during study.
+
+Optional launch arguments:
+
+```powershell
+.\experiments\visual_lab\launch.ps1 -Seed 23 -Grid Variant
+.\experiments\visual_lab\launch.ps1 -NoModel
+.\experiments\visual_lab\launch.ps1 -Playground
+```
+
+`-Grid` accepts `Catalogue`, `Base` or `Variant`; seed/grid options apply to Green Hill. `-NoModel` verifies the procedural fallback without moving or deleting local assets. F5 in Godot still opens the original playground; F6 on `visual_lab.tscn` opens Green Hill.
 
 ## Prepare the local character
 
@@ -106,7 +123,35 @@ The inspected SMD contains **54 retained bones, 2,211 unique vertices, 3,318 tri
 
 `idle`, `jump`, and `trick` are new experimental clips, each made from a held pose with a small one-second easing variation. They are not original game animations, a polished locomotion set, or a fully curled model. Ordinary movement uses a separate procedural spin-ball. No animation root motion drives the ball. Numerical deformation checks and rendered joint review are complementary: the report alone does not establish good shoulders, elbows, hips, or knees.
 
-## Verification performed — 2026-10-22
+## Playable integration verification — 2026-10-23
+
+Godot 4.7.2 Compatibility on Windows:
+
+- `experiments/visual_lab/playable_smoke.gd`: **25/25**. Real quick-build buttons regenerate Normal seeds 18 and 23, Grid base at 18 and Grid variant at 23. Checks cover regenerated terrain footprints, paddle lengths/positions, no 3D colliders, settings preservation, stale listeners, both pairs' real contact events, ring flight, marker alignment and pause.
+- Each continuous Balanced run started at the normal serve, used only ordinary flipper input, visited all three sections, returned down, hit bumpers, collected rings, drained and automatically relaunched. No trajectory edits or profile changes occurred during those runs. The input probe used a 58 px trigger and released the flippers after reaching the top to observe descent. Earlier 48 px timing did not complete every catalogue route; these witnesses are not player success rates.
+- `visual_lab_smoke.gd`: **19/19** with local Sonic; **14/14** with `--no-model`, including real flipper/bumper events in fallback mode.
+- Shared `physics_regression.gd`: **38/38**; `grid_chunk_regression.gd`: **23/23**; `normal_flow_regression.gd`: **17/17**. The grid test deliberately emits one invalid-recipe error and verifies preservation of the current table. Normal-flow reporting now creates its ignored output folder in fresh worktrees and handles open failure instead of hanging.
+- Headless import and PowerShell launcher syntax passed. Both explicit and automatically discovered Godot launches were checked. The launcher waits correctly for console or GUI executables and rejects reported import errors even when Godot returns zero.
+- Actual graphical gameplay and overview captures were rendered for all four layouts. The capture pass uses the same real input probe; it stops early after the live frame and is separate from the complete headless traversal check. Visual review caught and fixed clipped footer controls.
+
+Reproduce the complete focused check:
+
+```powershell
+godot --headless --fixed-fps 120 --path . --script res://experiments/visual_lab/playable_smoke.gd
+```
+
+Render fresh live-play screenshots (not pose mockups):
+
+```powershell
+godot --fixed-fps 120 --path . --script res://experiments/visual_lab/playable_smoke.gd -- --screenshots --captures-only
+```
+
+Files are ignored under `captures/`: `normal18_play.png`, `normal23_play.png`, `grid_base18_play.png`, `grid_variant23_play.png`, and each corresponding `_overview.png`. Omit `--captures-only` to run the complete traversal checks graphically as well. The older `-Capture gameplay` launcher option remains a **paused serve composition**, while idle/jump/trick/reel are character studies.
+
+`godot` is shorthand for the installed executable described above. Feel, player flipper timing, controller hardware and camera comfort still need human playtesting. Automated trajectories establish that the routes work, not that every shot succeeds.
+
+## Original visual-lab verification — 2026-10-22
+
 
 - The launcher's dedicated Godot 4.7.2 headless import completed without script errors. JSON manifest and PowerShell launcher syntax checks passed.
 - `godot --headless --path . --script experiments/visual_lab/visual_lab_smoke.gd` passed **19 of 19 checks with the local Sonic asset present**. Checks cover GLB and clip loading, actual Skeleton3D arm/hip differences after seeking idle/jump/trick, real 2D flipper and bumper event triggers, pause behavior, physical contact-marker alignment, separate upright/rolling transforms, no 3D gameplay colliders, and the unchanged normal entry point.
@@ -122,6 +167,6 @@ The `godot` name above is shorthand for the verified executable listed under Lau
 - Confirm textured eyes, mouth, gloves, shoes, and body in the close-up; inspect each pose's shoulders, elbows, hips, and knees.
 - Launch, use both flippers, and hit a bumper; confirm jump/trick presentation returns to the spin-ball without moving the physical contact marker independently.
 - Check ball visibility, flipper tips, target readability, boundary alignment, and shadows in the gameplay camera.
-- Leave the lab and run the ordinary project entry point; mechanics work should continue in its own checkout.
+- Open F1, regenerate another seed/grid layout, and verify its geometry and contact overlay; return to full view. Use Physics Playground.cmd for the original debugging presentation.
 
 Feel, flipper timing, camera readability, and final art direction still need user playtesting. The verification above records the checks actually run; it does not establish production readiness or asset redistribution permission.

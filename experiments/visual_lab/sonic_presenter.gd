@@ -24,6 +24,12 @@ var capture_hold := false
 var _last_position := Vector2.INF
 var _pose_time := 0.0
 var _clips: Dictionary = {}
+var trail: Array[MeshInstance3D] = []
+var trail_points: Array[Vector3] = []
+var trail_clock := 0.0
+var pulse: MeshInstance3D
+var pulse_material: StandardMaterial3D
+var pulse_time := 0.0
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
@@ -86,10 +92,20 @@ func _ready() -> void:
  close_camera.far = 100.0
  add_child(close_camera)
  table.ball_visual.visible = false
+ _build_effects()
+ # Bind to this adapter, so freeing a regenerated presentation disconnects every
+ # old listener, including listeners on the bottom paddles that survive the swap.
+ ball.bumper_hit.connect(_on_bumper_hit)
+ for flipper: PlaygroundFlipper in table.flippers:
+  flipper.struck.connect(_on_flipper_struck)
+ table.ring_field.pickup_claimed.connect(_on_ring_claimed)
  _set_pose("idle", true)
  _process(0.0)
 
 func _load_model() -> void:
+ if OS.get_cmdline_user_args().has("--no-model"):
+  model_status = "Spin-ball fallback (local model disabled)"
+  return
  var absolute := ProjectSettings.globalize_path(MODEL_PATH)
  if not FileAccess.file_exists(absolute):
   push_warning(model_status + ": " + absolute)
@@ -130,6 +146,70 @@ func _inspect_import(node: Node) -> void:
    child.queue_free()
   else:
    _inspect_import(child)
+
+func _build_effects() -> void:
+ for i in 7:
+  var mat := table.material(Color("59c9ff"))
+  mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+  var dot := table.mesh_node(table.sphere(0.07 * (1.0 - float(i) / 9.0)), mat, Vector3.ZERO, self)
+  dot.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+  dot.visible = false
+  trail.append(dot)
+ var hoop := TorusMesh.new()
+ hoop.inner_radius = 0.23
+ hoop.outer_radius = 0.255
+ hoop.rings = 32
+ hoop.ring_segments = 8
+ pulse_material = table.material(Color("fff4b0"))
+ pulse_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+ pulse_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+ pulse = table.mesh_node(hoop, pulse_material, Vector3.ZERO, self)
+ pulse.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+ pulse.visible = false
+
+func _pulse(color: Color) -> void:
+ pulse_time = 0.32
+ pulse_material.albedo_color = color
+
+func _on_flipper_struck() -> void:
+ show_event("jump", 0.46)
+ _pulse(Color("92eaff"))
+
+func _on_bumper_hit(_body: Node) -> void:
+ show_event("trick", 0.52)
+ _pulse(Color("fff2ae"))
+
+func _on_ring_claimed(_index: int) -> void:
+ _pulse(Color("ffd52f"))
+
+func resume_gameplay() -> void:
+ preview = ""
+ preview_roll = false
+ event_pose = ""
+ event_time = 0.0
+ capture_hold = false
+ trail_points.clear()
+ pulse_time = 0.0
+
+func _update_effects(delta: float) -> void:
+ if close_view or ball.serve_pending or ball.position.distance_to(_last_position) > 100.0:
+  trail_points.clear()
+ trail_clock += delta
+ if not close_view and not ball.serve_pending and trail_clock >= 0.018:
+  trail_clock = 0.0
+  trail_points.push_front(spin_root.position)
+  if trail_points.size() > trail.size():
+   trail_points.pop_back()
+ for i in trail.size():
+  trail[i].visible = not close_view and ball.linear_velocity.length() > 260.0 and i < trail_points.size()
+  if trail[i].visible:
+   trail[i].position = trail_points[i]
+   trail[i].visible = trail[i].position.distance_to(spin_root.position) < 0.9
+ pulse_time = maxf(0.0, pulse_time - delta)
+ pulse.visible = pulse_time > 0.0 and not close_view
+ pulse.position = marker.position + Vector3.UP * 0.025
+ pulse.scale = Vector3.ONE * (1.0 + (1.0 - pulse_time / 0.32) * 1.8)
+ pulse_material.albedo_color.a = clampf(pulse_time / 0.20, 0.0, 1.0)
 
 func select_preview(value: String) -> void:
  preview = "" if value == "roll" else value
@@ -190,6 +270,8 @@ func _process(delta: float) -> void:
  if animation_player != null and _clips.has(pose) and animation_delta > 0.0:
   animation_player.advance(animation_delta)
  var anchor := study_origin if close_view else TablePresentation.map_point(ball.position)
+ upright.scale = Vector3.ONE * (1.0 if close_view else 0.85)
+ spin_root.scale = Vector3.ONE * (1.0 if close_view else 1.12)
  upright.position = anchor + Vector3.UP * 0.025
  upright.rotation.y = 0.15 if close_view else -0.20
  spin_root.position = anchor + Vector3.UP * (TablePresentation.BALL_HEIGHT + 0.025)
@@ -202,6 +284,7 @@ func _process(delta: float) -> void:
   spin_root.rotate(Vector3(travel.y, 0, -travel.x).normalized(), travel.length() / PlaygroundBall.RADIUS)
  if close_view and pose == "roll" and not capture_hold:
   spin_root.rotate(Vector3(1, 0, 0.5).normalized(), delta * 4.5)
+ _update_effects(physics_delta)
  _last_position = ball.position
  var focus := upright.position + Vector3(0.0, 0.52, 0.0)
  close_camera.position = focus + Vector3(0.65, 0.65, 2.4)
