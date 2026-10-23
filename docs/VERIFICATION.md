@@ -1,6 +1,19 @@
 # Physics Playground verification
 
-Date: 2026-10-22. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: OpenGL Compatibility on NVIDIA GeForce RTX 4060.
+Latest checks: 2026-10-23. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: OpenGL Compatibility on NVIDIA GeForce RTX 4060.
+
+## Genuine Easy layouts for grid modes (generator v9)
+
+Grid base and Grid variant now use dedicated 800 × 700 px recipes when Easy is requested. Their 700 px openings replace the original 600 px openings, the sharper right-wall slopes become gentle banks/curves, and recovery paddles sit farther apart. The authored rating remains 28; the unchanged estimator now finds genuinely Easy combinations instead of falling back to Normal. Original grid Normal/Hard recipes and Existing catalogue remain unchanged.
+
+- `tests/grid_easy_regression.gd`: **22 checks passed**. Seeds 1–12 in both modes (24 configurations, each generated twice) all matched Easy at 28 points, preserved both broad upper designs and reproduced their geometry. Fourteen independent pre-change fingerprints protect Existing catalogue and sampled grid Normal/Hard geometry. Both new recipes passed compiler clearance, full paddle-swing checks, the unchanged whole-course validator and 618 px checked junction corridors.
+- Actual 120 Hz physics checks cover upward passage past resting, raised and moving middle paddles, one-strike descending recovery into the upper chamber, missed-shot drain/respawn/relaunch, bidirectional 1200 px/s shots through both junctions, and ten bank-joint probes at approximately 8000 px/s without added energy or escape. Continuous movement remains off-grid. These reuse the existing grid regression helpers with the new Easy recipes.
+- Regeneration retained tuning, overlays, camera, pause and bottom paddles. An intentionally invalid original recipe emitted its expected diagnostic and preserved the active table.
+- A graphical fixture passed **16 checks**, including Easy-to-Normal-to-Easy switching in both modes. Returning to Easy reproduced the initial signature with a matched tier. Four images were saved; the Base lower-junction view and Variant overview were inspected. Collision outlines match the raised rails, flippers and ball; the full overview fits.
+
+Total: **38 passing checks**. Logs and images are ignored `test-results/grid-easy-*`. Try **Easy seed 8** in both grid modes for an Open Meadow upper section, or **Easy seed 1** for Gentle Banks. Easy retains a 5 px grid/legacy inset difference, smaller than the 12 px rail radius; the generic generator still labels these tiny rounded closures `Step`. Large ceiling shoulders are gone, but endpoints are not mathematically identical. Representative physics samples pass; subjective recovery timing and exhaustive low-speed trajectories still need playtesting. The existing local `project.godot` edits and concurrent score-attack files are outside this change.
+
+The final shared-game script check passed after restoring an accidentally changed indentation line from concurrent work. Godot MCP launched Easy / Grid base / seed 8 and returned `PLAYGROUND_READY`. Its only reported diagnostic was a variable-shadow warning in the concurrent, unstaged Score Attack panel; no grid runtime error was reported. The Easy playtest was left open without changing the project's default scene.
 
 ## Normal flow pass (generator v8)
 

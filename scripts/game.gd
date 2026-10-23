@@ -25,6 +25,10 @@ const GRID_RECIPES: Array[GridChunkRecipe] = [
  preload("res://data/grid_chunks/flow_relay.tres"),
  preload("res://data/grid_chunks/flow_relay_variant.tres"),
 ]
+const GRID_EASY_RECIPES: Array[GridChunkRecipe] = [
+ preload("res://data/grid_chunks/flow_relay_easy.tres"),
+ preload("res://data/grid_chunks/flow_relay_easy_variant.tres"),
+]
 ## Legacy layout remains available for the original physics regression fixture.
 @export var generation_enabled: bool = true
 ## Keep earlier two-section regression fixtures reproducible, outside the debug UI.
@@ -99,7 +103,9 @@ func _generate_layout(seed_value: int, preference: int, grid_mode: int = -1) -> 
  if mode == 0:
   result = TableGenerator.generate(seed_value, preference)
  else:
-  var compiled := GridChunkCompiler.compile(GRID_RECIPES[mode - 1])
+  # Easy has its own broad recipe; preserve the original Normal/Hard catalogue.
+  var recipes := GRID_EASY_RECIPES if preference == TableGenerator.Difficulty.EASY else GRID_RECIPES
+  var compiled := GridChunkCompiler.compile(recipes[mode - 1])
   if not compiled.valid:
    return compiled
   var middle: Array[ChunkData] = [compiled.chunk]

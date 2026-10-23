@@ -265,6 +265,7 @@ func _build_generation_panel() -> void:
  stack.add_child(difficulty_selector)
  _label(stack, "Middle section (apply on build)", 12)
  grid_selector = OptionButton.new()
+ grid_selector.tooltip_text = "Grid modes use wider recipes for Easy. Normal and Hard retain the original base/variant designs."
  for mode_name: String in game.GRID_MODE_NAMES:
   grid_selector.add_item(mode_name)
  grid_selector.item_selected.connect(func(_index: int): grid_selector.release_focus())
