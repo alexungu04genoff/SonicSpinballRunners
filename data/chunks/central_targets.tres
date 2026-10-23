@@ -14,3 +14,4 @@ bumpers = Array[Dictionary]([{"kind": "circle", "position": Vector2(350, 290), "
 rings = PackedVector2Array(140, 265, 140, 400, 140, 520, 560, 265, 560, 400, 560, 520, 350, 160, 350, 420, 350, 565)
 markers = {"entry": Vector2(350, 670)}
 navigation_probes = PackedVector2Array(140, 330, 350, 160, 560, 330, 350, 550, 350, 420)
+flipper_placements = Array[Dictionary]([{"position": Vector2(125, 550), "side": 1.0, "length": 85.0}])

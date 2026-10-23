@@ -29,7 +29,7 @@ static func normal_flow_issues(transition: Dictionary) -> PackedStringArray:
    issues.append("Join %d has a bank too shallow for Normal upward flow" % [i + 1])
  return issues
 
-static func reshape(sources: Array[ChunkData], style: String) -> Dictionary:
+static func reshape(sources: Array[ChunkData], style: String, collar: float = COLLAR) -> Dictionary:
  var chunks: Array[ChunkData] = []
  for source: ChunkData in sources:
   chunks.append(source.duplicate(true))
@@ -40,7 +40,7 @@ static func reshape(sources: Array[ChunkData], style: String) -> Dictionary:
  for i in range(chunks.size() - 1):
   var upper: ChunkData = chunks[i].duplicate(true)
   var lower: ChunkData = chunks[i + 1].duplicate(true)
-  var shaped := _reshape_junction(upper, lower, style)
+  var shaped := _reshape_junction(upper, lower, style, collar)
   if shaped.changed and not _flippers_clear(shaped.paths, chunks):
    shaped = {"changed": false, "style": STEP, "paths": [], "note": "Bank would reduce flipper swing clearance"}
   if shaped.changed:
@@ -53,7 +53,7 @@ static func reshape(sources: Array[ChunkData], style: String) -> Dictionary:
    notes.append("Join %d: %s" % [i + 1, shaped.note])
  return {"chunks": chunks, "junction_styles": styles, "junction_paths": paths, "notes": notes, "changed": changed}
 
-static func _reshape_junction(upper: ChunkData, lower: ChunkData, style: String) -> Dictionary:
+static func _reshape_junction(upper: ChunkData, lower: ChunkData, style: String, collar: float = COLLAR) -> Dictionary:
  var up := upper.world_rect(upper.bottom_connection)
  var down := lower.world_rect(lower.top_connection)
  var result := {"changed": false, "style": STEP, "paths": [], "note": ""}
@@ -75,8 +75,8 @@ static func _reshape_junction(upper: ChunkData, lower: ChunkData, style: String)
    continue
   var upper_edge := Vector2(up_x, seam)
   var lower_edge := Vector2(down_x, seam)
-  var upper_boundary := _boundary(upper, upper_edge, seam - COLLAR)
-  var lower_boundary := _boundary(lower, lower_edge, seam + COLLAR)
+  var upper_boundary := _boundary(upper, upper_edge, seam - collar)
+  var lower_boundary := _boundary(lower, lower_edge, seam + collar)
   if upper_boundary.is_empty() or lower_boundary.is_empty():
    result.note = "Boundary has no unambiguous monotonic collar"
    return result

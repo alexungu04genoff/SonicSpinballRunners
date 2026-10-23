@@ -1,6 +1,6 @@
 # Green Hill Visual Lab
 
-A playable Green Hill presentation of the shared physics sandbox, now integrated on `main` with PhysicsBro's changes through `5dc758f`: generator v9, the 50 px construction kit including broader Easy recipes, varied recovery flippers, Normal-flow banks/curves, and optional Score Attack. The original physics-playground entry point remains available. Free Play remains the default; there are no acts, lives, checkpoints or campaign progression.
+A playable Green Hill presentation of the shared physics sandbox, integrated on `main`: generator v10, the 50 px construction kit with rounded Easy recipes, side recovery flippers and a short upper paddle, Normal-flow banks/curves, and optional Score Attack. The original physics-playground entry point remains available. Free Play remains the default; there are no acts, lives, checkpoints or campaign progression.
 
 The scene wraps the existing sandbox and its generated layout. Original procedural checkerboard terrain, grass, palms, flowers, distant rocks, sunlight, rings, bumpers, and flippers dress the same playfield. A locally prepared Sonic Runners model supplies brief, table-aligned gameplay poses and upright character-study previews. The invisible 2D ball remains authoritative; the character and scenery are collisionless. A contact marker tracks the physical ball independently of the visual hop. Body placement, imported-model axis correction, and spin-ball rotation use separate transforms.
 
@@ -27,14 +27,14 @@ Discovered tools: **Godot 4.7.2 stable**, **Blender 5.2.3 LTS**. The launcher al
 | Control | Action |
 | --- | --- |
 | Enter / gamepad X | Launch from the bottom serve |
-| Q / E or LB / RB | Left / right flippers in both pairs |
+| Q / E or LB / RB | All left / right flippers, including the short upper paddle |
 | Left / right arrows or left stick | Existing limited steering |
 | Escape / Menu | Pause or resume; leave character study |
 | R / Back | Reset and relaunch |
 | F1 / Tuning button | Open the complete existing physics, camera, seed and construction-grid controls |
 | O / Overview button | Toggle full-course overview and ball-follow camera |
 | Normal 18 / Normal 23 | Build the requested catalogue layout while paused or at serve |
-| Grid base / Grid variant | Build seed 18 base / seed 23 variant while paused or at serve |
+| Grid base / Grid variant | Switch middle type, preserving current seed and difficulty, while paused or at serve |
 | C / Character close-up | Enter or leave the optional paused study pedestal |
 | 1–4 in character study | Preview rolling, idle, jump and trick |
 

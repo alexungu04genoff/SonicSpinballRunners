@@ -14,6 +14,6 @@ playfield_outline = PackedVector2Array(55, 0, 745, 0, 745, 700, 55, 700)
 bumpers = Array[Dictionary]([{"kind": "circle", "position": Vector2(180, 230), "radius": 35.0}, {"kind": "circle", "position": Vector2(620, 310), "radius": 35.0}])
 rings = PackedVector2Array(400, 80, 400, 210, 400, 340, 400, 470, 140, 410, 660, 440, 400, 650)
 markers = {"entry": Vector2(400, 670), "exit": Vector2(400, 30), "test_target": Vector2(400, 180)}
-flipper_placements = Array[Dictionary]([{"position": Vector2(135, 550), "side": 1.0, "length": 115.0}, {"position": Vector2(665, 550), "side": -1.0, "length": 115.0}])
+flipper_placements = Array[Dictionary]([{"position": Vector2(125, 550), "side": 1.0, "length": 115.0}, {"position": Vector2(675, 550), "side": -1.0, "length": 115.0}])
 navigation_probes = PackedVector2Array(400, 30, 400, 180, 400, 420, 140, 550, 660, 550, 400, 670)
 visual_attachment = {"theme": "open_relay", "accent": Color(0.25, 0.85, 0.6, 1), "height": 0.0}

@@ -1,12 +1,12 @@
 extends "res://tests/grid_chunk_regression.gd"
-## Grid Easy has broad authored recipes; other modes retain their v8 geometry.
-const PRESERVED_V8 := {
- "0/1/8": "93c852ba719b97ab2e95789ac3e71960d5aae695aa49423f450ce48d8ceafbe1",
- "0/1/23": "057e838cd778ed62601dc82ef767dfb9f65befeeb62133fdc503586c2250c7a4",
- "1/1/8": "33dd0020af32c87b6ca4d6c074e17db27dfae7b8ad8c06afaa8c5f8900d6e3d6",
- "1/2/8": "a1bab9bf9c4c65a9a140db729ea582ec75443b65e3a41e03e5af71fba0361cd6",
- "2/1/8": "e36925014baf7a29819febcccd1fc87ecfe26bac4e5e4c13ed37a8a46d6e387f",
- "2/2/8": "b12a5827c839f24dc916623d404755299eb0a83c26bb7a69aa0e42fc5806c71a",
+## Rounded Easy routes and reviewed v10 layouts include side and upper recovery.
+const V10_MODE_GEOMETRY := {
+ "0/1/8": "fd803d4dff3e24b817b41318df704e7e4b1971d0b97065b52c834ed8caf5457c",
+ "0/1/23": "09704fc8bda4e07547c203ad3522b867f09d1813f04859dd1a6403bc931ff2df",
+ "1/1/8": "4205e493475a3d64b2421b6d32dc3eff84a61e986c04d5cceef566ef05e12c68",
+ "1/2/8": "45116940e5b7f4060437f68eae1775a9652c259060e7906a9cd7a5c59a032b8f",
+ "2/1/8": "7c44d4b0e22ae9d3fb46478de1103e939f02697e4596ddb2f8b201a7af059f8c",
+ "2/2/8": "6f7364fa66730d8acaec6c2be39fb23182572c8ba35d06bbbe37bca3c7b43364",
 }
 
 func create_grid_game(mode: int) -> void:
@@ -23,13 +23,13 @@ func create_grid_game(mode: int) -> void:
 func run() -> void:
  var host = load("res://scripts/game.gd").new()
  var preserved := true
- for key: String in PRESERVED_V8:
+ for key: String in V10_MODE_GEOMETRY:
   var parts := key.split("/")
-  preserved = preserved and geometry_hash(host._generate_layout(int(parts[2]), int(parts[1]), int(parts[0]))) == PRESERVED_V8[key]
- for key: String in V6_GEOMETRY:
+  preserved = preserved and geometry_hash(host._generate_layout(int(parts[2]), int(parts[1]), int(parts[0]))) == V10_MODE_GEOMETRY[key]
+ for key: String in V10_GEOMETRY:
   var parts := key.split("/")
-  preserved = preserved and geometry_hash(host._generate_layout(int(parts[1]), int(parts[0]), 0)) == V6_GEOMETRY[key]
- check(preserved, "Existing catalogue and grid Normal/Hard preserve independently captured geometry fingerprints")
+  preserved = preserved and geometry_hash(host._generate_layout(int(parts[1]), int(parts[0]), 0)) == V10_GEOMETRY[key]
+ check(preserved, "Existing catalogue and grid Normal/Hard reproduce reviewed v10 geometry and paddle fingerprints")
  var compiled: Array[ChunkData] = []
  for recipe: GridChunkRecipe in host.GRID_EASY_RECIPES:
   var result := GridChunkCompiler.compile(recipe)

@@ -2,9 +2,12 @@ extends SceneTree
 ## Real Balanced flipper shots; diagnostic coverage, not difficulty calibration.
 ## Run with --headless --fixed-fps 120 --script res://tests/vertical_shot_survey.gd.
 ## No teleport or velocity edits occur between the opening press and shot completion.
-const CONTACT_FRACTIONS: Array[float] = [55.0 / 150.0, 0.5, 95.0 / 150.0, 0.9]
+# Include the outer-middle contact band as well as the old near-pivot/tip samples.
+const CONTACT_FRACTIONS: Array[float] = [55.0 / 150.0, 0.5, 95.0 / 150.0, 0.75, 0.8, 0.9]
 const INCOMING_SPEEDS: Array[float] = [-200.0, 0.0, 200.0]
-const CONTINUOUS_TRIGGER_DISTANCES: Array[float] = [58.0, 48.0, 42.0]
+# Side-mounted paddles change the contact window; sample intermediate timings
+# while retaining the earlier attempts and the same complete-traversal check.
+const CONTINUOUS_TRIGGER_DISTANCES: Array[float] = [58.0, 52.0, 50.0, 48.0, 42.0]
 var game: Node
 var checks := 0
 var failures := 0

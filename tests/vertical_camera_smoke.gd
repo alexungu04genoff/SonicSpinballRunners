@@ -80,7 +80,7 @@ func run() -> void:
  # Disable automatic rendering updates during deterministic manual camera steps.
  p.set_process(false)
  p._process(0.0)
- check(game.chunks.size() == 3 and game.flippers.size() == 4 and p.camera_follow_enabled, "Three-section game starts with four paddles and follow enabled")
+ check(game.chunks.size() == 3 and game.flippers.size() == 5 and p.camera_follow_enabled, "Three-section game starts with five paddles and follow enabled")
  check(p.table_bounds == game.layout.bounds and p.find_children("*", "CollisionObject3D", true, false).is_empty() and aligned(), "All presentation objects use shared world mapping and have no gameplay collision")
  var floor_mesh: BoxMesh = p.get_node("TableFloor").mesh
  check(is_equal_approx(floor_mesh.size.z, (p.table_bounds.size.y + 50.0) * TablePresentation.SCALE), "Board slab spans generated bounds")
@@ -124,7 +124,7 @@ func run() -> void:
   game.ball.position = probe.point
   p.reset_camera(probe.point)
   p._process(0.0)
-  check(visible_point(p, p.ball_visual.position) and aligned(), "Follow %s snapshot keeps mapped ball and four paddles aligned" % probe.name)
+  check(visible_point(p, p.ball_visual.position) and aligned(), "Follow %s snapshot keeps mapped ball and five paddles aligned" % probe.name)
   await capture("vertical-follow-" + probe.name)
  p.physics_overlay.visible = true
  p.chunk_overlay.visible = true

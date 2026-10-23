@@ -207,8 +207,13 @@ func _build_lab_ui() -> void:
  stack.add_child(play_buttons)
  play_buttons.add_child(_button("Enter  Launch", launch_ball))
  for preset: Array in [["Normal 18", 18, 0], ["Normal 23", 23, 0], ["Grid base", 18, 1], ["Grid variant", 23, 2]]:
-  var button := _button(preset[0], func(): request_generation(preset[1], TableGenerator.Difficulty.NORMAL, preset[2]))
-  button.tooltip_text = "Build at serve or while paused. Resets ball, rings and score."
+  var button := _button(preset[0], func():
+   if preset[2] > 0:
+    request_generation(generation_seed, generation_difficulty, preset[2])
+   else:
+    request_generation(preset[1], TableGenerator.Difficulty.NORMAL, 0)
+  )
+  button.tooltip_text = "Switch middle type; keep current seed and difficulty. Build at serve or while paused." if preset[2] > 0 else "Build this Normal preset at serve or while paused. Resets ball, rings and score."
   layout_buttons.append(button)
   play_buttons.add_child(button)
  play_buttons.add_child(_button("F1  Tuning / seeds", toggle_debug))
@@ -334,7 +339,7 @@ func _process(_delta: float) -> void:
   score_header_lab.text = "RINGS / SCORE"
   score_label_lab.add_theme_font_size_override("font_size", 25)
  var section := current_chunk_index()
- status_label.text = "Seed %d · %s · Section %d/3" % [generation_seed, GRID_MODE_NAMES[generation_grid_mode], maxi(1, section + 1)]
+ status_label.text = "Seed %d · %s · %s · Section %d/3" % [generation_seed, TableGenerator.DIFFICULTY_NAMES[generation_difficulty], GRID_MODE_NAMES[generation_grid_mode], maxi(1, section + 1)]
  status_label.tooltip_text = character.model_status
  if not character.model_available:
   status_label.text += " · Spin-ball fallback"

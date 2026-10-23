@@ -57,9 +57,9 @@ func event_probe() -> bool:
  var all_struck := true
  var saved_gravity: float = game.tuning.effective.gravity_scale
  game.tuning.effective.gravity_scale = 0.0
- for pair in [0, 2]:
+ for pair in [0, 2, 4]:
   var pair_struck := false
-  for index in [pair, pair + 1]:
+  for index in range(pair, mini(pair + 2, game.flippers.size())):
    for fraction: float in [0.5, 0.7, 0.9]:
     game.controls.virtual_left = false
     game.controls.virtual_right = false
@@ -166,6 +166,10 @@ func run() -> void:
  game._set_close_view(false)
  for specification: Array in [[18, 0, "normal18"], [23, 0, "normal23"], [18, 1, "grid_base18"], [23, 2, "grid_variant23"]]:
   paused = true
+  if specification[1] > 0:
+   # Grid shortcuts now preserve seed and difficulty instead of forcing a preset.
+   game.request_generation(specification[0], TableGenerator.Difficulty.NORMAL)
+   await frames(4)
   var old_terrain: Node3D = game.presentation.terrain_root
   var old_actor: Node3D = game.character
   var saved_tuning: Dictionary = game.tuning.effective.duplicate()
@@ -188,7 +192,7 @@ func run() -> void:
   await snapshot(specification[2] + "_overview")
   game.presentation.set_camera_follow(true)
   paused = false
-  check(await event_probe(), "Real bottom and middle paddle contacts animate after regeneration: " + specification[2])
+  check(await event_probe(), "Real bottom, middle and upper paddle contacts animate after regeneration: " + specification[2])
   var sample: Dictionary = {}
   for trigger: float in [58.0, 42.0, 48.0]:
    sample = await play(specification[2], trigger)

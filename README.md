@@ -6,9 +6,9 @@ Free Play remains the default endless experimental physics playground. Optional 
 
 ## Play Green Hill
 
-Double-click **Play Green Hill.cmd** to play the themed version. **Physics Playground.cmd** opens the original debug presentation. Green Hill is integrated on `main` and includes the shared generator v9, 50 px kit with Easy recipes, Normal-flow connections, flippers, ring collection, unlimited drain recovery and optional Score Attack. Its mode/target strip remains available with the tuning panel hidden, and the shared upper goal and victory/replay controls use the same rules as the physics playground. Third-party Sonic assets remain local and ignored; a procedural spin-ball works without them.
+Double-click **Play Green Hill.cmd** to play the themed version. **Physics Playground.cmd** opens the original debug presentation. Green Hill is integrated on `main` and includes the shared generator v10, 50 px kit with rounded Easy recipes, Normal-flow connections, five flippers, ring collection, unlimited drain recovery and optional Score Attack. Its mode/target strip remains available with the tuning panel hidden, and the shared upper goal and victory/replay controls use the same rules as the physics playground. Third-party Sonic assets remain local and ignored; a procedural spin-ball works without them.
 
-Use **Enter** to launch, **Q/E** to flip, **Escape** to pause, **O** for overview and **F1** for tuning/seeds. The footer supplies Normal seeds 18/23 and both grid variants. Build while paused or at serve. See [Green Hill launch, assets and verification](experiments/visual_lab/README.md).
+Use **Enter** to launch, **Q/E** to flip, **Escape** to pause, **O** for overview and **F1** for tuning/seeds. The footer supplies Normal seeds 18/23 and both grid variants. Grid shortcuts preserve the active seed and difficulty, which the footer displays. Build while paused or at serve. See [Green Hill launch, assets and verification](experiments/visual_lab/README.md).
 
 ## Run the physics playground
 
@@ -20,7 +20,7 @@ For this machine, PowerShell can launch it with:
 & 'C:\Program Files\Godot\Godot.exe' --path 'E:\Sonic Spinball Runners'
 ```
 
-The ball starts on the bottom launch deck. Press **Enter** or gamepad **X** to launch. Time the middle flippers to gain height into the top section, then recover as the ball falls. Both left paddles share Q/LB; both right paddles share E/RB. Falling between sections is normal. Draining automatically respawns and relaunches at the bottom, without checkpoints or a lives limit.
+The ball starts on the bottom launch deck. Press **Enter** or gamepad **X** to launch. Time the middle flippers to gain height into the top section; its short paddle offers another recovery shot. All left paddles share Q/LB; all right paddles share E/RB. Falling between sections is normal. Draining automatically respawns and relaunches at the bottom, without checkpoints or a lives limit.
 
 | Action | Keyboard | Windows gamepad |
 | --- | --- | --- |
@@ -43,7 +43,7 @@ Both flippers can be held simultaneously. Special input currently displays a sta
 - An optional 50 px construction-grid experiment: choose **Grid base** or **Grid variant** in Table Generator, then build while paused or at serve. **Easy** uses wider recipes with gentle banks; Normal/Hard retain the original recipes. Enable **Construction grid** for local coordinates and piece footprints. **Existing catalogue** keeps the original levels available. See [grid authoring and variants](docs/GRID_AUTHORING.md).
 - Wide aligned Easy sections, flowing Normal gardens/return lanes/target routes, and Hard tapered or offset necks. Joins meet at physics `y = 700` and `y = 1400`. Normal requires aligned joins, passive banks or faceted curves at both junctions; authored interior corners remain.
 - Open, gently banked and asymmetric rebound middle sections, each with two bumpers and recovery paddles. Segmented rails, circular/triangular bumpers and collectible rings retain the primitive presentation.
-- Four physical flippers with authored lengths and a short, edge-triggered launch window. Bottom paddles leave a genuine drain gap. Middle layouts offer side-mounted, staggered and shorter traditional recovery arrangements. Holding a flipper keeps it raised; it does not repeatedly award launch impulses.
+- Five physical flippers with authored lengths and a short, edge-triggered launch window. Bottom paddles leave a genuine drain gap. Middle paddles sit near the side walls with space for the ball to pass behind them; layouts retain different heights and lengths. Each upper section adds one short 70–85 px recovery paddle, mirrored with its chunk. Holding a flipper keeps it raised; it does not repeatedly award launch impulses.
 - Rings award 25 points; bumpers award 100. Clearing all rings awards 500 and restores the ring rack after one second.
 - Rings contribute five special-meter points and bumpers two, scaled by the profile. Meter caps at 100; specials remain future work.
 - Rings stay at their authored positions until the configurable magnetic radius claims them. Score and meter update immediately; their visuals accelerate toward the moving ball over 0.20 seconds. Collection checks the ball's swept path and never alters ball momentum.
@@ -60,14 +60,14 @@ PhysicsPlayground                         scripts/game.gd
 ├── PhysicsWorld (Node2D)
 │   ├── Section_0 / Section_1 / Section_2  ordered top, middle, bottom collision sections
 │   ├── PlayerPhysics (RigidBody2D)        invisible circle, radius 14 px
-│   └── FourFlippers (AnimatableBody2D)    resource placements, shared left/right actions
+│   └── FiveFlippers (AnimatableBody2D)    resource placements, shared left/right actions
 ├── Rings                                 stationary pickups and swept collection
 ├── TableView / Collisionless3DViewport
 │   └── Presentation                      camera, lights, meshes, debug geometry
 └── DebugAndHUD (CanvasLayer)              live tuning, telemetry, score, pause
 ```
 
-Authoritative legacy layouts are in `data/chunks/*.tres`, `data/middle_chunks/*.tres` and `data/lower_chunk.tres`. Optional grid layouts live only in `data/grid_chunks/*.tres`; `GridChunkCompiler` creates their runtime geometry from `GridPieceKit`. `scripts/table_generator.gd` returns ordered chunks, junctions and their combined bounds after validation. `scripts/connector_transitions.gd` shapes Normal's adjoining wall collars on private resource copies; the resulting descriptors drive both 2D collisions and 3D meshes. `data/upper_chunk.tres` remains the fallback top and original physics-test fixture. Character defaults are in `data/balanced.tres` and `data/floaty.tres`. The example modifier is `data/practice_chao.tres`.
+Authoritative legacy layouts are in `data/chunks/*.tres`, `data/middle_chunks/*.tres` and `data/lower_chunk.tres`. Optional grid layouts live only in `data/grid_chunks/*.tres`; `GridChunkCompiler` creates their runtime geometry from `GridPieceKit`. `scripts/table_generator.gd` returns ordered chunks, junctions and their combined bounds after validation. `scripts/connector_transitions.gd` shapes Normal's adjoining wall collars and Easy grid's small inset mismatch on private resource copies; the resulting descriptors drive both 2D collisions and 3D meshes. `data/upper_chunk.tres` remains the fallback top and original physics-test fixture. Character defaults are in `data/balanced.tres` and `data/floaty.tres`. The example modifier is `data/practice_chao.tres`.
 
 Physics lives in `scripts/ball.gd`, `scripts/flipper.gd`, and `scripts/table_chunk.gd`. `scripts/ring_field.gd` owns collectibles. `scripts/game.gd` handles score, meter, drain/serve, and signal wiring. Rendering is isolated in `scripts/presentation.gd`. Future models can replace `ball_visual` and listen to existing bumper/flipper signals without changing collisions.
 
@@ -119,7 +119,7 @@ Visual attachment metadata is a future theme hook. The current renderer uses pri
 
 Use the **Table Generator** panel on the left. At serve, or after pausing with **Escape / Menu**, enter a seed, choose an **Easy / Normal / Hard** preference, and click **Build seed + preference**. **Next seed** increments the current seed using the selected preference. **Repeat current layout** restores the current seed and preference even if controls contain unbuilt edits. Different configurations can select the same layout. Generation resets the ball to serve, score, rings, meter, timers, and ball count, while preserving physics tuning, the Chao toggle, overlays, camera preset, and pause state. Resume if paused, then press **Enter / X** to launch.
 
-For generator **v8**, compare **18 + Normal** (two straight banks, estimate 46), **23 + Normal** (upper faceted curve and staggered recovery, 55), **1 + Normal** (upper bank and side recovery, 55), and **5 + Normal** (two curves, 55). **8 + Normal** retains the shorter traditional recovery pair; both grid modes on seed 8 demonstrate curved joins around the editable construction recipes. **1 + Easy** and **1 + Hard** retain their contrasting geometry. Version 8 intentionally changes Normal mappings and estimates; Easy/Hard retain their prior selection. The panel and log record ordered chunks, transforms, requested transition and actual junction styles. Scroll the left panel for checked widths, largest ledges and estimates; hover the summary for bank grades. **Chunks** and **Connectors** have independent overlays. F1 hides both development panels. Settings are not saved across restarts.
+For generator **v10**, compare **18 + Normal** (two straight banks, estimate 46), **23 + Normal** (upper faceted curve and staggered recovery, 55), and **1 + Normal** (upper bank and side recovery, 55). **8 + Easy** in both grid modes demonstrates rounded banks, step-free seams and side-mounted paddles. **1 + Hard** retains its narrow offset neck. Record the generator version when sharing seeds because authored layout changes can alter trajectories and selection. The panel and log record ordered chunks, transforms, requested transition and actual junction styles. Scroll the left panel for checked widths, largest ledges and estimates; hover the summary for bank grades. **Chunks** and **Connectors** have independent overlays. F1 hides both development panels. Settings are not saved across restarts.
 
 Difficulty is a rough geometry preference, not a physics mode or safety override. Easy opens recovery space; Normal favors momentum and banks while preserving authored interior corners; Hard uses large shoulders and narrow, sometimes sideways-bending necks that reject imprecise upward shots. Normal prefers Bank for seed remainders 0–3 and Curve for 4–7, trying the other style and other compatible candidates when needed. It never falls back to a stepped ceiling. Ordinary banks redirect momentum through existing wall collisions without a powered impulse. The hardest component across every chunk and junction, including actual generated bank inclination, sets the finished course estimate. An unavailable band explicitly reports the closest valid flowing alternative. See [difficulty scoring and limits](docs/GENERATION.md).
 
@@ -180,9 +180,9 @@ Flipper placements carry an optional pivot-to-tip `length`; omitted values retai
 | Section | Local pivots | Lengths | Arrangement |
 | --- | --- | --- | --- |
 | Launch Deck | (235,560), (565,560) | 130 / 130 px | Familiar bottom pair with an open drain |
-| Open Relay | (135,550), (665,550) | 115 / 115 px | Side recovery and broad central passage |
-| Bank Relay | (175,500), (615,590) | 125 / 115 px | Staggered recovery at different heights |
-| Rebound Relay | (185,560), (545,560) | 110 / 110 px | Shorter, slightly offset traditional pair with a narrower central route |
+| Open Relay | (125,550), (675,550) | 115 / 115 px | Side recovery and broad central passage |
+| Bank Relay | (140,500), (675,590) | 125 / 115 px | Staggered side recovery at different heights |
+| Rebound Relay | (125,560), (575,560) | 120 / 120 px | Side recovery with enough reach for the narrow upper necks |
 
 The old bottom paddles left only 19.23 px between their resting capsule tips, blocking the 28 px ball. The revised pair leaves 57.20 px at rest and at least 44 px throughout the swing. Failed shots can now fall through; unlimited automatic respawn/relaunch is unchanged. The minimum horizontal surface corridors for Open, Bank and Rebound are respectively 274, 174 and 114 px. Mirroring transforms placements and left/right input sides without changing length. Normal 8's Rebound passage admits both its x350 chunk center and the x400 lower-deck centerline.
 
@@ -223,7 +223,7 @@ From PowerShell, using the installed executable:
 
 The regression scripts use Godot directly, with no testing dependency. `tests/profile_regression.gd` protects resource resolution and reset behavior. `tests/physics_regression.gd` exercises real physics, both flippers, high-speed rail and bumper impacts, chunk crossings, scoring, collection, pause, live tuning, drain recovery, and 20 seconds of simulated play. See `docs/VERIFICATION.md` for results and practical limits.
 
-`tests/vertical_traversal_regression.gd` checks seeded three-section courses, both junctions, four paddles, pause/reset/drain and regeneration cleanup. `tests/vertical_shot_survey.gd` exercises actual flipper shots and continuous upward/downward play. `tests/vertical_camera_smoke.gd` checks tracking and captures follow/overview views. `tests/generation_regression.gd` retains the v3 two-section geometry fixtures through `generate_pair()`; `tests/generation_ui_smoke.gd` exercises current three-section controls. Capture scripts create the ignored `test-results/` directory when needed.
+`tests/vertical_traversal_regression.gd` checks seeded three-section courses, both junctions, five paddles, pause/reset/drain and regeneration cleanup. `tests/vertical_shot_survey.gd` exercises actual flipper shots and continuous upward/downward play. `tests/side_recovery_regression.gd` checks wall clearance, rounded Easy grid routes, mirrored upper recovery shots and Green Hill's difficulty-preserving shortcuts. `tests/vertical_camera_smoke.gd` checks tracking and captures follow/overview views. `tests/generation_regression.gd` retains the v3 two-section geometry fixtures through `generate_pair()`; `tests/generation_ui_smoke.gd` exercises current three-section controls. Capture scripts create the ignored `test-results/` directory when needed.
 
 `tests/flipper_access_survey.gd` remains the earlier two-section diagnostic with the original 150 px paddles; use the vertical and flipper-recovery diagnostics for current resource-authored geometry. Its optional diagnostic targets and recorded shot results are sandbox evidence, not win conditions or player success rates. Static connectivity and sampled trajectories cannot prove every shot, profile or modifier combination is playable.
 

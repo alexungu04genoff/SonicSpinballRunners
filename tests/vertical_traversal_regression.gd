@@ -80,7 +80,7 @@ func run() -> void:
  root.add_child(game)
  await frames(6)
  game.controls.virtual_enabled = true
- check(game.chunks.size() == 3 and game.flippers.size() == 4 and game.ball.serve_position.y > 1400, "Runtime creates a bottom serve and two pairs of flippers")
+ check(game.chunks.size() == 3 and game.flippers.size() == 5 and game.ball.serve_position.y > 1400, "Runtime creates a bottom serve and two flipper pairs and an upper recovery paddle")
  var middle_positions := PackedVector2Array()
  for i in [2, 3]:
   middle_positions.append(game.flippers[i].position)
@@ -91,7 +91,7 @@ func run() -> void:
  var all_held := true
  for flipper: PlaygroundFlipper in game.flippers:
   all_held = all_held and flipper.held and is_equal_approx(flipper.rotation, flipper.active_angle())
- check(all_held, "Both input actions operate all four flippers simultaneously")
+ check(all_held, "Both input actions operate all five flippers simultaneously")
  check(geometry_aligned(), "All translated bumper and moving paddle visuals match collision geometry, with no 3D collisions")
  game.controls.virtual_left = false
  game.controls.virtual_right = false
@@ -168,9 +168,9 @@ func run() -> void:
  for i in 3:
   await process_frame
  var stale_freed := not is_instance_valid(old_presentation) and not is_instance_valid(old_visual)
- for old in [old_chunks[0], old_chunks[1], old_flippers[2], old_flippers[3]]:
+ for old in [old_chunks[0], old_chunks[1], old_flippers[2], old_flippers[3], old_flippers[4]]:
   stale_freed = stale_freed and not is_instance_valid(old)
- check(stale_freed and game.flippers.size() == 4 and game.chunks.size() == 3 and game.chunks[2] == old_chunks[2] and game.flippers[0] == old_flippers[0] and game.flippers[1] == old_flippers[1], "Regeneration frees generated chunks, middle paddles and pickup visuals while preserving the launch deck")
+ check(stale_freed and game.flippers.size() == 5 and game.chunks.size() == 3 and game.chunks[2] == old_chunks[2] and game.flippers[0] == old_flippers[0] and game.flippers[1] == old_flippers[1], "Regeneration frees generated chunks, middle paddles and pickup visuals while preserving the launch deck")
  check(paused and game.ball.serve_pending and game.presentation.ring_pickups.is_empty() and game.ring_field.pickup_claimed.get_connections().size() == 1, "Regeneration preserves pause and leaves no stale pickup flight or duplicate listener")
  check(game.tuning.modifier_enabled and is_equal_approx(game.tuning.effective.steering_strength, 0.14) and is_equal_approx(game.tuning.effective.gravity_scale, 0.58), "Regeneration preserves Floaty, modifier and live steering override")
  check(not game.presentation.camera_follow_enabled and is_equal_approx(game.presentation.camera_settings.look_ahead, 165.0) and game.presentation.physics_overlay.visible and game.presentation.chunk_overlay.visible and game.presentation.connector_overlay.visible, "Regeneration preserves camera tuning, follow preference and overlays")

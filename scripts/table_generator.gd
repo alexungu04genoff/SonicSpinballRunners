@@ -1,7 +1,7 @@
 class_name TableGenerator
 extends RefCounted
 ## Ordered top / relay / launch sections. Transform resources are local to each layout.
-const VERSION := 9
+const VERSION := 10
 const PAIR_VERSION := 3
 enum Difficulty { EASY, NORMAL, HARD }
 const DIFFICULTY_NAMES := ["Easy", "Normal", "Hard"]
@@ -68,7 +68,18 @@ static func generate(seed_value: int, preference: int = Difficulty.NORMAL, catal
  for i in candidates.size():
   var candidate: Dictionary = candidates[i]
   candidate.order = i
-  candidate.estimate = _course_estimate(candidate.chunks, estimate_cache)
+  if preference == Difficulty.EASY and not candidate.chunks[1].construction_grid.is_empty():
+   # Shape only candidates we visit. Easy's 50 px grid meets 55 px legacy
+   # insets through a shallow collar instead of a horizontal seam step.
+   transition_requested = ConnectorTransitions.CURVE
+   var shaped := ConnectorTransitions.reshape(candidate.chunks, ConnectorTransitions.CURVE, 100.0)
+   if not ConnectorTransitions.normal_flow_issues(shaped).is_empty():
+    candidate.unusable = true
+    candidate.distance = INF
+    continue
+   candidate.chunks = shaped.chunks
+   candidate.transition = shaped
+  candidate.estimate = _course_estimate(candidate.chunks, estimate_cache, candidate.get("transition", {}))
   candidate.distance = absf(float(candidate.estimate.score) - DIFFICULTY_TARGETS[preference])
   if candidate.estimate.band == preference and _validate_course_candidate(candidate, junction_cache, rejected):
    return _course_layout(seed_value, preference, candidate, false, rejected, transition_requested)
@@ -76,6 +87,8 @@ static func generate(seed_value: int, preference: int = Difficulty.NORMAL, catal
   return a.order < b.order if is_equal_approx(a.distance, b.distance) else a.distance < b.distance
  )
  for candidate: Dictionary in candidates:
+  if candidate.get("unusable", false):
+   continue
   if _validate_course_candidate(candidate, junction_cache, rejected):
    return _course_layout(seed_value, preference, candidate, false, rejected, transition_requested)
  # A catalogue failure never silently shrinks the course back to two sections.

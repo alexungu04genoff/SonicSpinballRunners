@@ -3,15 +3,15 @@ extends "res://tests/flipper_recovery_regression.gd"
 ## Each physics sample starts a fresh ball and then uses only ordinary input.
 const COMPILER = preload("res://scripts/grid_chunk_compiler.gd")
 const RECIPES := [preload("res://data/grid_chunks/flow_relay.tres"), preload("res://data/grid_chunks/flow_relay_variant.tres")]
-const V6_GEOMETRY := {
- "0/1": "1f090310adc1e99bb277b22818db584755eafd221798fc175da037c9b7dea344",
- "0/8": "1f090310adc1e99bb277b22818db584755eafd221798fc175da037c9b7dea344",
- "0/18": "1f090310adc1e99bb277b22818db584755eafd221798fc175da037c9b7dea344",
- "0/23": "08c2ae9fcaa370b0498c7b4fbeed021cddbcfc59e0addec24b84a96729010580",
- "2/1": "cda3263b40932d8067cb0b48e95fdebee2cec052bcf8142341d5a6aedfd3c56c",
- "2/8": "c46af4ab67bce252107fc01aa394a3e98d30fd0f56de421613ddb8d712c05816",
- "2/18": "3a2aeb4d1187d6d4d6185c1593ac8c495c5271dc76541291c5caf08ddfc04800",
- "2/23": "8a4f3db26a072828ef661e0cf8f125ce678cb081c113afe0f1e63d3178aeaa17",
+const V10_GEOMETRY := {
+ "0/1": "f380a060c89db07304ed7cd5fede78a32f046b1d0b1a0fbe4c8e981263029713",
+ "0/8": "f380a060c89db07304ed7cd5fede78a32f046b1d0b1a0fbe4c8e981263029713",
+ "0/18": "f380a060c89db07304ed7cd5fede78a32f046b1d0b1a0fbe4c8e981263029713",
+ "0/23": "ebbd795abbba3b058a0fc133098ff7feb845fe2ef69b0a7229f44b69ab1b7cb2",
+ "2/1": "2f6d671369de2887f556040accbd3fe4dd4b55da3cf2528c94c58c332edccf3a",
+ "2/8": "53c429716e80a0984ca7b2937a14154d2791dec00c1fbb8cdfde63671e0695eb",
+ "2/18": "8273ec36b759f9e2e738ec79c455b4dbb10a0d5c8eadc48d6350e242a888cfad",
+ "2/23": "96718f9690a8ab8a5c2d7908bfbc205ff75f2b2b07b168f7d290c7ca812aeca3",
 }
 var grid_report: Dictionary = {"layouts": [], "passive_shots": [], "recoveries": []}
 var passive_root: Node2D
@@ -116,10 +116,10 @@ func flippers_clear(chunk: ChunkData) -> bool:
 
 func run() -> void:
  var legacy_preserved := true
- for key: String in V6_GEOMETRY:
+ for key: String in V10_GEOMETRY:
   var parts := key.split("/")
-  legacy_preserved = legacy_preserved and geometry_hash(TableGenerator.generate(int(parts[1]), int(parts[0]))) == V6_GEOMETRY[key]
- check(legacy_preserved, "Easy/Hard preserve v6 complete geometry and paddle placement for eight layouts; v8 intentionally changes Normal")
+  legacy_preserved = legacy_preserved and geometry_hash(TableGenerator.generate(int(parts[1]), int(parts[0]))) == V10_GEOMETRY[key]
+ check(legacy_preserved, "Eight Easy/Hard layouts reproduce v10 geometry, side paddles and upper recovery")
  var compiled: Array[ChunkData] = []
  var source_snapshots: Array[String] = []
  var reproducible := true
@@ -161,7 +161,8 @@ func grid_static_checks(compiled: Array[ChunkData], source_snapshots: Array[Stri
     "ring":
      anchors_match = anchors_match and chunk.rings.has(point)
     "flipper":
-     anchors_match = anchors_match and chunk.flipper_placements.any(func(item: Dictionary) -> bool: return item.position == point and is_equal_approx(item.length, definition.length * 50.0))
+     var pivot: Vector2 = point + definition.offset * 50.0
+     anchors_match = anchors_match and chunk.flipper_placements.any(func(item: Dictionary) -> bool: return item.position == pivot and is_equal_approx(item.length, definition.length * 50.0))
   var mirrored: ChunkData = chunk.duplicate(true)
   mirrored.mirrored = true
   mirrored.horizontal_shift_cells = 1
@@ -333,7 +334,7 @@ func grid_regeneration_check() -> void:
   intact = game.request_generation(8, TableGenerator.Difficulty.NORMAL, mode) and intact
   for tick in 3:
    await process_frame
-  intact = intact and paused and game.generation_grid_mode == mode and game.tuning.effective == values and game.presentation.camera_preset == TablePresentation.CameraPreset.DRAMATIC_PINBALL and game.presentation.camera_settings == camera_settings and game.presentation.camera_follow_enabled and game.presentation.physics_overlay.visible and game.presentation.construction_grid_overlay.visible and not is_instance_valid(old_middle) and not is_instance_valid(old_ring) and game.ring_field.pickup_claimed.get_connections().size() == 1 and game.flippers.size() == 4 and game.ball.serve_pending and game.flippers[0].get_instance_id() == bottom_ids[0] and game.flippers[1].get_instance_id() == bottom_ids[1]
+  intact = intact and paused and game.generation_grid_mode == mode and game.tuning.effective == values and game.presentation.camera_preset == TablePresentation.CameraPreset.DRAMATIC_PINBALL and game.presentation.camera_settings == camera_settings and game.presentation.camera_follow_enabled and game.presentation.physics_overlay.visible and game.presentation.construction_grid_overlay.visible and not is_instance_valid(old_middle) and not is_instance_valid(old_ring) and game.ring_field.pickup_claimed.get_connections().size() == 1 and game.flippers.size() == 5 and game.ball.serve_pending and game.flippers[0].get_instance_id() == bottom_ids[0] and game.flippers[1].get_instance_id() == bottom_ids[1]
   if mode == 0:
    intact = intact and geometry_hash(game.layout) == geometry_hash(TableGenerator.generate(8, TableGenerator.Difficulty.NORMAL))
   else:

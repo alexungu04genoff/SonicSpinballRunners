@@ -66,7 +66,7 @@ static func compile(recipe: GridChunkRecipe) -> Dictionary:
     if chunk.rings.has(position):
      errors.append("Duplicate ring anchor at %s" % placement.cell)
     chunk.rings.append(position)
-   "flipper": chunk.flipper_placements.append({"position": position, "side": piece.side, "length": piece.length * GridPieceKit.CELL_SIZE})
+   "flipper": chunk.flipper_placements.append({"position": position + piece.offset * GridPieceKit.CELL_SIZE, "side": piece.side, "length": piece.length * GridPieceKit.CELL_SIZE})
  for key: String in recipe.markers:
   if not recipe.markers[key] is Vector2i:
    errors.append("Marker %s must use integer grid coordinates" % key)
