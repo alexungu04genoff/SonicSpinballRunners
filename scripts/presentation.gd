@@ -31,6 +31,7 @@ var ring_pickups: Dictionary = {}
 var physics_overlay: Node3D
 var chunk_overlay: Node3D
 var connector_overlay: Node3D
+var construction_grid_overlay: Node3D
 var bumper_visuals: Dictionary = {}
 var flash_times: Dictionary = {}
 var camera: Camera3D
@@ -157,9 +158,15 @@ func build(chunks: Array[TableChunk], junctions: Variant = [], bounds: Rect2 = R
  connector_overlay.name = "ConnectorRegionOverlay"
  add_child(connector_overlay)
  connector_overlay.visible = false
+ construction_grid_overlay = Node3D.new()
+ construction_grid_overlay.name = "ConstructionGridOverlay"
+ add_child(construction_grid_overlay)
+ construction_grid_overlay.visible = false
  var debug_mat := debug_material(Color("70ff85"))
  var boundary_mat := debug_material(Color("d8a9ff"))
  for chunk: TableChunk in chunks:
+  if not chunk.data.construction_grid.is_empty():
+   _build_construction_grid(chunk.data)
   for item: Dictionary in chunk.descriptors:
    match item.kind:
     "rail":
@@ -340,7 +347,27 @@ func _rect_outline(rect: Rect2, mat: Material, parent: Node3D) -> void:
  for i in 4:
   line(points[i], points[(i + 1) % 4], 0.018, OVERLAY_HEIGHT, mat, parent)
 
-func _label(text: String, point: Vector2, font_size: int, color: Color) -> void:
+func _build_construction_grid(data: ChunkData) -> void:
+ var metadata: Dictionary = data.construction_grid
+ var size: float = metadata.cell_size
+ var dimensions: Vector2i = metadata.dimensions
+ var grid_material := debug_material(Color("437f9e"))
+ var footprint_material := debug_material(Color("dfab63"))
+ for x in range(dimensions.x + 1):
+  line(data.world_point(Vector2(x, 0) * size), data.world_point(Vector2(x, dimensions.y) * size), 0.007, OVERLAY_HEIGHT, grid_material, construction_grid_overlay)
+  _label(str(x), data.world_point(Vector2(x, 0.35) * size), 16, Color("a7daee"), construction_grid_overlay)
+ for y in range(dimensions.y + 1):
+  line(data.world_point(Vector2(0, y) * size), data.world_point(Vector2(dimensions.x, y) * size), 0.007, OVERLAY_HEIGHT, grid_material, construction_grid_overlay)
+  _label(str(y), data.world_point(Vector2(0.35, y) * size), 16, Color("a7daee"), construction_grid_overlay)
+ for placement: Dictionary in metadata.placements:
+  var footprint: Rect2 = placement.footprint
+  # Footprints describe authoring extents, not colliders or guaranteed free space.
+  if footprint.has_area():
+   _rect_outline(data.world_rect(Rect2(footprint.position * size, footprint.size * size)), footprint_material, construction_grid_overlay)
+  var cell: Vector2i = placement.cell
+  _label("%d,%d" % [cell.x, cell.y], data.world_point((Vector2(cell) + Vector2(0.25, 0.35)) * size), 13, Color("ffcf8c"), construction_grid_overlay)
+
+func _label(text: String, point: Vector2, font_size: int, color: Color, parent: Node3D = self) -> void:
  var label := Label3D.new()
  label.text = text
  label.font_size = font_size
@@ -349,7 +376,10 @@ func _label(text: String, point: Vector2, font_size: int, color: Color) -> void:
  label.outline_size = 0
  label.rotation.x = -PI / 2.0
  label.position = map_point(point, 0.01)
- add_child(label)
+ if parent == construction_grid_overlay:
+  label.no_depth_test = true
+  label.pixel_size = 0.016
+ parent.add_child(label)
 
 func _circle_outline(center: Vector2, radius: float, mat: Material) -> void:
  for i in 32:

@@ -19,6 +19,12 @@ var auto_launch_time: float = -1.0
 var ring_reset_time: float = -1.0
 @export var generation_seed: int = 1
 @export_enum("Easy", "Normal", "Hard") var generation_difficulty: int = TableGenerator.Difficulty.NORMAL
+@export_enum("Existing catalogue", "Grid base", "Grid variant") var generation_grid_mode: int = 0
+const GRID_MODE_NAMES := ["Existing catalogue", "Grid base", "Grid variant"]
+const GRID_RECIPES: Array[GridChunkRecipe] = [
+ preload("res://data/grid_chunks/flow_relay.tres"),
+ preload("res://data/grid_chunks/flow_relay_variant.tres"),
+]
 ## Legacy layout remains available for the original physics regression fixture.
 @export var generation_enabled: bool = true
 ## Keep earlier two-section regression fixtures reproducible, outside the debug UI.
@@ -83,12 +89,29 @@ func _ready() -> void:
  _apply_tuning()
  print("PLAYGROUND_READY | Godot %s | 120 Hz | 2D collisions / 3D presentation | %s" % [Engine.get_version_info().string, layout.signature])
 
-func _generate_layout(seed_value: int, preference: int) -> Dictionary:
+func _generate_layout(seed_value: int, preference: int, grid_mode: int = -1) -> Dictionary:
  if not generation_enabled:
   return TableGenerator.generate_pair(seed_value, preference, [])
  if legacy_pair_fixture:
   return TableGenerator.generate_pair(seed_value, preference)
- return TableGenerator.generate(seed_value, preference)
+ var mode := clampi(generation_grid_mode if grid_mode < 0 else grid_mode, 0, GRID_RECIPES.size())
+ var result: Dictionary
+ if mode == 0:
+  result = TableGenerator.generate(seed_value, preference)
+ else:
+  var compiled := GridChunkCompiler.compile(GRID_RECIPES[mode - 1])
+  if not compiled.valid:
+   return compiled
+  var middle: Array[ChunkData] = [compiled.chunk]
+  result = TableGenerator.generate(seed_value, preference, TableGenerator.CATALOGUE, middle)
+  # A broken experiment must not silently substitute an unrelated fallback section.
+  if result.valid and not result.chunks[1].construction_grid.has("recipe_id"):
+   return {"valid": false, "errors": PackedStringArray(["No valid grid layout; existing table preserved."])}
+ result["construction_mode"] = mode
+ result["construction_version"] = GridPieceKit.VERSION if mode > 0 else 0
+ if result.valid and mode > 0:
+  result.signature += " construction=%s kit=%d" % [GRID_MODE_NAMES[mode], result.construction_version]
+ return result
 
 func _build_chunk(index: int) -> TableChunk:
  var chunk := TableChunk.new()
@@ -160,28 +183,29 @@ func _build_presentation() -> void:
 func can_regenerate() -> bool:
  return not generation_pending and (get_tree().paused or ball.serve_pending)
 
-func request_generation(seed_value: int, preference: int = -1) -> bool:
+func request_generation(seed_value: int, preference: int = -1, grid_mode: int = -1) -> bool:
  if not can_regenerate():
   status_message = "Pause before generating a table, or wait at serve."
   return false
  generation_pending = true
  var requested := generation_difficulty if preference < 0 else clampi(preference, TableGenerator.Difficulty.EASY, TableGenerator.Difficulty.HARD)
- call_deferred("_regenerate", clampi(seed_value, 0, 2147483647), requested)
+ var requested_grid := generation_grid_mode if grid_mode < 0 else clampi(grid_mode, 0, GRID_RECIPES.size())
+ call_deferred("_regenerate", clampi(seed_value, 0, 2147483647), requested, requested_grid)
  return true
 
-func _regenerate(seed_value: int, preference: int) -> void:
+func _regenerate(seed_value: int, preference: int, grid_mode: int = -1) -> void:
  # Validate before touching the active scene; swap outside physics callbacks.
  if not (get_tree().paused or ball.serve_pending):
   generation_pending = false
   status_message = "Generation cancelled because play resumed. Pause and try again."
   return
- var candidate := _generate_layout(seed_value, preference)
+ var candidate := _generate_layout(seed_value, preference, grid_mode)
  if not candidate.valid:
   status_message = "Generation failed; current table preserved."
   push_error(str(candidate.errors))
   generation_pending = false
   return
- var overlays: Array[bool] = [presentation.physics_overlay.visible, presentation.chunk_overlay.visible, presentation.connector_overlay.visible]
+ var overlays: Array[bool] = [presentation.physics_overlay.visible, presentation.chunk_overlay.visible, presentation.connector_overlay.visible, presentation.construction_grid_overlay.visible]
  var camera_preset: int = presentation.camera_preset
  var camera_follow: bool = presentation.camera_follow_enabled
  var camera_settings: Dictionary = presentation.camera_settings.duplicate()
@@ -202,6 +226,7 @@ func _regenerate(seed_value: int, preference: int) -> void:
  layout = candidate
  generation_seed = seed_value
  generation_difficulty = preference
+ generation_grid_mode = int(candidate.get("construction_mode", 0))
  for i in range(layout.chunks.size() - 1):
   chunks.append(_build_chunk(i))
  if keep_lower_geometry:
@@ -233,6 +258,7 @@ func _regenerate(seed_value: int, preference: int) -> void:
  presentation.physics_overlay.visible = overlays[0]
  presentation.chunk_overlay.visible = overlays[1]
  presentation.connector_overlay.visible = overlays[2]
+ presentation.construction_grid_overlay.visible = overlays[3]
  presentation.set_camera_preset(camera_preset)
  for key: String in camera_settings:
   presentation.set_camera_value(key, camera_settings[key])

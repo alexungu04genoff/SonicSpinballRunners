@@ -1,7 +1,7 @@
 class_name TableGenerator
 extends RefCounted
 ## Ordered top / relay / launch sections. Transform resources are local to each layout.
-const VERSION := 6
+const VERSION := 8
 const PAIR_VERSION := 3
 enum Difficulty { EASY, NORMAL, HARD }
 const DIFFICULTY_NAMES := ["Easy", "Normal", "Hard"]
@@ -59,9 +59,10 @@ static func generate(seed_value: int, preference: int = Difficulty.NORMAL, catal
   candidates[i] = candidates[j]
   candidates[j] = temporary
  var rejected := PackedStringArray()
+ if preference == Difficulty.NORMAL:
+  return _generate_normal(seed_value, candidates, bottom, rejected, transition_requested)
  var junction_cache: Dictionary = {}
  var estimate_cache: Dictionary = {}
- var first_matching_step: Dictionary = {}
  # Lazy estimates avoid evaluating the entire Cartesian library for ordinary builds.
  # Exhausting the requested tier still evaluates every candidate before a fallback.
  for i in candidates.size():
@@ -70,18 +71,7 @@ static func generate(seed_value: int, preference: int = Difficulty.NORMAL, catal
   candidate.estimate = _course_estimate(candidate.chunks, estimate_cache)
   candidate.distance = absf(float(candidate.estimate.score) - DIFFICULTY_TARGETS[preference])
   if candidate.estimate.band == preference and _validate_course_candidate(candidate, junction_cache, rejected):
-   if transition_requested == ConnectorTransitions.STEP:
-    return _course_layout(seed_value, preference, candidate, false, rejected, transition_requested)
-   if first_matching_step.is_empty():
-    first_matching_step = candidate
-   var shaped := ConnectorTransitions.reshape(candidate.chunks, transition_requested)
-   if shaped.changed:
-    var shaped_candidate := {"chunks": shaped.chunks, "transition": shaped, "estimate": _course_estimate(shaped.chunks, {})}
-    if shaped_candidate.estimate.band == preference and _validate_course_candidate(shaped_candidate, {}, rejected):
-     return _course_layout(seed_value, preference, shaped_candidate, false, rejected, transition_requested)
- # Preserve a valid requested tier if none of its banked variants is appropriate.
- if not first_matching_step.is_empty():
-  return _course_layout(seed_value, preference, first_matching_step, false, rejected, transition_requested)
+   return _course_layout(seed_value, preference, candidate, false, rejected, transition_requested)
  candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
   return a.order < b.order if is_equal_approx(a.distance, b.distance) else a.distance < b.distance
  )
@@ -99,13 +89,53 @@ static func generate(seed_value: int, preference: int = Difficulty.NORMAL, catal
   return {"valid": false, "errors": fallback.validation.errors, "rejected": rejected}
  return _course_layout(seed_value, preference, fallback, true, rejected, transition_requested)
 
+static func _generate_normal(seed_value: int, candidates: Array[Dictionary], bottom: ChunkData, rejected: PackedStringArray, preferred_style: String) -> Dictionary:
+ var alternatives: Array[Dictionary] = []
+ var styles: Array[String] = [preferred_style, ConnectorTransitions.CURVE if preferred_style == ConnectorTransitions.BANK else ConnectorTransitions.BANK]
+ for source: Dictionary in candidates:
+  for style: String in styles:
+   var shaped := ConnectorTransitions.reshape(source.chunks, style)
+   var flow_issues := ConnectorTransitions.normal_flow_issues(shaped)
+   if not flow_issues.is_empty():
+    rejected.append("Flow %s / %s: %s" % [_transform_key(source.chunks[0]), _transform_key(source.chunks[1]), "; ".join(flow_issues)])
+    continue
+   # Rate the final banked/curved geometry, never the raw closure shoulders.
+   var candidate := {"chunks": shaped.chunks, "transition": shaped, "estimate": _course_estimate(shaped.chunks, {}, shaped)}
+   candidate.order = alternatives.size()
+   candidate.distance = absf(float(candidate.estimate.score) - DIFFICULTY_TARGETS[Difficulty.NORMAL])
+   if candidate.estimate.band == Difficulty.NORMAL:
+    if _validate_course_candidate(candidate, {}, rejected):
+     return _course_layout(seed_value, Difficulty.NORMAL, candidate, false, rejected, preferred_style)
+   else:
+    alternatives.append(candidate)
+   if not shaped.changed:
+    break # Fully aligned geometry is identical for either style.
+ # A missing tier may use a clearly reported easier/harder flowing course,
+ # but never reintroduce a raw ceiling to satisfy a numeric difficulty band.
+ alternatives.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+  return a.order < b.order if is_equal_approx(a.distance, b.distance) else a.distance < b.distance
+ )
+ for candidate: Dictionary in alternatives:
+  if _validate_course_candidate(candidate, {}, rejected):
+   return _course_layout(seed_value, Difficulty.NORMAL, candidate, false, rejected, preferred_style)
+ var top: ChunkData = CATALOGUE[4].duplicate(true) # Broad, aligned Open Meadow.
+ top.grid_position = Vector2i.ZERO
+ var middle: ChunkData = MIDDLE_CATALOGUE[0].duplicate(true)
+ middle.grid_position = Vector2i(0, 7)
+ var fallback_chunks: Array[ChunkData] = [top, middle, bottom]
+ var shaped_fallback := ConnectorTransitions.reshape(fallback_chunks, preferred_style)
+ var fallback := {"chunks": shaped_fallback.chunks, "transition": shaped_fallback, "estimate": _course_estimate(shaped_fallback.chunks, {}, shaped_fallback)}
+ if not ConnectorTransitions.normal_flow_issues(shaped_fallback).is_empty() or not _validate_course_candidate(fallback, {}, rejected):
+  return {"valid": false, "errors": PackedStringArray(["No technically valid flowing course"]), "rejected": rejected}
+ return _course_layout(seed_value, Difficulty.NORMAL, fallback, true, rejected, preferred_style)
+
 static func transition_preference(seed_value: int, preference: int) -> String:
  if preference != Difficulty.NORMAL:
   return ConnectorTransitions.STEP
- # Eight-seed comparison cycle: 25% Step, 37.5% Bank, 37.5% Curve.
- # Separate from the catalogue RNG, preserving v4 Easy/Hard geometry exactly.
+ # Eight-seed comparison cycle: half straight banks, half faceted curves.
+ # Separate from the catalogue RNG; Easy/Hard retain their original selection.
  var bucket := posmod(seed_value, 8)
- return ConnectorTransitions.STEP if bucket < 2 else (ConnectorTransitions.BANK if bucket < 5 else ConnectorTransitions.CURVE)
+ return ConnectorTransitions.BANK if bucket < 4 else ConnectorTransitions.CURVE
 
 static func _transforms(catalogue: Array[ChunkData], row: int) -> Array[ChunkData]:
  var result: Array[ChunkData] = []
@@ -134,7 +164,7 @@ static func _junction_key(upper: ChunkData, lower: ChunkData) -> String:
  # Instance IDs avoid aliasing two caller-supplied resources with the same authored ID.
  return "%d/%d" % [upper.get_instance_id(), lower.get_instance_id()]
 
-static func _course_estimate(chunks: Array[ChunkData], cache: Dictionary) -> Dictionary:
+static func _course_estimate(chunks: Array[ChunkData], cache: Dictionary, transition: Dictionary = {}) -> Dictionary:
  var estimates: Array[Dictionary] = []
  var worst: Dictionary = {}
  var worst_index := 0
@@ -142,7 +172,13 @@ static func _course_estimate(chunks: Array[ChunkData], cache: Dictionary) -> Dic
   var key := _junction_key(chunks[i], chunks[i + 1])
   if not cache.has(key):
    cache[key] = estimate_difficulty(chunks[i], chunks[i + 1])
-  var estimate: Dictionary = cache[key]
+  var estimate: Dictionary = cache[key].duplicate(true)
+  if not transition.is_empty():
+   # A shallow bank demands a more precise approach even with no residual ledge.
+   estimate.flow_grade = ConnectorTransitions.maximum_grade(transition.junction_paths[i])
+   estimate.flow_score = minf(100.0, estimate.flow_grade * 80.0)
+   estimate.score = maxf(estimate.score, estimate.flow_score)
+   estimate.band = difficulty_band(estimate.score)
   estimates.append(estimate)
   if worst.is_empty() or float(estimate.score) > float(worst.score):
    worst = estimate
@@ -175,6 +211,8 @@ static func _course_layout(seed_value: int, preference: int, candidate: Dictiona
  var note := "Requested tier matched." if matched else "No valid %s course; using %s." % [DIFFICULTY_NAMES[preference], DIFFICULTY_NAMES[estimate.band]]
  if fallback:
   note = "Catalogue exhausted; validated three-section %s fallback." % DIFFICULTY_NAMES[estimate.band]
+ if preference == Difficulty.NORMAL:
+  note += " Both joins preserve upward flow; authored interior corners remain."
  var transforms := PackedStringArray()
  for chunk: ChunkData in candidate.chunks:
   transforms.append(_transform_key(chunk))
@@ -189,6 +227,11 @@ static func _course_layout(seed_value: int, preference: int, candidate: Dictiona
    junctions[i].transition_paths = candidate.transition.junction_paths[i]
   styles.append("J%d %s" % [i + 1, junctions[i].transition_style])
  var transition_summary := "Requested %s; %s" % [transition_requested, " / ".join(styles)]
+ var notes: PackedStringArray = candidate.transition.notes.duplicate() if candidate.has("transition") else PackedStringArray()
+ if preference == Difficulty.NORMAL:
+  for i in estimate.junction_estimates.size():
+   var component: Dictionary = estimate.junction_estimates[i]
+   notes.append("Join %d flow grade %.2f; bank-shape contribution %.1f / 100" % [i + 1, component.get("flow_grade", 0.0), component.get("flow_score", 0.0)])
  if transition_requested != ConnectorTransitions.STEP and not candidate.has("transition"):
   transition_summary += "; no compatible bank in this tier"
  return {"valid": true, "seed": seed_value, "version": VERSION, "chunks": candidate.chunks,
@@ -196,7 +239,7 @@ static func _course_layout(seed_value: int, preference: int, candidate: Dictiona
   "used_fallback": fallback, "rejected": rejected, "difficulty_preference": preference,
   "difficulty_estimate": estimate, "preference_available": matched, "selection_note": note,
   "transition_requested": transition_requested, "transition_summary": transition_summary,
-  "transition_notes": candidate.transition.notes if candidate.has("transition") else PackedStringArray(),
+  "transition_notes": notes,
   "signature": "v%d seed=%d preference=%s chunks=%s estimate=%.1f transition=%s actual=%s" % [VERSION, seed_value, DIFFICULTY_NAMES[preference], " > ".join(transforms), estimate.score, transition_requested, "/".join(styles)]}
 
 static func generate_pair(seed_value: int, preference: int = Difficulty.NORMAL, catalogue: Array[ChunkData] = CATALOGUE) -> Dictionary:

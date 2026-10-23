@@ -107,7 +107,7 @@ func run() -> void:
   for junction: Dictionary in a.junctions:
    styles[junction.get("transition_style", "Step")] = true
  check(reproducible and valid, "Normal seeds 1–8 reproduce technically valid in-tier courses")
- check(styles.has("Step") and (styles.has("Bank") or styles.has("Curve")), "Normal seed variation retains steps alongside passive banks")
+ check(not styles.has("Step") and styles.has("Bank") and styles.has("Curve"), "Normal seed variation uses flowing banks and curves without closure shoulders")
 
  for seed_value: int in [18, 23]:
   var source := TableGenerator.generate_pair(seed_value, TableGenerator.Difficulty.NORMAL)

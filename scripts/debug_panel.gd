@@ -7,6 +7,7 @@ var panel: PanelContainer
 var generation_panel: PanelContainer
 var seed_field: SpinBox
 var difficulty_selector: OptionButton
+var grid_selector: OptionButton
 var generation_summary: Label
 var generation_hint: Label
 var traversal_telemetry: Label
@@ -262,17 +263,32 @@ func _build_generation_panel() -> void:
   difficulty_selector.add_item(difficulty_name)
  difficulty_selector.item_selected.connect(func(_index: int): difficulty_selector.release_focus())
  stack.add_child(difficulty_selector)
+ _label(stack, "Middle section (apply on build)", 12)
+ grid_selector = OptionButton.new()
+ for mode_name: String in game.GRID_MODE_NAMES:
+  grid_selector.add_item(mode_name)
+ grid_selector.item_selected.connect(func(_index: int): grid_selector.release_focus())
+ stack.add_child(grid_selector)
  generation_buttons.append(_button(stack, "Build seed + preference", func():
   seed_field.apply()
-  game.request_generation(int(seed_field.value), difficulty_selector.selected)
+  game.request_generation(int(seed_field.value), difficulty_selector.selected, grid_selector.selected)
  ))
- generation_buttons.append(_button(stack, "Next seed", func(): game.request_generation((game.generation_seed + 1) % 2147483648, difficulty_selector.selected)))
+ generation_buttons.append(_button(stack, "Next seed", func(): game.request_generation((game.generation_seed + 1) % 2147483648, difficulty_selector.selected, grid_selector.selected)))
  generation_buttons.append(_button(stack, "Repeat current layout", func(): game.request_generation(game.generation_seed, game.generation_difficulty)))
+ var grid_toggle := CheckButton.new()
+ grid_toggle.text = "Construction grid"
+ grid_toggle.add_theme_font_size_override("font_size", 12)
+ grid_toggle.tooltip_text = "50 px construction grid, local coordinates and source-piece footprints. Generated connector collars may reshape their ends. Use Physics geometry for the final collision shapes."
+ grid_toggle.toggled.connect(func(on: bool):
+  game.presentation.construction_grid_overlay.visible = on
+  grid_toggle.release_focus()
+ )
+ stack.add_child(grid_toggle)
  traversal_telemetry = _label(stack, "", 12)
  traversal_telemetry.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  traversal_telemetry.custom_minimum_size.x = 184
  var summary_scroll := ScrollContainer.new()
- summary_scroll.custom_minimum_size.y = 210
+ summary_scroll.custom_minimum_size.y = 145
  summary_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
  summary_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
  stack.add_child(summary_scroll)
@@ -288,8 +304,12 @@ func _build_generation_panel() -> void:
 func refresh_generation() -> void:
  seed_field.value = game.generation_seed
  difficulty_selector.select(game.generation_difficulty)
+ grid_selector.select(game.generation_grid_mode)
  var estimate: Dictionary = game.layout.difficulty_estimate
  generation_summary.text = "CURRENT SEED  %d\nPreference: %s\nEstimate: %s %.1f / 100\n" % [game.generation_seed, TableGenerator.DIFFICULTY_NAMES[game.generation_difficulty], TableGenerator.DIFFICULTY_NAMES[estimate.band], estimate.score]
+ generation_summary.text += "Middle: %s\n" % game.GRID_MODE_NAMES[game.generation_grid_mode]
+ if game.generation_grid_mode > 0:
+  generation_summary.text += "Kit v%d / cell 50 px\n" % GridPieceKit.VERSION
  if game.layout.has("transition_summary"):
   generation_summary.text += "Transitions: %s\n" % game.layout.transition_summary
  for i in game.layout.chunks.size():
@@ -302,7 +322,7 @@ func refresh_generation() -> void:
   generation_summary.text += "\nJoin %d: %s\ny %.0f; checked %.0f px\nLargest ledge: %.0f px\n%s %.0f / 100\n" % [i + 1, style, junction.passage.get_center().y, junction.passage.size.x, rating.largest_ledge, TableGenerator.DIFFICULTY_NAMES[rating.band], rating.score]
  generation_summary.text += "\nFallback: %s\nRough geometry estimate" % ("yes" if game.layout.used_fallback else "no")
  generation_summary.text += "\n" + game.layout.selection_note
- generation_summary.tooltip_text = "Estimate is the maximum of authored chunk challenge, connector severity, and sampled approach difficulty. Checked join includes a safety margin. Approach lane is the narrowest sampled contiguous ball-center route, not total space across separate lanes. These are geometry heuristics, not measured player success rates."
+ generation_summary.tooltip_text = "Estimate is the maximum across authored chunk challenge, connector severity, sampled approach difficulty, and Normal's generated bank inclination. Checked join includes a safety margin. Approach lane is the narrowest sampled contiguous ball-center route, not total space across separate lanes. These are geometry heuristics, not measured player success rates."
  for note: String in game.layout.get("transition_notes", PackedStringArray()):
   generation_summary.tooltip_text += "\n" + note
 
@@ -362,6 +382,13 @@ func _process(delta: float) -> void:
  var chunk_index: int = game.current_chunk_index()
  var chunk_name: String = game.chunks[chunk_index].data.chunk_id if chunk_index >= 0 else "Outside course"
  traversal_telemetry.text = "Ball: %s\nCamera: %s\nTarget: %.0f, %.0f px" % [chunk_name, "Follow" if game.presentation.camera_follow_enabled else "Overview", game.presentation.camera_target.x, game.presentation.camera_target.y]
+ if chunk_index >= 0 and not game.chunks[chunk_index].data.construction_grid.is_empty():
+  var data: ChunkData = game.chunks[chunk_index].data
+  var local: Vector2 = game.ball.position - Vector2(data.grid_position + Vector2i(data.horizontal_shift_cells, 0)) * ChunkData.GRID_SIZE
+  if data.mirrored:
+   local.x = data.grid_dimensions.x * ChunkData.GRID_SIZE - local.x
+  var cell := Vector2i(floori(local.x / GridPieceKit.CELL_SIZE), floori(local.y / GridPieceKit.CELL_SIZE))
+  traversal_telemetry.text += "\nLocal cell: (%d, %d)" % [cell.x, cell.y]
  var velocity: Vector2 = game.ball.linear_velocity
  score_label.text = "%06d   /   %02d RINGS   /   BALL %02d" % [game.score, game.rings_collected, game.ball_number]
  message_label.text = game.status_message
