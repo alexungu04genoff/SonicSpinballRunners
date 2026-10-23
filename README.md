@@ -30,7 +30,7 @@ The ball starts on the bottom launch deck. Press **Enter** or gamepad **X** to l
 | Launch | Enter | X |
 | Reset and relaunch | R | Back/View |
 | Pause/resume | Escape | Menu/Start |
-| Reserved special | Space | A |
+| Character special when READY | Space | A |
 | Toggle tuning panel | F1 | — |
 
 Both flippers can be held simultaneously. Special input currently displays a status message; it does not consume the meter or execute an ability.
@@ -55,9 +55,22 @@ Both flippers can be held simultaneously. Special input currently displays a sta
 - Open, gently banked and asymmetric rebound middle sections, each with two bumpers and recovery paddles. Segmented rails, circular/triangular bumpers and collectible rings retain the primitive presentation.
 - Five physical flippers with authored lengths and a short, edge-triggered launch window. Bottom paddles leave a genuine drain gap. Middle paddles sit near the side walls with space for the ball to pass behind them; layouts retain different heights and lengths. Each upper section adds one short 70–85 px recovery paddle, mirrored with its chunk. Holding a flipper keeps it raised; it does not repeatedly award launch impulses.
 - Rings award 25 points; bumpers award 100. Clearing all rings awards 500 and restores the ring rack after one second.
-- Rings contribute five special-meter points and bumpers two, scaled by the profile. Meter caps at 100; specials remain future work.
+- Rings contribute five special-meter points and bumpers two, scaled by the profile. Meter caps at 100; Character Lab specials spend 100 on a valid activation.
 - Rings stay at their authored positions until the configurable magnetic radius claims them. Score and meter update immediately; their visuals accelerate toward the moving ball over 0.20 seconds. Collection checks the ball's swept path and never alters ball momentum.
 - Automatic drain recovery, a fixed serve, two test profiles, one equipped Chao and live tuning.
+
+## Character Lab v1
+
+Select **Sonic · Homing** or **Tails · Flight** beside the mode selector, then **Start / replay** at serve or while paused. This starts the same seed with the selected character's starting profile. Ordinary replay retains live tuning; changing characters restores their starting profile. Sandbox Chao remain equipped. A fresh Zone starts its existing empty draft build.
+
+- **Sonic — Homing Attack:** Balanced starting physics. At READY, Space / gamepad A aims a bounded impulse toward the nearest bumper within 400 px whose path is clear for the entire ball. The marked bumper awards **500 instead of 100 points** only on actual contact within 0.65 seconds, once. No clear target or insufficient charge spends nothing. A wall can still stop a shot after activation. Gates, portals and exits are never targets. Choosing the moment matters: homing toward a lower bumper can sacrifice upward progress.
+- **Tails — Tail Flight:** slightly lower gravity and more steering, with an orange ball placeholder. Full meter buys **1.6 seconds** of reduced gravity and additional bounded steering. One upward impulse can rescue a fall; it does not continuously power ascent. Gravity/control fade back over the final 0.35 seconds. All ordinary collisions remain active.
+- The character HUD shows the equipped character, ability description, charge, **READY**, and activation/hit feedback. A pending character choice is explicitly labelled for the next run. F1 exposes the effective shared physics stats.
+- Unused charge persists through Acts, drains and ball resets; checkpoints never refill it. New runs/replay clear meter. Pause and Act drafts freeze flight time. Drain/reset, character changes and completed challenges clear temporary ability effects. Chao modifiers combine through the existing resolver, without duplicate temporary modifiers.
+
+Definitions and provisional tuning live in `data/characters/` and `data/tails.tres`. `CharacterSpecials` exposes `character_changed`, `special_activated`, `target_acquired`, `special_hit`, `flight_started`, `flight_ended`, `meter_changed`, `meter_spent` and `meter_replenished`. `CharacterFeedback` is a replaceable collisionless marker/placeholder adapter for ArtBro. Tails does not yet have character artwork or a flight scoring multiplier. Knuckles, Shadow and campaign expansion remain future work.
+
+Run `tests/character_lab_regression.gd` at `--fixed-fps 120` for controlled physics/lifecycle checks. `tests/character_play_survey.gd -- --seconds=180 --mode=2` compares the same seed using only ordinary inputs and earned meter. Mode 0 is Free Play; mode 1 is Score Attack. Add `--grid=1` or `--grid=2` for variants. See [verification and playtest limits](docs/VERIFICATION.md).
 
 ## Runtime structure
 

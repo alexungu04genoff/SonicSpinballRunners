@@ -4,6 +4,7 @@ extends Node
 signal changed
 const BALANCED = preload("res://data/balanced.tres")
 const FLOATY = preload("res://data/floaty.tres")
+const TAILS = preload("res://data/tails.tres")
 const EXAMPLE_MODIFIER = preload("res://data/practice_chao.tres")
 const CHAO: Dictionary = {
  "none": {"name": "None", "role": "Baseline", "description": "Original profile and session tuning.", "color": Color("b7c6ce"), "modifier": null},
@@ -26,6 +27,7 @@ const STEERING_PRESETS: Array[Dictionary] = [
 ]
 var base: PhysicsProfile = BALANCED
 var overrides: Dictionary = {}
+var _temporary: Dictionary = {}
 var _build_ids: Array[String] = []
 var build_ids: Array[String]:
  get:
@@ -62,8 +64,25 @@ static func resolve(profile: PhysicsProfile, changes: Dictionary, modifiers: Arr
  return values
 
 func rebuild() -> void:
- effective = preview_build(_build_ids)
+ var modifiers: Array[PhysicsModifier] = []
+ for id: String in _build_ids:
+  modifiers.append(CHAO[id].modifier)
+ modifiers.append_array(_temporary.values())
+ effective = resolve(base, overrides, modifiers)
  changed.emit()
+
+func set_temporary(key: String, modifier: PhysicsModifier) -> void:
+ _temporary[key] = modifier
+ rebuild()
+
+func clear_temporary(key: String) -> void:
+ if _temporary.erase(key):
+  rebuild()
+
+func use_profile(profile: PhysicsProfile) -> void:
+ base = profile
+ overrides.clear()
+ rebuild()
 
 func preview_chao(id: String) -> Dictionary:
  var modifier: PhysicsModifier = CHAO.get(id, CHAO.none).modifier
@@ -138,9 +157,7 @@ func build_name() -> String:
  return ", ".join(names)
 
 func select_profile(index: int) -> void:
- base = BALANCED if index == 0 else FLOATY
- overrides.clear()
- rebuild()
+ use_profile([BALANCED, FLOATY, TAILS][clampi(index, 0, 2)])
 
 func set_value(key: String, value: float) -> void:
  overrides[key] = value

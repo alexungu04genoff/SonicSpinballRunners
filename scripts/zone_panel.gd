@@ -194,7 +194,7 @@ func _refresh_draft() -> void:
  draft_heading.text = "ACT %d CLEAR — %s" % [act, "FINAL CHAO REWARD" if act == 3 else "CHOOSE A CHAO"]
  draft_summary.text = "Act score: %d / %d  ·  Total: %d\nCurrent build: %s" % [game.zone.act_score, game.zone.targets[clampi(act - 1, 0, 2)], game.score, _build_text()]
  draft_footer.text = "Choose one reward to complete Green Hill Zone. No second Zone in this prototype." if act == 3 else "Choose one reward to enter Act %d. Gameplay resumes from this position and velocity." % (act + 1)
- var current: Dictionary = game.tuning.effective
+ var current: Dictionary = game.tuning.preview_build(game.tuning.build_ids)
  var available: Array[Button] = []
  for id: String in cards:
   var count: int = game.zone.acquired.count(id)

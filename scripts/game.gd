@@ -13,6 +13,8 @@ var score: int = 0
 var rings_collected: int = 0
 var ball_number: int = 1
 var special_meter: float = 0.0
+@export_enum("sonic", "tails") var character_id := "sonic"
+var specials: CharacterSpecials
 var status_message: String = "Press Enter / gamepad X to launch"
 var respawn_time: float = -1.0
 var auto_launch_time: float = -1.0
@@ -83,6 +85,10 @@ func _ready() -> void:
  add_child(ring_field)
  _populate_rings()
  _setup_zone()
+ specials = CharacterSpecials.new()
+ specials.game = self
+ add_child(specials)
+ specials.select_character(character_id)
  score_attack_enabled = score_attack_enabled and not zone_enabled
  score_attack.reset(score_attack_enabled, score_attack_target, ScoreAttack.find_goal(layout))
  previous_goal_position = ball.serve_position
@@ -96,7 +102,10 @@ func _ready() -> void:
  controls.reset_requested.connect(func(): reset_ball(true))
  controls.pause_requested.connect(toggle_pause)
  controls.debug_requested.connect(toggle_debug)
- controls.special_requested.connect(func(): status_message = "Special reserved for future experiments — no ability implemented yet")
+ controls.special_requested.connect(func():
+  specials.activate()
+  status_message = specials.feedback
+ )
  ball.bumper_hit.connect(_on_bumper_hit)
  ring_field.collected.connect(_on_ring_collected)
  tuning.changed.connect(_apply_tuning)
@@ -208,11 +217,17 @@ func _add_zone_presentation() -> void:
  var markers := ZoneMarkers.new()
  markers.zone = zone
  presentation.add_child(markers)
+ var feedback := CharacterFeedback.new()
+ feedback.game = self
+ presentation.add_child(feedback)
 
 func can_regenerate() -> bool:
  return not generation_pending and zone.state != ZoneRun.State.DRAFT and (get_tree().paused or ball.serve_pending)
 
 func request_generation(seed_value: int, preference: int = -1, grid_mode: int = -1, challenge_settings: Dictionary = {}) -> bool:
+ if not CharacterSpecials.CHARACTERS.has(challenge_settings.get("character", character_id)):
+  status_message = "Unknown character; current run preserved."
+  return false
  if (bool(challenge_settings.get("zone", zone_enabled))) and challenge_settings.has("chao"):
   status_message = "Zone upgrades are chosen after completing an Act."
   return false
@@ -248,6 +263,11 @@ func _regenerate(seed_value: int, preference: int, grid_mode: int = -1, challeng
   generation_pending = false
   return
  var resume_after_victory := score_attack.state == ScoreAttack.State.COMPLETE or zone.state == ZoneRun.State.COMPLETE
+ var requested_character: String = challenge_settings.get("character", character_id)
+ if requested_character != character_id:
+  specials.select_character(requested_character)
+ else:
+  specials.reset(true, "New run")
  var overlays: Array[bool] = [presentation.physics_overlay.visible, presentation.chunk_overlay.visible, presentation.connector_overlay.visible, presentation.construction_grid_overlay.visible]
  var camera_preset: int = presentation.camera_preset
  var camera_follow: bool = presentation.camera_follow_enabled
@@ -363,6 +383,7 @@ func reset_ball(relaunch: bool = false) -> void:
  if score_attack.state == ScoreAttack.State.COMPLETE or zone.state == ZoneRun.State.COMPLETE:
   request_generation(generation_seed)
   return
+ specials.reset(false, "Reset")
  respawn_time = -1.0
  previous_goal_position = ball.serve_position
  _goal_motion_ready = false
@@ -391,8 +412,8 @@ func toggle_pause() -> void:
 func _on_bumper_hit(body: Node) -> void:
  if score_attack.state == ScoreAttack.State.COMPLETE or (zone_enabled and (zone.state != ZoneRun.State.PLAYING or not zone.acts[zone.active_act].bounds.has_point(body.global_position))):
   return
- score += 100
- special_meter = minf(100.0, special_meter + 2.0 * float(tuning.effective.special_meter_charge_multiplier))
+ score += 100 * specials.hit_multiplier(body)
+ specials.charge(specials.definition.bumper_charge)
  presentation.flash_bumper(body)
  _observe_challenge_score()
 
@@ -401,7 +422,7 @@ func _on_ring_collected(_where: Vector2) -> void:
   return
  score += 25
  rings_collected += 1
- special_meter = minf(100.0, special_meter + 5.0 * float(tuning.effective.special_meter_charge_multiplier))
+ specials.charge(specials.definition.ring_charge)
  var active: int = 0
  for ring: Dictionary in ring_field.rings:
   if ring.active and ring_field.ring_eligible(ring):
@@ -438,6 +459,7 @@ func _physics_process(delta: float) -> void:
  elif not ball.serve_pending and (_at_checkpoint_drain() or ball.position.y > layout.bounds.end.y + 50.0 or ball.position.x < layout.bounds.position.x - 250.0 or ball.position.x > layout.bounds.end.x + 250.0 or ball.position.y < layout.bounds.position.y - 200.0):
   ball_number += 1
   respawn_time = 0.65
+  specials.reset(false, "Drain")
   presentation.clear_ring_pickups()
   status_message = "DRAIN — automatic respawn"
  if auto_launch_time >= 0:
@@ -451,9 +473,11 @@ func _physics_process(delta: float) -> void:
  if not ball.serve_pending and not ball._teleport_pending and respawn_time < 0.0:
   var start := previous_goal_position if _goal_motion_ready else ball.position
   if score_attack.observe_motion(start, ball.position):
+   specials.reset(false, "Challenge complete")
    status_message = "SCORE ATTACK CLEAR! Upper goal reached."
    get_tree().paused = true
   if zone_enabled and zone.observe_motion(start, ball.position):
+   specials.clear_homing()
    _sync_zone_gates()
    status_message = "ACT %d CLEAR — choose your Chao" % (zone.active_act + 1)
    get_tree().paused = true
@@ -495,6 +519,7 @@ func choose_zone_chao(id: String) -> bool:
  zone.accept_reward(id, score)
  _sync_zone_gates()
  if zone.state == ZoneRun.State.COMPLETE:
+  specials.reset(false, "Zone complete")
   status_message = "GREEN HILL ZONE COMPLETE!"
   return true
  ball.serve_position = zone.acts[zone.active_act].entry

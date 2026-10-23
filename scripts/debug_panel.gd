@@ -27,6 +27,7 @@ var values: RichTextLabel
 var spinboxes: Dictionary = {}
 var _refreshing: bool = false
 var _telemetry_elapsed: float = 0.0
+var profiles: OptionButton
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
@@ -74,9 +75,10 @@ func _ready() -> void:
  padding.add_child(stack)
  _label(stack, "LIVE PHYSICS LAB", 22)
  _label(stack, "F1 hides panel  •  Changes affect this session", 12)
- var profiles := OptionButton.new()
+ profiles = OptionButton.new()
  profiles.add_item("Balanced")
  profiles.add_item("Floaty — longer flight")
+ profiles.add_item("Tails — controlled")
  profiles.item_selected.connect(func(index: int):
   tuning.select_profile(index)
   refresh_fields()
@@ -235,8 +237,9 @@ func _ready() -> void:
  values.custom_minimum_size.x = 315
  values.add_theme_font_size_override("normal_font_size", 12)
  fields.add_child(values)
- _label(fields, "Space / A: reserved special; no ability yet.\nRings charge meter. New rack after all collected.\nEnter commits a field and returns game controls.", 12)
+ _label(fields, "Space / A: character special when READY.\nRings and bumpers charge meter.\nEnter commits a field and returns game controls.", 12)
  tuning.changed.connect(refresh_effective)
+ game.specials.character_changed.connect(func(_id: String): refresh_fields())
  refresh_effective()
  _build_generation_panel()
  challenge_panel = ScoreAttackPanel.new()
@@ -353,12 +356,14 @@ func _button(parent: Node, text: String, callback: Callable) -> Button:
  return button
 
 func refresh_fields() -> void:
+ profiles.select([PhysicsTuning.BALANCED, PhysicsTuning.FLOATY, PhysicsTuning.TAILS].find(tuning.base))
  _refreshing = true
  for key: String in spinboxes:
   spinboxes[key].value = tuning.editable_value(key)
  _refreshing = false
 
 func refresh_effective() -> void:
+ profiles.select([PhysicsTuning.BALANCED, PhysicsTuning.FLOATY, PhysicsTuning.TAILS].find(tuning.base))
  practice_toggle.set_pressed_no_signal(tuning.modifier_enabled)
  if not is_instance_valid(values):
   return

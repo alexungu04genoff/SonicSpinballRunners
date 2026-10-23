@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/character_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://data/balanced.tres" id="2"]
+[resource]
+script = ExtResource("1")
+display_name = "Sonic"
+profile = ExtResource("2")
+ability = 0
+description = "Homing Attack: strike a nearby clear-path bumper for 5× points. 100 meter; actual contact required."

@@ -17,6 +17,8 @@ var _celebration: Tween
 var chao_button: Button
 var chao_lab: ChaoLabPanel
 var zone_panel: ZonePanel
+var character_selector: OptionButton
+var character_panel: CharacterPanel
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
@@ -32,6 +34,11 @@ func _ready() -> void:
  mode_selector.custom_minimum_size.x = 145
  mode_selector.item_selected.connect(func(_index: int): mode_selector.release_focus())
  row.add_child(mode_selector)
+ character_selector = OptionButton.new()
+ character_selector.add_item("Sonic · Homing")
+ character_selector.add_item("Tails · Flight")
+ character_selector.item_selected.connect(func(_index: int): character_selector.release_focus())
+ row.add_child(character_selector)
  target_caption = _label(row, "Target", 14)
  target_field = SpinBox.new()
  target_field.min_value = 25
@@ -47,6 +54,7 @@ func _ready() -> void:
  chao_lab = ChaoLabPanel.new()
  chao_lab.game = game
  chao_lab.start_run = start_run
+ chao_lab.next_character = func(): return "sonic" if character_selector.selected == 0 else "tails"
  add_child(chao_lab)
  chao_button = _button(row, "Chao: None", chao_lab.open_lab)
  chao_button.tooltip_text = "Chao Lab: compare three upgrades. Choose at serve or pause; equipping restarts this seed."
@@ -86,6 +94,10 @@ func _ready() -> void:
  zone_panel = ZonePanel.new()
  zone_panel.game = game
  add_child(zone_panel)
+ character_panel = CharacterPanel.new()
+ character_panel.game = game
+ character_panel.selector = character_selector
+ add_child(character_panel)
  game.score_attack.changed.connect(refresh)
  game.zone.changed.connect(func():
   if game.zone.state == ZoneRun.State.INACTIVE or game.generation_pending:
@@ -112,12 +124,14 @@ func _button(parent: Node, text: String, action: Callable) -> Button:
  return button
 
 func refresh() -> void:
+ character_selector.select(0 if game.character_id == "sonic" else 1)
  mode_selector.select(2 if game.zone_enabled else (1 if game.score_attack_enabled else 0))
  target_field.value = game.score_attack_target
 
 func start_run(chao_id: String = "") -> bool:
  target_field.apply()
  var settings := {"enabled": mode_selector.selected == 1, "target": int(target_field.value), "zone": mode_selector.selected == 2}
+ settings.character = "sonic" if character_selector.selected == 0 else "tails"
  if not chao_id.is_empty():
   settings.chao = chao_id
  return game.request_generation(game.generation_seed, -1, -1, settings)
@@ -127,6 +141,7 @@ func _process(_delta: float) -> void:
  chao_button.modulate = PhysicsTuning.CHAO[game.tuning.chao_id].color
  chao_button.disabled = not game.can_regenerate() or game.zone_enabled or mode_selector.selected == 2
  start_button.disabled = not game.can_regenerate()
+ character_selector.disabled = not game.can_regenerate()
  target_field.editable = mode_selector.selected == 1
  target_field.visible = mode_selector.selected != 2
  target_caption.visible = mode_selector.selected != 2

@@ -2,6 +2,24 @@
 
 Latest checks: 2026-10-23. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: OpenGL Compatibility on NVIDIA GeForce RTX 4060.
 
+## Character Lab v1
+
+`character_lab_regression.gd` passed **45 checks headlessly and 45 graphically with ANGLE**. It exercises real 120 Hz homing contact from stationary, falling, opposing and fast-falling trajectories; full-shape obstruction rejection; insufficient/no-target charge preservation; a closing-wall miss; one 500-point award with ordinary +2 recharge; actual Tails fall recovery; fade restoration; pause; Chao/Practice compatibility and pending-character previews; character switching; all three UI mode entries; a locked Act gate; Act carryover; checkpoint drain and replay cleanup. Fixtures deliberately prescribe starting positions, velocities and meter. They are not input-only runs.
+
+The initial 1,200 px/s homing impulse limit landed 2/5 specials in the 180-second Zone survey. Raising the impulse limit to 2,600 while keeping the aimed speed at 1,050 produced 7/8 actual hits. In the controlled fall probe, Tails fell 269.84 px over 0.375 seconds without flight; with flight he rose 16.42 px. Flight retained normal gate collision and restored the exact permanent profile/Chao result afterward.
+
+`character_play_survey.gd` uses only ordinary launch, steering, flippers, Special requests, earned meter and public draft choices. Both characters use seed 18 and the same trigger/steering policy; Tails activates while falling, Sonic when a clear target is available. No score, charge or trajectory is injected. Final headless results:
+
+| Mode / layout | Sonic | Tails |
+| --- | --- | --- |
+| Zone, catalogue, up to 180 s | First READY 24.61 s; 8 specials, 7 hits; 14,350 score; 1 Act completed; 15 balls | First READY 18.88 s; 5 flights; Zone complete at 91.87 s; 5,575 score; 7 balls |
+| Free Play, Grid base, 60 s | 1 special/1 hit; 4,725 score; 2 balls; minimum Y 77 px | 1 flight; 4,350 score; 1 ball; minimum Y 574 px |
+| Score Attack, Grid variant, up to 60 s | 1 special/no hit; 4,550 score; 2 balls; goal not reached | 1 flight; goal reached at 42.64 s; 3,450 score; 1 ball |
+
+No side/top escape occurred. These divergent paths support the experiment, but do not establish character win rates or subjective fun. Automatically firing toward the nearest bumper can harm Sonic's climb; players should choose the moment. Tails' lower gravity and rescue window may need tightening after human playtesting. Full-meter cost gives roughly 19–33 seconds to the first charge in these samples; later charge timing varies with rings, drains and routing.
+
+Godot ran graphical ANGLE physics/lifecycle checks and produced inspected Sonic target, Tails flight and READY HUD captures under `test-results/`. A longer graphical input survey was interrupted after its first Sonic activation capture; the full comparison above is headless. Existing regression reruns passed: profiles 8, physics 38, Score Attack 26, Chao Lab 29 and Zone 34. Restricted-profile runs emit the known root-certificate-store warning; no network function is used. Controller hardware, subjective timing and final visual polish remain human checks.
+
 ## Windows graphics crash workaround
 
 The user's Zone-start/replay crash returned `-1073741819` (`0xC0000005`). Windows Application Error event 1000 and Godot's saved backtrace both identified `nvoglv64.dll` (NVIDIA 616.64) after the initial three-section scene reported ready. There was no GDScript parse error. The same native-driver transition did not crash in the diagnostic rerun, so the precise trigger is not established.

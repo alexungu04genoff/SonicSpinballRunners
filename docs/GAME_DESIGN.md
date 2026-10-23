@@ -71,7 +71,7 @@ The game should be accessible and immediately fun while supporting deep combinat
 
 **Provisional tuning:** User playtesting selected Quick / Tight for both Balanced and Floaty: strength 0.10, normal acceleration 2200, counter deceleration 4000, contribution limit 120, and release deceleration 3000. Original, Air control, and Stronger brake remain selectable. Phase 2A does not change steering/release semantics.
 
-Complete characters, specials, Android controls, additional Zones and persistent campaign systems remain outside this milestone. ArtBro owns themed presentation and animation polish. Avoid unrelated refactors.
+The subsequent Character Lab v1 adds Sonic and Tails specials to all three modes. Complete character artwork, Android controls, additional Zones and persistent campaign systems remain outside this milestone. ArtBro owns themed presentation and animation polish. Avoid unrelated refactors.
 
 ### Green Hill Zone prototype — three connected Acts
 
@@ -113,7 +113,7 @@ The visual-lab adapter implements these states plus a paused upright showcase. R
 
 ## Characters and physics
 
-**Confirmed direction:** Playable characters have different starting physics profiles. Each may also have a passive ability and a rarer player-activated special. The first prototype needs only Balanced and Floaty test profiles, not finished characters.
+**Confirmed direction:** Playable characters have different starting physics profiles. Each may also have a passive ability and a rarer player-activated special. Character Lab v1 uses Balanced for Sonic and a controlled Tails profile; Floaty remains an optional debug profile. No passive ability system is implemented.
 
 **Tentative character examples:** Sonic is relatively fast and balanced; Cream is floatier with slower descent; Knuckles is heavier and more forceful. These are intended feels, not fixed numerical specifications.
 
@@ -129,7 +129,7 @@ Configurable physics should cover steering acceleration, steering deceleration, 
 | --- | --- | --- |
 | Left / right flipper | LB / RB | Q / E |
 | Limited lateral steering | Left analog stick | Left / right arrows |
-| Character special, when implemented | A | Space |
+| Character special when READY | A | Space |
 
 Steering should resemble slight air control in traditional Sonic games. It should not provide full character movement. Responsiveness, acceleration, deceleration, and maximum contribution must be independently configurable.
 
@@ -174,7 +174,19 @@ All abilities and values below are concepts, not final balancing requirements:
 | Knuckles | Horizontal glide toward a side wall or bumper, then a vertical shockwave that collects or activates eligible targets | Approximately ×2 |
 | Shadow | Large-radius Chaos Blast that collects or activates many bonuses | Ordinary ×1 value |
 
-Target eligibility, effect ranges, interaction with combos, and special-specific movement rules need design and playtesting. Specials are outside the current sandbox scope.
+Knuckles, Shadow, combos and Tails bonus scoring remain concepts. Sonic and Tails now have the following playable experiment; all numerical values remain provisional.
+
+### Character Lab v1 — implemented experiment
+
+Character selection applies on Start / replay in Free Play, Score Attack or Green Hill Zone. Changing character restores its profile and clears meter and temporary ability state; ordinary same-character replay preserves debug tuning. Sandbox Chao remain compatible with either profile. New Zone runs retain the existing rule of an empty acquired build.
+
+Sonic uses Balanced physics. Homing scans only existing bumper bodies in the active Act, within 400 px. A full-ball physics sweep must first encounter the candidate, excluding obstructed targets and all progression objects. Activation applies a gravity-compensated physical impulse aimed at 1,050 px/s, capped at a 2,600 px/s velocity change. The higher impulse cap overcame misses when opposing fast falls in the initial survey; it does not raise the aimed speed. Actual contact with the selected body within 0.65 seconds multiplies that one existing 100-point event by five. No teleport, remote hit, ring collection or additional scoring system is involved. Missed/blocked attempts receive no bonus or refund; no eligible target spends nothing.
+
+Tails starts at 0.82 gravity, 2,400 steering acceleration, 4,400 counter-steering and a 135 px/s steering contribution limit. Tail Flight lasts 1.6 seconds: gravity ×0.25, steering acceleration ×1.6, counter-steering ×1.5 and steering limit ×1.4, all resolved and clamped alongside Chao. A single lift impulse removes up to 700 px/s of downward velocity, aiming no higher than 160 px/s upward. The final 0.35 seconds smoothly restore the normal modifiers. Flight never disables collisions or gates.
+
+Both currently use a 100-point meter and full-meter cost, charged by ordinary rings (+5) and bumpers (+2) with the existing charge multiplier. Special hits still charge only the ordinary +2. Unused meter persists across Act drafts, checkpoint drains and ball resets; fresh runs and character changes start empty. Pause/drafts freeze flight duration. Drains/resets and final completion remove active temporary effects. Homing locks end at Act boundaries. Temporary modifiers use a keyed resolver slot, so repeated activation cannot stack or overwrite the permanent Chao build.
+
+The HUD exposes character, pending choice, description, READY and ability feedback; collisionless target/flight markers and a Tails placeholder are intentionally minimal. `CharacterSpecials` publishes activation, acquisition, successful contact, flight start/end and meter events for ArtBro. First charge arrived in roughly 19–25 simulated seconds on the seed-18 Zone survey. Same-seed input comparisons show different trajectories and scoring, not proof of subjective fun or final balance. Human judgment is still needed for homing timing, down-table target risk, flight generosity and controller feedback.
 
 ## Run progression
 

@@ -3,6 +3,7 @@ extends PopupPanel
 ## One session slot, previewed through the same resolver as the live physics.
 var game: Node
 var start_run: Callable
+var next_character: Callable
 var selected_id := "none"
 var cards: Dictionary = {}
 var heading: Label
@@ -42,7 +43,7 @@ func _ready() -> void:
   var stats := _label(card, "", 14)
   var button := _button(card, "Choose " + data.name, func(): choose(id))
   cards[id] = {"stats": stats, "button": button}
- _label(stack, "Effective stats: baseline → with Chao (current profile, tuning and limits).\nSteer and brake include the steering-strength setting.", 14)
+ _label(stack, "Effective stats: baseline → with Chao (next run's profile, tuning and limits).\nSteer and brake include the steering-strength setting.", 14)
  selection = _label(stack, "", 15)
  var actions := HBoxContainer.new()
  actions.add_theme_constant_override("separation", 12)
@@ -86,10 +87,13 @@ func choose(id: String) -> void:
 
 func refresh() -> void:
  var tuning: PhysicsTuning = game.tuning
- var baseline := tuning.preview_chao("none")
- heading.text = "CHAO LAB v0  ·  %s  ·  Seed %d" % [tuning.base.display_name, game.generation_seed]
+ var id_for_run: String = next_character.call() if next_character.is_valid() else game.character_id
+ var profile: PhysicsProfile = tuning.base if id_for_run == game.character_id else CharacterSpecials.CHARACTERS[id_for_run].profile
+ var changes: Dictionary = tuning.overrides if id_for_run == game.character_id else {}
+ var baseline := PhysicsTuning.resolve(profile, changes, [])
+ heading.text = "CHAO LAB v0  ·  %s  ·  Seed %d" % [profile.display_name, game.generation_seed]
  for id: String in cards:
-  var stats := tuning.preview_chao(id)
+  var stats := PhysicsTuning.resolve(profile, changes, [PhysicsTuning.CHAO[id].modifier])
   var text := ""
   for key: String in ["steering_acceleration", "counter_steering_deceleration", "max_steering_speed", "flipper_launch_strength", "ring_magnet_radius"]:
    var label: String = {"steering_acceleration": "Steer", "counter_steering_deceleration": "Brake", "max_steering_speed": "Steer cap", "flipper_launch_strength": "Flip", "ring_magnet_radius": "Ring radius"}[key]
@@ -101,7 +105,7 @@ func refresh() -> void:
    text += "%s: %s → %s %s\n" % [label, str(snappedf(original, 0.1)), str(snappedf(modified, 0.1)), PhysicsProfile.FIELDS[key][4]]
   cards[id].stats.text = text.trim_suffix("\n")
   cards[id].button.text = ("Selected: " if selected_id == id else "Choose ") + PhysicsTuning.CHAO[id].name
- selection.text = "Equipped: %s  |  Choice: %s\nUses the mode and target selected above." % [PhysicsTuning.CHAO[tuning.chao_id].name, PhysicsTuning.CHAO[selected_id].name]
+ selection.text = "Equipped: %s  |  Choice: %s\nUses the mode, character and target selected above." % [PhysicsTuning.CHAO[tuning.chao_id].name, PhysicsTuning.CHAO[selected_id].name]
 
 func apply_choice() -> void:
  if game.generation_pending:

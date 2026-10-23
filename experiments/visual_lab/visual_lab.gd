@@ -116,6 +116,7 @@ func _position_challenge_ui() -> void:
  panel.hint.visible = debug_open
  panel.victory.position = Vector2(295, 310) if debug_open else Vector2(387, 250)
  panel.zone_panel.hud.position = Vector2(235, 150) if debug_open else Vector2(24, 182)
+ panel.character_panel.position = Vector2(625, 155) if debug_open else Vector2(1005, 140)
 
 func _panel_style(color: Color, radius: int = 12) -> StyleBoxFlat:
  var style := StyleBoxFlat.new()
@@ -250,6 +251,9 @@ func _select_pose(value: String) -> void:
  get_viewport().gui_release_focus()
 
 func _set_close_view(enabled: bool) -> void:
+ if enabled and character_id == "tails":
+  status_message = "Tails uses a gameplay placeholder; character study currently shows Sonic only."
+  return
  if zone.state in [ZoneRun.State.DRAFT, ZoneRun.State.COMPLETE]:
   return
  if enabled == close_view:
