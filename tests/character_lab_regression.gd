@@ -3,6 +3,8 @@ extends "res://tests/score_attack_regression.gd"
 ## Input-only comparisons are in character_play_survey.gd.
 var target_body: StaticBody2D
 var wall: StaticBody2D
+var homing_events: Array[String] = []
+var homing_start: Dictionary = {}
 
 func collider(at: Vector2, shape: Shape2D, bumper: bool) -> StaticBody2D:
  var body := StaticBody2D.new()
@@ -25,6 +27,15 @@ func run() -> void:
  game.generation_seed = 18
  root.add_child(game)
  await frames(5)
+ game.specials.homing_started.connect(func(body: Node2D, direction: Vector2):
+  homing_events.append("start")
+  homing_start = {"target": body, "direction": direction, "remaining": game.specials.homing_remaining}
+ )
+ game.specials.homing_ended.connect(func(reason: String):
+  homing_events.append("end:" + reason)
+  check(game.specials.pending_target == null and game.specials.homing_remaining == 0 and game.specials.homing_direction == Vector2.ZERO, "Homing end observes cleared state: " + reason)
+ )
+ game.specials.special_hit.connect(func(_body: Node2D, _multiplier: int): homing_events.append("hit"))
  game.set_physics_process(false)
  game.ring_field.set_physics_process(false)
  var circle := CircleShape2D.new()
@@ -44,17 +55,21 @@ func run() -> void:
  await frames(2)
  game.special_meter = 99
  check(not game.specials.activate() and game.special_meter == 99, "Insufficient charge cannot activate or spend")
+ check(homing_events.is_empty(), "Failed activation emits no homing lifecycle events")
  for incoming: Vector2 in [Vector2.ZERO, Vector2(0, 400), Vector2(-250, -200), Vector2(0, 1200)]:
   await place(Vector2(2000, 2000), incoming)
+  homing_events.clear()
   game.special_meter = 100
   var before: int = game.score
   check(game.specials.activate() and game.special_meter == 0, "Clear target activates bounded impulse: " + str(incoming))
+  check(homing_start.target == target_body and homing_start.direction.is_equal_approx(game.ball.position.direction_to(target_body.position)) and homing_start.remaining == game.specials.definition.hit_window, "Homing start supplies target, direction and active duration")
   for tick in 90:
    await frames(1)
    if game.score > before:
     break
   check(game.score - before == 500 and game.specials.pending_target == null, "Physical contact awards one 5x hit: " + str(incoming))
   check(game.special_meter == 2, "Special hit uses ordinary bumper recharge")
+  check(homing_events == ["start", "end:Hit", "hit"], "Actual hit ends homing once before impact feedback")
  await place(Vector2(3000, 2000))
  game.special_meter = 100
  check(not game.specials.activate() and game.special_meter == 100, "No nearby target keeps meter")
@@ -66,7 +81,19 @@ func run() -> void:
  var before_block: int = game.score
  await frames(85)
  check(game.score == before_block and game.specials.pending_target == null, "Blocked shot expires without remote scoring or tunneling")
+ check(homing_events.back() == "end:Expired", "Missed shot exposes expiry without an impact event")
  wall.position.y = 3000
+ for reason: String in ["Drain", "Reset", "New run", "Character changed", "Act complete"]:
+  await place(Vector2(2000, 2000))
+  game.special_meter = 100
+  homing_events.clear()
+  game.specials.activate()
+  if reason == "Act complete":
+   game.specials.clear_homing(reason)
+  else:
+   game.specials.reset(false, reason)
+  game.specials.reset(false, reason)
+  check(homing_events == ["start", "end:" + reason], "Cancellation emits once with reason: " + reason)
  game.specials.select_character("tails")
  game.character_id = "tails"
  game.tuning.equip_chao("ice")

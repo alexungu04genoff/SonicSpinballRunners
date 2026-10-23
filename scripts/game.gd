@@ -477,7 +477,7 @@ func _physics_process(delta: float) -> void:
    status_message = "SCORE ATTACK CLEAR! Upper goal reached."
    get_tree().paused = true
   if zone_enabled and zone.observe_motion(start, ball.position):
-   specials.clear_homing()
+   specials.clear_homing("Act complete")
    _sync_zone_gates()
    status_message = "ACT %d CLEAR — choose your Chao" % (zone.active_act + 1)
    get_tree().paused = true

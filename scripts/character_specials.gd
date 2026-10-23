@@ -4,6 +4,8 @@ extends Node
 signal character_changed(id: String)
 signal special_activated(id: String)
 signal target_acquired(target: Node2D)
+signal homing_started(target: Node2D, direction: Vector2)
+signal homing_ended(reason: String)
 signal special_hit(target: Node2D, multiplier: int)
 signal flight_started
 signal flight_ended(reason: String)
@@ -18,6 +20,8 @@ var definition: CharacterDefinition = CHARACTERS.sonic
 var target: Node2D
 var pending_target: Node2D
 var homing_remaining := 0.0
+## Target-facing unit vector in gameplay XY at activation, zero when inactive.
+var homing_direction := Vector2.ZERO
 var flight_remaining := 0.0
 var feedback := "Collect rings and hit bumpers to charge"
 var _scan_remaining := 0.0
@@ -104,7 +108,9 @@ func activate() -> bool:
   game.ball.apply_central_impulse(impulse * game.ball.mass)
   pending_target = target
   homing_remaining = definition.hit_window
+  homing_direction = offset.normalized()
   feedback = "HOMING ATTACK — hit the marked bumper!"
+  homing_started.emit(pending_target, homing_direction)
  else:
   flight_remaining = definition.flight_duration
   _flight_weight = -1.0
@@ -123,19 +129,23 @@ func activate() -> bool:
 
 func hit_multiplier(body: Node2D) -> int:
  if homing_remaining > 0.0 and is_instance_valid(pending_target) and body == pending_target:
-  clear_homing()
+  clear_homing("Hit")
   feedback = "HOMING HIT!  ×%d target points" % definition.hit_multiplier
   special_hit.emit(body, definition.hit_multiplier)
   return definition.hit_multiplier
  return 1
 
-func clear_homing() -> void:
+func clear_homing(reason: String = "Cancelled") -> void:
+ var was_homing := homing_direction != Vector2.ZERO
  pending_target = null
  homing_remaining = 0.0
+ homing_direction = Vector2.ZERO
  _set_target(null)
+ if was_homing:
+  homing_ended.emit(reason)
 
 func reset(clear_meter: bool = false, reason: String = "Reset") -> void:
- clear_homing()
+ clear_homing(reason)
  var was_flying := flight_remaining > 0.0
  flight_remaining = 0.0
  game.tuning.clear_temporary(FLIGHT_KEY)
@@ -168,7 +178,7 @@ func _physics_process(delta: float) -> void:
  if homing_remaining > 0.0:
   homing_remaining = maxf(0.0, homing_remaining - delta)
   if homing_remaining == 0.0:
-   clear_homing()
+   clear_homing("Expired")
    feedback = "Homing window ended — no bonus"
  _scan_remaining -= delta
  if _scan_remaining <= 0.0:
