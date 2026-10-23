@@ -196,6 +196,9 @@ func can_regenerate() -> bool:
  return not generation_pending and (get_tree().paused or ball.serve_pending)
 
 func request_generation(seed_value: int, preference: int = -1, grid_mode: int = -1, challenge_settings: Dictionary = {}) -> bool:
+ if challenge_settings.has("chao") and not PhysicsTuning.CHAO.has(challenge_settings.chao):
+  status_message = "Unknown Chao; current run preserved."
+  return false
  if not can_regenerate():
   status_message = "Pause before generating a table, or wait at serve."
   return false
@@ -256,6 +259,10 @@ func _regenerate(seed_value: int, preference: int, grid_mode: int = -1, challeng
  chunks.append(lower)
  for i in range(chunks.size() - 2, -1, -1):
   _add_chunk_flippers(chunks[i])
+ # Commit the loadout only after the replacement layout has passed validation.
+ # Ordinary replay/regeneration retains the slot; no modifier list accumulates.
+ if challenge_settings.has("chao"):
+  tuning.equip_chao(challenge_settings.chao)
  _apply_tuning()
  _populate_rings()
  for flipper: PlaygroundFlipper in flippers:

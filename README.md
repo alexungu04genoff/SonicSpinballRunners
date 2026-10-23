@@ -37,6 +37,8 @@ Both flippers can be held simultaneously. Special input currently displays a sta
 
 ## What is playable
 
+- **Chao Lab v0:** open **Chao: … · Lab** beside Start / replay, at serve or while paused. Compare Ice, Spring and Magnet, then **Equip + replay same seed**. This uses the mode/target selected above and resets score, rings and ball; **None** provides a baseline. The equipped name stays visible during play. See [Chao tuning and lifecycle](#chao-lab-v0).
+
 - **Score Attack:** select it in the strip below the score, set a target, and press **Start / replay** while at serve or paused. Launch normally. The provisional default is **1,500 points** (for example, ten bumpers and twenty rings). At the threshold, the amber upper goal turns green. Touch its ring with the ball to win; points alone never complete the run. The victory panel offers **Replay same seed**, **Next table**, and **Free Play**. Starting/replaying clears score, rings and timers, while preserving physics tuning, difficulty and construction mode. Drains and R/ball reset preserve earned progress; use Start / replay for a fresh challenge. Paused builds stay paused; replaying a victory resumes at serve. Mode controls remain visible with F1.
 
 - A fixed bottom deck, three reusable middle layouts with two openings, and eight upper layouts, selected by a reproducible seed and difficulty preference with optional mirroring and horizontal shifting.
@@ -47,7 +49,7 @@ Both flippers can be held simultaneously. Special input currently displays a sta
 - Rings award 25 points; bumpers award 100. Clearing all rings awards 500 and restores the ring rack after one second.
 - Rings contribute five special-meter points and bumpers two, scaled by the profile. Meter caps at 100; specials remain future work.
 - Rings stay at their authored positions until the configurable magnetic radius claims them. Score and meter update immediately; their visuals accelerate toward the moving ball over 0.20 seconds. Collection checks the ball's swept path and never alters ball momentum.
-- Automatic drain recovery, a fixed serve, two test profiles, an example Chao modifier, and live tuning.
+- Automatic drain recovery, a fixed serve, two test profiles, one equipped Chao and live tuning.
 
 ## Runtime structure
 
@@ -127,7 +129,7 @@ Difficulty is a rough geometry preference, not a physics mode or safety override
 
 The simulation runs at 120 Hz with world gravity 700 px/s². Ball mass is one kilogram. All profile fields, labels, units, and allowed limits are centralized in `PhysicsProfile.FIELDS`.
 
-The panel edits session values before modifiers. Its **Active values** section shows final effective values. Click a numeric field, enter a value, then press Enter to return keyboard control to the game. Gameplay keys are suppressed while editing a numeric field. Profile switching clears session edits but preserves the Chao toggle. **Restore profile defaults** clears edits for the selected profile and also preserves that toggle. Ball reset preserves tuning, score, rings, and meter.
+The panel edits session values before modifiers. Its **Active values** section shows final effective values. Click a numeric field, enter a value, then press Enter to return keyboard control to the game. Gameplay keys are suppressed while editing a numeric field. Profile switching and **Restore profile defaults** clear session edits while preserving the equipped Chao. Ball reset preserves tuning, score, rings, and meter.
 
 | Field | Balanced | Floaty | Meaning |
 | --- | ---: | ---: | --- |
@@ -200,7 +202,23 @@ effective = clamp((starting_value + sum(additions))
 
 More explicitly, choose the session override when one exists; otherwise choose the character value. Add every modifier's additive amount, multiply every multiplier, then clamp once. Missing additions are zero; missing multipliers are one. Resolve from scratch after every change; resources are never modified. Multipliers stack multiplicatively (two ×1.25 effects produce ×1.5625), subject to field limits. There is no modifier inventory yet.
 
-Practice Chao applies ×1.25 steering acceleration and ×1.15 flipper launch strength. Bounds include steering strength 0–0.3, acceleration 0–4000, flipper strength 200–2200, gravity 0.1–2.0, bumper multiplier 0.25–2.5, and restitution 0–0.95. All other limits are in the same schema and enforced by both resolver and panel.
+Practice Chao applies ×1.25 steering acceleration and ×1.15 flipper launch strength. It occupies the same single slot as Chao Lab: enabling it replaces the current Chao; disabling it equips None. The debug toggle now starts a fresh run and is available only at serve or pause. Bounds include steering strength 0–0.3, acceleration 0–4000, flipper strength 200–2200, gravity 0.1–2.0, bumper multiplier 0.25–2.5, and restitution 0–0.95. All other limits are in the same schema and enforced by both resolver and panel.
+
+### Chao Lab v0
+
+These are provisional tuning values, implemented as `PhysicsModifier` resources in `data/chao/`. All resolve through the existing `PhysicsTuning` pipeline. The slot defaults to None; no inventory, rarity, drafting, persistence or campaign rules are introduced.
+
+| Chao | Effect | Balanced / Quick-tight effective values |
+| --- | --- | --- |
+| Ice — Control | ×1.5 steering acceleration, ×1.75 counter-steering, ×1.25 steering contribution cap | Steering 220 → 330 px/s² after strength; counter-steering 400 → 700 px/s²; cap 120 → 150 px/s |
+| Spring — Power | ×1.35 flipper launch strength | 1,050 → 1,417.5 px/s impulse per mass before leverage/contact response |
+| Magnet — Collection | ×2 ring magnet radius | 50 → 100 px, immediate score and unchanged cosmetic flight |
+
+The lab compares all three against your current unmodified profile/session settings and displays clamped effective values. Previewing a choice does not equip it; closing restores the prior pause state. Equipping rebuilds the same seed with the selected Free Play/Score Attack mode and target, clearing the run's counters and pending timers. A rejected build leaves the old loadout intact. Paused changes stay paused; victory replays resume at serve.
+
+Ordinary replay, Next table, regeneration, ball reset and drains retain the equipped Chao. Profile changes/default restoration retain it too. Only one modifier enters the resolver, including the legacy Practice choice; repeated equip/rebuild never duplicates it. Gameplay physics never branches on a Chao name. `PhysicsTuning.equip_chao(id)` is the simple future selection hook; current UI changes go through validated fresh-run generation.
+
+For comparison, build Normal seed 18, keep the same profile/tuning, and replay with None, Ice, Spring and Magnet. Actual 120 Hz probes show about 49% more half-second lateral travel with Ice and about 20–22% greater controlled launch height with Spring. Table collisions and timing make full-run results nonlinear; extra power does not guarantee a higher score or easier shot. See [verification and the short human checklist](docs/VERIFICATION.md).
 
 ## Verification
 

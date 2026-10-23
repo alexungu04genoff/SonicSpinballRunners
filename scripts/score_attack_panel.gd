@@ -13,6 +13,8 @@ var next_button: Button
 var free_play_button: Button
 var _showing_victory := false
 var _celebration: Tween
+var chao_button: Button
+var chao_lab: ChaoLabPanel
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
@@ -36,10 +38,15 @@ func _ready() -> void:
  target_field.get_line_edit().text_submitted.connect(func(_text: String): target_field.get_line_edit().release_focus())
  row.add_child(target_field)
  start_button = _button(row, "Start / replay", func():
-  target_field.apply()
-  game.request_generation(game.generation_seed, -1, -1, {"enabled": mode_selector.selected == 1, "target": int(target_field.value)})
+  start_run()
  )
  start_button.tooltip_text = "Apply mode and target to a fresh run on this seed. Score and rings reset; physics tuning stays."
+ chao_lab = ChaoLabPanel.new()
+ chao_lab.game = game
+ chao_lab.start_run = start_run
+ add_child(chao_lab)
+ chao_button = _button(row, "Chao: None", chao_lab.open_lab)
+ chao_button.tooltip_text = "Chao Lab: compare three upgrades. Choose at serve or pause; equipping restarts this seed."
  hint = _label(row, "", 12)
  victory = PanelContainer.new()
  victory.position = Vector2(295, 310)
@@ -98,10 +105,20 @@ func refresh() -> void:
  mode_selector.select(1 if game.score_attack_enabled else 0)
  target_field.value = game.score_attack_target
 
+func start_run(chao_id: String = "") -> bool:
+ target_field.apply()
+ var settings := {"enabled": mode_selector.selected == 1, "target": int(target_field.value)}
+ if not chao_id.is_empty():
+  settings.chao = chao_id
+ return game.request_generation(game.generation_seed, -1, -1, settings)
+
 func _process(_delta: float) -> void:
+ chao_button.text = "Chao: %s · Lab" % PhysicsTuning.CHAO[game.tuning.chao_id].name.trim_suffix(" Chao")
+ chao_button.modulate = PhysicsTuning.CHAO[game.tuning.chao_id].color
+ chao_button.disabled = not game.can_regenerate()
  start_button.disabled = not game.can_regenerate()
  target_field.editable = mode_selector.selected == 1
- hint.text = "Apply at serve or pause. Resets the run." if start_button.disabled else "Apply mode + target to a fresh run."
+ hint.text = "Pause to edit" if start_button.disabled else "Resets the run"
  var completed: bool = game.score_attack.state == ScoreAttack.State.COMPLETE
  victory.visible = completed
  if completed and not _showing_victory:

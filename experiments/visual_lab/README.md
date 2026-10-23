@@ -8,6 +8,8 @@ The scene wraps the existing sandbox and its generated layout. Original procedur
 
 Double-click **Play Green Hill.cmd** in this worktree's repository root. **Physics Playground.cmd** opens the original debugging presentation. Both launchers use the same physics, generator, profiles and scoring code. The local prepared Sonic model is reused automatically; preparation is not repeated at launch.
 
+**Chao Lab v0:** the shared **Chao: … · Lab** button beside Start / replay opens three simple colored choices and effective-stat comparisons. Choose at serve or pause, then equip into a fresh run on the same seed. It respects the selected mode/target and keeps the equipped name visible with F1 hidden. Replay, drains and table changes retain one slot; the debug Practice toggle replaces that slot. Chao names/colors are placeholders; terrain and character assets are unchanged. See the main README for values and lifecycle rules.
+
 Alternatively, run PowerShell from this worktree's repository root:
 
 ```powershell

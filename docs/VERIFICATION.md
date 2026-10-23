@@ -2,6 +2,28 @@
 
 Latest checks: 2026-10-23. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: OpenGL Compatibility on NVIDIA GeForce RTX 4060.
 
+## Chao Lab v0
+
+`tests/chao_lab_regression.gd` passed **29 checks**, headlessly and graphically. Coverage includes single-slot resolution, repeated equip, immutable profiles, clamped overrides, profile changes, Practice replacement and toggle synchronization, preview/cancel pause restoration, same-seed equip, real magnet pickup/score signals, rejection during active play, ball reset, drain/respawn/relaunch, typed Score Attack target/mode application, exact threshold, victory replay, grid/difficulty regeneration, invalid IDs and failed-build preservation. An intentionally invalid recipe emits its expected rejection diagnostic. Final lab and equipped HUD captures were inspected in Green Hill; all three cards and controls fit, and the equipped name remains visible with the debug HUD hidden.
+
+Actual 120 Hz physics comparisons use fresh bodies and identical initial conditions, followed only by ordinary input:
+
+| Probe | None | Chao | Observation |
+| --- | ---: | ---: | --- |
+| Half-second right input, Balanced | 26.14 px travel | Ice: 39.03 px | About 49% more lateral travel; sustained contribution remains capped at 150 px/s. |
+| Counter-steer from −100 px/s for 15 ticks | −53.33 px/s | Ice: −18.33 px/s | Faster braking without instant reversal. |
+| One controlled paddle strike, Balanced | 1,816.8 px rise | Spring: 2,220.6 px | About 22% more height; one impulse only. |
+| Same strike, Floaty | 3,052.8 px rise | Spring: 3,646.2 px | About 19% more height; one impulse only. |
+| Stationary ring 80 px from ball | Unclaimed | Magnet: claimed immediately | Existing score/pickup signals fire once; no ball force or ring-home displacement. |
+
+Spring's initial ×1.25 effect was too subtle in the chosen moving-paddle contact. ×1.35 produced a clear gain in both profiles. Larger sampled values changed the native contact timing and did not monotonically increase height, so the implementation retains the shared mechanics and a moderate multiplier. These isolated heights are measurement fixtures, not reachable heights inside a capped table.
+
+`tests/chao_play_survey.gd` passed **8 containment checks**: Normal seed 18, None and all three Chao, Balanced and Floaty, 40 simulated seconds each. The same feedback-input policy drives every sample from the normal serve; it never edits position or velocity after launch. All remained within side/top bounds, with distinct trajectories, ring counts and scores. None dominated all runs: Balanced scores were 3,975 / 3,875 / 3,100 / 2,825 (None / Ice / Spring / Magnet); Floaty scores were 2,250 / 3,150 / 2,525 / 4,475. These are short diagnostic observations, not player success rates or proof that an upgrade always raises score. The precise ring-radius comparison above isolates Magnet's benefit from chaotic trajectory changes.
+
+Existing checks passed: physics **38**, profiles **8**, rings **11**, vertical traversal **25**, Score Attack **26**, and steering UI smoke. The safe launcher import and Green Hill startup also passed. Logs, survey JSON and captures are under ignored `test-results/`. Sandbox runs still report the unrelated Windows certificate-store diagnostic.
+
+**Human check:** Replay Normal seed 18 with None, Ice, Spring and Magnet at the same profile and target. Judge whether Ice makes late saves manageable, whether Spring's extra power rewards retiming rather than feeling erratic, and whether Magnet's expanded collection is readable. Repeat once in Floaty and an Easy grid layout. Gamepad menu navigation and subjective fun remain human checks. No Chao artwork, campaign, drafting or permanent progression was added.
+
 ## Launcher indentation repair
 
 Reproduced the reported `game.gd:163` parse failure using a fresh default editor profile: both editor startup and `--import` converted its four-space indentation to a tab during editor restoration. The earlier test profile's one-space preference masked this behavior. Restored the affected local line and changed the Windows launcher to use a private, version-matched import profile with `convert_indent_on_save = false`. The caller's environment is restored in `finally`, before gameplay; global editor settings are untouched.

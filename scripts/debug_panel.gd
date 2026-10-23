@@ -22,6 +22,7 @@ var score_label: Label
 var message_label: Label
 var pause_label: Label
 var challenge_panel: ScoreAttackPanel
+var practice_toggle: CheckButton
 var values: RichTextLabel
 var spinboxes: Dictionary = {}
 var _refreshing: bool = false
@@ -97,11 +98,13 @@ func _ready() -> void:
  )
  stack.add_child(steering_presets)
  var modifier := CheckButton.new()
- modifier.text = "Chao: +25% normal accel / +15% flip"
+ practice_toggle = modifier
+ modifier.text = "Practice Chao (replaces equipped Chao)"
+ modifier.tooltip_text = "Legacy test: +25% steering acceleration / +15% flip. Starts a fresh run; never stacks with Chao Lab."
  modifier.add_theme_font_size_override("font_size", 13)
  modifier.toggled.connect(func(enabled: bool):
-  tuning.modifier_enabled = enabled
-  tuning.rebuild()
+  game.request_generation(game.generation_seed, -1, -1, {"chao": "practice" if enabled else "none"})
+  modifier.set_pressed_no_signal(tuning.modifier_enabled)
   modifier.release_focus()
  )
  stack.add_child(modifier)
@@ -356,6 +359,7 @@ func refresh_fields() -> void:
  _refreshing = false
 
 func refresh_effective() -> void:
+ practice_toggle.set_pressed_no_signal(tuning.modifier_enabled)
  if not is_instance_valid(values):
   return
  var text: String = ""
@@ -373,6 +377,7 @@ func refresh_effective() -> void:
    break
 
 func _process(delta: float) -> void:
+ practice_toggle.disabled = not game.can_regenerate()
  var focus: Control = get_viewport().gui_get_focus_owner()
  game.controls.input_blocked = focus is LineEdit
  pause_label.visible = get_tree().paused and game.score_attack.state != ScoreAttack.State.COMPLETE
