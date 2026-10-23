@@ -4,6 +4,7 @@ extends Control
 var game: Node
 var mode_selector: OptionButton
 var target_field: SpinBox
+var target_caption: Label
 var start_button: Button
 var hint: Label
 var victory: PanelContainer
@@ -15,6 +16,7 @@ var _showing_victory := false
 var _celebration: Tween
 var chao_button: Button
 var chao_lab: ChaoLabPanel
+var zone_panel: ZonePanel
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
@@ -26,10 +28,11 @@ func _ready() -> void:
  mode_selector = OptionButton.new()
  mode_selector.add_item("Free Play")
  mode_selector.add_item("Score Attack")
+ mode_selector.add_item("Green Hill Zone")
  mode_selector.custom_minimum_size.x = 145
  mode_selector.item_selected.connect(func(_index: int): mode_selector.release_focus())
  row.add_child(mode_selector)
- _label(row, "Target", 14)
+ target_caption = _label(row, "Target", 14)
  target_field = SpinBox.new()
  target_field.min_value = 25
  target_field.max_value = 1000000
@@ -80,7 +83,14 @@ func _ready() -> void:
  var footer := _label(stack, "Same physics. Unlimited retries. One successful climb.", 14)
  footer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
  victory.visible = false
+ zone_panel = ZonePanel.new()
+ zone_panel.game = game
+ add_child(zone_panel)
  game.score_attack.changed.connect(refresh)
+ game.zone.changed.connect(func():
+  if game.zone.state == ZoneRun.State.INACTIVE or game.generation_pending:
+   refresh()
+ )
  refresh()
 
 func _label(parent: Node, text: String, font_size: int) -> Label:
@@ -102,22 +112,24 @@ func _button(parent: Node, text: String, action: Callable) -> Button:
  return button
 
 func refresh() -> void:
- mode_selector.select(1 if game.score_attack_enabled else 0)
+ mode_selector.select(2 if game.zone_enabled else (1 if game.score_attack_enabled else 0))
  target_field.value = game.score_attack_target
 
 func start_run(chao_id: String = "") -> bool:
  target_field.apply()
- var settings := {"enabled": mode_selector.selected == 1, "target": int(target_field.value)}
+ var settings := {"enabled": mode_selector.selected == 1, "target": int(target_field.value), "zone": mode_selector.selected == 2}
  if not chao_id.is_empty():
   settings.chao = chao_id
  return game.request_generation(game.generation_seed, -1, -1, settings)
 
 func _process(_delta: float) -> void:
- chao_button.text = "Chao: %s · Lab" % PhysicsTuning.CHAO[game.tuning.chao_id].name.trim_suffix(" Chao")
+ chao_button.text = "Act rewards" if game.zone_enabled else "Chao: %s · Lab" % PhysicsTuning.CHAO[game.tuning.chao_id].name.trim_suffix(" Chao")
  chao_button.modulate = PhysicsTuning.CHAO[game.tuning.chao_id].color
- chao_button.disabled = not game.can_regenerate()
+ chao_button.disabled = not game.can_regenerate() or game.zone_enabled or mode_selector.selected == 2
  start_button.disabled = not game.can_regenerate()
  target_field.editable = mode_selector.selected == 1
+ target_field.visible = mode_selector.selected != 2
+ target_caption.visible = mode_selector.selected != 2
  hint.text = "Pause to edit" if start_button.disabled else "Resets the run"
  var completed: bool = game.score_attack.state == ScoreAttack.State.COMPLETE
  victory.visible = completed

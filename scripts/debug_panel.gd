@@ -377,10 +377,10 @@ func refresh_effective() -> void:
    break
 
 func _process(delta: float) -> void:
- practice_toggle.disabled = not game.can_regenerate()
+ practice_toggle.disabled = not game.can_regenerate() or game.zone_enabled
  var focus: Control = get_viewport().gui_get_focus_owner()
  game.controls.input_blocked = focus is LineEdit
- pause_label.visible = get_tree().paused and game.score_attack.state != ScoreAttack.State.COMPLETE
+ pause_label.visible = get_tree().paused and game.score_attack.state != ScoreAttack.State.COMPLETE and game.zone.state not in [ZoneRun.State.DRAFT, ZoneRun.State.COMPLETE]
  _telemetry_elapsed += delta
  if _telemetry_elapsed < 0.10:
   return
@@ -389,6 +389,8 @@ func _process(delta: float) -> void:
  for button: Button in generation_buttons:
   button.disabled = not safe
  generation_hint.text = "Ready to build. Resets score, rings and ball; keeps tuning." if safe else "Pause (Escape / Menu) to generate safely."
+ if safe and game.zone_enabled:
+  generation_hint.text = "Fresh Zone: Easy geometry; resets scores, Chao and checkpoints."
  var chunk_index: int = game.current_chunk_index()
  var chunk_name: String = game.chunks[chunk_index].data.chunk_id if chunk_index >= 0 else "Outside course"
  traversal_telemetry.text = "Ball: %s\nCamera: %s\nTarget: %.0f, %.0f px" % [chunk_name, "Follow" if game.presentation.camera_follow_enabled else "Overview", game.presentation.camera_target.x, game.presentation.camera_target.y]

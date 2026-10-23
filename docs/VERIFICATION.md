@@ -2,6 +2,43 @@
 
 Latest checks: 2026-10-23. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: OpenGL Compatibility on NVIDIA GeForce RTX 4060.
 
+## Green Hill Zone prototype
+
+The optional Zone uses nine connected chunks and the same invisible 2D body. Existing Free Play and standalone Score Attack remain three-section modes. New deterministic checks:
+
+- `zone_generation_regression.gd`: **21 checks**. Twelve seed/grid combinations, repeatability, unchanged source resources, Easy estimates, eight validated seams, one launch deck and one final cap, transformed checkpoint/portal clearance, complete flipper swings, and real 2D passage through all eight open seams at 1,200 px/s.
+- `zone_regression.gd`: **34 checks**. A 12,000 px/s locked-gate rebound; exact score threshold through existing ring callback; physical boundary crossing; mandatory pause; unchanged body identity/position/velocity across drafts; checkpoint drain/automatic retry; isolated Act scoring and ring eligibility; final reward/victory; replay; both grid variants; invalid-config preservation; and restoration of the prior sandbox Chao. State fixtures intentionally set points/trajectories; they are separate from the play witness. Invalid configuration emits an expected rejection diagnostic.
+- `chao_build_regression.gd`: **18 checks** for bounded copies/slots, resolver order and clamps, isolated previews, atomic invalid edits, repeated equip, profile changes, Practice replacement and reset.
+- `zone_ui_smoke.gd`: **17 headless checks**, with additional screenshot checks when rendered. Both presentations were inspected for readable HUD/draft/completion, viewport fit, pointer blocking, keyboard focus containment, duplicate-pick controls and replay cleanup.
+
+Existing regression passes during integration: physics **38**, rings **11**, profiles **8**, Score Attack **26**, Chao Lab **29**, generation UI **15**, and vertical camera **22**. The Score Attack regression also ran graphically. These retain Easy/Normal/Hard and grid coverage. No steering, flipper-strike or ball integration formula changed.
+
+### Actual input-only completion
+
+`tests/zone_play_survey.gd` launches normally and uses the ordinary input adapter, actual ring/bumper callbacks, automatic drains and public draft choices. It never assigns ball position/velocity or score. Reproduce with:
+
+```powershell
+& 'C:\Program Files\Godot\Godot.exe' --headless --path . --fixed-fps 120 --script res://tests/zone_play_survey.gd -- --seed=18 --grid=0 --trigger=58 --policy=2 --seconds=240
+```
+
+Balanced, seed **18**, mixed Easy relays, alternating half-strength steering and a 58 px flipper trigger completed in **204.93 simulated seconds**, with **12,750 points**, **182 rings**, **18 balls** and **Spring / Ice / Magnet**. All three scores came from existing gameplay events. No side/top escape occurred.
+
+The same witness also ran graphically in Green Hill with identical event times, positions, velocities and result. The captured completion screen was inspected. For a rendered replay, remove `--headless` and add `--green-hill` after `--`. Fixed-fps diagnostic runs advance simulation per rendered frame; their wall-clock duration is not a normal-game performance measurement.
+
+| Act | Score unlock (run seconds) | Physical exit / portal (run seconds) | Act score at completion | Reward |
+| --- | ---: | ---: | ---: | --- |
+| 1 | 8.21 | 38.57 | 2,975 | Spring |
+| 2 | 57.77 | 131.60 | 5,000 | Ice |
+| 3 | 152.05 | 204.93 | 4,775 | Magnet |
+
+The first two boundary crossings retained upward velocities of approximately **488** and **1,825 px/s**. A different seed-18 steering policy completed only two Acts within 240 seconds despite enough points; seed 1 without ordinary steering completed only one. The score phase is achievable, while the climb remains meaningful. This is evidence of a playable loop, not a human enjoyment, win-rate or balance study.
+
+Provisional targets stay **750 / 1,250 / 1,750** in `data/green_hill_zone.tres`. Deliberately modest thresholds avoid extended farming before the climb. Rewards use a fixed three-choice pool, with at most two copies per species and five slots; this Zone awards three picks. Completed gates latch physically, and falling toward a latch triggers the current checkpoint retry. This simple return mechanism avoids both completed-Act fallback and a flat-floor trap.
+
+Graphical UI checks passed **21/21** in Green Hill after a replay fix. Unpausing directly inside deferred regeneration exposed Godot's [2D deferred-unpause issue](https://github.com/godotengine/godot/issues/122378). Replay now resumes on the next process frame, after the rebuild, with no native query-list warning. Draft choices preserve their immediate input-driven resume. Existing standalone Score Attack replay still passes.
+
+Limitations: full nine-chunk validation measured approximately **3.9–4.3 seconds** alone, or **5.3–7.4 seconds** under concurrent test load. Overview fits all nine sections but is necessarily small. Human playtesting should judge recovery timing, gate returns, checkpoint serve comfort, the reward pause, and whether repeat copies overpower later climbs. The final reward is retained in the victory summary only; there is no second Zone or persistence across app restarts.
+
 ## Chao Lab v0
 
 `tests/chao_lab_regression.gd` passed **29 checks**, headlessly and graphically. Coverage includes single-slot resolution, repeated equip, immutable profiles, clamped overrides, profile changes, Practice replacement and toggle synchronization, preview/cancel pause restoration, same-seed equip, real magnet pickup/score signals, rejection during active play, ball reset, drain/respawn/relaunch, typed Score Attack target/mode application, exact threshold, victory replay, grid/difficulty regeneration, invalid IDs and failed-build preservation. An intentionally invalid recipe emits its expected rejection diagnostic. Final lab and equipped HUD captures were inspected in Green Hill; all three cards and controls fit, and the equipped name remains visible with the debug HUD hidden.

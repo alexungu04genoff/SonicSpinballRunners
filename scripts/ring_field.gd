@@ -9,12 +9,19 @@ var rings: Array[Dictionary] = []
 var ball: PlaygroundBall
 var tuning: PhysicsTuning
 var previous_ball_position: Vector2
+## Empty bounds preserve sandbox behavior; Zone mode collects only the active Act.
+var collection_bounds := Rect2()
+
+func ring_eligible(ring: Dictionary) -> bool:
+ return not collection_bounds.has_area() or collection_bounds.has_point(ring.home)
 
 func add_ring(at: Vector2) -> void:
  rings.append({"home": at, "position": at, "active": true})
 
 func reset_rings() -> void:
  for ring: Dictionary in rings:
+  if not ring_eligible(ring):
+   continue
   ring.position = ring.home
   ring.active = true
  rack_reset.emit()
@@ -28,7 +35,7 @@ func _physics_process(_delta: float) -> void:
  var radius := maxf(CONTACT_RADIUS, float(tuning.effective.ring_magnet_radius))
  for i in rings.size():
   var ring: Dictionary = rings[i]
-  if not ring.active:
+  if not ring.active or not ring_eligible(ring):
    continue
   var closest: Vector2 = Geometry2D.get_closest_point_to_segment(ring.position, previous_ball_position, ball.position)
   if closest.distance_squared_to(ring.position) <= radius * radius:

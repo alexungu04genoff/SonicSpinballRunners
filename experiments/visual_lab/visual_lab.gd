@@ -33,6 +33,8 @@ func _ready() -> void:
    generation_seed = clampi(int(argument.trim_prefix("--seed=")), 0, 2147483647)
   elif argument.begins_with("--grid="):
    generation_grid_mode = clampi(int(argument.trim_prefix("--grid=")), 0, 2)
+  elif argument == "--zone":
+   zone_enabled = true
  super._ready()
  if not is_instance_valid(ball):
   return
@@ -91,6 +93,7 @@ func _build_presentation() -> void:
  var goal := ScoreAttackGoal.new()
  goal.challenge = score_attack
  presentation.add_child(goal)
+ _add_zone_presentation()
  character = SonicPresenter.new()
  character.name = "SonicVisualAdapter"
  character.ball = ball
@@ -112,6 +115,7 @@ func _position_challenge_ui() -> void:
  row.position = Vector2(25, 108) if debug_open else Vector2(24, 140)
  panel.hint.visible = debug_open
  panel.victory.position = Vector2(295, 310) if debug_open else Vector2(387, 250)
+ panel.zone_panel.hud.position = Vector2(235, 150) if debug_open else Vector2(24, 182)
 
 func _panel_style(color: Color, radius: int = 12) -> StyleBoxFlat:
  var style := StyleBoxFlat.new()
@@ -246,6 +250,8 @@ func _select_pose(value: String) -> void:
  get_viewport().gui_release_focus()
 
 func _set_close_view(enabled: bool) -> void:
+ if zone.state in [ZoneRun.State.DRAFT, ZoneRun.State.COMPLETE]:
+  return
  if enabled == close_view:
   return
  if enabled and debug_open:
@@ -284,6 +290,8 @@ func _toggle_overview() -> void:
  get_viewport().gui_release_focus()
 
 func toggle_debug() -> void:
+ if zone.state == ZoneRun.State.DRAFT:
+  return
  if close_view:
   _set_close_view(false)
  debug_open = not debug_open
@@ -339,7 +347,8 @@ func _process(_delta: float) -> void:
   score_header_lab.text = "RINGS / SCORE"
   score_label_lab.add_theme_font_size_override("font_size", 25)
  var section := current_chunk_index()
- status_label.text = "Seed %d · %s · %s · Section %d/3" % [generation_seed, TableGenerator.DIFFICULTY_NAMES[generation_difficulty], GRID_MODE_NAMES[generation_grid_mode], maxi(1, section + 1)]
+ var construction_name: String = "Zone mix" if zone_enabled and generation_grid_mode == 0 else GRID_MODE_NAMES[generation_grid_mode]
+ status_label.text = "Seed %d · %s · %s · Section %d/%d" % [generation_seed, TableGenerator.DIFFICULTY_NAMES[generation_difficulty], construction_name, maxi(1, section + 1), chunks.size()]
  status_label.tooltip_text = character.model_status
  if not character.model_available:
   status_label.text += " · Spin-ball fallback"

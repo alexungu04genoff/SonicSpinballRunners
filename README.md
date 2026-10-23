@@ -2,7 +2,7 @@
 
 A local Godot 4/GDScript pinball prototype. Gameplay uses an invisible 2D rigid body and 2D collision geometry. Three connected sections form a tall course; a separate, collisionless 3D scene renders raised primitives with a smooth following perspective camera or fixed overview. No external artwork or dependencies are required.
 
-Free Play remains the default endless experimental physics playground. Optional Score Attack adds a single-table objective: earn points, unlock an upper goal, then physically reach it. There are no acts, zones, lives, bosses, or roguelite progression. The ball number is a serve counter, not a lives limit. Primitive, blocky N64-style visuals are sufficient while we tune physics, flippers, bumpers, steering, profiles, modifiers, and layouts.
+Free Play remains the default endless experimental physics playground. Optional Score Attack adds a single-table objective: earn points, unlock an upper goal, then physically reach it. Optional **Green Hill Zone** adds the first three-Act loop: nine connected chunks, separate score challenges, checkpoints and Chao rewards. There are no lives limits, bosses, permanent unlocks or second Zone. The ball number counts attempts.
 
 ## Play Green Hill
 
@@ -36,6 +36,14 @@ The ball starts on the bottom launch deck. Press **Enter** or gamepad **X** to l
 Both flippers can be held simultaneously. Special input currently displays a status message; it does not consume the meter or execute an ability.
 
 ## What is playable
+
+- **Green Hill Zone:** choose **Green Hill Zone** in the shared mode selector, then **Start / replay** at serve or while paused. This works in **Play Green Hill.cmd** and **Physics Playground.cmd**. Start with seed **18** for a verified route. All three Acts use Easy geometry, regardless of the sandbox difficulty setting. Existing catalogue mixes broad relays and rounded grid recipes; Grid base/variant use their corresponding Easy relays. Generation validates all nine chunks before replacing the table; allow several seconds for this larger build.
+
+  Earn **750 / 1,250 / 1,750 new points** in Acts 1 / 2 / 3. Each threshold opens that Act's exit; earlier points remain in Total Run Score but cannot unlock the next Act. Cross each open boundary, choose a Chao, and continue from the same position and velocity. The final portal requires Act 3's own target, then awards a final Chao before **GREEN HILL ZONE COMPLETE!**. Its replay starts the same geometry with empty scores and build.
+
+  Completed boundaries latch behind the ball. Falling back toward one triggers a checkpoint drain and automatic serve inside the current Act. Retries retain total score, Act score and rewards; active-Act rings refresh on a drain/reset or rack clear. Only active-Act rings and bumpers score. No completed Act must be replayed. The follow camera spans all nine sections; **O** in Green Hill or the debug follow toggle gives an overview.
+
+  Each reward offers Ice, Spring and Magnet, with effective-stat comparisons. Picks combine through the same resolver: **maximum two copies per species, five slots**, with existing stat clamps. This prototype awards three picks from a fixed pool. Zone mode starts without a Chao, disables the single-slot Lab/Practice toggle, and restores your earlier sandbox Chao when leaving. No random drafting, rarity, shops or permanent persistence.
 
 - **Chao Lab v0:** open **Chao: … · Lab** beside Start / replay, at serve or while paused. Compare Ice, Spring and Magnet, then **Equip + replay same seed**. This uses the mode/target selected above and resets score, rings and ball; **None** provides a baseline. The equipped name stays visible during play. See [Chao tuning and lifecycle](#chao-lab-v0).
 
@@ -77,7 +85,7 @@ Physics lives in `scripts/ball.gd`, `scripts/flipper.gd`, and `scripts/table_chu
 
 ### Coordinate mapping
 
-The current course is 800 × 2100 physics pixels, derived from its three footprints. Positive 2D Y points down the table. One physics pixel is 0.01 3D world units:
+The sandbox course is 800 × 2100 physics pixels; the Zone is 800 × 6300. Both derive their bounds from generated footprints. Positive 2D Y points down the table. One physics pixel is 0.01 3D world units:
 
 ```text
 3D position = (physics_x × 0.01, visual_height, physics_y × 0.01)

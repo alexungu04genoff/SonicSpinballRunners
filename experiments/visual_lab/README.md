@@ -1,12 +1,14 @@
 # Green Hill Visual Lab
 
-A playable Green Hill presentation of the shared physics sandbox, integrated on `main`: generator v10, the 50 px construction kit with rounded Easy recipes, side recovery flippers and a short upper paddle, Normal-flow banks/curves, and optional Score Attack. The original physics-playground entry point remains available. Free Play remains the default; there are no acts, lives, checkpoints or campaign progression.
+A playable Green Hill presentation of the shared physics sandbox, integrated on `main`: generator v10, the 50 px construction kit with rounded Easy recipes, side recovery flippers and a short upper paddle, Normal-flow banks/curves, optional Score Attack and the first three-Act Green Hill Zone. The original physics-playground entry point remains available. Free Play remains the default.
 
 The scene wraps the existing sandbox and its generated layout. Original procedural checkerboard terrain, grass, palms, flowers, distant rocks, sunlight, rings, bumpers, and flippers dress the same playfield. A locally prepared Sonic Runners model supplies brief, table-aligned gameplay poses and upright character-study previews. The invisible 2D ball remains authoritative; the character and scenery are collisionless. A contact marker tracks the physical ball independently of the visual hop. Body placement, imported-model axis correction, and spin-ball rotation use separate transforms.
 
 ## Launch
 
 Double-click **Play Green Hill.cmd** in this worktree's repository root. **Physics Playground.cmd** opens the original debugging presentation. Both launchers use the same physics, generator, profiles and scoring code. The local prepared Sonic model is reused automatically; preparation is not repeated at launch.
+
+**Green Hill Zone:** choose it in the shared mode dropdown, then **Start / replay**. Seed 18 has an input-only completion witness. Nine sections form one continuous Easy playfield, with score targets 750 / 1,250 / 1,750, locked gates, checkpoint retries, three Chao drafts and a final portal. Drafts pause the same ball in place; the last reward appears in the completion summary. Zone generation takes several seconds. Names, colored gates and portal are gameplay placeholders for later art. Use O for the full-course overview.
 
 **Chao Lab v0:** the shared **Chao: … · Lab** button beside Start / replay opens three simple colored choices and effective-stat comparisons. Choose at serve or pause, then equip into a fresh run on the same seed. It respects the selected mode/target and keeps the equipped name visible with F1 hidden. Replay, drains and table changes retain one slot; the debug Practice toggle replaces that slot. Chao names/colors are placeholders; terrain and character assets are unchanged. See the main README for values and lifecycle rules.
 
