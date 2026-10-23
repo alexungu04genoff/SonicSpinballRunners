@@ -93,6 +93,9 @@ func run() -> void:
  check(flipper.strikes > before and actor.event_pose == "jump" and actor.event_time > 0.0, "A real 2D flipper strike triggers the brief jump presentation")
  game.controls.virtual_left = false
  game.controls.virtual_right = false
+ # Isolate the bumper probe from the preceding jump reaction cooldown.
+ game.reset_ball()
+ await frames(24)
  var bumper: Dictionary = {}
  for descriptor: Dictionary in game.chunks.back().descriptors:
   if descriptor.kind == "circle":

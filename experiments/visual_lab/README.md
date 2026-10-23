@@ -2,7 +2,7 @@
 
 A playable Green Hill presentation of the shared physics sandbox, integrated with `main` through `1e24223` (generator v8, the 50 px construction kit, varied recovery flippers and Normal-flow banks/curves). The experiment lives on `experiment/green-hill-visual-lab`. The normal physics-playground entry point remains available. There are no acts, lives, checkpoints or campaign progression.
 
-The scene wraps the existing sandbox and its generated layout. Original procedural checkerboard terrain, grass, palms, flowers, distant rocks, sunlight, rings, bumpers, and flippers dress the same playfield. A locally prepared Sonic Runners model supplies upright poses. The invisible 2D ball remains authoritative; the character and scenery are collisionless. A contact marker tracks the physical ball independently of the visual hop. Upright poses and spin-ball rotation use separate transforms.
+The scene wraps the existing sandbox and its generated layout. Original procedural checkerboard terrain, grass, palms, flowers, distant rocks, sunlight, rings, bumpers, and flippers dress the same playfield. A locally prepared Sonic Runners model supplies brief, table-aligned gameplay poses and upright character-study previews. The invisible 2D ball remains authoritative; the character and scenery are collisionless. A contact marker tracks the physical ball independently of the visual hop. Body placement, imported-model axis correction, and spin-ball rotation use separate transforms.
 
 ## Launch
 
@@ -40,7 +40,7 @@ Discovered tools: **Godot 4.7.2 stable**, **Blender 5.2.3 LTS**. The launcher al
 
 The quick-build buttons disable during live play. Use Escape first, build, then resume and launch. F1 provides any other seed, preference, profile, tuning or grid combination. Regeneration preserves tuning, camera settings, overlays and pause, resets the run, and rebuilds terrain from the final mirrored/shifted/shaped chunk outlines. Surviving bottom paddles and newly generated middle paddles bind to the new character adapter exactly once.
 
-Ordinary gameplay automatically switches between serve idle, spin-ball, a 0.46-second flipper jump and a 0.52-second bumper trick. Short cyan motion beads and expanding impact/pickup circles improve tracking. The physical-radius contact marker stays at the authoritative ball anchor. Ring collection retains the sandbox's 0.20-second attraction flight to that anchor. Cosmetic hops and animations never change physical position, momentum, collider size or scoring.
+Ordinary gameplay defaults to the procedural spin-ball, including at serve. Real flipper strikes trigger a 0.62-second jump; bumper contacts trigger a 0.56-second trick. Both return to spin through a 0.12-second scale overlap. A 0.18-second event cooldown and suppression of repeated active reactions prevent contact callbacks from continually restarting the pose. Short cyan motion beads and expanding impact/pickup circles improve tracking. The physical-radius contact marker stays at the authoritative ball anchor. Ring collection retains the sandbox's 0.20-second attraction flight to that anchor. Cosmetic hops and animations never change physical position, momentum, collider size or scoring.
 
 Pose previews are confined to character study so a forgotten preview cannot suppress gameplay feedback. Returning restores the previous pause state and automatic animation. Regeneration is unavailable during study.
 
@@ -53,6 +53,14 @@ Optional launch arguments:
 ```
 
 `-Grid` accepts `Catalogue`, `Base` or `Variant`; seed/grid options apply to Green Hill. `-NoModel` verifies the procedural fallback without moving or deleting local assets. F5 in Godot still opens the original playground; F6 on `visual_lab.tscn` opens Green Hill.
+
+## Table-relative character orientation
+
+The presenter has four small explicit states: `SPIN`, `JUMP`, `TRICK`, and `SHOWCASE`. Gameplay uncurled poses point the head up-table (3D `-Z`), feet down-table (`+Z`), and front toward the board normal (`+Y`). Descending motion never flips that axis. Character study retains the conventional upright model.
+
+`UncurledVisualAnchor` owns placement, cosmetic height and directional lean. Its child `ImportedModelAxisAlignment` rotates the imported model by -90 degrees about X for gameplay. The normalized one-metre model is centered by a local Y offset of -0.5 before that correction. The separate procedural spin-ball never rotates the uncurled rig.
+
+Horizontal velocity supplies a smoothed in-plane lean, capped at ±23 degrees. The provisional dead zone is 45 px/s; full lean is reached at 650 px/s, with an exponential response rate of 10/s. Lean rotates around the board normal only. The body uses scale 0.85 and anchor height 0.40, with a visual-only sine hop of up to 0.12 for jumps or 0.06 for tricks. Sampled prepared poses retain at least 0.088 units of board clearance at full scale. These values are presentation tuning, not collision or grounded/airborne rules.
 
 ## Prepare the local character
 
@@ -103,7 +111,7 @@ Use a graphical Godot run for screenshots; headless execution cannot verify ligh
 .\experiments\visual_lab\launch.ps1 -Capture reel -Sequence
 ```
 
-Each capture run opens its own lab process, freezes physics, saves the full window including the lab UI, then exits. The gameplay image uses the playfield camera and idle Sonic at the served ball. The pose and roll captures use the dedicated study pedestal. Single images are `captures/gameplay.png`, `idle.png`, `jump.png`, `trick.png`, and `roll.png`. Single character images seek the pose to 0.55 seconds.
+Each capture run opens its own lab process, freezes physics, saves the full window including the lab UI, then exits. The gameplay image uses the playfield camera and the spin-ball at serve. The pose and roll captures use the dedicated study pedestal. Single images are `captures/gameplay.png`, `idle.png`, `jump.png`, `trick.png`, and `roll.png`. Single character images seek the pose to 0.55 seconds.
 
 The launcher supplies Godot's `--fixed-fps 60` for capture runs. Sequence mode writes 48 images, sampled every four rendered frames, for a 15 fps presentation sequence. `-Capture reel -Sequence` writes `captures/reel_000.png` through `reel_047.png`: 12 idle frames, 12 jump frames, 12 trick frames, and 12 spin-ball frames. Passing `-Sequence` with another capture kind holds that view for the entire sequence. `-CaptureFrames` changes the initial warm-up from its default of 75 rendered frames. The scene creates `captures/.gdignore` so Godot does not import the rendered images. This delivers frame captures; no video encoding tool is required.
 
@@ -122,6 +130,28 @@ The delivered local `captures/visual_lab_reel.mp4` was verified with FFprobe: H.
 The inspected SMD contains **54 retained bones, 2,211 unique vertices, 3,318 triangles, five material assignments, zero unweighted vertices, and a maximum weight-sum error of approximately 0.000001**. Its skeleton data contains only frame `0`; **no source animation clips were found**. The imported bone hierarchy and authored skin weights are preserved rather than replaced by a new rig.
 
 `idle`, `jump`, and `trick` are new experimental clips, each made from a held pose with a small one-second easing variation. They are not original game animations, a polished locomotion set, or a fully curled model. Ordinary movement uses a separate procedural spin-ball. No animation root motion drives the ball. Numerical deformation checks and rendered joint review are complementary: the report alone does not establish good shoulders, elbows, hips, or knees.
+
+The orientation follow-up compared imported rest matrices with SMD data (maximum element error about 0.0000078) and checked identity-pose skin deformation (maximum displacement about 0.00000018). The imported rest pose and weights were consistent. The pose script's rotation conjugation expresses rotations in rest-frame axes carried by animated parents; it does not keep them in fixed world axes. Temporary finger curls around the source Z axis bent fingers sideways. Those invented curls were removed, preserving the imported open-hand transforms. Jump and trick remain simple prototype poses; some hand/body overlap still needs artistic refinement.
+
+## Orientation verification — 2026-10-23
+
+Godot 4.7.2 passed `orientation_smoke.gd`: **13/13** with the prepared model, **13/13** with `--no-model`, and **13/13** in the graphical capture run. Checks cover table-relative axes, both lean directions, low-speed stability, descending motion, repeat suppression, pause, showcase restoration, unchanged physics/pickup/score state, and actual flipper/bumper contacts.
+
+```powershell
+godot --headless --fixed-fps 120 --path . --script res://experiments/visual_lab/orientation_smoke.gd
+godot --headless --fixed-fps 120 --path . --script res://experiments/visual_lab/orientation_smoke.gd -- --no-model
+godot --fixed-fps 120 --path . --script res://experiments/visual_lab/orientation_smoke.gd -- --screenshots
+```
+
+The graphical probes place the ball once before each contact, then let the actual 2D simulation run without further trajectory edits. Captures are labelled controlled probes. They show a near-vertical flipper launch, diagonal flipper launch, and descending bumper approach/rebound. Near-vertical and bumper sequences naturally complete the return to spin; the diagonal shot encounters another real bumper before its first reaction finishes. The separate complete playable integration check still covers ordinary launch-to-drain traversal.
+
+Local files under `captures/orientation/` include `near_vertical_launch.png`, `diagonal_launch.png`, `descending_bumper_trick.png`, `near_vertical_launch_return_to_spin.png`, and `descending_bumper_return_to_spin.png`. The delivered `live_contact_probes.mp4` contains 113 sampled frames at 30 fps, 1280 × 900, lasting 3.77 seconds. All media remains Git-ignored. To encode fresh sequence frames with an existing FFmpeg installation:
+
+```powershell
+ffmpeg -framerate 30 -i '.\experiments\visual_lab\captures\orientation\sequence_%03d.png' -frames:v 113 -c:v libx264 -pix_fmt yuv420p -crf 19 -movflags +faststart '.\experiments\visual_lab\captures\orientation\live_contact_probes.mp4'
+```
+
+The full playable check was rerun: **25/25**, covering Normal 18/23 and both grid variants. The existing visual check was rerun: **19/19** with the model and **14/14** without. Its independent bumper fixture now resets between scenarios so the preceding flipper reaction's intended cooldown cannot suppress that probe. Final headless editor import passed. Visual review confirmed the head/feet direction, visible face and return to the procedural ball. Human flipper timing, transition feel and controller hardware remain manual checks.
 
 ## Playable integration verification — 2026-10-23
 

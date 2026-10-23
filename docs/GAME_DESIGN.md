@@ -71,7 +71,7 @@ Complete characters, specials, Chao drafting, themed artwork, Android controls, 
 
 **Implemented Green Hill experiment — 2026-10-23:** The experiment branch now skins the current generator v8 sandbox, including its recovery flippers, 50 px grid recipes and Normal-flow connections. It is a cohesive three-section playable table with the existing launch, steering, bumpers, ring collection and unlimited drain/respawn behavior. Terrain rebuilds from transformed collision outlines on regeneration. F1 exposes the original tuning/generation tools; overview and character study remain presentation options. Separate Windows launchers preserve the primitive physics playground.
 
-The optional local Sonic model supplies upright poses while a procedural spin-ball handles ordinary motion and asset absence. Contact-marker position and ring attraction share the observed 2D ball anchor. Brief flipper jumps, bumper tricks, a short trail and pickup pulses are collisionless feedback only; the RigidBody2D remains the sole gameplay authority. Third-party files and captures are ignored. This branch's visual experiment supersedes earlier statements that themed artwork is entirely unimplemented, without adding acts, characters with distinct physics, progression or campaign systems. Visual scale, animation duration and camera comfort remain provisional playtesting choices.
+The optional local Sonic model supplies table-aligned jump and trick poses while a procedural spin-ball handles the default gameplay state and asset absence. During gameplay, the head points up-table (-Z), feet down-table (+Z), and front toward the board normal (+Y). A separate imported-model alignment transform keeps this correction independent of smoothed, bounded in-plane lean. Descending motion retains the head-up orientation. Character study alone uses the conventional upright orientation. Contact-marker position and ring attraction share the observed 2D ball anchor. Brief flipper jumps, bumper tricks, a short trail and pickup pulses are collisionless feedback only; the RigidBody2D remains the sole gameplay authority. Third-party files and captures are ignored. This branch's visual experiment supersedes earlier statements that themed artwork is entirely unimplemented, without adding acts, characters with distinct physics, progression or campaign systems. Visual scale, animation duration and camera comfort remain provisional playtesting choices.
 
 **Confirmed direction:** View the vertical playfield as if standing in front of a real pinball machine, through a moderately tilted **perspective camera**. The bottom appears larger and closer; the top recedes and appears slightly narrower. Think of a much less extreme Temple Run-style perspective combined with Sonic Mania's pinball gameplay. This supersedes the earlier orthographic design preference. The eventual colorful, relatively simple Sonic Runners-inspired presentation remains compatible with today's blocky sandbox visuals.
 
@@ -83,13 +83,13 @@ The optional local Sonic model supplies upright poses while a procedural spin-ba
 
 An invisible 2D physics ball owns collisions and gameplay movement. A collisionless 3D character model follows its position and animates independently. The physical ball continues moving during every visible animation. Character models, themed scenery, and animation timing never determine physical collision geometry.
 
-**Tentative presentation plan:** Three principal character states:
+**Confirmed presentation direction:** Three principal gameplay character states:
 
 1. Rolling or spinning during ordinary ball movement.
 2. A jump animation following flipper launches.
 3. Brief signature poses following exciting bumper impacts or other physics events.
 
-Exact camera tuning, presentation mapping, animation timing, and transition rules remain open. Complete character animation is outside the current sandbox scope.
+The visual-lab adapter implements these states plus a paused upright showcase. Real flipper and bumper events drive timed uncurl reactions with repeat suppression, small cosmetic hops, and a smooth return to the separate procedural spin-ball. Provisional tuning uses ±23 degrees of horizontal-velocity lean, a 45 px/s dead zone, 0.62-second jumps, 0.56-second tricks and 0.12-second transitions. No grounded state, root motion, collision or score changes are inferred from these animations. Camera comfort, pose quality and timing remain playtesting choices. Complete character animation is outside the current sandbox scope.
 
 ## Characters and physics
 

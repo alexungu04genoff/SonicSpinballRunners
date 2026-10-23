@@ -2,6 +2,21 @@ extends Node3D
 ## Collisionless character adapter. Only observations flow from the 2D simulation.
 const MODEL_PATH := "res://experiments/visual_lab/local/runtime/sonic.glb"
 const POSE_NAMES := ["roll", "idle", "jump", "trick"]
+enum State { SPIN, JUMP, TRICK, SHOWCASE }
+const MAX_LEAN_DEGREES := 23.0
+const LEAN_DEAD_ZONE := 45.0
+const LEAN_FULL_SPEED := 650.0
+const LEAN_RESPONSE := 10.0
+const UNCURL_BLEND_TIME := 0.12
+const POSE_HEIGHT := 0.40
+const MODEL_CENTER_HEIGHT := 0.50
+const EVENT_COOLDOWN := 0.18
+var state: int = State.SPIN
+var lean_angle := 0.0
+var uncurl_amount := 0.0
+var model_alignment: Node3D
+var _event_duration := 0.0
+var _event_cooldown := 0.0
 var ball: PlaygroundBall
 var table: TablePresentation
 var upright: Node3D
@@ -14,7 +29,7 @@ var study_root: Node3D
 var study_origin: Vector3
 var model_available := false
 var model_status := "Local Sonic asset not prepared"
-var pose := "idle"
+var pose := "roll"
 var preview := ""
 var preview_roll := false
 var event_pose := ""
@@ -49,10 +64,12 @@ func _ready() -> void:
  var second := table.mesh_node(stripe, table.material(Color("c9ecff"), 0.12), Vector3.ZERO, spin_root)
  second.rotation.x = 1.1
  upright = Node3D.new()
- upright.name = "UprightCharacterOnly"
+ upright.name = "UncurledVisualAnchor"
  add_child(upright)
- # Keep this root separate from RollingVisualOnly. It never inherits ball spin.
- upright.rotation.y = -0.20
+ # Body placement and board-plane lean never inherit the procedural ball spin.
+ model_alignment = Node3D.new()
+ model_alignment.name = "ImportedModelAxisAlignment"
+ upright.add_child(model_alignment)
  _load_model()
  marker = Node3D.new()
  marker.name = "AuthoritativeBallContactMarker"
@@ -99,7 +116,7 @@ func _ready() -> void:
  for flipper: PlaygroundFlipper in table.flippers:
   flipper.struck.connect(_on_flipper_struck)
  table.ring_field.pickup_claimed.connect(_on_ring_claimed)
- _set_pose("idle", true)
+ _set_pose("roll", true)
  _process(0.0)
 
 func _load_model() -> void:
@@ -122,7 +139,7 @@ func _load_model() -> void:
   model_status = "Sonic GLB contained no scene"
   return
  model.name = "ImportedSonic"
- upright.add_child(model)
+ model_alignment.add_child(model)
  model_available = true
  _inspect_import(model)
  if animation_player != null:
@@ -172,17 +189,22 @@ func _pulse(color: Color) -> void:
  pulse_material.albedo_color = color
 
 func _on_flipper_struck() -> void:
- show_event("jump", 0.46)
+ show_event("jump", 0.62)
  _pulse(Color("92eaff"))
 
 func _on_bumper_hit(_body: Node) -> void:
- show_event("trick", 0.52)
+ show_event("trick", 0.56)
  _pulse(Color("fff2ae"))
 
 func _on_ring_claimed(_index: int) -> void:
  _pulse(Color("ffd52f"))
 
 func resume_gameplay() -> void:
+ state = State.SPIN
+ lean_angle = 0.0
+ uncurl_amount = 0.0
+ _event_cooldown = 0.0
+ _event_duration = 0.0
  preview = ""
  preview_roll = false
  event_pose = ""
@@ -190,6 +212,7 @@ func resume_gameplay() -> void:
  capture_hold = false
  trail_points.clear()
  pulse_time = 0.0
+ _set_pose("roll", true)
 
 func _update_effects(delta: float) -> void:
  if close_view or ball.serve_pending or ball.position.distance_to(_last_position) > 100.0:
@@ -217,22 +240,34 @@ func select_preview(value: String) -> void:
  event_pose = ""
  event_time = 0.0
  _set_pose(value, true)
+ _update_pose_transform(0.0)
 
 func show_event(value: String, duration: float) -> void:
- if not preview.is_empty() or close_view:
+ if close_view or value not in ["jump", "trick"]:
+  return
+ # Repeated contact callbacks never rewind or prolong an active reaction.
+ # Different reactions may take over after a short, presentation-only cooldown.
+ if _event_cooldown > 0.0 or (event_time > 0.0 and event_pose == value):
   return
  event_pose = value
- event_time = duration
+ event_time = maxf(duration, UNCURL_BLEND_TIME * 2.0)
+ _event_duration = event_time
+ _event_cooldown = EVENT_COOLDOWN
+ state = State.JUMP if value == "jump" else State.TRICK
  _set_pose(value, true)
 
 func set_close_view(enabled: bool) -> void:
  close_view = enabled
  study_root.visible = enabled
  close_camera.current = enabled
- if enabled and preview.is_empty():
-  select_preview("idle")
- if not enabled:
+ if enabled:
+  state = State.SHOWCASE
+  if preview.is_empty():
+   select_preview("idle")
+ else:
+  resume_gameplay()
   table.camera.current = true
+ _process(0.0)
 
 func _set_pose(value: String, restart: bool = false) -> void:
  if pose == value and not restart:
@@ -242,8 +277,6 @@ func _set_pose(value: String, restart: bool = false) -> void:
  if animation_player != null and _clips.has(value):
   animation_player.play(_clips[value], 0.12)
   animation_player.advance(0.0)
- upright.visible = value != "roll" and model_available
- spin_root.visible = value == "roll" or not model_available
 
 func seek_pose(seconds: float) -> void:
  capture_hold = true
@@ -253,32 +286,63 @@ func seek_pose(seconds: float) -> void:
   animation_player.advance(0.0)
   animation_player.seek(seconds, true)
 
+func _update_pose_transform(delta: float) -> void:
+ var anchor := study_origin if close_view else TablePresentation.map_point(ball.position)
+ if close_view:
+  uncurl_amount = 0.0 if pose == "roll" else 1.0
+  lean_angle = 0.0
+  upright.rotation = Vector3(0, 0.15, 0)
+  model_alignment.rotation = Vector3.ZERO
+  if model_available:
+   model.position = Vector3.ZERO
+  upright.position = anchor + Vector3.UP * 0.025
+  upright.scale = Vector3.ONE
+ else:
+  var target_uncurl := 1.0 if state in [State.JUMP, State.TRICK] else 0.0
+  uncurl_amount = move_toward(uncurl_amount, target_uncurl, delta / UNCURL_BLEND_TIME)
+  var horizontal_speed := absf(ball.linear_velocity.x)
+  var lean_strength := clampf((horizontal_speed - LEAN_DEAD_ZONE) / (LEAN_FULL_SPEED - LEAN_DEAD_ZONE), 0.0, 1.0)
+  var target_lean := -signf(ball.linear_velocity.x) * deg_to_rad(MAX_LEAN_DEGREES) * lean_strength
+  lean_angle = lerpf(lean_angle, target_lean, 1.0 - exp(-LEAN_RESPONSE * delta))
+  # Only yaw around the board normal is trajectory-dependent. Descending never
+  # reverses the head/feet axis, and yaw cannot tilt the model through the board.
+  upright.rotation = Vector3(0, lean_angle, 0)
+  # Imported +Y (head) -> table -Z; imported +Z (face) -> board +Y.
+  model_alignment.rotation = Vector3(-PI * 0.5, 0, 0)
+  if model_available:
+   model.position = Vector3(0, -MODEL_CENTER_HEIGHT, 0)
+  var progress := clampf(1.0 - event_time / maxf(_event_duration, 0.001), 0.0, 1.0)
+  var hop := sin(progress * PI) * (0.12 if state == State.JUMP else 0.06)
+  upright.position = anchor + Vector3.UP * lerpf(TablePresentation.BALL_HEIGHT + 0.025, POSE_HEIGHT + hop, uncurl_amount)
+  upright.scale = Vector3.ONE * 0.85 * lerpf(0.25, 1.0, uncurl_amount)
+ var ball_scale := 1.0 if close_view else 1.12
+ # A short scale overlap suggests uncurl/re-curl without tumbling the upright rig.
+ spin_root.scale = Vector3.ONE * ball_scale * (1.0 if not model_available else maxf(0.001, 1.0 - uncurl_amount))
+ spin_root.position = anchor + Vector3.UP * (TablePresentation.BALL_HEIGHT + 0.025)
+ upright.visible = model_available and uncurl_amount > 0.001
+ spin_root.visible = not model_available or uncurl_amount < 0.999
+ marker.position = TablePresentation.map_point(ball.position, 0.015)
+
 func _process(delta: float) -> void:
  if not is_instance_valid(ball):
   return
  var physics_delta := 0.0 if get_tree().paused else delta
- if event_time > 0.0:
+ _event_cooldown = maxf(0.0, _event_cooldown - physics_delta)
+ if close_view:
+  state = State.SHOWCASE
+  _set_pose("roll" if preview_roll else (preview if not preview.is_empty() else "idle"))
+ else:
   event_time = maxf(0.0, event_time - physics_delta)
- if preview.is_empty():
-  _set_pose(event_pose if event_time > 0.0 else ("idle" if ball.serve_pending and not preview_roll else "roll"))
- elif pose != preview:
-  _set_pose(preview)
- var animation_delta := delta if not preview.is_empty() else physics_delta
+  if event_time <= 0.0:
+   state = State.SPIN
+  _set_pose(event_pose if state in [State.JUMP, State.TRICK] else "roll")
+ var animation_delta := delta if close_view else physics_delta
  if capture_hold:
   animation_delta = 0.0
  _pose_time += animation_delta
  if animation_player != null and _clips.has(pose) and animation_delta > 0.0:
   animation_player.advance(animation_delta)
- var anchor := study_origin if close_view else TablePresentation.map_point(ball.position)
- upright.scale = Vector3.ONE * (1.0 if close_view else 0.85)
- spin_root.scale = Vector3.ONE * (1.0 if close_view else 1.12)
- upright.position = anchor + Vector3.UP * 0.025
- upright.rotation.y = 0.15 if close_view else -0.20
- spin_root.position = anchor + Vector3.UP * (TablePresentation.BALL_HEIGHT + 0.025)
- marker.position = TablePresentation.map_point(ball.position, 0.015)
- # A visual hop never moves the 2D body, contact marker, or ring pickup target.
- if pose == "jump" and not capture_hold:
-  upright.position.y += 0.06 * sin(minf(_pose_time * 3.0, PI))
+ _update_pose_transform(physics_delta)
  var travel := ball.position - _last_position
  if _last_position != Vector2.INF and travel.length() > 0.001 and travel.length() < 100.0:
   spin_root.rotate(Vector3(travel.y, 0, -travel.x).normalized(), travel.length() / PlaygroundBall.RADIUS)

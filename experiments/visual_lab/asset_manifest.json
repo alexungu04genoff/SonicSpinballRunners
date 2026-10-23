@@ -94,7 +94,7 @@
   ],
   "authored_elements": {
     "scenery": "Procedural checkerboard terrain, grass caps, palms, flowers, rocks, materials and lighting generated in repository-authored Godot code.",
-    "character_presentation": "Procedural spin-ball and contact marker; separate upright transform; paused pedestal study offsets only the character visual, while the marker stays at the physical ball; no gameplay colliders or root-motion control.",
+    "character_presentation": "Procedural spin-ball and contact marker; separate body placement/lean and imported-model alignment transforms; gameplay poses face up-table while paused pedestal study uses upright orientation; the marker stays at the physical ball; no gameplay colliders or root-motion control.",
     "experimental_clips": ["idle", "jump", "trick"],
     "clip_scope": "New in-place pose studies with small one-second variation, looped by the visual adapter; not original game clips or production locomotion.",
     "asset_payload_embedded_in_scripts": false

@@ -50,7 +50,7 @@ func _ready() -> void:
  if not _capture_kind.is_empty():
   get_tree().paused = true
   if _capture_kind == "gameplay":
-   character.select_preview("idle")
+   character.resume_gameplay()
   else:
    _set_close_view(true)
    _select_pose(_capture_kind if _capture_kind in ["roll", "idle", "jump", "trick"] else "idle")

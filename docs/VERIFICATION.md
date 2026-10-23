@@ -259,3 +259,13 @@ Normal seeds 18 and 23, Grid base at 18 and Grid variant at 23 each completed a 
 Headless import, PowerShell syntax and launcher execution passed. Actual graphical play/overview captures were produced for all four layouts and remain ignored. Footer clipping found in visual review was repaired. The short capture mode stops after a live frame; it does not claim a complete graphical traversal run. The grid regression intentionally reports an invalid recipe as part of its preservation check.
 
 See [Green Hill instructions](../experiments/visual_lab/README.md) for commands and local capture filenames. Manual flipper feel, gamepad hardware and camera comfort remain user playtesting tasks.
+
+## Green Hill table-relative character follow-up — 2026-10-23
+
+The visual-lab presenter now defaults to spin and briefly uncurls along the table's gravity axis. Godot 4.7.2 orientation checks passed 13/13 with the local model, 13/13 without it, and 13/13 graphically. Coverage includes up-table head direction, visible front, smoothed bounded lean in both directions, descending motion without inversion, reaction repeat suppression, pause/study restoration and unchanged physics, rings and scoring during presenter updates.
+
+Three labelled controlled-contact probes captured near-vertical and diagonal real flipper launches and a descending bumper approach/rebound. Only the initial placement/velocity is prescribed; subsequent physics is unmodified. Near-vertical and bumper probes complete the return to spin. The diagonal probe records an intervening genuine bumper instead of suppressing it. Five stills and a 113-frame local MP4 were visually reviewed or assembled under ignored `experiments/visual_lab/captures/orientation/`.
+
+The complete playable integration rerun passed 25/25 across Normal 18/23 and both grid variants, including three-section traversal, rings, descent, drain and relaunch. Existing adapter checks passed 19/19 with the model and 14/14 with the fallback. The independent bumper fixture now resets after its preceding flipper scenario to respect the intentional visual cooldown. Final headless editor import passed without script errors.
+
+The rig audit found consistent rest matrices and normalized weights. Removing temporary sideways finger curls improved open gloves; the local GLB and Blender study renders were regenerated successfully. Body poses remain provisional, including some hand/body overlap. No core physics, ring magnet, shared gameplay source or public asset payload changed. Manual reaction feel and gamepad hardware remain untested. See the visual-lab README for repeatable commands and local media paths.

@@ -10,7 +10,7 @@ import math
 import shlex
 from collections import Counter
 from pathlib import Path
-from mathutils import Matrix, Vector, Euler, Quaternion
+from mathutils import Matrix, Vector, Euler
 
 BASE = Path(__file__).resolve().parents[1]
 SOURCE = next((BASE / 'local/source/sonic').rglob('chr_sonic.smd'))
@@ -101,24 +101,14 @@ scale=1/(hi-lo)
 arm.scale=(scale,)*3; arm.location.z=-lo*scale
 bpy.context.view_layer.update()
 
-# Pose rotations use global source axes, converted into each bone's local basis.
+# Pose rotations use source rest-frame axes, converted into each bone's local basis.
+# Animated parents carry those axes with them; fingers keep their authored open rest pose.
 def pose(rotations, gesture="idle"):
     for p in arm.pose.bones: p.matrix_basis=Matrix.Identity(4)
     for name,angles in rotations.items():
         p=arm.pose.bones[name]; r=p.bone.matrix_local.to_quaternion()
         q=Euler(tuple(math.radians(a) for a in angles),'XYZ').to_quaternion()
         p.rotation_mode='QUATERNION'; p.rotation_quaternion=r.inverted() @ q @ r
-    if rotations:
-        # Curl authored finger joints toward the palm in the original T-pose frame.
-        # The trick keeps the leading index extended for a readable pointing gesture.
-        for side,sign in [('L',-1),('R',1)]:
-            for finger in ['Middle','Index','Ring','Pinky']:
-                if gesture == 'trick' and side == 'L' and finger == 'Index': continue
-                for joint,amount in [(1,35 if gesture=='idle' else 58),(2,50 if gesture=='idle' else 68)]:
-                    p=arm.pose.bones[f'{finger}{joint}_{side}']
-                    r=p.bone.matrix_local.to_quaternion()
-                    q=Quaternion(Vector((0,0,sign)),math.radians(amount))
-                    p.rotation_mode='QUATERNION'; p.rotation_quaternion=r.inverted() @ q @ r
     bpy.context.view_layer.update()
 
 POSES={
