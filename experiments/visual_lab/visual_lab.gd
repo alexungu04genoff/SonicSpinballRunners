@@ -10,9 +10,11 @@ var study_buttons: HBoxContainer
 var overview_button: Button
 var character: Node3D
 var lab_ui: CanvasLayer
+var challenge_ui: CanvasLayer
 var pose_label: Label
 var status_label: Label
 var score_label_lab: Label
+var score_header_lab: Label
 var view_button: Button
 var pose_buttons: Dictionary = {}
 var close_view := false
@@ -40,6 +42,7 @@ func _ready() -> void:
  ring_field.process_mode = Node.PROCESS_MODE_PAUSABLE
  debug_panel.visible = false
  _build_lab_ui()
+ _attach_challenge_ui()
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--capture="):
    _capture_kind = argument.trim_prefix("--capture=")
@@ -85,11 +88,30 @@ func _build_presentation() -> void:
  presentation.ring_field = ring_field
  view.add_child(presentation)
  presentation.build(chunks, layout.junctions, layout.bounds)
+ var goal := ScoreAttackGoal.new()
+ goal.challenge = score_attack
+ presentation.add_child(goal)
  character = SonicPresenter.new()
  character.name = "SonicVisualAdapter"
  character.ball = ball
  character.table = presentation
  presentation.add_child(character)
+
+func _attach_challenge_ui() -> void:
+ # Reuse the shared mode/target/victory controls outside the hidden debug HUD.
+ challenge_ui = CanvasLayer.new()
+ challenge_ui.name = "GreenHillChallengeOverlay"
+ challenge_ui.layer = 22
+ add_child(challenge_ui)
+ debug_panel.challenge_panel.reparent(challenge_ui)
+ _position_challenge_ui()
+
+func _position_challenge_ui() -> void:
+ var panel: ScoreAttackPanel = debug_panel.challenge_panel
+ var row := panel.get_child(0) as HBoxContainer
+ row.position = Vector2(25, 108) if debug_open else Vector2(24, 140)
+ panel.hint.visible = debug_open
+ panel.victory.position = Vector2(295, 310) if debug_open else Vector2(387, 250)
 
 func _panel_style(color: Color, radius: int = 12) -> StyleBoxFlat:
  var style := StyleBoxFlat.new()
@@ -157,7 +179,8 @@ func _build_lab_ui() -> void:
  root.add_child(score_panel)
  var scores := VBoxContainer.new()
  score_panel.add_child(scores)
- scores.add_child(_label("RINGS / SCORE", 12, Color("a4e5e3")))
+ score_header_lab = _label("RINGS / SCORE", 12, Color("a4e5e3"))
+ scores.add_child(score_header_lab)
  score_label_lab = _label("00 / 000000", 25, Color("ffe373"))
  scores.add_child(score_label_lab)
  var footer := PanelContainer.new()
@@ -174,7 +197,7 @@ func _build_lab_ui() -> void:
  var top_row := HBoxContainer.new()
  top_row.add_theme_constant_override("separation", 10)
  stack.add_child(top_row)
- pose_label = _label("IDLE / READY TO LAUNCH", 14, Color("ffe373"))
+ pose_label = _label("ROLL / READY TO LAUNCH", 14, Color("ffe373"))
  pose_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  top_row.add_child(pose_label)
  status_label = _label("", 12, Color("a4e5e3"))
@@ -271,6 +294,7 @@ func toggle_debug() -> void:
   view_container.offset_bottom = -65
  else:
   view_container.offset_bottom = -170
+ _position_challenge_ui()
  get_viewport().gui_release_focus()
 
 func can_regenerate() -> bool:
@@ -295,8 +319,20 @@ func _process(_delta: float) -> void:
  if not is_instance_valid(character) or not is_instance_valid(pose_label):
   return
  var context := "CHARACTER STUDY" if close_view else ("PAUSED" if get_tree().paused else ("READY TO LAUNCH" if ball.serve_pending else "LIVE PLAY"))
+ if score_attack.state == ScoreAttack.State.COMPLETE and not close_view:
+  context = "SCORE ATTACK CLEAR"
  pose_label.text = "%s / %s" % [character.pose.to_upper(), context]
  score_label_lab.text = "%02d / %06d" % [rings_collected, score]
+ if score_attack.state != ScoreAttack.State.FREE_PLAY:
+  score_header_lab.text = "SCORE / TARGET"
+  var goal_status := "LOCKED" if score_attack.state == ScoreAttack.State.LOCKED else "OPEN"
+  if score_attack.state == ScoreAttack.State.COMPLETE:
+   goal_status = "CLEAR"
+  score_label_lab.text = "%d / %d\nGOAL %s" % [score, score_attack.target, goal_status]
+  score_label_lab.add_theme_font_size_override("font_size", 20)
+ else:
+  score_header_lab.text = "RINGS / SCORE"
+  score_label_lab.add_theme_font_size_override("font_size", 25)
  var section := current_chunk_index()
  status_label.text = "Seed %d · %s · Section %d/3" % [generation_seed, GRID_MODE_NAMES[generation_grid_mode], maxi(1, section + 1)]
  status_label.tooltip_text = character.model_status

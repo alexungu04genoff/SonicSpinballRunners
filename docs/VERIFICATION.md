@@ -1,6 +1,42 @@
 # Physics Playground verification
 
-Date: 2026-10-22. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: OpenGL Compatibility on NVIDIA GeForce RTX 4060.
+Latest checks: 2026-10-23. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: OpenGL Compatibility on NVIDIA GeForce RTX 4060.
+
+## Optional Score Attack
+
+Free Play stays the default. Score Attack uses the existing score callbacks and a swept 2D proximity check against a transformed upper-section anchor. It adds no colliders, physics tuning or generator changes. The default target is provisionally 1,500; the goal radius is 55 px plus the ball's 14 px contact radius.
+
+- `tests/score_attack_regression.gd`: **26 checks passed**. Covers locked contact, exact threshold, score farming without completion, swept contact, one-shot victory, default Free Play, real scoring callbacks including the rack bonus, mode UI, automatic drain/respawn with retained progress, reset sampling, latched victory, replay, Next table, paused regeneration, ring/timer cleanup and return to Free Play. Checks include all 28 catalogue mirror/shift/translation combinations and 27 complete seeded builds (seeds 1, 2, 12 × three difficulties × three construction modes). Selected goal anchors pass the existing whole-course route validator with the actual generated geometry. This establishes coarse connectivity, not every physical trajectory.
+- Graphical lifecycle fixture: the original **24 checks passed** before the two additional Next-table/pause checks. Free Play, locked-goal overview and victory screenshots were captured and inspected. Controls fit their margins, goal colors/text read correctly and the victory panel is clearly visible. A subsequent graphical input-only Normal run reproduced its headless victory and supplied `test-results/score-attack-play-clear.png` with the actual 1,500 target and 4,025 final score.
+- Existing regressions rerun: physics **38**, rings **11**, profiles **8**, vertical traversal **25**, grid construction **23**, and generation UI **15** checks passed. Grid invalid-recipe rejection emits its expected diagnostic. Initial parsing exposed a mixed-indent line in the shared game file; it was repaired before these passing runs. Sandbox runs also log Windows certificate-store access failure, unrelated to offline gameplay. No remaining gameplay script error was observed.
+- Final headless editor import and main-scene startup passed. The repeat indentation fault came from the temporary editor profile converting four spaces to a tab; that ignored profile now uses the repository's one-space indentation, and the source remains unchanged by import. Existing user `project.godot` changes were left out of this commit.
+
+`tests/score_attack_play_survey.gd` uses normal serve, actual scoring and unlimited automatic drain recovery. After launch it changes only ordinary virtual flipper/steering inputs; there are no teleports, score injection, velocity edits or physics changes. Balanced profile, Quick / Tight steering, no modifier. Each attempted policy gets 90 simulated seconds, with three trigger distances tried only when needed. Steering aims toward the goal within the top chamber. These are diagnostics, not human completion rates.
+
+| Layout | Successful policy completion | Final score |
+| --- | ---: | ---: |
+| Normal catalogue, seed 1 | 51.88 s | 4,025 |
+| Hard catalogue, seed 1 | 19.62 s | 1,525 |
+| Easy Grid base / variant, seed 2 | 74.93 / 66.08 s | 5,425 / 5,075 |
+| Normal catalogue / Grid variant, seed 2 | 67.13 / 46.94 s | 4,850 / 3,275 |
+| Hard catalogue / Grid base / Grid variant, seed 2 | 34.86 / 24.96 / 85.89 s | 2,525 / 2,525 / 6,550 |
+
+The five initial seed-1 trials and sixteen seed-2 trials all reached the score threshold in roughly 13–32 seconds. Easy catalogue seeds 1/2 and Normal Grid base seed 2 did not complete under the sampled policies; some trajectories reached the top but missed the goal. Failed samples remain meaningful evidence: points alone cannot win, and the final climb/aim remains the challenge. No difficulty or safety geometry was changed to make the bot pass. Automated winners demonstrate that the complete objective works across all three preferences and both grid variants; they do not prove every seed equally accessible.
+
+**Short human checklist:** Try Normal seed 1 at 1,500, then Easy Grid base seed 2. Judge whether unlocking feels too early, whether the final target is readable during follow-camera play, and whether retries make the climb satisfying rather than repetitive. Check gamepad menu navigation and flipper timing by hand. Art can replace `ScoreAttackGoal` using `game.score_attack.changed/state/goal_position` without controlling detection. Logs, diagnostic JSON and captures remain in ignored `test-results/`.
+
+## Genuine Easy layouts for grid modes (generator v9)
+
+Grid base and Grid variant now use dedicated 800 × 700 px recipes when Easy is requested. Their 700 px openings replace the original 600 px openings, the sharper right-wall slopes become gentle banks/curves, and recovery paddles sit farther apart. The authored rating remains 28; the unchanged estimator now finds genuinely Easy combinations instead of falling back to Normal. Original grid Normal/Hard recipes and Existing catalogue remain unchanged.
+
+- `tests/grid_easy_regression.gd`: **22 checks passed**. Seeds 1–12 in both modes (24 configurations, each generated twice) all matched Easy at 28 points, preserved both broad upper designs and reproduced their geometry. Fourteen independent pre-change fingerprints protect Existing catalogue and sampled grid Normal/Hard geometry. Both new recipes passed compiler clearance, full paddle-swing checks, the unchanged whole-course validator and 618 px checked junction corridors.
+- Actual 120 Hz physics checks cover upward passage past resting, raised and moving middle paddles, one-strike descending recovery into the upper chamber, missed-shot drain/respawn/relaunch, bidirectional 1200 px/s shots through both junctions, and ten bank-joint probes at approximately 8000 px/s without added energy or escape. Continuous movement remains off-grid. These reuse the existing grid regression helpers with the new Easy recipes.
+- Regeneration retained tuning, overlays, camera, pause and bottom paddles. An intentionally invalid original recipe emitted its expected diagnostic and preserved the active table.
+- A graphical fixture passed **16 checks**, including Easy-to-Normal-to-Easy switching in both modes. Returning to Easy reproduced the initial signature with a matched tier. Four images were saved; the Base lower-junction view and Variant overview were inspected. Collision outlines match the raised rails, flippers and ball; the full overview fits.
+
+Total: **38 passing checks**. Logs and images are ignored `test-results/grid-easy-*`. Try **Easy seed 8** in both grid modes for an Open Meadow upper section, or **Easy seed 1** for Gentle Banks. Easy retains a 5 px grid/legacy inset difference, smaller than the 12 px rail radius; the generic generator still labels these tiny rounded closures `Step`. Large ceiling shoulders are gone, but endpoints are not mathematically identical. Representative physics samples pass; subjective recovery timing and exhaustive low-speed trajectories still need playtesting. The existing local `project.godot` edits and concurrent score-attack files are outside this change.
+
+The final shared-game script check passed after restoring an accidentally changed indentation line from concurrent work. Godot MCP launched Easy / Grid base / seed 8 and returned `PLAYGROUND_READY`. Its only reported diagnostic was a variable-shadow warning in the concurrent, unstaged Score Attack panel; no grid runtime error was reported. The Easy playtest was left open without changing the project's default scene.
 
 ## Normal flow pass (generator v8)
 
@@ -269,3 +305,13 @@ Three labelled controlled-contact probes captured near-vertical and diagonal rea
 The complete playable integration rerun passed 25/25 across Normal 18/23 and both grid variants, including three-section traversal, rings, descent, drain and relaunch. Existing adapter checks passed 19/19 with the model and 14/14 with the fallback. The independent bumper fixture now resets after its preceding flipper scenario to respect the intentional visual cooldown. Final headless editor import passed without script errors.
 
 The rig audit found consistent rest matrices and normalized weights. Removing temporary sideways finger curls improved open gloves; the local GLB and Blender study renders were regenerated successfully. Body poses remain provisional, including some hand/body overlap. No core physics, ring magnet, shared gameplay source or public asset payload changed. Manual reaction feel and gamepad hardware remain untested. See the visual-lab README for repeatable commands and local media paths.
+
+## Combined main integration — 2026-10-23
+
+Merged Green Hill with all PhysicsBro commits through `5dc758f`, including generator v9 Easy grid recipes and optional Score Attack. Green Hill now uses the shared mode/target/victory controls and collisionless upper goal; the rules and authoritative 2D physics remain shared with the original playground.
+
+Checks executed on the combined source with Godot 4.7.2: headless editor import passed; shared physics 38/38; Easy grids 22/22; full Green Hill playable integration 25/25; original Score Attack 26/26; graphical Green Hill Score Attack 27/27. The Easy grid suite intentionally reports an invalid recipe while verifying preservation of the active table. The Score Attack check now accepts `--green-hill` and verifies mode controls remain available across debug/study changes. Its next-seed assertion was made relative to the starting seed after the initial Green Hill run exposed the playground-specific seed-1 assumption.
+
+The graphical lifecycle fixture exercised score unlock, physical goal contact, latched victory, same-seed replay, next table, Free Play return and 27 difficulty/grid/seed regenerations. Free Play, locked-goal and victory captures were saved locally; the HUD and victory view were inspected. Goal-contact placement in this lifecycle fixture is controlled, not a claim of unaided human completion. The separate playable check completed ordinary-input traversal, descent and drain recovery on Normal 18/23 and both original grid variants.
+
+Third-party assets and rendered media remain ignored. Existing uncommitted primary-checkout `project.godot` settings are preserved outside this merge. Human controller feel and difficulty remain playtesting tasks.

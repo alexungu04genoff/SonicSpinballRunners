@@ -21,6 +21,7 @@ var camera_fields: Dictionary = {}
 var score_label: Label
 var message_label: Label
 var pause_label: Label
+var challenge_panel: ScoreAttackPanel
 var values: RichTextLabel
 var spinboxes: Dictionary = {}
 var _refreshing: bool = false
@@ -235,6 +236,9 @@ func _ready() -> void:
  tuning.changed.connect(refresh_effective)
  refresh_effective()
  _build_generation_panel()
+ challenge_panel = ScoreAttackPanel.new()
+ challenge_panel.game = game
+ add_child(challenge_panel)
 
 func _build_generation_panel() -> void:
  generation_panel = PanelContainer.new()
@@ -265,6 +269,7 @@ func _build_generation_panel() -> void:
  stack.add_child(difficulty_selector)
  _label(stack, "Middle section (apply on build)", 12)
  grid_selector = OptionButton.new()
+ grid_selector.tooltip_text = "Grid modes use wider recipes for Easy. Normal and Hard retain the original base/variant designs."
  for mode_name: String in game.GRID_MODE_NAMES:
   grid_selector.add_item(mode_name)
  grid_selector.item_selected.connect(func(_index: int): grid_selector.release_focus())
@@ -370,7 +375,7 @@ func refresh_effective() -> void:
 func _process(delta: float) -> void:
  var focus: Control = get_viewport().gui_get_focus_owner()
  game.controls.input_blocked = focus is LineEdit
- pause_label.visible = get_tree().paused
+ pause_label.visible = get_tree().paused and game.score_attack.state != ScoreAttack.State.COMPLETE
  _telemetry_elapsed += delta
  if _telemetry_elapsed < 0.10:
   return
@@ -391,6 +396,11 @@ func _process(delta: float) -> void:
   traversal_telemetry.text += "\nLocal cell: (%d, %d)" % [cell.x, cell.y]
  var velocity: Vector2 = game.ball.linear_velocity
  score_label.text = "%06d   /   %02d RINGS   /   BALL %02d" % [game.score, game.rings_collected, game.ball_number]
+ if game.score_attack.state != ScoreAttack.State.FREE_PLAY:
+  var goal_state: String = "LOCKED" if game.score_attack.state == ScoreAttack.State.LOCKED else "OPEN — CLIMB UP!"
+  if game.score_attack.state == ScoreAttack.State.COMPLETE:
+   goal_state = "COMPLETE"
+  score_label.text = "%06d / %06d   •   GOAL %s" % [game.score, game.score_attack.target, goal_state]
  message_label.text = game.status_message
  telemetry.text = "Position   %7.1f, %7.1f px\nVelocity   %7.1f, %7.1f px/s\nSpeed      %7.1f    Assist %6.1f\nSpecial    %3.0f%%   |   Physics 120 Hz" % [game.ball.position.x, game.ball.position.y, velocity.x, velocity.y, velocity.length(), game.ball.steering_contribution, game.special_meter]
  var paused: bool = get_tree().paused

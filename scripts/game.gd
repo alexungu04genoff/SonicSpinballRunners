@@ -17,6 +17,11 @@ var status_message: String = "Press Enter / gamepad X to launch"
 var respawn_time: float = -1.0
 var auto_launch_time: float = -1.0
 var ring_reset_time: float = -1.0
+@export var score_attack_enabled: bool = false
+@export_range(25, 1000000, 25) var score_attack_target: int = ScoreAttack.DEFAULT_TARGET
+var score_attack := ScoreAttack.new()
+var previous_goal_position := Vector2.ZERO
+var _goal_motion_ready := false
 @export var generation_seed: int = 1
 @export_enum("Easy", "Normal", "Hard") var generation_difficulty: int = TableGenerator.Difficulty.NORMAL
 @export_enum("Existing catalogue", "Grid base", "Grid variant") var generation_grid_mode: int = 0
@@ -24,6 +29,10 @@ const GRID_MODE_NAMES := ["Existing catalogue", "Grid base", "Grid variant"]
 const GRID_RECIPES: Array[GridChunkRecipe] = [
  preload("res://data/grid_chunks/flow_relay.tres"),
  preload("res://data/grid_chunks/flow_relay_variant.tres"),
+]
+const GRID_EASY_RECIPES: Array[GridChunkRecipe] = [
+ preload("res://data/grid_chunks/flow_relay_easy.tres"),
+ preload("res://data/grid_chunks/flow_relay_easy_variant.tres"),
 ]
 ## Legacy layout remains available for the original physics regression fixture.
 @export var generation_enabled: bool = true
@@ -68,6 +77,8 @@ func _ready() -> void:
  ring_field.previous_ball_position = ball.position
  add_child(ring_field)
  _populate_rings()
+ score_attack.reset(score_attack_enabled, score_attack_target, ScoreAttack.find_goal(layout))
+ previous_goal_position = ball.serve_position
  _build_view()
  debug_panel = PlaygroundDebugPanel.new()
  debug_panel.name = "DebugAndHUD"
@@ -95,7 +106,9 @@ func _generate_layout(seed_value: int, preference: int, grid_mode: int = -1) -> 
  if mode == 0:
   result = TableGenerator.generate(seed_value, preference)
  else:
-  var compiled := GridChunkCompiler.compile(GRID_RECIPES[mode - 1])
+  # Easy has its own broad recipe; preserve the original Normal/Hard catalogue.
+  var recipes := GRID_EASY_RECIPES if preference == TableGenerator.Difficulty.EASY else GRID_RECIPES
+  var compiled := GridChunkCompiler.compile(recipes[mode - 1])
   if not compiled.valid:
    return compiled
   var middle: Array[ChunkData] = [compiled.chunk]
@@ -175,21 +188,24 @@ func _build_presentation() -> void:
  presentation.ring_field = ring_field
  view.add_child(presentation)
  presentation.build(chunks, layout.junctions, layout.bounds)
+ var goal := ScoreAttackGoal.new()
+ goal.challenge = score_attack
+ presentation.add_child(goal)
 
 func can_regenerate() -> bool:
  return not generation_pending and (get_tree().paused or ball.serve_pending)
 
-func request_generation(seed_value: int, preference: int = -1, grid_mode: int = -1) -> bool:
+func request_generation(seed_value: int, preference: int = -1, grid_mode: int = -1, challenge_settings: Dictionary = {}) -> bool:
  if not can_regenerate():
   status_message = "Pause before generating a table, or wait at serve."
   return false
  generation_pending = true
  var requested := generation_difficulty if preference < 0 else clampi(preference, TableGenerator.Difficulty.EASY, TableGenerator.Difficulty.HARD)
  var requested_grid := generation_grid_mode if grid_mode < 0 else clampi(grid_mode, 0, GRID_RECIPES.size())
- call_deferred("_regenerate", clampi(seed_value, 0, 2147483647), requested, requested_grid)
+ call_deferred("_regenerate", clampi(seed_value, 0, 2147483647), requested, requested_grid, challenge_settings.duplicate())
  return true
 
-func _regenerate(seed_value: int, preference: int, grid_mode: int = -1) -> void:
+func _regenerate(seed_value: int, preference: int, grid_mode: int = -1, challenge_settings: Dictionary = {}) -> void:
  # Validate before touching the active scene; swap outside physics callbacks.
  if not (get_tree().paused or ball.serve_pending):
   generation_pending = false
@@ -201,6 +217,13 @@ func _regenerate(seed_value: int, preference: int, grid_mode: int = -1) -> void:
   push_error(str(candidate.errors))
   generation_pending = false
   return
+ var goal_position := ScoreAttack.find_goal(candidate)
+ var challenge_enabled: bool = challenge_settings.get("enabled", score_attack_enabled)
+ if challenge_enabled and not goal_position.is_finite():
+  status_message = "No clear upper goal anchor; current table preserved."
+  generation_pending = false
+  return
+ var resume_after_victory := score_attack.state == ScoreAttack.State.COMPLETE
  var overlays: Array[bool] = [presentation.physics_overlay.visible, presentation.chunk_overlay.visible, presentation.connector_overlay.visible, presentation.construction_grid_overlay.visible]
  var camera_preset: int = presentation.camera_preset
  var camera_follow: bool = presentation.camera_follow_enabled
@@ -250,6 +273,11 @@ func _regenerate(seed_value: int, preference: int, grid_mode: int = -1) -> void:
  ring_reset_time = -1.0
  ball.bumper_hit_count = 0
  ball.sweep_rebounds = 0
+ score_attack_enabled = challenge_enabled
+ score_attack_target = clampi(int(challenge_settings.get("target", score_attack_target)), 25, 1000000)
+ score_attack.reset(score_attack_enabled, score_attack_target, goal_position)
+ previous_goal_position = ball.serve_position
+ _goal_motion_ready = false
  _build_presentation()
  presentation.physics_overlay.visible = overlays[0]
  presentation.chunk_overlay.visible = overlays[1]
@@ -264,6 +292,9 @@ func _regenerate(seed_value: int, preference: int, grid_mode: int = -1) -> void:
  generation_pending = false
  debug_panel.refresh_generation()
  status_message = "Table ready. Resume if paused, then Enter / X to launch."
+ if resume_after_victory:
+  get_tree().paused = false
+  status_message = "Fresh challenge. Enter / X to launch."
  print("TABLE_GENERATED | " + layout.signature + " | fallback=" + str(layout.used_fallback))
 
 func _apply_tuning() -> void:
@@ -271,14 +302,19 @@ func _apply_tuning() -> void:
   chunk.wall_material.bounce = tuning.effective.wall_restitution
 
 func launch_ball() -> void:
- if respawn_time > 0 or generation_pending:
+ if respawn_time > 0 or generation_pending or score_attack.state == ScoreAttack.State.COMPLETE:
   return
  ball.launch()
  auto_launch_time = -1.0
  status_message = "Keep it alive. Time your flips; steer lightly."
 
 func reset_ball(relaunch: bool = false) -> void:
+ if score_attack.state == ScoreAttack.State.COMPLETE:
+  request_generation(generation_seed)
+  return
  respawn_time = -1.0
+ previous_goal_position = ball.serve_position
+ _goal_motion_ready = false
  presentation.clear_ring_pickups()
  ball.teleport_to(ball.serve_position, Vector2.ZERO, true)
  presentation.reset_camera(ball.serve_position)
@@ -292,14 +328,21 @@ func toggle_debug() -> void:
  get_viewport().gui_release_focus()
 
 func toggle_pause() -> void:
+ if score_attack.state == ScoreAttack.State.COMPLETE:
+  return
  get_tree().paused = not get_tree().paused
 
 func _on_bumper_hit(body: Node) -> void:
+ if score_attack.state == ScoreAttack.State.COMPLETE:
+  return
  score += 100
  special_meter = minf(100.0, special_meter + 2.0 * float(tuning.effective.special_meter_charge_multiplier))
  presentation.flash_bumper(body)
+ _observe_challenge_score()
 
 func _on_ring_collected(_where: Vector2) -> void:
+ if score_attack.state == ScoreAttack.State.COMPLETE:
+  return
  score += 25
  rings_collected += 1
  special_meter = minf(100.0, special_meter + 5.0 * float(tuning.effective.special_meter_charge_multiplier))
@@ -311,8 +354,19 @@ func _on_ring_collected(_where: Vector2) -> void:
   score += 500
   ring_reset_time = 1.0
   status_message = "RING RACK CLEARED  +500"
+ _observe_challenge_score()
+
+func _observe_challenge_score() -> void:
+ var was_locked := score_attack.state == ScoreAttack.State.LOCKED
+ score_attack.observe_score(score)
+ if was_locked and score_attack.state == ScoreAttack.State.UNLOCKED:
+  # Crossing the goal while locked cannot be credited retroactively.
+  previous_goal_position = ball.position
+  status_message = "GOAL OPEN — climb to the green ring in the upper section!"
 
 func _physics_process(delta: float) -> void:
+ if score_attack.state == ScoreAttack.State.COMPLETE:
+  return
  if respawn_time >= 0.0:
   respawn_time -= delta
   if respawn_time <= 0:
@@ -330,3 +384,12 @@ func _physics_process(delta: float) -> void:
   ring_reset_time -= delta
   if ring_reset_time <= 0:
    ring_field.reset_rings()
+ if not ball.serve_pending and not ball._teleport_pending and respawn_time < 0.0:
+  var start := previous_goal_position if _goal_motion_ready else ball.position
+  if score_attack.observe_motion(start, ball.position):
+   status_message = "SCORE ATTACK CLEAR! Upper goal reached."
+   get_tree().paused = true
+  _goal_motion_ready = true
+ else:
+  _goal_motion_ready = false
+ previous_goal_position = ball.position

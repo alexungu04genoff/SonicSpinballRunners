@@ -1,6 +1,6 @@
 # Vertical Traversal Playground: generation contract
 
-## Current generator v8
+## Current generator v9
 
 The default game generates three seven-row sections: a capped top at row 0, a reusable middle at row 7, and the familiar launch deck at row 14. The resulting bounds are currently 800 × 2100 physics pixels. `layout.chunks` is ordered **top to bottom**; `layout.junctions` holds adjacent section indices, world-space closure rails, checked passage rectangles and difficulty estimates. Bounds merge the resource footprints. Runtime construction, overlays, floor, drain detection and camera framing consume that data rather than assuming two sections.
 
@@ -38,6 +38,8 @@ Version 6 records the drain/recovery placement change. Static rails, bumpers, ri
 Version 7 adds an explicit middle-catalogue mode without changing existing catalogue selection or geometry. **Grid base** and **Grid variant** compile a 50 px Resource-authored construction grid into fresh `ChunkData`, then pass that one middle resource through the same mirror/shift, selection, transition, difficulty and collision validation paths. The mode and kit version are recorded in game layout metadata and grid signatures; repeat uses the current mode. Closest-tier reporting still applies. Failed grid compilation preserves the active table. The two recipes and shared construction kit are documented in [Grid authoring](GRID_AUTHORING.md).
 
 Version 8 intentionally changes Normal's seed mappings, transition eligibility and estimates, including grid modes. It removes generated stepped ceilings from Normal, rates actual bank inclination and supports shared seam points between construction-grid and legacy insets. Easy/Hard selection and geometry remain unchanged. The existing catalogue provides enough variety without additional resource variants: sampled default Normal seeds cover at least four top designs, all three middle designs and six pairings. Record v8 when sharing new seeds.
+
+Version 9 adds dedicated **Easy** recipes for Grid base and Grid variant. The game chooses the matching broad middle recipe before calling the unchanged generator. Their 800 px footprints, 700 px openings, gentle banks and wider paddle spacing replace the narrower grid layout that previously forced an out-of-tier fallback. Existing catalogue and grid Normal/Hard retain their v8 selection and geometry. The 5 px grid/legacy inset difference still uses the ordinary rounded closure capsules; no difficulty threshold, collision rule or physics value changes. See [grid authoring](GRID_AUTHORING.md) for exact dimensions and sample seeds. Record v9 for current layouts.
 
 Run `tests/vertical_traversal_regression.gd`, `tests/vertical_shot_survey.gd` (headless with `--fixed-fps 120`) and graphical `tests/vertical_camera_smoke.gd` for current verification. The shot survey uses actual flipper impulses, including uninterrupted bottom-to-top traversal and falling recovery. Its controlled inputs are evidence of sample routes, not guaranteed reachability for every transform or a difficulty success probability. See [executed results and limitations](VERIFICATION.md).
 

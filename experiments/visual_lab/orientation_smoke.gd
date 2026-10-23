@@ -54,7 +54,7 @@ func make_capture_label() -> void:
  overlay.layer = 30
  root.add_child(overlay)
  capture_label = Label.new()
- capture_label.position = Vector2(24, 140)
+ capture_label.position = Vector2(24, 188)
  capture_label.add_theme_font_size_override("font_size", 17)
  capture_label.add_theme_color_override("font_color", Color.WHITE)
  capture_label.add_theme_color_override("font_shadow_color", Color("071e26"))

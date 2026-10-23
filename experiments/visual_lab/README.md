@@ -1,6 +1,6 @@
 # Green Hill Visual Lab
 
-A playable Green Hill presentation of the shared physics sandbox, integrated with `main` through `1e24223` (generator v8, the 50 px construction kit, varied recovery flippers and Normal-flow banks/curves). The experiment lives on `experiment/green-hill-visual-lab`. The normal physics-playground entry point remains available. There are no acts, lives, checkpoints or campaign progression.
+A playable Green Hill presentation of the shared physics sandbox, now integrated on `main` with PhysicsBro's changes through `5dc758f`: generator v9, the 50 px construction kit including broader Easy recipes, varied recovery flippers, Normal-flow banks/curves, and optional Score Attack. The original physics-playground entry point remains available. Free Play remains the default; there are no acts, lives, checkpoints or campaign progression.
 
 The scene wraps the existing sandbox and its generated layout. Original procedural checkerboard terrain, grass, palms, flowers, distant rocks, sunlight, rings, bumpers, and flippers dress the same playfield. A locally prepared Sonic Runners model supplies brief, table-aligned gameplay poses and upright character-study previews. The invisible 2D ball remains authoritative; the character and scenery are collisionless. A contact marker tracks the physical ball independently of the visual hop. Body placement, imported-model axis correction, and spin-ball rotation use separate transforms.
 
@@ -37,6 +37,8 @@ Discovered tools: **Godot 4.7.2 stable**, **Blender 5.2.3 LTS**. The launcher al
 | Grid base / Grid variant | Build seed 18 base / seed 23 variant while paused or at serve |
 | C / Character close-up | Enter or leave the optional paused study pedestal |
 | 1–4 in character study | Preview rolling, idle, jump and trick |
+
+The mode strip below the Green Hill title reuses the shared Free Play / Score Attack selector, score target and Start / replay action. Score Attack unlocks the upper goal at the chosen score and requires reaching it physically; the shared victory panel offers replay, next seed and Free Play. The Green Hill score card shows target progress and goal status. F1 preserves access to the same controls.
 
 The quick-build buttons disable during live play. Use Escape first, build, then resume and launch. F1 provides any other seed, preference, profile, tuning or grid combination. Regeneration preserves tuning, camera settings, overlays and pause, resets the run, and rebuilds terrain from the final mirrored/shifted/shaped chunk outlines. Surviving bottom paddles and newly generated middle paddles bind to the new character adapter exactly once.
 
@@ -200,3 +202,14 @@ The `godot` name above is shorthand for the verified executable listed under Lau
 - Open F1, regenerate another seed/grid layout, and verify its geometry and contact overlay; return to full view. Use Physics Playground.cmd for the original debugging presentation.
 
 Feel, flipper timing, camera readability, and final art direction still need user playtesting. The verification above records the checks actually run; it does not establish production readiness or asset redistribution permission.
+
+## Main integration — 2026-10-23
+
+Green Hill and the original playground now share all committed PhysicsBro changes through `5dc758f`, including Easy grid recipes and Score Attack. The visual adapter creates the same collisionless `ScoreAttackGoal` and reuses `ScoreAttackPanel` outside its hidden debug HUD. Score rules, movement, generation, goal contact and replay remain in the existing shared code.
+
+The existing Score Attack regression can exercise either presentation. Its next-seed assertion uses the actual starting seed so the playground's seed 1 and Green Hill's seed 18 both remain covered. Graphical runs save local ignored HUD captures under `test-results/green-hill-score-attack-*.png`.
+
+```powershell
+godot --headless --fixed-fps 120 --path . --script res://tests/score_attack_regression.gd
+godot --fixed-fps 120 --path . --script res://tests/score_attack_regression.gd -- --green-hill
+```
