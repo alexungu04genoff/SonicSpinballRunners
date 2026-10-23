@@ -3,7 +3,7 @@
 - Build with Godot 4 and GDScript. Target Windows first; Android is a possible later platform.
 - Read `docs/GAME_DESIGN.md` before major gameplay features or architectural changes. Keep it current with agreed decisions, and distinguish confirmed direction from tentative mechanics and tuning values.
 - The implemented baseline is Phase 2A: Modular Chunk Generation on the Physics Playground. Work autonomously within the agreed task scope in any phase. Discuss substantial changes to the agreed gameplay vision before committing to that direction.
-- Keep the current game an endless experimental physics sandbox: no acts, zones, win conditions, lives, bosses, or complete roguelite progression. Primitive, blocky N64-style graphics are sufficient; prioritize gameplay feel over visual polish or external assets.
+- Keep Free Play as the default endless experimental physics sandbox. Optional Score Attack is a single-table score-unlock-and-reach-goal challenge; no acts, zones, lives, bosses, or complete roguelite progression. Primitive, blocky N64-style graphics are sufficient; prioritize gameplay feel over visual polish or external assets.
 - Treat traversable corners, ledges, and tight connections as possible intentional challenges. Keep difficulty estimates separate from collision validity; do not automatically smooth every connection or relax safety checks for harder preferences.
 - Keep gameplay physics independent of presentation. An invisible 2D ball owns collisions; collisionless 3D models, scenery, and animations must not control them.
 - Resolve physics through shared profiles and centralized modifiers, not scattered character-specific checks. Start with Balanced and Floaty test profiles.

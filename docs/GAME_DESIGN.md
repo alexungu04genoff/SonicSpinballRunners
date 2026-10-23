@@ -9,9 +9,9 @@ This document records the project's intended direction, not a claim that its sys
 - **Future:** explicitly outside the current phase; not a commitment to implement now.
 - **Implemented:** behavior observed in repository source or documented verification. This is distinct from proposed experiments and does not imply new testing during a documentation update.
 
-### Current design and implementation snapshot — 2026-10-22
+### Current design and implementation snapshot — 2026-10-23
 
-The current product is an endlessly replayable physics sandbox with deliberately simple, blocky N64-style visuals. Current exploration covers physics/flippers/steering, profiles and modifiers, seeded chunks, connector compatibility and estimated difficulty, and primitive 3D geometry, perspective, shadows, and depth perception. It does not include acts, zones, branching progression, win conditions, finished Sonic characters, or elaborate environment artwork.
+The current product defaults to an endlessly replayable Free Play physics sandbox with deliberately simple, blocky N64-style visuals. Optional Score Attack now adds an experimental single-table win condition. Current exploration covers physics/flippers/steering, profiles and modifiers, seeded chunks, connector compatibility and estimated difficulty, and primitive 3D geometry, perspective, shadows, and depth perception. It does not include acts, zones, branching progression, finished Sonic characters, or elaborate environment artwork.
 
 The repository contains the **Vertical Traversal Playground**: a seeded three-section course with reusable dual-connector middle chunks, two pairs of flippers, reproducible difficulty preferences, a following perspective camera and fixed overview. Shared physics profiles/modifiers, scoring, swept ring collection with cosmetic flight, automatic bottom respawn and live tuning remain intact. Generator validation and regression results are documented in `VERIFICATION.md`; subjective difficulty remains a playtesting question.
 
@@ -42,7 +42,11 @@ The game should be accessible and immediately fun while supporting deep combinat
 
 ## Current scope: Vertical Traversal Playground
 
-**Confirmed playground scope:** Generate three connected sections: the familiar bottom launch deck, a reusable middle with top/bottom openings and recovery flippers, and a capped upper section. Follow the ball upward, horizontally and back down. Falling between chunks is normal gameplay; a drain always returns to the bottom, with no checkpoint. This remains an endlessly replayable physics sandbox, not an infinitely tall world. No acts, zones, branching progression, win conditions, limited lives, bosses or complete roguelite progression. Primitive N64-style visuals are sufficient; progression ideas below remain long-term direction only.
+**Confirmed playground scope:** Generate three connected sections: the familiar bottom launch deck, a reusable middle with top/bottom openings and recovery flippers, and a capped upper section. Follow the ball upward, horizontally and back down. Falling between chunks is normal gameplay; a drain always returns to the bottom, with no checkpoint. Free Play remains an endlessly replayable physics sandbox, not an infinitely tall world. Optional Score Attack is the sole current win condition. No acts, zones, branching progression, limited lives, bosses or complete roguelite progression. Primitive N64-style visuals are sufficient; progression ideas below remain long-term direction only.
+
+**Confirmed and implemented Score Attack experiment (2026-10-23):** Opt into a fresh single-table challenge through the existing HUD. Accumulate points through the existing ring, bumper and rack-clear callbacks; reaching the configured target unlocks a collisionless goal near the upper end of the generated table. Completion requires subsequent physical proximity/swept contact with that goal. An earlier locked visit is not banked. Existing transformed target/navigation/ring anchors and clearance checks determine placement; no fixed world coordinate, generation change, new obstruction or 3D collision is introduced. Victory pauses play and presents same-seed replay, next table, and return to Free Play. Replay/regeneration resets the objective, score, rack and timers. Drains and ordinary ball resets retain progress and unlimited retries. Physics profiles, modifiers, steering, flipper mechanics and camera behavior remain shared with Free Play.
+
+**Tentative tuning and evidence:** Start at 1,500 points with a 55 px goal radius, plus the existing 14 px ball contact radius. The target is configurable before starting a fresh challenge. Input-only Balanced trials unlocked in approximately 13–32 simulated seconds; successful upper-goal finishes ranged from approximately 20–86 seconds. Some bot policies failed to finish despite sufficient score. This supports a short scoring phase followed by a meaningful climb, but does not establish human enjoyment, tier balance or completion time. Score is intentionally retained after drains so repeated attempts remain useful. See [verification](VERIFICATION.md) for sampled layouts and limitations.
 
 **Completed foundation:** The Physics Playground supplies:
 
@@ -160,7 +164,7 @@ After Act 3, players advance to another zone while retaining their run build.
 
 **Tentative:** Acts may add objectives or hazards. Score requirements may grow multiplicatively, but tuning must account for achievable character and Chao combinations. Exact thresholds, run length, failure conditions, and between-act reset rules remain open.
 
-Increasing score requirements remain the intended campaign direction; exact completion/win rules are future design work, not sandbox functionality.
+Increasing score requirements remain the intended campaign direction; campaign completion/win rules are future design work. The current optional Score Attack experiment does not implement that progression.
 
 ### Future possibility: branching routes
 

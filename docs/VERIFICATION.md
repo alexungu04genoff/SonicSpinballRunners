@@ -2,6 +2,29 @@
 
 Latest checks: 2026-10-23. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: OpenGL Compatibility on NVIDIA GeForce RTX 4060.
 
+## Optional Score Attack
+
+Free Play stays the default. Score Attack uses the existing score callbacks and a swept 2D proximity check against a transformed upper-section anchor. It adds no colliders, physics tuning or generator changes. The default target is provisionally 1,500; the goal radius is 55 px plus the ball's 14 px contact radius.
+
+- `tests/score_attack_regression.gd`: **26 checks passed**. Covers locked contact, exact threshold, score farming without completion, swept contact, one-shot victory, default Free Play, real scoring callbacks including the rack bonus, mode UI, automatic drain/respawn with retained progress, reset sampling, latched victory, replay, Next table, paused regeneration, ring/timer cleanup and return to Free Play. Checks include all 28 catalogue mirror/shift/translation combinations and 27 complete seeded builds (seeds 1, 2, 12 × three difficulties × three construction modes). Selected goal anchors pass the existing whole-course route validator with the actual generated geometry. This establishes coarse connectivity, not every physical trajectory.
+- Graphical lifecycle fixture: the original **24 checks passed** before the two additional Next-table/pause checks. Free Play, locked-goal overview and victory screenshots were captured and inspected. Controls fit their margins, goal colors/text read correctly and the victory panel is clearly visible. A subsequent graphical input-only Normal run reproduced its headless victory and supplied `test-results/score-attack-play-clear.png` with the actual 1,500 target and 4,025 final score.
+- Existing regressions rerun: physics **38**, rings **11**, profiles **8**, vertical traversal **25**, grid construction **23**, and generation UI **15** checks passed. Grid invalid-recipe rejection emits its expected diagnostic. Initial parsing exposed a mixed-indent line in the shared game file; it was repaired before these passing runs. Sandbox runs also log Windows certificate-store access failure, unrelated to offline gameplay. No remaining gameplay script error was observed.
+- Final headless editor import and main-scene startup passed. The repeat indentation fault came from the temporary editor profile converting four spaces to a tab; that ignored profile now uses the repository's one-space indentation, and the source remains unchanged by import. Existing user `project.godot` changes were left out of this commit.
+
+`tests/score_attack_play_survey.gd` uses normal serve, actual scoring and unlimited automatic drain recovery. After launch it changes only ordinary virtual flipper/steering inputs; there are no teleports, score injection, velocity edits or physics changes. Balanced profile, Quick / Tight steering, no modifier. Each attempted policy gets 90 simulated seconds, with three trigger distances tried only when needed. Steering aims toward the goal within the top chamber. These are diagnostics, not human completion rates.
+
+| Layout | Successful policy completion | Final score |
+| --- | ---: | ---: |
+| Normal catalogue, seed 1 | 51.88 s | 4,025 |
+| Hard catalogue, seed 1 | 19.62 s | 1,525 |
+| Easy Grid base / variant, seed 2 | 74.93 / 66.08 s | 5,425 / 5,075 |
+| Normal catalogue / Grid variant, seed 2 | 67.13 / 46.94 s | 4,850 / 3,275 |
+| Hard catalogue / Grid base / Grid variant, seed 2 | 34.86 / 24.96 / 85.89 s | 2,525 / 2,525 / 6,550 |
+
+The five initial seed-1 trials and sixteen seed-2 trials all reached the score threshold in roughly 13–32 seconds. Easy catalogue seeds 1/2 and Normal Grid base seed 2 did not complete under the sampled policies; some trajectories reached the top but missed the goal. Failed samples remain meaningful evidence: points alone cannot win, and the final climb/aim remains the challenge. No difficulty or safety geometry was changed to make the bot pass. Automated winners demonstrate that the complete objective works across all three preferences and both grid variants; they do not prove every seed equally accessible.
+
+**Short human checklist:** Try Normal seed 1 at 1,500, then Easy Grid base seed 2. Judge whether unlocking feels too early, whether the final target is readable during follow-camera play, and whether retries make the climb satisfying rather than repetitive. Check gamepad menu navigation and flipper timing by hand. Art can replace `ScoreAttackGoal` using `game.score_attack.changed/state/goal_position` without controlling detection. Logs, diagnostic JSON and captures remain in ignored `test-results/`.
+
 ## Genuine Easy layouts for grid modes (generator v9)
 
 Grid base and Grid variant now use dedicated 800 × 700 px recipes when Easy is requested. Their 700 px openings replace the original 600 px openings, the sharper right-wall slopes become gentle banks/curves, and recovery paddles sit farther apart. The authored rating remains 28; the unchanged estimator now finds genuinely Easy combinations instead of falling back to Normal. Original grid Normal/Hard recipes and Existing catalogue remain unchanged.

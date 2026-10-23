@@ -2,7 +2,7 @@
 
 A local Godot 4/GDScript pinball prototype. Gameplay uses an invisible 2D rigid body and 2D collision geometry. Three connected sections form a tall course; a separate, collisionless 3D scene renders raised primitives with a smooth following perspective camera or fixed overview. No external artwork or dependencies are required.
 
-This remains an endless experimental physics playground, including the modular generator. There are no acts, zones, win conditions, lives, bosses, or roguelite progression. The ball number is a serve counter, not a lives limit. Primitive, blocky N64-style visuals are sufficient while we tune physics, flippers, bumpers, steering, profiles, modifiers, and layouts.
+Free Play remains the default endless experimental physics playground. Optional Score Attack adds a single-table objective: earn points, unlock an upper goal, then physically reach it. There are no acts, zones, lives, bosses, or roguelite progression. The ball number is a serve counter, not a lives limit. Primitive, blocky N64-style visuals are sufficient while we tune physics, flippers, bumpers, steering, profiles, modifiers, and layouts.
 
 ## Run
 
@@ -30,6 +30,8 @@ The ball starts on the bottom launch deck. Press **Enter** or gamepad **X** to l
 Both flippers can be held simultaneously. Special input currently displays a status message; it does not consume the meter or execute an ability.
 
 ## What is playable
+
+- **Score Attack:** select it in the strip below the score, set a target, and press **Start / replay** while at serve or paused. Launch normally. The provisional default is **1,500 points** (for example, ten bumpers and twenty rings). At the threshold, the amber upper goal turns green. Touch its ring with the ball to win; points alone never complete the run. The victory panel offers **Replay same seed**, **Next table**, and **Free Play**. Starting/replaying clears score, rings and timers, while preserving physics tuning, difficulty and construction mode. Drains and R/ball reset preserve earned progress; use Start / replay for a fresh challenge. Paused builds stay paused; replaying a victory resumes at serve. Mode controls remain visible with F1.
 
 - A fixed bottom deck, three reusable middle layouts with two openings, and eight upper layouts, selected by a reproducible seed and difficulty preference with optional mirroring and horizontal shifting.
 - An optional 50 px construction-grid experiment: choose **Grid base** or **Grid variant** in Table Generator, then build while paused or at serve. **Easy** uses wider recipes with gentle banks; Normal/Hard retain the original recipes. Enable **Construction grid** for local coordinates and piece footprints. **Existing catalogue** keeps the original levels available. See [grid authoring and variants](docs/GRID_AUTHORING.md).
@@ -62,6 +64,8 @@ PhysicsPlayground                         scripts/game.gd
 Authoritative legacy layouts are in `data/chunks/*.tres`, `data/middle_chunks/*.tres` and `data/lower_chunk.tres`. Optional grid layouts live only in `data/grid_chunks/*.tres`; `GridChunkCompiler` creates their runtime geometry from `GridPieceKit`. `scripts/table_generator.gd` returns ordered chunks, junctions and their combined bounds after validation. `scripts/connector_transitions.gd` shapes Normal's adjoining wall collars on private resource copies; the resulting descriptors drive both 2D collisions and 3D meshes. `data/upper_chunk.tres` remains the fallback top and original physics-test fixture. Character defaults are in `data/balanced.tres` and `data/floaty.tres`. The example modifier is `data/practice_chao.tres`.
 
 Physics lives in `scripts/ball.gd`, `scripts/flipper.gd`, and `scripts/table_chunk.gd`. `scripts/ring_field.gd` owns collectibles. `scripts/game.gd` handles score, meter, drain/serve, and signal wiring. Rendering is isolated in `scripts/presentation.gd`. Future models can replace `ball_visual` and listen to existing bumper/flipper signals without changing collisions.
+
+`scripts/score_attack.gd` observes that existing score and swept 2D ball contact; it does not award points or change collisions. Goal placement uses a clear authored target, navigation probe or ring anchor in the upper 45% of the transformed top chunk. The circle has a 55 px radius; contact includes the ball's 14 px radius. `scripts/score_attack_goal.gd` supplies the replaceable collisionless skin under Presentation, and `scripts/score_attack_panel.gd` supplies mode/victory UI. For themed art, use `game.score_attack.changed`, `.state`, `.target`, and `.goal_position`; keep detection and score in gameplay. No changes to the existing presentation script are required.
 
 ### Coordinate mapping
 
