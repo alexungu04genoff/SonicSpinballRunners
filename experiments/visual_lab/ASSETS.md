@@ -1,13 +1,14 @@
 # Asset provenance and local-use boundary
 
-This is a local visual experiment using a fan-uploaded commercial game model. A fan upload is not an open license. The public branch contains integration code, original procedural scenery code, this provenance record, and preparation instructions; it does not contain third-party archives, models, textures, derived GLBs/Blender files, or renders containing them.
+This is a local visual experiment using fan-uploaded commercial game models. A fan upload is not an open license. The public branch contains integration code, original procedural scenery code, this provenance record, and preparation instructions; it does not contain third-party archives, models, textures, derived GLBs/Blender files, or renders containing them.
 
-## Sources inspected on 2026-10-22
+## Sources inspected on 2026-10-22 and 2026-10-23
 
 | Source | Credit recorded | Use in this experiment |
 | --- | --- | --- |
 | [Sonic Runners collection](https://models.spriters-resource.com/mobile/sonicrunners/) | SEGA / Sonic Team game content; individual uploaders vary | Collection inspected for context |
 | [Sonic Runners — Sonic](https://models.spriters-resource.com/mobile/sonicrunners/asset/293026/) | Page uploader **Kawasuzu**; page contributor **Howall**; archive DAE author field **Hallow**. These are recorded separately because they differ. Original character/game assets: **SEGA / Sonic Team** | ZIP downloaded; SMD geometry, rig, skin weights, and diffuse textures used locally |
+| [Sonic Runners — Miles “Tails” Prower](https://models.spriters-resource.com/mobile/sonicrunners/asset/295033/) | Page uploader **Hallow**; original character/game assets **SEGA / Sonic Team** | ZIP downloaded with explicit user approval on 2026-10-23; SMD geometry, rig, skin weights and diffuse textures used locally |
 | [Green Hill palm tree — Sonic Adventure 2: Battle](https://models.spriters-resource.com/gamecube/sonicadventure2battle/asset/349881/) | Page uploader **lemurboy12**; original game assets **SEGA / Sonic Team** | ZIP downloaded for reference only; its model and textures are not used by the runtime scene |
 | [Green Hill Zone Act 1 — Sonic Generations](https://models.spriters-resource.com/pc_computer/sonicgenerations/asset/296339/) | Page uploader **DatHax**; original game assets **SEGA / Sonic Team** | Source page inspected only; full stage not downloaded or used |
 
@@ -17,26 +18,35 @@ The scenery, checkerboard surfaces, grass, palms, flowers, distant rocks, spin-b
 
 The site's [Help page](https://models.spriters-resource.com/page/help/) and [Terms of Use](https://models.spriters-resource.com/page/tou/) were inspected. They identify original rights holders as the owners of uploaded game content and do not grant the site authority to license those copyrights. Noncommercial-use guidance is not redistribution permission. The site disallows commercial use / asset-marketplace redistribution of its content.
 
-**Redistribution permission for this Sonic archive and derived assets has not been established.** Credit is not permission. Keep the files local and ignored until the relevant rights are reviewed. Do not publish the GLB, Blender file, original textures, archives, or rendered captures as part of this public repository. No claim of an open-source art license is made here. No public deployment or release is part of this experiment.
+**Redistribution permission for these Sonic and Tails archives and derived assets has not been established.** Credit is not permission. Keep the files local and ignored until the relevant rights are reviewed. Do not publish the GLB, Blender file, original textures, archives, or rendered captures as part of this public repository. No claim of an open-source art license is made here. No public deployment or release is part of this experiment.
 
 ## Exact inspected archives
 
 | Local file | SHA-256 |
 | --- | --- |
 | `local/sonic.zip` | `4DE42CC9627DAEA795F6E4EDCB77A2BB5E44A11AED10C8968B977BB18E9DB2E8` |
+| `local/tails.zip` | `D81CA4D80D6B9D9C109933F578DEF4E59E9C2BE9EEED95A9969C22F422055F43` |
 | `local/palm.zip` | `95AC908609F771CA660A85787A6388AA3303E7F838221E91CFD61F09B8F86EC9` |
 
-If the source archive changes, inspect the replacement and update its provenance before trusting the preparation results. The data reader is deliberately narrow, written for the inspected SMD; it is not a general model converter. No asset-bundled scripts were executed.
+If the source archive changes, inspect the replacement and update its provenance before trusting the preparation results. The data reader is deliberately narrow, written for the inspected Sonic and Tails SMDs; it is not a general model converter. No asset-bundled scripts were executed.
 
 ## Files that remain local
 
 All paths below are relative to `experiments/visual_lab/` and excluded by its `.gitignore`:
 
-- `local/sonic.zip`, `local/palm.zip`, and all extracted files under `local/source/`.
+- `local/sonic.zip`, `local/tails.zip`, `local/palm.zip`, and all extracted files under `local/source/`.
 - Original `.smd`, `.dae`, `.fbx`, and `.png` assets, including unused texture variants.
-- `local/runtime/sonic.glb`, with embedded textures, original weighted geometry, and experimental pose clips.
-- `local/sonic_prepared.blend`, diagnostic reports, logs, and Blender preview images.
+- `local/runtime/sonic.glb` and `local/runtime/tails.glb`, with embedded textures, original weighted geometry, and experimental pose clips.
+- `local/sonic_prepared.blend`, `local/tails_prepared.blend`, diagnostic reports, logs, backups and Blender preview images.
 - `captures/`, including gameplay, character, and animation-sequence captures.
 - Blender backups (`*.blend1`) and Python bytecode caches.
 
 The tracked preparation script contains only importer/conversion logic and newly authored pose parameters. It does not encode third-party geometry, textures, or archive payloads. See [README.md](README.md) for local preparation and [asset_manifest.json](asset_manifest.json) for machine-readable provenance.
+
+## Character rig and preparation findings — 2026-10-23
+
+Both archives provide a bind-pose SMD with only frame `0`; no source animation clips were found. The shared `tools/prepare_character.py` reads those files as data and preserves their original hierarchy and skin weights. `tools/prepare_sonic.py` remains a compatibility entry point. The public preparation logic includes newly authored pose parameters, but no third-party geometry, textures or binary animation payloads.
+
+Sonic retains 54 bones, 2,211 unique vertices and 3,318 triangles. Tails retains 61 bones, 2,605 unique vertices and 3,782 triangles. Both have five material assignments, zero unweighted vertices and weight sums within approximately 0.000001 of one. Tails has two separate four-bone tail chains, each weighting 131 vertices without body-bone blends. Flight rotates each complete original tail from its first joint; the remaining three joints retain their local rest rotations. Diffuse textures are opaque; the `_a` grayscale variants are auxiliary maps, not transparency masks.
+
+The local GLBs contain newly authored Sonic `idle`, `jump`, `trick`, `homing`, `impact` clips and Tails `idle`, `jump`, `trick`, `fly` clips. These clips are prototype presentation work, not recovered Sonic Runners animations. Reports and renders stay local alongside the prepared assets. New asset downloads still require user approval.

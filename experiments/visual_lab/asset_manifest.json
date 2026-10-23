@@ -3,7 +3,7 @@
   "experiment": "Green Hill Visual Lab",
   "branch": "experiment/green-hill-visual-lab",
   "base_commit": "a099f340bf7d54ce779fc37375123adb73faf832",
-  "inspected_on": "2026-10-22",
+  "inspected_on": "2026-10-23",
   "path_base": "experiments/visual_lab",
   "asset_policy": {
     "third_party_assets_local_only": true,
@@ -15,9 +15,13 @@
       "https://models.spriters-resource.com/page/tou/"
     ],
     "terms_summary": "Original rights holders retain copyright. The host does not grant a copyright license. Noncommercial-use guidance does not establish redistribution permission; commercial use and marketplace redistribution are disallowed by the site's guidance.",
-    "ignored_directories": ["local/", "captures/"],
-    "download_method": "Manual browser download from the source page; CLI requests encountered a Cloudflare challenge.",
-    "execute_bundled_scripts": false
+    "ignored_directories": [
+      "local/",
+      "captures/"
+    ],
+    "download_method": "Browser download from the approved source page; CLI requests encountered a Cloudflare challenge.",
+    "execute_bundled_scripts": false,
+    "new_downloads_require_user_approval": true
   },
   "sources": [
     {
@@ -47,9 +51,14 @@
         "**/chr_sonic_eye_dif.png",
         "**/chr_sonic_mouth_dif.png"
       ],
-      "inspected_alternative_formats": ["**/chr_sonic.fbx", "**/chr_sonic.dae"],
+      "inspected_alternative_formats": [
+        "**/chr_sonic.fbx",
+        "**/chr_sonic.dae"
+      ],
       "source_animation_clips": 0,
-      "source_skeleton_frames": [0],
+      "source_skeleton_frames": [
+        0
+      ],
       "import_note": "Blender's FBX importer rejects version 6100. The repository-authored preparation script reads SMD v1 as data and preserves the hierarchy and skin weights.",
       "rig_inspection": {
         "retained_bones": 54,
@@ -57,15 +66,110 @@
         "triangles": 3318,
         "material_assignments": 5,
         "unweighted_vertices": 0,
-        "max_weight_sum_error_approx": 0.000001,
-        "diagnostic_report": "local/rig_report.json"
+        "max_weight_sum_error_approx": 1e-06,
+        "diagnostic_report": "local/sonic_rig_report.json",
+        "identity_skin_error_m_approx": 1.81318723e-07,
+        "rest_matrix_max_element_error_approx": 7.80075788e-06
       },
       "derived_outputs": [
         "local/runtime/sonic.glb",
         "local/sonic_prepared.blend",
-        "local/blender_idle.png",
-        "local/blender_jump.png",
-        "local/blender_trick.png",
+        "local/sonic_rig_report.json",
+        "local/rig_report.json",
+        "local/sonic_blender_*.png",
+        "local/backups/sonic_*/",
+        "captures/"
+      ],
+      "inspected_on": "2026-10-22",
+      "authored_experimental_clips": [
+        "idle",
+        "jump",
+        "trick",
+        "homing",
+        "impact"
+      ]
+    },
+    {
+      "id": "sonic_runners_tails",
+      "title": "Sonic Runners — Miles “Tails” Prower",
+      "url": "https://models.spriters-resource.com/mobile/sonicrunners/asset/295033/",
+      "page_uploader": "Hallow",
+      "original_rights_holder": "SEGA / Sonic Team",
+      "inspected_on": "2026-10-23",
+      "status": "downloaded with explicit user approval and used locally",
+      "runtime_dependency": true,
+      "archive_path": "local/tails.zip",
+      "archive_sha256": "D81CA4D80D6B9D9C109933F578DEF4E59E9C2BE9EEED95A9969C22F422055F43",
+      "extraction_root": "local/source/tails/",
+      "used_files": [
+        "**/chr_tails.smd",
+        "**/chr_tails_body_dif.png",
+        "**/chr_tails_eye_dif.png",
+        "**/chr_tails_mouth_dif.png"
+      ],
+      "inspected_alternative_formats": [
+        "**/chr_tails.fbx",
+        "**/chr_tails.dae"
+      ],
+      "source_animation_clips": 0,
+      "source_skeleton_frames": [
+        0
+      ],
+      "authored_experimental_clips": [
+        "idle",
+        "jump",
+        "trick",
+        "fly"
+      ],
+      "import_note": "The shared data-only SMD v1 reader preserves source hierarchy and skin weights. Diffuse textures are opaque; opaque grayscale _a variants are unused auxiliary maps, not transparency masks.",
+      "rig_inspection": {
+        "retained_bones": 61,
+        "unique_vertices": 2605,
+        "triangles": 3782,
+        "material_assignments": 5,
+        "unweighted_vertices": 0,
+        "max_weight_sum_error_approx": 1e-06,
+        "identity_skin_error_m_approx": 1.78969087e-07,
+        "rest_matrix_max_element_error_approx": 9.23871994e-07,
+        "diagnostic_report": "local/tails_rig_report.json",
+        "tails": {
+          "chains": [
+            [
+              "Tail1_L",
+              "Tail2_L",
+              "Tail3_L",
+              "Tail4_L"
+            ],
+            [
+              "Tail1_R",
+              "Tail2_R",
+              "Tail3_R",
+              "Tail4_R"
+            ]
+          ],
+          "weighted_vertices_per_chain": 131,
+          "vertices_blended_with_body": 0,
+          "animated_roots": [
+            "Tail1_L",
+            "Tail1_R"
+          ],
+          "child_rotation_deltas": "identity",
+          "blade_alignment": "Derived from measured Tail1-to-Tail2 rest direction; opposite blades rotate around the rearward source +Y axis.",
+          "revolutions_per_second": 2,
+          "flight_audit_phases": 24,
+          "flight_godot_z_depth_bounds_m_approx": [
+            -0.203413,
+            0.3154
+          ],
+          "relaxed_pose_min_godot_z_m_approx": -0.305409
+        }
+      },
+      "derived_outputs": [
+        "local/runtime/tails.glb",
+        "local/tails_prepared.blend",
+        "local/tails_rig_report.json",
+        "local/tails_blender_*.png",
+        "local/backups/tails_*/",
         "captures/"
       ]
     },
@@ -94,20 +198,58 @@
   ],
   "authored_elements": {
     "scenery": "Procedural checkerboard terrain, grass caps, palms, flowers, rocks, materials and lighting generated in repository-authored Godot code.",
-    "character_presentation": "Procedural spin-ball and contact marker; separate body placement/lean and imported-model alignment transforms; gameplay poses face up-table while paused pedestal study uses upright orientation; the marker stays at the physical ball; no gameplay colliders or root-motion control.",
-    "experimental_clips": ["idle", "jump", "trick"],
-    "clip_scope": "New in-place pose studies with small one-second variation, looped by the visual adapter; not original game clips or production locomotion.",
-    "asset_payload_embedded_in_scripts": false
+    "character_presentation": "Separate blue Sonic and orange Tails procedural spin-balls and physical contact marker; shared collisionless adapter observes gameplay character and special events. Ordinary poses and flight face up-table; homing turns the heading in the board plane with the face outward. Paused study uses conventional upright orientation. No animation root motion or visual callback controls the ball.",
+    "experimental_clips": [
+      "idle",
+      "jump",
+      "trick",
+      "homing",
+      "impact",
+      "fly"
+    ],
+    "clip_scope": "New in-place prototype poses, plus rotation of the original Tails tail chains; not original game clips or production locomotion.",
+    "asset_payload_embedded_in_scripts": false,
+    "character_clips": {
+      "sonic": [
+        "idle",
+        "jump",
+        "trick",
+        "homing",
+        "impact"
+      ],
+      "tails": [
+        "idle",
+        "jump",
+        "trick",
+        "fly"
+      ]
+    }
   },
   "preparation": {
-    "script": "tools/prepare_sonic.py",
+    "script": "tools/prepare_character.py",
     "blender_version": "5.2.3 LTS",
     "godot_version": "4.7.2 stable",
     "runtime_format": "GLB",
-    "runtime_model": "local/runtime/sonic.glb",
     "source_scan_ignore": "local/.gdignore",
     "runtime_loading": "GLTFDocument loads the local GLB directly.",
     "standing_height_m": 1.0,
-    "instructions": "README.md"
+    "instructions": "README.md",
+    "compatibility_entry_point": "tools/prepare_sonic.py",
+    "character_argument": "--character sonic|tails (after Blender -- separator)",
+    "runtime_models": {
+      "sonic": "local/runtime/sonic.glb",
+      "tails": "local/runtime/tails.glb"
+    },
+    "optional_arguments": [
+      "--skip-renders"
+    ],
+    "previous_prepared_outputs_backup": "local/backups/<character>_<timestamp>/",
+    "runtime_model": "local/runtime/sonic.glb",
+    "export_validation": {
+      "clip_duration_seconds": 1.0,
+      "max_loop_rotation_error_degrees": 0.1,
+      "max_translation_drift_m": 1e-05,
+      "report_location": "local/<character>_rig_report.json"
+    }
   }
 }

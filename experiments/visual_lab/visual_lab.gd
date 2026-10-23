@@ -33,6 +33,10 @@ func _ready() -> void:
    generation_seed = clampi(int(argument.trim_prefix("--seed=")), 0, 2147483647)
   elif argument.begins_with("--grid="):
    generation_grid_mode = clampi(int(argument.trim_prefix("--grid=")), 0, 2)
+  elif argument.begins_with("--character="):
+   var requested := argument.trim_prefix("--character=")
+   if CharacterSpecials.CHARACTERS.has(requested):
+    character_id = requested
   elif argument == "--zone":
    zone_enabled = true
  super._ready()
@@ -58,7 +62,7 @@ func _ready() -> void:
    character.resume_gameplay()
   else:
    _set_close_view(true)
-   _select_pose(_capture_kind if _capture_kind in ["roll", "idle", "jump", "trick"] else "idle")
+   _select_pose(_capture_kind if _capture_kind in ["roll", "idle", "jump", "trick", "homing", "impact", "fly"] else "idle")
   if not _capture_sequence:
    character.seek_pose(0.55)
  print("GREEN_HILL_READY | Enter launch | Q/E flippers | arrows steer | F1 tuning/seeds | O overview | C study")
@@ -98,7 +102,15 @@ func _build_presentation() -> void:
  character.name = "SonicVisualAdapter"
  character.ball = ball
  character.table = presentation
+ character.specials = specials
  presentation.add_child(character)
+
+func _add_zone_presentation() -> void:
+ # The physics playground keeps its lightweight CharacterFeedback placeholder.
+ # Green Hill supplies its own character, target and special feedback below.
+ var markers := ZoneMarkers.new()
+ markers.zone = zone
+ presentation.add_child(markers)
 
 func _attach_challenge_ui() -> void:
  # Reuse the shared mode/target/victory controls outside the hidden debug HUD.
@@ -229,8 +241,8 @@ func _build_lab_ui() -> void:
  study_buttons.visible = false
  stack.add_child(study_buttons)
  var buttons := study_buttons
- var labels := ["1  Rolling", "2  Idle", "3  Jump", "4  Trick"]
- var poses := ["roll", "idle", "jump", "trick"]
+ var labels := ["1  Rolling", "2  Idle", "3  Jump", "4  Trick", "5  Special", "6  Impact"]
+ var poses := ["roll", "idle", "jump", "trick", "special", "impact"]
  for i in poses.size():
   var value: String = poses[i]
   var button := _button(labels[i], func(): _select_pose(value))
@@ -241,19 +253,16 @@ func _build_lab_ui() -> void:
  buttons.add_child(space)
  view_button = _button("C  Character close-up", func(): _set_close_view(not close_view))
  top_row.add_child(view_button)
- stack.add_child(_label("Q / E  Flippers    ← / →  Steer    ESC  Pause    R  Reset    O  Overview    F1  Tuning / seeds    •    Pause or wait at serve to build", 13, Color("cce5e0")))
+ stack.add_child(_label("Q / E  Flippers    SPACE  Special    ← / →  Steer    ESC  Pause    R  Reset    O  Overview    F1  Tuning / seeds    •    Pause or wait at serve to build", 13, Color("cce5e0")))
 
 func _select_pose(value: String) -> void:
  if not close_view:
   return
  character.capture_hold = false
- character.select_preview(value)
+ character.select_preview(("fly" if character_id == "tails" else "homing") if value == "special" else value)
  get_viewport().gui_release_focus()
 
 func _set_close_view(enabled: bool) -> void:
- if enabled and character_id == "tails":
-  status_message = "Tails uses a gameplay placeholder; character study currently shows Sonic only."
-  return
  if zone.state in [ZoneRun.State.DRAFT, ZoneRun.State.COMPLETE]:
   return
  if enabled == close_view:
@@ -283,6 +292,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
   KEY_2: _select_pose("idle")
   KEY_3: _select_pose("jump")
   KEY_4: _select_pose("trick")
+  KEY_5: _select_pose("special")
+  KEY_6:
+   if character_id == "sonic":
+    _select_pose("impact")
   KEY_C: _set_close_view(not close_view)
   KEY_O: _toggle_overview()
 
@@ -358,13 +371,16 @@ func _process(_delta: float) -> void:
   status_label.text += " · Spin-ball fallback"
  for button: Button in layout_buttons:
   button.disabled = not can_regenerate()
- overview_button.text = "O  Overview" if presentation.camera_follow_enabled else "O  Follow Sonic"
+ overview_button.text = "O  Overview" if presentation.camera_follow_enabled else "O  Follow character"
  if respawn_time >= 0.0:
   pose_label.text = "DRAIN / RETURNING TO SERVE"
  elif not close_view:
   pose_label.text += " · TRY %d" % ball_number
+ pose_buttons["impact"].visible = character_id == "sonic"
+ pose_buttons["special"].text = "5  Flight" if character_id == "tails" else "5  Homing"
  for value: String in pose_buttons:
-  pose_buttons[value].modulate = Color("ffe373") if character.pose == value else Color.WHITE
+  var displayed: String = ("fly" if character_id == "tails" else "homing") if value == "special" else value
+  pose_buttons[value].modulate = Color("ffe373") if character.pose == displayed else Color.WHITE
  if not _capture_kind.is_empty():
   _frame_count += 1
   if _frame_count >= _capture_frames and not _capture_started:

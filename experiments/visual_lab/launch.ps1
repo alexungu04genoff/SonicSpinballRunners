@@ -7,9 +7,11 @@ param(
     [string]$Grid = 'Catalogue',
     [ValidateSet('Angle', 'Native')]
     [string]$GraphicsBackend = 'Angle',
+    [ValidateSet('Sonic', 'Tails')]
+    [string]$Character = 'Sonic',
     [switch]$Playground,
     [switch]$NoModel,
-    [ValidateSet('gameplay', 'idle', 'jump', 'trick', 'roll', 'reel')]
+    [ValidateSet('gameplay', 'idle', 'jump', 'trick', 'roll', 'reel', 'homing', 'impact', 'fly')]
     [string]$Capture,
     [switch]$Sequence,
     [ValidateRange(10, 10000)]
@@ -26,7 +28,7 @@ if ($Playground -and $Capture) {
 }
 
 if ($Sequence -and -not $Capture) {
-    throw '-Sequence requires -Capture gameplay, idle, jump, trick, roll, or reel.'
+    throw '-Sequence requires -Capture.'
 }
 
 if ($Capture -eq 'reel' -and -not $Sequence) {
@@ -98,9 +100,9 @@ if ($ImportOnly) {
     return
 }
 
-$assetPath = Join-Path $PSScriptRoot 'local\runtime\sonic.glb'
+$assetPath = Join-Path $PSScriptRoot ('local\runtime\{0}.glb' -f $Character.ToLowerInvariant())
 if (-not $Playground -and -not (Test-Path -LiteralPath $assetPath -PathType Leaf)) {
-    Write-Warning 'Local Sonic GLB is missing. The scene will use its spin-ball fallback. See README.md for preparation.'
+    Write-Warning "Local $Character GLB is missing. The scene will use its spin-ball fallback. See README.md for preparation."
 }
 
 # Keep Godot's Compatibility renderer, but use Direct3D 11 through ANGLE by
@@ -115,6 +117,7 @@ Write-Host "Graphics backend: $GraphicsBackend ($renderingDriver)"
 Write-Host "Game log: $gameLog"
 $launchArguments = @('--path', $repoRoot, '--rendering-method', 'gl_compatibility', '--rendering-driver', $renderingDriver, '--log-file', $gameLog, $scenePath)
 $userArguments = @("--seed=$Seed", "--grid=$(@{Catalogue=0; Base=1; Variant=2}[$Grid])")
+if (-not $Playground) { $userArguments += "--character=$($Character.ToLowerInvariant())" }
 if ($NoModel) { $userArguments += '--no-model' }
 if ($Capture) {
     $launchArguments = @('--fixed-fps', '60') + $launchArguments

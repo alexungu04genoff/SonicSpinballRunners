@@ -182,7 +182,7 @@ func run() -> void:
  check(game.zone.active_act == 0 and game.special_meter == 0 and game.tuning.build_ids.is_empty() and game.specials.target == null, "Zone replay resets meter, acquired Chao and targeting")
  paused = false
  await frames(5)
- check(not game.presentation.get_node("SonicVisualAdapter").visible, "Tails hides the Sonic presentation without changing its artwork")
+ check(game.character.visible and game.character.character_id == "tails" and game.character.spin_material.albedo_color.r > game.character.spin_material.albedo_color.b, "Green Hill presents the selected Tails character with its orange spinball")
  game.special_meter = 100
  game.launch_ball()
  await frames(12)

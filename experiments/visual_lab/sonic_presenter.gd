@@ -1,8 +1,21 @@
 extends Node3D
 ## Collisionless character adapter. Only observations flow from the 2D simulation.
 const MODEL_PATH := "res://experiments/visual_lab/local/runtime/sonic.glb"
-const POSE_NAMES := ["roll", "idle", "jump", "trick"]
-enum State { SPIN, JUMP, TRICK, SHOWCASE }
+const MODEL_PATHS := {
+ "sonic": MODEL_PATH,
+ "tails": "res://experiments/visual_lab/local/runtime/tails.glb",
+}
+const POSE_NAMES := ["roll", "idle", "jump", "trick", "homing", "impact", "fly"]
+enum State { SPIN, JUMP, TRICK, SHOWCASE, HOMING, IMPACT, FLIGHT }
+var specials: CharacterSpecials
+var character_id := "sonic"
+var spin_material: StandardMaterial3D
+var streak_materials: Array[StandardMaterial3D] = []
+var target_marker: Node3D
+var flight_wind: MeshInstance3D
+var homing_direction := Vector2.UP
+var _aim_angle := 0.0
+var _special_heading_active := false
 const MAX_LEAN_DEGREES := 23.0
 const LEAN_DEAD_ZONE := 45.0
 const LEAN_FULL_SPEED := 650.0
@@ -48,12 +61,14 @@ var pulse_time := 0.0
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
+ if is_instance_valid(specials):
+  character_id = specials.character_id
  spin_root = Node3D.new()
  spin_root.name = "RollingVisualOnly"
  add_child(spin_root)
- var blue := table.material(Color("075dd2"), 0.05)
- blue.roughness = 0.38
- table.mesh_node(table.sphere(0.17), blue, Vector3.ZERO, spin_root)
+ spin_material = table.material(Color("075dd2"), 0.05)
+ spin_material.roughness = 0.38
+ table.mesh_node(table.sphere(0.17), spin_material, Vector3.ZERO, spin_root)
  var stripe := TorusMesh.new()
  stripe.inner_radius = 0.167
  stripe.outer_radius = 0.175
@@ -63,6 +78,7 @@ func _ready() -> void:
  streak.rotation.z = 0.5
  var second := table.mesh_node(stripe, table.material(Color("c9ecff"), 0.12), Vector3.ZERO, spin_root)
  second.rotation.x = 1.1
+ streak_materials.assign([streak.material_override, second.material_override])
  upright = Node3D.new()
  upright.name = "UncurledVisualAnchor"
  add_child(upright)
@@ -110,6 +126,14 @@ func _ready() -> void:
  add_child(close_camera)
  table.ball_visual.visible = false
  _build_effects()
+ _apply_character_color()
+ if is_instance_valid(specials):
+  specials.character_changed.connect(_on_character_changed)
+  specials.homing_started.connect(_on_homing_started)
+  specials.homing_ended.connect(_on_homing_ended)
+  specials.special_hit.connect(_on_special_hit)
+  specials.flight_started.connect(_on_flight_started)
+  specials.flight_ended.connect(_on_flight_ended)
  # Bind to this adapter, so freeing a regenerated presentation disconnects every
  # old listener, including listeners on the bottom paddles that survive the swap.
  ball.bumper_hit.connect(_on_bumper_hit)
@@ -120,10 +144,18 @@ func _ready() -> void:
  _process(0.0)
 
 func _load_model() -> void:
+ if is_instance_valid(model):
+  model.get_parent().remove_child(model)
+  model.queue_free()
+ model = null
+ animation_player = null
+ model_available = false
+ _clips.clear()
+ model_status = "Local %s asset not prepared" % character_id.capitalize()
  if OS.get_cmdline_user_args().has("--no-model"):
   model_status = "Spin-ball fallback (local model disabled)"
   return
- var absolute := ProjectSettings.globalize_path(MODEL_PATH)
+ var absolute := ProjectSettings.globalize_path(MODEL_PATHS.get(character_id, MODEL_PATH))
  if not FileAccess.file_exists(absolute):
   push_warning(model_status + ": " + absolute)
   return
@@ -131,14 +163,14 @@ func _load_model() -> void:
  var state := GLTFState.new()
  var result := document.append_from_file(absolute, state)
  if result != OK:
-  model_status = "Sonic GLB could not be loaded (%s)" % error_string(result)
+  model_status = "%s GLB could not be loaded (%s)" % [character_id.capitalize(), error_string(result)]
   push_warning(model_status)
   return
  model = document.generate_scene(state)
  if model == null:
-  model_status = "Sonic GLB contained no scene"
+  model_status = character_id.capitalize() + " GLB contained no scene"
   return
- model.name = "ImportedSonic"
+ model.name = "Imported" + character_id.capitalize()
  model_alignment.add_child(model)
  model_available = true
  _inspect_import(model)
@@ -146,13 +178,84 @@ func _load_model() -> void:
   animation_player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
   for clip: StringName in animation_player.get_animation_list():
    var lower := String(clip).to_lower()
-   for desired: String in ["idle", "jump", "trick"]:
+   for desired: String in ["idle", "jump", "trick", "homing", "impact", "fly"]:
     if lower == desired or lower.ends_with("/" + desired) or lower.ends_with("_" + desired):
      _clips[desired] = clip
-     animation_player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
+     animation_player.get_animation(clip).loop_mode = Animation.LOOP_NONE if desired == "impact" else Animation.LOOP_LINEAR
   print("VISUAL_LAB_ANIMATIONS | ", animation_player.get_animation_list())
- model_status = "Sonic Runners model · %d pose clips" % _clips.size()
+ model_status = "%s · Sonic Runners model · %d pose clips" % [character_id.capitalize(), _clips.size()]
  print("VISUAL_LAB_MODEL_READY | ", model_status)
+
+func _apply_character_color() -> void:
+ var tails := character_id == "tails"
+ spin_material.albedo_color = Color("f28b17") if tails else Color("075dd2")
+ streak_materials[0].albedo_color = Color("ffd35c") if tails else Color("68caff")
+ streak_materials[1].albedo_color = Color("fff0c7") if tails else Color("c9ecff")
+ for bead: MeshInstance3D in trail:
+  (bead.material_override as StandardMaterial3D).albedo_color = Color("ffc367") if tails else Color("59c9ff")
+
+func _on_character_changed(id: String) -> void:
+ if character_id == id:
+  return
+ character_id = id
+ resume_gameplay()
+ _load_model()
+ _apply_character_color()
+ if close_view:
+  select_preview("idle")
+
+func _on_homing_started(_target: Node2D, direction: Vector2) -> void:
+ homing_direction = direction.normalized()
+ _special_heading_active = true
+ # The imported head points along table -Z. Only yaw changes the aim;
+ # imported front remains aligned with the board normal at every angle.
+ _aim_angle = atan2(-homing_direction.x, -homing_direction.y)
+ if close_view:
+  return
+ state = State.HOMING
+ event_time = 0.0
+ _set_pose("homing", true)
+ _pulse(Color("80dbff"))
+
+func _on_homing_ended(_reason: String) -> void:
+ if state == State.HOMING:
+  state = State.SPIN
+
+func _on_special_hit(_target: Node2D, _multiplier: int) -> void:
+ if close_view:
+  return
+ state = State.IMPACT
+ event_pose = "impact"
+ event_time = 0.28
+ _event_duration = event_time
+ _set_pose("impact", true)
+ _pulse(Color("e1faff"))
+
+func _on_flight_started() -> void:
+ if close_view:
+  return
+ _special_heading_active = false
+ state = State.FLIGHT
+ event_time = 0.0
+ _set_pose("fly", true)
+ _pulse(Color("ffd38a"))
+
+func _on_flight_ended(_reason: String) -> void:
+ if state == State.FLIGHT:
+  state = State.SPIN
+
+func _sync_special_state() -> void:
+ if not is_instance_valid(specials):
+  return
+ # Read-only recovery after a presentation rebuild or leaving character study.
+ if specials.homing_remaining > 0.0 and specials.homing_direction != Vector2.ZERO:
+  if state != State.HOMING:
+   _on_homing_started(specials.pending_target, specials.homing_direction)
+ elif specials.flight_remaining > 0.0:
+  if state != State.FLIGHT:
+   _on_flight_started()
+ elif state in [State.HOMING, State.FLIGHT]:
+  state = State.SPIN
 
 func _inspect_import(node: Node) -> void:
  if node is AnimationPlayer and animation_player == null:
@@ -183,6 +286,26 @@ func _build_effects() -> void:
  pulse = table.mesh_node(hoop, pulse_material, Vector3.ZERO, self)
  pulse.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  pulse.visible = false
+ target_marker = Node3D.new()
+ target_marker.name = "AuthoritativeHomingTarget"
+ add_child(target_marker)
+ var target_mat := table.material(Color("b7f1ff"), 0.6)
+ target_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+ var target_ring := table.mesh_node(hoop, target_mat, Vector3.ZERO, target_marker)
+ target_ring.scale = Vector3.ONE * 1.65
+ for i in 4:
+  var tick := BoxMesh.new()
+  tick.size = Vector3(0.12, 0.02, 0.025)
+  var angle := i * PI * 0.5
+  var tick_node := table.mesh_node(tick, target_mat, Vector3(cos(angle), 0, sin(angle)) * 0.48, target_marker)
+  tick_node.rotation.y = -angle
+ var wind_mat := table.material(Color(1.0, 0.76, 0.35, 0.45), 0.2)
+ wind_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+ wind_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+ flight_wind = table.mesh_node(hoop, wind_mat, Vector3.ZERO, self)
+ flight_wind.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+ flight_wind.visible = false
+ target_marker.visible = false
 
 func _pulse(color: Color) -> void:
  pulse_time = 0.32
@@ -200,6 +323,7 @@ func _on_ring_claimed(_index: int) -> void:
  _pulse(Color("ffd52f"))
 
 func resume_gameplay() -> void:
+ _special_heading_active = false
  state = State.SPIN
  lean_angle = 0.0
  uncurl_amount = 0.0
@@ -233,6 +357,15 @@ func _update_effects(delta: float) -> void:
  pulse.position = marker.position + Vector3.UP * 0.025
  pulse.scale = Vector3.ONE * (1.0 + (1.0 - pulse_time / 0.32) * 1.8)
  pulse_material.albedo_color.a = clampf(pulse_time / 0.20, 0.0, 1.0)
+ var chosen: Node2D = null
+ if is_instance_valid(specials) and not close_view and not ball.serve_pending:
+  chosen = specials.pending_target if state == State.HOMING else specials.target
+ target_marker.visible = is_instance_valid(chosen) and not chosen.is_queued_for_deletion()
+ if target_marker.visible:
+  target_marker.position = TablePresentation.map_point(chosen.global_position, 0.07)
+ flight_wind.visible = state == State.FLIGHT and not close_view
+ flight_wind.position = marker.position + Vector3.UP * 0.04
+ flight_wind.scale = Vector3.ONE * (1.55 + sin(_pose_time * TAU * 2.0) * 0.12)
 
 func select_preview(value: String) -> void:
  preview = "" if value == "roll" else value
@@ -243,12 +376,13 @@ func select_preview(value: String) -> void:
  _update_pose_transform(0.0)
 
 func show_event(value: String, duration: float) -> void:
- if close_view or value not in ["jump", "trick"]:
+ if close_view or state in [State.HOMING, State.IMPACT, State.FLIGHT] or value not in ["jump", "trick"]:
   return
  # Repeated contact callbacks never rewind or prolong an active reaction.
  # Different reactions may take over after a short, presentation-only cooldown.
  if _event_cooldown > 0.0 or (event_time > 0.0 and event_pose == value):
   return
+ _special_heading_active = false
  event_pose = value
  event_time = maxf(duration, UNCURL_BLEND_TIME * 2.0)
  _event_duration = event_time
@@ -275,7 +409,7 @@ func _set_pose(value: String, restart: bool = false) -> void:
  pose = value
  _pose_time = 0.0
  if animation_player != null and _clips.has(value):
-  animation_player.play(_clips[value], 0.12)
+  animation_player.play(_clips[value], 0.045 if value in ["homing", "impact"] else UNCURL_BLEND_TIME)
   animation_player.advance(0.0)
 
 func seek_pose(seconds: float) -> void:
@@ -289,7 +423,7 @@ func seek_pose(seconds: float) -> void:
 func _update_pose_transform(delta: float) -> void:
  var anchor := study_origin if close_view else TablePresentation.map_point(ball.position)
  if close_view:
-  uncurl_amount = 0.0 if pose == "roll" else 1.0
+  uncurl_amount = 0.0 if pose == "roll" or (model_available and not _clips.has(pose)) else 1.0
   lean_angle = 0.0
   upright.rotation = Vector3(0, 0.15, 0)
   model_alignment.rotation = Vector3.ZERO
@@ -298,21 +432,22 @@ func _update_pose_transform(delta: float) -> void:
   upright.position = anchor + Vector3.UP * 0.025
   upright.scale = Vector3.ONE
  else:
-  var target_uncurl := 1.0 if state in [State.JUMP, State.TRICK] else 0.0
-  uncurl_amount = move_toward(uncurl_amount, target_uncurl, delta / UNCURL_BLEND_TIME)
+  var target_uncurl := 1.0 if (not model_available or _clips.has(pose)) and state in [State.JUMP, State.TRICK, State.HOMING, State.IMPACT, State.FLIGHT] else 0.0
+  var blend_time := 0.055 if state == State.HOMING else UNCURL_BLEND_TIME
+  uncurl_amount = move_toward(uncurl_amount, target_uncurl, delta / blend_time)
   var horizontal_speed := absf(ball.linear_velocity.x)
   var lean_strength := clampf((horizontal_speed - LEAN_DEAD_ZONE) / (LEAN_FULL_SPEED - LEAN_DEAD_ZONE), 0.0, 1.0)
   var target_lean := -signf(ball.linear_velocity.x) * deg_to_rad(MAX_LEAN_DEGREES) * lean_strength
   lean_angle = lerpf(lean_angle, target_lean, 1.0 - exp(-LEAN_RESPONSE * delta))
   # Only yaw around the board normal is trajectory-dependent. Descending never
   # reverses the head/feet axis, and yaw cannot tilt the model through the board.
-  upright.rotation = Vector3(0, lean_angle, 0)
+  upright.rotation = Vector3(0, _aim_angle if _special_heading_active and uncurl_amount > 0.001 else lean_angle, 0)
   # Imported +Y (head) -> table -Z; imported +Z (face) -> board +Y.
   model_alignment.rotation = Vector3(-PI * 0.5, 0, 0)
   if model_available:
    model.position = Vector3(0, -MODEL_CENTER_HEIGHT, 0)
   var progress := clampf(1.0 - event_time / maxf(_event_duration, 0.001), 0.0, 1.0)
-  var hop := sin(progress * PI) * (0.12 if state == State.JUMP else 0.06)
+  var hop := sin(progress * PI) * (0.12 if state == State.JUMP else (0.06 if state in [State.TRICK, State.IMPACT] else 0.0))
   upright.position = anchor + Vector3.UP * lerpf(TablePresentation.BALL_HEIGHT + 0.025, POSE_HEIGHT + hop, uncurl_amount)
   upright.scale = Vector3.ONE * 0.85 * lerpf(0.25, 1.0, uncurl_amount)
  var ball_scale := 1.0 if close_view else 1.12
@@ -333,9 +468,16 @@ func _process(delta: float) -> void:
   _set_pose("roll" if preview_roll else (preview if not preview.is_empty() else "idle"))
  else:
   event_time = maxf(0.0, event_time - physics_delta)
-  if event_time <= 0.0:
+  if state in [State.JUMP, State.TRICK, State.IMPACT] and event_time <= 0.0:
    state = State.SPIN
-  _set_pose(event_pose if state in [State.JUMP, State.TRICK] else "roll")
+  _sync_special_state()
+  if ball.serve_pending:
+   state = State.SPIN
+  match state:
+   State.HOMING: _set_pose("homing")
+   State.FLIGHT: _set_pose("fly")
+   State.JUMP, State.TRICK, State.IMPACT: _set_pose(event_pose)
+   _: _set_pose("roll")
  var animation_delta := delta if close_view else physics_delta
  if capture_hold:
   animation_delta = 0.0
