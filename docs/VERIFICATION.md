@@ -2,6 +2,16 @@
 
 Latest checks: 2026-10-23. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: OpenGL Compatibility on NVIDIA GeForce RTX 4060.
 
+## Character presentation merged into main — 2026-10-23
+
+Integrated ArtBro's `1e363ac` on top of gameplay/lifecycle commit `e5bc124`. Green Hill now uses the generic Sonic/Tails presenter for homing, actual-contact impact, rotating-tail flight and return to spin. The original playground keeps its minimal placeholder; gameplay and the ANGLE launcher workaround remain shared.
+
+Checks executed from the primary checkout: isolated Godot import passed; graphical ANGLE Character Lab **70/70**; special presentation **13/13** with prepared models and **13/13** without models; orientation **13/13**; physics **38/38**; Score Attack **26/26**; Zone **34/34**. Launcher PowerShell syntax passed. The Zone fixture deliberately rejects an invalid configuration. Restricted-profile runs retain the known root-certificate warning; no unexpected script errors or failed assertions occurred.
+
+Inspected the merged rendered Tails flight capture at `test-results/character-lab-tails.png`: textured model, flight pose, shared HUD and Green Hill table are visible together. This capture uses a controlled meter fixture, not a new input-only playthrough. ArtBro's earlier input-only captures and results remain documented in the visual-lab README. Human animation feel and controller timing remain playtesting tasks.
+
+Copied the two prepared runtime GLBs from the visual worktree into the primary checkout and verified matching SHA-256 hashes. Backed up the prior Sonic GLB before replacement. Models and backups remain Git-ignored; no third-party asset is added to the repository. The preexisting `project.godot` edit is preserved byte-for-byte, and ArtBro's branch/worktree remains intact.
+
 ## Character Lab v1
 
 Presentation-contract follow-up: **70 headless Character Lab checks passed** after adding `homing_started(target, direction)` and `homing_ended(reason)`. The additional checks verify target-facing direction and active duration at start, no lifecycle events for rejected activation, cleared state at end, successful-hit event order, expiry without impact, and exactly one cancellation notification across repeated cleanup. No force, scoring, targeting or flight tuning changed in this follow-up. Signal ordering and adapter ownership are documented in the README's Character Lab section.
