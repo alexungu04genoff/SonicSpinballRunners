@@ -5,6 +5,8 @@ param(
     [int]$Seed = 18,
     [ValidateSet('Catalogue', 'Base', 'Variant')]
     [string]$Grid = 'Catalogue',
+    [ValidateSet('Angle', 'Native')]
+    [string]$GraphicsBackend = 'Angle',
     [switch]$Playground,
     [switch]$NoModel,
     [ValidateSet('gameplay', 'idle', 'jump', 'trick', 'roll', 'reel')]
@@ -101,7 +103,17 @@ if (-not $Playground -and -not (Test-Path -LiteralPath $assetPath -PathType Leaf
     Write-Warning 'Local Sonic GLB is missing. The scene will use its spin-ball fallback. See README.md for preparation.'
 }
 
-$launchArguments = @('--path', $repoRoot, $scenePath)
+# Keep Godot's Compatibility renderer, but use Direct3D 11 through ANGLE by
+# default. Native NVIDIA OpenGL crashed inside nvoglv64.dll during Zone rebuilds.
+# This is a launch override; the user's project/editor settings stay untouched.
+$renderingDriver = if ($GraphicsBackend -eq 'Angle') { 'opengl3_angle' } else { 'opengl3' }
+$gameLog = Join-Path $logDirectory 'green-hill-game.log'
+if (Test-Path -LiteralPath $gameLog -PathType Leaf) {
+    Copy-Item -LiteralPath $gameLog -Destination (Join-Path $logDirectory 'green-hill-game.previous.log') -Force
+}
+Write-Host "Graphics backend: $GraphicsBackend ($renderingDriver)"
+Write-Host "Game log: $gameLog"
+$launchArguments = @('--path', $repoRoot, '--rendering-method', 'gl_compatibility', '--rendering-driver', $renderingDriver, '--log-file', $gameLog, $scenePath)
 $userArguments = @("--seed=$Seed", "--grid=$(@{Catalogue=0; Base=1; Variant=2}[$Grid])")
 if ($NoModel) { $userArguments += '--no-model' }
 if ($Capture) {
@@ -117,5 +129,7 @@ $quotedArguments = $launchArguments | ForEach-Object { '"{0}"' -f $_ }
 # This is the interactive game window requested by the player.
 $gameProcess = Start-Process -FilePath $resolvedGodot -ArgumentList $quotedArguments -Wait -PassThru
 if ($gameProcess.ExitCode -ne 0) {
-    throw "Game exited with code $($gameProcess.ExitCode)."
+    $unsignedExit = [System.BitConverter]::ToUInt32([System.BitConverter]::GetBytes([int]$gameProcess.ExitCode), 0)
+    $hexExit = '0x{0:X8}' -f $unsignedExit
+    throw "Godot exited with code $($gameProcess.ExitCode) ($hexExit). Graphics: $GraphicsBackend. Diagnostic log: $gameLog"
 }

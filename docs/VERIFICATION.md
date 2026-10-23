@@ -2,6 +2,16 @@
 
 Latest checks: 2026-10-23. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: OpenGL Compatibility on NVIDIA GeForce RTX 4060.
 
+## Windows graphics crash workaround
+
+The user's Zone-start/replay crash returned `-1073741819` (`0xC0000005`). Windows Application Error event 1000 and Godot's saved backtrace both identified `nvoglv64.dll` (NVIDIA 616.64) after the initial three-section scene reported ready. There was no GDScript parse error. The same native-driver transition did not crash in the diagnostic rerun, so the precise trigger is not established.
+
+The launcher now requests `opengl3_angle` with the same Compatibility renderer, using Direct3D 11 on this machine. `-GraphicsBackend Native` retains the prior driver for comparison. Dedicated current/previous runtime logs preserve evidence without depending on the user-data folder. This is a targeted graphics-path workaround, not a claim to have repaired the NVIDIA driver.
+
+`tests/render_transition_smoke.gd` exercises rendered Free Play launch, entering Zone from Free Play, Zone replay, return to Score Attack, and return to Free Play. It checks actual scene bounds and simulates after each rebuild, with a rendered Zone capture. Both native OpenGL and ANGLE runs passed **14 checks**; startup-only runs also exited normally. The existing Zone UI regression covers the final-reward/victory replay separately. Earlier verification below records the original native OpenGL runs.
+
+ANGLE also passed **21 graphical Zone UI checks**, including victory replay. The actual PowerShell launcher completed its import and gameplay capture using the normal Windows user profile; the runtime log confirmed ANGLE / Direct3D 11 and exit code zero. Its rendered Zone capture was inspected for intact terrain, character, flippers and HUD.
+
 ## Green Hill Zone prototype
 
 The optional Zone uses nine connected chunks and the same invisible 2D body. Existing Free Play and standalone Score Attack remain three-section modes. New deterministic checks:
