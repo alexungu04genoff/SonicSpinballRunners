@@ -16,6 +16,8 @@ Alternatively, run PowerShell from this worktree's repository root:
 
 The launcher resolves a Godot executable, waits for a dedicated headless import and checks its diagnostics, then opens only `experiments/visual_lab/visual_lab.tscn`. It does not stop existing processes or change `project.godot`. If Sonic has not been prepared, the scene still opens with a clearly reported spin-ball fallback.
 
+Import uses a private editor profile under `.godot/launcher-profile` with indentation conversion disabled. Godot restores editor state even with `--import`; using a normal tab-based editor profile could rewrite a four-space nested line into a tab and break `game.gd`. The launcher restores the caller's `APPDATA` before starting gameplay and never edits the user's editor settings. If a previous launch already introduced that parse error, restore the affected line to its original spaces before retrying; the launcher does not rewrite source files to repair errors.
+
 To choose the exact executable used for this experiment:
 
 ```powershell

@@ -2,6 +2,12 @@
 
 Latest checks: 2026-10-23. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: OpenGL Compatibility on NVIDIA GeForce RTX 4060.
 
+## Launcher indentation repair
+
+Reproduced the reported `game.gd:163` parse failure using a fresh default editor profile: both editor startup and `--import` converted its four-space indentation to a tab during editor restoration. The earlier test profile's one-space preference masked this behavior. Restored the affected local line and changed the Windows launcher to use a private, version-matched import profile with `convert_indent_on_save = false`. The caller's environment is restored in `finally`, before gameplay; global editor settings are untouched.
+
+Verified `-ImportOnly` with both the installed GUI executable and the automatically detected console executable. A repeated import preserved hashes of all **47 tracked GDScript files** and restored `APPDATA`. The full automatic launcher completed a graphical `-Capture gameplay -CaptureFrames 20` run, returned zero and produced an inspected Green Hill image. Import diagnostics remain strict; script failures are not suppressed. Existing local `project.godot` changes remain outside the commit.
+
 ## Side recovery and rounded Easy grid routes (generator v10, kit v2)
 
 Middle paddles now sit nearer the walls, with full-ball passage behind their complete swing. Rebound Relay uses 120 px paddles: moving its former 110 px pair outward made direct shots into a Hard neck too scarce in the initial samples; 10 px more reach restored a tested route. Every upper resource and the fallback adds one 70–85 px paddle. Easy grid recipes use rounded 30 px banks and short curved seam collars, removing their horizontal inset steps without relaxing corridor, tier or collision checks. Green Hill's grid shortcuts previously forced Normal; they now preserve the active seed/difficulty and show the difficulty in the footer.

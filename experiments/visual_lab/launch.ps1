@@ -60,7 +60,33 @@ $logDirectory = Join-Path $repoRoot '.godot'
 New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
 $importOutput = Join-Path $logDirectory 'green-hill-import.log'
 $importErrors = Join-Path $logDirectory 'green-hill-import-errors.log'
-$importProcess = Start-Process -FilePath $resolvedGodot -ArgumentList @('--headless', '--path', ('"{0}"' -f $repoRoot), '--editor', '--quit') -WindowStyle Hidden -Wait -PassThru -RedirectStandardOutput $importOutput -RedirectStandardError $importErrors
+# Even --import restores editor state. Use a private import profile so the user's
+# tab-conversion preference cannot rewrite this project's space-indented scripts.
+$godotVersion = (& $resolvedGodot --version | Out-String).Trim()
+if ($godotVersion -notmatch '^(4)\.(\d+)\.') {
+    throw "Expected Godot 4; received version: $godotVersion"
+}
+$settingsName = "editor_settings-$($Matches[1]).$($Matches[2]).tres"
+$importProfile = Join-Path $logDirectory 'launcher-profile'
+$settingsDirectory = Join-Path $importProfile 'Godot'
+New-Item -ItemType Directory -Force -Path $settingsDirectory | Out-Null
+$settings = @'
+[gd_resource type="EditorSettings" format=3]
+
+[resource]
+text_editor/behavior/files/convert_indent_on_save = false
+text_editor/behavior/files/restore_scripts_on_load = false
+text_editor/behavior/indent/type = 1
+text_editor/behavior/indent/size = 1
+'@
+[System.IO.File]::WriteAllText((Join-Path $settingsDirectory $settingsName), $settings, [System.Text.UTF8Encoding]::new($false))
+$previousAppData = $env:APPDATA
+try {
+    $env:APPDATA = $importProfile
+    $importProcess = Start-Process -FilePath $resolvedGodot -ArgumentList @('--headless', '--path', ('"{0}"' -f $repoRoot), '--import') -WindowStyle Hidden -Wait -PassThru -RedirectStandardOutput $importOutput -RedirectStandardError $importErrors
+} finally {
+    $env:APPDATA = $previousAppData
+}
 $diagnostics = (Get-Content -LiteralPath $importOutput -Raw) + (Get-Content -LiteralPath $importErrors -Raw)
 Write-Host $diagnostics
 if ($importProcess.ExitCode -ne 0 -or $diagnostics -match '(?m)^(SCRIPT ERROR|ERROR):') {
