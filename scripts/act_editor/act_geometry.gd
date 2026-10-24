@@ -1,7 +1,9 @@
 class_name ActGeometry
 extends Resource
-## A single Act's terrain, boundary connectors and exact gameplay authoring data.
-const FORMAT_VERSION := 3
+## A single Act's terrain, connectors, gameplay objects and lifecycle authoring data.
+const FORMAT_VERSION := 4
+## The system gutter is outside terrain bounds and is never a thirteenth terrain row.
+const RED_GUTTER_CELLS := 1
 const SHAPES = preload("res://scripts/act_editor/terrain_shapes.gd")
 const OBJECTS = preload("res://scripts/act_editor/gameplay_objects.gd")
 const SCRIPT_PATH := "res://scripts/act_editor/act_geometry.gd"
@@ -36,6 +38,9 @@ const PLACEMENT_TYPES := {
 @export var entry_width = 0
 @export var exit_start_x = 0
 @export var exit_width = 0
+## Independent optional guides; entry itself does not activate the checkpoint.
+@export_storage var activation_y = null
+@export_storage var spawn_position = null
 
 var _format_version_was_set := false
 var _library_version_was_set := false
@@ -59,6 +64,13 @@ static func compatible(previous_exit: Dictionary, next_entry: Dictionary) -> boo
  var previous_width: Variant = previous_exit.get("width")
  var next_width: Variant = next_entry.get("width")
  return typeof(previous_width) == TYPE_INT and typeof(next_width) == TYPE_INT and previous_width > 0 and previous_width == next_width
+
+func terrain_bounds() -> Rect2:
+ return Rect2(Vector2.ZERO, Vector2(grid_size) * float(cell_size))
+
+func red_gutter_bounds() -> Rect2:
+ var terrain := terrain_bounds()
+ return Rect2(Vector2(0, terrain.end.y), Vector2(terrain.size.x, float(cell_size) * RED_GUTTER_CELLS))
 
 func validation_errors() -> PackedStringArray:
  var errors := PackedStringArray()
@@ -94,6 +106,7 @@ func validation_errors() -> PackedStringArray:
   elif valid_grid_type and (connector.width > grid_size.x or connector.start_x > grid_size.x - connector.width):
    errors.append("%s connector span must fit inside the Act's horizontal grid boundary." % kind.capitalize())
  errors.append_array(_gameplay_validation_errors())
+ errors.append_array(_lifecycle_validation_errors())
  if typeof(placements) != TYPE_ARRAY:
   errors.append("Terrain placements must be an array of dictionaries.")
   return errors
@@ -126,6 +139,31 @@ func validation_errors() -> PackedStringArray:
   # Frame bounds are the only spatial restriction. Overlap is deliberately valid.
   if valid_grid_type and (anchor.x < 0 or anchor.y < 0 or anchor.x > grid_size.x - frame.x or anchor.y > grid_size.y - frame.y):
    errors.append(prefix + "the transformed footprint must fit inside this Act.")
+ return errors
+
+func _lifecycle_validation_errors() -> PackedStringArray:
+ var errors := PackedStringArray()
+ var valid_bounds: bool = typeof(grid_size) == TYPE_VECTOR2I and grid_size.x > 0 and grid_size.y > 0 and typeof(cell_size) in [TYPE_INT, TYPE_FLOAT] and is_finite(cell_size) and cell_size > 0
+ var bounds := terrain_bounds() if valid_bounds else Rect2()
+ if valid_bounds and not bounds.size.is_finite():
+  valid_bounds = false
+  if activation_y != null or spawn_position != null:
+   errors.append("Act terrain bounds must be finite to place lifecycle markers.")
+ if activation_y != null:
+  if typeof(activation_y) not in [TYPE_FLOAT, TYPE_INT]:
+   errors.append("Activation trigger Y must be a number or unset.")
+  elif not is_finite(activation_y):
+   errors.append("Activation trigger Y must be finite.")
+  elif valid_bounds and (activation_y < 0 or activation_y >= bounds.end.y):
+   errors.append("Activation trigger must be inside the terrain: 0 <= Y < %s. The bottom boundary and red gutter are outside." % bounds.end.y)
+ if spawn_position != null:
+  if typeof(spawn_position) != TYPE_VECTOR2:
+   errors.append("Spawn position must be a local pixel Vector2 or unset.")
+  elif not spawn_position.is_finite():
+   errors.append("Spawn position must contain finite local coordinates.")
+  elif valid_bounds and not bounds.has_point(spawn_position):
+   errors.append("Spawn position must be inside the terrain. Right/bottom boundaries and the red gutter are outside.")
+ # Bounds are half-open, matching Rect2.has_point. Never repair authored positions.
  return errors
 
 func _gameplay_validation_errors() -> PackedStringArray:
@@ -186,8 +224,9 @@ func fingerprint() -> String:
  # ResourceSaver can omit an integer cell size equal to the default float size.
  # Treat equivalent numeric cell sizes identically while preserving their value.
  var normalized_cell_size: Variant = float(cell_size) if typeof(cell_size) in [TYPE_INT, TYPE_FLOAT] else cell_size
+ var normalized_activation: Variant = float(activation_y) if typeof(activation_y) in [TYPE_INT, TYPE_FLOAT] else activation_y
  # Hash native scalar bits: decimal formatting can collapse adjacent float values.
- return var_to_bytes([format_version, library_version, title, grid_size, normalized_cell_size, ordered_placements, entry_start_x, entry_width, exit_start_x, exit_width, ordered_objects]).hex_encode().sha256_text()
+ return var_to_bytes([format_version, library_version, title, grid_size, normalized_cell_size, ordered_placements, entry_start_x, entry_width, exit_start_x, exit_width, ordered_objects, normalized_activation, spawn_position]).hex_encode().sha256_text()
 
 func copy_document() -> Resource:
  var result: Resource = get_script().new()
@@ -202,6 +241,8 @@ func copy_document() -> Resource:
  result.entry_width = entry_width
  result.exit_start_x = exit_start_x
  result.exit_width = exit_width
+ result.activation_y = activation_y
+ result.spawn_position = spawn_position
  return result
 
 static func load_document(path: String) -> Dictionary:
@@ -215,14 +256,21 @@ static func load_document(path: String) -> Dictionary:
   return {"document": null, "error": "The selected file is not an Act Geometry resource."}
  if not loaded._format_version_was_set or not loaded._library_version_was_set:
   return {"document": null, "error": "This Act file is missing its required format or terrain library version."}
- if typeof(loaded.format_version) == TYPE_INT and loaded.format_version == 2 and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
-  if typeof(loaded.gameplay_objects) != TYPE_ARRAY or not loaded.gameplay_objects.is_empty():
+ if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
+  if loaded.format_version == 2 and (typeof(loaded.gameplay_objects) != TYPE_ARRAY or not loaded.gameplay_objects.is_empty()):
    return {"document": null, "error": "Terrain-and-connector format 2 cannot contain gameplay object data."}
-  # Previous Acts gain an empty object list in memory. Only an explicit save writes v3.
+  if loaded.activation_y != null or loaded.spawn_position != null:
+   return {"document": null, "error": "Previous Act formats cannot contain lifecycle marker data."}
+  # Previous Acts gain unset markers in memory. Only an explicit save writes v4.
   loaded.format_version = FORMAT_VERSION
  var decode_error := _decode_stored_angles(loaded)
  if not decode_error.is_empty():
   return {"document": null, "error": decode_error}
+ if typeof(loaded.activation_y) == TYPE_PACKED_BYTE_ARRAY:
+  var decoded: Variant = _decode_numeric_payload(loaded.activation_y)
+  if decoded == null:
+   return {"document": null, "error": "Activation trigger: invalid stored numeric Y coordinate."}
+  loaded.activation_y = decoded
  var errors: PackedStringArray = loaded.validation_errors()
  if not errors.is_empty():
   return {"document": null, "error": "\n".join(errors)}
@@ -231,33 +279,36 @@ static func load_document(path: String) -> Dictionary:
 static func _decode_stored_angles(document: Resource) -> String:
  if typeof(document.gameplay_objects) != TYPE_ARRAY:
   return "" # The ordinary schema validator reports malformed collections.
- # Derive Godot's supported primitive numeric layouts without accepting objects
- # or arbitrary encoded containers. The payload has only one numeric authority.
- var numeric_layouts := [var_to_bytes(0), var_to_bytes(2147483648), var_to_bytes(0.0), var_to_bytes(PI)]
  for index in document.gameplay_objects.size():
   var placement: Variant = document.gameplay_objects[index]
   if typeof(placement) != TYPE_DICTIONARY or typeof(placement.get("rotation_degrees")) != TYPE_PACKED_BYTE_ARRAY:
    continue
-  var payload: PackedByteArray = placement.rotation_degrees
-  var valid_layout := false
-  if payload.size() >= 4:
-   for layout: PackedByteArray in numeric_layouts:
-    if payload.size() == layout.size() and payload.decode_u32(0) == layout.decode_u32(0):
-     valid_layout = true
-     break
-  if not valid_layout:
+  var decoded: Variant = _decode_numeric_payload(placement.rotation_degrees)
+  if decoded == null:
    return "Gameplay object %d: invalid stored numeric angle." % (index + 1)
-  # bytes_to_var disables object decoding by default; only numeric headers passed.
-  placement.rotation_degrees = bytes_to_var(payload)
+  placement.rotation_degrees = decoded
  return ""
+
+static func _decode_numeric_payload(payload: PackedByteArray) -> Variant:
+ # Derive only primitive numeric layouts; do not accept objects or containers.
+ # Null indicates malformed storage and must not become an unset marker.
+ if payload.size() >= 4:
+  for layout: PackedByteArray in [var_to_bytes(0), var_to_bytes(2147483648), var_to_bytes(0.0), var_to_bytes(PI)]:
+   if payload.size() == layout.size() and payload.decode_u32(0) == layout.decode_u32(0):
+    # bytes_to_var disables object decoding; only numeric headers reach it.
+    return bytes_to_var(payload)
+ return null
 
 func _storage_document() -> Resource:
  var stored: Resource = copy_document()
  for placement: Dictionary in stored.gameplay_objects:
-  # Godot 4.7's text float parser can shift arbitrary double angles by one ULP.
+  # Godot 4.7's text float parser can shift arbitrary double scalars by one ULP.
   # Store the angle once as a native numeric byte payload in the same field.
   # Live documents and undo snapshots retain normal numeric rotation_degrees.
   placement.rotation_degrees = var_to_bytes(placement.rotation_degrees)
+ if stored.activation_y != null:
+  # Use the same single-authority scalar representation as authored angles.
+  stored.activation_y = var_to_bytes(stored.activation_y)
  return stored
 
 func save_document(path: String) -> Error:

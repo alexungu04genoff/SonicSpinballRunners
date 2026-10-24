@@ -173,7 +173,7 @@ func check_persistence() -> void:
  var document := make_fixture()
  check(document.save_document(SAVED_PATH) == OK, "Terrain, connectors and exact gameplay objects save together")
  var source := FileAccess.get_file_as_string(SAVED_PATH)
- check(source.contains("format_version = 3") and source.contains("gameplay_objects = ["), "Current native Resource explicitly stores its format and separate object array")
+ check(source.contains("format_version = " + str(Document.FORMAT_VERSION)) and source.contains("gameplay_objects = ["), "Current native Resource explicitly stores its format and separate object array")
  check(source.contains("\"rotation_degrees\": PackedByteArray(") and not source.contains("rotation_bits"), "One lossless numeric payload stores each angle without a duplicate authority")
  check(typeof(document.gameplay_objects[0].rotation_degrees) == TYPE_FLOAT and typeof(document.gameplay_objects[2].rotation_degrees) == TYPE_INT, "Saving leaves the live authored angles numeric and unchanged")
  var loaded: Dictionary = Document.load_document(SAVED_PATH)

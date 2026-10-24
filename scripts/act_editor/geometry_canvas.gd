@@ -9,8 +9,11 @@ signal connector_selection_changed(kind: String)
 signal gameplay_placement_requested(placement: Dictionary)
 signal gameplay_selection_changed(index: int)
 signal gameplay_move_requested(index: int, position: Vector2)
+signal marker_requested(kind: String, value: Variant)
+signal marker_selection_changed(kind: String)
 signal status_changed(message: String)
 
+const ActData = preload("res://scripts/act_editor/act_geometry.gd")
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const ObjectPreview = preload("res://scripts/act_editor/gameplay_preview.gd")
@@ -21,6 +24,9 @@ const SELECTION_COLOR := Color("b9f4ff")
 const CONNECTOR_COLOR := Color("71efa4")
 const CONNECTOR_BORDER_TOLERANCE := 12.0
 const POINTER_JITTER_PIXELS := 0.01
+const ACTIVATION_COLOR := Color("62eee3")
+const SPAWN_COLOR := Color("ffd0ee")
+const INVALID_MARKER_COLOR := Color("ff7a88")
 
 var document: Resource
 var selected_index := -1
@@ -29,6 +35,8 @@ var connector_tool := ""
 var selected_connector := ""
 var gameplay_brush: Dictionary = {}
 var selected_gameplay_index := -1
+var marker_tool := ""
+var selected_marker := ""
 
 var _view_origin := Vector2.ZERO
 var _cell_pixels := 48.0
@@ -62,6 +70,12 @@ var _gameplay_drag_moved := false
 var _drop_gameplay_brush: Dictionary = {}
 var _pending_cycle_target: Dictionary = {}
 var _alt_held := false
+var _marker_drag_kind := ""
+var _marker_drag_start_pointer := Vector2.ZERO
+var _marker_drag_last_pointer := Vector2.ZERO
+var _marker_drag_start_value: Variant = null
+var _marker_drag_value: Variant = null
+var _marker_drag_moved := false
 
 
 func _ready() -> void:
@@ -91,6 +105,8 @@ func set_document(value: Resource, reset_view: bool = true) -> void:
  selected_connector = ""
  gameplay_brush = {}
  selected_gameplay_index = -1
+ marker_tool = ""
+ selected_marker = ""
  cancel_gesture()
  if reset_view:
   fit_view()
@@ -106,6 +122,8 @@ func set_brush(value: Dictionary) -> void:
  selected_connector = ""
  gameplay_brush = {}
  selected_gameplay_index = -1
+ marker_tool = ""
+ selected_marker = ""
  queue_redraw()
 
 
@@ -117,6 +135,8 @@ func select_piece(index: int) -> void:
  selected_connector = ""
  gameplay_brush = {}
  selected_gameplay_index = -1
+ marker_tool = ""
+ selected_marker = ""
  queue_redraw()
 
 
@@ -128,6 +148,8 @@ func set_connector_tool(kind: String) -> void:
  connector_tool = kind if kind in ["entry", "exit"] else ""
  gameplay_brush = {}
  selected_gameplay_index = -1
+ marker_tool = ""
+ selected_marker = ""
  queue_redraw()
 
 
@@ -139,6 +161,8 @@ func select_connector(kind: String) -> void:
  selected_connector = kind if kind in ["entry", "exit"] and connector_span(kind).y > 0 else ""
  gameplay_brush = {}
  selected_gameplay_index = -1
+ marker_tool = ""
+ selected_marker = ""
  queue_redraw()
 
 
@@ -150,6 +174,8 @@ func set_gameplay_brush(value: Dictionary) -> void:
  selected_connector = ""
  gameplay_brush = value.duplicate(true)
  selected_gameplay_index = -1
+ marker_tool = ""
+ selected_marker = ""
  queue_redraw()
 
 
@@ -161,11 +187,36 @@ func select_gameplay(index: int) -> void:
  selected_connector = ""
  gameplay_brush = {}
  selected_gameplay_index = index if index >= 0 and index < _gameplay_objects().size() else -1
+ marker_tool = ""
+ selected_marker = ""
  queue_redraw()
+
+
+func set_marker_tool(kind: String) -> void:
+ select_piece(-1)
+ marker_tool = kind if kind in ["activation", "spawn"] else ""
+ queue_redraw()
+
+
+func select_marker(kind: String) -> void:
+ select_piece(-1)
+ selected_marker = kind if marker_value(kind) != null else ""
+ queue_redraw()
+
+
+func marker_value(kind: String) -> Variant:
+ if document == null:
+  return null
+ if kind == "activation":
+  return document.get("activation_y")
+ if kind == "spawn":
+  return document.get("spawn_position")
+ return null
 
 
 func fit_view() -> void:
  var dimensions := Vector2(_grid_size())
+ dimensions.y += ActData.RED_GUTTER_CELLS
  var available := (size - Vector2.ONE * GRID_MARGIN * 2.0).max(Vector2.ONE)
  _cell_pixels = clampf(minf(available.x / dimensions.x, available.y / dimensions.y), 4.0, MAX_CELL_PIXELS)
  _view_origin = (size - dimensions * _cell_pixels) * 0.5
@@ -186,6 +237,10 @@ func cancel_gesture() -> void:
  _gameplay_drag_moved = false
  _drop_gameplay_brush = {}
  _pending_cycle_target = {}
+ _marker_drag_kind = ""
+ _marker_drag_moved = false
+ _marker_drag_start_value = null
+ _marker_drag_value = null
  queue_redraw()
 
 
@@ -235,11 +290,38 @@ func gameplay_hit_indices_at(local_position: Vector2) -> Array[int]:
 
 func mixed_hit_indices_at(local_position: Vector2) -> Array[Dictionary]:
  var hits: Array[Dictionary] = []
+ for kind: String in marker_hits_at(local_position):
+  hits.append({"kind": "marker", "marker": kind})
  for index: int in gameplay_hit_indices_at(local_position):
   hits.append({"kind": "gameplay", "index": index})
  for index: int in hit_indices_at(local_position):
   hits.append({"kind": "terrain", "index": index})
  return hits
+
+
+func marker_hits_at(local_position: Vector2) -> Array[String]:
+ var hits: Array[String] = []
+ var spawn: Variant = marker_value("spawn")
+ if spawn is Vector2 and local_position.distance_to(local_pixels_to_screen(spawn)) <= 15.0:
+  hits.append("spawn")
+ var activation: Variant = marker_value("activation")
+ if activation != null:
+  var start := local_pixels_to_screen(Vector2(0, float(activation)))
+  var end := local_pixels_to_screen(Vector2(document.terrain_bounds().size.x, float(activation)))
+  if local_position.x >= start.x and local_position.x <= end.x and absf(local_position.y - start.y) <= 8.0:
+   hits.append("activation")
+ return hits
+
+
+func valid_marker_value(kind: String, value: Variant) -> bool:
+ if document == null:
+  return false
+ var bounds: Rect2 = document.terrain_bounds()
+ if kind == "spawn":
+  return value is Vector2 and value.is_finite() and bounds.has_point(value)
+ if kind == "activation" and typeof(value) in [TYPE_FLOAT, TYPE_INT]:
+  return is_finite(value) and value >= bounds.position.y and value < bounds.end.y
+ return false
 
 
 func connector_span(kind: String) -> Vector2i:
@@ -323,6 +405,7 @@ func _draw() -> void:
  draw_rect(Rect2(Vector2.ZERO, size), Color("0b1320"))
  if document == null:
   return
+ _draw_gutter()
  _draw_grid()
  var placements := _placements()
  for index in placements.size():
@@ -344,7 +427,76 @@ func _draw() -> void:
   _draw_piece(ghost, false, true)
   _draw_footprint(ghost, Color(0.75, 0.91, 1.0, 0.5))
  _draw_gameplay_objects()
+ _draw_markers()
  _draw_connectors()
+
+
+func _draw_gutter() -> void:
+ var local_bounds: Rect2 = document.red_gutter_bounds()
+ var bounds := Rect2(local_pixels_to_screen(local_bounds.position), local_bounds.size * _cell_pixels / _local_cell_size())
+ draw_rect(bounds, Color(0.67, 0.12, 0.20, 0.23))
+ draw_rect(bounds, Color("ad4b60"), false, 1.5)
+ var label := "SYSTEM DRAIN / TRANSITION ZONE · NOT TERRAIN"
+ var font := get_theme_default_font()
+ var width := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x
+ var label_x := clampf(bounds.get_center().x - width * 0.5, 8.0, maxf(8.0, size.x - width - 8.0))
+ draw_string(font, Vector2(label_x, bounds.end.y + 19.0), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("ef94a7"))
+
+
+func _draw_markers() -> void:
+ for kind: String in ["activation", "spawn"]:
+  var value: Variant = marker_value(kind)
+  if value == null:
+   continue
+  if _marker_drag_kind == kind and _marker_drag_moved:
+   if not valid_marker_value(kind, _marker_drag_value):
+    _draw_marker(kind, value, false, true)
+   _draw_marker(kind, _marker_drag_value, true, true, valid_marker_value(kind, _marker_drag_value))
+  else:
+   _draw_marker(kind, value, selected_marker == kind, false)
+ if _hovering and not marker_tool.is_empty():
+  var value: Variant = _marker_position_value(marker_tool, screen_to_local_pixels(_cursor_position), _alt_held)
+  _draw_marker(marker_tool, value, false, true, _inside_grid(_cursor_position) and valid_marker_value(marker_tool, value))
+
+
+func _draw_marker(kind: String, value: Variant, selected: bool, ghost: bool, valid: bool = true) -> void:
+ var color := ACTIVATION_COLOR if kind == "activation" else SPAWN_COLOR
+ if not valid:
+  color = INVALID_MARKER_COLOR
+ color.a = 0.65 if ghost else 1.0
+ var font := get_theme_default_font()
+ if kind == "activation":
+  var start := local_pixels_to_screen(Vector2(0, float(value)))
+  var end := local_pixels_to_screen(Vector2(document.terrain_bounds().size.x, float(value)))
+  start.x = maxf(start.x, 0.0)
+  end.x = minf(end.x, size.x)
+  if start.x >= end.x or start.y < -30.0 or start.y > size.y + 30.0:
+   return
+  if selected:
+   draw_line(start, end, Color(color, 0.16), 12.0, true)
+  _draw_dashes(start, end, color, 3.0 if selected else 2.0)
+  var arrow := Vector2(lerpf(start.x, end.x, 0.75), start.y)
+  draw_line(arrow + Vector2(0, 7), arrow - Vector2(0, 12), color, 2.0, true)
+  draw_line(arrow - Vector2(0, 12), arrow + Vector2(-4, -7), color, 2.0, true)
+  draw_line(arrow - Vector2(0, 12), arrow + Vector2(4, -7), color, 2.0, true)
+  var label := "ACTIVATION · CROSS UP"
+  var label_width := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x
+  draw_rect(Rect2(start + Vector2(8, -24), Vector2(label_width + 8, 17)), Color(0.04, 0.09, 0.13, 0.9))
+  draw_string(font, start + Vector2(12, -11), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, color)
+ else:
+  var point := local_pixels_to_screen(value)
+  if selected:
+   draw_circle(point, 16.0, Color(color, 0.22))
+  draw_circle(point, 10.0, Color("192031"))
+  draw_arc(point, 10.0, 0, TAU, 32, color, 2.0, true)
+  draw_line(point + Vector2(-5, 0), point + Vector2(5, 0), color, 2.0, true)
+  draw_line(point + Vector2(0, -5), point + Vector2(0, 5), color, 2.0, true)
+  draw_circle(point, 2.0, Color.WHITE)
+  var tip := point + Vector2(0, -26)
+  draw_line(point + Vector2(0, -13), tip, color, 2.0, true)
+  draw_line(tip, tip + Vector2(-4, 5), color, 2.0, true)
+  draw_line(tip, tip + Vector2(4, 5), color, 2.0, true)
+  draw_string(font, point + Vector2(16, 4), "SPAWN", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, color)
 
 
 func _draw_gameplay_objects() -> void:
@@ -405,7 +557,7 @@ func _draw_connector(kind: String, start_x: int, width: int, selected: bool, gho
  var label := "%s · %d %s" % [kind.to_upper(), width, "cell" if width == 1 else "cells"]
  var text_width := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 12).x
  var label_x := clampf(center.x - text_width * 0.5, 8.0, maxf(8.0, size.x - text_width - 8.0))
- var label_y := start.y + (35.0 if kind == "entry" else -29.0)
+ var label_y := start.y + (26.0 if kind == "entry" else -29.0)
  draw_string(font, Vector2(label_x, label_y), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, color)
 
 
@@ -495,14 +647,14 @@ func _draw_footprint(placement: Dictionary, color: Color) -> void:
  draw_circle(top_left, 3.0, color)
 
 
-func _draw_dashes(from: Vector2, to: Vector2, color: Color) -> void:
+func _draw_dashes(from: Vector2, to: Vector2, color: Color, width: float = 1.0) -> void:
  var length := from.distance_to(to)
  if length < 0.01:
   return
  var direction := (to - from) / length
  var distance := 0.0
  while distance < length:
-  draw_line(from + direction * distance, from + direction * minf(distance + 5.0, length), color, 1.0, true)
+  draw_line(from + direction * distance, from + direction * minf(distance + 5.0, length), color, width, true)
   distance += 10.0
 
 
@@ -524,7 +676,14 @@ func _gui_input(event: InputEvent) -> void:
   return
  if event is InputEventKey and event.keycode == KEY_ALT:
   _alt_held = event.pressed
-  if _alt_held and _gameplay_drag_index >= 0 and _gameplay_drag_moved:
+  if not _marker_drag_kind.is_empty():
+   if _alt_held and _marker_drag_moved:
+    _update_marker_drag(_cursor_position, true, true)
+   else:
+    _set_marker_status(_marker_drag_kind, _marker_drag_value)
+  elif not marker_tool.is_empty():
+   _set_marker_status(marker_tool, _marker_position_value(marker_tool, screen_to_local_pixels(_cursor_position), _alt_held))
+  elif _alt_held and _gameplay_drag_index >= 0 and _gameplay_drag_moved:
    _update_gameplay_drag(_cursor_position, true, true)
   elif _gameplay_drag_index >= 0:
    _set_gameplay_status(_gameplay_drag_position)
@@ -538,7 +697,16 @@ func _gui_input(event: InputEvent) -> void:
  elif event is InputEventKey and event.pressed and not event.ctrl_pressed and not event.meta_pressed and event.keycode in [KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN]:
   # Consume arrows before Control's built-in focus navigation. The owner still
   # applies the edit through the same move signal as pointer dragging.
-  if not event.echo and selected_gameplay_index >= 0 and selected_gameplay_index < _gameplay_objects().size():
+  if not event.echo and not selected_marker.is_empty():
+   cancel_gesture()
+   var direction: Vector2 = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP, KEY_DOWN: Vector2.DOWN}[event.keycode]
+   var distance := 1.0 if event.alt_pressed else _local_cell_size()
+   var value: Variant = marker_value(selected_marker)
+   if selected_marker == "spawn":
+    _request_marker(selected_marker, value + direction * distance)
+   elif direction.y != 0.0:
+    _request_marker(selected_marker, float(value) + direction.y * distance)
+  elif not event.echo and selected_gameplay_index >= 0 and selected_gameplay_index < _gameplay_objects().size():
    cancel_gesture()
    var direction: Vector2 = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP, KEY_DOWN: Vector2.DOWN}[event.keycode]
    var point: Vector2 = _gameplay_objects()[selected_gameplay_index].position
@@ -577,7 +745,10 @@ func _gui_input(event: InputEvent) -> void:
     grab_focus()
     _begin_primary(event.position, event.alt_pressed)
    else:
-    if _gameplay_drag_index >= 0:
+    if not _marker_drag_kind.is_empty():
+     if event.position.distance_squared_to(_marker_drag_last_pointer) > POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
+      _update_marker_drag(event.position, event.alt_pressed)
+    elif _gameplay_drag_index >= 0:
      # A modifier release alone must not quantize the last free preview.
      if event.position.distance_squared_to(_gameplay_drag_last_pointer) > POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
       _update_gameplay_drag(event.position, event.alt_pressed)
@@ -593,12 +764,16 @@ func _gui_input(event: InputEvent) -> void:
   if _panning:
    _view_origin += event.relative
    _view_adjusted = true
+  elif not _marker_drag_kind.is_empty():
+   _update_marker_drag(event.position, event.alt_pressed)
   elif _gameplay_drag_index >= 0:
    _update_gameplay_drag(event.position, event.alt_pressed)
   elif not _connector_drag_kind.is_empty():
    _update_connector_drag(event.position)
   elif _drag_index >= 0:
    _update_drag(event.position)
+  elif not marker_tool.is_empty():
+   _set_marker_status(marker_tool, _marker_position_value(marker_tool, screen_to_local_pixels(event.position), event.alt_pressed), _inside_grid(event.position))
   elif not gameplay_brush.is_empty() and _inside_grid(event.position):
    _set_gameplay_status(legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed))
   elif not connector_tool.is_empty():
@@ -615,6 +790,13 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _begin_primary(pointer: Vector2, cycle_overlaps: bool) -> void:
+ if not marker_tool.is_empty():
+  var value: Variant = _marker_position_value(marker_tool, screen_to_local_pixels(pointer), cycle_overlaps)
+  if _inside_grid(pointer):
+   _request_marker(marker_tool, value)
+  else:
+   _set_marker_status(marker_tool, value, false)
+  return
  if not connector_tool.is_empty():
   if connector_border_at(pointer) == connector_tool:
    _begin_connector_drag(connector_tool, pointer, "create")
@@ -640,6 +822,7 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool) -> void:
   select_connector(connector)
   selection_changed.emit(-1)
   gameplay_selection_changed.emit(-1)
+  marker_selection_changed.emit("")
   connector_selection_changed.emit(connector)
   _begin_connector_drag(connector, pointer, connector_handle_at(connector, pointer))
   return
@@ -647,7 +830,7 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool) -> void:
  var current_slot := -1
  for slot in hits.size():
   var hit: Dictionary = hits[slot]
-  if (hit.kind == "gameplay" and hit.index == selected_gameplay_index) or (hit.kind == "terrain" and hit.index == selected_index):
+  if (hit.kind == "marker" and hit.marker == selected_marker) or (hit.kind == "gameplay" and hit.index == selected_gameplay_index) or (hit.kind == "terrain" and hit.index == selected_index):
    current_slot = slot
    break
  var target: Dictionary = {}
@@ -665,7 +848,9 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool) -> void:
  _select_hit_target(target)
  _pending_cycle_target = click_target
  if not target.is_empty():
-  if target.kind == "gameplay":
+  if target.kind == "marker":
+   _begin_marker_drag(target.marker, pointer)
+  elif target.kind == "gameplay":
    var placement: Dictionary = _gameplay_objects()[target.index]
    _gameplay_drag_index = target.index
    _gameplay_drag_start_pointer = screen_to_local_pixels(pointer)
@@ -681,13 +866,15 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool) -> void:
    _drag_anchor = _drag_start_anchor
    _drag_moved = false
   if hits.size() > 1:
-   _set_status("%d overlapping items here. Alt-click cycles; Alt-drag freely moves gameplay objects." % hits.size())
+   _set_status("%d overlapping items here. Alt-click cycles; Alt-drag freely moves gameplay objects and markers." % hits.size())
  queue_redraw()
 
 
 func _select_hit_target(target: Dictionary) -> void:
  if target.is_empty():
   select_piece(-1)
+ elif target.kind == "marker":
+  select_marker(target.marker)
  elif target.kind == "gameplay":
   select_gameplay(target.index)
  else:
@@ -695,6 +882,7 @@ func _select_hit_target(target: Dictionary) -> void:
  selection_changed.emit(selected_index)
  gameplay_selection_changed.emit(selected_gameplay_index)
  connector_selection_changed.emit(selected_connector)
+ marker_selection_changed.emit(selected_marker)
 
 
 func _finish_cycle_click() -> void:
@@ -717,6 +905,74 @@ func _update_drag(pointer: Vector2) -> void:
  _pending_cycle_target = {}
  _drag_anchor = legal_anchor_for(placements[_drag_index], Vector2(_drag_start_anchor) + delta)
  _set_status("Move to (%d, %d). Release to apply; Esc cancels." % [_drag_anchor.x, _drag_anchor.y])
+
+
+func _marker_position_value(kind: String, position: Vector2, free_move: bool) -> Variant:
+ if kind == "activation":
+  return float(position.y) if free_move else roundf(position.y / _local_cell_size()) * _local_cell_size()
+ return legal_gameplay_position(position, free_move)
+
+
+func _request_marker(kind: String, value: Variant) -> void:
+ if not valid_marker_value(kind, value):
+  _set_marker_status(kind, value)
+  return
+ marker_requested.emit(kind, value)
+
+
+func _set_marker_status(kind: String, value: Variant, pointer_inside: bool = true) -> void:
+ if not pointer_inside or not valid_marker_value(kind, value):
+  _set_status("%s must stay inside the Act terrain bounds. The outer bottom/right edges and red gutter are outside; no edit applied." % kind.capitalize())
+  return
+ var mode := "FREE MOVE" if _alt_held else "SNAP ON"
+ var coordinate := "Y %.2f px" % float(value) if kind == "activation" else "(%.2f, %.2f) px" % [value.x, value.y]
+ _set_status("%s · %s %s · Alt frees position; Esc cancels. Activation moves vertically only." % [mode, kind.capitalize(), coordinate])
+
+
+func _begin_marker_drag(kind: String, pointer: Vector2) -> void:
+ _marker_drag_kind = kind
+ _marker_drag_start_pointer = screen_to_local_pixels(pointer)
+ _marker_drag_last_pointer = pointer
+ _marker_drag_start_value = marker_value(kind)
+ _marker_drag_value = _marker_drag_start_value
+ _marker_drag_moved = false
+
+
+func _update_marker_drag(pointer: Vector2, free_move: bool, force: bool = false) -> void:
+ if _marker_drag_kind.is_empty() or marker_value(_marker_drag_kind) == null:
+  cancel_gesture()
+  return
+ if not force and pointer.distance_squared_to(_marker_drag_last_pointer) <= POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
+  return
+ _marker_drag_last_pointer = pointer
+ var delta := screen_to_local_pixels(pointer) - _marker_drag_start_pointer
+ var movement := absf(delta.y) if _marker_drag_kind == "activation" else delta.length()
+ if not _marker_drag_moved and movement * _cell_pixels / _local_cell_size() < 3.0:
+  return
+ _marker_drag_moved = true
+ _pending_cycle_target = {}
+ _alt_held = free_move
+ if _marker_drag_kind == "activation":
+  var y := float(_marker_drag_start_value) + delta.y
+  _marker_drag_value = y if free_move else roundf(y / _local_cell_size()) * _local_cell_size()
+ else:
+  _marker_drag_value = legal_gameplay_position(_marker_drag_start_value + delta, free_move)
+ _set_marker_status(_marker_drag_kind, _marker_drag_value)
+ queue_redraw()
+
+
+func _end_marker_drag() -> void:
+ var kind := _marker_drag_kind
+ var value: Variant = _marker_drag_value
+ var changed: bool = _marker_drag_moved and value != _marker_drag_start_value
+ _marker_drag_kind = ""
+ _marker_drag_moved = false
+ _marker_drag_start_value = null
+ _marker_drag_value = null
+ if changed:
+  _request_marker(kind, value)
+ _finish_cycle_click()
+ queue_redraw()
 
 
 func _update_gameplay_drag(pointer: Vector2, free_move: bool, force: bool = false) -> void:
@@ -813,6 +1069,9 @@ func _end_connector_drag() -> void:
 
 
 func _end_primary() -> void:
+ if not _marker_drag_kind.is_empty():
+  _end_marker_drag()
+  return
  if _gameplay_drag_index >= 0:
   _end_gameplay_drag()
   return
@@ -838,10 +1097,13 @@ func _leave_tool() -> void:
  selected_connector = ""
  gameplay_brush = {}
  selected_gameplay_index = -1
+ marker_tool = ""
+ selected_marker = ""
  selection_changed.emit(-1)
  connector_selection_changed.emit("")
  gameplay_selection_changed.emit(-1)
- _set_status("Selection mode. Click terrain, gameplay objects or green connectors. Alt-click cycles overlaps.")
+ marker_selection_changed.emit("")
+ _set_status("Selection mode. Click terrain, gameplay objects or Act markers. Alt-click cycles overlaps.")
  queue_redraw()
 
 
@@ -932,7 +1194,13 @@ func _valid_gameplay_stamp(placement: Dictionary) -> bool:
 
 
 func _inside_grid(point: Vector2) -> bool:
- return Rect2(_view_origin, Vector2(_grid_size()) * _cell_pixels).has_point(point)
+ # Compare in the same coordinate space as the incoming pointer. Converting an
+ # exact left/top edge through a translated Control can lose one float32 ULP.
+ # Transforming both operands together retains the half-open right/bottom edges
+ # without a tolerance that would admit gutter placement or alter saved values.
+ var transform := get_global_transform()
+ var bounds: Rect2 = transform * Rect2(_view_origin, Vector2(_grid_size()) * _cell_pixels)
+ return bounds.has_point(transform * point)
 
 
 func _placements() -> Array:

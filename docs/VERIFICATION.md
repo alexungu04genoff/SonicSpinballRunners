@@ -2,6 +2,17 @@
 
 Latest checks: 2026-10-25. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
+## Act lifecycle metadata — 2026-10-25
+
+Act Markers adds optional full-width Activation and exact-position Spawn markers alongside the existing Entry/Exit tools. A system-owned one-cell-height red gutter sits outside the unchanged 12×12 terrain grid. Format 4 loads previous format-2/3 Acts with lifecycle fields unset. This remains authoring-only: no activation state, death/respawn, ball, transitions, generator changes or playable Act loading.
+
+- `act_lifecycle_regression.gd`: **170 checks passed + 8 fresh-process checks**. Coverage includes optional drafts, finite half-open terrain bounds, malformed data, rejection without clamping, exact fractional values, independent copies/fingerprints, shared gutter bounds, previous-format fixtures, repeated persistence and restart/edit/re-save. Activation uses the existing lossless scalar payload; Spawn remains a native Vector2.
+- `act_lifecycle_editor_smoke.gd`: **49 headless and 50 ANGLE graphical checks passed**, each with **5 fresh-editor-process checks**, with empty error logs. Actual viewport input exercises all four marker tools, create/replace/move/delete, snapping and Alt fine movement, arrow nudges, one edit per drag, cancellation, undo/redo, mixed-layer selection, invalid moves, cell-size rejection, terrain click/drop exclusion in the gutter, unchanged grid dimensions and complete marker persistence.
+- Existing model regressions remain green: geometry **3,302 + 6**, connectors **108 + 5**, gameplay **471 + 76**. Existing terrain UI passed **86 checks** and gameplay UI passed **57 headless checks + 5 fresh-process checks** with the gutter visible. A fractional-origin boundary regression was fixed by comparing pointer and bounds in the same global coordinate space; an additional eight actual-click probes confirmed left/top admission and right/bottom/gutter rejection without a tolerance or coordinate changes.
+- Isolated editor import and unchanged playground startup passed with an empty error log and `PLAYGROUND_READY`.
+
+The rendered lifecycle capture was inspected at 1280×900. Terrain rows stop at 0–11; the red gutter has no grid lines. Green Entry/Exit, cyan Activation, pink Spawn and the system-zone caption remain distinct and readable. The bundled example now includes Activation Y=450 and Spawn=(300.5,555.25), preserving all 18 terrain pieces, four gameplay objects and both connectors. Subjective marker placement comfort remains a short manual check.
+
 ## Gameplay-object authoring — 2026-10-25
 
 The standalone Act editor authors round bumpers, triangle bumpers/slings and left/right flippers in a separate exact-local-coordinate collection. Format 3 loads previous format-2 terrain/connector documents with an empty object list. All previews remain collisionless; runtime assembly, generator behavior and gameplay are outside this change.

@@ -44,6 +44,9 @@ var palette_heading: Label
 var angle_field: LineEdit
 var handedness_field: OptionButton
 var _angle_display_text := ""
+var marker_buttons: Dictionary = {}
+var marker_list: VBoxContainer
+var marker_summary: Label
 
 func _ready() -> void:
 	_previous_auto_quit = get_tree().auto_accept_quit
@@ -134,6 +137,7 @@ func _build_ui() -> void:
 	palette_tabs = TabBar.new()
 	palette_tabs.add_tab("Terrain")
 	palette_tabs.add_tab("Gameplay")
+	palette_tabs.add_tab("Act Markers")
 	palette_tabs.tab_changed.connect(_change_palette_tab)
 	palette.add_child(palette_tabs)
 	palette_heading = Label.new()
@@ -182,6 +186,25 @@ func _build_ui() -> void:
 	object_hint.add_theme_color_override("font_color", Color("9cb3c6"))
 	object_hint.add_theme_font_size_override("font_size", 13)
 	gameplay_list.add_child(object_hint)
+	marker_list = VBoxContainer.new()
+	marker_list.add_theme_constant_override("separation", 8)
+	marker_list.visible = false
+	palette.add_child(marker_list)
+	_button(marker_list, "marker_entry", "Entry Connector", func(): choose_connector("entry"), "Physical connection on the bottom border; width determines compatibility")
+	_button(marker_list, "marker_exit", "Exit Connector", func(): choose_connector("exit"), "Physical connection on the top border; width determines compatibility")
+	_button(marker_list, "marker_activation", "Activation Trigger", func(): choose_marker("activation"), "Place a horizontal guide. Future upward crossing changes the active checkpoint.")
+	_button(marker_list, "marker_spawn", "Spawn Point", func(): choose_marker("spawn"), "Place the future launch / respawn point. Hold Alt for an exact local position.")
+	for kind: String in ["entry", "exit", "activation", "spawn"]:
+		marker_buttons[kind] = buttons["marker_" + kind]
+	marker_summary = Label.new()
+	marker_summary.add_theme_color_override("font_color", Color("9bdedb"))
+	marker_summary.add_theme_font_size_override("font_size", 13)
+	marker_list.add_child(marker_summary)
+	var marker_hint := Label.new()
+	marker_hint.text = "Entry / Exit: physical connection\nActivation: upward checkpoint line\nSpawn: launch / respawn point\n\nThe red gutter is system-owned.\nIt adds no terrain cells.\n\nMarkers may remain unset.\nNo gameplay runs in this editor."
+	marker_hint.add_theme_color_override("font_color", Color("9cb3c6"))
+	marker_hint.add_theme_font_size_override("font_size", 13)
+	marker_list.add_child(marker_hint)
 	var workspace := VBoxContainer.new()
 	workspace.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	workspace.add_theme_constant_override("separation", 8)
@@ -233,6 +256,8 @@ func _build_ui() -> void:
 	canvas.gameplay_placement_requested.connect(add_gameplay_placement)
 	canvas.gameplay_move_requested.connect(move_gameplay_placement)
 	canvas.gameplay_selection_changed.connect(func(_index): _refresh())
+	canvas.marker_requested.connect(set_lifecycle_marker)
+	canvas.marker_selection_changed.connect(func(_kind): _refresh())
 	canvas.status_changed.connect(_set_status)
 	var object_properties := HBoxContainer.new()
 	object_properties.add_theme_constant_override("separation", 8)
@@ -344,8 +369,9 @@ func _change_palette_tab(index: int) -> void:
 	search_field.visible = terrain
 	family_filter.visible = terrain
 	terrain_scroll.visible = terrain
-	gameplay_list.visible = not terrain
-	palette_heading.text = "TERRAIN LIBRARY  /  %d stamps" % Shapes.definitions().size() if terrain else "GAMEPLAY  /  4 objects"
+	gameplay_list.visible = index == 1
+	marker_list.visible = index == 2
+	palette_heading.text = ["TERRAIN LIBRARY  /  %d stamps" % Shapes.definitions().size(), "GAMEPLAY  /  4 objects", "ACT MARKERS  /  4 tools"][index]
 	_select_mode()
 
 func choose_gameplay(id: String) -> void:
@@ -360,7 +386,7 @@ func choose_gameplay(id: String) -> void:
 func _select_mode() -> void:
 	canvas.grab_focus()
 	canvas.select_piece(-1)
-	_set_status("Click terrain, gameplay objects or green connectors. Drag to move; Alt frees gameplay position. Alt-click cycles overlaps.")
+	_set_status("Click terrain, gameplay or Act markers. Drag to move; Alt frees object / marker position. Alt-click cycles overlaps.")
 	_refresh()
 
 func choose_connector(kind: String) -> void:
@@ -369,6 +395,31 @@ func choose_connector(kind: String) -> void:
 	canvas.grab_focus()
 	canvas.set_connector_tool(kind)
 	_set_status("Drag contiguous cells along the %s border to create or replace %s. Esc cancels." % ["bottom" if kind == "entry" else "top", kind.capitalize()])
+	_refresh()
+
+func choose_marker(kind: String) -> void:
+	if kind not in ["activation", "spawn"]:
+		return
+	canvas.grab_focus()
+	canvas.set_marker_tool(kind)
+	_set_status("Click inside the Act to place %s. Snap is on; hold Alt for fine position. The red gutter is outside the Act." % ("the Activation Trigger" if kind == "activation" else "the Spawn Point"))
+	_refresh()
+
+func set_lifecycle_marker(kind: String, value: Variant) -> void:
+	if kind not in ["activation", "spawn"]:
+		return
+	var field := "activation_y" if kind == "activation" else "spawn_position"
+	var candidate: Resource = document.copy_document()
+	candidate.set(field, value)
+	var errors: PackedStringArray = candidate.validation_errors()
+	if not errors.is_empty():
+		_set_status(errors[0] + " Marker unchanged.")
+		return
+	if document.get(field) != value:
+		_record_edit()
+		document.set(field, value)
+	canvas.select_marker(kind if value != null else "")
+	_set_status(("Activation Trigger" if kind == "activation" else "Spawn Point") + (" removed. Incomplete drafts can still be saved." if value == null else " set. Drag to move; Delete removes; Alt allows fine position."))
 	_refresh()
 
 func set_connector(kind: String, start_x: int, width: int) -> void:
@@ -550,6 +601,9 @@ func _transform_active(operation: String) -> void:
 	_refresh()
 
 func delete_selected() -> void:
+	if not canvas.selected_marker.is_empty():
+		set_lifecycle_marker(canvas.selected_marker, null)
+		return
 	if not canvas.selected_connector.is_empty():
 		set_connector(canvas.selected_connector, 0, 0)
 		return
@@ -570,7 +624,8 @@ func delete_selected() -> void:
 
 func _snapshot() -> Dictionary:
 	return {"document": document.copy_document(), "selected": canvas.selected_index,
-		"connector": canvas.selected_connector, "gameplay": canvas.selected_gameplay_index}
+		"connector": canvas.selected_connector, "gameplay": canvas.selected_gameplay_index,
+		"marker": canvas.selected_marker}
 
 func _record_edit() -> void:
 	undo_stack.append(_snapshot())
@@ -606,6 +661,8 @@ func _restore_snapshot(snapshot: Dictionary) -> void:
 		canvas.set_gameplay_brush(active_gameplay_brush)
 	elif not snapshot.get("connector", "").is_empty() and document.get_connector(snapshot.connector).width > 0:
 		canvas.select_connector(snapshot.connector)
+	elif not snapshot.get("marker", "").is_empty():
+		canvas.select_marker(snapshot.marker)
 	elif snapshot.get("gameplay", -1) >= 0:
 		canvas.select_gameplay(snapshot.gameplay)
 	else:
@@ -747,6 +804,13 @@ func _change_cell_size(value: float) -> void:
 		cell_size_field.set_value_no_signal(document.cell_size)
 		_set_status("Cell size must be greater than zero.")
 		return
+	var candidate: Resource = document.copy_document()
+	candidate.cell_size = value
+	var errors: PackedStringArray = candidate.validation_errors()
+	if not errors.is_empty():
+		cell_size_field.set_value_no_signal(document.cell_size)
+		_set_status("Cell size unchanged: " + errors[0])
+		return
 	_record_edit()
 	document.cell_size = value
 	_refresh()
@@ -761,10 +825,12 @@ func _refresh() -> void:
 	_refresh_file_state()
 	buttons.undo.disabled = undo_stack.is_empty()
 	buttons.redo.disabled = redo_stack.is_empty()
-	buttons.delete.disabled = canvas.selected_index < 0 and canvas.selected_gameplay_index < 0 and canvas.selected_connector.is_empty()
+	buttons.delete.disabled = canvas.selected_index < 0 and canvas.selected_gameplay_index < 0 and canvas.selected_connector.is_empty() and canvas.selected_marker.is_empty()
 	buttons.duplicate.disabled = canvas.selected_gameplay_index < 0
 	connector_summary.text = _connector_description("entry") + "   |   " + _connector_description("exit")
 	connector_summary.tooltip_text = connector_summary.text + "\nCompatibility compares width only; horizontal positions may differ."
+	marker_summary.text = "Activation: " + ("unset" if document.activation_y == null else "Y %s px" % var_to_str(document.activation_y))
+	marker_summary.text += "\nSpawn: " + ("unset" if document.spawn_position == null else "%s px" % document.spawn_position)
 	var active: Dictionary = canvas.brush if not canvas.brush.is_empty() else (document.placements[canvas.selected_index] if canvas.selected_index >= 0 else {})
 	var gameplay := _active_gameplay()
 	for key in ["rotate", "flip_h", "flip_v"]:
@@ -777,7 +843,13 @@ func _refresh() -> void:
 	angle_field.placeholder_text = "Gameplay only"
 	handedness_field.disabled = gameplay.is_empty() or gameplay.type not in ["left_flipper", "right_flipper"]
 	handedness_field.select(1 if not gameplay.is_empty() and gameplay.type == "right_flipper" else 0)
-	if not canvas.connector_tool.is_empty():
+	if not canvas.marker_tool.is_empty():
+		mode_label.text = "PLACE  ·  " + ("Activation Trigger" if canvas.marker_tool == "activation" else "Spawn Point")
+		detail_label.text = "Inside terrain bounds only · grid snap / Alt free position · red gutter is system-owned"
+	elif not canvas.selected_marker.is_empty():
+		mode_label.text = "SELECTED  ·  " + ("Activation Trigger" if canvas.selected_marker == "activation" else "Spawn Point")
+		detail_label.text = ("Y %s px · Full Act width · Future upward crossing activates the checkpoint" % var_to_str(document.activation_y) if canvas.selected_marker == "activation" else "Position %s px · Future launch / respawn point" % document.spawn_position) + " · Delete removes"
+	elif not canvas.connector_tool.is_empty():
 		mode_label.text = "AUTHOR %s  ·  %s border only" % [canvas.connector_tool.to_upper(), "bottom" if canvas.connector_tool == "entry" else "top"]
 		detail_label.text = "Click or drag across boundary cells to set the span. Green spans are authoring markers; terrain remains unchanged."
 	elif not canvas.selected_connector.is_empty():
