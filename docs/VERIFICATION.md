@@ -2,6 +2,14 @@
 
 Latest checks: 2026-10-25. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
+## Standard bumper scale — 2026-10-25
+
+The editor round bumper now derives radius from `0.25 × cell_size`, giving a half-cell diameter while preserving the authored center. Canvas, placement ghost and hit testing use the same geometry. Palette thumbnails continue to fit their own icon boxes. Sling geometry remains 85×90 local pixels; flipper bodies remain 156×26 pixels before rotation, including rounded caps. Terrain dimensions and runtime physics are untouched.
+
+- Gameplay model regression: **488 checks + 76 fresh-process checks passed**. Radius/diameter and centering are checked at cell sizes 25, 47.5, 50 and 100; both flipper hands and sling coordinates remain unchanged. Exact placement persistence remains green.
+- Gameplay editor smoke: **67 headless and 68 ANGLE graphical checks passed**, each with **5 fresh-editor-process checks**. New checks place three neighboring bumpers, select each at its center and reject the former oversized hit region at both 50 and 100 px cell sizes. An initial graphical run reported a palette-drop coordinate mismatch; the rerun passed the unchanged assertion after adding failure diagnostics, and headless verification also passed. No coordinate tolerance was relaxed.
+- Lifecycle editor smoke: **49 + 5 fresh-process checks passed**. The rendered gameplay capture was inspected against the grid: bumper bodies span half a cell, and sling/flipper proportions remain unchanged. Final error logs are empty.
+
 ## Filled U/S correction — 2026-10-25
 
 Filled U and Filled S now use the matching open wall as their upper surface and fill down to the canonical frame bottom. Open wall geometry, frame sizes and saved placement IDs remain unchanged. This supersedes the ribbon interpretation in the earlier connector/shape-expansion milestone.

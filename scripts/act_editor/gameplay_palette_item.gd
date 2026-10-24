@@ -2,6 +2,8 @@ extends Button
 ## Collisionless gameplay preview and drag payload for the Act authoring palette.
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const Preview = preload("res://scripts/act_editor/gameplay_preview.gd")
+## Palette icons fit their box independently of canvas scale.
+const ICON_CELL_SIZE := 50.0
 var definition: Dictionary = {}
 
 func configure(value: Dictionary) -> void:
@@ -26,7 +28,7 @@ func _draw() -> void:
 	if definition.is_empty():
 		return
 	var placement: Dictionary = Objects.make_placement(definition.id)
-	var points: PackedVector2Array = Preview.rotated_points(placement)
+	var points: PackedVector2Array = Preview.rotated_points(placement, ICON_CELL_SIZE)
 	if points.is_empty():
 		return
 	var bounds := Rect2(points[0], Vector2.ZERO)
@@ -34,7 +36,7 @@ func _draw() -> void:
 		bounds = bounds.expand(point)
 	var scale_factor := 42.0 / maxf(bounds.size.x, bounds.size.y)
 	var anchor := Vector2(31, size.y * 0.5) - bounds.get_center() * scale_factor
-	Preview.draw_object(self, placement, anchor, scale_factor, false, false, false)
+	Preview.draw_object(self, placement, anchor, scale_factor, ICON_CELL_SIZE, false, false, false)
 	draw_string(get_theme_default_font(), Vector2(66, size.y - 10), "GAMEPLAY OBJECT", HORIZONTAL_ALIGNMENT_LEFT, size.x - 74, 10, definition.color)
 
 func _get_drag_data(_at_position: Vector2) -> Variant:

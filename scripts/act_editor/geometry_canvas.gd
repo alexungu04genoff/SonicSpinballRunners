@@ -273,7 +273,7 @@ func gameplay_hit_indices_at(local_position: Vector2) -> Array[int]:
  var objects := _gameplay_objects()
  for index in range(objects.size() - 1, -1, -1):
   var placement: Dictionary = objects[index]
-  var points := ObjectPreview.rotated_points(placement)
+  var points := ObjectPreview.rotated_points(placement, _local_cell_size())
   var point := pixel_position - Vector2(placement.position)
   if points.size() < 3:
    continue
@@ -507,15 +507,15 @@ func _draw_gameplay_objects() -> void:
   var point: Vector2 = placement.position
   if index == _gameplay_drag_index and _gameplay_drag_moved:
    point = _gameplay_drag_position
-  ObjectPreview.draw_object(self, placement, local_pixels_to_screen(point), scale_factor)
+  ObjectPreview.draw_object(self, placement, local_pixels_to_screen(point), scale_factor, _local_cell_size())
  if selected_gameplay_index >= 0 and selected_gameplay_index < objects.size():
   var placement: Dictionary = objects[selected_gameplay_index]
   var point: Vector2 = _gameplay_drag_position if selected_gameplay_index == _gameplay_drag_index and _gameplay_drag_moved else placement.position
-  ObjectPreview.draw_object(self, placement, local_pixels_to_screen(point), scale_factor, true)
+  ObjectPreview.draw_object(self, placement, local_pixels_to_screen(point), scale_factor, _local_cell_size(), true)
  var active_brush := _drop_gameplay_brush if not _drop_gameplay_brush.is_empty() else gameplay_brush
  if (_hovering or not _drop_gameplay_brush.is_empty()) and _inside_grid(_cursor_position) and _valid_gameplay_stamp(active_brush):
   var point := legal_gameplay_position(screen_to_local_pixels(_cursor_position), _alt_held)
-  ObjectPreview.draw_object(self, active_brush, local_pixels_to_screen(point), scale_factor, false, true)
+  ObjectPreview.draw_object(self, active_brush, local_pixels_to_screen(point), scale_factor, _local_cell_size(), false, true)
 
 
 func _draw_connectors() -> void:

@@ -4,19 +4,19 @@ const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const SELECTION_COLOR := Color("b9f4ff")
 
 
-static func rotated_points(placement: Dictionary) -> PackedVector2Array:
- var result: PackedVector2Array = Objects.local_points(placement)
+static func rotated_points(placement: Dictionary, cell_size: float) -> PackedVector2Array:
+ var result: PackedVector2Array = Objects.local_points(placement, cell_size)
  var angle := deg_to_rad(float(placement.get("rotation_degrees", 0.0)))
  for index in result.size():
   result[index] = result[index].rotated(angle)
  return result
 
 
-static func draw_object(target: CanvasItem, placement: Dictionary, anchor: Vector2, scale_factor: float, selected: bool = false, ghost: bool = false, annotations: bool = true) -> void:
+static func draw_object(target: CanvasItem, placement: Dictionary, anchor: Vector2, scale_factor: float, cell_size: float, selected: bool = false, ghost: bool = false, annotations: bool = true) -> void:
  var definition: Dictionary = Objects.get_definition(str(placement.get("type", "")))
  if definition.is_empty():
   return
- var points := rotated_points(placement)
+ var points := rotated_points(placement, cell_size)
  for index in points.size():
   points[index] = anchor + points[index] * scale_factor
  if points.size() < 3:

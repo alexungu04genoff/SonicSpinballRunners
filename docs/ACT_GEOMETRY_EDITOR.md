@@ -43,7 +43,7 @@ The default grid has 144 **cells**, with 13 boundary intersections along each ax
 
 **Overlaps are allowed.** Frames reserve no cells. Selection tests actual polygons or proximity to open wall segments. Gameplay objects appear above terrain; the last-placed item in each of those layers wins. Lifecycle markers appear above both. Alt-click cycles overlapping terrain, gameplay objects and lifecycle markers, including covered pieces. Dashed frames are guides, not terrain. Alt never disables terrain snapping or its quarter-turn restriction.
 
-Cell size specifies saved local authoring pixels per cell. It does not change terrain grid anchors or footprints, or rescale existing gameplay-object positions/dimensions. The fitted view scales the Act to the window; zoom controls on-screen size. Grid dimensions are stored in the Resource; this MVP creates 12×12 Acts without a grid-resize tool.
+Cell size specifies saved local authoring pixels per cell. It does not change terrain grid anchors or footprints, or rescale existing object positions. Round bumper diameter follows cell size; sling and flipper dimensions remain fixed. The fitted view scales the Act to the window; zoom controls on-screen size. Grid dimensions are stored in the Resource; this MVP creates 12×12 Acts without a grid-resize tool.
 
 ## Gameplay objects
 
@@ -55,7 +55,9 @@ The **Gameplay** tab contains only **Round Bumper**, **Triangle Bumper / Sling**
 - **Flippers:** the paddle, pivot, handedness label and curved swing arrow show future motion direction. Left and right defaults match the runtime resting orientations, about 18.33° and 161.67°. Changing the handedness selector changes swing direction while retaining the exact authored pivot and angle.
 - **Duplication:** Ctrl+D copies the selected gameplay object and offsets it by one cell in both axes. Its fractional position and angle remain intact; the copy is selected. Undo treats duplication as one edit.
 
-The silhouettes use the current bottom-table proportions: round bumper radius 38 px, the existing triangle's three local vertices, and a 130 px flipper centerline with 13 px end-cap radius. Definitions are pure editor data and do not load runtime physics scripts. These dimensions stay constant when changing grid cell size.
+The standard round bumper has **diameter `0.5 × cell_size`** and **radius `0.25 × cell_size`**, centered on its authored position. At the default 50 px cell size, that is a 25 px diameter and 12.5 px radius. Drawing, placement previews and selection resolve the same size from the Act's cell size; changing cell size preserves its center and updates its diameter. No per-placement radius or file conversion is needed.
+
+The sling and flippers retain their existing bottom-table proportions: the triangle spans 85×90 local pixels (1.7×1.8 default cells), and each flipper has a 130 px centerline with 13 px end-cap radius (156×26 px unrotated body, or 3.12×0.52 default cells). Those dimensions remain fixed when cell size changes. Definitions are pure editor data and do not load or alter runtime physics scripts. Palette icons fit their thumbnail boxes independently of canvas scale.
 
 The Act's top-left is local `(0, 0)`, with X right and Y down. Gameplay placements store exact `Vector2` local pixels independently of cells. Existing objects can move beyond the grid boundary; their values are preserved, with no collision, occupancy or reachability restriction. Palette placement starts inside the visible Act. For example, `(438.5, 271.25)` remains fractional after save/restart/load.
 

@@ -358,6 +358,8 @@ func check_palette_drag() -> void:
 	await move_pointer(drop_point, true)
 	await mouse_button(drop_point, false)
 	await set_alt(false)
+	if editor.document.gameplay_objects.size() != count + 1 or not close_to(editor.document.gameplay_objects[-1].position, expected_position):
+		print("DROP DIAGNOSTIC | screen=", drop_point, " expected=", expected_position, " actual=", editor.document.gameplay_objects[-1].position, " transform=", root.get_final_transform(), " canvas=", editor.canvas.global_position, " viewport=", root.size, " window=", DisplayServer.window_get_size())
 	check(editor.document.gameplay_objects.size() == count + 1 and editor.document.gameplay_objects[-1].type == "round_bumper" and close_to(editor.document.gameplay_objects[-1].position, expected_position) and expected_position.distance_to(expected_position.snapped(Vector2.ONE * editor.document.cell_size)) > 1.0, "Actual gameplay palette drag/drop preserves the exact off-grid cursor position with Alt")
 	check(editor.document.gameplay_objects[2].rotation_degrees == -22.625, "Gameplay palette drop commits a pending numeric angle before changing the selected object")
 	await click_at(local_position(Vector2(525.5, 175.25)))
@@ -459,6 +461,27 @@ func capture() -> void:
 		check(root.get_texture().get_image().save_png("res://test-results/act-gameplay-editor.png") == OK, "Gameplay editor screenshot captures terrain, connectors, bumpers and flipper pivot previews")
 
 
+func check_bumper_grid_scale() -> void:
+	for cell_size: float in [50.0, 100.0]:
+		editor.new_document()
+		await click_control(editor.cell_size_field.get_line_edit())
+		await press_key(KEY_A, true)
+		await type_text(str(cell_size))
+		await press_key(KEY_ENTER)
+		await choose_gameplay("round_bumper")
+		for column in [3, 4, 5]:
+			await click_at(grid_position(Vector2(column, 3)))
+		await press_key(KEY_ESCAPE)
+		check(editor.document.cell_size == cell_size and editor.document.gameplay_objects.size() == 3, "Several standard bumpers fit into neighboring chamber cells at cell size " + str(cell_size))
+		for index in 3:
+			await click_at(grid_position(Vector2(3 + index, 3)))
+			check(editor.canvas.selected_gameplay_index == index, "Small bumper remains selectable at its authored center: " + str(index))
+		await click_at(grid_position(Vector2(3, 3.7)))
+		check(editor.canvas.selected_gameplay_index == -1, "Bumper selection uses the smaller cell-relative silhouette rather than the old radius")
+	editor.new_document()
+	await process_frame
+
+
 func run() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results"))
 	root.gui_embed_subwindows = true
@@ -469,6 +492,7 @@ func run() -> void:
 	if OS.get_cmdline_user_args().has("--reload-gameplay-fixture"):
 		await reload_in_fresh_process()
 		return
+	await check_bumper_grid_scale()
 	await check_initial_placement()
 	await check_movement()
 	await check_angles_handedness_and_history()

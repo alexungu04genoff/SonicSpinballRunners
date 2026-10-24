@@ -1,8 +1,8 @@
 class_name ActGameplayObjects
 extends RefCounted
 ## Editor-only silhouettes in local physical pixels. No bodies or gameplay scripts.
-## Values match data/act_bottom.tres and scripts/flipper.gd's resting paddle shape.
-const ROUND_RADIUS := 38.0
+## Sling/flipper dimensions match the existing runtime shapes; bumpers are cell-relative.
+const ROUND_RADIUS_CELLS := 0.25
 const FLIPPER_LENGTH := 130.0
 const FLIPPER_RADIUS := 13.0
 const FLIPPER_SWING_DEGREES := rad_to_deg(0.8)
@@ -32,18 +32,19 @@ static func make_placement(id: String) -> Dictionary:
   angle = rad_to_deg(PI - 0.32)
  return {"type": id, "position": Vector2.ZERO, "rotation_degrees": angle}
 
-static func local_points(placement: Dictionary) -> PackedVector2Array:
+static func local_points(placement: Dictionary, cell_size: float) -> PackedVector2Array:
  # Rotation is applied by the caller around the saved center/pivot at (0,0).
  # The sling keeps its runtime local origin; its centroid is not re-centered.
  var points := PackedVector2Array()
  match placement.get("type", ""):
   "round_bumper":
+   var radius := ROUND_RADIUS_CELLS * cell_size
    for step in range(CURVE_STEPS * 4):
-    points.append(Vector2.RIGHT.rotated(TAU * float(step) / (CURVE_STEPS * 4)) * ROUND_RADIUS)
-   points[0] = Vector2(ROUND_RADIUS, 0)
-   points[CURVE_STEPS] = Vector2(0, ROUND_RADIUS)
-   points[CURVE_STEPS * 2] = Vector2(-ROUND_RADIUS, 0)
-   points[CURVE_STEPS * 3] = Vector2(0, -ROUND_RADIUS)
+    points.append(Vector2.RIGHT.rotated(TAU * float(step) / (CURVE_STEPS * 4)) * radius)
+   points[0] = Vector2(radius, 0)
+   points[CURVE_STEPS] = Vector2(0, radius)
+   points[CURVE_STEPS * 2] = Vector2(-radius, 0)
+   points[CURVE_STEPS * 3] = Vector2(0, -radius)
   "triangle_bumper":
    return PackedVector2Array([Vector2(-40, 35), Vector2(-15, -55), Vector2(45, 35)])
   "left_flipper", "right_flipper":
