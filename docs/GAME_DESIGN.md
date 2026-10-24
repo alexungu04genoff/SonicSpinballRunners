@@ -37,6 +37,12 @@ The depth experiment retains Real Pinball perspective as the default, a lower Dr
 
 See [Act Geometry Editor](ACT_GEOMETRY_EDITOR.md) for launch, controls, the editable example and format/verification details. Human review still owns palette comfort, curve silhouettes and editing feel.
 
+### Ring-trail authoring — 2026-10-25
+
+**Confirmed scoped follow-up:** Gameplay now includes a Rings tool. A click creates one ring; a drag creates an unconstrained straight trail as one authoring group and one undo action. Rings use a centralized 0.18-cell preview diameter and a default maximum center spacing of 0.4 cells. Equal intervals fit both endpoints. Only endpoints snap; Alt frees them and generated coordinates never snap individually. Selection, group movement, both endpoint handles, spacing edits, deletion, duplication and shared history preserve exact coordinates. Terrain overlap is allowed.
+
+Format 5 adds `ring_trails` records containing exact local-pixel start/end and spacing. Existing format-2/3/4 Acts load with empty trails without rewriting their files. Changes to cell size or preview size do not reposition saved rings. This exception to the authoring freeze is strictly authoring/persistence: the existing standalone runtime path does not yet instantiate these trails. Collection, scoring, magnetism, ring physics, character interaction and procedural routes remain deferred.
+
 ### One authored Act in real gameplay — 2026-10-25
 
 **Confirmed and implemented Milestone 5:** New authoring features are temporarily frozen to prove **one saved file → one playable Act**. [Authored Act Playtest.cmd](../Authored%20Act%20Playtest.cmd) and [scenes/authored_act_playtest.tscn](../scenes/authored_act_playtest.tscn), launched with F6, provide file selection, Example, Reload, Serve and Reset. F5 and all existing procedural modes retain their normal flow.

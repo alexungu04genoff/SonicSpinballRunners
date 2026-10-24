@@ -1,11 +1,12 @@
 class_name ActGeometry
 extends Resource
 ## A single Act's terrain, connectors, gameplay objects and lifecycle authoring data.
-const FORMAT_VERSION := 4
+const FORMAT_VERSION := 5
 ## The system gutter is outside terrain bounds and is never a thirteenth terrain row.
 const RED_GUTTER_CELLS := 1
 const SHAPES = preload("res://scripts/act_editor/terrain_shapes.gd")
 const OBJECTS = preload("res://scripts/act_editor/gameplay_objects.gd")
+const RINGS = preload("res://scripts/act_editor/ring_trails.gd")
 const SCRIPT_PATH := "res://scripts/act_editor/act_geometry.gd"
 const PLACEMENT_TYPES := {
  "shape_id": TYPE_STRING,
@@ -32,6 +33,8 @@ const PLACEMENT_TYPES := {
 @export var placements = []
 ## Gameplay centers/pivots use exact local pixel coordinates, independently of terrain.
 @export var gameplay_objects = []
+## One record per gesture; generated positions never snap to the terrain grid.
+@export var ring_trails = []
 ## Entry lies on the bottom boundary; exit lies on the top boundary.
 ## A zero start and width represent an unset connector in an editable draft.
 @export var entry_start_x = 0
@@ -106,6 +109,7 @@ func validation_errors() -> PackedStringArray:
   elif valid_grid_type and (connector.width > grid_size.x or connector.start_x > grid_size.x - connector.width):
    errors.append("%s connector span must fit inside the Act's horizontal grid boundary." % kind.capitalize())
  errors.append_array(_gameplay_validation_errors())
+ errors.append_array(_ring_validation_errors())
  errors.append_array(_lifecycle_validation_errors())
  if typeof(placements) != TYPE_ARRAY:
   errors.append("Terrain placements must be an array of dictionaries.")
@@ -195,6 +199,17 @@ func _gameplay_validation_errors() -> PackedStringArray:
  # Gameplay data has no grid bounds, occupancy rules, angle normalization or snapping.
  return errors
 
+func _ring_validation_errors() -> PackedStringArray:
+ var errors := PackedStringArray()
+ if typeof(ring_trails) != TYPE_ARRAY:
+  errors.append("Ring trails must be an array.")
+  return errors
+ for index in ring_trails.size():
+  var error: String = RINGS.validation_error(ring_trails[index])
+  if not error.is_empty():
+   errors.append("Ring trail %d: %s" % [index + 1, error])
+ return errors
+
 func fingerprint() -> String:
  # Arrays make field order explicit, independent of Dictionary insertion order.
  var ordered_placements: Array = []
@@ -225,8 +240,19 @@ func fingerprint() -> String:
  # Treat equivalent numeric cell sizes identically while preserving their value.
  var normalized_cell_size: Variant = float(cell_size) if typeof(cell_size) in [TYPE_INT, TYPE_FLOAT] else cell_size
  var normalized_activation: Variant = float(activation_y) if typeof(activation_y) in [TYPE_INT, TYPE_FLOAT] else activation_y
+ var ordered_trails: Array = []
+ if typeof(ring_trails) == TYPE_ARRAY:
+  for trail: Variant in ring_trails:
+   if trail is Dictionary:
+    var spacing: Variant = trail.get("spacing")
+    if typeof(spacing) in [TYPE_INT, TYPE_FLOAT]: spacing = float(spacing)
+    ordered_trails.append([trail.get("start"), trail.get("end"), spacing])
+   else:
+    ordered_trails.append(trail)
+ else:
+  ordered_trails.append(ring_trails)
  # Hash native scalar bits: decimal formatting can collapse adjacent float values.
- return var_to_bytes([format_version, library_version, title, grid_size, normalized_cell_size, ordered_placements, entry_start_x, entry_width, exit_start_x, exit_width, ordered_objects, normalized_activation, spawn_position]).hex_encode().sha256_text()
+ return var_to_bytes([format_version, library_version, title, grid_size, normalized_cell_size, ordered_placements, entry_start_x, entry_width, exit_start_x, exit_width, ordered_objects, normalized_activation, spawn_position, ordered_trails]).hex_encode().sha256_text()
 
 func copy_document() -> Resource:
  var result: Resource = get_script().new()
@@ -237,6 +263,7 @@ func copy_document() -> Resource:
  result.cell_size = cell_size
  result.placements = placements.duplicate(true) if typeof(placements) == TYPE_ARRAY else placements
  result.gameplay_objects = gameplay_objects.duplicate(true) if typeof(gameplay_objects) == TYPE_ARRAY else gameplay_objects
+ result.ring_trails = ring_trails.duplicate(true) if typeof(ring_trails) == TYPE_ARRAY else ring_trails
  result.entry_start_x = entry_start_x
  result.entry_width = entry_width
  result.exit_start_x = exit_start_x
@@ -256,12 +283,14 @@ static func load_document(path: String) -> Dictionary:
   return {"document": null, "error": "The selected file is not an Act Geometry resource."}
  if not loaded._format_version_was_set or not loaded._library_version_was_set:
   return {"document": null, "error": "This Act file is missing its required format or terrain library version."}
- if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
+ if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
   if loaded.format_version == 2 and (typeof(loaded.gameplay_objects) != TYPE_ARRAY or not loaded.gameplay_objects.is_empty()):
    return {"document": null, "error": "Terrain-and-connector format 2 cannot contain gameplay object data."}
-  if loaded.activation_y != null or loaded.spawn_position != null:
+  if loaded.format_version < 4 and (loaded.activation_y != null or loaded.spawn_position != null):
    return {"document": null, "error": "Previous Act formats cannot contain lifecycle marker data."}
-  # Previous Acts gain unset markers in memory. Only an explicit save writes v4.
+  if typeof(loaded.ring_trails) != TYPE_ARRAY or not loaded.ring_trails.is_empty():
+   return {"document": null, "error": "Previous Act formats cannot contain ring trails."}
+  # Previous Acts gain an empty ring collection; only explicit saving writes v5.
   loaded.format_version = FORMAT_VERSION
  var decode_error := _decode_stored_angles(loaded)
  if not decode_error.is_empty():
@@ -271,6 +300,13 @@ static func load_document(path: String) -> Dictionary:
   if decoded == null:
    return {"document": null, "error": "Activation trigger: invalid stored numeric Y coordinate."}
   loaded.activation_y = decoded
+ if typeof(loaded.ring_trails) == TYPE_ARRAY:
+  for trail: Variant in loaded.ring_trails:
+   if trail is Dictionary and typeof(trail.get("spacing")) == TYPE_PACKED_BYTE_ARRAY:
+    var decoded: Variant = _decode_numeric_payload(trail.spacing)
+    if decoded == null:
+     return {"document": null, "error": "Ring trail: invalid stored spacing."}
+    trail.spacing = decoded
  var errors: PackedStringArray = loaded.validation_errors()
  if not errors.is_empty():
   return {"document": null, "error": "\n".join(errors)}
@@ -309,6 +345,8 @@ func _storage_document() -> Resource:
  if stored.activation_y != null:
   # Use the same single-authority scalar representation as authored angles.
   stored.activation_y = var_to_bytes(stored.activation_y)
+ for trail: Dictionary in stored.ring_trails:
+  trail.spacing = var_to_bytes(trail.spacing)
  return stored
 
 func save_document(path: String) -> Error:

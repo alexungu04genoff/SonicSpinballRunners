@@ -11,6 +11,8 @@ signal gameplay_selection_changed(index: int)
 signal gameplay_move_requested(index: int, position: Vector2)
 signal marker_requested(kind: String, value: Variant)
 signal marker_selection_changed(kind: String)
+signal ring_requested(index: int, trail: Dictionary)
+signal ring_selection_changed(index: int)
 signal status_changed(message: String)
 
 const ActData = preload("res://scripts/act_editor/act_geometry.gd")
@@ -18,6 +20,7 @@ const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const ObjectPreview = preload("res://scripts/act_editor/gameplay_preview.gd")
 const PreviewDimensions = preload("res://scripts/act_editor/preview_dimensions.gd")
+const Rings = preload("res://scripts/act_editor/ring_trails.gd")
 const GRID_MARGIN := 48.0
 const MIN_CELL_PIXELS := 12.0
 const MAX_CELL_PIXELS := 240.0
@@ -38,6 +41,16 @@ var gameplay_brush: Dictionary = {}
 var selected_gameplay_index := -1
 var marker_tool := ""
 var selected_marker := ""
+var ring_tool := false
+var selected_ring_index := -1
+var ring_spacing_cells := Rings.DEFAULT_SPACING_CELLS
+var _ring_mode := ""
+var _ring_index := -1
+var _ring_original: Dictionary = {}
+var _ring_preview: Dictionary = {}
+var _ring_start_pointer := Vector2.ZERO
+var _ring_last_pointer := Vector2.ZERO
+var _ring_moved := false
 
 var _view_origin := Vector2.ZERO
 var _cell_pixels := 48.0
@@ -99,6 +112,8 @@ func _ready() -> void:
 
 
 func set_document(value: Resource, reset_view: bool = true) -> void:
+ ring_tool = false
+ selected_ring_index = -1
  document = value
  selected_index = -1
  brush = {}
@@ -116,6 +131,8 @@ func set_document(value: Resource, reset_view: bool = true) -> void:
 
 
 func set_brush(value: Dictionary) -> void:
+ ring_tool = false
+ selected_ring_index = -1
  cancel_gesture()
  brush = value.duplicate(true)
  selected_index = -1
@@ -129,6 +146,8 @@ func set_brush(value: Dictionary) -> void:
 
 
 func select_piece(index: int) -> void:
+ ring_tool = false
+ selected_ring_index = -1
  cancel_gesture()
  brush = {}
  selected_index = index if index >= 0 and index < _placements().size() else -1
@@ -142,6 +161,8 @@ func select_piece(index: int) -> void:
 
 
 func set_connector_tool(kind: String) -> void:
+ ring_tool = false
+ selected_ring_index = -1
  cancel_gesture()
  brush = {}
  selected_index = -1
@@ -155,6 +176,8 @@ func set_connector_tool(kind: String) -> void:
 
 
 func select_connector(kind: String) -> void:
+ ring_tool = false
+ selected_ring_index = -1
  cancel_gesture()
  brush = {}
  selected_index = -1
@@ -168,6 +191,8 @@ func select_connector(kind: String) -> void:
 
 
 func set_gameplay_brush(value: Dictionary) -> void:
+ ring_tool = false
+ selected_ring_index = -1
  cancel_gesture()
  brush = {}
  selected_index = -1
@@ -181,6 +206,8 @@ func set_gameplay_brush(value: Dictionary) -> void:
 
 
 func select_gameplay(index: int) -> void:
+ ring_tool = false
+ selected_ring_index = -1
  cancel_gesture()
  brush = {}
  selected_index = -1
@@ -205,6 +232,16 @@ func select_marker(kind: String) -> void:
  queue_redraw()
 
 
+func set_ring_tool() -> void:
+ select_piece(-1)
+ ring_tool = true
+ queue_redraw()
+
+func select_ring(index: int) -> void:
+ select_piece(-1)
+ selected_ring_index = index if index >= 0 and index < document.ring_trails.size() else -1
+ queue_redraw()
+
 func marker_value(kind: String) -> Variant:
  if document == null:
   return null
@@ -227,6 +264,11 @@ func fit_view() -> void:
 
 
 func cancel_gesture() -> void:
+ _ring_mode = ""
+ _ring_index = -1
+ _ring_preview = {}
+ _ring_original = {}
+ _ring_moved = false
  _drag_index = -1
  _drag_moved = false
  _panning = false
@@ -293,6 +335,19 @@ func mixed_hit_indices_at(local_position: Vector2) -> Array[Dictionary]:
  var hits: Array[Dictionary] = []
  for kind: String in marker_hits_at(local_position):
   hits.append({"kind": "marker", "marker": kind})
+ for index in range(document.ring_trails.size() - 1, -1, -1):
+  var trail: Dictionary = document.ring_trails[index]
+  var hit := false
+  var radius := maxf(5.0, PreviewDimensions.RING_RADIUS_CELLS * _cell_pixels + 2.0)
+  for point: Vector2 in Rings.positions(trail):
+   if local_position.distance_to(local_pixels_to_screen(point)) <= radius:
+    hit = true
+    break
+  if index == selected_ring_index:
+   var nearest := Geometry2D.get_closest_point_to_segment(local_position, local_pixels_to_screen(trail.start), local_pixels_to_screen(trail.end))
+   hit = hit or nearest.distance_to(local_position) <= 5.0
+  if hit:
+   hits.append({"kind": "ring", "index": index})
  for index: int in gameplay_hit_indices_at(local_position):
   hits.append({"kind": "gameplay", "index": index})
  for index: int in hit_indices_at(local_position):
@@ -428,9 +483,80 @@ func _draw() -> void:
   _draw_piece(ghost, false, true)
   _draw_footprint(ghost, Color(0.75, 0.91, 1.0, 0.5))
  _draw_gameplay_objects()
+ _draw_rings()
  _draw_markers()
  _draw_connectors()
 
+
+func _draw_rings() -> void:
+ for index in document.ring_trails.size():
+  var trail: Dictionary = _ring_preview if _ring_index == index and not _ring_mode.is_empty() else document.ring_trails[index]
+  _draw_ring_trail(trail, index == selected_ring_index, false)
+ if _ring_mode == "create":
+  _draw_ring_trail(_ring_preview, true, true)
+ elif ring_tool and _hovering and _inside_grid(_cursor_position):
+  var point := legal_gameplay_position(screen_to_local_pixels(_cursor_position), _alt_held)
+  _draw_ring_trail({"start": point, "end": point, "spacing": ring_spacing_cells * _local_cell_size()}, false, true)
+
+func _draw_ring_trail(trail: Dictionary, selected: bool, ghost: bool) -> void:
+ var color := Color("ffd95e")
+ if ghost: color.a = 0.6
+ for point: Vector2 in Rings.positions(trail):
+  draw_arc(local_pixels_to_screen(point), PreviewDimensions.RING_RADIUS_CELLS * _cell_pixels, 0, TAU, 24, color, 1.5, true)
+ if selected:
+  var start := local_pixels_to_screen(trail.start)
+  var end := local_pixels_to_screen(trail.end)
+  draw_line(start, end, Color(color, 0.3), 1.0, true)
+  var radius := clampf(PreviewDimensions.RING_HANDLE_RADIUS_CELLS * _cell_pixels, 2.0, 5.0)
+  for point: Vector2 in [start, end]:
+   draw_rect(Rect2(point - Vector2.ONE * radius, Vector2.ONE * radius * 2), Color("fff0b0"), false, 1.0)
+
+func _begin_ring_drag(index: int, pointer: Vector2, mode: String) -> void:
+ _ring_index = index
+ _ring_mode = mode
+ _ring_start_pointer = screen_to_local_pixels(pointer)
+ _ring_last_pointer = pointer
+ _ring_moved = false
+ if mode == "create":
+  var point := legal_gameplay_position(_ring_start_pointer, _alt_held)
+  _ring_original = {"start": point, "end": point, "spacing": ring_spacing_cells * _local_cell_size()}
+ else:
+  _ring_original = document.ring_trails[index].duplicate(true)
+ _ring_preview = _ring_original.duplicate(true)
+ queue_redraw()
+
+func _update_ring_drag(pointer: Vector2, free_move: bool, force: bool = false) -> void:
+ if not force and pointer.distance_squared_to(_ring_last_pointer) <= POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
+  return
+ _ring_last_pointer = pointer
+ var delta := screen_to_local_pixels(pointer) - _ring_start_pointer
+ if not _ring_moved and delta.length() * _cell_pixels / _local_cell_size() < 3.0:
+  return
+ _ring_moved = true
+ _pending_cycle_target = {}
+ _ring_preview = _ring_original.duplicate(true)
+ if _ring_mode == "move":
+  # Snap only the translated start; preserve the complete trail's relative shape.
+  var offset := legal_gameplay_position(_ring_original.start + delta, free_move) - Vector2(_ring_original.start)
+  _ring_preview.start += offset
+  _ring_preview.end += offset
+ elif _ring_mode == "create":
+  _ring_preview.end = legal_gameplay_position(screen_to_local_pixels(pointer), free_move)
+ else:
+  _ring_preview[_ring_mode] = legal_gameplay_position(_ring_original[_ring_mode] + delta, free_move)
+ _set_status("%d rings · Release for one edit · Alt frees endpoints · Esc cancels" % Rings.positions(_ring_preview).size())
+ queue_redraw()
+
+func _end_ring_drag() -> void:
+ var index := _ring_index
+ var trail := _ring_preview.duplicate(true)
+ var changed := _ring_mode == "create" or (_ring_moved and trail != _ring_original)
+ _ring_mode = ""
+ _ring_index = -1
+ if changed:
+  ring_requested.emit(index, trail)
+ _finish_cycle_click()
+ queue_redraw()
 
 func _draw_gutter() -> void:
  var local_bounds: Rect2 = document.red_gutter_bounds()
@@ -684,7 +810,9 @@ func _gui_input(event: InputEvent) -> void:
   return
  if event is InputEventKey and event.keycode == KEY_ALT:
   _alt_held = event.pressed
-  if not _marker_drag_kind.is_empty():
+  if not _ring_mode.is_empty():
+   if _alt_held and _ring_moved: _update_ring_drag(_cursor_position, true, true)
+  elif not _marker_drag_kind.is_empty():
    if _alt_held and _marker_drag_moved:
     _update_marker_drag(_cursor_position, true, true)
    else:
@@ -705,7 +833,15 @@ func _gui_input(event: InputEvent) -> void:
  elif event is InputEventKey and event.pressed and not event.ctrl_pressed and not event.meta_pressed and event.keycode in [KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN]:
   # Consume arrows before Control's built-in focus navigation. The owner still
   # applies the edit through the same move signal as pointer dragging.
-  if not event.echo and not selected_marker.is_empty():
+  if not event.echo and selected_ring_index >= 0:
+   cancel_gesture()
+   var direction: Vector2 = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP, KEY_DOWN: Vector2.DOWN}[event.keycode]
+   var offset := direction * (1.0 if event.alt_pressed else _local_cell_size())
+   var trail: Dictionary = document.ring_trails[selected_ring_index].duplicate(true)
+   trail.start += offset
+   trail.end += offset
+   ring_requested.emit(selected_ring_index, trail)
+  elif not event.echo and not selected_marker.is_empty():
    cancel_gesture()
    var direction: Vector2 = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP, KEY_DOWN: Vector2.DOWN}[event.keycode]
    var distance := 1.0 if event.alt_pressed else _local_cell_size()
@@ -753,7 +889,9 @@ func _gui_input(event: InputEvent) -> void:
     grab_focus()
     _begin_primary(event.position, event.alt_pressed)
    else:
-    if not _marker_drag_kind.is_empty():
+    if not _ring_mode.is_empty():
+     _update_ring_drag(event.position, event.alt_pressed)
+    elif not _marker_drag_kind.is_empty():
      if event.position.distance_squared_to(_marker_drag_last_pointer) > POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
       _update_marker_drag(event.position, event.alt_pressed)
     elif _gameplay_drag_index >= 0:
@@ -772,6 +910,8 @@ func _gui_input(event: InputEvent) -> void:
   if _panning:
    _view_origin += event.relative
    _view_adjusted = true
+  elif not _ring_mode.is_empty():
+   _update_ring_drag(event.position, event.alt_pressed)
   elif not _marker_drag_kind.is_empty():
    _update_marker_drag(event.position, event.alt_pressed)
   elif _gameplay_drag_index >= 0:
@@ -798,6 +938,9 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _begin_primary(pointer: Vector2, cycle_overlaps: bool) -> void:
+ if ring_tool:
+  if _inside_grid(pointer): _begin_ring_drag(-1, pointer, "create")
+  return
  if not marker_tool.is_empty():
   var value: Variant = _marker_position_value(marker_tool, screen_to_local_pixels(pointer), cycle_overlaps)
   if _inside_grid(pointer):
@@ -838,7 +981,7 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool) -> void:
  var current_slot := -1
  for slot in hits.size():
   var hit: Dictionary = hits[slot]
-  if (hit.kind == "marker" and hit.marker == selected_marker) or (hit.kind == "gameplay" and hit.index == selected_gameplay_index) or (hit.kind == "terrain" and hit.index == selected_index):
+  if (hit.kind == "ring" and hit.index == selected_ring_index) or (hit.kind == "marker" and hit.marker == selected_marker) or (hit.kind == "gameplay" and hit.index == selected_gameplay_index) or (hit.kind == "terrain" and hit.index == selected_index):
    current_slot = slot
    break
  var target: Dictionary = {}
@@ -853,10 +996,18 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool) -> void:
     click_target = hits[(current_slot + 1) % hits.size()]
    else:
     click_target = hits[0]
+ var ring_mode := "move"
+ if target.get("kind") == "ring" and target.index == selected_ring_index:
+  var trail: Dictionary = document.ring_trails[target.index]
+  if trail.start != trail.end:
+   if pointer.distance_to(local_pixels_to_screen(trail.start)) <= 6: ring_mode = "start"
+   elif pointer.distance_to(local_pixels_to_screen(trail.end)) <= 6: ring_mode = "end"
  _select_hit_target(target)
  _pending_cycle_target = click_target
  if not target.is_empty():
-  if target.kind == "marker":
+  if target.kind == "ring":
+   _begin_ring_drag(target.index, pointer, ring_mode)
+  elif target.kind == "marker":
    _begin_marker_drag(target.marker, pointer)
   elif target.kind == "gameplay":
    var placement: Dictionary = _gameplay_objects()[target.index]
@@ -881,6 +1032,8 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool) -> void:
 func _select_hit_target(target: Dictionary) -> void:
  if target.is_empty():
   select_piece(-1)
+ elif target.kind == "ring":
+  select_ring(target.index)
  elif target.kind == "marker":
   select_marker(target.marker)
  elif target.kind == "gameplay":
@@ -891,6 +1044,7 @@ func _select_hit_target(target: Dictionary) -> void:
  gameplay_selection_changed.emit(selected_gameplay_index)
  connector_selection_changed.emit(selected_connector)
  marker_selection_changed.emit(selected_marker)
+ ring_selection_changed.emit(selected_ring_index)
 
 
 func _finish_cycle_click() -> void:
@@ -1077,6 +1231,9 @@ func _end_connector_drag() -> void:
 
 
 func _end_primary() -> void:
+ if not _ring_mode.is_empty():
+  _end_ring_drag()
+  return
  if not _marker_drag_kind.is_empty():
   _end_marker_drag()
   return
@@ -1098,6 +1255,8 @@ func _end_primary() -> void:
 
 
 func _leave_tool() -> void:
+ ring_tool = false
+ selected_ring_index = -1
  cancel_gesture()
  brush = {}
  selected_index = -1
@@ -1111,6 +1270,7 @@ func _leave_tool() -> void:
  connector_selection_changed.emit("")
  gameplay_selection_changed.emit(-1)
  marker_selection_changed.emit("")
+ ring_selection_changed.emit(-1)
  _set_status("Selection mode. Click terrain, gameplay objects or Act markers. Alt-click cycles overlaps.")
  queue_redraw()
 

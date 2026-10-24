@@ -6,6 +6,7 @@ const Canvas = preload("res://scripts/act_editor/geometry_canvas.gd")
 const PaletteItem = preload("res://scripts/act_editor/terrain_palette_item.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const GameplayPaletteItem = preload("res://scripts/act_editor/gameplay_palette_item.gd")
+const Rings = preload("res://scripts/act_editor/ring_trails.gd")
 const EXAMPLE_PATH := "res://data/acts/curve_garden.tres"
 const HISTORY_LIMIT := 100
 
@@ -47,6 +48,7 @@ var _angle_display_text := ""
 var marker_buttons: Dictionary = {}
 var marker_list: VBoxContainer
 var marker_summary: Label
+var ring_spacing_field: SpinBox
 
 func _ready() -> void:
 	_previous_auto_quit = get_tree().auto_accept_quit
@@ -181,8 +183,26 @@ func _build_ui() -> void:
 		item.pressed.connect(choose_gameplay.bind(definition.id))
 		gameplay_list.add_child(item)
 		gameplay_buttons[definition.id] = item
+	_button(gameplay_list, "rings", "◎  Rings — click / drag", choose_rings, "Click for one ring; drag in any direction for a trail. Alt frees endpoints.")
+	var ring_settings := HBoxContainer.new()
+	gameplay_list.add_child(ring_settings)
+	var ring_label := Label.new()
+	ring_label.text = "Spacing"
+	ring_settings.add_child(ring_label)
+	ring_spacing_field = SpinBox.new()
+	ring_spacing_field.min_value = 0.1
+	ring_spacing_field.max_value = 4.0
+	ring_spacing_field.allow_greater = true
+	ring_spacing_field.allow_lesser = true
+	ring_spacing_field.step = 0.05
+	ring_spacing_field.value = Rings.DEFAULT_SPACING_CELLS
+	ring_spacing_field.suffix = "cells"
+	ring_spacing_field.tooltip_text = "Maximum center spacing. Equal intervals fit both endpoints. Changes the selected trail, or the next trail."
+	ring_spacing_field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ring_spacing_field.value_changed.connect(_change_ring_spacing)
+	ring_settings.add_child(ring_spacing_field)
 	var object_hint := Label.new()
-	object_hint.text = "Snap to grid intersections.\nHold Alt for exact placement.\n\nCyan: bumpers / sling\nYellow: flippers\nCrosshair: anchor / pivot"
+	object_hint.text = "Snap to grid intersections.\nHold Alt for exact placement.\n\nCyan: bumpers / sling\nYellow: flippers / ring trails\nCrosshair: anchor / pivot"
 	object_hint.add_theme_color_override("font_color", Color("9cb3c6"))
 	object_hint.add_theme_font_size_override("font_size", 13)
 	gameplay_list.add_child(object_hint)
@@ -258,6 +278,8 @@ func _build_ui() -> void:
 	canvas.gameplay_selection_changed.connect(func(_index): _refresh())
 	canvas.marker_requested.connect(set_lifecycle_marker)
 	canvas.marker_selection_changed.connect(func(_kind): _refresh())
+	canvas.ring_requested.connect(set_ring_trail)
+	canvas.ring_selection_changed.connect(func(_index): _refresh())
 	canvas.status_changed.connect(_set_status)
 	var object_properties := HBoxContainer.new()
 	object_properties.add_theme_constant_override("separation", 8)
@@ -305,6 +327,7 @@ func _button(parent: Node, id: String, label: String, action: Callable, hint: St
 		# Toolbar buttons do not take keyboard focus. Commit numeric drafts before
 		# an edit refreshes the fields, then give editing shortcuts to the canvas.
 		cell_size_field.apply()
+		ring_spacing_field.apply()
 		_commit_gameplay_angle()
 		_commit_title()
 		if id in ["select", "rotate", "flip_h", "flip_v", "delete", "duplicate", "undo", "redo", "fit"]:
@@ -371,8 +394,45 @@ func _change_palette_tab(index: int) -> void:
 	terrain_scroll.visible = terrain
 	gameplay_list.visible = index == 1
 	marker_list.visible = index == 2
-	palette_heading.text = ["TERRAIN LIBRARY  /  %d stamps" % Shapes.definitions().size(), "GAMEPLAY  /  4 objects", "ACT MARKERS  /  4 tools"][index]
+	palette_heading.text = ["TERRAIN LIBRARY  /  %d stamps" % Shapes.definitions().size(), "GAMEPLAY  /  4 objects + Rings", "ACT MARKERS  /  4 tools"][index]
 	_select_mode()
+
+func choose_rings() -> void:
+	canvas.grab_focus()
+	canvas.set_ring_tool()
+	_set_status("Rings: click for one; drag in any direction for a trail. Alt frees endpoints. One drag = one undo.")
+	_refresh()
+
+func set_ring_trail(index: int, trail: Dictionary) -> void:
+	if index < -1 or index >= document.ring_trails.size():
+		return
+	var error: String = Rings.validation_error(trail)
+	if not error.is_empty():
+		_set_status(error)
+		return
+	if index >= 0 and document.ring_trails[index] == trail:
+		return
+	_record_edit()
+	if index < 0:
+		document.ring_trails.append(trail.duplicate(true))
+	else:
+		document.ring_trails[index] = trail.duplicate(true)
+	_set_status("%d rings in one trail. Select / Move to drag the group or its small endpoint handles." % Rings.positions(trail).size())
+	_refresh()
+
+func _change_ring_spacing(value: float) -> void:
+	if _refreshing or canvas == null:
+		return
+	if not is_finite(value) or value <= 0:
+		_set_status("Ring spacing must be finite and greater than zero.")
+		_refresh()
+		return
+	if canvas.selected_ring_index >= 0:
+		var trail: Dictionary = document.ring_trails[canvas.selected_ring_index].duplicate(true)
+		trail.spacing = value * document.cell_size
+		set_ring_trail(canvas.selected_ring_index, trail)
+	canvas.ring_spacing_cells = value
+	canvas.queue_redraw()
 
 func choose_gameplay(id: String) -> void:
 	var placement: Dictionary = Objects.make_placement(id)
@@ -546,6 +606,14 @@ func _change_handedness(index: int) -> void:
 	_refresh()
 
 func duplicate_selected() -> void:
+	if canvas.selected_ring_index >= 0:
+		var trail: Dictionary = document.ring_trails[canvas.selected_ring_index].duplicate(true)
+		trail.start += Vector2.ONE * document.cell_size
+		trail.end += Vector2.ONE * document.cell_size
+		set_ring_trail(-1, trail)
+		canvas.select_ring(document.ring_trails.size() - 1)
+		_refresh()
+		return
 	var index: int = canvas.selected_gameplay_index
 	if index < 0 or index >= document.gameplay_objects.size():
 		return
@@ -601,6 +669,13 @@ func _transform_active(operation: String) -> void:
 	_refresh()
 
 func delete_selected() -> void:
+	if canvas.selected_ring_index >= 0:
+		canvas.cancel_gesture()
+		_record_edit()
+		document.ring_trails.remove_at(canvas.selected_ring_index)
+		canvas.select_ring(-1)
+		_refresh()
+		return
 	if not canvas.selected_marker.is_empty():
 		set_lifecycle_marker(canvas.selected_marker, null)
 		return
@@ -625,7 +700,7 @@ func delete_selected() -> void:
 func _snapshot() -> Dictionary:
 	return {"document": document.copy_document(), "selected": canvas.selected_index,
 		"connector": canvas.selected_connector, "gameplay": canvas.selected_gameplay_index,
-		"marker": canvas.selected_marker}
+		"marker": canvas.selected_marker, "ring": canvas.selected_ring_index}
 
 func _record_edit() -> void:
 	undo_stack.append(_snapshot())
@@ -652,10 +727,13 @@ func redo() -> void:
 func _restore_snapshot(snapshot: Dictionary) -> void:
 	var active_brush: Dictionary = canvas.brush.duplicate(true)
 	var active_gameplay_brush: Dictionary = canvas.gameplay_brush.duplicate(true)
+	var active_ring_tool: bool = canvas.ring_tool
 	document = snapshot.document
 	_title_edit_recorded = false
 	canvas.set_document(document, false)
-	if not active_brush.is_empty():
+	if active_ring_tool:
+		canvas.set_ring_tool()
+	elif not active_brush.is_empty():
 		canvas.set_brush(active_brush)
 	elif not active_gameplay_brush.is_empty():
 		canvas.set_gameplay_brush(active_gameplay_brush)
@@ -665,6 +743,8 @@ func _restore_snapshot(snapshot: Dictionary) -> void:
 		canvas.select_marker(snapshot.marker)
 	elif snapshot.get("gameplay", -1) >= 0:
 		canvas.select_gameplay(snapshot.gameplay)
+	elif snapshot.get("ring", -1) >= 0:
+		canvas.select_ring(snapshot.ring)
 	else:
 		canvas.select_piece(snapshot.selected if snapshot.selected < document.placements.size() else -1)
 	_refresh()
@@ -685,6 +765,7 @@ func new_document() -> void:
 	_set_status("New Act: 12 columns × 12 rows. Choose a terrain stamp to begin.")
 
 func save_to(path: String) -> bool:
+	ring_spacing_field.apply()
 	_commit_gameplay_angle()
 	cell_size_field.apply()
 	_commit_title()
@@ -696,7 +777,7 @@ func save_to(path: String) -> bool:
 		return false
 	current_path = path
 	saved_fingerprint = document.fingerprint()
-	_set_status("Saved %d terrain pieces and %d gameplay objects to %s" % [document.placements.size(), document.gameplay_objects.size(), path])
+	_set_status("Saved %d terrain pieces, %d gameplay objects and %d ring trails to %s" % [document.placements.size(), document.gameplay_objects.size(), document.ring_trails.size(), path])
 	_refresh()
 	return true
 
@@ -714,12 +795,13 @@ func load_from(path: String) -> bool:
 	canvas.set_document(document)
 	_refresh()
 	canvas.call_deferred("fit_view")
-	_set_status("Loaded %d terrain pieces and %d gameplay objects. Continue editing or choose a palette item." % [document.placements.size(), document.gameplay_objects.size()])
+	_set_status("Loaded %d terrain pieces, %d gameplay objects and %d ring trails. Continue editing or choose a palette item." % [document.placements.size(), document.gameplay_objects.size(), document.ring_trails.size()])
 	return true
 
 func request_action(action: String) -> void:
 	if _modal_open():
 		return
+	ring_spacing_field.apply()
 	_commit_gameplay_angle()
 	cell_size_field.apply()
 	_commit_title()
@@ -753,6 +835,7 @@ func _save_current() -> void:
 		pending_action = ""
 
 func _open_save_dialog() -> void:
+	ring_spacing_field.apply()
 	_commit_gameplay_angle()
 	cell_size_field.apply()
 	_commit_title()
@@ -825,8 +908,10 @@ func _refresh() -> void:
 	_refresh_file_state()
 	buttons.undo.disabled = undo_stack.is_empty()
 	buttons.redo.disabled = redo_stack.is_empty()
-	buttons.delete.disabled = canvas.selected_index < 0 and canvas.selected_gameplay_index < 0 and canvas.selected_connector.is_empty() and canvas.selected_marker.is_empty()
-	buttons.duplicate.disabled = canvas.selected_gameplay_index < 0
+	buttons.delete.disabled = canvas.selected_index < 0 and canvas.selected_gameplay_index < 0 and canvas.selected_ring_index < 0 and canvas.selected_connector.is_empty() and canvas.selected_marker.is_empty()
+	buttons.duplicate.disabled = canvas.selected_gameplay_index < 0 and canvas.selected_ring_index < 0
+	var ring_spacing: float = document.ring_trails[canvas.selected_ring_index].spacing / float(document.cell_size) if canvas.selected_ring_index >= 0 else canvas.ring_spacing_cells
+	ring_spacing_field.set_value_no_signal(ring_spacing)
 	connector_summary.text = _connector_description("entry") + "   |   " + _connector_description("exit")
 	connector_summary.tooltip_text = connector_summary.text + "\nCompatibility compares width only; horizontal positions may differ."
 	marker_summary.text = "Activation: " + ("unset" if document.activation_y == null else "Y %s px" % var_to_str(document.activation_y))
@@ -843,7 +928,10 @@ func _refresh() -> void:
 	angle_field.placeholder_text = "Gameplay only"
 	handedness_field.disabled = gameplay.is_empty() or gameplay.type not in ["left_flipper", "right_flipper"]
 	handedness_field.select(1 if not gameplay.is_empty() and gameplay.type == "right_flipper" else 0)
-	if not canvas.marker_tool.is_empty():
+	if canvas.ring_tool or canvas.selected_ring_index >= 0:
+		mode_label.text = "DRAW RINGS" if canvas.ring_tool else "SELECTED  ·  Ring trail"
+		detail_label.text = "Click / drag · Alt frees endpoints · Generated rings never snap · Select trail to move or resize · Delete removes trail"
+	elif not canvas.marker_tool.is_empty():
 		mode_label.text = "PLACE  ·  " + ("Activation Trigger" if canvas.marker_tool == "activation" else "Spawn Point")
 		detail_label.text = "Inside terrain bounds only · grid snap / Alt free position · red gutter is system-owned"
 	elif not canvas.selected_marker.is_empty():
@@ -863,7 +951,7 @@ func _refresh() -> void:
 		detail_label.text = "%s %s px · %s° · Alt: free position · Arrows: 1 cell / Alt: 1 px" % [anchor_label, gameplay.position, var_to_str(gameplay.rotation_degrees)]
 	elif active.is_empty():
 		mode_label.text = "SELECT / MOVE"
-		detail_label.text = "%d terrain pieces · %d gameplay objects · Click to select; Alt-click cycles overlaps." % [document.placements.size(), document.gameplay_objects.size()]
+		detail_label.text = "%d terrain pieces · %d gameplay objects · %d ring trails · Alt-click cycles overlaps." % [document.placements.size(), document.gameplay_objects.size(), document.ring_trails.size()]
 	else:
 		var definition: Dictionary = Shapes.get_definition(active.shape_id)
 		var frame: Vector2i = Shapes.transformed_size(active)

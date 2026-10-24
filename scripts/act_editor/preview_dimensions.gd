@@ -4,6 +4,8 @@ const ROUND_RADIUS_CELLS := 0.25
 const SLING_HEIGHT_CELLS := 0.60
 const FLIPPER_LENGTH_CELLS := 0.65 # Pivot-to-tip centerline; caps give 0.75 overall.
 const FLIPPER_RADIUS_CELLS := 0.05
+const RING_RADIUS_CELLS := 0.09 # 0.18-cell collectible diameter.
+const RING_HANDLE_RADIUS_CELLS := 0.06
 
 const SPAWN_RADIUS_CELLS := 0.12
 const PIVOT_RADIUS_CELLS := 0.045

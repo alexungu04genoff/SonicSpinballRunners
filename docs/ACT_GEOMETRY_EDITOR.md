@@ -14,7 +14,7 @@ The Windows launcher uses the project's working ANGLE backend. For another Godot
 
 ## Build an Act
 
-1. Choose **Terrain**, **Gameplay** or **Act Markers**. Click a tool; terrain and gameplay palette items can also be dragged onto the canvas. Terrain supports search by name/size and family filtering.
+1. Choose **Terrain**, **Gameplay** or **Act Markers**. Click a tool; terrain and the four gameplay-object palette items can also be dragged onto the canvas. **Gameplay → Rings** draws trails directly on the canvas. Terrain supports search by name/size and family filtering.
 2. Terrain and gameplay stamps show a cursor preview; click to place and keep clicking to repeat. Act markers select themselves after placement; choose the tool again to replace a marker.
 3. Press **Esc**, right-click, or choose **Select / Move**. Click terrain, gameplay or a marker, then drag to move it. Hold **Alt** for free gameplay-object or lifecycle-marker movement.
 4. Rotate terrain/gameplay, flip terrain, or delete any selection. With a terrain/gameplay stamp active, transforms change the next stamp instead. Markers have no rotation or flip controls.
@@ -37,7 +37,7 @@ The Windows launcher uses the project's working ANGLE backend. For another Godot
 | Zoom / pan / restore overview | Mouse wheel / middle-drag / Fit Grid |
 | New / Load / Save / Save As | Ctrl+N / Ctrl+O / Ctrl+S / Ctrl+Shift+S |
 
-Text fields retain normal text-editing shortcuts. Undo/redo covers terrain, connectors, lifecycle markers, gameplay objects, names and cell size, retaining up to 100 edits per session. Each completed pointer drag adds at most one edit. Activation moves vertically only; Entry/Exit move horizontally only.
+Text fields retain normal text-editing shortcuts. Undo/redo covers terrain, connectors, lifecycle markers, gameplay objects, ring trails, names and cell size, retaining up to 100 edits per session. Each completed pointer drag adds at most one edit. Activation moves vertically only; Entry/Exit move horizontally only.
 
 The default grid has 144 **cells**, with 13 boundary intersections along each axis. A 1×3 stamp becomes 3×1 after one quarter-turn. The integer anchor is the transformed frame's top-left corner. Movement rounds to the nearest anchor and clamps the entire frame inside the Act. Rotation near a border may move the anchor inward to keep the frame inside.
 
@@ -47,7 +47,7 @@ Cell size specifies saved local authoring pixels per cell. It does not change te
 
 ## Gameplay objects
 
-The **Gameplay** tab contains only **Round Bumper**, **Triangle Bumper / Sling**, **Left Flipper** and **Right Flipper**. Cyan bumpers and yellow flippers are distinct from terrain geometry. These are collisionless authoring previews: they do not fire, swing, collide or create physics bodies.
+The **Gameplay** tab contains **Round Bumper**, **Triangle Bumper / Sling**, **Left Flipper**, **Right Flipper** and the **Rings** drawing tool. Cyan bumpers, yellow flippers and tiny gold rings are distinct from terrain geometry. These are collisionless authoring previews: they do not fire, swing, collect, collide or create physics bodies.
 
 - **Anchors:** a round bumper uses its center; a flipper uses its pivot. A triangle bumper retains the same origin relative to its uniformly scaled silhouette. The small crosshair marks this point. Preview sizing never shifts the authored position.
 - **Position:** normal placement and dragging snap the anchor to the nearest grid intersection. Hold **Alt** to use continuous local-pixel coordinates, including while a drag is already in progress. The canvas reports **SNAP ON** or **FREE MOVE**. Releasing Alt without moving the pointer does not round a freely placed position; later pointer movement resumes snapping. Arrow nudges preserve the existing fractional offset.
@@ -64,6 +64,20 @@ Tune these editor dimensions in `scripts/act_editor/preview_dimensions.gd`. It a
 Saved object records still contain only type, exact local position and angle. Preview size is derived separately and is never baked into position, stored as a new transform or used to rescale saved coordinates. Spawn position is likewise independent of its indicator size. Terrain definitions keep their exact cell footprints.
 
 The Act's top-left is local `(0, 0)`, with X right and Y down. Gameplay placements store exact `Vector2` local pixels independently of cells. Existing objects can move beyond the grid boundary; their values are preserved, with no collision, occupancy or reachability restriction. Palette placement starts inside the visible Act. For example, `(438.5, 271.25)` remains fractional after save/restart/load.
+
+## Ring trails
+
+Choose **Gameplay → Rings**, then click once for one ring, or drag in any direction for an evenly spaced trail. Release to commit the whole trail as **one undo step**. The tool stays active for repeated trails. Esc or right-click cancels an unfinished gesture and returns to selection mode.
+
+Endpoints snap to grid intersections normally; hold **Alt** for exact local-pixel endpoints. Intermediate rings are linearly interpolated and never individually grid-snapped, so diagonal trails stay smooth. Releasing Alt without moving does not re-snap the current preview. Ring placement can overlap filled terrain and other objects; no occupancy, collision or reachability correction occurs.
+
+The compact **Spacing** field defaults to **0.4 cells between centers**. Both endpoints are included: the tool fits equal intervals no wider than the chosen spacing, so actual spacing may be slightly smaller. Coincident endpoints produce one ring. Spacing edits affect the selected trail or the next trail when none is selected. Each record stores its endpoints and spacing in local pixels, so later cell-size or preview changes do not reposition existing rings.
+
+In **Select / Move**, click any ring to select the whole trail. Drag its body to move both endpoints together; once selected, drag either small endpoint handle to reshape the trail. A single ring moves as one point. Normal group movement snaps the start while preserving the trail's relative shape. Alt enables free movement; arrows move one cell and Alt+arrows move one pixel. Delete removes the whole trail, and Ctrl+D duplicates it one cell diagonally. Creation, movement, endpoint edits, spacing changes, duplication and deletion use the shared undo/redo history. Alt-click includes ring trails when cycling overlapping items.
+
+Rings have a **0.18-cell diameter**, centralized as `RING_RADIUS_CELLS` in `preview_dimensions.gd`. Selection adds only a faint endpoint line and small handles. `ring_trails.gd` owns deterministic generation and default spacing; it has no runtime dependencies. A trail is limited to 4,096 rings to reject unbounded resource input without freezing the editor.
+
+This feature is **authoring and persistence only**. The existing authored-Act playtest does not instantiate these trails yet; no ring collection, scoring, magnetism, collision, character interaction or procedural ring routes are added.
 
 ## Entry and Exit
 
@@ -138,10 +152,11 @@ Filled U uses the exact half-ellipse wall as its upper surface and closes throug
 - `entry_start_x`, `entry_width`, `exit_start_x` and `exit_width`. Width 0 with start 0 means unset; otherwise the integer span must fit the Act's boundary.
 - A separate ordered `gameplay_objects` array. Each dictionary contains `type`, `position: Vector2` in local pixels and `rotation_degrees`. The four type IDs are `round_bumper`, `triangle_bumper`, `left_flipper` and `right_flipper`; the two flipper IDs encode handedness.
 - Separate lifecycle fields: `activation_y` (a local-pixel number or `null`) and `spawn_position` (a local-pixel `Vector2` or `null`). `null` means unset. Neither field changes terrain grid dimensions or connector metadata.
+- A separate ordered `ring_trails` array. Each dictionary contains `start: Vector2`, `end: Vector2` and `spacing` in local pixels. Individual centers are reproduced deterministically from this record without snapping.
 
-The current schema uses **format version 4 / terrain library version 2**. Existing **format-2 terrain/connector Acts** and **format-3 gameplay-object Acts** retain their authored data and load with lifecycle markers unset. Version-2 files also gain an empty gameplay-object array. Loading does not rewrite the source file; the next explicit save writes version 4. The earlier fresh-start terrain library still has no legacy shape aliases or version-1 migration path.
+The current schema uses **format version 5 / terrain library version 2**. Existing format-2/3/4 Acts retain their authored data and load with an empty ring-trail collection. Format-2/3 Acts also gain unset lifecycle markers; format-2 files gain an empty gameplay-object array. Loading does not rewrite the source file; the next explicit save writes version 5. The earlier fresh-start terrain library still has no legacy shape aliases or version-1 migration path.
 
-Use `ActGeometry.load_document()` and `save_document()` for persistence. In memory, `rotation_degrees` and a set `activation_y` are numbers. In the saved `.tres`, each uses one native `PackedByteArray` numeric payload, decoded on load. Godot 4.7.2's decimal text parser can change some float64 numbers by one binary unit; this narrow encoding preserves every bit without a second competing value. Local object and Spawn positions remain native `Vector2` values. Plain numeric scalar fields are also accepted on input. No transform is rounded or snapped while saving or loading.
+Use `ActGeometry.load_document()` and `save_document()` for persistence. In memory, `rotation_degrees`, a set `activation_y` and ring `spacing` are numbers. In the saved `.tres`, each uses one native `PackedByteArray` numeric payload, decoded on load. Godot 4.7.2's decimal text parser can change some float64 numbers by one binary unit; this narrow encoding preserves every bit without a second competing value. Local object/Spawn positions and ring endpoints remain native `Vector2` values. Plain numeric scalar fields are also accepted on input. No transform is rounded or snapped while saving or loading.
 
 Transforms apply clockwise quarter-turns, then mirrors along the final screen axes. Rotate composes another clockwise turn with existing mirrors. Saves reference shape IDs instead of duplicating points. Normal field/shape validation and the existing unsaved-change workflow remain in place.
 
@@ -157,6 +172,8 @@ Use the existing isolated import helper to prevent editor indentation conversion
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script res://tests/act_connector_regression.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script res://tests/act_gameplay_regression.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script res://tests/act_lifecycle_regression.gd
+& 'C:\Program Files\Godot\Godot.exe' --headless --path . --script res://tests/act_ring_regression.gd
+& 'C:\Program Files\Godot\Godot.exe' --headless --path . --script res://tests/act_ring_editor_smoke.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script res://tests/act_editor_smoke.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script res://tests/act_gameplay_editor_smoke.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script res://tests/act_lifecycle_editor_smoke.gd

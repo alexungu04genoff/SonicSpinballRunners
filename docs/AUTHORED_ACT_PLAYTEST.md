@@ -95,4 +95,4 @@ Focused runtime and real-physics regression entry points:
 
 The sample is authored and saved through `ActGeometry.save_document()`, including its exact numeric persistence checks. Runtime verification covers collision topology, transform mapping, actual shared ball/object interactions, lifecycle crossings, drain recovery and source immutability. The graphical scene smoke exercises file selection, toolbar/keyboard controls, a physical flipper launch through Activation and rendered captures. Human playtesting still judges flipper timing, rebound feel and layout quality. See [verification results](VERIFICATION.md) for measured timings and executed checks.
 
-Multiple Acts, horizontal alignment, compatibility selection, Zone assembly, score gates, rewards and production presentation remain outside this scene.
+Format-5 ring trails are preserved as authoring data but are not instantiated by this scene yet. Their collection, scoring and runtime presentation remain outside the ring-authoring milestone. Multiple Acts, horizontal alignment, compatibility selection, Zone assembly, score gates, rewards and production presentation also remain outside this scene.

@@ -2,6 +2,16 @@
 
 Latest checks: 2026-10-25. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
+## Lightweight ring-trail authoring — 2026-10-25
+
+The Gameplay Rings tool creates one-point or straight interpolated trails. Each trail stores exact endpoints and local-pixel spacing in format 5. Drawing, movement, endpoint edits and deletion use one history entry per gesture; preview size is centralized at a 0.18-cell diameter. Spacing defaults to 0.4 cells and equal intervals fit both endpoints. This change adds authoring/persistence only; terrain and gameplay physics remain unchanged.
+
+- `act_ring_regression.gd`: **46 checks + 18 fresh-process checks passed**. Covers single, horizontal, vertical and free diagonal trails; equal/collinear internal spacing; fractional coordinates; cell-size independence; independent snapshots; malformed inputs; previous format-2/3/4 loading without source writes; exact endpoint/spacing bits and byte-identical generated positions after restart.
+- `act_ring_editor_smoke.gd`: **30 ANGLE graphical checks + 3 fresh-editor checks passed**. Actual pointer/keyboard gestures cover click/drag, Alt placement and release before mouse-up, one-step undo/redo, whole-trail movement, both endpoint handles, duplication, deletion, spacing UI, terrain overlap/cycling, gesture cancellation and save/restart/load/edit. The rendered `test-results/act-ring-editor.png` was inspected: tiny gold rings, unobtrusive selection line/handles and compact spacing control fit the existing layout.
+- Existing regressions passed: geometry **3,461 + 6**, connectors **108 + 5**, gameplay objects **493 + 76**, lifecycle **170 + 8**, and authored runtime **135**. Existing headless editor checks passed: terrain **92**, gameplay **67 + 5 fresh-editor**, lifecycle **49 + 5 fresh-editor**. Final error logs are empty. Isolated Godot import passed and generated the new script UIDs.
+
+Two initial test-harness issues were corrected: dictionary serialization order is now excluded from bit-exact field comparisons, and the fresh-editor nudge probe selects through a real click to establish keyboard focus. No production assertion was weakened. Human review still owns preferred visual spacing and handle comfort. Ring collection and runtime integration remain deferred; the user's pre-existing `project.godot` edits are preserved.
+
 ## One authored file to one playable Act — 2026-10-25
 
 The dedicated `authored_act_playtest.tscn` loads saved editor Resources into an isolated 2D world. Terrain uses the canonical editor points, with solid polygons for filled stamps and consecutive segments for open paths. The existing ball and flippers, shared bumper factory and physics profile drive gameplay. Exact authored transforms and source data remain unchanged. Runtime uses existing physical dimensions independently of compact editor previews. Entry, upward Activation, Spawn, the gutter-bottom drain and upward Exit remain separate concepts.
