@@ -92,7 +92,7 @@ Activation Y must be finite and satisfy `0 <= Y < Act height`. Spawn coordinates
 
 The translucent **red gutter** begins at the true bottom terrain boundary and spans one cell-height below it, using shared `ActGeometry.RED_GUTTER_CELLS`. It has no grid lines, terrain row index, editable marker or placement tool. Terrain clicks and palette drops cannot place anything there. Its height is derived from cell size and is not copied into each Act file; `terrain_bounds()` and `red_gutter_bounds()` expose the two distinct local rectangles.
 
-The four concepts remain separate: Entry is the physical connection, Activation is the future upward checkpoint crossing, the red gutter is the future drain threshold below the active Act, and Spawn is its restart location. This preserves a recovery area between entry and activation and a small space below entry before a future drain. **No activation, death, respawn, transitions or gameplay physics run in this editor.**
+The concepts remain separate: Entry is the physical connection, Activation is the upward checkpoint crossing, the red gutter provides recovery space below the active Act, and Spawn is its restart location. **No gameplay physics run in this editor.** The separate [Authored Act Playtest](AUTHORED_ACT_PLAYTEST.md) now detects upward Activation/Exit crossings and drains at the gutter's bottom, resetting to Spawn. Checkpoint transfers between multiple Acts remain future work.
 
 ## File workflow
 
@@ -129,7 +129,7 @@ The palette contains **77 stamps**. Useful solid/wall pairs appear together, wit
 
 `scripts/act_editor/terrain_shapes.gd` defines deterministic sampled curves with exact endpoints/extents. Open walls never close implicitly. A straight wall has zero geometric width but a one-cell logical frame. Redundant square ovals/capsules are absent; circles cover those cases. Filled U/S stamps fill all space beneath their matching open curve down to the canonical frame's bottom edge. Rotation and mirroring transform this entire solid.
 
-Filled U uses the exact half-ellipse wall as its upper surface and closes through both bottom corners. Its two solid sides meet where the curve touches the frame bottom; the bowl above stays empty. The S wall runs from `(0,0)` to `(width,height)` using `x = width*(3t²−2t³), y = height*t`, with vertical endpoint tangents and one inflection. Filled S closes from its bottom-right endpoint through the bottom-left corner, leaving only the area above the curve empty. The existing `u_band_*` and `s_band_*` placement IDs now resolve to these corrected filled shapes; no file conversion is needed. These are authoring silhouettes, not runtime collision rules.
+Filled U uses the exact half-ellipse wall as its upper surface and closes through both bottom corners. Its two solid sides meet where the curve touches the frame bottom; the bowl above stays empty. The S wall runs from `(0,0)` to `(width,height)` using `x = width*(3t²−2t³), y = height*t`, with vertical endpoint tangents and one inflection. Filled S closes from its bottom-right endpoint through the bottom-left corner, leaving only the area above the curve empty. The existing `u_band_*` and `s_band_*` placement IDs now resolve to these corrected filled shapes; no file conversion is needed. The standalone runtime compiler consumes these same authoritative silhouettes.
 
 `scripts/act_editor/act_geometry.gd` stores:
 
@@ -145,7 +145,7 @@ Use `ActGeometry.load_document()` and `save_document()` for persistence. In memo
 
 Transforms apply clockwise quarter-turns, then mirrors along the final screen axes. Rotate composes another clockwise turn with existing mirrors. Saves reference shape IDs instead of duplicating points. Normal field/shape validation and the existing unsaved-change workflow remain in place.
 
-The canvas emits edit requests; the editor owns mutations and history. No grid-occupancy masks, boolean union, collision compilation or procedural-chunk assumptions enter the model. Rings, boost pads, hazards, difficulty/reachability checks, runtime Act loading, horizontal Act alignment, playtesting and Zone assembly are deferred. The authored Act is not yet playable.
+The canvas emits edit requests; the editor owns mutations and history. No grid-occupancy masks, boolean union, collision compilation or procedural-chunk assumptions enter the authoring model. Save a file with Spawn, then load it in the standalone [Authored Act Playtest](AUTHORED_ACT_PLAYTEST.md) to play its exact geometry with existing gameplay physics. Runtime compilation remains separate from authoring. Rings, boost pads, hazards, difficulty/reachability checks, horizontal Act alignment and Zone assembly remain deferred.
 
 ## Verification
 
@@ -164,4 +164,4 @@ Use the existing isolated import helper to prevent editor indentation conversion
 
 The geometry regression checks all shapes against independent transform calculations, curved fill coverage and triangulation, overlap persistence and a fresh-process reload/edit/re-save. Connector regression checks width-only compatibility, spans, drafts and restart persistence. Gameplay and lifecycle regressions check independent records, validation, exact fractional persistence and previous-format loading. Scene smoke scripts exercise actual pointer/keyboard gestures, both snapping modes, numeric angles, overlap selection, history, marker bounds, gutter rejection and file workflow. Run them graphically with the launcher's ANGLE backend for rendered captures.
 
-Human review remains useful for palette comfort, drag precision, curve silhouettes and editing feel. This milestone has no gameplay playtest mode.
+Human review remains useful for palette comfort, drag precision, curve silhouettes and editing feel. Gameplay is tested in the separate authored-Act scene; the editor remains focused on authoring.

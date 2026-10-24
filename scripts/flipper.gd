@@ -15,6 +15,8 @@ var swing_remaining: float = 0.0
 var struck_this_swing: bool = false
 var strikes: int = 0
 var enabled := true
+## Optional authored rest rotation, in radians. NaN keeps the legacy table angles.
+var authored_rest_angle: float = NAN
 
 func set_enabled(value: bool) -> void:
  enabled = value
@@ -45,9 +47,13 @@ func _ready() -> void:
  rotation = rest_angle()
 
 func rest_angle() -> float:
+ if is_finite(authored_rest_angle):
+  return authored_rest_angle
  return 0.32 if side > 0.0 else PI - 0.32
 
 func active_angle() -> float:
+ if is_finite(authored_rest_angle):
+  return authored_rest_angle - (0.8 if side > 0.0 else -0.8)
  return -0.48 if side > 0.0 else PI + 0.48
 
 func tip() -> Vector2:
@@ -56,11 +62,13 @@ func tip() -> Vector2:
 func strike_direction(contact_fraction: float) -> Vector2:
  # Keep an upward arcade bias while letting heel/tip contact and swing timing aim.
  # The mirrored surface normal supplies orientation; strength stays in the resolver.
- var axis := Vector2.RIGHT.rotated(rotation)
+ # An authored paddle rotates that same aiming frame, including its arcade bias.
+ var rest_offset := authored_rest_angle - (0.32 if side > 0.0 else PI - 0.32) if is_finite(authored_rest_angle) else 0.0
+ var axis := Vector2.RIGHT.rotated(rotation - rest_offset)
  var normal := Vector2(axis.y, -axis.x) * side
  var normal_angle := atan2(normal.x * side, -normal.y)
  var inward_angle := clampf(0.12 + 0.45 * normal_angle + 0.5 * (0.65 - clampf(contact_fraction, 0.0, 1.0)), -0.18, 0.55)
- return Vector2.UP.rotated(side * inward_angle)
+ return Vector2.UP.rotated(side * inward_angle + rest_offset)
 
 func _physics_process(delta: float) -> void:
  if not enabled:

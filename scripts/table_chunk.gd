@@ -1,6 +1,7 @@
 class_name TableChunk
 extends Node2D
 ## Authoritative collision geometry; descriptors feed a separate renderer.
+const BumperFactory = preload("res://scripts/bumper_factory.gd")
 var data: ChunkData
 var descriptors: Array[Dictionary] = []
 var wall_material: PhysicsMaterial
@@ -74,22 +75,11 @@ func set_checkpoint_active(active: bool) -> void:
    item.body.set_deferred("collision_mask", 2 if active else 0)
 
 func _bumper(item: Dictionary) -> void:
- var body := _body()
- body.name = "Bumper"
- body.position = item.position - position
- body.physics_material_override = bumper_material
- body.set_meta("bumper", true)
+ var local_item := item.duplicate(true)
+ local_item.position = item.position - position
+ var body := BumperFactory.create(local_item, bumper_material)
+ add_child(body)
  var descriptor: Dictionary = item.duplicate(true)
  descriptor.position = body.position + position
  descriptor["body"] = body
- if item.kind == "circle":
-  var collision := CollisionShape2D.new()
-  var circle := CircleShape2D.new()
-  circle.radius = item.radius
-  collision.shape = circle
-  body.add_child(collision)
- else:
-  var polygon := CollisionPolygon2D.new()
-  polygon.polygon = item.points
-  body.add_child(polygon)
  descriptors.append(descriptor)
