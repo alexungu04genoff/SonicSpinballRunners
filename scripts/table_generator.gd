@@ -562,7 +562,7 @@ static func point_clear(point: Vector2, geometry: Array[Dictionary], clearance: 
    "circle":
     if point.distance_to(item.position) < clearance + float(item.radius):
      return false
-   "triangle":
+   "triangle", "flipper_mount":
     var local: Vector2 = point - item.position
     if Geometry2D.is_point_in_polygon(local, item.points):
      return false

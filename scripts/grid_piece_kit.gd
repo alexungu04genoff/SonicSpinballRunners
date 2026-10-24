@@ -3,9 +3,15 @@ extends RefCounted
 ## Gameplay definitions only. Points and footprints use construction-grid units.
 ## Piece orientation is explicit in its name; rotations are not supported.
 const CELL_SIZE := 50.0
-const VERSION := 4
+const VERSION := 5
 
 static func definition(name: String, span: int = 1) -> Dictionary:
+ if name.begins_with("mounted_"):
+  var paddle := definition(name.trim_prefix("mounted_"), span)
+  if paddle.get("kind", "") != "flipper":
+   return {}
+  paddle.wall_mount = true
+  return paddle
  var points := PackedVector2Array()
  match name:
   "open":

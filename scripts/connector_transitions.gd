@@ -227,7 +227,18 @@ static func _flippers_clear(paths: Array, chunks: Array[ChunkData]) -> bool:
      angle = PI - angle
     var tip: Vector2 = flipper.position + Vector2.RIGHT.rotated(angle) * float(flipper.length)
     for path: PackedVector2Array in paths:
+     var behind_mount: bool = flipper.get("wall_mount", false)
+     for point: Vector2 in path:
+      behind_mount = behind_mount and (point.x - flipper.position.x) * float(flipper.side) < 0.0
      for i in range(path.size() - 1):
-      if _segment_distance(flipper.position, tip, path[i], path[i + 1]) < required:
+      var start: Vector2 = flipper.position
+      if behind_mount:
+       # A perimeter hinge has no rear lane. Preserve physical capsule clearance
+       # at the root and full ball passage past its first 60px, as in the compiler.
+       # Shaped recipes subsequently revalidate the compact bearing attachment.
+       if _segment_distance(start, tip, path[i], path[i + 1]) < PlaygroundFlipper.RADIUS + ChunkData.RAIL_RADIUS - 0.01:
+        return false
+       start += (tip - start).normalized() * minf(60.0, float(flipper.length))
+      if _segment_distance(start, tip, path[i], path[i + 1]) < required:
        return false
  return true

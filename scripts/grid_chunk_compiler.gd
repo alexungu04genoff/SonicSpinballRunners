@@ -81,6 +81,8 @@ static func compile(recipe: GridChunkRecipe) -> Dictionary:
     chunk.rings.append(position)
    "flipper":
     var paddle := {"position": position + piece.offset * GridPieceKit.CELL_SIZE, "side": piece.side, "length": piece.length * GridPieceKit.CELL_SIZE}
+    if piece.get("wall_mount", false):
+     paddle.wall_mount = true
     if placement.has("role"):
      if placement.role not in ["primary_recovery", "side_recovery", "precision"]:
       errors.append("Unknown flipper role at placement %d" % index)
@@ -90,6 +92,10 @@ static func compile(recipe: GridChunkRecipe) -> Dictionary:
       errors.append("Flipper shot target must use integer grid coordinates")
      else:
       paddle.shot_target = Vector2(placement.shot_target) * GridPieceKit.CELL_SIZE
+    if placement.has("shot_kind"):
+     if placement.shot_kind not in ["score", "upper_passage"]:
+      errors.append("Unknown authored flipper shot kind at placement %d" % index)
+     paddle.shot_kind = placement.shot_kind
     chunk.flipper_placements.append(paddle)
  for key: String in recipe.markers:
   if not recipe.markers[key] is Vector2i:
@@ -179,11 +185,40 @@ static func _point_clear(point: Vector2, chunk: ChunkData, clearance: float) -> 
   for i in range(rail.size() - 1):
    if point.distance_to(Geometry2D.get_closest_point_to_segment(point, rail[i], rail[i + 1])) < ChunkData.RAIL_RADIUS + clearance:
     return false
- if not TableGenerator.point_clear(point, chunk.bumpers, clearance):
+ var solids := chunk.bumpers.duplicate()
+ solids.append_array(chunk.local_flipper_mounts())
+ if not TableGenerator.point_clear(point, solids, clearance):
   return false
  return true
 
 static func _check_clearance(chunk: ChunkData, errors: PackedStringArray) -> void:
+ var mounts := chunk.local_flipper_mounts()
+ var mounted_count := 0
+ for paddle: Dictionary in chunk.flipper_placements:
+  if paddle.get("wall_mount", false):
+   mounted_count += 1
+ if mounts.size() != mounted_count:
+  errors.append("Mounted flipper requires a complete side-wall attachment")
+ for mount: Dictionary in mounts:
+  var side := 0 if mount.wall_attachment == "left" else 1
+  var paddle: Dictionary = chunk.flipper_placements[mount.flipper_index]
+  # Pivot capsule must clear the wall while the slightly wider bearing overlaps
+  # its rail by at least 2px. This permits only a compact perimeter attachment.
+  for anchor: Vector2 in mount.rear_anchors:
+   var depth: float = (mount.position.x - anchor.x) * float(paddle.side)
+   if depth < PlaygroundFlipper.RADIUS + ChunkData.RAIL_RADIUS - EPSILON or depth > ChunkData.MOUNT_RADIUS + ChunkData.RAIL_RADIUS - 2.0:
+    errors.append("Flipper housing must connect to a nearby wall behind its pivot")
+  var opposite: PackedVector2Array = chunk.rails[1 - side]
+  for i in range(opposite.size() - 1):
+   if _bumper_segment_distance(mount, opposite[i], opposite[i + 1]) < ChunkData.RAIL_RADIUS + BALL_CLEARANCE * 2.0:
+    errors.append("Flipper housing closes the opposing ball lane")
+  for bumper: Dictionary in chunk.bumpers:
+   if _bumper_pair_distance(mount, bumper) < BALL_CLEARANCE * 2.0:
+    errors.append("Flipper housing leaves insufficient ball passage beside a bumper")
+ for i in mounts.size():
+  for j in range(i + 1, mounts.size()):
+   if _bumper_pair_distance(mounts[i], mounts[j]) < BALL_CLEARANCE * 2.0:
+    errors.append("Flipper housings close the ball passage")
  for bumper: Dictionary in chunk.bumpers:
   var attachment: String = bumper.get("wall_attachment", "")
   var attached_side := 0 if attachment == "left" else (1 if attachment == "right" else -1)
@@ -222,13 +257,34 @@ static func _check_clearance(chunk: ChunkData, errors: PackedStringArray) -> voi
    var tip: Vector2 = flipper.position + Vector2.RIGHT.rotated(angle) * float(flipper.length)
    if not Geometry2D.is_point_in_polygon(flipper.position, chunk.playfield_outline) or not Geometry2D.is_point_in_polygon(tip, chunk.playfield_outline):
     errors.append("Flipper swing extends outside the navigable outline")
-   for rail: PackedVector2Array in chunk.rails:
+   for rail_index in chunk.rails.size():
+    var rail: PackedVector2Array = chunk.rails[rail_index]
+    var mounted_side := 0 if flipper.side > 0 else 1
+    var is_attached_wall: bool = flipper.get("wall_mount", false) and rail_index == mounted_side
     for i in range(rail.size() - 1):
-     if _segment_distance(flipper.position, tip, rail[i], rail[i + 1]) < PlaygroundFlipper.RADIUS + ChunkData.RAIL_RADIUS + BALL_CLEARANCE * 2.0 + SWING_MARGIN:
+     var start: Vector2 = flipper.position
+     if is_attached_wall:
+      # There is no ball lane behind a sealed hinge. The complete capsule must
+      # still clear this wall, and full ball passage is required after the first
+      # 60px of blade. Remote same-side ledges receive that same passage check.
+      if _segment_distance(start, tip, rail[i], rail[i + 1]) < PlaygroundFlipper.RADIUS + ChunkData.RAIL_RADIUS - EPSILON:
+       errors.append("Mounted flipper physically intersects its attachment wall")
+      start += (tip - start).normalized() * minf(60.0, float(flipper.length))
+     if _segment_distance(start, tip, rail[i], rail[i + 1]) < PlaygroundFlipper.RADIUS + ChunkData.RAIL_RADIUS + BALL_CLEARANCE * 2.0 + SWING_MARGIN:
       errors.append("Flipper swing leaves insufficient ball passage beside a rail")
    for bumper: Dictionary in chunk.bumpers:
     if _bumper_segment_distance(bumper, flipper.position, tip) < PlaygroundFlipper.RADIUS + BALL_CLEARANCE * 2.0 + SWING_MARGIN:
      errors.append("Flipper swing leaves insufficient ball passage beside a bumper")
+   for mount: Dictionary in mounts:
+    if mount.flipper_index == chunk.flipper_placements.find(flipper):
+     # Only the bearing may overlap its own paddle. The housing must stay
+     # behind the exposed blade at every angle, including mirrored recipes.
+     var axis: Vector2 = (tip - flipper.position).normalized()
+     for point: Vector2 in mount.points:
+      if point.dot(axis) > ChunkData.MOUNT_RADIUS + SWING_MARGIN:
+       errors.append("Flipper housing intrudes beyond its sealed hinge")
+    elif _bumper_segment_distance(mount, flipper.position, tip) < PlaygroundFlipper.RADIUS + BALL_CLEARANCE * 2.0 + SWING_MARGIN:
+     errors.append("Flipper swing leaves insufficient passage beside another housing")
    samples.append([flipper.position, tip])
   sweeps.append(samples)
  for i in sweeps.size():

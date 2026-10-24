@@ -37,10 +37,11 @@ func run() -> void:
     var placement: Dictionary = data.world_flippers()[paddle_index]
     check(inside_clear(data, start) and placement.position.y - start.y >= 300.0, "%s paddle%d starts clear and well upstream" % [data.chunk_id, paddle_index])
     var timed := await feed_shot(data, paddle_index, start, 43.0)
-    # Balcony's precision return deliberately aims through the upper opening;
-    # the other fixtures require their authored bumper/ring scoring target.
-    var reached: bool = timed.exit if data.chunk_id == "zone_normal_balcony" else timed.useful
-    var destination := "upper opening" if data.chunk_id == "zone_normal_balcony" else "declared scoring target"
+    # Progression paddles must physically pass the opening. Collecting a ring
+    # below it or striking a bumper cannot substitute for that passage.
+    var requires_exit: bool = placement.get("shot_kind", "score") == "upper_passage" or data.chunk_id == "zone_normal_balcony"
+    var reached: bool = timed.exit if requires_exit else timed.useful
+    var destination := "upper opening" if requires_exit else "declared scoring target"
     check(timed.strikes == 1 and reached and timed.finite, "%s paddle%d mirrored=%s turns a natural descent into its %s" % [data.chunk_id, paddle_index, mirrored, destination], str(timed))
     var missed := await feed_shot(data, paddle_index, start, 43.0, false)
     check(missed.strikes == 0 and missed.missed and not missed.resting and missed.finite, "%s paddle%d mirrored=%s lets a missed shot fall to the recovery section below" % [data.chunk_id, paddle_index, mirrored], str(missed))
@@ -49,6 +50,10 @@ func run() -> void:
      var early := await feed_shot(data, paddle_index, start, 130.0, true, 4)
      check(early.strikes == 0 and early.missed and not early.resting, "An early tap expires before the Garden return arrives and the ball falls below", str(early))
      timed["early_tap"] = early
+     if paddle_index == 1:
+      var earlier_climb := await feed_shot(data, paddle_index, start, 46.0)
+      check(earlier_climb.strikes == 1 and earlier_climb.finite and earlier_climb.exit and not earlier_climb.rings_after_strike.is_empty(), "Garden right mirrored=%s retains an earlier ring-scoring shot through the upper opening" % mirrored, str(earlier_climb))
+      timed["earlier_climb"] = earlier_climb
     feeds.append({"room": data.chunk_id, "paddle": paddle_index, "mirrored": mirrored, "timed": timed, "missed": missed})
  var output := FileAccess.open("res://test-results/normal-flipper-feeds.json", FileAccess.WRITE)
  output.store_string(JSON.stringify(feeds, " "))
@@ -108,7 +113,8 @@ func feed_shot(data: ChunkData, paddle_index: int, start: Vector2, trigger: floa
  var sample := fixture(data, start, Vector2.ZERO)
  var paddle: PlaygroundFlipper = sample.paddles[paddle_index]
  var target: Vector2 = placement.shot_target
- var result := {"start": start, "trigger": trigger, "pressed_tick": -1, "strikes": 0, "target_hit": false, "target_ring": false, "useful": false, "useful_tick": -1, "exit": false, "exit_position": Vector2.INF, "missed": false, "resting": false, "finite": true, "wall_contacts": 0, "minimum_y_after_strike": INF, "closest_paddle": INF, "strike_position": Vector2.INF, "incoming_velocity": Vector2.ZERO}
+ var requires_exit: bool = placement.get("shot_kind", "score") == "upper_passage"
+ var result := {"start": start, "trigger": trigger, "pressed_tick": -1, "strikes": 0, "target_hit": false, "target_ring": false, "useful": false, "useful_tick": -1, "exit": false, "exit_position": Vector2.INF, "missed": false, "resting": false, "finite": true, "wall_contacts": 0, "minimum_y_after_strike": INF, "closest_paddle": INF, "strike_position": Vector2.INF, "incoming_velocity": Vector2.ZERO, "rings_after_strike": []}
  sample.ball.body_entered.connect(func(body: Node) -> void:
   if paddle.strikes == 0 and body is StaticBody2D and not body is PlaygroundFlipper and not body.has_meta("bumper"):
    result.wall_contacts += 1)
@@ -116,8 +122,10 @@ func feed_shot(data: ChunkData, paddle_index: int, start: Vector2, trigger: floa
   if paddle.strikes > 0 and body.global_position.distance_to(target) < 1.0:
    result.target_hit = true)
  sample.rings.collected.connect(func(position: Vector2) -> void:
-  if paddle.strikes > 0 and position.distance_to(target) < 1.0:
-   result.target_ring = true)
+  if paddle.strikes > 0:
+   result.rings_after_strike.append(position)
+   if position.distance_to(target) < 1.0:
+    result.target_ring = true)
  var strike_seen := false
  var still_frames := 0
  for tick in 720:
@@ -139,8 +147,10 @@ func feed_shot(data: ChunkData, paddle_index: int, start: Vector2, trigger: floa
    result.minimum_y_after_strike = minf(result.minimum_y_after_strike, sample.ball.position.y)
   result.useful = result.target_hit or result.target_ring
   if result.useful:
-   result.useful_tick = tick
-   break
+   if result.useful_tick < 0:
+    result.useful_tick = tick
+   if not requires_exit:
+    break
   if sample.ball.position.y > 720.0:
    result.missed = true
    break

@@ -2,7 +2,7 @@ class_name ZoneGenerator
 extends RefCounted
 ## One connected course. Chunk indices run from the final cap to the launch deck;
 ## acts run in the opposite direction, in the order the player completes them.
-const VERSION := 4
+const VERSION := 5
 const CHUNK_COUNT := 9
 const CHUNKS_PER_ACT := 3
 const EASY_TOPS: Array[ChunkData] = [TableGenerator.CATALOGUE[4], TableGenerator.CATALOGUE[5]]

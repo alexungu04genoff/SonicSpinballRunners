@@ -23,6 +23,17 @@ func build() -> void:
    _rail(item)
   elif item.kind == "ring":
    descriptors.append(item)
+  elif item.kind == "flipper_mount":
+   var body := _body()
+   body.name = "FlipperHousing"
+   body.position = item.position - position
+   body.physics_material_override = wall_material
+   var polygon := CollisionPolygon2D.new()
+   polygon.polygon = item.points
+   body.add_child(polygon)
+   var descriptor := item.duplicate(true)
+   descriptor.body = body
+   descriptors.append(descriptor)
   else:
    _bumper(item)
  for marker_name: String in data.markers:

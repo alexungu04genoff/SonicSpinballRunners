@@ -2,6 +2,30 @@
 
 Latest checks: 2026-10-24. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
+## Target Garden — perimeter mounting and distinct shot routes
+
+The approved compact mounting moves both pivots 50px toward the existing walls, to x125/675, with 18px bearings. Boundary polylines and paddle lengths stay unchanged. This pass changes only Target Garden; Bank Vault and Offset Climb retain their preceding layouts. The large bumper moves from (550,200) to (600,200), clearing a diagonal ring trail from the source-right paddle to the upper opening. A separate left-side trail leads into the small target cluster. Seed 28 mirrors the room, placing the progression paddle on screen left.
+
+`target_garden_routes.gd`: **25 checks passed**. From the same clear upstream start at (688,200), zero initial velocity and one ordinary flipper press, five consecutive press ticks (116–120 at 120Hz) reach the actual upper opening with no post-strike bumper contacts and 2–6 post-strike rings. The same seven-sample timing sweep produced three clean climbs before the large bumper moved and five afterward. An earlier press hits the large bumper and falls below the isolated room. Both mirror orientations pass; no-input and premature presses miss without becoming stationary. The left paddle still reaches its small scoring target, and resting paddles leave the central upward passage open. `shot_kind="upper_passage"` requires physical passage; collecting an exit ring alone cannot pass the check.
+
+Natural-feed checks passed **63**, Normal rooms **48**, compact mounts **98**, and unchanged contact-based aiming **21**. Mount coverage includes translated and mirrored fixtures, sixteen physical upper/underside/hinge/held-release probes, and rejection of missing or weak attachment, wall overlap, distant pivots, unrelated obstacles and invalid shot intent. The sealed root has no rear ball lane; actual capsule clearance remains mandatory, and full ball passage resumes beyond the first 60px of blade.
+
+### Graphical full-Zone demonstrations
+
+Three ANGLE recordings use the actual nine-chunk Normal 28 Green Hill game. Each initializes one upstream position and zero velocity, then uses ordinary flipper input or no input. No subsequent body, score, meter or force edits occur. The clips keep real walls, scoring, gates and drains active. They are controlled-shot demonstrations, not human or complete-run playtests.
+
+| Clip in `test-results/target-garden-routes-review/` | Measured result |
+| --- | --- |
+| `garden-progression.mp4` | One strike; whole ball crosses the upper opening at 1.37s, with 150 points, 6 rings and no bumper contact before passage. |
+| `garden-scoring.mp4` | Earlier strike; two real hits on the offset large bumper. Passage occurs later at 2.68s, then the ball returns into Garden. At 5s: 525 points, 9 rings and 2 bumper contacts. |
+| `garden-miss.mp4` | No press; falls below Garden at 1.67s and reaches the ordinary Act 1 drain at 3.33s. Checkpoint retry is queued. |
+
+The full-Zone scoring rebound eventually climbs, unlike the isolated-room scoring witness, then falls back into Garden rather than the lower recovery section. This shows a scoring detour with a different trajectory, not a guarantee that choosing points prevents progression. The clean climbing route reaches the passage sooner. Human playtesting must still judge whether the timing distinction is readable and comfortable across less controlled approaches.
+
+`seed-28.png` and `seed-14.png` show the final room and its generated opposite mirror with the ordinary gameplay camera and HUD. All three graphical runs and both still captures passed; the H.264 clips also passed full decode. Separate earlier perimeter and rejected wedge captures remain archived; they are not current layouts. Captures and reports stay in ignored `test-results/`.
+
+Compatibility reruns passed: Zone composition **103**, Zone lifecycle **34**, physics/profile resolution **38**, Character Lab **70**, Scorecraft **37**, and standalone Score Attack **26**. Composition includes Normal 28 / Hard 24 seams, both Act entries/drafts and all three checkpoint drains/recoveries. Zone lifecycle includes replay, Chao restoration and mode switching. The existing invalid-configuration negative test emits its expected diagnostic; no unexpected failures occurred. Final isolated editor import and whitespace checks passed. The flipper implementation and preexisting `project.godot` edit are unchanged. No subjective fun or full human Zone completion is claimed.
+
 ## Middle-flipper feeds and directional aiming — 2026-10-24
 
 Zone generator v4 changes three existing recipes: Target Garden's shoulders now guide wall returns into its pair; Bank Vault loses its redundant right short paddle; Offset Climb lowers its 80px paddle by 50px to meet the opposing-bank return. Other Normal/Hard room shapes and selection remain intact. Existing grid clearance and connector validation are unchanged. The shared flipper now derives a bounded upward impulse direction from contact position and actual swing orientation, with unchanged resolved strength/leverage. Release cancels assistance, underside contacts receive no powered boost, and raised follow-through is limited to two physics ticks.

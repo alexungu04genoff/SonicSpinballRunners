@@ -197,6 +197,14 @@ func build(chunks: Array[TableChunk], junctions: Variant = [], bounds: Rect2 = R
      mesh_node(cylinder(radius * 0.60, 0.02), gold, Vector3(0, 0.41, 0), body_visual)
      bumper_visuals[item.body.get_instance_id()] = body_visual
      _circle_outline(item.position, item.radius, debug_mat)
+    "flipper_mount":
+     var housing := mesh_node(_prism(item.points, 0.18, rail_mat, rail_top), null, map_point(item.position))
+     housing.name = "WallFlipperHousing"
+     # The bearing is part of the same solid footprint; the moving paddle sits
+     # above its deck. No presentation object owns gameplay collisions.
+     mesh_node(cylinder(ChunkData.MOUNT_RADIUS * SCALE, 0.05), rail_mat, map_point(item.position, 0.205))
+     for i in item.points.size():
+      line(item.position + item.points[i], item.position + item.points[(i + 1) % item.points.size()], 0.012, OVERLAY_HEIGHT, debug_mat, physics_overlay)
     "triangle":
      var body_visual := mesh_node(_prism(item.points, 0.34, bumper_mat, bumper_top), null, map_point(item.position))
      bumper_visuals[item.body.get_instance_id()] = body_visual

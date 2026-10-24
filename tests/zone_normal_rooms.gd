@@ -56,7 +56,7 @@ func run() -> void:
        break
      if found:
       break
-    check(found, "%s paddle %d %s catches a descent and reaches its declared scoring target" % [recipe.title, paddle, "mirrored" if mirrored else "authored"], str(witness))
+    check(found, "%s paddle %d %s catches a descent and completes its declared shot" % [recipe.title, paddle, "mirrored" if mirrored else "authored"], str(witness))
     report.append(witness)
  check(paddle_counts.has(0) and paddle_counts.has(1) and paddle_counts.has(2), "Normal library has deliberate zero, one and two-paddle rooms")
  check(shape_signatures.size() == RECIPES.size(), "All six authored room outlines differ before mirroring")
@@ -135,8 +135,8 @@ func upward_shot(data: ChunkData, offset: float) -> Dictionary:
   await frames(1)
   result.position = sample.ball.position
   result.finite = result.finite and sample.ball.position.is_finite() and sample.ball.linear_velocity.is_finite()
-  if sample.ball.position.y < 25.0:
-   result.crossed = result.finite and sample.ball.position.x > exit.position.x + PlaygroundBall.RADIUS + ChunkData.RAIL_RADIUS and sample.ball.position.x < exit.end.x - PlaygroundBall.RADIUS - ChunkData.RAIL_RADIUS
+  if sample.ball.position.y < exit.position.y - PlaygroundBall.RADIUS:
+   result.crossed = result.finite and sample.ball.linear_velocity.y < 0.0 and sample.ball.position.x > exit.position.x + PlaygroundBall.RADIUS + ChunkData.RAIL_RADIUS and sample.ball.position.x < exit.end.x - PlaygroundBall.RADIUS - ChunkData.RAIL_RADIUS
    break
   if sample.ball.position.y > 710.0:
    break
@@ -150,8 +150,10 @@ func recovery_shot(data: ChunkData, paddle_index: int, fraction: float, incoming
  var start: Vector2 = placement.position + Vector2.RIGHT.rotated(angle) * placement.length * fraction + Vector2(0, -110)
  var sample := fixture(data, start, Vector2(incoming_x, 180))
  var paddle: PlaygroundFlipper = sample.paddles[paddle_index]
- var target: Vector2 = placement.shot_target
- var result := {"room": data.chunk_id, "mirrored": data.mirrored, "paddle": paddle_index, "role": placement.role, "fraction": fraction, "incoming_x": incoming_x, "target": target, "pressed_tick": -1, "strikes": 0, "target_hit": false, "target_ring": false, "finite": true, "minimum_target_distance": INF, "success": false}
+ var target: Vector2 = placement.get("shot_target", Vector2.INF)
+ var passage: bool = placement.get("shot_kind", "score") == "upper_passage"
+ var opening := data.world_rect(data.top_connection)
+ var result := {"room": data.chunk_id, "mirrored": data.mirrored, "paddle": paddle_index, "role": placement.role, "shot_kind": placement.get("shot_kind", "score"), "fraction": fraction, "incoming_x": incoming_x, "target": target, "pressed_tick": -1, "strikes": 0, "target_hit": false, "target_ring": false, "upper_passage": false, "finite": true, "minimum_target_distance": INF, "success": false}
  sample.ball.bumper_hit.connect(func(body: Node) -> void:
   if paddle.strikes > 0 and body.global_position.distance_to(target) < 1.0:
    result.target_hit = true)
@@ -170,9 +172,11 @@ func recovery_shot(data: ChunkData, paddle_index: int, fraction: float, incoming
   result.finite = result.finite and sample.ball.position.is_finite() and sample.ball.linear_velocity.is_finite()
   if paddle.strikes > 0:
    result.minimum_target_distance = minf(result.minimum_target_distance, sample.ball.position.distance_to(target))
-  if result.finite and paddle.strikes == 1 and (result.target_hit or result.target_ring):
-   result.success = true
-   break
+  if result.finite and paddle.strikes == 1:
+   result.upper_passage = sample.ball.position.y < opening.position.y - PlaygroundBall.RADIUS and sample.ball.linear_velocity.y < 0.0 and sample.ball.position.x > opening.position.x + PlaygroundBall.RADIUS + ChunkData.RAIL_RADIUS and sample.ball.position.x < opening.end.x - PlaygroundBall.RADIUS - ChunkData.RAIL_RADIUS
+   result.success = result.upper_passage if passage else (result.target_hit or result.target_ring)
+   if result.success:
+    break
   if sample.ball.position.y > 720.0 or sample.ball.position.y < -25.0:
    break
  sample.world.free()
