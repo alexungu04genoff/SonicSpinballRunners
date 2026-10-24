@@ -1,26 +1,34 @@
 extends Control
-## Terrain drawing and pointer gestures only. The editor owns document changes and undo.
+## Authoring drawing and pointer gestures only. The editor owns changes and undo.
 
 signal placement_requested(placement: Dictionary)
 signal selection_changed(index: int)
 signal move_requested(index: int, anchor: Vector2i)
 signal connector_requested(kind: String, start_x: int, width: int)
 signal connector_selection_changed(kind: String)
+signal gameplay_placement_requested(placement: Dictionary)
+signal gameplay_selection_changed(index: int)
+signal gameplay_move_requested(index: int, position: Vector2)
 signal status_changed(message: String)
 
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
+const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
+const ObjectPreview = preload("res://scripts/act_editor/gameplay_preview.gd")
 const GRID_MARGIN := 48.0
 const MIN_CELL_PIXELS := 12.0
 const MAX_CELL_PIXELS := 240.0
 const SELECTION_COLOR := Color("b9f4ff")
 const CONNECTOR_COLOR := Color("71efa4")
 const CONNECTOR_BORDER_TOLERANCE := 12.0
+const POINTER_JITTER_PIXELS := 0.01
 
 var document: Resource
 var selected_index := -1
 var brush: Dictionary = {}
 var connector_tool := ""
 var selected_connector := ""
+var gameplay_brush: Dictionary = {}
+var selected_gameplay_index := -1
 
 var _view_origin := Vector2.ZERO
 var _cell_pixels := 48.0
@@ -45,6 +53,15 @@ var _connector_original_width := 0
 var _connector_preview_start := 0
 var _connector_preview_width := 0
 var _connector_release_valid := true
+var _gameplay_drag_index := -1
+var _gameplay_drag_start_pointer := Vector2.ZERO
+var _gameplay_drag_start_position := Vector2.ZERO
+var _gameplay_drag_position := Vector2.ZERO
+var _gameplay_drag_last_pointer := Vector2.ZERO
+var _gameplay_drag_moved := false
+var _drop_gameplay_brush: Dictionary = {}
+var _pending_cycle_target: Dictionary = {}
+var _alt_held := false
 
 
 func _ready() -> void:
@@ -60,6 +77,7 @@ func _ready() -> void:
  mouse_exited.connect(func():
   _hovering = false
   _drop_brush = {}
+  _drop_gameplay_brush = {}
   queue_redraw()
  )
  fit_view()
@@ -71,6 +89,8 @@ func set_document(value: Resource, reset_view: bool = true) -> void:
  brush = {}
  connector_tool = ""
  selected_connector = ""
+ gameplay_brush = {}
+ selected_gameplay_index = -1
  cancel_gesture()
  if reset_view:
   fit_view()
@@ -84,6 +104,8 @@ func set_brush(value: Dictionary) -> void:
  selected_index = -1
  connector_tool = ""
  selected_connector = ""
+ gameplay_brush = {}
+ selected_gameplay_index = -1
  queue_redraw()
 
 
@@ -93,6 +115,8 @@ func select_piece(index: int) -> void:
  selected_index = index if index >= 0 and index < _placements().size() else -1
  connector_tool = ""
  selected_connector = ""
+ gameplay_brush = {}
+ selected_gameplay_index = -1
  queue_redraw()
 
 
@@ -102,6 +126,8 @@ func set_connector_tool(kind: String) -> void:
  selected_index = -1
  selected_connector = ""
  connector_tool = kind if kind in ["entry", "exit"] else ""
+ gameplay_brush = {}
+ selected_gameplay_index = -1
  queue_redraw()
 
 
@@ -111,6 +137,30 @@ func select_connector(kind: String) -> void:
  selected_index = -1
  connector_tool = ""
  selected_connector = kind if kind in ["entry", "exit"] and connector_span(kind).y > 0 else ""
+ gameplay_brush = {}
+ selected_gameplay_index = -1
+ queue_redraw()
+
+
+func set_gameplay_brush(value: Dictionary) -> void:
+ cancel_gesture()
+ brush = {}
+ selected_index = -1
+ connector_tool = ""
+ selected_connector = ""
+ gameplay_brush = value.duplicate(true)
+ selected_gameplay_index = -1
+ queue_redraw()
+
+
+func select_gameplay(index: int) -> void:
+ cancel_gesture()
+ brush = {}
+ selected_index = -1
+ connector_tool = ""
+ selected_connector = ""
+ gameplay_brush = {}
+ selected_gameplay_index = index if index >= 0 and index < _gameplay_objects().size() else -1
  queue_redraw()
 
 
@@ -132,6 +182,10 @@ func cancel_gesture() -> void:
  _connector_drag_kind = ""
  _connector_drag_mode = ""
  _connector_release_valid = true
+ _gameplay_drag_index = -1
+ _gameplay_drag_moved = false
+ _drop_gameplay_brush = {}
+ _pending_cycle_target = {}
  queue_redraw()
 
 
@@ -141,6 +195,51 @@ func grid_to_screen(point: Vector2) -> Vector2:
 
 func screen_to_grid(point: Vector2) -> Vector2:
  return (point - _view_origin) / _cell_pixels
+
+
+func screen_to_local_pixels(point: Vector2) -> Vector2:
+ return screen_to_grid(point) * _local_cell_size()
+
+
+func local_pixels_to_screen(point: Vector2) -> Vector2:
+ return grid_to_screen(point / _local_cell_size())
+
+
+func legal_gameplay_position(position: Vector2, free_move: bool) -> Vector2:
+ if free_move:
+  return position
+ return (position / _local_cell_size()).round() * _local_cell_size()
+
+
+func gameplay_hit_indices_at(local_position: Vector2) -> Array[int]:
+ var hits: Array[int] = []
+ var pixel_position := screen_to_local_pixels(local_position)
+ var tolerance := 7.0 * _local_cell_size() / _cell_pixels
+ var objects := _gameplay_objects()
+ for index in range(objects.size() - 1, -1, -1):
+  var placement: Dictionary = objects[index]
+  var points := ObjectPreview.rotated_points(placement)
+  var point := pixel_position - Vector2(placement.position)
+  if points.size() < 3:
+   continue
+  if Geometry2D.is_point_in_polygon(point, points):
+   hits.append(index)
+   continue
+  for segment in points.size():
+   var nearest := Geometry2D.get_closest_point_to_segment(point, points[segment], points[(segment + 1) % points.size()])
+   if nearest.distance_to(point) <= tolerance:
+    hits.append(index)
+    break
+ return hits
+
+
+func mixed_hit_indices_at(local_position: Vector2) -> Array[Dictionary]:
+ var hits: Array[Dictionary] = []
+ for index: int in gameplay_hit_indices_at(local_position):
+  hits.append({"kind": "gameplay", "index": index})
+ for index: int in hit_indices_at(local_position):
+  hits.append({"kind": "terrain", "index": index})
+ return hits
 
 
 func connector_span(kind: String) -> Vector2i:
@@ -244,7 +343,27 @@ func _draw() -> void:
   ghost["anchor"] = legal_anchor_for(ghost, screen_to_grid(_cursor_position))
   _draw_piece(ghost, false, true)
   _draw_footprint(ghost, Color(0.75, 0.91, 1.0, 0.5))
+ _draw_gameplay_objects()
  _draw_connectors()
+
+
+func _draw_gameplay_objects() -> void:
+ var objects := _gameplay_objects()
+ var scale_factor := _cell_pixels / _local_cell_size()
+ for index in objects.size():
+  var placement: Dictionary = objects[index]
+  var point: Vector2 = placement.position
+  if index == _gameplay_drag_index and _gameplay_drag_moved:
+   point = _gameplay_drag_position
+  ObjectPreview.draw_object(self, placement, local_pixels_to_screen(point), scale_factor)
+ if selected_gameplay_index >= 0 and selected_gameplay_index < objects.size():
+  var placement: Dictionary = objects[selected_gameplay_index]
+  var point: Vector2 = _gameplay_drag_position if selected_gameplay_index == _gameplay_drag_index and _gameplay_drag_moved else placement.position
+  ObjectPreview.draw_object(self, placement, local_pixels_to_screen(point), scale_factor, true)
+ var active_brush := _drop_gameplay_brush if not _drop_gameplay_brush.is_empty() else gameplay_brush
+ if (_hovering or not _drop_gameplay_brush.is_empty()) and _inside_grid(_cursor_position) and _valid_gameplay_stamp(active_brush):
+  var point := legal_gameplay_position(screen_to_local_pixels(_cursor_position), _alt_held)
+  ObjectPreview.draw_object(self, active_brush, local_pixels_to_screen(point), scale_factor, false, true)
 
 
 func _draw_connectors() -> void:
@@ -387,16 +506,45 @@ func _draw_dashes(from: Vector2, to: Vector2, color: Color) -> void:
   distance += 10.0
 
 
+func _input(event: InputEvent) -> void:
+ # Drag-and-drop can bypass _gui_input, so retain the modifiers from the
+ # actual event before Godot asks this control to accept or commit a drop.
+ if event is InputEventKey and event.keycode == KEY_ALT:
+  _alt_held = event.pressed
+ elif event is InputEventMouse:
+  _alt_held = event.alt_pressed
+ else:
+  return
+ if not _drop_gameplay_brush.is_empty():
+  queue_redraw()
+
+
 func _gui_input(event: InputEvent) -> void:
  if document == null:
   return
- if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+ if event is InputEventKey and event.keycode == KEY_ALT:
+  _alt_held = event.pressed
+  if _alt_held and _gameplay_drag_index >= 0 and _gameplay_drag_moved:
+   _update_gameplay_drag(_cursor_position, true, true)
+  elif _gameplay_drag_index >= 0:
+   _set_gameplay_status(_gameplay_drag_position)
+  elif not gameplay_brush.is_empty():
+   _set_gameplay_status(legal_gameplay_position(screen_to_local_pixels(_cursor_position), _alt_held))
+  queue_redraw()
+  accept_event()
+ elif event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
   _leave_tool()
   accept_event()
  elif event is InputEventKey and event.pressed and not event.ctrl_pressed and not event.meta_pressed and event.keycode in [KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN]:
   # Consume arrows before Control's built-in focus navigation. The owner still
   # applies the edit through the same move signal as pointer dragging.
-  if not event.echo and not selected_connector.is_empty():
+  if not event.echo and selected_gameplay_index >= 0 and selected_gameplay_index < _gameplay_objects().size():
+   cancel_gesture()
+   var direction: Vector2 = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP, KEY_DOWN: Vector2.DOWN}[event.keycode]
+   var point: Vector2 = _gameplay_objects()[selected_gameplay_index].position
+   var distance := 1.0 if event.alt_pressed else _local_cell_size()
+   gameplay_move_requested.emit(selected_gameplay_index, point + direction * distance)
+  elif not event.echo and not selected_connector.is_empty():
    if event.keycode in [KEY_LEFT, KEY_RIGHT]:
     cancel_gesture()
     var span := connector_span(selected_connector)
@@ -412,6 +560,7 @@ func _gui_input(event: InputEvent) -> void:
   accept_event()
  elif event is InputEventMouseButton:
   _cursor_position = event.position
+  _alt_held = event.alt_pressed
   if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
    _leave_tool()
    accept_event()
@@ -428,7 +577,11 @@ func _gui_input(event: InputEvent) -> void:
     grab_focus()
     _begin_primary(event.position, event.alt_pressed)
    else:
-    if not _connector_drag_kind.is_empty():
+    if _gameplay_drag_index >= 0:
+     # A modifier release alone must not quantize the last free preview.
+     if event.position.distance_squared_to(_gameplay_drag_last_pointer) > POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
+      _update_gameplay_drag(event.position, event.alt_pressed)
+    elif not _connector_drag_kind.is_empty():
      _update_connector_drag(event.position)
     elif _drag_index >= 0:
      _update_drag(event.position)
@@ -436,13 +589,18 @@ func _gui_input(event: InputEvent) -> void:
    accept_event()
  elif event is InputEventMouseMotion:
   _cursor_position = event.position
+  _alt_held = event.alt_pressed
   if _panning:
    _view_origin += event.relative
    _view_adjusted = true
+  elif _gameplay_drag_index >= 0:
+   _update_gameplay_drag(event.position, event.alt_pressed)
   elif not _connector_drag_kind.is_empty():
    _update_connector_drag(event.position)
   elif _drag_index >= 0:
    _update_drag(event.position)
+  elif not gameplay_brush.is_empty() and _inside_grid(event.position):
+   _set_gameplay_status(legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed))
   elif not connector_tool.is_empty():
    var border := "bottom" if connector_tool == "entry" else "top"
    if connector_border_at(event.position) == connector_tool:
@@ -464,6 +622,12 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool) -> void:
    var border := "bottom" if connector_tool == "entry" else "top"
    _set_status("%s can only be created on the %s border." % [connector_tool.capitalize(), border])
   return
+ if not gameplay_brush.is_empty():
+  if _inside_grid(pointer) and _valid_gameplay_stamp(gameplay_brush):
+   var placement := gameplay_brush.duplicate(true)
+   placement["position"] = legal_gameplay_position(screen_to_local_pixels(pointer), cycle_overlaps)
+   gameplay_placement_requested.emit(placement)
+  return
  if not brush.is_empty():
   if _inside_grid(pointer) and _valid_stamp(brush):
    var placement := brush.duplicate(true)
@@ -475,31 +639,70 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool) -> void:
  if not connector.is_empty():
   select_connector(connector)
   selection_changed.emit(-1)
+  gameplay_selection_changed.emit(-1)
   connector_selection_changed.emit(connector)
   _begin_connector_drag(connector, pointer, connector_handle_at(connector, pointer))
   return
- var had_connector := not selected_connector.is_empty()
- selected_connector = ""
- if had_connector:
-  connector_selection_changed.emit("")
- var hits := hit_indices_at(pointer)
- var next_index := -1
+ var hits := mixed_hit_indices_at(pointer)
+ var current_slot := -1
+ for slot in hits.size():
+  var hit: Dictionary = hits[slot]
+  if (hit.kind == "gameplay" and hit.index == selected_gameplay_index) or (hit.kind == "terrain" and hit.index == selected_index):
+   current_slot = slot
+   break
+ var target: Dictionary = {}
+ var click_target: Dictionary = {}
  if not hits.is_empty():
-  next_index = hits[0]
-  if cycle_overlaps and selected_index in hits:
-   next_index = hits[(hits.find(selected_index) + 1) % hits.size()]
- selected_index = next_index
- selection_changed.emit(selected_index)
- if next_index >= 0:
-  var placement: Dictionary = _placements()[next_index]
-  _drag_index = next_index
-  _drag_start_pointer = screen_to_grid(pointer)
-  _drag_start_anchor = placement.get("anchor", Vector2i.ZERO)
-  _drag_anchor = _drag_start_anchor
-  _drag_moved = false
+  target = hits[0]
+  if cycle_overlaps:
+   # Resolve Alt-click only on release. An Alt-drag keeps the already-selected
+   # object, allowing fine movement even when terrain lies beneath it.
+   if current_slot >= 0:
+    target = hits[current_slot]
+    click_target = hits[(current_slot + 1) % hits.size()]
+   else:
+    click_target = hits[0]
+ _select_hit_target(target)
+ _pending_cycle_target = click_target
+ if not target.is_empty():
+  if target.kind == "gameplay":
+   var placement: Dictionary = _gameplay_objects()[target.index]
+   _gameplay_drag_index = target.index
+   _gameplay_drag_start_pointer = screen_to_local_pixels(pointer)
+   _gameplay_drag_start_position = placement.position
+   _gameplay_drag_position = placement.position
+   _gameplay_drag_last_pointer = pointer
+   _gameplay_drag_moved = false
+  else:
+   var placement: Dictionary = _placements()[target.index]
+   _drag_index = target.index
+   _drag_start_pointer = screen_to_grid(pointer)
+   _drag_start_anchor = placement.get("anchor", Vector2i.ZERO)
+   _drag_anchor = _drag_start_anchor
+   _drag_moved = false
   if hits.size() > 1:
-   _set_status("%d overlapping shapes here. Alt-click cycles the selection." % hits.size())
+   _set_status("%d overlapping items here. Alt-click cycles; Alt-drag freely moves gameplay objects." % hits.size())
  queue_redraw()
+
+
+func _select_hit_target(target: Dictionary) -> void:
+ if target.is_empty():
+  select_piece(-1)
+ elif target.kind == "gameplay":
+  select_gameplay(target.index)
+ else:
+  select_piece(target.index)
+ selection_changed.emit(selected_index)
+ gameplay_selection_changed.emit(selected_gameplay_index)
+ connector_selection_changed.emit(selected_connector)
+
+
+func _finish_cycle_click() -> void:
+ if _pending_cycle_target.is_empty():
+  return
+ var target := _pending_cycle_target
+ _pending_cycle_target = {}
+ _select_hit_target(target)
 
 
 func _update_drag(pointer: Vector2) -> void:
@@ -511,8 +714,44 @@ func _update_drag(pointer: Vector2) -> void:
  if not _drag_moved and delta.length() * _cell_pixels < 3.0:
   return
  _drag_moved = true
+ _pending_cycle_target = {}
  _drag_anchor = legal_anchor_for(placements[_drag_index], Vector2(_drag_start_anchor) + delta)
  _set_status("Move to (%d, %d). Release to apply; Esc cancels." % [_drag_anchor.x, _drag_anchor.y])
+
+
+func _update_gameplay_drag(pointer: Vector2, free_move: bool, force: bool = false) -> void:
+ if _gameplay_drag_index < 0 or _gameplay_drag_index >= _gameplay_objects().size():
+  cancel_gesture()
+  return
+ if not force and pointer.distance_squared_to(_gameplay_drag_last_pointer) <= POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
+  return
+ _gameplay_drag_last_pointer = pointer
+ var delta := screen_to_local_pixels(pointer) - _gameplay_drag_start_pointer
+ if not _gameplay_drag_moved and delta.length() * _cell_pixels / _local_cell_size() < 3.0:
+  return
+ _gameplay_drag_moved = true
+ _pending_cycle_target = {}
+ _alt_held = free_move
+ _gameplay_drag_position = legal_gameplay_position(_gameplay_drag_start_position + delta, free_move)
+ _set_gameplay_status(_gameplay_drag_position)
+ queue_redraw()
+
+
+func _end_gameplay_drag() -> void:
+ var index := _gameplay_drag_index
+ var point := _gameplay_drag_position
+ var changed := _gameplay_drag_moved and point != _gameplay_drag_start_position
+ _gameplay_drag_index = -1
+ _gameplay_drag_moved = false
+ if changed:
+  gameplay_move_requested.emit(index, point)
+ _finish_cycle_click()
+ queue_redraw()
+
+
+func _set_gameplay_status(point: Vector2) -> void:
+ var mode := "FREE MOVE" if _alt_held else "SNAP ON"
+ _set_status("%s · Anchor (%.2f, %.2f) px · Alt frees gameplay position; terrain always snaps." % [mode, point.x, point.y])
 
 
 func _begin_connector_drag(kind: String, pointer: Vector2, mode: String) -> void:
@@ -574,6 +813,9 @@ func _end_connector_drag() -> void:
 
 
 func _end_primary() -> void:
+ if _gameplay_drag_index >= 0:
+  _end_gameplay_drag()
+  return
  if not _connector_drag_kind.is_empty():
   _end_connector_drag()
   return
@@ -584,6 +826,7 @@ func _end_primary() -> void:
  _drag_moved = false
  if moved_index >= 0 and should_move:
   move_requested.emit(moved_index, moved_anchor)
+ _finish_cycle_click()
  queue_redraw()
 
 
@@ -593,9 +836,12 @@ func _leave_tool() -> void:
  selected_index = -1
  connector_tool = ""
  selected_connector = ""
+ gameplay_brush = {}
+ selected_gameplay_index = -1
  selection_changed.emit(-1)
  connector_selection_changed.emit("")
- _set_status("Selection mode. Click terrain or a green connector. Alt-click cycles terrain overlaps.")
+ gameplay_selection_changed.emit(-1)
+ _set_status("Selection mode. Click terrain, gameplay objects or green connectors. Alt-click cycles overlaps.")
  queue_redraw()
 
 
@@ -617,8 +863,22 @@ func _on_resized() -> void:
 
 
 func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
- if not data is Dictionary or not data.get("terrain_stamp") is Dictionary:
+ if not data is Dictionary:
   return false
+ if data.get("gameplay_stamp") is Dictionary:
+  var object: Dictionary = data["gameplay_stamp"]
+  _drop_brush = {}
+  if not _valid_gameplay_stamp(object) or not _inside_grid(at_position):
+   _drop_gameplay_brush = {}
+   queue_redraw()
+   return false
+  _drop_gameplay_brush = object.duplicate(true)
+  _cursor_position = at_position
+  queue_redraw()
+  return true
+ if not data.get("terrain_stamp") is Dictionary:
+  return false
+ _drop_gameplay_brush = {}
  var stamp: Dictionary = data["terrain_stamp"]
  if not _valid_stamp(stamp) or not _inside_grid(at_position):
   _drop_brush = {}
@@ -633,18 +893,27 @@ func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
 func _drop_data(at_position: Vector2, data: Variant) -> void:
  if not _can_drop_data(at_position, data):
   return
+ # Commit a focused inspector field before changing the selection or brush.
+ grab_focus()
+ if data.get("gameplay_stamp") is Dictionary:
+  var object: Dictionary = data["gameplay_stamp"].duplicate(true)
+  object["position"] = legal_gameplay_position(screen_to_local_pixels(at_position), _alt_held)
+  set_gameplay_brush(data["gameplay_stamp"])
+  gameplay_placement_requested.emit(object)
+  return
  var placement: Dictionary = data["terrain_stamp"].duplicate(true)
  placement["anchor"] = legal_anchor_for(placement, screen_to_grid(at_position))
  set_brush(data["terrain_stamp"])
  placement_requested.emit(placement)
- grab_focus()
 
 
 func _notification(what: int) -> void:
  if what == NOTIFICATION_DRAG_END:
   _drop_brush = {}
+  _drop_gameplay_brush = {}
   queue_redraw()
  elif what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+  _alt_held = false
   cancel_gesture()
 
 
@@ -658,12 +927,24 @@ func _valid_stamp(placement: Dictionary) -> bool:
  return footprint.x > 0 and footprint.y > 0 and footprint.x <= dimensions.x and footprint.y <= dimensions.y
 
 
+func _valid_gameplay_stamp(placement: Dictionary) -> bool:
+ return document != null and not Objects.get_definition(str(placement.get("type", ""))).is_empty()
+
+
 func _inside_grid(point: Vector2) -> bool:
  return Rect2(_view_origin, Vector2(_grid_size()) * _cell_pixels).has_point(point)
 
 
 func _placements() -> Array:
  return document.get("placements") if document != null else []
+
+
+func _gameplay_objects() -> Array:
+ return document.get("gameplay_objects") if document != null else []
+
+
+func _local_cell_size() -> float:
+ return float(document.get("cell_size")) if document != null else 50.0
 
 
 func _grid_size() -> Vector2i:

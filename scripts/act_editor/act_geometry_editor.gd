@@ -4,6 +4,8 @@ const ActData = preload("res://scripts/act_editor/act_geometry.gd")
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 const Canvas = preload("res://scripts/act_editor/geometry_canvas.gd")
 const PaletteItem = preload("res://scripts/act_editor/terrain_palette_item.gd")
+const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
+const GameplayPaletteItem = preload("res://scripts/act_editor/gameplay_palette_item.gd")
 const EXAMPLE_PATH := "res://data/acts/curve_garden.tres"
 const HISTORY_LIMIT := 100
 
@@ -34,6 +36,14 @@ var _title_edit_recorded := false
 var _previous_auto_quit := true
 var grid_label: Label
 var connector_summary: Label
+var palette_tabs: TabBar
+var gameplay_buttons: Dictionary = {}
+var gameplay_list: VBoxContainer
+var terrain_scroll: ScrollContainer
+var palette_heading: Label
+var angle_field: LineEdit
+var handedness_field: OptionButton
+var _angle_display_text := ""
 
 func _ready() -> void:
 	_previous_auto_quit = get_tree().auto_accept_quit
@@ -41,7 +51,7 @@ func _ready() -> void:
 	_build_ui()
 	_build_dialogs()
 	new_document()
-	_set_status("Choose a terrain stamp. Every placement snaps to the grid; overlaps are welcome.")
+	_set_status("Choose Terrain or Gameplay. Gameplay anchors snap to the grid; hold Alt for free placement.")
 
 func _exit_tree() -> void:
 	get_tree().auto_accept_quit = _previous_auto_quit
@@ -84,7 +94,7 @@ func _build_ui() -> void:
 	header.add_theme_constant_override("separation", 8)
 	column.add_child(header)
 	var brand := Label.new()
-	brand.text = "ACT / GEOMETRY"
+	brand.text = "ACT / EDITOR"
 	brand.add_theme_font_size_override("font_size", 23)
 	brand.add_theme_color_override("font_color", Color("70e5d5"))
 	brand.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -102,8 +112,8 @@ func _build_ui() -> void:
 	var tools := HBoxContainer.new()
 	tools.add_theme_constant_override("separation", 6)
 	column.add_child(tools)
-	_button(tools, "select", "Select / Move", _select_mode, "Esc • click a shape, then drag • Alt-click cycles overlaps")
-	_button(tools, "rotate", "Rotate +90°", rotate_active, "R • clockwise quarter-turns only")
+	_button(tools, "select", "Select / Move", _select_mode, "Esc • click terrain or an object, then drag • Alt-click cycles overlaps")
+	_button(tools, "rotate", "Rotate +90°", rotate_active, "R • terrain +90°; gameplay +15° (Shift+R −15°)")
 	_button(tools, "flip_h", "Flip Horizontal", func(): flip_active(true), "H • mirror across the current screen frame")
 	_button(tools, "flip_v", "Flip Vertical", func(): flip_active(false), "V • mirror across the current screen frame")
 	_button(tools, "delete", "Delete", delete_selected, "Delete / Backspace")
@@ -121,7 +131,12 @@ func _build_ui() -> void:
 	palette.custom_minimum_size.x = 264
 	palette.add_theme_constant_override("separation", 8)
 	body.add_child(palette)
-	var palette_heading := Label.new()
+	palette_tabs = TabBar.new()
+	palette_tabs.add_tab("Terrain")
+	palette_tabs.add_tab("Gameplay")
+	palette_tabs.tab_changed.connect(_change_palette_tab)
+	palette.add_child(palette_tabs)
+	palette_heading = Label.new()
 	palette_heading.text = "TERRAIN LIBRARY  /  %d stamps" % Shapes.definitions().size()
 	palette_heading.add_theme_color_override("font_color", Color("70e5d5"))
 	palette.add_child(palette_heading)
@@ -134,6 +149,7 @@ func _build_ui() -> void:
 	family_filter.item_selected.connect(func(_index): _filter_palette())
 	palette.add_child(family_filter)
 	var scroll := ScrollContainer.new()
+	terrain_scroll = scroll
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	palette.add_child(scroll)
@@ -151,6 +167,21 @@ func _build_ui() -> void:
 		item.pressed.connect(choose_shape.bind(definition.id))
 		palette_list.add_child(item)
 		palette_buttons[definition.id] = item
+	gameplay_list = VBoxContainer.new()
+	gameplay_list.add_theme_constant_override("separation", 8)
+	gameplay_list.visible = false
+	palette.add_child(gameplay_list)
+	for definition: Dictionary in Objects.definitions():
+		var item := GameplayPaletteItem.new()
+		item.configure(definition)
+		item.pressed.connect(choose_gameplay.bind(definition.id))
+		gameplay_list.add_child(item)
+		gameplay_buttons[definition.id] = item
+	var object_hint := Label.new()
+	object_hint.text = "Snap to grid intersections.\nHold Alt for exact placement.\n\nCyan: bumpers / sling\nYellow: flippers\nCrosshair: anchor / pivot"
+	object_hint.add_theme_color_override("font_color", Color("9cb3c6"))
+	object_hint.add_theme_font_size_override("font_size", 13)
+	gameplay_list.add_child(object_hint)
 	var workspace := VBoxContainer.new()
 	workspace.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	workspace.add_theme_constant_override("separation", 8)
@@ -199,10 +230,34 @@ func _build_ui() -> void:
 	canvas.selection_changed.connect(func(_index): _refresh())
 	canvas.connector_requested.connect(set_connector)
 	canvas.connector_selection_changed.connect(func(_kind): _refresh())
+	canvas.gameplay_placement_requested.connect(add_gameplay_placement)
+	canvas.gameplay_move_requested.connect(move_gameplay_placement)
+	canvas.gameplay_selection_changed.connect(func(_index): _refresh())
 	canvas.status_changed.connect(_set_status)
+	var object_properties := HBoxContainer.new()
+	object_properties.add_theme_constant_override("separation", 8)
+	workspace.add_child(object_properties)
 	mode_label = Label.new()
+	mode_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	mode_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	mode_label.add_theme_color_override("font_color", Color("70e5d5"))
-	workspace.add_child(mode_label)
+	object_properties.add_child(mode_label)
+	var angle_label := Label.new()
+	angle_label.text = "Angle °"
+	object_properties.add_child(angle_label)
+	angle_field = LineEdit.new()
+	angle_field.custom_minimum_size.x = 120
+	angle_field.tooltip_text = "Gameplay resting orientation in degrees. Enter commits the exact number. R / Shift+R changes it by 15°."
+	angle_field.text_submitted.connect(func(_text): _commit_gameplay_angle(); canvas.grab_focus())
+	angle_field.focus_exited.connect(_commit_gameplay_angle)
+	object_properties.add_child(angle_field)
+	handedness_field = OptionButton.new()
+	handedness_field.add_item("Left flipper")
+	handedness_field.add_item("Right flipper")
+	handedness_field.tooltip_text = "Change handedness and swing direction; preserve the authored pivot and resting angle."
+	handedness_field.item_selected.connect(_change_handedness)
+	object_properties.add_child(handedness_field)
+	_button(object_properties, "duplicate", "Duplicate", duplicate_selected, "Ctrl+D • duplicate the selected gameplay object, offset by one cell")
 	detail_label = Label.new()
 	detail_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	detail_label.add_theme_color_override("font_color", Color("b5c8d6"))
@@ -211,7 +266,7 @@ func _build_ui() -> void:
 	status_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	column.add_child(status_label)
 	var help := Label.new()
-	help.text = "R rotate   H / V flip   Delete remove   Ctrl+Z undo   Esc select   Alt-click overlap   Wheel zoom   Middle-drag pan"
+	help.text = "R rotate   Shift+R object −15°   H / V terrain flip   Ctrl+D duplicate object   Alt free move / cycle overlaps   Wheel zoom   Middle-drag pan"
 	help.add_theme_font_size_override("font_size", 12)
 	help.add_theme_color_override("font_color", Color("8aa5ba"))
 	column.add_child(help)
@@ -225,8 +280,9 @@ func _button(parent: Node, id: String, label: String, action: Callable, hint: St
 		# Toolbar buttons do not take keyboard focus. Commit numeric drafts before
 		# an edit refreshes the fields, then give editing shortcuts to the canvas.
 		cell_size_field.apply()
+		_commit_gameplay_angle()
 		_commit_title()
-		if id in ["select", "rotate", "flip_h", "flip_v", "delete", "undo", "redo", "fit"]:
+		if id in ["select", "rotate", "flip_h", "flip_v", "delete", "duplicate", "undo", "redo", "fit"]:
 			canvas.grab_focus()
 		action.call())
 	parent.add_child(button)
@@ -283,10 +339,28 @@ func choose_shape(id: String) -> void:
 	_set_status("Click the grid to place %s. Keep clicking to repeat; Esc returns to selection." % definition.label)
 	_refresh()
 
+func _change_palette_tab(index: int) -> void:
+	var terrain := index == 0
+	search_field.visible = terrain
+	family_filter.visible = terrain
+	terrain_scroll.visible = terrain
+	gameplay_list.visible = not terrain
+	palette_heading.text = "TERRAIN LIBRARY  /  %d stamps" % Shapes.definitions().size() if terrain else "GAMEPLAY  /  4 objects"
+	_select_mode()
+
+func choose_gameplay(id: String) -> void:
+	var placement: Dictionary = Objects.make_placement(id)
+	if placement.is_empty():
+		return
+	canvas.grab_focus()
+	canvas.set_gameplay_brush(placement)
+	_set_status("Place %s. SNAP ON · hold Alt for FREE MOVE. R / Shift+R adjusts the angle." % Objects.get_definition(id).label)
+	_refresh()
+
 func _select_mode() -> void:
 	canvas.grab_focus()
 	canvas.select_piece(-1)
-	_set_status("Click terrain or a green connector. Drag to move; connector handles resize. Alt-click reaches overlapping terrain.")
+	_set_status("Click terrain, gameplay objects or green connectors. Drag to move; Alt frees gameplay position. Alt-click cycles overlaps.")
 	_refresh()
 
 func choose_connector(kind: String) -> void:
@@ -351,8 +425,96 @@ func _clamp_anchor(placement: Dictionary, anchor: Vector2i) -> Vector2i:
 	var frame: Vector2i = Shapes.transformed_size(placement)
 	return Vector2i(clampi(anchor.x, 0, document.grid_size.x - frame.x), clampi(anchor.y, 0, document.grid_size.y - frame.y))
 
+func add_gameplay_placement(placement: Dictionary) -> void:
+	var candidate: Resource = document.copy_document()
+	candidate.gameplay_objects.append(placement.duplicate(true))
+	if not candidate.validation_errors().is_empty():
+		_set_status("Gameplay objects require a known type, finite local position and finite angle.")
+		return
+	_record_edit()
+	document.gameplay_objects.append(placement.duplicate(true))
+	_set_status("Placed %s at %s px. %d gameplay objects." % [Objects.get_definition(placement.type).label, placement.position, document.gameplay_objects.size()])
+	_refresh()
+
+func move_gameplay_placement(index: int, position: Vector2) -> void:
+	if index < 0 or index >= document.gameplay_objects.size() or not position.is_finite():
+		return
+	var placement: Dictionary = document.gameplay_objects[index]
+	if placement.position == position:
+		return
+	_record_edit()
+	# Snapping belongs to the gesture. Stored positions are never normalized.
+	placement.position = position
+	_refresh()
+
+func _active_gameplay() -> Dictionary:
+	if not canvas.gameplay_brush.is_empty():
+		return canvas.gameplay_brush
+	if canvas.selected_gameplay_index >= 0 and canvas.selected_gameplay_index < document.gameplay_objects.size():
+		return document.gameplay_objects[canvas.selected_gameplay_index]
+	return {}
+
+func set_gameplay_angle(value: float) -> void:
+	var placement := _active_gameplay()
+	if placement.is_empty() or not is_finite(value) or placement.rotation_degrees == value:
+		return
+	canvas.cancel_gesture()
+	if canvas.gameplay_brush.is_empty():
+		_record_edit()
+	placement.rotation_degrees = value
+	_refresh()
+
+func _commit_gameplay_angle() -> void:
+	if _refreshing or angle_field == null or not angle_field.editable:
+		return
+	var text_value := angle_field.text.strip_edges()
+	# A displayed decimal may be shorter than its underlying binary float. Merely
+	# focusing the field or using another toolbar action must never round that value.
+	if text_value == _angle_display_text:
+		return
+	if not text_value.is_valid_float() or not is_finite(text_value.to_float()):
+		_set_status("Enter a finite angle in degrees.")
+		angle_field.text = _angle_display_text
+		return
+	set_gameplay_angle(text_value.to_float())
+	_refresh()
+
+func _change_handedness(index: int) -> void:
+	if _refreshing:
+		return
+	var placement := _active_gameplay()
+	if placement.is_empty() or placement.type not in ["left_flipper", "right_flipper"]:
+		return
+	var type := "left_flipper" if index == 0 else "right_flipper"
+	if placement.type == type:
+		return
+	canvas.cancel_gesture()
+	if canvas.gameplay_brush.is_empty():
+		_record_edit()
+	placement.type = type
+	_refresh()
+
+func duplicate_selected() -> void:
+	var index: int = canvas.selected_gameplay_index
+	if index < 0 or index >= document.gameplay_objects.size():
+		return
+	canvas.cancel_gesture()
+	var placement: Dictionary = document.gameplay_objects[index].duplicate(true)
+	placement.position += Vector2.ONE * float(document.cell_size)
+	add_gameplay_placement(placement)
+	canvas.select_gameplay(document.gameplay_objects.size() - 1)
+	_refresh()
+
 func rotate_active() -> void:
-	_transform_active("rotation")
+	if not _active_gameplay().is_empty():
+		rotate_gameplay(15.0)
+	else:
+		_transform_active("rotation")
+
+func rotate_gameplay(degrees: float) -> void:
+	var placement := _active_gameplay()
+	if not placement.is_empty():
+		set_gameplay_angle(float(placement.rotation_degrees) + degrees)
 
 func flip_active(horizontal: bool) -> void:
 	_transform_active("flip_h" if horizontal else "flip_v")
@@ -391,6 +553,13 @@ func delete_selected() -> void:
 	if not canvas.selected_connector.is_empty():
 		set_connector(canvas.selected_connector, 0, 0)
 		return
+	if canvas.selected_gameplay_index >= 0:
+		canvas.cancel_gesture()
+		_record_edit()
+		document.gameplay_objects.remove_at(canvas.selected_gameplay_index)
+		canvas.select_gameplay(-1)
+		_refresh()
+		return
 	if canvas.selected_index < 0:
 		return
 	canvas.cancel_gesture()
@@ -400,7 +569,8 @@ func delete_selected() -> void:
 	_refresh()
 
 func _snapshot() -> Dictionary:
-	return {"document": document.copy_document(), "selected": canvas.selected_index, "connector": canvas.selected_connector}
+	return {"document": document.copy_document(), "selected": canvas.selected_index,
+		"connector": canvas.selected_connector, "gameplay": canvas.selected_gameplay_index}
 
 func _record_edit() -> void:
 	undo_stack.append(_snapshot())
@@ -426,13 +596,18 @@ func redo() -> void:
 
 func _restore_snapshot(snapshot: Dictionary) -> void:
 	var active_brush: Dictionary = canvas.brush.duplicate(true)
+	var active_gameplay_brush: Dictionary = canvas.gameplay_brush.duplicate(true)
 	document = snapshot.document
 	_title_edit_recorded = false
 	canvas.set_document(document, false)
 	if not active_brush.is_empty():
 		canvas.set_brush(active_brush)
+	elif not active_gameplay_brush.is_empty():
+		canvas.set_gameplay_brush(active_gameplay_brush)
 	elif not snapshot.get("connector", "").is_empty() and document.get_connector(snapshot.connector).width > 0:
 		canvas.select_connector(snapshot.connector)
+	elif snapshot.get("gameplay", -1) >= 0:
+		canvas.select_gameplay(snapshot.gameplay)
 	else:
 		canvas.select_piece(snapshot.selected if snapshot.selected < document.placements.size() else -1)
 	_refresh()
@@ -453,6 +628,7 @@ func new_document() -> void:
 	_set_status("New Act: 12 columns × 12 rows. Choose a terrain stamp to begin.")
 
 func save_to(path: String) -> bool:
+	_commit_gameplay_angle()
 	cell_size_field.apply()
 	_commit_title()
 	if path.get_extension().to_lower() != "tres":
@@ -463,7 +639,7 @@ func save_to(path: String) -> bool:
 		return false
 	current_path = path
 	saved_fingerprint = document.fingerprint()
-	_set_status("Saved %d terrain pieces to %s" % [document.placements.size(), path])
+	_set_status("Saved %d terrain pieces and %d gameplay objects to %s" % [document.placements.size(), document.gameplay_objects.size(), path])
 	_refresh()
 	return true
 
@@ -481,12 +657,13 @@ func load_from(path: String) -> bool:
 	canvas.set_document(document)
 	_refresh()
 	canvas.call_deferred("fit_view")
-	_set_status("Loaded %d terrain pieces. Continue editing or choose a new stamp." % document.placements.size())
+	_set_status("Loaded %d terrain pieces and %d gameplay objects. Continue editing or choose a palette item." % [document.placements.size(), document.gameplay_objects.size()])
 	return true
 
 func request_action(action: String) -> void:
 	if _modal_open():
 		return
+	_commit_gameplay_angle()
 	cell_size_field.apply()
 	_commit_title()
 	canvas.cancel_gesture()
@@ -519,6 +696,7 @@ func _save_current() -> void:
 		pending_action = ""
 
 func _open_save_dialog() -> void:
+	_commit_gameplay_angle()
 	cell_size_field.apply()
 	_commit_title()
 	canvas.cancel_gesture()
@@ -583,12 +761,22 @@ func _refresh() -> void:
 	_refresh_file_state()
 	buttons.undo.disabled = undo_stack.is_empty()
 	buttons.redo.disabled = redo_stack.is_empty()
-	buttons.delete.disabled = canvas.selected_index < 0 and canvas.selected_connector.is_empty()
+	buttons.delete.disabled = canvas.selected_index < 0 and canvas.selected_gameplay_index < 0 and canvas.selected_connector.is_empty()
+	buttons.duplicate.disabled = canvas.selected_gameplay_index < 0
 	connector_summary.text = _connector_description("entry") + "   |   " + _connector_description("exit")
 	connector_summary.tooltip_text = connector_summary.text + "\nCompatibility compares width only; horizontal positions may differ."
 	var active: Dictionary = canvas.brush if not canvas.brush.is_empty() else (document.placements[canvas.selected_index] if canvas.selected_index >= 0 else {})
+	var gameplay := _active_gameplay()
 	for key in ["rotate", "flip_h", "flip_v"]:
 		buttons[key].disabled = active.is_empty()
+	buttons.rotate.disabled = active.is_empty() and gameplay.is_empty()
+	buttons.rotate.text = "Rotate +15°" if not gameplay.is_empty() else "Rotate +90°"
+	angle_field.editable = not gameplay.is_empty()
+	_angle_display_text = var_to_str(gameplay.rotation_degrees) if not gameplay.is_empty() else ""
+	angle_field.text = _angle_display_text
+	angle_field.placeholder_text = "Gameplay only"
+	handedness_field.disabled = gameplay.is_empty() or gameplay.type not in ["left_flipper", "right_flipper"]
+	handedness_field.select(1 if not gameplay.is_empty() and gameplay.type == "right_flipper" else 0)
 	if not canvas.connector_tool.is_empty():
 		mode_label.text = "AUTHOR %s  ·  %s border only" % [canvas.connector_tool.to_upper(), "bottom" if canvas.connector_tool == "entry" else "top"]
 		detail_label.text = "Click or drag across boundary cells to set the span. Green spans are authoring markers; terrain remains unchanged."
@@ -596,9 +784,14 @@ func _refresh() -> void:
 		mode_label.text = "SELECTED CONNECTOR  ·  " + _connector_description(canvas.selected_connector)
 		var next_width: int = document.exit_width
 		detail_label.text = "Drag middle to move · endpoint handles resize · Delete removes · Left/Right nudge" + (" · Next entry width: %d" % next_width if next_width > 0 else "")
+	elif not gameplay.is_empty():
+		var definition: Dictionary = Objects.get_definition(gameplay.type)
+		mode_label.text = ("PLACE  ·  " if not canvas.gameplay_brush.is_empty() else "SELECTED  ·  ") + definition.label
+		var anchor_label := "Pivot" if gameplay.type in ["left_flipper", "right_flipper"] else "Anchor"
+		detail_label.text = "%s %s px · %s° · Alt: free position · Arrows: 1 cell / Alt: 1 px" % [anchor_label, gameplay.position, var_to_str(gameplay.rotation_degrees)]
 	elif active.is_empty():
-		mode_label.text = "SELECT / MOVE  ·  %d pieces" % document.placements.size()
-		detail_label.text = "Click terrain to select it. Arrow keys move a selected piece by one cell."
+		mode_label.text = "SELECT / MOVE"
+		detail_label.text = "%d terrain pieces · %d gameplay objects · Click to select; Alt-click cycles overlaps." % [document.placements.size(), document.gameplay_objects.size()]
 	else:
 		var definition: Dictionary = Shapes.get_definition(active.shape_id)
 		var frame: Vector2i = Shapes.transformed_size(active)
@@ -646,13 +839,18 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			KEY_Y:
 				if typing: return
 				redo()
+			KEY_D:
+				if typing: return
+				duplicate_selected()
 			_: return
 	elif typing:
 		return
 	else:
 		match event.keycode:
 			KEY_ESCAPE: _select_mode()
-			KEY_R: rotate_active()
+			KEY_R:
+				if event.shift_pressed and not _active_gameplay().is_empty(): rotate_gameplay(-15.0)
+				else: rotate_active()
 			KEY_H: flip_active(true)
 			KEY_V: flip_active(false)
 			KEY_DELETE, KEY_BACKSPACE: delete_selected()

@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="ActGeometry" format=3]
 
-[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_af4ky"]
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_mi1hr"]
 
 [resource]
-script = ExtResource("1_af4ky")
-format_version = 2
+script = ExtResource("1_mi1hr")
+format_version = 3
 library_version = 2
-title = "Curve Garden — Entry & Exit"
+title = "Curve Garden — Complete Authoring"
 placements = [{
 "anchor": Vector2i(1, 1),
 "base_size": Vector2i(3, 3),
@@ -133,6 +133,23 @@ placements = [{
 "flip_v": false,
 "quarter_turns": 0,
 "shape_id": "circle_1x1"
+}]
+gameplay_objects = [{
+"position": Vector2(438.5, 271.25),
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "round_bumper"
+}, {
+"position": Vector2(230.5, 365.25),
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 66),
+"type": "triangle_bumper"
+}, {
+"position": Vector2(150, 530.5),
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 169, 103, 2, 150, 171, 85, 50, 64),
+"type": "left_flipper"
+}, {
+"position": Vector2(450, 530.5),
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 11, 179, 63, 141, 74, 53, 100, 64),
+"type": "right_flipper"
 }]
 entry_start_x = 7
 entry_width = 3

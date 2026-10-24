@@ -110,7 +110,7 @@ func check_persistence() -> void:
  var document := make_fixture()
  check(document.save_document(SAVED_PATH) == OK, "Authored terrain and both connectors save together")
  var source := FileAccess.get_file_as_string(SAVED_PATH)
- check(source.contains("format_version = 2") and source.contains("library_version = 2"), "Both current versions are serialized explicitly")
+ check(source.contains("format_version = " + str(Document.FORMAT_VERSION)) and source.contains("library_version = " + str(Shapes.VERSION)), "Both current versions are serialized explicitly")
  for field: String in CONNECTOR_FIELDS:
   check(source.contains(field + " = " + str(document.get(field))), "Saved resource retains " + field)
  var invalid: Resource = document.copy_document()

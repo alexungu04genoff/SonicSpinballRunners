@@ -1,8 +1,9 @@
 class_name ActGeometry
 extends Resource
-## A single Act's terrain references and boundary connectors. No runtime objects.
-const FORMAT_VERSION := 2
+## A single Act's terrain, boundary connectors and exact gameplay authoring data.
+const FORMAT_VERSION := 3
 const SHAPES = preload("res://scripts/act_editor/terrain_shapes.gd")
+const OBJECTS = preload("res://scripts/act_editor/gameplay_objects.gd")
 const SCRIPT_PATH := "res://scripts/act_editor/act_geometry.gd"
 const PLACEMENT_TYPES := {
  "shape_id": TYPE_STRING,
@@ -27,6 +28,8 @@ const PLACEMENT_TYPES := {
 @export var grid_size = Vector2i(12, 12)
 @export var cell_size = 50.0
 @export var placements = []
+## Gameplay centers/pivots use exact local pixel coordinates, independently of terrain.
+@export var gameplay_objects = []
 ## Entry lies on the bottom boundary; exit lies on the top boundary.
 ## A zero start and width represent an unset connector in an editable draft.
 @export var entry_start_x = 0
@@ -90,6 +93,7 @@ func validation_errors() -> PackedStringArray:
    errors.append("%s connector needs a positive width and nonnegative start." % kind.capitalize())
   elif valid_grid_type and (connector.width > grid_size.x or connector.start_x > grid_size.x - connector.width):
    errors.append("%s connector span must fit inside the Act's horizontal grid boundary." % kind.capitalize())
+ errors.append_array(_gameplay_validation_errors())
  if typeof(placements) != TYPE_ARRAY:
   errors.append("Terrain placements must be an array of dictionaries.")
   return errors
@@ -124,6 +128,35 @@ func validation_errors() -> PackedStringArray:
    errors.append(prefix + "the transformed footprint must fit inside this Act.")
  return errors
 
+func _gameplay_validation_errors() -> PackedStringArray:
+ var errors := PackedStringArray()
+ if typeof(gameplay_objects) != TYPE_ARRAY:
+  errors.append("Gameplay objects must be an array of dictionaries.")
+  return errors
+ for index in gameplay_objects.size():
+  var prefix := "Gameplay object %d: " % (index + 1)
+  if typeof(gameplay_objects[index]) != TYPE_DICTIONARY:
+   errors.append(prefix + "placement must be a dictionary.")
+   continue
+  var placement: Dictionary = gameplay_objects[index]
+  if typeof(placement.get("type")) != TYPE_STRING:
+   errors.append(prefix + "type must be a string.")
+  elif OBJECTS.get_definition(placement.type).is_empty():
+   errors.append(prefix + "unknown gameplay object type '%s'." % placement.type)
+  if typeof(placement.get("position")) != TYPE_VECTOR2:
+   errors.append(prefix + "position must be a local pixel Vector2.")
+  elif not placement.position.is_finite():
+   errors.append(prefix + "position must contain finite local coordinates.")
+  if typeof(placement.get("rotation_degrees")) not in [TYPE_FLOAT, TYPE_INT]:
+   errors.append(prefix + "rotation_degrees must be a number.")
+  elif not is_finite(placement.rotation_degrees):
+   errors.append(prefix + "rotation_degrees must be finite.")
+  for key: Variant in placement:
+   if typeof(key) != TYPE_STRING or key not in ["type", "position", "rotation_degrees"]:
+    errors.append(prefix + "unrecognized object field; only type, position and rotation_degrees are supported.")
+ # Gameplay data has no grid bounds, occupancy rules, angle normalization or snapping.
+ return errors
+
 func fingerprint() -> String:
  # Arrays make field order explicit, independent of Dictionary insertion order.
  var ordered_placements: Array = []
@@ -138,10 +171,23 @@ func fingerprint() -> String:
     ordered_placements.append(placement)
  else:
   ordered_placements.append(placements)
+ var ordered_objects: Array = []
+ if typeof(gameplay_objects) == TYPE_ARRAY:
+  for placement: Variant in gameplay_objects:
+   if typeof(placement) == TYPE_DICTIONARY:
+    var angle: Variant = placement.get("rotation_degrees")
+    if typeof(angle) in [TYPE_FLOAT, TYPE_INT]:
+     angle = float(angle)
+    ordered_objects.append([placement.get("type"), placement.get("position"), angle])
+   else:
+    ordered_objects.append(placement)
+ else:
+  ordered_objects.append(gameplay_objects)
  # ResourceSaver can omit an integer cell size equal to the default float size.
  # Treat equivalent numeric cell sizes identically while preserving their value.
  var normalized_cell_size: Variant = float(cell_size) if typeof(cell_size) in [TYPE_INT, TYPE_FLOAT] else cell_size
- return var_to_str([format_version, library_version, title, grid_size, normalized_cell_size, ordered_placements, entry_start_x, entry_width, exit_start_x, exit_width]).sha256_text()
+ # Hash native scalar bits: decimal formatting can collapse adjacent float values.
+ return var_to_bytes([format_version, library_version, title, grid_size, normalized_cell_size, ordered_placements, entry_start_x, entry_width, exit_start_x, exit_width, ordered_objects]).hex_encode().sha256_text()
 
 func copy_document() -> Resource:
  var result: Resource = get_script().new()
@@ -151,6 +197,7 @@ func copy_document() -> Resource:
  result.grid_size = grid_size
  result.cell_size = cell_size
  result.placements = placements.duplicate(true) if typeof(placements) == TYPE_ARRAY else placements
+ result.gameplay_objects = gameplay_objects.duplicate(true) if typeof(gameplay_objects) == TYPE_ARRAY else gameplay_objects
  result.entry_start_x = entry_start_x
  result.entry_width = entry_width
  result.exit_start_x = exit_start_x
@@ -168,10 +215,50 @@ static func load_document(path: String) -> Dictionary:
   return {"document": null, "error": "The selected file is not an Act Geometry resource."}
  if not loaded._format_version_was_set or not loaded._library_version_was_set:
   return {"document": null, "error": "This Act file is missing its required format or terrain library version."}
+ if typeof(loaded.format_version) == TYPE_INT and loaded.format_version == 2 and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
+  if typeof(loaded.gameplay_objects) != TYPE_ARRAY or not loaded.gameplay_objects.is_empty():
+   return {"document": null, "error": "Terrain-and-connector format 2 cannot contain gameplay object data."}
+  # Previous Acts gain an empty object list in memory. Only an explicit save writes v3.
+  loaded.format_version = FORMAT_VERSION
+ var decode_error := _decode_stored_angles(loaded)
+ if not decode_error.is_empty():
+  return {"document": null, "error": decode_error}
  var errors: PackedStringArray = loaded.validation_errors()
  if not errors.is_empty():
   return {"document": null, "error": "\n".join(errors)}
  return {"document": loaded, "error": ""}
+
+static func _decode_stored_angles(document: Resource) -> String:
+ if typeof(document.gameplay_objects) != TYPE_ARRAY:
+  return "" # The ordinary schema validator reports malformed collections.
+ # Derive Godot's supported primitive numeric layouts without accepting objects
+ # or arbitrary encoded containers. The payload has only one numeric authority.
+ var numeric_layouts := [var_to_bytes(0), var_to_bytes(2147483648), var_to_bytes(0.0), var_to_bytes(PI)]
+ for index in document.gameplay_objects.size():
+  var placement: Variant = document.gameplay_objects[index]
+  if typeof(placement) != TYPE_DICTIONARY or typeof(placement.get("rotation_degrees")) != TYPE_PACKED_BYTE_ARRAY:
+   continue
+  var payload: PackedByteArray = placement.rotation_degrees
+  var valid_layout := false
+  if payload.size() >= 4:
+   for layout: PackedByteArray in numeric_layouts:
+    if payload.size() == layout.size() and payload.decode_u32(0) == layout.decode_u32(0):
+     valid_layout = true
+     break
+  if not valid_layout:
+   return "Gameplay object %d: invalid stored numeric angle." % (index + 1)
+  # bytes_to_var disables object decoding by default; only numeric headers passed.
+  placement.rotation_degrees = bytes_to_var(payload)
+ return ""
+
+func _storage_document() -> Resource:
+ var stored: Resource = copy_document()
+ for placement: Dictionary in stored.gameplay_objects:
+  # Godot 4.7's text float parser can shift arbitrary double angles by one ULP.
+  # Store the angle once as a native numeric byte payload in the same field.
+  # Live documents and undo snapshots retain normal numeric rotation_degrees.
+  placement.rotation_degrees = var_to_bytes(placement.rotation_degrees)
+ return stored
 
 func save_document(path: String) -> Error:
  if not validation_errors().is_empty():
@@ -186,7 +273,7 @@ func save_document(path: String) -> Error:
  # Staging stays beside the destination so every rename stays on one filesystem.
  # Its .tres suffix is essential for ResourceSaver's format selection.
  var staged := _unused_sibling(target, "staging")
- var error := ResourceSaver.save(copy_document(), staged)
+ var error := ResourceSaver.save(_storage_document(), staged)
  if error != OK:
   _remove_if_present(staged)
   return error

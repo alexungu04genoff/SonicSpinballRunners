@@ -1,8 +1,20 @@
 # Physics Playground verification
 
-Latest checks: 2026-10-24. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
+Latest checks: 2026-10-25. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
-## Act connectors and expanded terrain
+## Gameplay-object authoring — 2026-10-25
+
+The standalone Act editor authors round bumpers, triangle bumpers/slings and left/right flippers in a separate exact-local-coordinate collection. Format 3 loads previous format-2 terrain/connector documents with an empty object list. All previews remain collisionless; runtime assembly, generator behavior and gameplay are outside this change.
+
+- `act_gameplay_regression.gd`: **471 checks passed**, plus **76 fresh-process checks**. Four pure-data silhouettes match current bottom-table proportions. Coverage includes finite numeric transforms, independent snapshots, overlap, out-of-grid local coordinates, version-2 compatibility, 70 fractional-coordinate/angle placements, repeated saves and restart/edit/re-save with byte-exact comparisons.
+- Native Godot decimal text roundtrips changed some float64 angles by one binary unit. Saved `rotation_degrees` fields now use a single native numeric byte payload, decoded by `load_document()`; live objects retain numeric angles. Checks cover malformed payloads, unchanged live data and rejection without damaging an existing save. Fingerprints use ordered binary values, so even tiny authored changes remain visible to dirty/history tracking.
+- Existing geometry regression passed **3,302 checks + 6 fresh-process checks**; connector regression passed **108 + 5**. Their terrain and connector contracts remain unchanged.
+- `act_gameplay_editor_smoke.gd`: **57 headless and 58 ANGLE graphical checks passed**, each including **5 fresh-editor-process checks**, with empty error logs. Real viewport input covers all four palette types, snapped and Alt-free positions, modifier changes during a drag, exact numeric angles, handedness, duplication/deletion/history, mixed terrain/object overlaps, palette drag/drop, pending-angle focus changes and combined persistence. Graphical palette-drop probes target actual integer screen pixels and compare the corresponding fractional local position.
+- Existing terrain/connector editor smoke passed **86 headless checks**. The isolated editor import completed without script errors, and the unchanged playground reached `PLAYGROUND_READY` in a separate headless startup check. The gameplay editor capture was inspected at 1280×900: cyan bumpers, yellow flippers, pivot markers, swing arrows, palette categories and angle controls remain readable.
+
+The bundled example now combines 18 terrain pieces, two connectors and all four gameplay objects, including fractional positions and a 32° sling. Human review remains useful for drag comfort, pivot/swing readability and palette ergonomics. There is no playable Act loading in this milestone.
+
+## Act connectors and expanded terrain — previous milestone
 
 The follow-up authoring milestone retains the standalone scene and existing editing/file workflow. The user confirmed a fresh start: format/library version 2 only, with no migration layer or legacy shape lookup. Runtime generation and gameplay remain unchanged.
 

@@ -8,7 +8,7 @@ Free Play remains the default endless experimental physics playground. Optional 
 
 ## Manual Act geometry editor
 
-Double-click **Act Geometry Editor.cmd**, or run `scenes/act_geometry_editor.tscn` with **F6**. This isolated editor provides a 12×12 Act canvas, 77 terrain stamps, quarter-turn rotation, mirrors, overlap-aware selection, green bottom Entry/top Exit spans, undo/redo and persistent `.tres` saves. Connector compatibility compares width only. Choose **Example** for an editable sample. See [Act Geometry Editor](docs/ACT_GEOMETRY_EDITOR.md) for controls and the current format. The playable generator and default scene are unchanged.
+Double-click **Act Geometry Editor.cmd**, or run `scenes/act_geometry_editor.tscn` with **F6**. This isolated editor provides a 12×12 Act canvas, 77 terrain stamps, green bottom Entry/top Exit spans and a separate Gameplay palette for round/triangle bumpers and left/right flippers. Terrain keeps grid anchors, quarter-turns and mirrors. Gameplay anchors snap by default; hold **Alt** for exact free position, use **R / Shift+R** for 15° turns or enter an exact angle. Object placement, moves, rotation, handedness, deletion and duplication join undo/redo and persistent `.tres` saves. Format-2 terrain/connector files still load; new saves use format 3. Choose **Example** for an editable sample. See [Act Geometry Editor](docs/ACT_GEOMETRY_EDITOR.md) for controls and format details. The authored Acts are not yet playable; the generator and default scene are unchanged.
 
 ## Play Green Hill
 
