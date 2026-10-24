@@ -44,10 +44,12 @@ func _ready() -> void:
    mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
    var strip := MeshInstance3D.new()
    var strip_mesh := BoxMesh.new()
-   strip_mesh.size = Vector3((act.exit_right - act.exit_left) * TablePresentation.SCALE, 0.015, 0.03)
+   var clear_left: float = act.get("clear_left", act.exit_left)
+   var clear_right: float = act.get("clear_right", act.exit_right)
+   strip_mesh.size = Vector3((clear_right - clear_left) * TablePresentation.SCALE, 0.015, 0.03)
    strip.mesh = strip_mesh
    strip.material_override = mat
-   strip.position = TablePresentation.map_point(Vector2((act.exit_left + act.exit_right) * 0.5, y), 0.03)
+   strip.position = TablePresentation.map_point(Vector2((clear_left + clear_right) * 0.5, y), 0.03)
    entry.add_child(strip)
    var hint := Label3D.new()
    hint.text = "ACT %d ENTRY" % (index + 2)

@@ -19,6 +19,10 @@ static func compile(recipe: GridChunkRecipe) -> Dictionary:
    errors.append("Invalid grid connector span")
  chunk.chunk_id = recipe.recipe_id
  chunk.title = recipe.title
+ chunk.zone_role = recipe.zone_role
+ chunk.shot_description = recipe.shot_description
+ if recipe.zone_role not in ["", "interaction", "approach"]:
+  errors.append("Unknown Zone room role")
  chunk.estimated_difficulty = recipe.estimated_difficulty
  chunk.grid_dimensions = Vector2i(Vector2(recipe.dimensions) * GridPieceKit.CELL_SIZE / ChunkData.GRID_SIZE)
  chunk.grid_position = Vector2i(0, 7)
@@ -75,7 +79,18 @@ static func compile(recipe: GridChunkRecipe) -> Dictionary:
     if chunk.rings.has(position):
      errors.append("Duplicate ring anchor at %s" % placement.cell)
     chunk.rings.append(position)
-   "flipper": chunk.flipper_placements.append({"position": position + piece.offset * GridPieceKit.CELL_SIZE, "side": piece.side, "length": piece.length * GridPieceKit.CELL_SIZE})
+   "flipper":
+    var paddle := {"position": position + piece.offset * GridPieceKit.CELL_SIZE, "side": piece.side, "length": piece.length * GridPieceKit.CELL_SIZE}
+    if placement.has("role"):
+     if placement.role not in ["primary_recovery", "side_recovery", "precision"]:
+      errors.append("Unknown flipper role at placement %d" % index)
+     paddle.role = placement.role
+    if placement.has("shot_target"):
+     if not placement.shot_target is Vector2i:
+      errors.append("Flipper shot target must use integer grid coordinates")
+     else:
+      paddle.shot_target = Vector2(placement.shot_target) * GridPieceKit.CELL_SIZE
+    chunk.flipper_placements.append(paddle)
  for key: String in recipe.markers:
   if not recipe.markers[key] is Vector2i:
    errors.append("Marker %s must use integer grid coordinates" % key)

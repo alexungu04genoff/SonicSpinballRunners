@@ -2,7 +2,8 @@ extends "res://tests/score_attack_regression.gd"
 ## Exercise the actual F1 selector, mode-start path, replay, and failed-build state.
 
 func run() -> void:
- game = load("res://scenes/playground.tscn").instantiate()
+ green_hill = OS.get_cmdline_user_args().has("--green-hill")
+ game = load("res://experiments/visual_lab/visual_lab.tscn" if green_hill else "res://scenes/playground.tscn").instantiate()
  game.generation_seed = 18
  game.generation_difficulty = TableGenerator.Difficulty.EASY
  root.add_child(game)
@@ -10,6 +11,7 @@ func run() -> void:
  var debug: PlaygroundDebugPanel = game.debug_panel
  var ui: ScoreAttackPanel = debug.challenge_panel
  check(game.zone_difficulty_override == -1 and debug.zone_difficulty_selector.selected == 0, "Development override defaults to the official Easy Zone")
+ check(debug.grid_selector.get_item_text(1) == "Grid base" and debug.grid_caption.text.begins_with("Middle"), "Sandbox construction labels retain catalogue and individual recipe meanings")
  var sandbox_signature: String = game.layout.signature
  debug.zone_difficulty_selector.select(2)
  check(ui.start_run(), "Free Play can restart while a development Zone choice is pending")
@@ -22,6 +24,9 @@ func run() -> void:
  await frames(6)
  check(game.zone_enabled and game.chunks.size() == 9 and game.generation_difficulty == TableGenerator.Difficulty.NORMAL and game.zone_difficulty_override == TableGenerator.Difficulty.NORMAL, "Normal development selection builds all nine chunks at Normal")
  check(game.zone_config.difficulty == TableGenerator.Difficulty.EASY and ui.zone_panel.heading.text.contains("DEV NORMAL"), "Official configuration remains Easy and the HUD identifies the development build")
+ check(debug.grid_selector.get_item_text(0) == "Layout shuffle A" and debug.grid_selector.get_item_text(2) == "Layout shuffle C" and debug.generation_summary.text.contains("Layout shuffle A"), "Zone labels describe deterministic layout shuffles rather than individual grid recipes")
+ if green_hill:
+  check(game.layout_buttons[0].text == "Zone seed 18" and game.layout_buttons[2].text == "Layout shuffle B" and game.status_label.text.contains("Layout shuffle A"), "Green Hill footer identifies seeded Zone layouts and shuffles")
  var normal_signature: String = game.layout.signature
  debug.generation_buttons[2].pressed.emit()
  await frames(6)
@@ -50,6 +55,12 @@ func run() -> void:
  check(game.generation_difficulty == TableGenerator.Difficulty.EASY and game.zone_difficulty_override == -1 and not ui.zone_panel.heading.text.contains("DEV"), "Returning to official mode restores Easy geometry and clears the development badge")
  var canvas_height: int = ProjectSettings.get_setting("display/window/size/viewport_height")
  check(debug.generation_panel.get_global_rect().end.y <= canvas_height and debug.generation_panel.get_global_rect().end.x < 235.0, "The expanded generator controls fit their canvas area without overlapping the Zone HUD")
+ ui.mode_selector.select(0)
+ check(ui.start_run(), "Free Play can resume after reviewing a Zone layout")
+ await frames(6)
+ check(not game.zone_enabled and debug.grid_selector.get_item_text(0) == "Existing catalogue" and debug.grid_selector.get_item_text(2) == "Grid variant" and debug.generation_summary.text.contains("Middle:"), "Returning to Free Play restores recipe-specific construction labels")
+ if green_hill:
+  check(game.layout_buttons[0].text == "Normal 18" and game.layout_buttons[2].text == "Grid base" and not game.status_label.text.contains("Layout shuffle"), "Green Hill footer restores sandbox preset and grid-recipe labels")
  print("RESULT | Zone development difficulty | %d checks | %d failures" % [checks, failures])
  game.queue_free()
  await process_frame

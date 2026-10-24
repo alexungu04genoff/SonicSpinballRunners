@@ -231,6 +231,7 @@ func _build_lab_ui() -> void:
     request_generation(preset[1], TableGenerator.Difficulty.NORMAL, 0)
   )
   button.tooltip_text = "Switch middle type; keep current seed and difficulty. Build at serve or while paused." if preset[2] > 0 else "Build this Normal preset at serve or while paused. Resets ball, rings and score."
+  button.set_meta("layout_preset", preset)
   layout_buttons.append(button)
   play_buttons.add_child(button)
  play_buttons.add_child(_button("F1  Tuning / seeds", toggle_debug))
@@ -364,13 +365,20 @@ func _process(_delta: float) -> void:
   score_header_lab.text = "RINGS / SCORE"
   score_label_lab.add_theme_font_size_override("font_size", 25)
  var section := current_chunk_index()
- var construction_name: String = "Zone mix" if zone_enabled and generation_grid_mode == 0 else GRID_MODE_NAMES[generation_grid_mode]
+ var construction_name: String = PlaygroundDebugPanel.ZONE_LAYOUT_NAMES[generation_grid_mode] if zone_enabled else GRID_MODE_NAMES[generation_grid_mode]
  status_label.text = "Seed %d · %s · %s · Section %d/%d" % [generation_seed, TableGenerator.DIFFICULTY_NAMES[generation_difficulty], construction_name, maxi(1, section + 1), chunks.size()]
  status_label.tooltip_text = character.model_status
  if not character.model_available:
   status_label.text += " · Spin-ball fallback"
  for button: Button in layout_buttons:
   button.disabled = not can_regenerate()
+  var preset: Array = button.get_meta("layout_preset")
+  if zone_enabled:
+   button.text = PlaygroundDebugPanel.ZONE_LAYOUT_NAMES[preset[2]] if preset[2] > 0 else "Zone seed %d" % preset[1]
+   button.tooltip_text = "Change the Zone's seeded room arrangement using its full authored library. Keeps current Zone difficulty. Build at serve or while paused."
+  else:
+   button.text = preset[0]
+   button.tooltip_text = "Switch middle type; keep current seed and difficulty. Build at serve or while paused." if preset[2] > 0 else "Build this Normal preset at serve or while paused. Resets ball, rings and score."
  overview_button.text = "O  Overview" if presentation.camera_follow_enabled else "O  Follow character"
  if respawn_time >= 0.0:
   pose_label.text = "DRAIN / RETURNING TO SERVE"

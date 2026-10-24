@@ -4,6 +4,9 @@ extends Resource
 ## independent of the existing 100-pixel chunk placement grid.
 @export var recipe_id: String = "grid_relay"
 @export var title: String = "GRID RELAY"
+## Optional Zone composition intent; standalone recipes retain their original behavior.
+@export var zone_role: String = ""
+@export var shot_description: String = ""
 @export var dimensions: Vector2i = Vector2i(14, 14)
 @export_range(0.0, 100.0, 1.0) var estimated_difficulty: float = 28.0
 ## Inclusive rail-center endpoints on the top/bottom boundary, in grid units.

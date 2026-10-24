@@ -4,6 +4,7 @@ extends Control
 var game: Node
 var hud: PanelContainer
 var heading: Label
+var layout_label: Label
 var score_label: Label
 var exit_label: Label
 var build_label: Label
@@ -33,6 +34,8 @@ func _ready() -> void:
  hud.add_child(status)
  heading = _label(status, "GREEN HILL ZONE", 19)
  heading.modulate = Color("9de583")
+ layout_label = _label(status, "", 13)
+ layout_label.modulate = Color("9bb7c9")
  score_label = _label(status, "", 17)
  exit_label = _label(status, "", 14)
  build_label = _label(status, "", 14)
@@ -162,6 +165,9 @@ func _refresh_hud() -> void:
   return
  var act: int = game.zone.active_act
  heading.text = "GREEN HILL ZONE  ·  ACT %d / 3  ·  %s" % [act + 1, _difficulty_label()]
+ var layout_name: String = game.zone.acts[act].get("layout_name", "")
+ layout_label.text = "Route: " + layout_name
+ layout_label.visible = not layout_name.is_empty()
  score_label.text = "Act score %d / %d   |   Total %d" % [game.zone.act_score, game.zone.targets[act], game.score]
  var destination := "Portal" if act == 2 else "Exit"
  exit_label.text = "%s %s  ·  Checkpoint: Act %d" % [destination, "UNLOCKED — reach it!" if game.zone.exit_unlocked else "LOCKED", act + 1]

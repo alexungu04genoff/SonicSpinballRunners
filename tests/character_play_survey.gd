@@ -12,7 +12,8 @@ func run() -> void:
   game.character_id = id
   game.generation_seed = option("--seed=", 18)
   game.generation_grid_mode = option("--grid=", 0)
-  game.generation_difficulty = TableGenerator.Difficulty.EASY
+  game.generation_difficulty = option("--difficulty=", TableGenerator.Difficulty.EASY)
+  game.zone_difficulty_override = option("--difficulty=", -1)
   game.zone_enabled = mode == 2
   game.score_attack_enabled = mode == 1
   root.add_child(game)
@@ -56,6 +57,7 @@ func run() -> void:
    result.minimum_y = minf(result.minimum_y, game.ball.position.y)
    result.escaped = result.escaped or not game.ball.position.is_finite() or game.ball.position.x < -20 or game.ball.position.x > 820 or game.ball.position.y < -20
   result.score = game.score
+  result.difficulty = game.generation_difficulty
   result.rings = game.rings_collected
   result.balls = game.ball_number
   result.acts = game.zone.completed_acts
@@ -64,7 +66,7 @@ func run() -> void:
   paused = false
   game.free()
   await frames(4)
- var path := "res://test-results/character-play-mode%d-grid%d%s.json" % [mode, option("--grid=", 0), "-green-hill" if graphical else ""]
+ var path := "res://test-results/character-play-seed%d-tier%d-mode%d-grid%d%s.json" % [option("--seed=", 18), option("--difficulty=", -1), mode, option("--grid=", 0), "-green-hill" if graphical else ""]
  var output := FileAccess.open(path, FileAccess.WRITE)
  output.store_string(JSON.stringify(results, " "))
  output.close()

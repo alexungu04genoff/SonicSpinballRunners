@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="GridChunkRecipe" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/grid_chunk_recipe.gd" id="1"]
+[resource]
+script = ExtResource("1")
+recipe_id = "zone_normal_balcony"
+title = "BALCONY SHOT"
+zone_role = "approach"
+shot_description = "A right-side precision paddle follows the sloping shoulder into the narrower left upper opening. The broad left lane remains available for ordinary upward shots."
+estimated_difficulty = 47.0
+dimensions = Vector2i(16, 14)
+top_span = Vector2i(2, 12)
+bottom_span = Vector2i(1, 15)
+placements = Array[Dictionary]([
+{"piece": "slope_shallow_left", "cell": Vector2i(2, 0), "chain": "left"},
+{"piece": "rail_v", "cell": Vector2i(1, 2), "span": 12, "chain": "left"},
+{"piece": "rail_v", "cell": Vector2i(12, 0), "span": 6, "chain": "right"},
+{"piece": "slope_shallow_right", "cell": Vector2i(12, 6), "chain": "right"},
+{"piece": "slope_shallow_right", "cell": Vector2i(13, 8), "chain": "right"},
+{"piece": "slope_shallow_right", "cell": Vector2i(14, 10), "chain": "right"},
+{"piece": "rail_v", "cell": Vector2i(15, 12), "span": 2, "chain": "right"},
+{"piece": "wall_bumper_left", "cell": Vector2i(1, 7)},
+{"piece": "wall_bumper_right", "cell": Vector2i(13, 8)},
+{"piece": "bumper", "cell": Vector2i(6, 5)},
+{"piece": "short_flipper_right", "cell": Vector2i(12, 10), "role": "precision", "shot_target": Vector2i(8, 3)},
+{"piece": "ring", "cell": Vector2i(6, 1)},
+{"piece": "ring", "cell": Vector2i(8, 3)},
+{"piece": "ring", "cell": Vector2i(9, 5)},
+{"piece": "ring", "cell": Vector2i(10, 7)},
+{"piece": "ring", "cell": Vector2i(8, 9)},
+{"piece": "ring", "cell": Vector2i(6, 11)},
+{"piece": "ring", "cell": Vector2i(8, 13)}
+])
+markers = {"entry": Vector2i(8, 13), "exit": Vector2i(6, 1), "test_target": Vector2i(8, 3)}
+navigation_cells = Array[Vector2i]([Vector2i(6, 1), Vector2i(9, 5), Vector2i(8, 9), Vector2i(8, 13)])

@@ -2,6 +2,41 @@
 
 Latest checks: 2026-10-24. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
+## Normal/Hard authored Act composition — 2026-10-24
+
+Zone generator v3 replaces the repeated development corridors with six Normal and six Hard rooms. Each Act combines recovery, a distinct interaction chamber and an exit approach; the final Act retains a shaped capped objective room. Normal uses 160px Curve collars, Hard uses 240px Bank collars, and both retain the existing maximum bank grade of 0.75. The full compiler clearance checks run again after shaping. Official Easy selection and standalone Free Play/Score Attack resources remain intact.
+
+`zone_normal_rooms.gd`: **48 checks passed**. Every Normal room accepts a real upward shot in both mirrors. All seven authored paddles catch a descending ball and then physically hit their named bumper or collect their named ring; the seven selected seed-28 paddles repeat that result after connector shaping. `zone_hard_rooms.gd`: **35 checks passed**, covering six compiled rooms, twelve mirrored upward shots, ten mirrored scoring recoveries, and four recoveries in the final shaped seed-24 rooms. These are controlled 120 Hz fixtures with one prescribed starting trajectory and timed flipper inputs, not claims of human skill or enjoyment.
+
+`zone_composition_regression.gd`: **103 checks passed**. Six Normal/Hard examples and both alternative shuffles retain the requested roles and difficulty in every Act, five unique relay IDs, different interior silhouettes, measured Hard precision lanes and flowing joins. Repeated seeds reproduce transforms and composition. Counterexamples reject a single severe cap promoting otherwise Normal Acts, or broad empty rooms labelled Hard. Real physics checks cover twelve internal seam shots, four complete Act-boundary arrivals, six primary recovery shots, six central drains, frozen drafts and checkpoint state retention across Normal 28 and Hard 24.
+
+Review identified a real progression defect exposed by offset mouths: completion at the next funnel's safe-entry line still checked the old gate's narrower X span. Completion now derives its own span from the incoming outline, inset by rail and ball radii; the physical gate keeps its original bounds. `zone_offset_entry_regression.gd`: **12 checks passed headlessly and graphically with ANGLE**. An actual Hard 24 shot enters the gate at x = 150.26, then fans left to cross the safe line at x = 95.72. The old span 110–705 rejected it; the actual chamber span 81–719 accepts it. Locked targets and crossings outside that safe span remain rejected. The draft freezes the arrival and reward selection preserves its body/momentum before activating the new funnel and sealing the old gate. Existing Zone lifecycle regression also passed **34 checks**.
+
+### Ordinary-input character comparison
+
+Final reruns include the offset-entry fix. The same timed-flipper/alternating-steering policy uses earned specials, ordinary gravity serves and public Spring/Ice/Magnet draft choices. No score, meter, position or velocity is injected. These are simulated seconds at 120 Hz, not human completion estimates.
+
+| Layout | Character | Progress within 240 seconds | Score | Rings | Balls | Specials |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| Normal 28 | Sonic | Completed at 171.59 s | 20,500 | 59 | 1 | 5 activations, 5 actual Homing hits |
+| Normal 28 | Tails | Two Acts; reached final cap | 24,300 | 50 | 1 | 5 flights |
+| Hard 24 | Sonic | Two Acts; reached final cap | 32,350 | 57 | 1 | 6 activations, 5 actual Homing hits |
+| Hard 24 | Tails | Two Acts; reached cap entrance | 25,175 | 62 | 2 | 6 flights |
+
+All four runs physically crossed both Act boundaries without a side/top escape. First READY occurred at 20.35/34.62 seconds for Normal Sonic/Tails and 20.74/28.23 for Hard. The three incomplete runs remain incomplete evidence: high score did not replace the final aimed climb, and the same bot policy handles the characters differently. No difficulty or score target was reduced to force a successful survey.
+
+`zone_cap_shots.gd`: **3 checks passed** proving Hard 24's final portal and recovery route are reachable. A prescribed entry from (355, 730) with velocity (-120, -900) reaches the actual portal detector after 86 ticks and one bumper contact. A second entry from (405, 730) with velocity (160, -700) reaches it after 327 ticks, three timed cap-paddle strikes and three bumper hits. Both include the shaped cap and neighboring room, normal Balanced physics and no subsequent position/force edits. These controlled witnesses explain a reachable aiming challenge; they do not erase the bot's failed final climbs.
+
+### What differs visibly and mechanically
+
+Normal 18 starts Bank Return into the paddle-free Winding Lane; Normal 28 starts Target Garden into Offset Crown; Normal 41 starts Crosscourt into Balcony. Hard 24 starts Bank Vault into Offset Climb. Hard 29 instead starts Target Cove into Needle Gate; Hard 41 starts the paddle-free Split Orbit into Needle Gate, later Bank Vault into Switchback. These change target routes, recovery coverage and room silhouettes. Hard 18 and Hard 24 have the same room order and mainly differ in Act 2 mirroring; their different signatures alone are not evidence of a new design.
+
+Needle Gate's controlled upward route threads x = 475 (mirrored: 325) between large targets, while a center shot misses. Bank Vault's unequal pair reaches different scoring targets; Offset Climb's short optional paddle can hit its upper bumper. That short paddle still looks isolated from the wall: its role is a precise bonus shot, not side recovery. Human review should decide whether the shot earns the placement. Shared checkpoint decks remain repeated recognizable recovery spaces. Human timing fairness, sustained room interest and Tails' final climb remain open playtesting questions.
+
+Graphical ANGLE verification produced **nine full overviews and six close-ups** with `zone_design_capture.gd`: Hard Free Play24/Zone24; Normal Free Play29/Zone28; additional Normal18/41 and Hard18/29/41. Baseline comparisons remain separately named. Final captures wait for the ordinary deferred serve reset before pausing; they do not place Sonic at an old table's coordinates. Files are `test-results/zone-design-*.png`, with JSON manifests; captures remain local and ignored. UI regression passed **19 graphical checks**, including Layout shuffle A/B/C naming, sandbox labels, development-tier persistence and route identities.
+
+Compatibility checks passed: physics **38**, Score Attack **26**, Character Lab **70**, Scorecraft **37**, Act pinball **38**, Grid construction **23**, Grid Easy **22**, and Easy Zone generation **21**. The grid suites reproduce existing v11 geometry fingerprints and preserve regeneration behavior. The isolated Godot editor import also passed. Expected invalid-recipe/configuration diagnostics are exercised deliberately; no final failed assertions or unexpected script errors occurred. Source models, ArtBro's separate branch/worktree and the preexisting `project.godot` edit are preserved.
+
 ## Playfield design, gravity serves and Act funnels — 2026-10-24
 
 The final serve follows the user's review: no cup, spring or preset launch velocity. Enter / X releases the waiting character into ordinary gravity at the generated side marker. The existing flippers supply the first upward shot. Checkpoint retries use the same release. New Act-bottom funnels stay retracted until a physical upward shot clears their generated safe-entry line; drafting preserves the same body and momentum before activating the next funnel.

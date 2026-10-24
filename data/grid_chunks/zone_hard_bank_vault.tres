@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="GridChunkRecipe" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/grid_chunk_recipe.gd" id="1"]
+[resource]
+script = ExtResource("1")
+recipe_id = "zone_hard_bank_vault"
+title = "BANK VAULT / HARD"
+estimated_difficulty = 66.0
+zone_role = "interaction"
+shot_description = "Two unequal catches serve the central vault and the shorter right target route; the rounded bank feeds inward."
+dimensions = Vector2i(16, 14)
+top_span = Vector2i(1, 12)
+bottom_span = Vector2i(1, 12)
+placements = Array[Dictionary]([
+{"piece": "rail_v", "cell": Vector2i(1, 0), "span": 2, "chain": "left"},
+{"piece": "wide_bank_right", "cell": Vector2i(1, 2), "chain": "left"},
+{"piece": "rail_v", "cell": Vector2i(1, 10), "span": 4, "chain": "left"},
+{"piece": "rail_v", "cell": Vector2i(12, 0), "span": 2, "chain": "right"},
+{"piece": "slope_right", "cell": Vector2i(12, 2), "span": 3, "chain": "right"},
+{"piece": "rail_v", "cell": Vector2i(15, 5), "span": 4, "chain": "right"},
+{"piece": "slope_left", "cell": Vector2i(15, 9), "span": 3, "chain": "right"},
+{"piece": "rail_v", "cell": Vector2i(12, 12), "span": 2, "chain": "right"},
+{"piece": "wall_bumper_left", "cell": Vector2i(2, 6)},
+{"piece": "bumper_large", "cell": Vector2i(6, 5)},
+{"piece": "bumper_small", "cell": Vector2i(11, 4)},
+{"piece": "sling_right", "cell": Vector2i(15, 7)},
+{"piece": "flipper_left", "cell": Vector2i(3, 10), "role": "side_recovery", "shot_target": Vector2i(6, 5)},
+{"piece": "short_flipper_right", "cell": Vector2i(12, 10), "role": "precision", "shot_target": Vector2i(9, 5)},
+{"piece": "ring", "cell": Vector2i(7, 1)},
+{"piece": "ring", "cell": Vector2i(8, 3)},
+{"piece": "ring", "cell": Vector2i(9, 5)},
+{"piece": "ring", "cell": Vector2i(11, 6)},
+{"piece": "ring", "cell": Vector2i(10, 8)},
+{"piece": "ring", "cell": Vector2i(7, 9)},
+{"piece": "ring", "cell": Vector2i(4, 7)},
+{"piece": "ring", "cell": Vector2i(6, 13)}
+])
+markers = {"entry": Vector2i(6, 13), "exit": Vector2i(7, 1), "test_target": Vector2i(8, 3)}
+navigation_cells = Array[Vector2i]([Vector2i(7, 1), Vector2i(8, 3), Vector2i(9, 5), Vector2i(7, 9), Vector2i(6, 13)])

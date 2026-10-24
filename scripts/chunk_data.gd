@@ -5,6 +5,8 @@ const GRID_SIZE := 100.0
 const RAIL_RADIUS := 12.0
 @export var chunk_id: String = "section"
 @export var title: String = "Section"
+@export var zone_role: String = ""
+@export var shot_description: String = ""
 ## Provisional authored gameplay rating, independent of technical validity or character stats.
 @export_range(0.0, 100.0, 1.0) var estimated_difficulty: float = 25.0
 @export var grid_position: Vector2i = Vector2i.ZERO
@@ -55,6 +57,10 @@ func world_flippers() -> Array[Dictionary]:
   var transformed := {"position": world_point(placement.position), "side": -float(placement.side) if mirrored else float(placement.side), "length": float(placement.get("length", PlaygroundFlipper.LENGTH))}
   if placement.get("checkpoint_only", false):
    transformed.checkpoint_only = true
+  if placement.has("role"):
+   transformed.role = placement.role
+  if placement.has("shot_target"):
+   transformed.shot_target = world_point(placement.shot_target)
   result.append(transformed)
  if flipper_placements.is_empty():
   for marker_name: String in ["left_flipper", "right_flipper"]:

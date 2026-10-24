@@ -1,6 +1,8 @@
 class_name PlaygroundDebugPanel
 extends CanvasLayer
 
+const ZONE_LAYOUT_NAMES := ["Layout shuffle A", "Layout shuffle B", "Layout shuffle C"]
+
 var game: Node
 var tuning: PhysicsTuning
 var panel: PanelContainer
@@ -9,6 +11,7 @@ var seed_field: SpinBox
 var difficulty_selector: OptionButton
 var zone_difficulty_selector: OptionButton
 var grid_selector: OptionButton
+var grid_caption: Label
 var generation_summary: Label
 var generation_hint: Label
 var traversal_telemetry: Label
@@ -279,12 +282,11 @@ func _build_generation_panel() -> void:
  zone_difficulty_selector.add_item("Official Zone: Easy")
  zone_difficulty_selector.add_item("DEV Zone: Normal")
  zone_difficulty_selector.add_item("DEV Zone: Hard")
- zone_difficulty_selector.tooltip_text = "Applies to all nine Zone chunks on the next build or Start / replay. Official Green Hill stays Easy. Development layouts still require collision validation; an unavailable layout is reported without falling back to Easy."
+ zone_difficulty_selector.tooltip_text = "Selects the room composition for all three Acts on the next build or Start / replay. Official Green Hill stays Easy. Development layouts still require collision validation; an unavailable layout is reported without falling back to Easy."
  zone_difficulty_selector.item_selected.connect(func(_index: int): zone_difficulty_selector.release_focus())
  stack.add_child(zone_difficulty_selector)
- _label(stack, "Middle section (apply on build)", 12)
+ grid_caption = _label(stack, "Middle section (apply on build)", 12)
  grid_selector = OptionButton.new()
- grid_selector.tooltip_text = "Grid modes use wider recipes for Easy. Normal and Hard retain the original base/variant designs."
  for mode_name: String in game.GRID_MODE_NAMES:
   grid_selector.add_item(mode_name)
  grid_selector.item_selected.connect(func(_index: int): grid_selector.release_focus())
@@ -326,15 +328,24 @@ func refresh_generation() -> void:
  difficulty_selector.select(game.generation_difficulty)
  zone_difficulty_selector.select(maxi(0, game.zone_difficulty_override))
  grid_selector.select(game.generation_grid_mode)
+ grid_caption.text = "Zone layout (apply on build)" if game.zone_enabled else "Middle section (apply on build)"
+ for index in grid_selector.item_count:
+  grid_selector.set_item_text(index, ZONE_LAYOUT_NAMES[index] if game.zone_enabled else game.GRID_MODE_NAMES[index])
+ grid_selector.tooltip_text = "All three shuffles use the full authored Zone library. Choose a different deterministic arrangement of rooms for this seed; this does not select a single grid recipe." if game.zone_enabled else "Existing catalogue selects an authored middle chunk. Grid base and Grid variant select their respective construction recipes; Easy uses the wider versions."
  var estimate: Dictionary = game.layout.difficulty_estimate
  generation_summary.text = "CURRENT SEED  %d\nPreference: %s\nEstimate: %s %.1f / 100\n" % [game.generation_seed, TableGenerator.DIFFICULTY_NAMES[game.generation_difficulty], TableGenerator.DIFFICULTY_NAMES[estimate.band], estimate.score]
  if game.zone_enabled:
   generation_summary.text += "Zone: %s\n" % ("Official Easy" if game.zone_difficulty_override < 0 else "DEV " + TableGenerator.DIFFICULTY_NAMES[game.zone_difficulty_override])
- generation_summary.text += "Middle: %s\n" % game.GRID_MODE_NAMES[game.generation_grid_mode]
- if game.generation_grid_mode > 0:
+ generation_summary.text += "%s: %s\n" % ["Layout" if game.zone_enabled else "Middle", ZONE_LAYOUT_NAMES[game.generation_grid_mode] if game.zone_enabled else game.GRID_MODE_NAMES[game.generation_grid_mode]]
+ if game.zone_enabled or game.generation_grid_mode > 0:
   generation_summary.text += "Kit v%d / cell 50 px\n" % GridPieceKit.VERSION
  if game.layout.has("transition_summary"):
   generation_summary.text += "Transitions: %s\n" % game.layout.transition_summary
+ if game.zone_enabled:
+  for index in game.layout.acts.size():
+   var layout_name: String = game.layout.acts[index].get("layout_name", "")
+   if not layout_name.is_empty():
+    generation_summary.text += "Act %d: %s\n" % [index + 1, layout_name]
  for i in game.layout.chunks.size():
   var chunk: ChunkData = game.layout.chunks[i]
   generation_summary.text += "\n%d. %s\nMirror: %s  Shift: %d\n" % [i + 1, chunk.chunk_id, "yes" if chunk.mirrored else "no", chunk.horizontal_shift_cells]
@@ -346,6 +357,8 @@ func refresh_generation() -> void:
  generation_summary.text += "\nFallback: %s\nRough geometry estimate" % ("yes" if game.layout.used_fallback else "no")
  generation_summary.text += "\n" + game.layout.selection_note
  generation_summary.tooltip_text = "Estimate is the maximum across authored chunk challenge, connector severity, sampled approach difficulty, and Normal's generated bank inclination. Checked join includes a safety margin. Approach lane is the narrowest sampled contiguous ball-center route, not total space across separate lanes. These are geometry heuristics, not measured player success rates."
+ if game.zone_enabled:
+  generation_summary.tooltip_text += "\nZone composition separately checks room roles and the requested challenge within every Act. A severe junction alone is not enough to qualify a Hard Zone."
  for note: String in game.layout.get("transition_notes", PackedStringArray()):
   generation_summary.tooltip_text += "\n" + note
 

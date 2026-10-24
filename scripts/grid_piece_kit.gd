@@ -3,7 +3,7 @@ extends RefCounted
 ## Gameplay definitions only. Points and footprints use construction-grid units.
 ## Piece orientation is explicit in its name; rotations are not supported.
 const CELL_SIZE := 50.0
-const VERSION := 3
+const VERSION := 4
 
 static func definition(name: String, span: int = 1) -> Dictionary:
  var points := PackedVector2Array()
@@ -14,6 +14,8 @@ static func definition(name: String, span: int = 1) -> Dictionary:
   "rail_h": points = PackedVector2Array([Vector2.ZERO, Vector2(span, 0)])
   "slope_right": points = PackedVector2Array([Vector2.ZERO, Vector2(span, span)])
   "slope_left": points = PackedVector2Array([Vector2.ZERO, Vector2(-span, span)])
+  "slope_shallow_right": points = PackedVector2Array([Vector2.ZERO, Vector2(1, 2)])
+  "slope_shallow_left": points = PackedVector2Array([Vector2.ZERO, Vector2(-1, 2)])
   "corner_right": points = PackedVector2Array([Vector2.ZERO, Vector2(span, 0), Vector2(span, span)])
   "corner_left": points = PackedVector2Array([Vector2.ZERO, Vector2(-span, 0), Vector2(-span, span)])
   "bank_right": points = PackedVector2Array([Vector2.ZERO, Vector2(1, 2), Vector2(0, 4)])
@@ -43,9 +45,11 @@ static func definition(name: String, span: int = 1) -> Dictionary:
    return {"kind": "triangle", "points": vertices, "attachment": name.trim_prefix("sling_"), "footprint": Rect2(minf(0, direction * 1.4), -1, 1.4, 2)}
   "ring":
    return {"kind": "ring", "footprint": Rect2(-0.2, -0.2, 0.4, 0.4)}
-  "flipper_left", "flipper_right", "side_flipper_left", "side_flipper_right":
+  "flipper_left", "flipper_right", "side_flipper_left", "side_flipper_right", "short_flipper_left", "short_flipper_right":
    var side := 1.0 if name.ends_with("left") else -1.0
    var length := 2.5 if side > 0.0 else 2.3
+   if name.begins_with("short_"):
+    length = 1.6
    var offset := Vector2(-side * 0.5, 0) if name.begins_with("side_") else Vector2.ZERO
    var box := Rect2(-0.26, -length * sin(0.48) - 0.26, length + 0.52, length * (sin(0.48) + sin(0.32)) + 0.52)
    if side < 0.0:

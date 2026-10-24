@@ -52,6 +52,7 @@ func run() -> void:
  game.generation_seed = option("--seed=", 18)
  game.generation_grid_mode = option("--grid=", 0)
  game.zone_enabled = true
+ game.zone_difficulty_override = option("--difficulty=", -1)
  root.add_child(game)
  await frames(5)
  game.controls.virtual_enabled = true

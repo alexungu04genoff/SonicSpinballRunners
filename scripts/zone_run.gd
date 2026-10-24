@@ -55,7 +55,7 @@ func observe_motion(previous: Vector2, current: Vector2) -> bool:
   var crossing_y: float = act.get("clear_y", act.exit_y - PlaygroundBall.RADIUS - ZoneGate.THICKNESS * 0.5 - 2.0)
   if previous.y >= crossing_y and current.y < crossing_y:
    var x := lerpf(previous.x, current.x, (crossing_y - previous.y) / (current.y - previous.y))
-   reached = x >= act.exit_left and x <= act.exit_right
+   reached = x >= act.get("clear_left", act.exit_left) and x <= act.get("clear_right", act.exit_right)
  else:
   var near := Geometry2D.get_closest_point_to_segment(act.goal_position, previous, current)
   reached = near.distance_squared_to(act.goal_position) <= ScoreAttack.CONTACT_RADIUS * ScoreAttack.CONTACT_RADIUS
