@@ -202,7 +202,7 @@ All abilities and values below are concepts, not final balancing requirements:
 | Knuckles | Horizontal glide toward a side wall or bumper, then a vertical shockwave that collects or activates eligible targets | Approximately ×2 |
 | Shadow | Large-radius Chaos Blast that collects or activates many bonuses | Ordinary ×1 value |
 
-Knuckles, Shadow and a separate Tails special scoring bonus remain concepts. Sonic, Tails and Scorecraft now have playable experiments; all numerical values remain provisional.
+All four characters now have playable experiments alongside Scorecraft; a separate Tails special scoring bonus remains a concept. All numerical values remain provisional.
 
 ### Scorecraft v1 — implemented experiment, 2026-10-24
 
@@ -212,9 +212,19 @@ Knuckles, Shadow and a separate Tails special scoring bonus remain concepts. Son
 
 **Lifecycle and comparison:** Pauses and Chao drafts freeze the timer. Expiration, drain, reset, character change, Act advancement and fresh runs clear active combos. Zone subtotals and cumulative score use the same awarded points; no combo carries into the next Act. A shared HUD shows links, multiplier, timer, next action and award breakdown. Switching combos off at serve/pause starts a clean same-seed baseline replay. Config values and presentation signals are documented in README. The numerical tuning and human enjoyment remain provisional; input-only surveys are evidence of behavior, not proof of skill balance.
 
-### Character Lab v1 — implemented experiment
+### Character Lab — four-character experiment
 
-Character selection applies on Start / replay in Free Play, Score Attack or Green Hill Zone. Changing character restores its profile and clears meter and temporary ability state; ordinary same-character replay preserves debug tuning. Sandbox Chao remain compatible with either profile. New Zone runs retain the existing rule of an empty acquired build.
+**Confirmed expansion:** Knuckles and Shadow join Sonic and Tails through the existing definitions, profile resolver, meter and selection UI. This is independent of Act Builder and procedural geometry work. Existing Sonic/Tails mechanics remain unchanged. All four can use Chao in Free Play, Score Attack and Green Hill. Knuckles uses a red placeholder; Shadow uses a black placeholder with red accents until ArtBro supplies presentation.
+
+**Provisional Knuckles tuning:** Starting gravity 1.12, steering acceleration 1,900, counter-steering 3,400, contribution limit 105, bumper rebound 1.10 and wall restitution 0.78. A left/right choice or existing horizontal momentum selects a single lateral impulse toward 650px/s, capped at a 950px/s change. Glide lasts 0.85 seconds, with shared steering modifiers and unchanged gravity. A real side rail or eligible bumper impact of at least 180px/s ends glide and releases an upward 360×500px wave. The wave requires line of sight to targets/rings; exposed wall-bumper faces are eligible even when their centers lie behind a rail. No target can trigger before the physical impact. Misses expire safely. Knuckles gains no powered upward lift.
+
+**Provisional Shadow tuning:** Starting gravity 1.0, steering acceleration 2,100, counter-steering 4,800, contribution limit 125 and wall restitution 0.66. Chaos Blast instantly checks a 300px radius around the physical ball. This explicit remote ability can reach through ordinary walls, but eligible targets and rings must belong to the active Act. No gates, portals, transitions, flippers, mounts or unrelated bodies can be activated. Positioning determines coverage.
+
+**Area scoring contract:** Shockwave pays 2× base target/ring points; Chaos Blast pays 1×. These awards go through Scorecraft without combo multiplication, chain advancement, timer refresh or remote meter charge. Physical Knuckles impact pays 2× once and retains ordinary physical charge; subsequent wave enumeration cannot duplicate it. One shared atomic ring claim preserves immediate collection and cosmetic flight. Remote/contact target awards share a short cooldown, and duplicate descriptors cannot duplicate a blast award. Ordinary rack-clear bonuses remain. Score may unlock progression normally; physical exit traversal remains mandatory.
+
+**Lifecycle:** Both new specials initially cost 100 of 100 meter, configurable per definition. Failed direction/charge checks keep meter; a paid missed glide or empty blast is not refunded. Shared temporary modifiers preserve Chao and clear on drains, resets, character changes, replay and completion. Pause/drafts freeze glide time; Act advancement cancels glide and pending waves without refilling meter. Tails' existing flight behavior below is retained. Art adapters receive activation, impact, area-target, completion and reset events; remote scoring never emits a false physical bumper event. No generator or authored room changes belong to this experiment.
+
+Character selection applies on Start / replay in Free Play, Score Attack or Green Hill Zone. Changing character restores its profile and clears meter and temporary ability state; ordinary same-character replay preserves debug tuning. Sandbox Chao remain compatible with all four profiles. New Zone runs retain the existing rule of an empty acquired build.
 
 Sonic uses Balanced physics. Homing scans only existing bumper bodies in the active Act, within 400 px. A full-ball physics sweep must first encounter the candidate, excluding obstructed targets and all progression objects. Activation applies a gravity-compensated physical impulse aimed at 1,050 px/s, capped at a 2,600 px/s velocity change. The higher impulse cap overcame misses when opposing fast falls in the initial survey; it does not raise the aimed speed. Actual contact with the selected body within 0.65 seconds grants the equivalent of ×5 base points: 100 plus a 400-point bonus. Scorecraft multiplies only that base as described above. No teleport, remote hit, ring collection or additional scoring system is involved. Missed/blocked attempts receive no bonus or refund; no eligible target spends nothing.
 

@@ -35,8 +35,8 @@ func _ready() -> void:
  mode_selector.item_selected.connect(func(_index: int): mode_selector.release_focus())
  row.add_child(mode_selector)
  character_selector = OptionButton.new()
- character_selector.add_item("Sonic · Homing")
- character_selector.add_item("Tails · Flight")
+ for id: String in CharacterSpecials.CHARACTER_IDS:
+  character_selector.add_item(CharacterSpecials.CHARACTERS[id].selection_label)
  character_selector.item_selected.connect(func(_index: int): character_selector.release_focus())
  row.add_child(character_selector)
  target_caption = _label(row, "Target", 14)
@@ -54,7 +54,7 @@ func _ready() -> void:
  chao_lab = ChaoLabPanel.new()
  chao_lab.game = game
  chao_lab.start_run = start_run
- chao_lab.next_character = func(): return "sonic" if character_selector.selected == 0 else "tails"
+ chao_lab.next_character = func(): return CharacterSpecials.CHARACTER_IDS[character_selector.selected]
  add_child(chao_lab)
  chao_button = _button(row, "Chao: None", chao_lab.open_lab)
  chao_button.tooltip_text = "Chao Lab: compare three upgrades. Choose at serve or pause; equipping restarts this seed."
@@ -124,7 +124,7 @@ func _button(parent: Node, text: String, action: Callable) -> Button:
  return button
 
 func refresh() -> void:
- character_selector.select(0 if game.character_id == "sonic" else 1)
+ character_selector.select(CharacterSpecials.CHARACTER_IDS.find(game.character_id))
  mode_selector.select(2 if game.zone_enabled else (1 if game.score_attack_enabled else 0))
  target_field.value = game.score_attack_target
 
@@ -133,7 +133,7 @@ func start_run(chao_id: String = "") -> bool:
  var settings := {"enabled": mode_selector.selected == 1, "target": int(target_field.value), "zone": mode_selector.selected == 2}
  if settings.zone:
   settings.merge(game.debug_panel.zone_generation_settings())
- settings.character = "sonic" if character_selector.selected == 0 else "tails"
+ settings.character = CharacterSpecials.CHARACTER_IDS[character_selector.selected]
  if not chao_id.is_empty():
   settings.chao = chao_id
  return game.request_generation(game.generation_seed, -1, -1, settings)

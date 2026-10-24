@@ -2,6 +2,33 @@
 
 Latest checks: 2026-10-24. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
+## Four-character abilities — Knuckles and Shadow
+
+`four_character_regression.gd`: **64 checks passed** using real 2D bodies, shared score callbacks and the public run-selection UI. Coverage includes paid and rejected activations, partial configured costs, blast radius limits, duplicate descriptors and ring claims, remote/contact award deduplication, fixed area values during an active ×3 combo, no remote meter refund, active-Act filtering, ordinary rack bonuses, real wall/bumper glide impacts, an immediate near-wall impact, missed glides, line-of-sight obstruction, unrelated-body exclusion, queued-wave cancellation, pause/draft timing, all reset reasons, real locked Act gates, actual checkpoint drains, Chao/profile compatibility, and both new characters in all three modes.
+
+Native contact resolution can stop the ball before its callback. The new observational impact signal uses the preceding physical approach velocity and the solver's contact impulse; the existing fast-motion guard supplies its measured incoming speed. These observations do not change collision response. The first wave trial missed wall-mounted targets whose centers lie behind their rails. Testing the exposed bumper face preserves real line of sight and makes the existing mounted targets useful. Wave width increased from 260 to 360px after the first input survey found few scoring opportunities; range stays 500px. No geometry or generator changes were made.
+
+Existing regressions passed: Sonic/Tails Character Lab **70**, physics **38**, rings **11**, Scorecraft **37**, Chao Lab **29**, Score Attack **26**, and Zone lifecycle **34**. The Zone negative configuration check emits its expected error; successful runs contain no unexpected script errors. Final safe editor import passed and generated the new UID files.
+
+### Same-seed input comparison
+
+All four used the existing seed-18 Easy Zone with the same movement/flipper policy and ability-specific activation conditions. Meter came only from real ring/bumper interactions. No score, charge, trajectory or position was injected. The cap was 120 simulated seconds; these are automated policies, not human completion times or proof of character balance.
+
+| Character | Points | Rings | Balls | Acts completed | Special results |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Sonic | 12,400 | 38 | 3 | 0 | 3 activations, 2 physical Homing hits |
+| Tails | 10,725 | 35 | 1 | 1 | 3 flights |
+| Knuckles | 11,850 | 59 | 2 | 3 | 3 glides/impacts; 2 remote targets and 4 wave rings; Zone complete at 110.55s |
+| Shadow | 10,350 | 41 | 2 | 0 | 3 blasts; 7 remote targets and 3 blast rings |
+
+First full charge arrived at 20.61–28.51 simulated seconds across the four characters. The survey shows different scoring/traversal outcomes, not a reason to retune Act targets. A separate 90-second same-seed Free Play comparison passed for all four specials, scoring 9,200 / 10,100 / 8,325 / 10,425 respectively. Its first boundary report was investigated: Knuckles had already drained and was 522px below the table with respawn pending, followed by the normal deferred reset. The survey now records that legitimate post-drain departure separately; non-finite motion and live side/top escapes still fail. The final Free Play and Zone surveys reported no live escapes.
+
+### Graphical same-room comparison
+
+`four_character_capture.gd` passed with ANGLE in the existing seed-18 Green Hill Orbit Cluster. All four start at the same authored room position, falling at 350px/s with an explicitly supplied full meter. After initialization, only ordinary controls act. Sonic physically hits a Homing target; Tails reduces the fall and guides the ball; Knuckles hits the side rail and waves an exposed wall bumper for 200 points; Shadow activates four bumpers and three rings for 475 remote points, with no remote recharge. Subsequent ordinary play can add points and meter.
+
+Actual gameplay-camera images and JSON are in `test-results/four-character-review/`, including `knuckles-outcome.png` and `shadow-activation.png`. Shadow is black with red accents; neither new character borrows Sonic's model. All visuals are collisionless placeholders. Human playtesting should judge glide commitment and expiry, whether wave opportunities are readable, blast positioning, and the full-meter cost. No art polish or complete human playthrough is claimed.
+
 ## Target Garden — perimeter mounting and distinct shot routes
 
 The approved compact mounting moves both pivots 50px toward the existing walls, to x125/675, with 18px bearings. Boundary polylines and paddle lengths stay unchanged. This pass changes only Target Garden; Bank Vault and Offset Climb retain their preceding layouts. The large bumper moves from (550,200) to (600,200), clearing a diagonal ring trail from the source-right paddle to the upper opening. A separate left-side trail leads into the small target cluster. Seed 28 mirrors the room, placing the progression paddle on screen left.

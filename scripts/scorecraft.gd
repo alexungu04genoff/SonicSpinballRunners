@@ -61,6 +61,12 @@ func award_rack() -> int:
  # Rack completion is a fixed award, never a combo link or timer refresh.
  return _award("rack", RACK_POINTS, 1, 0, false)
 
+func award_area(kind: String, source: String, scale: int, body: Node = null) -> int:
+ # Area abilities pay fixed base awards. They neither advance nor refresh a
+ # chain, and their bonus never receives the current combo multiplier.
+ var base := BUMPER_POINTS if kind == "bumper" else RING_POINTS
+ return _award(source + "_" + kind, base, clampi(scale, 1, 2), 0, false, body.get_instance_id() if is_instance_valid(body) else 0)
+
 func _award(kind: String, base: int, applied: int, bonus: int, eligible: bool, target_id: int = 0) -> int:
  var amount := base * applied + bonus
  last_award = {"kind": kind, "base": base, "multiplier": applied, "special_bonus": bonus, "total": amount, "chain": chain, "fresh_bumper": eligible, "target_id": target_id}

@@ -5,6 +5,9 @@ signal changed
 const BALANCED = preload("res://data/balanced.tres")
 const FLOATY = preload("res://data/floaty.tres")
 const TAILS = preload("res://data/tails.tres")
+const KNUCKLES = preload("res://data/knuckles.tres")
+const SHADOW = preload("res://data/shadow.tres")
+const PROFILES := [BALANCED, FLOATY, TAILS, KNUCKLES, SHADOW]
 const EXAMPLE_MODIFIER = preload("res://data/practice_chao.tres")
 const CHAO: Dictionary = {
  "none": {"name": "None", "role": "Baseline", "description": "Original profile and session tuning.", "color": Color("b7c6ce"), "modifier": null},
@@ -157,7 +160,7 @@ func build_name() -> String:
  return ", ".join(names)
 
 func select_profile(index: int) -> void:
- use_profile([BALANCED, FLOATY, TAILS][clampi(index, 0, 2)])
+ use_profile(PROFILES[clampi(index, 0, PROFILES.size() - 1)])
 
 func set_value(key: String, value: float) -> void:
  overrides[key] = value

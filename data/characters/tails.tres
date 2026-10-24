@@ -4,7 +4,9 @@
 [resource]
 script = ExtResource("1")
 display_name = "Tails"
+selection_label = "Tails · Flight"
 profile = ExtResource("2")
 ability = 1
 color = Color(1, 0.72, 0.22, 1)
+ball_color = Color(0.95, 0.55, 0.09, 1)
 description = "Tail Flight: 1.6 seconds of reduced gravity and extra steering, with one bounded rescue lift. Costs 100 meter."

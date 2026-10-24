@@ -106,6 +106,7 @@ func _build_presentation() -> void:
  presentation.add_child(character)
 
 func _add_zone_presentation() -> void:
+ _add_area_feedback()
  # The physics playground keeps its lightweight CharacterFeedback placeholder.
  # Green Hill supplies its own character, target and special feedback below.
  var markers := ZoneMarkers.new()

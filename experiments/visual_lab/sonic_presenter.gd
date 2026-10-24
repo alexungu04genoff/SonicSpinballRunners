@@ -152,6 +152,9 @@ func _load_model() -> void:
  model_available = false
  _clips.clear()
  model_status = "Local %s asset not prepared" % character_id.capitalize()
+ if not MODEL_PATHS.has(character_id):
+  model_status = character_id.capitalize() + " · colored prototype ball"
+  return
  if OS.get_cmdline_user_args().has("--no-model"):
   model_status = "Spin-ball fallback (local model disabled)"
   return
@@ -193,6 +196,13 @@ func _apply_character_color() -> void:
  streak_materials[1].albedo_color = Color("fff0c7") if tails else Color("c9ecff")
  for bead: MeshInstance3D in trail:
   (bead.material_override as StandardMaterial3D).albedo_color = Color("ffc367") if tails else Color("59c9ff")
+ if character_id not in ["sonic", "tails"]:
+  var color: Color = CharacterSpecials.CHARACTERS[character_id].color
+  spin_material.albedo_color = CharacterSpecials.CHARACTERS[character_id].ball_color
+  for material: StandardMaterial3D in streak_materials:
+   material.albedo_color = color.lightened(0.3)
+  for bead: MeshInstance3D in trail:
+   bead.material_override.albedo_color = color
 
 func _on_character_changed(id: String) -> void:
  if character_id == id:

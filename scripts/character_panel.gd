@@ -40,7 +40,7 @@ func _label(parent: Node, font_size: int) -> Label:
 
 func _process(_delta: float) -> void:
  var ability: CharacterSpecials = game.specials
- var selected: CharacterDefinition = CharacterSpecials.CHARACTERS["sonic" if selector.selected == 0 else "tails"]
+ var selected: CharacterDefinition = CharacterSpecials.CHARACTERS[CharacterSpecials.CHARACTER_IDS[selector.selected]]
  heading.text = "%s · %s" % [ability.definition.display_name, "READY · Space / A" if ability.ready_to_use() else "Special · Space / A"]
  heading.modulate = ability.definition.color
  description.text = selected.description

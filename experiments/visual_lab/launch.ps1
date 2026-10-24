@@ -7,7 +7,7 @@ param(
     [string]$Grid = 'Catalogue',
     [ValidateSet('Angle', 'Native')]
     [string]$GraphicsBackend = 'Angle',
-    [ValidateSet('Sonic', 'Tails')]
+    [ValidateSet('Sonic', 'Tails', 'Knuckles', 'Shadow')]
     [string]$Character = 'Sonic',
     [switch]$Playground,
     [switch]$NoModel,
@@ -101,7 +101,7 @@ if ($ImportOnly) {
 }
 
 $assetPath = Join-Path $PSScriptRoot ('local\runtime\{0}.glb' -f $Character.ToLowerInvariant())
-if (-not $Playground -and -not (Test-Path -LiteralPath $assetPath -PathType Leaf)) {
+if (-not $Playground -and $Character -in @('Sonic', 'Tails') -and -not (Test-Path -LiteralPath $assetPath -PathType Leaf)) {
     Write-Warning "Local $Character GLB is missing. The scene will use its spin-ball fallback. See README.md for preparation."
 }
 

@@ -34,13 +34,14 @@ func _ready() -> void:
  marker.material_override = highlight
 
 func _process(_delta: float) -> void:
- var tails: bool = game.character_id == "tails"
- placeholder.visible = tails
+ var fallback: bool = game.character_id != "sonic"
+ placeholder.visible = fallback
+ placeholder.material_override.albedo_color = game.specials.definition.ball_color
  placeholder.position = TablePresentation.map_point(game.ball.position, 0.2)
  var sonic := get_parent().get_node_or_null("SonicVisualAdapter")
  if sonic:
-  sonic.visible = not tails
- if tails:
+  sonic.visible = not fallback
+ if fallback:
   game.presentation.ball_visual.visible = false
  marker.visible = false
  if is_instance_valid(game.specials.target):

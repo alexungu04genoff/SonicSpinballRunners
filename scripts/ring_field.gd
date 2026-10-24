@@ -2,6 +2,7 @@ class_name RingField
 extends Node
 ## Rings stay at their authored positions. Collection never applies force to the ball.
 signal collected(position: Vector2)
+signal scoring_pickup(position: Vector2, source: String, multiplier: int)
 signal pickup_claimed(index: int)
 signal rack_reset
 const CONTACT_RADIUS := PlaygroundBall.RADIUS + 12.0
@@ -26,6 +27,20 @@ func reset_rings() -> void:
   ring.active = true
  rack_reset.emit()
 
+func claim_ring(index: int, source: String = "", multiplier: int = 1) -> bool:
+ if index < 0 or index >= rings.size():
+  return false
+ var ring: Dictionary = rings[index]
+ if not ring.active or not ring_eligible(ring):
+  return false
+ # One atomic claim is shared by contact, magnet and area abilities. Cosmetic
+ # flight and legacy collection observers still receive exactly one event.
+ ring.active = false
+ pickup_claimed.emit(index)
+ scoring_pickup.emit(ring.position, source, multiplier)
+ collected.emit(ring.position)
+ return true
+
 func _physics_process(_delta: float) -> void:
  if ball.serve_pending:
   previous_ball_position = ball.position
@@ -41,7 +56,5 @@ func _physics_process(_delta: float) -> void:
   if closest.distance_squared_to(ring.position) <= radius * radius:
    # Deactivate before notifying score/meter listeners, so overlapping pickup
    # methods and subsequent ticks cannot award this ring twice in one rack.
-   ring.active = false
-   pickup_claimed.emit(i)
-   collected.emit(ring.position)
+   claim_ring(i)
  previous_ball_position = ball.position

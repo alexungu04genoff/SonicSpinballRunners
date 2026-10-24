@@ -4,6 +4,7 @@
 [resource]
 script = ExtResource("1")
 display_name = "Sonic"
+selection_label = "Sonic · Homing"
 profile = ExtResource("2")
 ability = 0
 description = "Homing Attack: hit a clear-path bumper for 100 × combo + 400 points, ending the chain. 100 meter; actual contact required."

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PhysicsProfile" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/physics_profile.gd" id="1"]
+[resource]
+script = ExtResource("1")
+display_name = "Knuckles — heavy impact"
+steering_acceleration = 1900.0
+counter_steering_deceleration = 3400.0
+max_steering_speed = 105.0
+steering_deceleration = 3000.0
+steering_strength = 0.1
+gravity_scale = 1.12
+bumper_rebound_multiplier = 1.1
+wall_restitution = 0.78

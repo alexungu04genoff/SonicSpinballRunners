@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=3 format=3]
+[ext_resource type="Script" path="res://scripts/character_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://data/knuckles.tres" id="2"]
+[resource]
+script = ExtResource("1")
+display_name = "Knuckles"
+selection_label = "Knuckles · Glide"
+profile = ExtResource("2")
+ability = 2
+color = Color(0.94, 0.23, 0.2, 1)
+ball_color = Color(0.94, 0.23, 0.2, 1)
+description = "Glide + Shockwave: hold left/right and press Special. A real side impact sends an upward wave: 2× base points, no combo or remote recharge. Costs 100 meter."

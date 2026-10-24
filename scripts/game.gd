@@ -16,7 +16,8 @@ var special_meter: float = 0.0
 @export var scorecraft_enabled := true
 @export var scorecraft_config: ScorecraftConfig = preload("res://data/scorecraft.tres")
 var scorecraft: Scorecraft
-@export_enum("sonic", "tails") var character_id := "sonic"
+@export_enum("sonic", "tails", "knuckles", "shadow") var character_id := "sonic"
+var _target_awards: Dictionary = {}
 var specials: CharacterSpecials
 var status_message: String = "Press Enter / gamepad X to launch"
 var respawn_time: float = -1.0
@@ -118,7 +119,7 @@ func _ready() -> void:
   status_message = specials.feedback
  )
  ball.bumper_hit.connect(_on_bumper_hit)
- ring_field.collected.connect(_on_ring_collected)
+ ring_field.scoring_pickup.connect(_on_ring_collected)
  tuning.changed.connect(_apply_tuning)
  _apply_tuning()
  print("PLAYGROUND_READY | Godot %s | 120 Hz | 2D collisions / 3D presentation | %s" % [Engine.get_version_info().string, layout.signature])
@@ -230,12 +231,18 @@ func _build_presentation() -> void:
  _add_zone_presentation()
 
 func _add_zone_presentation() -> void:
+ _add_area_feedback()
  var markers := ZoneMarkers.new()
  markers.zone = zone
  presentation.add_child(markers)
  var feedback := CharacterFeedback.new()
  feedback.game = self
  presentation.add_child(feedback)
+
+func _add_area_feedback() -> void:
+ var area := AreaSpecialFeedback.new()
+ area.game = self
+ presentation.add_child(area)
 
 func can_regenerate() -> bool:
  return not generation_pending and zone.state != ZoneRun.State.DRAFT and (get_tree().paused or (ball.serve_pending and not ball.release_pending))
@@ -433,23 +440,48 @@ func toggle_pause() -> void:
  get_tree().paused = not get_tree().paused
 
 func _on_bumper_hit(body: Node) -> void:
- if respawn_time >= 0.0 or generation_pending:
-  return
- if score_attack.state == ScoreAttack.State.COMPLETE or (zone_enabled and (zone.state != ZoneRun.State.PLAYING or not zone.acts[zone.active_act].bounds.has_point(body.global_position))):
-  return
- score += scorecraft.award_bumper(body, specials.hit_multiplier(body))
- specials.charge(specials.definition.bumper_charge)
+ var impact: bool = specials.impact_target == body
+ _award_bumper(body, "shockwave" if impact else "", specials.definition.shockwave_multiplier if impact else 1, true)
+
+func scoring_target_eligible(body: Node2D) -> bool:
+ if not is_instance_valid(body) or not body.has_meta("bumper") or respawn_time >= 0.0 or generation_pending:
+  return false
+ if score_attack.state == ScoreAttack.State.COMPLETE:
+  return false
+ return not zone_enabled or (zone.state == ZoneRun.State.PLAYING and zone.acts[zone.active_act].bounds.has_point(body.global_position))
+
+func activate_area_target(body: Node2D, source: String, multiplier: int) -> bool:
+ if source not in ["shockwave", "chaos_blast"]:
+  return false
+ return _award_bumper(body, source, multiplier, false)
+
+func _award_bumper(body: Node2D, source: String, multiplier: int, physical: bool) -> bool:
+ if not scoring_target_eligible(body):
+  return false
+ var key := body.get_instance_id()
+ var frame := Engine.get_physics_frames()
+ var previous: Dictionary = _target_awards.get(key, {})
+ # Share the existing contact cooldown across remote/contact award paths.
+ # Ordinary repeated contacts retain Scorecraft's existing repeated-target rule.
+ if not previous.is_empty() and frame - previous.frame < ceili(0.16 * Engine.physics_ticks_per_second) and (not physical or previous.remote):
+  return false
+ _target_awards[key] = {"frame": frame, "remote": not physical}
+ score += scorecraft.award_bumper(body, specials.hit_multiplier(body)) if source.is_empty() else scorecraft.award_area("bumper", source, multiplier, body)
+ if physical:
+  specials.charge(specials.definition.bumper_charge)
  presentation.flash_bumper(body)
  _observe_challenge_score()
+ return true
 
-func _on_ring_collected(_where: Vector2) -> void:
+func _on_ring_collected(_where: Vector2, source: String = "", multiplier: int = 1) -> void:
  if respawn_time >= 0.0 or generation_pending:
   return
  if score_attack.state == ScoreAttack.State.COMPLETE or (zone_enabled and zone.state != ZoneRun.State.PLAYING):
   return
- score += scorecraft.award_ring()
+ score += scorecraft.award_ring() if source.is_empty() else scorecraft.award_area("ring", source, multiplier)
  rings_collected += 1
- specials.charge(specials.definition.ring_charge)
+ if source.is_empty():
+  specials.charge(specials.definition.ring_charge)
  var active: int = 0
  for ring: Dictionary in ring_field.rings:
   if ring.active and ring_field.ring_eligible(ring):
@@ -568,6 +600,7 @@ func choose_zone_chao(id: String) -> bool:
  if not tuning.add_chao(id):
   return false
  zone.accept_reward(id, score)
+ specials.act_advanced()
  scorecraft.reset("Act advanced", true)
  _sync_zone_gates()
  if zone.state == ZoneRun.State.COMPLETE:

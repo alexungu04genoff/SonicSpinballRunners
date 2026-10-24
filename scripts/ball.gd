@@ -2,6 +2,7 @@ class_name PlaygroundBall
 extends RigidBody2D
 
 signal bumper_hit(collider: Node)
+signal physical_impact(collider: Node2D, normal: Vector2, speed: float)
 signal launch_started
 signal launched(impulse: Vector2)
 const RADIUS: float = 14.0
@@ -25,6 +26,7 @@ var _teleport_velocity: Vector2
 var _contact_cooldowns: Dictionary = {}
 var bumper_hit_count: int = 0
 var sweep_rebounds: int = 0
+var _previous_step_velocity := Vector2.ZERO
 var _motion_query := PhysicsTestMotionParameters2D.new()
 var _motion_result := PhysicsTestMotionResult2D.new()
 
@@ -122,6 +124,7 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
   state.transform = Transform2D(0.0, _teleport_position)
   state.linear_velocity = _teleport_velocity
   state.angular_velocity = 0.0
+  _previous_step_velocity = _teleport_velocity
   _teleport_pending = false
  if serve_pending:
   # Waiting at serve is an explicit reset state, not an active physics trajectory.
@@ -164,6 +167,13 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
   if not is_instance_valid(collider):
    continue
   var normal: Vector2 = state.get_contact_local_normal(index).normalized()
+  # Native contact resolution can already have stopped or bounced the body.
+  # Use its previous physics-step approach speed, not the resolved remainder.
+  var approach := maxf(0.0, -(_previous_step_velocity - state.get_contact_collider_velocity_at_position(index)).dot(normal))
+  # An impulse applied between steps can hit a touching wall immediately. The
+  # solver's contact impulse supplies that impact even before a velocity sample.
+  approach = maxf(approach, absf(state.get_contact_impulse(index).dot(normal)) / mass)
+  physical_impact.emit(collider, normal, approach)
   if collider.has_meta("bumper"):
    var id: int = collider.get_instance_id()
    if not _contact_cooldowns.has(id):
@@ -182,6 +192,7 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
     state.apply_central_impulse(tangent * slope * float(stats.rolling_acceleration) * mass * dt)
    state.apply_central_impulse(-tangent * tangent_speed * (1.0 - exp(-float(stats.rolling_drag) * dt)) * mass)
  _guard_fast_motion(state)
+ _previous_step_velocity = state.linear_velocity
 
 func _guard_fast_motion(state: PhysicsDirectBodyState2D) -> void:
  # Native CCD remains enabled. A conservative shape sweep handles thin-rail misses
@@ -201,6 +212,8 @@ func _guard_fast_motion(state: PhysicsDirectBodyState2D) -> void:
  if incoming >= 0.0:
   return
  var collider: Object = _motion_result.get_collider()
+ if is_instance_valid(collider):
+  physical_impact.emit(collider, normal, -incoming)
  var restitution: float = tuning.effective.wall_restitution
  if collider is PlaygroundFlipper:
   restitution = 0.15

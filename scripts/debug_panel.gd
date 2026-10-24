@@ -83,6 +83,8 @@ func _ready() -> void:
  profiles.add_item("Balanced")
  profiles.add_item("Floaty — longer flight")
  profiles.add_item("Tails — controlled")
+ profiles.add_item("Knuckles — heavy impact")
+ profiles.add_item("Shadow — positioning")
  profiles.item_selected.connect(func(index: int):
   tuning.select_profile(index)
   refresh_fields()
@@ -384,14 +386,14 @@ func _button(parent: Node, text: String, callback: Callable) -> Button:
  return button
 
 func refresh_fields() -> void:
- profiles.select([PhysicsTuning.BALANCED, PhysicsTuning.FLOATY, PhysicsTuning.TAILS].find(tuning.base))
+ profiles.select(PhysicsTuning.PROFILES.find(tuning.base))
  _refreshing = true
  for key: String in spinboxes:
   spinboxes[key].value = tuning.editable_value(key)
  _refreshing = false
 
 func refresh_effective() -> void:
- profiles.select([PhysicsTuning.BALANCED, PhysicsTuning.FLOATY, PhysicsTuning.TAILS].find(tuning.base))
+ profiles.select(PhysicsTuning.PROFILES.find(tuning.base))
  practice_toggle.set_pressed_no_signal(tuning.modifier_enabled)
  if not is_instance_valid(values):
   return
