@@ -131,8 +131,8 @@ func run() -> void:
   var target := active_bumper()
   while not game.zone.exit_unlocked:
    game._on_bumper_hit(target)
-  var gate_y: float = game.zone.acts[0].exit_y
-  game.zone.observe_motion(Vector2(400, gate_y + 50), Vector2(400, gate_y - 60))
+  var clear_y: float = game.zone.acts[0].clear_y
+  game.zone.observe_motion(Vector2(400, clear_y + 50), Vector2(400, clear_y - 60))
   game._sync_zone_gates()
   preserved_time = game.scorecraft.remaining
   var preserved_score: int = game.score
@@ -141,7 +141,7 @@ func run() -> void:
   check(game.choose_zone_chao("ice") and game.scorecraft.chain == 0 and game.score == preserved_score and game.zone.act_score == 0, "Act advancement clears combo but preserves cumulative score and equips Chao")
   game._on_bumper_hit(active_bumper())
   game.set_physics_process(true)
-  game.ball.teleport_to(Vector2(400, game.zone.acts[1].bounds.end.y - 30), Vector2(0, 400))
+  game.ball.teleport_to(game.zone.acts[1].drain - Vector2(0, 30), Vector2(0, 400))
   await frames(8)
   check(game.respawn_time > 0 and game.scorecraft.chain == 0, "Actual checkpoint drain ends the combo")
   preserved_score = game.score

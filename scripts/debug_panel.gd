@@ -7,6 +7,7 @@ var panel: PanelContainer
 var generation_panel: PanelContainer
 var seed_field: SpinBox
 var difficulty_selector: OptionButton
+var zone_difficulty_selector: OptionButton
 var grid_selector: OptionButton
 var generation_summary: Label
 var generation_hint: Label
@@ -51,7 +52,7 @@ func _ready() -> void:
  hud_stack.add_child(message_label)
  var help := Label.new()
  help.position = Vector2(25, 843)
- help.text = "Q / E  FLIPPERS     ← / →  STEER     ENTER  LAUNCH     R  RESET\nLB / RB  FLIPPERS     LEFT STICK  STEER     X  LAUNCH     MENU  PAUSE"
+ help.text = "Q / E  FLIPPERS     ← / →  STEER     ENTER  ROLL IN     R  RESET\nLB / RB  FLIPPERS     LEFT STICK  STEER     X  ROLL IN     MENU  PAUSE"
  help.add_theme_font_size_override("font_size", 13)
  help.modulate = Color("9bb7c9")
  help.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -82,7 +83,7 @@ func _ready() -> void:
  profiles.item_selected.connect(func(index: int):
   tuning.select_profile(index)
   refresh_fields()
-  game.status_message = "Profile changed. Reset for a comparable launch."
+  game.status_message = "Profile changed. Reset for a comparable start."
   profiles.release_focus()
  )
  stack.add_child(profiles)
@@ -95,7 +96,7 @@ func _ready() -> void:
   if index > 0:
    tuning.apply_steering_preset(index - 1)
    refresh_fields()
-   game.status_message = "Steering preset applied. Reset for a comparable launch."
+   game.status_message = "Steering preset applied. Reset for a comparable start."
   steering_presets.release_focus()
  )
  stack.add_child(steering_presets)
@@ -112,8 +113,8 @@ func _ready() -> void:
  stack.add_child(modifier)
  var buttons := HBoxContainer.new()
  stack.add_child(buttons)
- _button(buttons, "Launch", func(): game.launch_ball())
- _button(buttons, "Reset + launch", func(): game.reset_ball(true))
+ _button(buttons, "Roll in", func(): game.launch_ball())
+ _button(buttons, "Reset + roll in", func(): game.reset_ball(true))
  _button(buttons, "Pause", func(): game.toggle_pause())
  var reset := Button.new()
  reset.text = "Restore profile defaults"
@@ -267,12 +268,20 @@ func _build_generation_panel() -> void:
  seed_field.step = 1
  seed_field.get_line_edit().text_submitted.connect(func(_text: String): seed_field.get_line_edit().release_focus())
  stack.add_child(seed_field)
- _label(stack, "Preference (apply on build)", 12)
+ _label(stack, "Sandbox difficulty (on build)", 12)
  difficulty_selector = OptionButton.new()
  for difficulty_name: String in TableGenerator.DIFFICULTY_NAMES:
   difficulty_selector.add_item(difficulty_name)
  difficulty_selector.item_selected.connect(func(_index: int): difficulty_selector.release_focus())
  stack.add_child(difficulty_selector)
+ _label(stack, "Zone difficulty (development)", 12)
+ zone_difficulty_selector = OptionButton.new()
+ zone_difficulty_selector.add_item("Official Zone: Easy")
+ zone_difficulty_selector.add_item("DEV Zone: Normal")
+ zone_difficulty_selector.add_item("DEV Zone: Hard")
+ zone_difficulty_selector.tooltip_text = "Applies to all nine Zone chunks on the next build or Start / replay. Official Green Hill stays Easy. Development layouts still require collision validation; an unavailable layout is reported without falling back to Easy."
+ zone_difficulty_selector.item_selected.connect(func(_index: int): zone_difficulty_selector.release_focus())
+ stack.add_child(zone_difficulty_selector)
  _label(stack, "Middle section (apply on build)", 12)
  grid_selector = OptionButton.new()
  grid_selector.tooltip_text = "Grid modes use wider recipes for Easy. Normal and Hard retain the original base/variant designs."
@@ -282,9 +291,9 @@ func _build_generation_panel() -> void:
  stack.add_child(grid_selector)
  generation_buttons.append(_button(stack, "Build seed + preference", func():
   seed_field.apply()
-  game.request_generation(int(seed_field.value), difficulty_selector.selected, grid_selector.selected)
+  game.request_generation(int(seed_field.value), difficulty_selector.selected, grid_selector.selected, zone_generation_settings() if game.zone_enabled else {})
  ))
- generation_buttons.append(_button(stack, "Next seed", func(): game.request_generation((game.generation_seed + 1) % 2147483648, difficulty_selector.selected, grid_selector.selected)))
+ generation_buttons.append(_button(stack, "Next seed", func(): game.request_generation((game.generation_seed + 1) % 2147483648, difficulty_selector.selected, grid_selector.selected, zone_generation_settings() if game.zone_enabled else {})))
  generation_buttons.append(_button(stack, "Repeat current layout", func(): game.request_generation(game.generation_seed, game.generation_difficulty)))
  var grid_toggle := CheckButton.new()
  grid_toggle.text = "Construction grid"
@@ -315,9 +324,12 @@ func _build_generation_panel() -> void:
 func refresh_generation() -> void:
  seed_field.value = game.generation_seed
  difficulty_selector.select(game.generation_difficulty)
+ zone_difficulty_selector.select(maxi(0, game.zone_difficulty_override))
  grid_selector.select(game.generation_grid_mode)
  var estimate: Dictionary = game.layout.difficulty_estimate
  generation_summary.text = "CURRENT SEED  %d\nPreference: %s\nEstimate: %s %.1f / 100\n" % [game.generation_seed, TableGenerator.DIFFICULTY_NAMES[game.generation_difficulty], TableGenerator.DIFFICULTY_NAMES[estimate.band], estimate.score]
+ if game.zone_enabled:
+  generation_summary.text += "Zone: %s\n" % ("Official Easy" if game.zone_difficulty_override < 0 else "DEV " + TableGenerator.DIFFICULTY_NAMES[game.zone_difficulty_override])
  generation_summary.text += "Middle: %s\n" % game.GRID_MODE_NAMES[game.generation_grid_mode]
  if game.generation_grid_mode > 0:
   generation_summary.text += "Kit v%d / cell 50 px\n" % GridPieceKit.VERSION
@@ -336,6 +348,9 @@ func refresh_generation() -> void:
  generation_summary.tooltip_text = "Estimate is the maximum across authored chunk challenge, connector severity, sampled approach difficulty, and Normal's generated bank inclination. Checked join includes a safety margin. Approach lane is the narrowest sampled contiguous ball-center route, not total space across separate lanes. These are geometry heuristics, not measured player success rates."
  for note: String in game.layout.get("transition_notes", PackedStringArray()):
   generation_summary.tooltip_text += "\n" + note
+
+func zone_generation_settings() -> Dictionary:
+ return {"zone_difficulty": -1 if zone_difficulty_selector.selected == 0 else zone_difficulty_selector.selected}
 
 func _label(parent: Node, text: String, font_size: int) -> Label:
  var label := Label.new()
@@ -391,11 +406,13 @@ func _process(delta: float) -> void:
   return
  _telemetry_elapsed = 0.0
  var safe: bool = game.can_regenerate()
+ difficulty_selector.disabled = game.zone_enabled
  for button: Button in generation_buttons:
   button.disabled = not safe
  generation_hint.text = "Ready to build. Resets score, rings and ball; keeps tuning." if safe else "Pause (Escape / Menu) to generate safely."
  if safe and game.zone_enabled:
-  generation_hint.text = "Fresh Zone: Easy geometry; resets scores, Chao and checkpoints."
+  var zone_preference: String = "Official Easy" if zone_difficulty_selector.selected == 0 else "DEV " + TableGenerator.DIFFICULTY_NAMES[zone_difficulty_selector.selected]
+  generation_hint.text = "Fresh Zone: %s. Resets scores, Chao and checkpoints." % zone_preference
  var chunk_index: int = game.current_chunk_index()
  var chunk_name: String = game.chunks[chunk_index].data.chunk_id if chunk_index >= 0 else "Outside course"
  traversal_telemetry.text = "Ball: %s\nCamera: %s\nTarget: %.0f, %.0f px" % [chunk_name, "Follow" if game.presentation.camera_follow_enabled else "Overview", game.presentation.camera_target.x, game.presentation.camera_target.y]

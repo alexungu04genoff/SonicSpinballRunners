@@ -26,6 +26,9 @@ var flippers: Array[PlaygroundFlipper] = []
 var ring_field: RingField
 var ball_visual: MeshInstance3D
 var flipper_visuals: Array[Node3D] = []
+var flipper_retracted_visuals: Array[Node3D] = []
+var checkpoint_visuals: Array[Dictionary] = []
+var serve_visuals: Array[Dictionary] = []
 var ring_visuals: Array[MeshInstance3D] = []
 var ring_pickups: Dictionary = {}
 var physics_overlay: Node3D
@@ -177,7 +180,11 @@ func build(chunks: Array[TableChunk], junctions: Variant = [], bounds: Rect2 = R
      var length: float = item.a.distance_to(item.b) * SCALE
      _paddle(length, item.radius * SCALE, 0.30, 0.0, rail_mat, rail)
      _paddle(length, item.radius * SCALE * 0.68, 0.025, 0.30, rail_top, rail)
-     _capsule_outline(item.a, item.b, item.radius, debug_mat)
+     if item.get("checkpoint_only", false):
+      var guide := line(item.a, item.b, 0.025, 0.025, material(Color("82978d")))
+      checkpoint_visuals.append({"visual": rail, "guide": guide, "body": item.body, "a": item.a, "b": item.b, "radius": item.radius})
+     else:
+      _capsule_outline(item.a, item.b, item.radius, debug_mat)
     "circle":
      var body_visual := Node3D.new()
      body_visual.position = map_point(item.position)
@@ -230,6 +237,11 @@ func build(chunks: Array[TableChunk], junctions: Variant = [], bounds: Rect2 = R
   _paddle(flipper.length * SCALE, PlaygroundFlipper.RADIUS * SCALE * 0.72, 0.035, 0.23, material(Color("b0e6ff")), pivot)
   mesh_node(cylinder(0.06, 0.02), gold, Vector3(0, 0.275, 0), pivot)
   flipper_visuals.append(pivot)
+  var retracted := Node3D.new()
+  retracted.position = pivot.position
+  add_child(retracted)
+  _paddle(flipper.length * SCALE, PlaygroundFlipper.RADIUS * SCALE * 0.45, 0.02, 0.006, material(Color("82978d")), retracted)
+  flipper_retracted_visuals.append(retracted)
  ball_visual = mesh_node(sphere(PlaygroundBall.RADIUS * SCALE), material(Color("4f97ff"), 0.12), map_point(ball.position, BALL_HEIGHT))
  var stripe := TorusMesh.new()
  stripe.inner_radius = 0.134
@@ -237,10 +249,55 @@ func build(chunks: Array[TableChunk], junctions: Variant = [], bounds: Rect2 = R
  mesh_node(stripe, material(Color("e5f4ff")), Vector3.ZERO, ball_visual)
  # Drain and serve guides have no gameplay collision.
  for chunk: TableChunk in chunks:
+  if chunk.data.markers.has("serve"):
+   _build_serve_marker(chunk.data)
   if chunk.data.markers.has("drain"):
    var drain := chunk.data.world_point(chunk.data.markers.drain)
    line(drain + Vector2(-40, -25), drain + Vector2(40, -25), 0.035, 0.01, material(Color("ef6473"), 0.4))
    _label("DRAIN", drain + Vector2(0, -60), 18, Color("ee8693"))
+ _update_serve_markers()
+ _update_checkpoint_visuals()
+
+func _build_serve_marker(data: ChunkData) -> void:
+ var serve := data.world_point(data.markers.serve)
+ var marker := Node3D.new()
+ marker.name = "ServeMarker_" + data.chunk_id
+ add_child(marker)
+ var ink := material(Color("82978d"))
+ # Flat corner marks identify a starting position without suggesting a physical cup.
+ for side_x: float in [-1.0, 1.0]:
+  for side_y: float in [-1.0, 1.0]:
+   var corner := serve + Vector2(side_x, side_y) * 22.0
+   line(corner, corner - Vector2(side_x * 10.0, 0), 0.012, 0.02, ink, marker)
+   line(corner, corner - Vector2(0, side_y * 10.0), 0.012, 0.02, ink, marker)
+ # A dedicated parent keeps this gameplay hint visible in themed presentations.
+ var hint := Label3D.new()
+ hint.text = "ENTER / X\nROLL IN"
+ hint.font_size = 18
+ hint.pixel_size = 0.012
+ hint.modulate = Color("ffe27a")
+ hint.outline_size = 2
+ hint.rotation.x = -PI / 2.0
+ hint.position = map_point(serve + Vector2(100 if data.mirrored else -100, 55), 0.04)
+ marker.add_child(hint)
+ serve_visuals.append({"serve": serve, "ink": ink, "hint": hint})
+
+func _update_serve_markers() -> void:
+ for marker: Dictionary in serve_visuals:
+  var active: bool = marker.serve.is_equal_approx(ball.serve_position)
+  var waiting: bool = active and ball.serve_pending
+  marker.hint.visible = waiting
+  marker.ink.albedo_color = Color("ffe27a") if waiting else Color("82978d")
+
+func _update_checkpoint_visuals() -> void:
+ for checkpoint: Dictionary in checkpoint_visuals:
+  var active: bool = is_instance_valid(checkpoint.body) and checkpoint.body.collision_layer != 0
+  checkpoint.visual.visible = active
+  checkpoint.guide.visible = not active
+ for i in flippers.size():
+  flipper_visuals[i].visible = flippers[i].enabled
+  flipper_retracted_visuals[i].visible = not flippers[i].enabled
+  flipper_retracted_visuals[i].rotation.y = -flippers[i].rotation
 
 func set_camera_preset(index: int) -> void:
  camera_preset = clampi(index, CameraPreset.TOP_DOWN, CameraPreset.DRAMATIC_PINBALL)
@@ -467,6 +524,8 @@ func _process(delta: float) -> void:
  _last_ball_position = ball.position
  for i in flippers.size():
   flipper_visuals[i].rotation.y = -flippers[i].rotation
+ _update_checkpoint_visuals()
+ _update_serve_markers()
  _update_ring_visuals(delta)
  for id: int in flash_times.keys():
   flash_times[id] -= delta
@@ -482,15 +541,23 @@ func _draw_dynamic_geometry() -> void:
  dynamic_geometry.clear_surfaces()
  dynamic_geometry.surface_begin(Mesh.PRIMITIVE_LINES)
  _debug_circle(ball.position, PlaygroundBall.RADIUS)
+ for checkpoint: Dictionary in checkpoint_visuals:
+  if checkpoint.body.collision_layer != 0:
+   _debug_capsule(checkpoint.a, checkpoint.b, checkpoint.radius)
  for flipper: PlaygroundFlipper in flippers:
+  if not flipper.enabled:
+   continue
   var a: Vector2 = flipper.position
   var b: Vector2 = flipper.tip()
-  var offset := (b - a).normalized().orthogonal() * PlaygroundFlipper.RADIUS
-  for point: Vector2 in [a + offset, b + offset, a - offset, b - offset]:
-   dynamic_geometry.surface_add_vertex(map_point(point, OVERLAY_HEIGHT))
-  _debug_circle(a, PlaygroundFlipper.RADIUS)
-  _debug_circle(b, PlaygroundFlipper.RADIUS)
+  _debug_capsule(a, b, PlaygroundFlipper.RADIUS)
  dynamic_geometry.surface_end()
+
+func _debug_capsule(a: Vector2, b: Vector2, radius: float) -> void:
+ var offset := (b - a).normalized().orthogonal() * radius
+ for point: Vector2 in [a + offset, b + offset, a - offset, b - offset]:
+  dynamic_geometry.surface_add_vertex(map_point(point, OVERLAY_HEIGHT))
+ _debug_circle(a, radius)
+ _debug_circle(b, radius)
 
 func _debug_circle(center: Vector2, radius: float) -> void:
  for i in 32:

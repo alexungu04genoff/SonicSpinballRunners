@@ -131,6 +131,8 @@ func refresh() -> void:
 func start_run(chao_id: String = "") -> bool:
  target_field.apply()
  var settings := {"enabled": mode_selector.selected == 1, "target": int(target_field.value), "zone": mode_selector.selected == 2}
+ if settings.zone:
+  settings.merge(game.debug_panel.zone_generation_settings())
  settings.character = "sonic" if character_selector.selected == 0 else "tails"
  if not chao_id.is_empty():
   settings.chao = chao_id

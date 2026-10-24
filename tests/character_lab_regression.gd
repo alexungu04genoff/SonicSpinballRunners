@@ -164,7 +164,8 @@ func run() -> void:
  check(minimum_y > gate_y and game.zone.active_act == 0, "Flight cannot bypass a locked Act gate")
  game.special_meter = 37
  game.zone.observe_score(10000)
- game.zone.observe_motion(Vector2(400, gate_y + 50), Vector2(400, gate_y - 60))
+ var clear_y: float = game.zone.acts[0].clear_y
+ game.zone.observe_motion(Vector2(400, clear_y + 50), Vector2(400, clear_y - 60))
  game._sync_zone_gates()
  paused = true
  check(game.choose_zone_chao("spring") and game.special_meter == 37 and game.specials.flight_remaining > 0, "Act draft retains unused meter and paused flight")
@@ -173,7 +174,7 @@ func run() -> void:
  game.special_meter = 100
  game.specials.activate()
  game.special_meter = 19
- game.ball.teleport_to(Vector2(400, game.zone.acts[1].bounds.end.y - 30), Vector2(0, 400))
+ game.ball.teleport_to(game.zone.acts[1].drain - Vector2(0, 30), Vector2(0, 400))
  await frames(8)
  check(game.respawn_time > 0 and game.specials.flight_remaining == 0 and game.special_meter == 19 and game.tuning._temporary.is_empty(), "Checkpoint drain ends flight and retains unused meter without refill")
  paused = true

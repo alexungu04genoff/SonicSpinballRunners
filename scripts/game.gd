@@ -29,6 +29,8 @@ var score_attack := ScoreAttack.new()
 @export var zone_config: ZoneConfig = preload("res://data/green_hill_zone.tres")
 var zone := ZoneRun.new()
 var zone_gates: Array[ZoneGate] = []
+@export var zone_difficulty_override := -1
+var drains: Array[PlayfieldDrain] = []
 var _sandbox_chao := "none"
 var previous_goal_position := Vector2.ZERO
 var _goal_motion_ready := false
@@ -121,11 +123,14 @@ func _ready() -> void:
  _apply_tuning()
  print("PLAYGROUND_READY | Godot %s | 120 Hz | 2D collisions / 3D presentation | %s" % [Engine.get_version_info().string, layout.signature])
 
-func _generate_layout(seed_value: int, preference: int, grid_mode: int = -1, for_zone: bool = false) -> Dictionary:
+func _generate_layout(seed_value: int, preference: int, grid_mode: int = -1, for_zone: bool = false, difficulty_override: int = -2) -> Dictionary:
  if for_zone:
   if zone_config.difficulty != TableGenerator.Difficulty.EASY or zone_config.act_targets.size() != 3 or zone_config.act_targets.any(func(target: int): return target < 25):
    return {"valid": false, "errors": PackedStringArray(["This prototype requires one Easy Zone and three score targets of at least 25."])}
-  return ZoneGenerator.generate(seed_value, generation_grid_mode if grid_mode < 0 else grid_mode)
+  var override := zone_difficulty_override if difficulty_override == -2 else difficulty_override
+  if override < -1 or override > TableGenerator.Difficulty.HARD:
+   return {"valid": false, "errors": PackedStringArray(["Invalid development Zone difficulty."])}
+  return ZoneGenerator.generate(seed_value, generation_grid_mode if grid_mode < 0 else grid_mode, TableGenerator.Difficulty.EASY if override < 0 else override)
  if not generation_enabled:
   return TableGenerator.generate_pair(seed_value, preference, [])
  if legacy_pair_fixture:
@@ -172,6 +177,8 @@ func _add_chunk_flippers(chunk: TableChunk) -> void:
   flipper.ball = ball
   flipper.controls = controls
   flipper.tuning = tuning
+  if placement.get("checkpoint_only", false):
+   flipper.set_meta("checkpoint_chunk", chunk)
   world.add_child(flipper)
   flippers.append(flipper)
 
@@ -231,7 +238,7 @@ func _add_zone_presentation() -> void:
  presentation.add_child(feedback)
 
 func can_regenerate() -> bool:
- return not generation_pending and zone.state != ZoneRun.State.DRAFT and (get_tree().paused or ball.serve_pending)
+ return not generation_pending and zone.state != ZoneRun.State.DRAFT and (get_tree().paused or (ball.serve_pending and not ball.release_pending))
 
 func request_generation(seed_value: int, preference: int = -1, grid_mode: int = -1, challenge_settings: Dictionary = {}) -> bool:
  if not CharacterSpecials.CHARACTERS.has(challenge_settings.get("character", character_id)):
@@ -254,14 +261,15 @@ func request_generation(seed_value: int, preference: int = -1, grid_mode: int = 
 
 func _regenerate(seed_value: int, preference: int, grid_mode: int = -1, challenge_settings: Dictionary = {}) -> void:
  # Validate before touching the active scene; swap outside physics callbacks.
- if not (get_tree().paused or ball.serve_pending):
+ if not (get_tree().paused or (ball.serve_pending and not ball.release_pending)):
   generation_pending = false
   status_message = "Generation cancelled because play resumed. Pause and try again."
   return
  var requested_zone: bool = challenge_settings.get("zone", zone_enabled)
- var candidate := _generate_layout(seed_value, preference, grid_mode, requested_zone)
+ var requested_override: int = challenge_settings.get("zone_difficulty", zone_difficulty_override)
+ var candidate := _generate_layout(seed_value, preference, grid_mode, requested_zone, requested_override)
  if not candidate.valid:
-  status_message = "Generation failed; current table preserved."
+  status_message = "Generation failed; current table preserved. " + "; ".join(candidate.errors)
   push_error(str(candidate.errors))
   generation_pending = false
   return
@@ -293,13 +301,14 @@ func _regenerate(seed_value: int, preference: int, grid_mode: int = -1, challeng
  # Paddles stay put. A shaped lower junction can change the deck's top wall collar.
  var lower: TableChunk = chunks.back()
  var keep_lower_geometry: bool = lower.data.gameplay_descriptors() == candidate.chunks.back().gameplay_descriptors()
+ var keep_lower_paddles: bool = lower.data.world_flippers() == candidate.chunks.back().world_flippers()
  for i in range(chunks.size() - 1):
   chunks[i].free()
  chunks.clear()
  for i in range(flippers.size() - 1, 1, -1):
   flippers[i].free()
   flippers.remove_at(i)
- if not keep_lower_geometry:
+ if not keep_lower_paddles:
   for flipper: PlaygroundFlipper in flippers:
    flipper.free()
   flippers.clear()
@@ -315,7 +324,7 @@ func _regenerate(seed_value: int, preference: int, grid_mode: int = -1, challeng
   lower.free()
   lower = _build_chunk(layout.chunks.size() - 1)
  chunks.append(lower)
- if not keep_lower_geometry:
+ if not keep_lower_paddles:
   _add_chunk_flippers(lower)
  for i in range(chunks.size() - 2, -1, -1):
   _add_chunk_flippers(chunks[i])
@@ -330,6 +339,7 @@ func _regenerate(seed_value: int, preference: int, grid_mode: int = -1, challeng
  if challenge_settings.has("chao"):
   tuning.equip_chao(challenge_settings.chao)
  zone_enabled = requested_zone
+ zone_difficulty_override = requested_override
  ball.serve_position = chunks.back().get_node("serve").global_position
  ball.teleport_to(ball.serve_position, Vector2.ZERO, true)
  _apply_tuning()
@@ -506,8 +516,20 @@ func _physics_process(delta: float) -> void:
  previous_goal_position = ball.position
 
 func _setup_zone() -> void:
+ for drain: PlayfieldDrain in drains:
+  drain.free()
+ drains.clear()
  zone.reset(zone_enabled, zone_config, layout)
  ring_field.collection_bounds = zone.acts[0].bounds if zone_enabled else Rect2()
+ for chunk: TableChunk in chunks:
+  if chunk.data.markers.has("drain"):
+   var drain := PlayfieldDrain.new()
+   drain.ball = ball
+   var center: Vector2 = chunk.data.world_point(chunk.data.markers.drain)
+   drain.bounds = Rect2(center - Vector2(35, 5), Vector2(70, 20))
+   world.add_child(drain)
+   drains.append(drain)
+ _sync_act_bottoms()
  if not zone_enabled:
   return
  for index in 2:
@@ -522,13 +544,23 @@ func _setup_zone() -> void:
 func _sync_zone_gates() -> void:
  for index in zone_gates.size():
   zone_gates[index].set_closed(index != zone.active_act or not zone.exit_unlocked or zone.state != ZoneRun.State.PLAYING)
+ _sync_act_bottoms()
+
+func _sync_act_bottoms() -> void:
+ var current_bounds: Rect2 = zone.acts[zone.active_act].bounds if zone_enabled else layout.bounds
+ for chunk: TableChunk in chunks:
+  chunk.set_checkpoint_active(not zone_enabled or current_bounds.has_point(chunk.data.world_point(Vector2(400, 400))))
+ for flipper: PlaygroundFlipper in flippers:
+  if flipper.has_meta("checkpoint_chunk"):
+   flipper.set_enabled(not zone_enabled or current_bounds.has_point(flipper.position))
+ for drain: PlayfieldDrain in drains:
+  drain.active = not zone_enabled or (drain.bounds.get_center().y >= current_bounds.position.y and drain.bounds.get_center().y < current_bounds.end.y)
 
 func _at_checkpoint_drain() -> bool:
- if not zone_enabled or zone.active_act == 0:
-  return false
- # The latched physical gate prevents fallback. Falling toward it counts as a
- # checkpoint drain, giving a fresh playable serve instead of a flat-floor trap.
- return ball.linear_velocity.y > 0 and ball.position.y > float(zone.acts[zone.active_act].bounds.end.y) - 48.0
+ for drain: PlayfieldDrain in drains:
+  if drain.crossed(previous_goal_position, ball.position):
+   return true
+ return false
 
 func choose_zone_chao(id: String) -> bool:
  if zone.state != ZoneRun.State.DRAFT or not tuning.can_add_chao(id):

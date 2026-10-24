@@ -1,7 +1,7 @@
 class_name TableGenerator
 extends RefCounted
 ## Ordered top / relay / launch sections. Transform resources are local to each layout.
-const VERSION := 10
+const VERSION := 11
 const PAIR_VERSION := 3
 enum Difficulty { EASY, NORMAL, HARD }
 const DIFFICULTY_NAMES := ["Easy", "Normal", "Hard"]
@@ -336,8 +336,8 @@ static func estimate_difficulty(upper: ChunkData, lower: ChunkData) -> Dictionar
  var reference_width := maxf(1.0, down.size.x - PASSAGE_INSET * 2.0)
  var offset := absf(up.get_center().x - down.get_center().x)
  var largest_ledge := maxf(absf(up.position.x - down.position.x), absf(up.end.x - down.end.x))
- var geometry := upper.gameplay_descriptors()
- geometry.append_array(lower.gameplay_descriptors())
+ var geometry := entry_geometry(upper)
+ geometry.append_array(entry_geometry(lower))
  var blocked := 0
  const APPROACH_SAMPLES := 42
  for dy: float in [-150.0, -100.0, -50.0, 50.0, 100.0, 150.0]:
@@ -416,7 +416,7 @@ static func validate_course(chunks: Array[ChunkData], junction_cache: Dictionary
   return {"valid": false, "errors": PackedStringArray(["A course needs at least two ordered sections"]), "junctions": junctions}
  var geometry: Array[Dictionary] = []
  for chunk: ChunkData in chunks:
-  geometry.append_array(chunk.gameplay_descriptors())
+  geometry.append_array(entry_geometry(chunk))
  for i in range(chunks.size() - 1):
   var key := _junction_key(chunks[i], chunks[i + 1])
   if not junction_cache.has(key):
@@ -463,8 +463,8 @@ static func validate_junction(upper: ChunkData, lower: ChunkData) -> Dictionary:
  for pair: Vector2 in [Vector2(up.position.x, down.position.x), Vector2(up.end.x, down.end.x)]:
   if not is_equal_approx(pair.x, pair.y):
    closures.append({"kind": "rail", "a": Vector2(minf(pair.x, pair.y), seam), "b": Vector2(maxf(pair.x, pair.y), seam), "radius": ChunkData.RAIL_RADIUS})
- var geometry := upper.gameplay_descriptors()
- geometry.append_array(lower.gameplay_descriptors())
+ var geometry := entry_geometry(upper)
+ geometry.append_array(entry_geometry(lower))
  geometry.append_array(closures)
  # Clear central band includes ball radius, rail cap radius and a safety margin.
  var corridor := _passage_interval(upper, lower, left, right)
@@ -542,6 +542,16 @@ static func _check_connection(chunk: ChunkData, connection: Rect2, top: bool, er
       matches += 1
   if matches != 1:
    errors.append("Opening edge must meet exactly one rail endpoint: " + chunk.chunk_id)
+
+static func entry_geometry(chunk: ChunkData) -> Array[Dictionary]:
+ # Check the geometry that exists while entering a future Act. Its one-way
+ # recovery funnel arms only after the ball reaches the clear marker above it.
+ # Active funnels receive separate physical drain/recovery checks.
+ var result: Array[Dictionary] = []
+ for item: Dictionary in chunk.gameplay_descriptors():
+  if not item.get("checkpoint_only", false):
+   result.append(item)
+ return result
 
 static func point_clear(point: Vector2, geometry: Array[Dictionary], clearance: float = CLEARANCE) -> bool:
  for item: Dictionary in geometry:

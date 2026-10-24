@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ChunkData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/chunk_data.gd" id="1"]
+[resource]
+script = ExtResource("1")
+chunk_id = "checkpoint_funnel"
+title = "CHECKPOINT / ROLL-IN"
+estimated_difficulty = 25.0
+playfield_outline = PackedVector2Array(55, 0, 55, 700, 745, 700, 745, 0)
+navigation_probes = PackedVector2Array(170, 180, 630, 180, 400, 400)
+rails = Array[PackedVector2Array]([PackedVector2Array(55, 0, 55, 700), PackedVector2Array(745, 0, 745, 700)])
+checkpoint_rails = Array[PackedVector2Array]([PackedVector2Array(55, 330, 75, 400, 125, 460, 235, 560, 365, 660), PackedVector2Array(745, 330, 725, 400, 675, 460, 565, 560, 435, 660)])
+bumpers = Array[Dictionary]([{"position": Vector2(400, 120), "radius": 38.0, "kind": "circle"}, {"position": Vector2(205, 315), "kind": "triangle", "points": PackedVector2Array(-40, 35, -15, -55, 45, 35)}, {"position": Vector2(595, 315), "kind": "triangle", "points": PackedVector2Array(-45, 35, 15, -55, 40, 35)}])
+rings = PackedVector2Array(170, 75, 170, 170, 630, 75, 630, 170, 305, 315, 495, 315, 400, 430)
+markers = {"entry": Vector2(400, 680), "entry_clear": Vector2(400, 290), "exit": Vector2(400, 20), "serve": Vector2(660, 420), "drain": Vector2(400, 680)}
+flipper_placements = Array[Dictionary]([{"position": Vector2(235, 560), "side": 1.0, "length": 130.0, "checkpoint_only": true}, {"position": Vector2(565, 560), "side": -1.0, "length": 130.0, "checkpoint_only": true}])
+visual_attachment = {"theme": "checkpoint_funnel", "accent": Color(0.2, 0.7, 0.9, 1), "height": 0.0}

@@ -20,7 +20,7 @@ func build() -> void:
  geometry.append_array(junction_rails)
  for item: Dictionary in geometry:
   if item.kind == "rail":
-   _rail(item.a - position, item.b - position)
+   _rail(item)
   elif item.kind == "ring":
    descriptors.append(item)
   else:
@@ -38,7 +38,9 @@ func _body() -> StaticBody2D:
  add_child(body)
  return body
 
-func _rail(a: Vector2, b: Vector2) -> void:
+func _rail(item: Dictionary) -> void:
+ var a: Vector2 = item.a - position
+ var b: Vector2 = item.b - position
  var body := _body()
  body.name = "Rail"
  body.physics_material_override = wall_material
@@ -50,7 +52,15 @@ func _rail(a: Vector2, b: Vector2) -> void:
  collision.shape = shape
  collision.rotation = (b - a).angle() + PI / 2.0
  body.add_child(collision)
- descriptors.append({"kind": "rail", "a": a + position, "b": b + position, "radius": 12.0})
+ var descriptor := item.duplicate(true)
+ descriptor.body = body
+ descriptors.append(descriptor)
+
+func set_checkpoint_active(active: bool) -> void:
+ for item: Dictionary in descriptors:
+  if item.get("checkpoint_only", false):
+   item.body.set_deferred("collision_layer", 1 if active else 0)
+   item.body.set_deferred("collision_mask", 2 if active else 0)
 
 func _bumper(item: Dictionary) -> void:
  var body := _body()

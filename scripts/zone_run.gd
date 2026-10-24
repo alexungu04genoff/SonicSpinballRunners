@@ -50,9 +50,9 @@ func observe_motion(previous: Vector2, current: Vector2) -> bool:
  var act: Dictionary = acts[active_act]
  var reached := false
  if active_act < 2:
-  # Commit only when the entire ball clears the gate slab. The slab can then
-  # close behind it without moving the body or changing its velocity.
-  var crossing_y: float = act.exit_y - PlaygroundBall.RADIUS - ZoneGate.THICKNESS * 0.5 - 2.0
+  # Commit only above the incoming funnel's collision envelope. The funnel
+  # and gate can then activate without moving the body or changing its velocity.
+  var crossing_y: float = act.get("clear_y", act.exit_y - PlaygroundBall.RADIUS - ZoneGate.THICKNESS * 0.5 - 2.0)
   if previous.y >= crossing_y and current.y < crossing_y:
    var x := lerpf(previous.x, current.x, (crossing_y - previous.y) / (current.y - previous.y))
    reached = x >= act.exit_left and x <= act.exit_right

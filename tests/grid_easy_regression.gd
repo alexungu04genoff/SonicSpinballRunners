@@ -1,12 +1,13 @@
 extends "res://tests/grid_chunk_regression.gd"
-## Rounded Easy routes and reviewed v10 layouts include side and upper recovery.
-const V10_MODE_GEOMETRY := {
- "0/1/8": "fd803d4dff3e24b817b41318df704e7e4b1971d0b97065b52c834ed8caf5457c",
- "0/1/23": "09704fc8bda4e07547c203ad3522b867f09d1813f04859dd1a6403bc931ff2df",
- "1/1/8": "4205e493475a3d64b2421b6d32dc3eff84a61e986c04d5cceef566ef05e12c68",
- "1/2/8": "45116940e5b7f4060437f68eae1775a9652c259060e7906a9cd7a5c59a032b8f",
- "2/1/8": "7c44d4b0e22ae9d3fb46478de1103e939f02697e4596ddb2f8b201a7af059f8c",
- "2/2/8": "6f7364fa66730d8acaec6c2be39fb23182572c8ba35d06bbbe37bca3c7b43364",
+## Rounded Easy routes and reviewed v11 layouts include side and upper recovery.
+## Only the two added lower-funnel segments differ from these modes' v10 fingerprints.
+const V11_MODE_GEOMETRY := {
+ "0/1/8": "f8eb3b5e4d77539e5e9035f31f2c6ef307929a343053633beadaafa2ea16f286",
+ "0/1/23": "f3c50b323665e6af8573810f078fb9787c6f63e7f99d1d6f7e147a0a9c35efba",
+ "1/1/8": "0220dc8919dfbc9f998c7ec72c6f6946a58ea4820ad4cfca13b12b27744b1a9b",
+ "1/2/8": "23ebc622d220b9edd95cd67be9dc7fa0d01c92cd6a8fb990241ceba1d3ce3d9a",
+ "2/1/8": "8c2c75379ec69752eb6bb3b546584b88fce1d23188d5a6bcacda587f20aa962a",
+ "2/2/8": "cdc4e79e39bd11274d79086a0de4469ee9d486f28343d8db89b0ee848befc63d",
 }
 
 func create_grid_game(mode: int) -> void:
@@ -23,13 +24,13 @@ func create_grid_game(mode: int) -> void:
 func run() -> void:
  var host = load("res://scripts/game.gd").new()
  var preserved := true
- for key: String in V10_MODE_GEOMETRY:
+ for key: String in V11_MODE_GEOMETRY:
   var parts := key.split("/")
-  preserved = preserved and geometry_hash(host._generate_layout(int(parts[2]), int(parts[1]), int(parts[0]))) == V10_MODE_GEOMETRY[key]
- for key: String in V10_GEOMETRY:
+  preserved = preserved and geometry_hash(host._generate_layout(int(parts[2]), int(parts[1]), int(parts[0]))) == V11_MODE_GEOMETRY[key]
+ for key: String in V11_GEOMETRY:
   var parts := key.split("/")
-  preserved = preserved and geometry_hash(host._generate_layout(int(parts[1]), int(parts[0]), 0)) == V10_GEOMETRY[key]
- check(preserved, "Existing catalogue and grid Normal/Hard reproduce reviewed v10 geometry and paddle fingerprints")
+  preserved = preserved and geometry_hash(host._generate_layout(int(parts[1]), int(parts[0]), 0)) == V11_GEOMETRY[key]
+ check(preserved, "Existing catalogue and grid Normal/Hard reproduce reviewed v11 drain geometry and paddle fingerprints")
  var compiled: Array[ChunkData] = []
  for recipe: GridChunkRecipe in host.GRID_EASY_RECIPES:
   var result := GridChunkCompiler.compile(recipe)

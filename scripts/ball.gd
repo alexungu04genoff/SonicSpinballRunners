@@ -2,6 +2,8 @@ class_name PlaygroundBall
 extends RigidBody2D
 
 signal bumper_hit(collider: Node)
+signal launch_started
+signal launched(impulse: Vector2)
 const RADIUS: float = 14.0
 var tuning: PhysicsTuning
 var controls: PlaygroundInput
@@ -15,6 +17,7 @@ var steering_block_reason: String = "Waiting for launch"
 var steering_last_reset: String = "None"
 var steering_reset_age: float = 0.0
 var serve_pending: bool = true
+var release_pending := false
 var serve_position: Vector2 = Vector2(665, 1120)
 var _teleport_pending: bool = false
 var _teleport_position: Vector2
@@ -51,14 +54,16 @@ func teleport_to(where: Vector2, velocity: Vector2 = Vector2.ZERO, waiting: bool
  _teleport_velocity = velocity
  _teleport_pending = true
  serve_pending = waiting
+ release_pending = false
  _reset_steering("Serve / reset")
  steering_acceleration_applied = 0.0
  steering_impulse_applied = 0.0
  _contact_cooldowns.clear()
 
 func launch() -> void:
- if serve_pending:
-  teleport_to(serve_position, Vector2(-125, -1390))
+ if serve_pending and not release_pending:
+  release_pending = true
+  launch_started.emit()
 
 static func steering_step(previous: float, axis: float, stats: Dictionary, dt: float, horizontal_velocity: float = 0.0) -> float:
  var target: float = axis * float(stats.max_steering_speed)
@@ -129,6 +134,12 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
   steering_target = 0.0
   steering_at_limit = false
   steering_block_reason = "Waiting for launch"
+  if release_pending:
+   release_pending = false
+   serve_pending = false
+   gravity_scale = tuning.effective.gravity_scale
+   # The serve releases into ordinary gravity. Flippers supply the first shot.
+   launched.emit(Vector2.ZERO)
   return
  var stats: Dictionary = tuning.effective
  gravity_scale = stats.gravity_scale

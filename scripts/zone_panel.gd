@@ -161,12 +161,15 @@ func _refresh_hud() -> void:
  if not visible:
   return
  var act: int = game.zone.active_act
- heading.text = "GREEN HILL ZONE  ·  ACT %d / 3  ·  EASY" % (act + 1)
+ heading.text = "GREEN HILL ZONE  ·  ACT %d / 3  ·  %s" % [act + 1, _difficulty_label()]
  score_label.text = "Act score %d / %d   |   Total %d" % [game.zone.act_score, game.zone.targets[act], game.score]
  var destination := "Portal" if act == 2 else "Exit"
  exit_label.text = "%s %s  ·  Checkpoint: Act %d" % [destination, "UNLOCKED — reach it!" if game.zone.exit_unlocked else "LOCKED", act + 1]
  exit_label.modulate = Color("9de583") if game.zone.exit_unlocked else Color("ffe27a")
  build_label.text = "Chao: " + _build_text()
+
+func _difficulty_label() -> String:
+ return "EASY" if game.zone_difficulty_override < 0 else "DEV " + TableGenerator.DIFFICULTY_NAMES[game.generation_difficulty].to_upper()
 
 func refresh() -> void:
  if not is_node_ready():
@@ -178,7 +181,7 @@ func refresh() -> void:
  if draft.visible:
   _refresh_draft()
  if completion.visible:
-  result_label.text = "Total Run Score: %d\nActs completed: %d / 3  ·  Seed: %d\nCollected Chao: %s" % [game.score, game.zone.completed_acts, game.generation_seed, _build_text()]
+  result_label.text = "Total Run Score: %d\nActs completed: %d / 3  ·  Seed: %d  ·  %s\nCollected Chao: %s" % [game.score, game.zone.completed_acts, game.generation_seed, _difficulty_label(), _build_text()]
  if _last_state != game.zone.state:
   if draft.visible:
    for id: String in cards:

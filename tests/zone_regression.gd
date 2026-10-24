@@ -29,7 +29,7 @@ func run() -> void:
  check(game.zone_gates[0].collision_layer == 0 and game.zone_gates[1].collision_layer == 1, "Only current unlocked gate opens; next Act remains gated")
  game.ball.teleport_to(Vector2(gate_x, gate_y + 90), Vector2(0, -1700))
  game._goal_motion_ready = false
- for i in 30:
+ for i in 60:
   await frames(1)
   if game.zone.state == ZoneRun.State.DRAFT:
    break
@@ -47,10 +47,10 @@ func run() -> void:
  await frames(2)
  check(game.zone_gates[0].collision_layer == 1 and game.tuning.build_ids == ["spring"], "Completed boundary seals behind ball and reward equips once")
  var total: int = game.score
- game.ball.teleport_to(Vector2(gate_x, gate_y - 35), Vector2(0, 800))
+ game.ball.teleport_to(game.zone.acts[1].drain - Vector2(0, 30), Vector2(0, 800))
  game._goal_motion_ready = false
  await frames(3)
- check(game.respawn_time > 0, "Falling toward completed boundary triggers current checkpoint drain")
+ check(game.respawn_time > 0, "Falling through the generated central opening triggers current checkpoint drain")
  await frames(110)
  check(game.zone.active_act == 1 and game.score >= total and game.tuning.build_ids == ["spring"] and game.ball.serve_position == game.zone.acts[1].entry, "Automatic checkpoint retry retains Act, total score and Chao")
  var future_ring: Dictionary = {}
@@ -65,7 +65,7 @@ func run() -> void:
  gate_y = game.zone.acts[1].exit_y
  game.ball.teleport_to(Vector2(400, gate_y + 90), Vector2(0, -1700))
  game._goal_motion_ready = false
- for i in 30:
+ for i in 60:
   await frames(1)
   if game.zone.state == ZoneRun.State.DRAFT:
    break

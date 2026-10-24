@@ -13,6 +13,17 @@ var held: bool = false
 var swing_remaining: float = 0.0
 var struck_this_swing: bool = false
 var strikes: int = 0
+var enabled := true
+
+func set_enabled(value: bool) -> void:
+ enabled = value
+ set_deferred("collision_layer", 1 if value else 0)
+ set_deferred("collision_mask", 2 if value else 0)
+ if not value:
+  held = false
+  swing_remaining = 0.0
+  struck_this_swing = false
+  rotation = rest_angle()
 
 func _ready() -> void:
  collision_layer = 1
@@ -42,6 +53,8 @@ func tip() -> Vector2:
  return global_position + Vector2.RIGHT.rotated(rotation) * length
 
 func _physics_process(delta: float) -> void:
+ if not enabled:
+  return
  var pressed: bool = controls.left_held if side > 0.0 else controls.right_held
  if pressed and not held:
   swing_remaining = 0.11

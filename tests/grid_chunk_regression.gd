@@ -3,15 +3,17 @@ extends "res://tests/flipper_recovery_regression.gd"
 ## Each physics sample starts a fresh ball and then uses only ordinary input.
 const COMPILER = preload("res://scripts/grid_chunk_compiler.gd")
 const RECIPES := [preload("res://data/grid_chunks/flow_relay.tres"), preload("res://data/grid_chunks/flow_relay_variant.tres")]
-const V10_GEOMETRY := {
- "0/1": "f380a060c89db07304ed7cd5fede78a32f046b1d0b1a0fbe4c8e981263029713",
- "0/8": "f380a060c89db07304ed7cd5fede78a32f046b1d0b1a0fbe4c8e981263029713",
- "0/18": "f380a060c89db07304ed7cd5fede78a32f046b1d0b1a0fbe4c8e981263029713",
- "0/23": "ebbd795abbba3b058a0fc133098ff7feb845fe2ef69b0a7229f44b69ab1b7cb2",
- "2/1": "2f6d671369de2887f556040accbd3fe4dd4b55da3cf2528c94c58c332edccf3a",
- "2/8": "53c429716e80a0984ca7b2937a14154d2791dec00c1fbb8cdfde63671e0695eb",
- "2/18": "8273ec36b759f9e2e738ec79c455b4dbb10a0d5c8eadc48d6350e242a888cfad",
- "2/23": "96718f9690a8ab8a5c2d7908bfbc205ff75f2b2b07b168f7d290c7ca812aeca3",
+## v11 adds the two lower drain-funnel rail segments. Removing only those segments
+## reproduced every prior v10 fingerprint; upper/middle geometry and paddles are unchanged.
+const V11_GEOMETRY := {
+ "0/1": "401008a02a1b7591002e1ec8d3e33bc674ad4dd67a4bcccd62d8ffcc32fbadc2",
+ "0/8": "401008a02a1b7591002e1ec8d3e33bc674ad4dd67a4bcccd62d8ffcc32fbadc2",
+ "0/18": "401008a02a1b7591002e1ec8d3e33bc674ad4dd67a4bcccd62d8ffcc32fbadc2",
+ "0/23": "b940785496e51227d76b88d1b79246a7fab0ee30269295be1019968eec95cb95",
+ "2/1": "18d0d414b502a642e71a12ab078a00c7b8a14644e082e53a39ab90158cc31c2d",
+ "2/8": "c99edba60083aba17866a1b18e6810d89858fc4f8646777e5e396449b1105394",
+ "2/18": "e83794b0f1f87e3c8c9b719645d493a88b6e2b53d29336ba7cb2ed142ec388bf",
+ "2/23": "6001dfacc327e1b2e9ac6555bc4279cb5a23b1b0fed9fc2b5e092ddb6cb696bf",
 }
 var grid_report: Dictionary = {"layouts": [], "passive_shots": [], "recoveries": []}
 var passive_root: Node2D
@@ -116,10 +118,10 @@ func flippers_clear(chunk: ChunkData) -> bool:
 
 func run() -> void:
  var legacy_preserved := true
- for key: String in V10_GEOMETRY:
+ for key: String in V11_GEOMETRY:
   var parts := key.split("/")
-  legacy_preserved = legacy_preserved and geometry_hash(TableGenerator.generate(int(parts[1]), int(parts[0]))) == V10_GEOMETRY[key]
- check(legacy_preserved, "Eight Easy/Hard layouts reproduce v10 geometry, side paddles and upper recovery")
+  legacy_preserved = legacy_preserved and geometry_hash(TableGenerator.generate(int(parts[1]), int(parts[0]))) == V11_GEOMETRY[key]
+ check(legacy_preserved, "Eight Easy/Hard layouts reproduce v11 drain geometry with existing side paddles and upper recovery")
  var compiled: Array[ChunkData] = []
  var source_snapshots: Array[String] = []
  var reproducible := true
@@ -283,7 +285,7 @@ func grid_runtime_checks(compiled: Array[ChunkData]) -> void:
   grid_report.recoveries.append(witness)
   check(recovered, "A genuine timed descending grid-flipper recovery reaches the upper chamber: " + middle.chunk_id, str(witness))
   var drop := await drop_sample(400.0, 0, true)
-  check(drop.drained and drop.respawned and drop.relaunched and drop.strikes == 0, "A missed bottom shot still drains and automatically relaunches with the grid middle: " + middle.chunk_id)
+  check(drop.drained and drop.sensor_contact and drop.respawned and drop.waited and drop.released and drop.strikes == 0, "A missed bottom shot reaches its drain sensor and permits a deliberate gravity retry with the grid middle: " + middle.chunk_id)
   var layout: Dictionary = game.layout
   await remove_game()
   passive_fixture(layout.chunks, layout.junctions)
@@ -350,6 +352,6 @@ func grid_regeneration_check() -> void:
  print("EXPECTED INVALID RECIPE | Next diagnostic verifies active-table preservation")
  game._regenerate(8, TableGenerator.Difficulty.NORMAL, 1)
  shared_recipe.placements.pop_back()
- check(game.layout.signature == prior_signature and game.chunks[1].get_instance_id() == prior_middle_id and game.presentation.get_instance_id() == prior_presentation_id and game.generation_grid_mode == 1 and not game.generation_pending and game.status_message == "Generation failed; current table preserved.", "Invalid grid recipe leaves the complete active table intact")
+ check(game.layout.signature == prior_signature and game.chunks[1].get_instance_id() == prior_middle_id and game.presentation.get_instance_id() == prior_presentation_id and game.generation_grid_mode == 1 and not game.generation_pending and game.status_message.begins_with("Generation failed; current table preserved.") and game.status_message.contains("unknown piece"), "Invalid grid recipe preserves the complete active table and reports its authoring error")
  paused = false
  await remove_game()

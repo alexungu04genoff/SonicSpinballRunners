@@ -65,7 +65,7 @@ func _ready() -> void:
    _select_pose(_capture_kind if _capture_kind in ["roll", "idle", "jump", "trick", "homing", "impact", "fly"] else "idle")
   if not _capture_sequence:
    character.seek_pose(0.55)
- print("GREEN_HILL_READY | Enter launch | Q/E flippers | arrows steer | F1 tuning/seeds | O overview | C study")
+ print("GREEN_HILL_READY | Enter roll in | Q/E flippers | arrows steer | F1 tuning/seeds | O overview | C study")
 
 func _build_view() -> void:
  view_container = SubViewportContainer.new()
@@ -214,7 +214,7 @@ func _build_lab_ui() -> void:
  var top_row := HBoxContainer.new()
  top_row.add_theme_constant_override("separation", 10)
  stack.add_child(top_row)
- pose_label = _label("ROLL / READY TO LAUNCH", 14, Color("ffe373"))
+ pose_label = _label("ROLL / READY TO ROLL IN", 14, Color("ffe373"))
  pose_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  top_row.add_child(pose_label)
  status_label = _label("", 12, Color("a4e5e3"))
@@ -222,7 +222,7 @@ func _build_lab_ui() -> void:
  play_buttons = HBoxContainer.new()
  play_buttons.add_theme_constant_override("separation", 8)
  stack.add_child(play_buttons)
- play_buttons.add_child(_button("Enter  Launch", launch_ball))
+ play_buttons.add_child(_button("Enter  Roll in", launch_ball))
  for preset: Array in [["Normal 18", 18, 0], ["Normal 23", 23, 0], ["Grid base", 18, 1], ["Grid variant", 23, 2]]:
   var button := _button(preset[0], func():
    if preset[2] > 0:
@@ -348,7 +348,7 @@ func _physics_process(delta: float) -> void:
 func _process(_delta: float) -> void:
  if not is_instance_valid(character) or not is_instance_valid(pose_label):
   return
- var context := "CHARACTER STUDY" if close_view else ("PAUSED" if get_tree().paused else ("READY TO LAUNCH" if ball.serve_pending else "LIVE PLAY"))
+ var context := "CHARACTER STUDY" if close_view else ("PAUSED" if get_tree().paused else ("READY TO ROLL IN" if ball.serve_pending else "LIVE PLAY"))
  if score_attack.state == ScoreAttack.State.COMPLETE and not close_view:
   context = "SCORE ATTACK CLEAR"
  pose_label.text = "%s / %s" % [character.pose.to_upper(), context]

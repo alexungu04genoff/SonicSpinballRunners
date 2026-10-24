@@ -1,6 +1,10 @@
 # Vertical Traversal Playground: generation contract
 
-## Current generator v10
+## Current generator v11
+
+Version 11 updates the bottom funnel to a 70px mouth with a central drain sensor and a gravity-fed side serve. It also preserves explicitly tagged checkpoint geometry in shared descriptors while excluding that retracted geometry from entry-open route checks. Active funnel passage, recovery and drain behavior have separate real-physics checks. Existing catalogue resources and normal flipper forces remain shared. Historical v10 fingerprints change because the lower deck's rails changed.
+
+Optional **Zone generator v2** composes nine sections using eight authored Easy relay archetypes and two reusable checkpoint funnels. A shuffled bag avoids repeated relay IDs within an Easy run. Grid variants shuffle the entire library. Mirroring and compatible shared shifts retain broad connections. The official tier is Easy; an explicit development override can request Normal or Hard resources. A requested tier must pass the unchanged geometry limits and validation; exhausting the bounded candidate search returns an error, never an Easy fallback. See README for the entry/latch sequence and `GRID_AUTHORING.md` for the room library.
 
 The default game generates three seven-row sections: a capped top at row 0, a reusable middle at row 7, and the familiar launch deck at row 14. The resulting bounds are currently 800 × 2100 physics pixels. `layout.chunks` is ordered **top to bottom**; `layout.junctions` holds adjacent section indices, world-space closure rails, checked passage rectangles and difficulty estimates. Bounds merge the resource footprints. Runtime construction, overlays, floor, drain detection and camera framing consume that data rather than assuming two sections.
 

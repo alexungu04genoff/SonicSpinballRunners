@@ -73,6 +73,20 @@ Provisional window, ring count and cap live in `data/scorecraft.tres`. `Scorecra
 
 Run `tests/scorecraft_regression.gd` for formula/contact/lifecycle checks. `tests/scorecraft_play_survey.gd -- --seconds=120` compares four input policies on seed 18; `--mode=2 --case=1 --route --seconds=240` measures all three Act unlocks. See [measured results and limits](docs/VERIFICATION.md).
 
+## Playfield design: roll-in serves and Act funnels
+
+Sonic and Tails wait at a marked side serve. **Enter / gamepad X releases the ball into normal gravity**, feeding it down the sloping wall toward the recovery flippers. The flippers provide the first upward shot. There is no launch cup, spring obstruction or preset launch velocity. This follows the playtest preference for a simple roll-in. Automatic retries use the same serve in the current Act; manual reset can leave the ball waiting there.
+
+Every Act has a sloped funnel, two recovery flippers and a real central 2D drain sensor. A fast downward pass uses a swept sensor check. Score, current Act progress and Chao survive; the existing combo and temporary-special resets still happen on a drain. The global out-of-bounds recovery remains a safety net.
+
+Future checkpoint funnels and their flippers are retracted, shown as thin floor guides, so an unlocked entrance does not become a ceiling. Cross the score gate and climb above the generated safe-entry line to finish the Act. A weak attempt can fall back before that line. After the draft, the next funnel activates and the previous gate seals behind it. Entered Acts remain checkpoints; there is no return to completed Acts or transition teleport.
+
+Zone generator v2 draws five distinct relay rooms from **eight authored Easy archetypes**: Wall Garden, Sling Alley, Orbit Cluster, Bank Return, Staggered Steps, Winding Lane, Twin Banks and Crosscourt. Two checkpoint decks, the bottom funnel and one final cap complete the nine-chunk layout. The shared 50px kit adds mounted circles, three circle sizes, triangular wall slings and rounded banks. Ring patterns, paddle positions, mirroring and safe horizontal shifts follow each authored room's purpose. Grid base and variant now shuffle the full Zone library instead of repeating one room. Free Play and Score Attack keep their existing three-section catalogues, with the shared roll-in serve and lower drain refinement.
+
+Green Hill's official difficulty remains **Easy**. For development, open **F1**, select **Zone difficulty: DEV Normal / DEV Hard**, then build or start a Zone. The override changes the complete generated course, is labelled in the HUD, and persists on replay. Invalid candidates report failure and preserve the current run; Zone generation never substitutes Easy for a requested development tier. Select **Official Easy** to return to the official rules. Sandbox difficulty remains separate.
+
+All rails, bumpers, slings and flippers come from shared 2D descriptors. `checkpoint_only` marks retractable geometry; its collision state and each flipper's `enabled` state also drive placeholder visuals. `PlayfieldDrain` owns the bounded sensor; `ZoneRun` owns progress. `PlaygroundBall.launch_started` and `launched(impulse)` report serve release; the latter currently carries `Vector2.ZERO`, because gravity supplies the motion. Presentation cannot change ball motion.
+
 ## Character Lab v1
 
 Select **Sonic · Homing** or **Tails · Flight** beside the mode selector, then **Start / replay** at serve or while paused. This starts the same seed with the selected character's starting profile. Ordinary replay retains live tuning; changing characters restores their starting profile. Sandbox Chao remain equipped. A fresh Zone starts its existing empty draft build.

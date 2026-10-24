@@ -53,6 +53,10 @@ func fresh_ball(where: Vector2, velocity: Vector2) -> void:
  game.presentation.ball = fresh
  game.ring_field.ball = fresh
  game.ring_field.previous_ball_position = where
+ for drain: PlayfieldDrain in game.drains:
+  drain.ball = fresh
+ game.previous_goal_position = where
+ game._goal_motion_ready = false
  fresh.bumper_hit.connect(game._on_bumper_hit)
  fresh.teleport_to(where, velocity)
  game.respawn_time = -1.0
@@ -72,7 +76,9 @@ func drop_sample(x: float, profile: int, early_press: bool = false) -> Dictionar
  fresh_ball(start, Vector2.ZERO)
  var initial_number: int = game.ball_number
  var strikes_before: int = game.flippers[0].strikes + game.flippers[1].strikes
- var result := {"x": x, "profile": profile, "early_press": early_press, "drained": false, "respawned": false, "relaunched": false, "drain_frame": -1, "drain_position": Vector2.ZERO, "last_position": start, "last_velocity": Vector2.ZERO, "strikes": 0}
+ var result := {"x": x, "profile": profile, "early_press": early_press, "drained": false, "sensor_contact": false, "respawned": false, "waited": false, "released": false, "drain_frame": -1, "drain_position": Vector2.ZERO, "last_position": start, "last_velocity": Vector2.ZERO, "strikes": 0}
+ var ready_frame := -1
+ var release_requested := false
  for tick in 1800:
   game.controls.virtual_left = early_press and tick < 10
   game.controls.virtual_right = early_press and tick < 10
@@ -83,10 +89,18 @@ func drop_sample(x: float, profile: int, early_press: bool = false) -> Dictionar
    result.drained = true
    result.drain_frame = tick
    result.drain_position = game.ball.position
+   for drain: PlayfieldDrain in game.drains:
+    result.sensor_contact = result.sensor_contact or (drain.active and drain.bounds.grow(PlaygroundBall.RADIUS + 1.0).has_point(game.ball.position))
   if result.drained and game.ball.serve_pending and game.ball.position.distance_to(game.ball.serve_position) < 1.0:
    result.respawned = true
-  if result.respawned and not game.ball.serve_pending and game.ball.linear_velocity.y < -500.0:
-   result.relaunched = true
+   if ready_frame < 0:
+    ready_frame = tick
+   if tick - ready_frame >= 12 and not release_requested:
+    result.waited = game.ball.linear_velocity.is_zero_approx()
+    game.launch_ball()
+    release_requested = true
+  if release_requested and not game.ball.serve_pending and game.ball.position.y > game.ball.serve_position.y + 2.0 and game.ball.linear_velocity.y > 0.0:
+   result.released = game.ball.linear_velocity.length() < 300.0 and game.ball_number == initial_number + 1
    break
  result.strikes = game.flippers[0].strikes + game.flippers[1].strikes - strikes_before
  report.drops.append(result)
@@ -109,7 +123,8 @@ func held_cradle_sample(paddle: int) -> Dictionary:
  for tick in 1200:
   await frames(1)
   if game.ball_number > initial_number:
-   result.released_drain = game.ball.position.y > game.layout.bounds.end.y + 50.0
+   for drain: PlayfieldDrain in game.drains:
+    result.released_drain = result.released_drain or (drain.active and drain.bounds.grow(PlaygroundBall.RADIUS + 1.0).has_point(game.ball.position))
    break
  report.cradles.append(result)
  return result
@@ -180,11 +195,11 @@ func run() -> void:
  for profile in 2:
   for x: float in [365.0, 385.0, 400.0, 415.0, 435.0]:
    var result := await drop_sample(x, profile)
-   drops_work = drops_work and result.drained and result.drain_position.y > game.layout.bounds.end.y + 50.0 and result.respawned and result.relaunched
+   drops_work = drops_work and result.drained and result.sensor_contact and result.respawned and result.waited and result.released
    print("LOW SPEED DROP | ", result)
- check(drops_work, "Balanced and Floaty center/tip-near zero-speed drops physically drain and automatically relaunch")
+ check(drops_work, "Balanced and Floaty center/tip-near drops reach the drain sensor, respawn, wait and roll in under gravity")
  var miss := await drop_sample(400.0, 0, true)
- check(miss.drained and miss.respawned and miss.relaunched and miss.strikes == 0, "An early missed flip drains, respawns and relaunches without a forced ball correction", str(miss))
+ check(miss.drained and miss.sensor_contact and miss.respawned and miss.waited and miss.released and miss.strikes == 0, "An early missed flip drains, respawns and releases under gravity without a forced ball correction", str(miss))
  var cradles_release := true
  for paddle in [0, 1]:
   var cradle := await held_cradle_sample(paddle)

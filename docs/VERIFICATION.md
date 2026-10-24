@@ -2,6 +2,36 @@
 
 Latest checks: 2026-10-24. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
+## Playfield design, gravity serves and Act funnels — 2026-10-24
+
+The final serve follows the user's review: no cup, spring or preset launch velocity. Enter / X releases the waiting character into ordinary gravity at the generated side marker. The existing flippers supply the first upward shot. Checkpoint retries use the same release. New Act-bottom funnels stay retracted until a physical upward shot clears their generated safe-entry line; drafting preserves the same body and momentum before activating the next funnel.
+
+`act_pinball_regression.gd`: **38 checks passed headlessly and graphically with ANGLE**. Controlled real-physics fixtures cover waiting and zero-impulse release, left and right recovery strikes in all three Acts, three missed shots through their central gaps into active 2D sensors, checkpoint retry, weak upward entries returning without advancement, both successful full-clear crossings, frozen drafts, unchanged arriving momentum, gate closure, score/Chao retention and clean same-seed replay. These fixtures prescribe starting trajectories and target scores; they are separate from the ordinary-input surveys below.
+
+`playfield_catalogue_regression.gd`: **25 checks passed**, including real contacts with wall-mounted circles, bank-mounted circles and triangular slings. `zone_generation_regression.gd`: **21 checks passed**, spanning twelve seed/grid layouts, deterministic regeneration, five distinct relay archetypes per Easy Zone and eight actual upward seam crossings. The library contains eight authored Easy archetypes plus two Hard recipes; Normal reuses its existing flowing geometry. Collision validation remains separate from difficulty estimates.
+
+`zone_difficulty_regression.gd`: **13 checks passed** for the F1 selector, complete Normal/Hard builds, replay persistence, explicit failed-generation preservation, official Easy restoration and UI fit. `launcher_visual_regression.gd`: **12 graphical ANGLE checks passed** for the final gravity serve, flat marker, low release speed, ordinary downward motion, pause and reset. The filename retains its original experimental name; there is no plunger in the final behavior.
+
+Compatibility reruns passed: physics **38**, Score Attack **26**, Chao Lab **29**, rings **11**, Character Lab **70**, Scorecraft **37**, Zone **34**, and flipper recovery **12**. Act drain fixtures now use generated drain markers, and progression fixtures use the safe-entry line rather than the old flat checkpoint boundary.
+
+Grid construction **23** and Grid Easy **22** checks passed, including their seed matrices, actual moving-paddle passage/recovery and regeneration. An independent audit reproduced all fourteen prior v10 geometry fingerprints after removing only the two new lower-funnel rail segments; reviewed v11 expectations include that intended change. The regeneration checks exposed and fixed replacement of unchanged bottom paddles when a generated wall collar changes. Paddle identity now follows its own placement descriptors independently of the lower collision section. Isolated editor import passed. Graphical ANGLE mode-transition smoke passed **14** checks across Free Play, Zone, replay and Score Attack. Deliberately invalid recipes/configuration emit expected diagnostics; final checks had no unexpected script errors or failed assertions.
+
+### Input-only Zone play with the final gravity serve
+
+These runs use ordinary launch, steering, timed flippers, earned special meter and public Spring / Ice / Magnet draft choices. No score, charge, position or velocity is injected. Times are simulated seconds at 120 Hz, not human completion estimates.
+
+| Seed / policy | Completion | Score | Rings | Balls | Special use |
+| --- | ---: | ---: | ---: | ---: | --- |
+| 18, Sonic character survey | 159.60 s | 14,325 | 55 | 1 | 4 activations, 2 actual Homing hits |
+| 18, Tails character survey | 175.44 s | 13,925 | 79 | 2 | 5 flights |
+| 41, alternating route policy 2 | 149.16 s | 18,000 | 64 | 1 | No specials |
+
+All three runs physically completed all three Acts and drafts without a side/top escape. Seed 18 first READY occurred at 28.69 s for Sonic and 30.51 s for Tails. Seed 41 unlocked Acts at run times 8.66 / 91.05 / 106.53 s and reached their physical exits at 76.24 / 97.93 / 149.16 s. Targets remain 750 / 1,250 / 1,750: these samples still require substantial travel after score unlock and do not justify arbitrary target inflation.
+
+The gravity start supplies a readable first recovery shot, and both characters can traverse the new course through ordinary input. Controlled contact tests establish that misses and last-second recoveries work in each Act. They do not establish subjective fun or human timing fairness. Human review should compare seeds 18 / 23 / 41, judge the marked full-clear entrance on a weak shot, and try late flipper recovery on each funnel. Development Normal/Hard builds are geometry experiments, not evidence of balanced full-Zone completion.
+
+`pinball_design_capture.gd` records three full-Zone layouts and all three active Act-bottom close-ups with the graphical Green Hill presentation. Still-image progression uses explicit fixtures and must not be mistaken for input-only play. Captures and logs remain under ignored `test-results/`; no third-party assets are added. ArtBro's separate worktree and the preexisting `project.godot` edit are preserved.
+
 ## Scorecraft v1 — 2026-10-24
 
 The shared award calculator uses a 3-second window, three rings per ring link and a ×3 cap. The first trial allowed fresh bumpers alone to reach ×3. That produced 29–39 seconds at ×3 in two-minute Free Play trials, with little distinction between bumper-seeking and ring-seeking inputs. The final rule requires a completed ring link for ×3; fresh bumpers alone stop at ×2. This reduced top-tier uptime to 3–11 seconds while retaining the same physics and ordinary input policies.

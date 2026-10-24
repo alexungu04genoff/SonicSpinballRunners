@@ -14,6 +14,8 @@ const RAIL_RADIUS := 12.0
 @export var mirrored: bool = false
 @export var horizontal_shift_cells: int = 0
 @export var rails: Array[PackedVector2Array] = []
+## Retracted during upward entry, enabled only after this Act becomes a checkpoint.
+@export var checkpoint_rails: Array[PackedVector2Array] = []
 @export var bumpers: Array[Dictionary] = []
 @export var rings: PackedVector2Array = PackedVector2Array()
 @export var markers: Dictionary = {}
@@ -50,7 +52,10 @@ func world_polygon(points: PackedVector2Array) -> PackedVector2Array:
 func world_flippers() -> Array[Dictionary]:
  var result: Array[Dictionary] = []
  for placement: Dictionary in flipper_placements:
-  result.append({"position": world_point(placement.position), "side": -float(placement.side) if mirrored else float(placement.side), "length": float(placement.get("length", PlaygroundFlipper.LENGTH))})
+  var transformed := {"position": world_point(placement.position), "side": -float(placement.side) if mirrored else float(placement.side), "length": float(placement.get("length", PlaygroundFlipper.LENGTH))}
+  if placement.get("checkpoint_only", false):
+   transformed.checkpoint_only = true
+  result.append(transformed)
  if flipper_placements.is_empty():
   for marker_name: String in ["left_flipper", "right_flipper"]:
    if markers.has(marker_name):
@@ -72,6 +77,9 @@ func gameplay_descriptors() -> Array[Dictionary]:
     points.append(Vector2(-point.x if mirrored else point.x, point.y))
    item.points = points
   result.append(item)
+ for rail: PackedVector2Array in checkpoint_rails:
+  for i in range(rail.size() - 1):
+   result.append({"kind": "rail", "a": world_point(rail[i]), "b": world_point(rail[i + 1]), "radius": RAIL_RADIUS, "checkpoint_only": true})
  for point: Vector2 in rings:
   result.append({"kind": "ring", "position": world_point(point)})
  return result

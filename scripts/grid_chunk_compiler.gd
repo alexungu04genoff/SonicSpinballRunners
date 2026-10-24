@@ -61,7 +61,16 @@ static func compile(recipe: GridChunkRecipe) -> Dictionary:
     var points: PackedVector2Array = piece.points
     for i in range(points.size() - 1):
      chains[chain].append([position + points[i] * GridPieceKit.CELL_SIZE, position + points[i + 1] * GridPieceKit.CELL_SIZE])
-   "circle": chunk.bumpers.append({"kind": "circle", "position": position, "radius": piece.radius * GridPieceKit.CELL_SIZE})
+   "circle":
+    var bumper := {"kind": "circle", "position": position, "radius": piece.radius * GridPieceKit.CELL_SIZE}
+    if not piece.attachment.is_empty():
+     bumper.wall_attachment = piece.attachment
+    chunk.bumpers.append(bumper)
+   "triangle":
+    var vertices := PackedVector2Array()
+    for point: Vector2 in piece.points:
+     vertices.append(point * GridPieceKit.CELL_SIZE)
+    chunk.bumpers.append({"kind": "triangle", "position": position, "points": vertices, "wall_attachment": piece.attachment})
    "ring":
     if chunk.rings.has(position):
      errors.append("Duplicate ring anchor at %s" % placement.cell)
@@ -155,24 +164,30 @@ static func _point_clear(point: Vector2, chunk: ChunkData, clearance: float) -> 
   for i in range(rail.size() - 1):
    if point.distance_to(Geometry2D.get_closest_point_to_segment(point, rail[i], rail[i + 1])) < ChunkData.RAIL_RADIUS + clearance:
     return false
- for bumper: Dictionary in chunk.bumpers:
-  if point.distance_to(bumper.position) < bumper.radius + clearance:
-   return false
+ if not TableGenerator.point_clear(point, chunk.bumpers, clearance):
+  return false
  return true
 
 static func _check_clearance(chunk: ChunkData, errors: PackedStringArray) -> void:
  for bumper: Dictionary in chunk.bumpers:
-  if not Geometry2D.is_point_in_polygon(bumper.position, chunk.playfield_outline):
+  var attachment: String = bumper.get("wall_attachment", "")
+  var attached_side := 0 if attachment == "left" else (1 if attachment == "right" else -1)
+  if attached_side < 0 and not Geometry2D.is_point_in_polygon(bumper.position, chunk.playfield_outline):
    errors.append("Bumper is outside the navigable outline")
-  for rail: PackedVector2Array in chunk.rails:
+  if attached_side >= 0 and not _valid_attachment(bumper, chunk.rails[attached_side]):
+   errors.append("Wall bumper or sling must be anchored directly to its named boundary")
+  for side in chunk.rails.size():
+   if side == attached_side:
+    continue # This authored edge is deliberately sealed; it is not a ball lane.
+   var rail: PackedVector2Array = chunk.rails[side]
    for i in range(rail.size() - 1):
-    if bumper.position.distance_to(Geometry2D.get_closest_point_to_segment(bumper.position, rail[i], rail[i + 1])) < bumper.radius + ChunkData.RAIL_RADIUS + BALL_CLEARANCE * 2.0:
+    if _bumper_segment_distance(bumper, rail[i], rail[i + 1]) < ChunkData.RAIL_RADIUS + BALL_CLEARANCE * 2.0:
      errors.append("Bumper leaves insufficient ball passage beside a rail")
  for i in chunk.bumpers.size():
   for j in range(i + 1, chunk.bumpers.size()):
    var a: Dictionary = chunk.bumpers[i]
    var b: Dictionary = chunk.bumpers[j]
-   if a.position.distance_to(b.position) < a.radius + b.radius + BALL_CLEARANCE * 2.0:
+   if _bumper_pair_distance(a, b) < BALL_CLEARANCE * 2.0:
     errors.append("Bumpers overlap or leave insufficient ball passage")
  var targets := chunk.navigation_probes.duplicate()
  targets.append_array(chunk.rings)
@@ -197,7 +212,7 @@ static func _check_clearance(chunk: ChunkData, errors: PackedStringArray) -> voi
      if _segment_distance(flipper.position, tip, rail[i], rail[i + 1]) < PlaygroundFlipper.RADIUS + ChunkData.RAIL_RADIUS + BALL_CLEARANCE * 2.0 + SWING_MARGIN:
       errors.append("Flipper swing leaves insufficient ball passage beside a rail")
    for bumper: Dictionary in chunk.bumpers:
-    if bumper.position.distance_to(Geometry2D.get_closest_point_to_segment(bumper.position, flipper.position, tip)) < bumper.radius + PlaygroundFlipper.RADIUS + BALL_CLEARANCE * 2.0 + SWING_MARGIN:
+    if _bumper_segment_distance(bumper, flipper.position, tip) < PlaygroundFlipper.RADIUS + BALL_CLEARANCE * 2.0 + SWING_MARGIN:
      errors.append("Flipper swing leaves insufficient ball passage beside a bumper")
    samples.append([flipper.position, tip])
   sweeps.append(samples)
@@ -208,6 +223,39 @@ static func _check_clearance(chunk: ChunkData, errors: PackedStringArray) -> voi
      if _segment_distance(a[0], a[1], b[0], b[1]) < PlaygroundFlipper.RADIUS * 2.0 + BALL_CLEARANCE * 2.0 + SWING_MARGIN * 2.0:
       errors.append("Flipper sweeps overlap or close the ball passage")
       return
+
+static func _valid_attachment(bumper: Dictionary, rail: PackedVector2Array) -> bool:
+ # The whole rear edge must touch one straight boundary segment. A misplaced
+ # mounted piece cannot create an unvalidated narrow passage behind itself.
+ var anchors := PackedVector2Array([bumper.position])
+ if bumper.kind == "triangle":
+  anchors = PackedVector2Array([bumper.position + bumper.points[0], bumper.position + bumper.points[2]])
+ for i in range(rail.size() - 1):
+  var aligned := true
+  for point: Vector2 in anchors:
+   aligned = aligned and point.distance_to(Geometry2D.get_closest_point_to_segment(point, rail[i], rail[i + 1])) < EPSILON
+  if aligned:
+   return true
+ return false
+
+static func _bumper_segment_distance(bumper: Dictionary, a: Vector2, b: Vector2) -> float:
+ if bumper.kind == "circle":
+  return bumper.position.distance_to(Geometry2D.get_closest_point_to_segment(bumper.position, a, b)) - float(bumper.radius)
+ var points: PackedVector2Array = bumper.points
+ if Geometry2D.is_point_in_polygon(a - bumper.position, points) or Geometry2D.is_point_in_polygon(b - bumper.position, points):
+  return 0.0
+ var distance := INF
+ for i in points.size():
+  distance = minf(distance, _segment_distance(a, b, bumper.position + points[i], bumper.position + points[(i + 1) % points.size()]))
+ return distance
+
+static func _bumper_pair_distance(a: Dictionary, b: Dictionary) -> float:
+ if a.kind == "circle":
+  return _bumper_segment_distance(b, a.position, a.position) - float(a.radius)
+ var distance := INF
+ for i in a.points.size():
+  distance = minf(distance, _bumper_segment_distance(b, a.position + a.points[i], a.position + a.points[(i + 1) % a.points.size()]))
+ return distance
 
 static func _segment_distance(a: Vector2, b: Vector2, c: Vector2, d: Vector2) -> float:
  if Geometry2D.segment_intersects_segment(a, b, c, d) != null:

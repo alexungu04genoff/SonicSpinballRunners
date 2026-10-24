@@ -3,7 +3,7 @@ extends RefCounted
 ## Gameplay definitions only. Points and footprints use construction-grid units.
 ## Piece orientation is explicit in its name; rotations are not supported.
 const CELL_SIZE := 50.0
-const VERSION := 2
+const VERSION := 3
 
 static func definition(name: String, span: int = 1) -> Dictionary:
  var points := PackedVector2Array()
@@ -27,8 +27,20 @@ static func definition(name: String, span: int = 1) -> Dictionary:
    for step in 17:
     var progress := step / 16.0
     points.append(Vector2(direction * 0.30 * (1.0 - cos(TAU * progress)), progress * 4.0))
-  "bumper":
-   return {"kind": "circle", "radius": 0.72, "footprint": Rect2(-0.72, -0.72, 1.44, 1.44)}
+  "wide_bank_left", "wide_bank_right":
+   var direction := -1.0 if name == "wide_bank_left" else 1.0
+   # An eight-row bank reaches an integer-cell apex, providing an explicit
+   # mount anchor without introducing a corner in the rounded Easy boundary.
+   for step in 17:
+    var progress := step / 16.0
+    points.append(Vector2(direction * 0.5 * (1.0 - cos(TAU * progress)), progress * 8.0))
+  "bumper", "bumper_small", "bumper_large", "wall_bumper_left", "wall_bumper_right":
+   var radius := 0.48 if name == "bumper_small" else (0.96 if name == "bumper_large" else 0.72)
+   return {"kind": "circle", "radius": radius, "attachment": name.trim_prefix("wall_bumper_") if name.begins_with("wall_bumper_") else "", "footprint": Rect2(-radius, -radius, radius * 2.0, radius * 2.0)}
+  "sling_left", "sling_right":
+   var direction := 1.0 if name == "sling_left" else -1.0
+   var vertices := PackedVector2Array([Vector2(0, -1), Vector2(direction * 1.4, 0), Vector2(0, 1)])
+   return {"kind": "triangle", "points": vertices, "attachment": name.trim_prefix("sling_"), "footprint": Rect2(minf(0, direction * 1.4), -1, 1.4, 2)}
   "ring":
    return {"kind": "ring", "footprint": Rect2(-0.2, -0.2, 0.4, 0.4)}
   "flipper_left", "flipper_right", "side_flipper_left", "side_flipper_right":
