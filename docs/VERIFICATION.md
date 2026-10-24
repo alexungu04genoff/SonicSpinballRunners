@@ -2,6 +2,21 @@
 
 Latest checks: 2026-10-24. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
+## Manual Act Geometry Editor
+
+The standalone editor adds no runtime generator or gameplay changes. Godot 4.7.2 checks on 2026-10-24:
+
+- Isolated headless editor import and standalone editor startup passed.
+- Godot MCP launched the editor graphically; its final debug output contained no errors or warnings.
+- `act_geometry_regression.gd`: **2,181 checks passed**, plus **5 checks in a fresh Godot process**. Coverage includes all 52 canonical shapes, every quarter-turn/mirror combination, exact frames and extents, open/closed topology, independent point-transform expectations, malformed/missing version metadata, invalid placements, deliberate overlap, save/reload equality and editing/re-saving after restart.
+- `act_editor_smoke.gd`: **60 headless interaction checks passed**. Every palette stamp is placed through viewport input. The checks exercise repeated placement, real palette drag/drop, snapped moves and cancellation, selection by actual shape, overlap cycling, button/keyboard transforms, delete, history, title/cell-size drafts, file-state indicators, unsaved-change guards, failed-load preservation and exact editor re-save.
+- The same scene smoke passed **61 graphical checks**, including a rendered capture. `test-results/act-editor.png` was visually inspected at 1280×900: palette previews, controls, grid, geometry and ghost fit and remain readable. Synthetic drag/drop input also synchronizes the native cursor so graphical mouse polling cannot overwrite its test position.
+- Existing profile regression passed; existing generation regression passed **64 checks**. The unchanged playground scene reached `PLAYGROUND_READY` during a separate headless startup check.
+
+The 22-piece `data/acts/curve_garden.tres` example was created using editor stamping/transform/save actions. Version fields are explicitly stored, and files reload with `CACHE_MODE_IGNORE`. No external testing dependencies were introduced.
+
+The first raw editor import applied an existing indentation-conversion preference to one line of `scripts/game.gd`. That side effect was restored; subsequent checks used the existing isolated import helper, and no gameplay source change remains. Human review still owns palette comfort, drag precision and curve silhouettes. The editor deliberately has no runtime playtest mode.
+
 ## Four-character abilities — Knuckles and Shadow
 
 `four_character_regression.gd`: **64 checks passed** using real 2D bodies, shared score callbacks and the public run-selection UI. Coverage includes paid and rejected activations, partial configured costs, blast radius limits, duplicate descriptors and ring claims, remote/contact award deduplication, fixed area values during an active ×3 combo, no remote meter refund, active-Act filtering, ordinary rack bonuses, real wall/bumper glide impacts, an immediate near-wall impact, missed glides, line-of-sight obstruction, unrelated-body exclusion, queued-wave cancellation, pause/draft timing, all reset reasons, real locked Act gates, actual checkpoint drains, Chao/profile compatibility, and both new characters in all three modes.

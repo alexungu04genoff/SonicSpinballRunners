@@ -6,6 +6,10 @@ A local Godot 4/GDScript pinball prototype. Gameplay uses an invisible 2D rigid 
 
 Free Play remains the default endless experimental physics playground. Optional Score Attack adds a single-table objective: earn points, unlock an upper goal, then physically reach it. Optional **Green Hill Zone** adds the first three-Act loop: nine connected chunks, separate score challenges, checkpoints and Chao rewards. There are no lives limits, bosses, permanent unlocks or second Zone. The ball number counts attempts.
 
+## Manual Act geometry editor
+
+Double-click **Act Geometry Editor.cmd**, or run `scenes/act_geometry_editor.tscn` with **F6**. This isolated editor provides a 12×12 Act canvas, 52 terrain stamps, quarter-turn rotation, mirrors, overlap-aware selection, undo/redo and persistent `.tres` saves. Choose **Example** for an editable sample. See [Act Geometry Editor](docs/ACT_GEOMETRY_EDITOR.md) for controls and the file format. The playable generator and default scene are unchanged.
+
 ## Play Green Hill
 
 Double-click **Play Green Hill.cmd** to play the themed version. **Physics Playground.cmd** opens the original debug presentation. Green Hill is integrated on `main` and includes the shared generator v10, 50 px kit with rounded Easy recipes, Normal-flow connections, five flippers, ring collection, unlimited drain recovery and optional Score Attack. Its mode/target strip remains available with the tuning panel hidden, and the shared upper goal and victory/replay controls use the same rules as the physics playground. Third-party Sonic assets remain local and ignored; a procedural spin-ball works without them.

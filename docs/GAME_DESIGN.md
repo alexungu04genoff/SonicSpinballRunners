@@ -19,6 +19,14 @@ Free Play and standalone Score Attack use the **Vertical Traversal Playground**:
 
 The depth experiment retains Real Pinball perspective as the default, a lower Dramatic preset and a top-down orthographic reference. Follow mode adds bounded, damped translation with a vertical dead zone, upward lead and gentle horizontal response, without rotating during play. Overview fits the complete generated course. Raised meshes, contrasting materials and shadows remain collisionless; floor, overlays and cameras derive their extent from generated bounds. README records provisional camera values; this document owns the long-term design. Historical sections below retain earlier implementation and verification context.
 
+### Manual Act Geometry Editor — 2026-10-24
+
+**Confirmed and implemented authoring milestone:** A standalone editor constructs one Act on a default 12×12 grid, with configurable cell size, 52 canonical terrain stamps, integer anchors, clockwise quarter-turns and independent horizontal/vertical mirrors. Shape frames measure cells, not intersections. Overlapping instances are valid; frames do not reserve occupied cells. Selection follows actual filled terrain or open wall segments, with overlap cycling. The scene supports snapped placement/movement, deletion, session undo/redo and persistent versioned `.tres` authoring Resources through New, Save, Save As and Load, with unsaved-change guards.
+
+**Scope boundary:** This is a parallel authoring foundation, not a replacement for current procedural chunks or runtime construction. Existing Free Play, Score Attack, Green Hill generation, gameplay physics and presentation stay intact. Terrain definitions remain separate from placement data. Open walls are not implicitly closed; curves use deterministic sampled outlines. Future gameplay objects may use exact local coordinates independently of terrain anchors. Entry/exit connectors, gameplay objects, boolean-union/collision compilation, difficulty/reachability checks, runtime Act loading, playtesting and Zone assembly are explicitly deferred. Existing restrictions against rotating procedural chunks do not restrict these isolated terrain stamps.
+
+See [Act Geometry Editor](ACT_GEOMETRY_EDITOR.md) for launch, controls, the editable example and format/verification details. Human review still owns palette comfort, curve silhouettes and editing feel.
+
 ### Phase 1 implementation history — 2026-10-22
 
 The workspace was empty at initial inspection, but prototype files appeared during this documentation pass. This baseline describes the files subsequently inspected; development appears to be ongoing. The directory was not a Git repository at inspection.
