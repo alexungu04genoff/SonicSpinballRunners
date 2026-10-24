@@ -6,6 +6,7 @@ var heading: Label
 var description: Label
 var meter: ProgressBar
 var feedback: Label
+var combo_hud: ScorecraftPanel
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
@@ -25,6 +26,9 @@ func _ready() -> void:
  meter.custom_minimum_size.y = 20
  stack.add_child(meter)
  feedback = _label(stack, 13)
+ combo_hud = ScorecraftPanel.new()
+ combo_hud.game = game
+ stack.add_child(combo_hud)
 
 func _label(parent: Node, font_size: int) -> Label:
  var label := Label.new()

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="ScorecraftConfig" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/scorecraft_config.gd" id="1"]
+[resource]
+script = ExtResource("1")
+combo_window = 3.0
+rings_per_link = 3
+multiplier_cap = 3

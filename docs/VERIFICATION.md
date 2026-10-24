@@ -1,6 +1,45 @@
 # Physics Playground verification
 
-Latest checks: 2026-10-23. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: OpenGL Compatibility on NVIDIA GeForce RTX 4060.
+Latest checks: 2026-10-24. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
+
+## Scorecraft v1 — 2026-10-24
+
+The shared award calculator uses a 3-second window, three rings per ring link and a ×3 cap. The first trial allowed fresh bumpers alone to reach ×3. That produced 29–39 seconds at ×3 in two-minute Free Play trials, with little distinction between bumper-seeking and ring-seeking inputs. The final rule requires a completed ring link for ×3; fresh bumpers alone stop at ×2. This reduced top-tier uptime to 3–11 seconds while retaining the same physics and ordinary input policies.
+
+`scorecraft_regression.gd`: **37 checks passed headlessly and graphically with ANGLE**. It covers capped awards, partial/extra rings, target history across A–B–A–B repeats, expiry, configurable thresholds, baseline awards, fixed rack clears, and Homing's additive bonus. A controlled real-physics fixture hits a bumper, collects three rings for 100 + 25 + 25 + 50 = 200, then earns exactly 700 from actual Homing contact. Meter remains ordinary +2/+5. Other checks cover paused timers, the live comparison toggle, Score Attack threshold observation, Zone subtotal accounting, frozen drafts, Act advancement, checkpoint drains, late contacts, Chao retention and regeneration cleanup. Controlled fixtures prescribe positions/meter and are separate from the input-only surveys below.
+
+Existing suites passed: physics **38**, Score Attack **26** (including 27 seeded Easy/Normal/Hard catalogue/grid builds), Character Lab **70**, Chao Lab **29**, Zone **34**, rings **11**, profiles **8**, Chao builds **18**, plus **13 graphical special-presentation checks**. Isolated editor import passed. Expected invalid-layout/configuration diagnostics and the restricted-profile root-certificate warning remain; no unexpected script errors or failed assertions occurred in final checks.
+
+### Same-seed scoring comparison
+
+`scorecraft_play_survey.gd` uses ordinary launch, steering, timed flippers, earned special meter and public Chao choices. No score, meter or trajectory is injected. Seed 18, Easy catalogue, 120 simulated seconds per policy, combos enabled:
+
+| Input policy | Total score | Same contacts at baseline values | Added combo points | Time at ×3 | Special use |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Bumper seeking | 11,375 | 8,450 | 2,925 (+35%) | 3.95 s | None |
+| Ring seeking on ascending shots | 11,075 | 8,100 | 2,975 (+37%) | 3.01 s | None |
+| Ring seeking plus Sonic Homing | 14,675 | 10,750 | 3,925 (+37%) | 11.13 s | 2 activations, 2 hits |
+| Tails with falling-flight activation | 11,800 | 8,150 | 3,650 (+45%) | 8.99 s | 2 flights |
+
+The shadow baseline column sums original base awards plus the special bonus for the **same actual scoring events**, avoiding a false causal comparison between diverging physics trajectories. Separate baseline-mode runs produced 7,750 / 8,425 / 8,650 / 8,625 points respectively. Repeated bumper contacts stayed at 100 in all combo runs; 35 / 31 / 43 / 27 contacts received no combo uplift. ×3 was intermittent, not an automatic permanent buff. Ring-seeking input did not reliably collect more rings or beat bumper-seeking input; this simple bot is not evidence of skilled human routing. The controlled sequence demonstrates the reward, while human aiming and enjoyment remain open questions.
+
+An initial survey escape flag incorrectly included balls already below the open drain during the 0.65-second respawn delay. Logged positions established this in baseline and combo runs. The final survey checks side escapes at playfield height and always checks top/non-finite escapes; it does not change gameplay collision or drain logic. All eight final Free Play trials and both Score Attack trials reported no playfield escape.
+
+### Act targets and actual progression
+
+Seed 18 Zone, the existing alternating-steering route policy, ordinary flippers, and Spring / Ice / Magnet draft choices:
+
+| Act | Target retained | Baseline unlock, seconds since Act entry | Combo unlock, seconds since Act entry | Combo physical exit, run seconds |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 750 | 8.20 | 4.91 | 10.78 |
+| 2 | 1,250 | 19.19 | 10.33 | 76.79 |
+| 3 | 1,750 | 20.44 | 16.03 | 218.28 |
+
+Baseline completed at 204.93 seconds with 12,575 points; combos completed at 218.28 with 17,800. Gate opening changes later trajectories, so earlier score unlock does not guarantee earlier completion. Targets remain 750 / 1,250 / 1,750: scoring is shorter, but the upper climb remains substantial. This sample does not justify simply multiplying all targets by the combo cap.
+
+Tails completed the same Zone with four earned flights at 95.83 seconds, 7,350 points and seven balls; its baseline run reached Act 3 but did not finish within 180 seconds. Separate Score Attack / grid-variant play reached the goal with combos at 39.03 seconds and 3,750 points; the baseline policy did not finish within 90 seconds. These are sampled input policies, not character balance or success-rate claims. The Character Lab suite separately verifies flight near locked gates, modifier restoration and special-meter lifecycle.
+
+Graphical Green Hill play reached ×3 naturally and produced `test-results/scorecraft-play.png`; the shared combo HUD was inspected for readable timer, action hint and award feedback. Human checks: attempt the same seed with combos on/off, deliberately bank into three rings then a fresh bumper, choose a Homing finisher, and judge whether three seconds is readable under controller play. Human feel, timing pressure and whether ring routes are enticing enough remain unproven.
 
 ## Character presentation merged into main — 2026-10-23
 

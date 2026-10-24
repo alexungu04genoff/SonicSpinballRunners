@@ -13,6 +13,9 @@ var score: int = 0
 var rings_collected: int = 0
 var ball_number: int = 1
 var special_meter: float = 0.0
+@export var scorecraft_enabled := true
+@export var scorecraft_config: ScorecraftConfig = preload("res://data/scorecraft.tres")
+var scorecraft: Scorecraft
 @export_enum("sonic", "tails") var character_id := "sonic"
 var specials: CharacterSpecials
 var status_message: String = "Press Enter / gamepad X to launch"
@@ -53,6 +56,11 @@ func _ready() -> void:
  tuning = PhysicsTuning.new()
  tuning.name = "PhysicsTuning"
  add_child(tuning)
+ scorecraft = Scorecraft.new()
+ scorecraft.name = "Scorecraft"
+ scorecraft.config = scorecraft_config
+ scorecraft.enabled = scorecraft_enabled
+ add_child(scorecraft)
  controls = PlaygroundInput.new()
  controls.name = "InputRouter"
  add_child(controls)
@@ -88,6 +96,7 @@ func _ready() -> void:
  specials = CharacterSpecials.new()
  specials.game = self
  add_child(specials)
+ specials.character_changed.connect(func(_id: String): scorecraft.reset("Character changed", true))
  specials.select_character(character_id)
  score_attack_enabled = score_attack_enabled and not zone_enabled
  score_attack.reset(score_attack_enabled, score_attack_target, ScoreAttack.find_goal(layout))
@@ -263,6 +272,9 @@ func _regenerate(seed_value: int, preference: int, grid_mode: int = -1, challeng
   generation_pending = false
   return
  var resume_after_victory := score_attack.state == ScoreAttack.State.COMPLETE or zone.state == ZoneRun.State.COMPLETE
+ scorecraft.reset("New run", true)
+ scorecraft_enabled = bool(challenge_settings.get("combos", scorecraft_enabled))
+ scorecraft.enabled = scorecraft_enabled
  var requested_character: String = challenge_settings.get("character", character_id)
  if requested_character != character_id:
   specials.select_character(requested_character)
@@ -384,6 +396,7 @@ func reset_ball(relaunch: bool = false) -> void:
   request_generation(generation_seed)
   return
  specials.reset(false, "Reset")
+ scorecraft.reset("Reset", true)
  respawn_time = -1.0
  previous_goal_position = ball.serve_position
  _goal_motion_ready = false
@@ -410,17 +423,21 @@ func toggle_pause() -> void:
  get_tree().paused = not get_tree().paused
 
 func _on_bumper_hit(body: Node) -> void:
+ if respawn_time >= 0.0 or generation_pending:
+  return
  if score_attack.state == ScoreAttack.State.COMPLETE or (zone_enabled and (zone.state != ZoneRun.State.PLAYING or not zone.acts[zone.active_act].bounds.has_point(body.global_position))):
   return
- score += 100 * specials.hit_multiplier(body)
+ score += scorecraft.award_bumper(body, specials.hit_multiplier(body))
  specials.charge(specials.definition.bumper_charge)
  presentation.flash_bumper(body)
  _observe_challenge_score()
 
 func _on_ring_collected(_where: Vector2) -> void:
+ if respawn_time >= 0.0 or generation_pending:
+  return
  if score_attack.state == ScoreAttack.State.COMPLETE or (zone_enabled and zone.state != ZoneRun.State.PLAYING):
   return
- score += 25
+ score += scorecraft.award_ring()
  rings_collected += 1
  specials.charge(specials.definition.ring_charge)
  var active: int = 0
@@ -428,7 +445,7 @@ func _on_ring_collected(_where: Vector2) -> void:
   if ring.active and ring_field.ring_eligible(ring):
    active += 1
  if active == 0:
-  score += 500
+  score += scorecraft.award_rack()
   ring_reset_time = 1.0
   status_message = "RING RACK CLEARED  +500"
  _observe_challenge_score()
@@ -460,6 +477,7 @@ func _physics_process(delta: float) -> void:
   ball_number += 1
   respawn_time = 0.65
   specials.reset(false, "Drain")
+  scorecraft.reset("Drain", true)
   presentation.clear_ring_pickups()
   status_message = "DRAIN — automatic respawn"
  if auto_launch_time >= 0:
@@ -474,6 +492,7 @@ func _physics_process(delta: float) -> void:
   var start := previous_goal_position if _goal_motion_ready else ball.position
   if score_attack.observe_motion(start, ball.position):
    specials.reset(false, "Challenge complete")
+   scorecraft.reset("Challenge complete")
    status_message = "SCORE ATTACK CLEAR! Upper goal reached."
    get_tree().paused = true
   if zone_enabled and zone.observe_motion(start, ball.position):
@@ -517,6 +536,7 @@ func choose_zone_chao(id: String) -> bool:
  if not tuning.add_chao(id):
   return false
  zone.accept_reward(id, score)
+ scorecraft.reset("Act advanced", true)
  _sync_zone_gates()
  if zone.state == ZoneRun.State.COMPLETE:
   specials.reset(false, "Zone complete")
