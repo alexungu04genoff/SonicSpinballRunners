@@ -9,19 +9,22 @@ const INVALID_PATH := "res://test-results/act-geometry-invalid.tres"
 const EXPECTED := {
 	"wall": [Vector2i(1, 1), Vector2i(1, 2), Vector2i(1, 3)],
 	"corner": [Vector2i(1, 1), Vector2i(1, 2), Vector2i(1, 3), Vector2i(2, 2), Vector2i(2, 3), Vector2i(3, 3)],
-	"triangle": [Vector2i(1, 1), Vector2i(1, 2), Vector2i(1, 3)],
+	"triangle": [Vector2i(1, 1), Vector2i(1, 2), Vector2i(1, 3), Vector2i(2, 2), Vector2i(3, 2), Vector2i(3, 3)],
 	"slope": [Vector2i(1, 1), Vector2i(1, 2), Vector2i(1, 3), Vector2i(2, 2), Vector2i(2, 3), Vector2i(3, 3)],
 	"j_curve": [Vector2i(1, 1), Vector2i(1, 2), Vector2i(1, 3), Vector2i(2, 2), Vector2i(2, 3), Vector2i(3, 3)],
 	"rectangle": [Vector2i(1, 1), Vector2i(2, 2), Vector2i(3, 3), Vector2i(1, 2), Vector2i(1, 3)],
 	"circle": [Vector2i(1, 1), Vector2i(2, 2), Vector2i(3, 3)],
-	"oval": [Vector2i(1, 2), Vector2i(1, 3), Vector2i(2, 2), Vector2i(2, 3)],
-	"bump": [Vector2i(1, 2), Vector2i(1, 3), Vector2i(2, 3)],
-	"diagonal": [Vector2i(1, 1), Vector2i(1, 2), Vector2i(1, 3)],
-	"capsule": [Vector2i(1, 2), Vector2i(1, 3), Vector2i(2, 2), Vector2i(2, 3)],
+	"oval": [Vector2i(1, 2), Vector2i(1, 3), Vector2i(2, 3)],
+	"bump": [Vector2i(1, 1), Vector2i(1, 2), Vector2i(1, 3), Vector2i(2, 1), Vector2i(2, 2), Vector2i(2, 3), Vector2i(3, 1), Vector2i(3, 2), Vector2i(3, 3)],
+	"diagonal": [Vector2i(1, 1), Vector2i(1, 2), Vector2i(1, 3), Vector2i(2, 2), Vector2i(3, 2), Vector2i(3, 3)],
+	"capsule": [Vector2i(1, 2), Vector2i(1, 3), Vector2i(2, 3)],
 	"outer_corner": [Vector2i(1, 1), Vector2i(2, 2), Vector2i(3, 3)],
 	"u_curve": [Vector2i(2, 2), Vector2i(2, 3), Vector2i(3, 3)],
+	"u_band": [Vector2i(2, 2), Vector2i(2, 3), Vector2i(3, 3)],
+	"s_curve": [Vector2i(1, 2), Vector2i(1, 3), Vector2i(2, 2), Vector2i(2, 3), Vector2i(3, 2), Vector2i(3, 3)],
+	"s_band": [Vector2i(1, 2), Vector2i(1, 3), Vector2i(2, 2), Vector2i(2, 3), Vector2i(3, 2), Vector2i(3, 3)],
 }
-const OPEN_FAMILIES := ["wall", "corner", "j_curve", "diagonal", "u_curve"]
+const OPEN_FAMILIES := ["wall", "corner", "j_curve", "diagonal", "u_curve", "s_curve"]
 var checks := 0
 var failures := 0
 
@@ -52,6 +55,10 @@ func make_fixture() -> Resource:
 	var document := Document.new()
 	document.title = "Every terrain shape: transforms and intentional overlaps"
 	document.cell_size = 47.5
+	document.entry_start_x = 7
+	document.entry_width = 2
+	document.exit_start_x = 1
+	document.exit_width = 3
 	for definition: Dictionary in Shapes.definitions():
 		for turns in 4:
 			document.placements.append(placement_for(definition.id, Vector2i(2, 3), turns, turns % 2 == 0, turns >= 2))
@@ -72,6 +79,55 @@ func polygon_area(points: PackedVector2Array) -> float:
 	return absf(doubled_area) * 0.5
 
 
+func simple_polygon(points: PackedVector2Array) -> bool:
+	for first in points.size():
+		var first_end := (first + 1) % points.size()
+		if points[first].is_equal_approx(points[first_end]):
+			return false
+		for second in range(first + 1, points.size()):
+			var second_end := (second + 1) % points.size()
+			if first_end == second or second_end == first:
+				continue
+			if Geometry2D.segment_intersects_segment(points[first], points[first_end], points[second], points[second_end]) != null:
+				return false
+	return true
+
+
+func check_curve_geometry(family: String, size: Vector2i, points: PackedVector2Array, id: String) -> void:
+	var w := float(size.x)
+	var h := float(size.y)
+	if family == "s_curve":
+		check(points[0] == Vector2.ZERO and points[-1] == Vector2(size), "S endpoints meet exact grid corners: " + id)
+		check((points[1] - points[0]).normalized().dot(Vector2.DOWN) > 0.99 and (points[-1] - points[-2]).normalized().dot(Vector2.DOWN) > 0.99, "S endpoint tangents approach the vertical frame edges smoothly: " + id)
+		var previous_sign := 0
+		var sign_changes := 0
+		var monotone := true
+		for index in range(1, points.size() - 1):
+			var incoming := points[index] - points[index - 1]
+			var outgoing := points[index + 1] - points[index]
+			monotone = monotone and incoming.x > 0 and incoming.y > 0
+			var cross := incoming.cross(outgoing)
+			if absf(cross) < 0.0000001:
+				continue
+			var curvature_sign := 1 if cross > 0 else -1
+			if previous_sign != 0 and previous_sign != curvature_sign:
+				sign_changes += 1
+			previous_sign = curvature_sign
+		check(monotone and sign_changes == 1, "Smooth S has one inflection and no zig-zag or reversing segment: " + id)
+	if family in ["u_band", "s_band"]:
+		check(simple_polygon(points), "Ribbon boundary has no crossing or duplicate seam vertices: " + id)
+		var ratio := polygon_area(points) / (w * h)
+		check(ratio > 0.05 and ratio < 0.45, "Solid ribbon occupies a narrow portion of its frame: " + id)
+		if family == "u_band":
+			var wall: PackedVector2Array = Shapes.get_definition("u_curve_%dx%d" % [size.x, size.y]).points
+			check(points.slice(0, wall.size()) == wall, "U ribbon follows the exact existing outer wall curve: " + id)
+			check(not Geometry2D.is_point_in_polygon(Vector2(w * 0.5, h * 0.35), points) and Geometry2D.is_point_in_polygon(Vector2(w * 0.5, h - 0.09 * minf(w, h)), points), "U ribbon keeps its mouth empty and its curved base solid: " + id)
+		else:
+			check(Geometry2D.is_point_in_polygon(Vector2(w * 0.5, h * 0.5), points) and not Geometry2D.is_point_in_polygon(Vector2(w * 0.1, h * 0.5), points) and not Geometry2D.is_point_in_polygon(Vector2(w * 0.9, h * 0.5), points), "S ribbon surrounds its centerline and leaves both frame sides empty: " + id)
+	if family == "bump":
+		check(absf(polygon_area(points) / (w * h) - PI * 0.25) < 0.002, "Bump preserves its half-ellipse silhouette at every aspect ratio: " + id)
+
+
 func reference_transform(point: Vector2, size: Vector2i, turns: int, horizontal: bool, vertical: bool) -> Vector2:
 	# Rotate about the frame center, then move into the new positive frame.
 	# This intentionally does not call the production point-transform helper.
@@ -86,7 +142,7 @@ func reference_transform(point: Vector2, size: Vector2i, turns: int, horizontal:
 
 func check_library() -> void:
 	var definitions: Array = Shapes.definitions()
-	check(definitions.size() == 52, "All 52 canonical sizes across 13 requested families exist")
+	check(definitions.size() == 77, "All 77 useful canonical stamps exist without redundant square ovals or capsules")
 	var ids: Dictionary = {}
 	for family: String in EXPECTED:
 		for size: Vector2i in EXPECTED[family]:
@@ -118,6 +174,7 @@ func check_library() -> void:
 				check(points.size() == 2, "Diagonal has one rail, no triangle boundary: " + id)
 			if family == "triangle":
 				check(points.size() == 3 and is_equal_approx(polygon_area(points), size.x * size.y * 0.5), "Triangle occupies half its frame: " + id)
+			check_curve_geometry(family, size, points, id)
 			for turns in 4:
 				for horizontal in [false, true]:
 					for vertical in [false, true]:
@@ -137,13 +194,21 @@ func check_library() -> void:
 	var original_points: PackedVector2Array = triangle.points.duplicate()
 	triangle.points[0] = Vector2(99, 99)
 	check(Shapes.get_definition("triangle_1x3").points == original_points, "Callers cannot corrupt shared canonical geometry")
+	for pair: Array in [["triangle", "diagonal"], ["slope", "j_curve"], ["u_band", "u_curve"], ["s_band", "s_curve"]]:
+		for size: Vector2i in EXPECTED[pair[0]]:
+			var suffix := "_%dx%d" % [size.x, size.y]
+			var solid: Dictionary = Shapes.get_definition(pair[0] + suffix)
+			var wall: Dictionary = Shapes.get_definition(pair[1] + suffix)
+			var solid_index: int = definitions.find(solid)
+			check(solid.family == wall.family and solid_index >= 0 and definitions[solid_index + 1].id == wall.id, "Meaningful solid/wall pair appears adjacent under one family: " + suffix + "/" + pair[0])
+			check(solid.closed and not wall.closed and solid.points != wall.points, "Solid and open wall pair retain distinct topology and vertices: " + suffix + "/" + pair[0])
 	print("PASS | Canonical library, topology, exact frames and all 16 transforms per shape")
 
 
 func check_validation() -> void:
 	var document := make_fixture()
 	check(document.validation_errors().is_empty(), "Intentional overlapping instances are accepted independently")
-	check(document.placements.size() == 208, "Every shape appears in all four rotation states")
+	check(document.placements.size() == Shapes.definitions().size() * 4, "Every shape appears in all four rotation states")
 	var independent: Resource = document.copy_document()
 	independent.placements[0].anchor = Vector2i(8, 8)
 	check(document.placements[0].anchor == Vector2i(2, 3), "Snapshot placements are independent deep copies")
@@ -198,10 +263,10 @@ func check_persistence() -> void:
 	check(document.save_document(FIXTURE_PATH) == OK, "Full authoring fixture saves")
 	var saved_text := FileAccess.get_file_as_string(FIXTURE_PATH)
 	check(not saved_text.contains("PackedVector2Array") and not saved_text.contains("\"points\""), "Save stores instances and metadata, not duplicated canonical geometry")
-	check(saved_text.contains("format_version = 1") and saved_text.contains("library_version = 1"), "Persistent file explicitly records both supported versions")
+	check(saved_text.contains("format_version = %d" % Document.FORMAT_VERSION) and saved_text.contains("library_version = %d" % Shapes.VERSION), "Persistent file explicitly records both supported versions")
 	for field: String in ["format_version", "library_version"]:
 		var missing_version := FileAccess.open(INVALID_PATH, FileAccess.WRITE)
-		missing_version.store_string(saved_text.replace(field + " = 1\n", ""))
+		missing_version.store_string(saved_text.replace("%s = %d\n" % [field, Document.FORMAT_VERSION if field == "format_version" else Shapes.VERSION], ""))
 		missing_version.close()
 		check(Document.load_document(INVALID_PATH).document == null, "Missing serialized " + field + " is rejected instead of silently assuming a version")
 	var invalid: Resource = document.copy_document()
@@ -236,7 +301,8 @@ func reload_in_fresh_process() -> void:
 		var expected := make_fixture()
 		var actual: Resource = loaded.document
 		check(actual.placements == expected.placements, "Fresh process restores every ID, frame, anchor, rotation and mirror exactly")
-		check(actual.title == expected.title and actual.grid_size == Vector2i(12, 12) and actual.cell_size == 47.5 and actual.format_version == 1 and actual.library_version == 1, "Fresh process restores document and version metadata")
+		check(actual.title == expected.title and actual.grid_size == Vector2i(12, 12) and actual.cell_size == 47.5 and actual.format_version == Document.FORMAT_VERSION and actual.library_version == Shapes.VERSION, "Fresh process restores document and version metadata")
+		check(actual.get_connector("entry") == {"start_x": 7, "width": 2} and actual.get_connector("exit") == {"start_x": 1, "width": 3}, "Fresh process restores authored entry and exit independently of terrain")
 		check(actual.fingerprint() == expected.fingerprint(), "Fresh process fingerprint matches original data")
 		actual.placements[0].anchor = Vector2i(7, 8)
 		actual.placements[0].quarter_turns = 3

@@ -140,7 +140,7 @@ func close_file_dialog(_dialog: FileDialog) -> void:
 
 func check_palette_and_overlap() -> void:
 	check(editor.document.grid_size == Vector2i(12, 12) and editor.document.placements.is_empty() and not editor.is_dirty(), "New scene edits one clean 12×12 Act")
-	check(editor.palette_buttons.size() == 52, "All 52 canonical stamps have visible palette entries")
+	check(editor.palette_buttons.size() == 77, "All 77 current stamps have visible palette entries without redundant square ovals or capsules")
 	var definitions: Array = Shapes.definitions()
 	for definition: Dictionary in definitions:
 		await choose_palette(definition.id)
@@ -382,6 +382,76 @@ func check_metadata_and_loaded_frames() -> void:
 	await process_frame
 
 
+func drag_grid(from: Vector2, to: Vector2) -> void:
+	await move_pointer(grid_position(from))
+	await mouse_button(grid_position(from), true)
+	await move_pointer(grid_position(to), true)
+	await mouse_button(grid_position(to), false)
+
+
+func check_connectors() -> void:
+	check(editor.document.entry_width == 0 and editor.document.exit_width == 0, "New Acts can remain drafts with both connectors unset")
+	await click_control(editor.buttons.entry)
+	await click_at(grid_position(Vector2(7.2, 0)))
+	await click_at(grid_position(Vector2(7.2, 7)))
+	check(editor.document.entry_width == 0 and editor.document.exit_width == 0, "Entry tool rejects the top border and interior")
+	await drag_grid(Vector2(7.2, 12), Vector2(8.8, 12))
+	check(editor.document.entry_start_x == 7 and editor.document.entry_width == 2 and editor.document.exit_width == 0, "Entry drag defines inclusive cells 7–8 on the bottom boundary")
+	check(editor.canvas.selected_connector == "entry" and editor.canvas.brush.is_empty() and editor.canvas.selected_index == -1, "Created connector is selected without selecting terrain")
+	check(editor.connector_summary.text.contains("Entry: width 2 · cells 7–8") and editor.buttons.rotate.disabled and editor.buttons.flip_h.disabled, "Connector metadata is readable and terrain-only transform buttons disable")
+	await press_key(KEY_LEFT)
+	check(editor.document.entry_start_x == 6 and editor.document.entry_width == 2, "Arrow key nudges a selected connector along its boundary")
+	await drag_grid(Vector2(6.75, 12), Vector2(8.75, 12))
+	check(editor.document.entry_start_x == 8 and editor.document.entry_width == 2, "Dragging connector interior moves it without changing width")
+	await drag_grid(Vector2(10, 12), Vector2(12, 12))
+	check(editor.document.entry_start_x == 8 and editor.document.entry_width == 4, "Right endpoint resizes to the exact outer grid boundary")
+	await drag_grid(Vector2(8, 12), Vector2(7, 12))
+	check(editor.document.entry_start_x == 7 and editor.document.entry_width == 5, "Left endpoint resizes while preserving the opposite endpoint")
+	await click_control(editor.buttons.entry)
+	await drag_grid(Vector2(4.8, 12), Vector2(2.2, 12))
+	check(editor.document.entry_start_x == 2 and editor.document.entry_width == 3, "Reverse-direction creation replaces Entry with one contiguous span")
+	await click_control(editor.buttons.exit)
+	await click_at(grid_position(Vector2(3, 12)))
+	check(editor.document.exit_width == 0, "Exit tool rejects the bottom boundary")
+	await drag_grid(Vector2(1.2, 0), Vector2(3.8, 0))
+	check(editor.document.exit_start_x == 1 and editor.document.exit_width == 3 and editor.document.entry_start_x == 2, "Exit authors only the top boundary and leaves Entry unchanged")
+	check(ActData.compatible(editor.document.get_connector("exit"), editor.document.get_connector("entry")), "Equal-width connector compatibility ignores different local X positions")
+	var committed: String = editor.document.fingerprint()
+	await press_key(KEY_Z, true)
+	check(editor.document.exit_width == 0 and editor.document.entry_width == 3, "One undo removes the complete connector creation gesture")
+	await press_key(KEY_Y, true)
+	check(editor.document.fingerprint() == committed, "Redo restores the exact connector metadata")
+	await drag_grid(Vector2(2.2, 0), Vector2(5.2, 0))
+	check(editor.document.exit_start_x == 4 and editor.document.exit_width == 3, "Exit moves horizontally while remaining on the top border")
+	await press_key(KEY_Z, true)
+	check(editor.document.fingerprint() == committed, "Undo restores a moved connector as one edit")
+	await press_key(KEY_DELETE)
+	check(editor.document.exit_width == 0 and editor.document.entry_width == 3, "Delete removes only the selected connector")
+	await press_key(KEY_Z, true)
+	check(editor.document.fingerprint() == committed, "Undo restores connector deletion")
+	await mouse_button(grid_position(Vector2(2.2, 0)), true)
+	await move_pointer(grid_position(Vector2(5.2, 0)), true)
+	await press_key(KEY_ESCAPE)
+	await mouse_button(grid_position(Vector2(5.2, 0)), false)
+	check(editor.document.fingerprint() == committed, "Esc cancels connector preview without committing a partial edit")
+	await choose_palette("rectangle_1x2")
+	await click_at(grid_position(Vector2(1, 0)))
+	check(editor.document.exit_start_x == 1 and editor.document.exit_width == 3 and editor.document.placements.size() == 1, "Terrain may overlap connector annotations without deleting or blocking either")
+	await press_key(KEY_ESCAPE)
+	await click_at(grid_position(Vector2(1.5, 0)))
+	check(editor.canvas.selected_connector == "exit", "Selection prioritizes a visible connector on its boundary")
+	await click_at(grid_position(Vector2(1.5, 0)), true)
+	check(editor.canvas.selected_connector.is_empty() and editor.canvas.selected_index == 0, "Alt-click still reaches terrain beneath a connector annotation")
+	committed = editor.document.fingerprint()
+	var connector_path := "res://test-results/act-editor-connectors.tres"
+	check(editor.save_to(connector_path), "Editor saves terrain and both authored connectors together")
+	editor.new_document()
+	check(editor.load_from(connector_path) and editor.document.fingerprint() == committed, "Editor reload preserves connector positions, widths and overlapping terrain exactly")
+	editor.new_document()
+	await process_frame
+	await process_frame
+
+
 func capture_example() -> void:
 	if FileAccess.file_exists("res://data/acts/curve_garden.tres"):
 		await click_control(editor.buttons.example)
@@ -392,8 +462,11 @@ func capture_example() -> void:
 		for entry in [{"id": "slope_3x3", "at": Vector2(0, 2)}, {"id": "circle_1x1", "at": Vector2(1, 4)}, {"id": "triangle_1x3", "at": Vector2(10, 2)}, {"id": "u_curve_3x3", "at": Vector2(4, 7)}, {"id": "bump_2x3", "at": Vector2(8, 7)}]:
 			await choose_palette(entry.id)
 			await click_at(grid_position(entry.at))
-	await choose_palette("slope_3x3")
-	await move_pointer(grid_position(Vector2(5.1, 3.1)))
+	check(editor.document.entry_width == 3 and editor.document.exit_width == 3 and editor.document.entry_start_x != editor.document.exit_start_x, "Example demonstrates equal-width Entry and Exit at different local positions")
+	await show_palette_item("s_band_3x2")
+	await click_control(editor.buttons.select)
+	await click_at(grid_position(Vector2(2.5, 0)))
+	await move_pointer(grid_position(Vector2(10.5, 11.5)))
 	check(Rect2(Vector2.ZERO, root.get_visible_rect().size).encloses(editor.canvas.get_global_rect()), "Grid canvas fits inside the application viewport")
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw
@@ -412,6 +485,7 @@ func run() -> void:
 	await check_open_hits_and_palette_drag()
 	await check_file_workflow()
 	await check_metadata_and_loaded_frames()
+	await check_connectors()
 	await capture_example()
 	print("RESULT | Act editor UI | %d checks | %d failures" % [checks, failures])
 	editor.queue_free()

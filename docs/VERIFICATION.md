@@ -2,7 +2,18 @@
 
 Latest checks: 2026-10-24. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
-## Manual Act Geometry Editor
+## Act connectors and expanded terrain
+
+The follow-up authoring milestone retains the standalone scene and existing editing/file workflow. The user confirmed a fresh start: format/library version 2 only, with no migration layer or legacy shape lookup. Runtime generation and gameplay remain unchanged.
+
+- `act_geometry_regression.gd`: **3,302 checks passed**, plus **6 fresh-process checks**. All 77 stamps retain exact cell frames through every quarter-turn/mirror combination. Additional checks cover matched solid/wall pairs, all nine bump aspect ratios, U-band open mouths, S inflection and endpoint tangents, valid non-self-intersecting ribbon polygons, and full terrain/connector restart persistence.
+- `act_connector_regression.gd`: **108 checks passed**, plus **5 fresh-process checks**. Compatibility ignores local X and compares positive integer widths only. Optional drafts, in-bounds integer spans, independent snapshots, fingerprints and editing/re-saving after restart are covered.
+- `act_editor_smoke.gd`: **86 headless checks and 87 graphical checks passed**, with empty error logs. Actual viewport input exercises all 77 stamps and existing terrain/file/history interactions, plus boundary restrictions, inclusive/reverse connector drags, replacement, movement, both resize handles, exact right-edge bounds, arrow nudges, cancellation, deletion, undo/redo, connector/terrain overlap selection, and saving/reloading both spans.
+- Isolated headless editor import passed, and the unchanged playground reached `PLAYGROUND_READY` in a headless startup check. The rendered editor capture was inspected at 1280×900; connector metadata, green markers, endpoint handles, palette labels and new terrain remain readable. An additional rendered atlas covers all U/S pairs and all nine bump aspect ratios; U mouths remain empty and S ribbons follow their curves with tapered grid-corner tips.
+
+The current `data/acts/curve_garden.tres` was authored through editor stamping/connector/save actions. It contains 18 terrain pieces and equal-width Entry/Exit spans at different local X positions. Captures and logs remain in ignored `test-results/`. Subjective drag comfort and preferred ribbon thickness still benefit from human review; gameplay playtesting and collision compilation are outside this milestone.
+
+## Manual Act Geometry Editor — initial milestone
 
 The standalone editor adds no runtime generator or gameplay changes. Godot 4.7.2 checks on 2026-10-24:
 

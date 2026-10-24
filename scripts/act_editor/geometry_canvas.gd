@@ -4,6 +4,8 @@ extends Control
 signal placement_requested(placement: Dictionary)
 signal selection_changed(index: int)
 signal move_requested(index: int, anchor: Vector2i)
+signal connector_requested(kind: String, start_x: int, width: int)
+signal connector_selection_changed(kind: String)
 signal status_changed(message: String)
 
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
@@ -11,10 +13,14 @@ const GRID_MARGIN := 48.0
 const MIN_CELL_PIXELS := 12.0
 const MAX_CELL_PIXELS := 240.0
 const SELECTION_COLOR := Color("b9f4ff")
+const CONNECTOR_COLOR := Color("71efa4")
+const CONNECTOR_BORDER_TOLERANCE := 12.0
 
 var document: Resource
 var selected_index := -1
 var brush: Dictionary = {}
+var connector_tool := ""
+var selected_connector := ""
 
 var _view_origin := Vector2.ZERO
 var _cell_pixels := 48.0
@@ -30,6 +36,15 @@ var _drag_anchor := Vector2i.ZERO
 var _drag_moved := false
 var _drop_brush: Dictionary = {}
 var _last_status := ""
+var _connector_drag_kind := ""
+var _connector_drag_mode := ""
+var _connector_first_cell := 0
+var _connector_pointer_start_x := 0.0
+var _connector_original_start := 0
+var _connector_original_width := 0
+var _connector_preview_start := 0
+var _connector_preview_width := 0
+var _connector_release_valid := true
 
 
 func _ready() -> void:
@@ -54,6 +69,8 @@ func set_document(value: Resource, reset_view: bool = true) -> void:
  document = value
  selected_index = -1
  brush = {}
+ connector_tool = ""
+ selected_connector = ""
  cancel_gesture()
  if reset_view:
   fit_view()
@@ -65,6 +82,8 @@ func set_brush(value: Dictionary) -> void:
  cancel_gesture()
  brush = value.duplicate(true)
  selected_index = -1
+ connector_tool = ""
+ selected_connector = ""
  queue_redraw()
 
 
@@ -72,6 +91,26 @@ func select_piece(index: int) -> void:
  cancel_gesture()
  brush = {}
  selected_index = index if index >= 0 and index < _placements().size() else -1
+ connector_tool = ""
+ selected_connector = ""
+ queue_redraw()
+
+
+func set_connector_tool(kind: String) -> void:
+ cancel_gesture()
+ brush = {}
+ selected_index = -1
+ selected_connector = ""
+ connector_tool = kind if kind in ["entry", "exit"] else ""
+ queue_redraw()
+
+
+func select_connector(kind: String) -> void:
+ cancel_gesture()
+ brush = {}
+ selected_index = -1
+ connector_tool = ""
+ selected_connector = kind if kind in ["entry", "exit"] and connector_span(kind).y > 0 else ""
  queue_redraw()
 
 
@@ -90,6 +129,9 @@ func cancel_gesture() -> void:
  _drag_moved = false
  _panning = false
  _drop_brush = {}
+ _connector_drag_kind = ""
+ _connector_drag_mode = ""
+ _connector_release_valid = true
  queue_redraw()
 
 
@@ -99,6 +141,51 @@ func grid_to_screen(point: Vector2) -> Vector2:
 
 func screen_to_grid(point: Vector2) -> Vector2:
  return (point - _view_origin) / _cell_pixels
+
+
+func connector_span(kind: String) -> Vector2i:
+ if document == null or kind not in ["entry", "exit"]:
+  return Vector2i.ZERO
+ return Vector2i(int(document.get(kind + "_start_x")), int(document.get(kind + "_width")))
+
+
+func connector_border_at(local_position: Vector2) -> String:
+ var left_x := grid_to_screen(Vector2.ZERO).x
+ var right_x := grid_to_screen(Vector2(_grid_size().x, 0)).x
+ if local_position.x < left_x or local_position.x > right_x:
+  return ""
+ var top_distance := absf(local_position.y - grid_to_screen(Vector2.ZERO).y)
+ var bottom_distance := absf(local_position.y - grid_to_screen(Vector2(0, _grid_size().y)).y)
+ if minf(top_distance, bottom_distance) > CONNECTOR_BORDER_TOLERANCE:
+  return ""
+ return "exit" if top_distance <= bottom_distance else "entry"
+
+
+func connector_hit_at(local_position: Vector2) -> String:
+ for kind: String in ["entry", "exit"]:
+  var span := connector_span(kind)
+  if span.y <= 0:
+   continue
+  var start := grid_to_screen(Vector2(span.x, _connector_row(kind)))
+  var end := grid_to_screen(Vector2(span.x + span.y, _connector_row(kind)))
+  if absf(local_position.y - start.y) <= CONNECTOR_BORDER_TOLERANCE and local_position.x >= start.x - 7.0 and local_position.x <= end.x + 7.0:
+   return kind
+ return ""
+
+
+func connector_handle_at(kind: String, local_position: Vector2) -> String:
+ var span := connector_span(kind)
+ if span.y <= 0 or connector_hit_at(local_position) != kind:
+  return ""
+ var left := grid_to_screen(Vector2(span.x, _connector_row(kind))).x
+ var right := grid_to_screen(Vector2(span.x + span.y, _connector_row(kind))).x
+ # Leave a generous move target even when the connector is only one cell wide.
+ var handle_radius := minf(8.0, _cell_pixels * 0.22)
+ if absf(local_position.x - left) <= handle_radius:
+  return "left"
+ if absf(local_position.x - right) <= handle_radius:
+  return "right"
+ return "move"
 
 
 func legal_anchor_for(placement: Dictionary, grid_position: Vector2) -> Vector2i:
@@ -157,6 +244,54 @@ func _draw() -> void:
   ghost["anchor"] = legal_anchor_for(ghost, screen_to_grid(_cursor_position))
   _draw_piece(ghost, false, true)
   _draw_footprint(ghost, Color(0.75, 0.91, 1.0, 0.5))
+ _draw_connectors()
+
+
+func _draw_connectors() -> void:
+ for kind: String in ["entry", "exit"]:
+  var span := connector_span(kind)
+  if span.y > 0 and _connector_drag_kind != kind:
+   _draw_connector(kind, span.x, span.y, selected_connector == kind, false)
+ if not _connector_drag_kind.is_empty():
+  _draw_connector(_connector_drag_kind, _connector_preview_start, _connector_preview_width, true, true)
+ elif _hovering and not connector_tool.is_empty() and connector_border_at(_cursor_position) == connector_tool:
+  var cell := clampi(floori(screen_to_grid(_cursor_position).x), 0, _grid_size().x - 1)
+  _draw_connector(connector_tool, cell, 1, false, true, false)
+
+
+func _draw_connector(kind: String, start_x: int, width: int, selected: bool, ghost: bool, show_label: bool = true) -> void:
+ if width <= 0:
+  return
+ var start := grid_to_screen(Vector2(start_x, _connector_row(kind)))
+ var end := grid_to_screen(Vector2(start_x + width, _connector_row(kind)))
+ var color := Color(CONNECTOR_COLOR, 0.48 if ghost else 1.0)
+ if selected:
+  draw_line(start, end, Color("d1ffe2"), 10.0, true)
+ draw_line(start, end, Color("123c30"), 8.0, true)
+ draw_line(start, end, color, 5.0, true)
+ for point: Vector2 in [start, end]:
+  draw_line(point - Vector2(0, 7), point + Vector2(0, 7), color, 2.0, true)
+  if selected:
+   draw_rect(Rect2(point - Vector2(4, 4), Vector2(8, 8)), Color("d1ffe2"))
+   draw_rect(Rect2(point - Vector2(2, 2), Vector2(4, 4)), color)
+ # Both annotations point upward: Entry into the Act; Exit out of the Act.
+ var center := (start + end) * 0.5
+ var tip := center - Vector2(0, 13)
+ draw_line(center + Vector2(0, 13), tip, color, 2.0, true)
+ draw_line(tip, tip + Vector2(-4, 5), color, 2.0, true)
+ draw_line(tip, tip + Vector2(4, 5), color, 2.0, true)
+ if not show_label:
+  return
+ var font := get_theme_default_font()
+ var label := "%s · %d %s" % [kind.to_upper(), width, "cell" if width == 1 else "cells"]
+ var text_width := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 12).x
+ var label_x := clampf(center.x - text_width * 0.5, 8.0, maxf(8.0, size.x - text_width - 8.0))
+ var label_y := start.y + (35.0 if kind == "entry" else -29.0)
+ draw_string(font, Vector2(label_x, label_y), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, color)
+
+
+func _connector_row(kind: String) -> int:
+ return _grid_size().y if kind == "entry" else 0
 
 
 func _draw_grid() -> void:
@@ -261,7 +396,15 @@ func _gui_input(event: InputEvent) -> void:
  elif event is InputEventKey and event.pressed and not event.ctrl_pressed and not event.meta_pressed and event.keycode in [KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN]:
   # Consume arrows before Control's built-in focus navigation. The owner still
   # applies the edit through the same move signal as pointer dragging.
-  if not event.echo and selected_index >= 0 and selected_index < _placements().size():
+  if not event.echo and not selected_connector.is_empty():
+   if event.keycode in [KEY_LEFT, KEY_RIGHT]:
+    cancel_gesture()
+    var span := connector_span(selected_connector)
+    var offset := -1 if event.keycode == KEY_LEFT else 1
+    var start_x := clampi(span.x + offset, 0, _grid_size().x - span.y)
+    if start_x != span.x and span.y > 0:
+     connector_requested.emit(selected_connector, start_x, span.y)
+  elif not event.echo and selected_index >= 0 and selected_index < _placements().size():
    var direction: Vector2i = {KEY_LEFT: Vector2i.LEFT, KEY_RIGHT: Vector2i.RIGHT, KEY_UP: Vector2i.UP, KEY_DOWN: Vector2i.DOWN}[event.keycode]
    var placement: Dictionary = _placements()[selected_index]
    var anchor: Vector2i = placement.get("anchor", Vector2i.ZERO)
@@ -285,7 +428,9 @@ func _gui_input(event: InputEvent) -> void:
     grab_focus()
     _begin_primary(event.position, event.alt_pressed)
    else:
-    if _drag_index >= 0:
+    if not _connector_drag_kind.is_empty():
+     _update_connector_drag(event.position)
+    elif _drag_index >= 0:
      _update_drag(event.position)
     _end_primary()
    accept_event()
@@ -294,8 +439,16 @@ func _gui_input(event: InputEvent) -> void:
   if _panning:
    _view_origin += event.relative
    _view_adjusted = true
+  elif not _connector_drag_kind.is_empty():
+   _update_connector_drag(event.position)
   elif _drag_index >= 0:
    _update_drag(event.position)
+  elif not connector_tool.is_empty():
+   var border := "bottom" if connector_tool == "entry" else "top"
+   if connector_border_at(event.position) == connector_tool:
+    _set_status("%s: click or drag contiguous %s-border cells. Esc cancels." % [connector_tool.capitalize(), border])
+   else:
+    _set_status("%s belongs on the %s border. Click or drag there to define its span." % [connector_tool.capitalize(), border])
   elif not brush.is_empty() and _inside_grid(event.position):
    var anchor := legal_anchor_for(brush, screen_to_grid(event.position))
    _set_status("Place at (%d, %d). Click to stamp; right-click or Esc to select." % [anchor.x, anchor.y])
@@ -304,12 +457,31 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _begin_primary(pointer: Vector2, cycle_overlaps: bool) -> void:
+ if not connector_tool.is_empty():
+  if connector_border_at(pointer) == connector_tool:
+   _begin_connector_drag(connector_tool, pointer, "create")
+  else:
+   var border := "bottom" if connector_tool == "entry" else "top"
+   _set_status("%s can only be created on the %s border." % [connector_tool.capitalize(), border])
+  return
  if not brush.is_empty():
   if _inside_grid(pointer) and _valid_stamp(brush):
    var placement := brush.duplicate(true)
    placement["anchor"] = legal_anchor_for(placement, screen_to_grid(pointer))
    placement_requested.emit(placement)
   return
+ # Alt-click preserves access to terrain that shares a connector's border.
+ var connector := "" if cycle_overlaps else connector_hit_at(pointer)
+ if not connector.is_empty():
+  select_connector(connector)
+  selection_changed.emit(-1)
+  connector_selection_changed.emit(connector)
+  _begin_connector_drag(connector, pointer, connector_handle_at(connector, pointer))
+  return
+ var had_connector := not selected_connector.is_empty()
+ selected_connector = ""
+ if had_connector:
+  connector_selection_changed.emit("")
  var hits := hit_indices_at(pointer)
  var next_index := -1
  if not hits.is_empty():
@@ -343,7 +515,68 @@ func _update_drag(pointer: Vector2) -> void:
  _set_status("Move to (%d, %d). Release to apply; Esc cancels." % [_drag_anchor.x, _drag_anchor.y])
 
 
+func _begin_connector_drag(kind: String, pointer: Vector2, mode: String) -> void:
+ var span := connector_span(kind)
+ _connector_drag_kind = kind
+ _connector_drag_mode = mode
+ _connector_pointer_start_x = screen_to_grid(pointer).x
+ _connector_first_cell = clampi(floori(_connector_pointer_start_x), 0, _grid_size().x - 1)
+ _connector_original_start = span.x
+ _connector_original_width = span.y
+ _connector_preview_start = _connector_first_cell if mode == "create" else span.x
+ _connector_preview_width = 1 if mode == "create" else span.y
+ _connector_release_valid = true
+ queue_redraw()
+
+
+func _update_connector_drag(pointer: Vector2) -> void:
+ var grid_x := screen_to_grid(pointer).x
+ var columns := _grid_size().x
+ match _connector_drag_mode:
+  "create":
+   _connector_release_valid = connector_border_at(pointer) == _connector_drag_kind
+   var cell := clampi(floori(grid_x), 0, columns - 1)
+   _connector_preview_start = mini(_connector_first_cell, cell)
+   _connector_preview_width = absi(_connector_first_cell - cell) + 1
+  "move":
+   _connector_preview_start = clampi(_connector_original_start + roundi(grid_x - _connector_pointer_start_x), 0, columns - _connector_original_width)
+  "left":
+   var fixed_end := _connector_original_start + _connector_original_width
+   _connector_preview_start = clampi(roundi(grid_x), 0, fixed_end - 1)
+   _connector_preview_width = fixed_end - _connector_preview_start
+  "right":
+   var end := clampi(roundi(grid_x), _connector_original_start + 1, columns)
+   _connector_preview_width = end - _connector_original_start
+ if _connector_release_valid:
+  _set_status("%s: width %d · cells %d–%d. Release to apply; Esc cancels." % [_connector_drag_kind.capitalize(), _connector_preview_width, _connector_preview_start, _connector_preview_start + _connector_preview_width - 1])
+ else:
+  var border := "bottom" if _connector_drag_kind == "entry" else "top"
+  _set_status("Return to the %s border before releasing to create this connector." % border)
+ queue_redraw()
+
+
+func _end_connector_drag() -> void:
+ var kind := _connector_drag_kind
+ var start_x := _connector_preview_start
+ var width := _connector_preview_width
+ var valid := _connector_release_valid
+ var changed := _connector_drag_mode == "create" or start_x != _connector_original_start or width != _connector_original_width
+ _connector_drag_kind = ""
+ _connector_drag_mode = ""
+ _connector_release_valid = true
+ if not valid:
+  _set_status("Connector placement canceled: release on its required border.")
+ elif changed:
+  selected_connector = kind
+  connector_requested.emit(kind, start_x, width)
+  connector_selection_changed.emit(selected_connector)
+ queue_redraw()
+
+
 func _end_primary() -> void:
+ if not _connector_drag_kind.is_empty():
+  _end_connector_drag()
+  return
  var moved_index := _drag_index
  var moved_anchor := _drag_anchor
  var should_move := _drag_moved and moved_anchor != _drag_start_anchor
@@ -358,8 +591,11 @@ func _leave_tool() -> void:
  cancel_gesture()
  brush = {}
  selected_index = -1
+ connector_tool = ""
+ selected_connector = ""
  selection_changed.emit(-1)
- _set_status("Selection mode. Click terrain; Alt-click cycles overlaps. Drag to move.")
+ connector_selection_changed.emit("")
+ _set_status("Selection mode. Click terrain or a green connector. Alt-click cycles terrain overlaps.")
  queue_redraw()
 
 

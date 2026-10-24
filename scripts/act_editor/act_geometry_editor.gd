@@ -33,6 +33,7 @@ var _refreshing := false
 var _title_edit_recorded := false
 var _previous_auto_quit := true
 var grid_label: Label
+var connector_summary: Label
 
 func _ready() -> void:
 	_previous_auto_quit = get_tree().auto_accept_quit
@@ -121,7 +122,7 @@ func _build_ui() -> void:
 	palette.add_theme_constant_override("separation", 8)
 	body.add_child(palette)
 	var palette_heading := Label.new()
-	palette_heading.text = "TERRAIN LIBRARY  /  52 stamps"
+	palette_heading.text = "TERRAIN LIBRARY  /  %d stamps" % Shapes.definitions().size()
 	palette_heading.add_theme_color_override("font_color", Color("70e5d5"))
 	palette.add_child(palette_heading)
 	search_field = LineEdit.new()
@@ -178,6 +179,17 @@ func _build_ui() -> void:
 	cell_size_field.custom_minimum_size.x = 110
 	cell_size_field.value_changed.connect(_change_cell_size)
 	settings.add_child(cell_size_field)
+	var connectors := HBoxContainer.new()
+	connectors.add_theme_constant_override("separation", 8)
+	workspace.add_child(connectors)
+	_button(connectors, "entry", "Entry (bottom)", func(): choose_connector("entry"), "Drag contiguous cells along the bottom border to create or replace Entry")
+	_button(connectors, "exit", "Exit (top)", func(): choose_connector("exit"), "Drag contiguous cells along the top border to create or replace Exit")
+	connector_summary = Label.new()
+	connector_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	connector_summary.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	connector_summary.add_theme_font_size_override("font_size", 13)
+	connector_summary.add_theme_color_override("font_color", Color("76edab"))
+	connectors.add_child(connector_summary)
 	canvas = Canvas.new()
 	canvas.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	canvas.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -185,6 +197,8 @@ func _build_ui() -> void:
 	canvas.placement_requested.connect(add_placement)
 	canvas.move_requested.connect(move_placement)
 	canvas.selection_changed.connect(func(_index): _refresh())
+	canvas.connector_requested.connect(set_connector)
+	canvas.connector_selection_changed.connect(func(_kind): _refresh())
 	canvas.status_changed.connect(_set_status)
 	mode_label = Label.new()
 	mode_label.add_theme_color_override("font_color", Color("70e5d5"))
@@ -272,8 +286,44 @@ func choose_shape(id: String) -> void:
 func _select_mode() -> void:
 	canvas.grab_focus()
 	canvas.select_piece(-1)
-	_set_status("Click visible terrain to select it. Drag to move; Alt-click cycles overlapping pieces.")
+	_set_status("Click terrain or a green connector. Drag to move; connector handles resize. Alt-click reaches overlapping terrain.")
 	_refresh()
+
+func choose_connector(kind: String) -> void:
+	if kind not in ["entry", "exit"]:
+		return
+	canvas.grab_focus()
+	canvas.set_connector_tool(kind)
+	_set_status("Drag contiguous cells along the %s border to create or replace %s. Esc cancels." % ["bottom" if kind == "entry" else "top", kind.capitalize()])
+	_refresh()
+
+func set_connector(kind: String, start_x: int, width: int) -> void:
+	if kind not in ["entry", "exit"]:
+		return
+	var candidate: Resource = document.copy_document()
+	candidate.set(kind + "_start_x", start_x)
+	candidate.set(kind + "_width", width)
+	if not candidate.validation_errors().is_empty():
+		_set_status("A connector must use contiguous integer cells inside its boundary.")
+		return
+	var previous: Dictionary = document.get_connector(kind)
+	if previous.start_x != start_x or previous.width != width:
+		_record_edit()
+		document.set(kind + "_start_x", start_x)
+		document.set(kind + "_width", width)
+	if width > 0:
+		canvas.select_connector(kind)
+		_set_status("%s set. Drag its middle to move, drag either endpoint to resize, or press Delete." % kind.capitalize())
+	else:
+		canvas.select_piece(-1)
+		_set_status("%s removed. Drafts can be saved without connectors." % kind.capitalize())
+	_refresh()
+
+func _connector_description(kind: String) -> String:
+	var connector: Dictionary = document.get_connector(kind)
+	if connector.width == 0:
+		return kind.capitalize() + ": unset"
+	return "%s: width %d · cells %d–%d" % [kind.capitalize(), connector.width, connector.start_x, connector.start_x + connector.width - 1]
 
 func add_placement(placement: Dictionary) -> void:
 	var candidate: Resource = document.copy_document()
@@ -338,6 +388,9 @@ func _transform_active(operation: String) -> void:
 	_refresh()
 
 func delete_selected() -> void:
+	if not canvas.selected_connector.is_empty():
+		set_connector(canvas.selected_connector, 0, 0)
+		return
 	if canvas.selected_index < 0:
 		return
 	canvas.cancel_gesture()
@@ -347,7 +400,7 @@ func delete_selected() -> void:
 	_refresh()
 
 func _snapshot() -> Dictionary:
-	return {"document": document.copy_document(), "selected": canvas.selected_index}
+	return {"document": document.copy_document(), "selected": canvas.selected_index, "connector": canvas.selected_connector}
 
 func _record_edit() -> void:
 	undo_stack.append(_snapshot())
@@ -378,6 +431,8 @@ func _restore_snapshot(snapshot: Dictionary) -> void:
 	canvas.set_document(document, false)
 	if not active_brush.is_empty():
 		canvas.set_brush(active_brush)
+	elif not snapshot.get("connector", "").is_empty() and document.get_connector(snapshot.connector).width > 0:
+		canvas.select_connector(snapshot.connector)
 	else:
 		canvas.select_piece(snapshot.selected if snapshot.selected < document.placements.size() else -1)
 	_refresh()
@@ -528,11 +583,20 @@ func _refresh() -> void:
 	_refresh_file_state()
 	buttons.undo.disabled = undo_stack.is_empty()
 	buttons.redo.disabled = redo_stack.is_empty()
-	buttons.delete.disabled = canvas.selected_index < 0
+	buttons.delete.disabled = canvas.selected_index < 0 and canvas.selected_connector.is_empty()
+	connector_summary.text = _connector_description("entry") + "   |   " + _connector_description("exit")
+	connector_summary.tooltip_text = connector_summary.text + "\nCompatibility compares width only; horizontal positions may differ."
 	var active: Dictionary = canvas.brush if not canvas.brush.is_empty() else (document.placements[canvas.selected_index] if canvas.selected_index >= 0 else {})
 	for key in ["rotate", "flip_h", "flip_v"]:
 		buttons[key].disabled = active.is_empty()
-	if active.is_empty():
+	if not canvas.connector_tool.is_empty():
+		mode_label.text = "AUTHOR %s  ·  %s border only" % [canvas.connector_tool.to_upper(), "bottom" if canvas.connector_tool == "entry" else "top"]
+		detail_label.text = "Click or drag across boundary cells to set the span. Green spans are authoring markers; terrain remains unchanged."
+	elif not canvas.selected_connector.is_empty():
+		mode_label.text = "SELECTED CONNECTOR  ·  " + _connector_description(canvas.selected_connector)
+		var next_width: int = document.exit_width
+		detail_label.text = "Drag middle to move · endpoint handles resize · Delete removes · Left/Right nudge" + (" · Next entry width: %d" % next_width if next_width > 0 else "")
+	elif active.is_empty():
 		mode_label.text = "SELECT / MOVE  ·  %d pieces" % document.placements.size()
 		detail_label.text = "Click terrain to select it. Arrow keys move a selected piece by one cell."
 	else:

@@ -1,7 +1,7 @@
 class_name ActGeometry
 extends Resource
-## A single Act's editable terrain references. No runtime or gameplay objects.
-const FORMAT_VERSION := 1
+## A single Act's terrain references and boundary connectors. No runtime objects.
+const FORMAT_VERSION := 2
 const SHAPES = preload("res://scripts/act_editor/terrain_shapes.gd")
 const SCRIPT_PATH := "res://scripts/act_editor/act_geometry.gd"
 const PLACEMENT_TYPES := {
@@ -27,6 +27,12 @@ const PLACEMENT_TYPES := {
 @export var grid_size = Vector2i(12, 12)
 @export var cell_size = 50.0
 @export var placements = []
+## Entry lies on the bottom boundary; exit lies on the top boundary.
+## A zero start and width represent an unset connector in an editable draft.
+@export var entry_start_x = 0
+@export var entry_width = 0
+@export var exit_start_x = 0
+@export var exit_width = 0
 
 var _format_version_was_set := false
 var _library_version_was_set := false
@@ -38,6 +44,18 @@ func _init() -> void:
  library_version = SHAPES.VERSION
  _format_version_was_set = false
  _library_version_was_set = false
+
+func get_connector(kind: String) -> Dictionary:
+ match kind:
+  "entry": return {"start_x": entry_start_x, "width": entry_width}
+  "exit": return {"start_x": exit_start_x, "width": exit_width}
+ return {}
+
+static func compatible(previous_exit: Dictionary, next_entry: Dictionary) -> bool:
+ # Local X is deliberately irrelevant; future assembly will align whole Acts.
+ var previous_width: Variant = previous_exit.get("width")
+ var next_width: Variant = next_entry.get("width")
+ return typeof(previous_width) == TYPE_INT and typeof(next_width) == TYPE_INT and previous_width > 0 and previous_width == next_width
 
 func validation_errors() -> PackedStringArray:
  var errors := PackedStringArray()
@@ -60,6 +78,18 @@ func validation_errors() -> PackedStringArray:
   errors.append("Grid cell size must be a number.")
  elif not is_finite(cell_size) or cell_size <= 0.0:
   errors.append("Grid cell size must be finite and greater than zero.")
+ for kind: String in ["entry", "exit"]:
+  var connector := get_connector(kind)
+  if typeof(connector.start_x) != TYPE_INT or typeof(connector.width) != TYPE_INT:
+   errors.append("%s connector start and width must both be integers." % kind.capitalize())
+   continue
+  if connector.width == 0:
+   if connector.start_x != 0:
+    errors.append("%s connector must use start 0 when its width is 0 (unset)." % kind.capitalize())
+  elif connector.width < 0 or connector.start_x < 0:
+   errors.append("%s connector needs a positive width and nonnegative start." % kind.capitalize())
+  elif valid_grid_type and (connector.width > grid_size.x or connector.start_x > grid_size.x - connector.width):
+   errors.append("%s connector span must fit inside the Act's horizontal grid boundary." % kind.capitalize())
  if typeof(placements) != TYPE_ARRAY:
   errors.append("Terrain placements must be an array of dictionaries.")
   return errors
@@ -111,7 +141,7 @@ func fingerprint() -> String:
  # ResourceSaver can omit an integer cell size equal to the default float size.
  # Treat equivalent numeric cell sizes identically while preserving their value.
  var normalized_cell_size: Variant = float(cell_size) if typeof(cell_size) in [TYPE_INT, TYPE_FLOAT] else cell_size
- return var_to_str([format_version, library_version, title, grid_size, normalized_cell_size, ordered_placements]).sha256_text()
+ return var_to_str([format_version, library_version, title, grid_size, normalized_cell_size, ordered_placements, entry_start_x, entry_width, exit_start_x, exit_width]).sha256_text()
 
 func copy_document() -> Resource:
  var result: Resource = get_script().new()
@@ -121,6 +151,10 @@ func copy_document() -> Resource:
  result.grid_size = grid_size
  result.cell_size = cell_size
  result.placements = placements.duplicate(true) if typeof(placements) == TYPE_ARRAY else placements
+ result.entry_start_x = entry_start_x
+ result.entry_width = entry_width
+ result.exit_start_x = exit_start_x
+ result.exit_width = exit_width
  return result
 
 static func load_document(path: String) -> Dictionary:

@@ -17,6 +17,8 @@ func configure(value: Dictionary) -> void:
 		style.set_corner_radius_all(6)
 		style.content_margin_left = 66
 		style.content_margin_right = 8
+		style.content_margin_top = 0
+		style.content_margin_bottom = 18
 		add_theme_stylebox_override(state, style)
 	queue_redraw()
 
@@ -34,6 +36,7 @@ func _draw() -> void:
 		draw_colored_polygon(points, Color(color, 0.3))
 		points.append(points[0])
 	draw_polyline(points, color, 2.0, true)
+	draw_string(get_theme_default_font(), Vector2(66, size.y - 8), "SOLID TERRAIN" if definition.closed else "WALL ONLY", HORIZONTAL_ALIGNMENT_LEFT, size.x - 74, 10, Color(color, 0.9))
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	if definition.is_empty():
