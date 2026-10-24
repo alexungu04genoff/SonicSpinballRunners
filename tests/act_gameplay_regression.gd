@@ -107,7 +107,7 @@ func check_definitions() -> void:
   check(sling_points[0].is_equal_approx(Vector2(-40, 35) * cell_size / 150.0) and sling_points[1].is_equal_approx(Vector2(-15, -55) * cell_size / 150.0) and sling_points[2].is_equal_approx(Vector2(45, 35) * cell_size / 150.0), "Sling scales uniformly about its existing authored origin")
   for hand: String in ["left_flipper", "right_flipper"]:
    var flipper_bounds := bounds_of(Objects.local_points(Objects.make_placement(hand), cell_size))
-   check(flipper_bounds.position.is_equal_approx(Vector2(-0.05, -0.05) * cell_size) and flipper_bounds.size.is_equal_approx(Vector2(0.9, 0.1) * cell_size), "Flipper is 0.9 cell long and 0.1 cell thick, with its rounded pivot centered at the saved origin: " + hand)
+   check(flipper_bounds.position.is_equal_approx(Vector2(-0.05, -0.05) * cell_size) and flipper_bounds.size.is_equal_approx(Vector2(0.75, 0.1) * cell_size), "Flipper is 0.75 cell long and 0.1 cell thick, with its rounded pivot centered at the saved origin: " + hand)
  var document := make_fixture()
  var fingerprint: String = document.fingerprint()
  for cell_size: float in [25.0, 100.0]:

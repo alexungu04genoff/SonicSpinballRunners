@@ -2,6 +2,10 @@
 
 Latest checks: 2026-10-25. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
+## Shorter authored flippers — 2026-10-25
+
+Both flippers now use a 0.65-cell centerline and 0.75-cell overall body, down from 0.8/0.9 cell. Thickness, pivots, positions and resting angles remain unchanged. Shared tuning automatically shortens the swing guides and selection silhouette. Gameplay regression passed **493 + 76 fresh-process checks**; ANGLE editor smoke passed **68 + 5 fresh-editor checks**, with empty error logs. The rendered result was inspected. This is editor sizing only; runtime physics is unchanged.
+
 ## Gameplay-object and marker scale pass — 2026-10-25
 
 `scripts/act_editor/preview_dimensions.gd` centralizes editor sizing: round bumper diameter 0.5 cell, sling height 0.6 cell, flipper centerline 0.8 cell with 0.05-cell rounded caps (0.9×0.1-cell total body), and a 0.24-cell Spawn ring. Pivot marks, outlines, swing arrows, Activation arrows and connector handles are compact. Connector spans and full-width Activation retain their extents. Annotation scale clamps only at extreme zoom levels; object silhouettes always follow the construction-cell ratio. Terrain geometry and runtime physics are unchanged.

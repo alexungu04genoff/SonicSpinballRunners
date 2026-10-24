@@ -2,7 +2,7 @@ extends RefCounted
 ## Editor-only tuning in construction cells. Never rescales authored coordinates.
 const ROUND_RADIUS_CELLS := 0.25
 const SLING_HEIGHT_CELLS := 0.60
-const FLIPPER_LENGTH_CELLS := 0.80 # Pivot-to-tip centerline; caps give 0.90 overall.
+const FLIPPER_LENGTH_CELLS := 0.65 # Pivot-to-tip centerline; caps give 0.75 overall.
 const FLIPPER_RADIUS_CELLS := 0.05
 
 const SPAWN_RADIUS_CELLS := 0.12
