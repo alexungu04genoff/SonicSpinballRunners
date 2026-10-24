@@ -115,15 +115,30 @@ func check_curve_geometry(family: String, size: Vector2i, points: PackedVector2A
 			previous_sign = curvature_sign
 		check(monotone and sign_changes == 1, "Smooth S has one inflection and no zig-zag or reversing segment: " + id)
 	if family in ["u_band", "s_band"]:
-		check(simple_polygon(points), "Ribbon boundary has no crossing or duplicate seam vertices: " + id)
+		var wall_id := ("u_curve" if family == "u_band" else "s_curve") + "_%dx%d" % [size.x, size.y]
+		var wall: PackedVector2Array = Shapes.get_definition(wall_id).points
+		check(points.slice(0, wall.size()) == wall, "Filled terrain retains the exact matching open curve: " + id)
 		var ratio := polygon_area(points) / (w * h)
-		check(ratio > 0.05 and ratio < 0.45, "Solid ribbon occupies a narrow portion of its frame: " + id)
+		check(absf(ratio - (1.0 - PI * 0.25 if family == "u_band" else 0.5)) < 0.002, "Fill occupies the entire area below the curve: " + id)
+		var correct_sides := true
+		for index in range(1, wall.size() - 1):
+			var surface: Vector2 = wall[index]
+			if surface.y < h:
+				correct_sides = correct_sides and Geometry2D.is_point_in_polygon(Vector2(surface.x, (surface.y + h) * 0.5), points)
+			correct_sides = correct_sides and not Geometry2D.is_point_in_polygon(Vector2(surface.x, surface.y * 0.5), points)
+		check(correct_sides, "Every sampled curve position is filled below and empty above: " + id)
+		check(points[-1] == Vector2(0, h), "Filled curve closes through the bottom-left frame corner: " + id)
 		if family == "u_band":
-			var wall: PackedVector2Array = Shapes.get_definition("u_curve_%dx%d" % [size.x, size.y]).points
-			check(points.slice(0, wall.size()) == wall, "U ribbon follows the exact existing outer wall curve: " + id)
-			check(not Geometry2D.is_point_in_polygon(Vector2(w * 0.5, h * 0.35), points) and Geometry2D.is_point_in_polygon(Vector2(w * 0.5, h - 0.09 * minf(w, h)), points), "U ribbon keeps its mouth empty and its curved base solid: " + id)
+			# The unchanged U touches the bottom at its midpoint. Its two filled
+			# sides meet there; each side must remain a simple, triangulatable solid.
+			var middle := wall.size() / 2
+			var left := wall.slice(0, middle + 1)
+			left.append(Vector2(0, h))
+			var right := wall.slice(middle)
+			right.append(Vector2(w, h))
+			check(simple_polygon(left) and simple_polygon(right) and points[-2] == Vector2(w, h), "U sides meet only at the bottom tangency and close through both bottom corners: " + id)
 		else:
-			check(Geometry2D.is_point_in_polygon(Vector2(w * 0.5, h * 0.5), points) and not Geometry2D.is_point_in_polygon(Vector2(w * 0.1, h * 0.5), points) and not Geometry2D.is_point_in_polygon(Vector2(w * 0.9, h * 0.5), points), "S ribbon surrounds its centerline and leaves both frame sides empty: " + id)
+			check(simple_polygon(points), "Filled S has no crossing or duplicate seam vertices: " + id)
 	if family == "bump":
 		check(absf(polygon_area(points) / (w * h) - PI * 0.25) < 0.002, "Bump preserves its half-ellipse silhouette at every aspect ratio: " + id)
 
@@ -187,6 +202,12 @@ func check_library() -> void:
 							for index in points.size():
 								matches = matches and transformed[index].distance_to(reference_transform(points[index], size, turns, horizontal, vertical)) < 0.0001
 						check(matches, "Actual points rotate clockwise then mirror on screen axes: %s/%d/%s/%s" % [id, turns, horizontal, vertical])
+						if family in ["u_band", "s_band"]:
+							var indices := Geometry2D.triangulate_polygon(transformed)
+							var filled_area := 0.0
+							for index in range(0, indices.size(), 3):
+								filled_area += polygon_area(PackedVector2Array([transformed[indices[index]], transformed[indices[index + 1]], transformed[indices[index + 2]]]))
+							check(not indices.is_empty() and absf(filled_area - polygon_area(points)) < 0.0001, "Rotated/mirrored fill triangulates the complete curved solid: %s/%d/%s/%s" % [id, turns, horizontal, vertical])
 	for definition: Dictionary in definitions:
 		check(ids.has(definition.id), "Catalogue has no unexpected or duplicate substituted sizes: " + str(definition.id))
 	check(Shapes.get_definition("missing_shape").is_empty(), "Unknown definitions return no geometry")

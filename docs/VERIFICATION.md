@@ -2,6 +2,14 @@
 
 Latest checks: 2026-10-25. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
+## Filled U/S correction — 2026-10-25
+
+Filled U and Filled S now use the matching open wall as their upper surface and fill down to the canonical frame bottom. Open wall geometry, frame sizes and saved placement IDs remain unchanged. This supersedes the ribbon interpretation in the earlier connector/shape-expansion milestone.
+
+- Geometry regression: **3,461 checks + 6 fresh-process checks passed**. Checks cover exact shared curves, fill below/empty above, expected areas, U bottom tangency, all rotation/mirror triangulations and persistence.
+- ANGLE editor smoke: **93 checks passed**, including placement and selection in the newly filled regions, empty-space selection and existing editor workflows. Error log empty.
+- Rendered atlas inspected for all three U sizes and all six S sizes, beside their unchanged open wall counterparts. Fill reaches each frame's bottom; terrain scaling is unchanged.
+
 ## Act lifecycle metadata — 2026-10-25
 
 Act Markers adds optional full-width Activation and exact-position Spawn markers alongside the existing Entry/Exit tools. A system-owned one-cell-height red gutter sits outside the unchanged 12×12 terrain grid. Format 4 loads previous format-2/3 Acts with lifecycle fields unset. This remains authoring-only: no activation state, death/respawn, ball, transitions, generator changes or playable Act loading.

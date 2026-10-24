@@ -117,13 +117,13 @@ The palette contains **77 stamps**. Useful solid/wall pairs appear together, wit
 | Capsules | 1×2, 1×3, 2×3 | Rounded ends and straight sides |
 | Outer corners | 1×1, 2×2, 3×3 | Convex quarter-disk with closing edges |
 | U-curves | 2×2, 2×3, 3×3 | Half-ellipse wall, no closing segment |
-| U bands | Same three U sizes | Solid ribbon around the curve; mouth remains open |
+| Filled U | Same three U sizes | Solid area below the U curve, closed along the frame bottom |
 | S-curves | 1×2, 1×3, 2×2, 2×3, 3×2, 3×3 | Smooth open wall with one inflection |
-| S bands | Same six S sizes | Solid ribbon following the S curve, tapering to grid-corner endpoints |
+| Filled S | Same six S sizes | Solid area below the S curve, closed along the frame bottom |
 
-`scripts/act_editor/terrain_shapes.gd` defines deterministic sampled curves with exact endpoints/extents. Open walls never close implicitly. A straight wall has zero geometric width but a one-cell logical frame. Redundant square ovals/capsules are absent; circles cover those cases. Solid U/S bands follow the curve instead of filling the frame.
+`scripts/act_editor/terrain_shapes.gd` defines deterministic sampled curves with exact endpoints/extents. Open walls never close implicitly. A straight wall has zero geometric width but a one-cell logical frame. Redundant square ovals/capsules are absent; circles cover those cases. Filled U/S stamps fill all space beneath their matching open curve down to the canonical frame's bottom edge. Rotation and mirroring transform this entire solid.
 
-The U band connects an outer half-ellipse to an inset inner curve at the two mouth ends. Its inset is 18% of the smaller frame dimension. The S wall runs from `(0,0)` to `(width,height)` using `x = width*(3t²−2t³), y = height*t`, with vertical endpoint tangents and one inflection. Its solid version uses horizontal offsets `±0.15*min(width,height)*sin²(πt)`; both sides meet at the exact grid endpoints. These are authoring silhouettes, not runtime collision rules.
+Filled U uses the exact half-ellipse wall as its upper surface and closes through both bottom corners. Its two solid sides meet where the curve touches the frame bottom; the bowl above stays empty. The S wall runs from `(0,0)` to `(width,height)` using `x = width*(3t²−2t³), y = height*t`, with vertical endpoint tangents and one inflection. Filled S closes from its bottom-right endpoint through the bottom-left corner, leaving only the area above the curve empty. The existing `u_band_*` and `s_band_*` placement IDs now resolve to these corrected filled shapes; no file conversion is needed. These are authoring silhouettes, not runtime collision rules.
 
 `scripts/act_editor/act_geometry.gd` stores:
 
@@ -156,6 +156,6 @@ Use the existing isolated import helper to prevent editor indentation conversion
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script res://tests/act_lifecycle_editor_smoke.gd
 ```
 
-The geometry regression checks all shapes against independent transform calculations, valid band polygons/voids, overlap persistence and a fresh-process reload/edit/re-save. Connector regression checks width-only compatibility, spans, drafts and restart persistence. Gameplay and lifecycle regressions check independent records, validation, exact fractional persistence and previous-format loading. Scene smoke scripts exercise actual pointer/keyboard gestures, both snapping modes, numeric angles, overlap selection, history, marker bounds, gutter rejection and file workflow. Run them graphically with the launcher's ANGLE backend for rendered captures.
+The geometry regression checks all shapes against independent transform calculations, curved fill coverage and triangulation, overlap persistence and a fresh-process reload/edit/re-save. Connector regression checks width-only compatibility, spans, drafts and restart persistence. Gameplay and lifecycle regressions check independent records, validation, exact fractional persistence and previous-format loading. Scene smoke scripts exercise actual pointer/keyboard gestures, both snapping modes, numeric angles, overlap selection, history, marker bounds, gutter rejection and file workflow. Run them graphically with the launcher's ANGLE backend for rendered captures.
 
 Human review remains useful for palette comfort, drag precision, curve silhouettes and editing feel. This milestone has no gameplay playtest mode.

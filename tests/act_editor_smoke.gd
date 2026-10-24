@@ -452,6 +452,28 @@ func check_connectors() -> void:
 	await process_frame
 
 
+func check_filled_curves() -> void:
+	editor.new_document()
+	await process_frame
+	await choose_palette("u_band_3x3")
+	await click_at(grid_position(Vector2(1, 1)))
+	await choose_palette("s_band_3x3")
+	await click_at(grid_position(Vector2(6, 1)))
+	await press_key(KEY_ESCAPE)
+	check(editor.document.placements.size() == 2, "Filled U and S stamp through the terrain palette")
+	check(editor.palette_buttons.u_band_3x3.text == "Filled U 3×3" and editor.palette_buttons.s_band_3x3.text == "Filled S 3×3", "Palette names describe filled curves rather than ribbons")
+	await click_at(grid_position(Vector2(1.3, 3.7)))
+	check(editor.canvas.selected_index == 0, "Filled U selects solid terrain beneath the curve near the frame bottom")
+	await click_at(grid_position(Vector2(2.5, 2.5)))
+	check(editor.canvas.selected_index == -1, "Filled U leaves the bowl above its curve empty")
+	await click_at(grid_position(Vector2(6.3, 3.7)))
+	check(editor.canvas.selected_index == 1, "Filled S selects solid terrain all the way down to its base")
+	await click_at(grid_position(Vector2(8.7, 1.3)))
+	check(editor.canvas.selected_index == -1, "Filled S leaves the area above its curve empty")
+	editor.new_document()
+	await process_frame
+
+
 func capture_example() -> void:
 	if FileAccess.file_exists("res://data/acts/curve_garden.tres"):
 		await click_control(editor.buttons.example)
@@ -486,6 +508,7 @@ func run() -> void:
 	await check_file_workflow()
 	await check_metadata_and_loaded_frames()
 	await check_connectors()
+	await check_filled_curves()
 	await capture_example()
 	print("RESULT | Act editor UI | %d checks | %d failures" % [checks, failures])
 	editor.queue_free()
