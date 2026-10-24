@@ -1,5 +1,7 @@
 # Sonic Spinball Runners — Vertical Traversal Playground
 
+**Current presentation (2026-10-24):** Sonic, Tails, Knuckles and Shadow always remain in their character-colored ball form, including jumps, impacts, specials and character study. State transitions, special effects and authoritative 2D gameplay remain intact. Local character models are not loaded; the existing Blender pipeline and pose hooks are retained for later work with a 3D modeler. Older model previews and verification records below describe the previous presentation.
+
 A local Godot 4/GDScript pinball prototype. Gameplay uses an invisible 2D rigid body and 2D collision geometry. Three connected sections form a tall course; a separate, collisionless 3D scene renders raised primitives with a smooth following perspective camera or fixed overview. No external artwork or dependencies are required.
 
 Free Play remains the default endless experimental physics playground. Optional Score Attack adds a single-table objective: earn points, unlock an upper goal, then physically reach it. Optional **Green Hill Zone** adds the first three-Act loop: nine connected chunks, separate score challenges, checkpoints and Chao rewards. There are no lives limits, bosses, permanent unlocks or second Zone. The ball number counts attempts.

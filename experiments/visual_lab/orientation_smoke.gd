@@ -250,7 +250,7 @@ func run() -> void:
  game._set_close_view(false)
  actor._process(0.0)
  check(showcase_ok and not paused and actor.state == actor.State.SPIN and axes_are_table_aligned(), "Paused showcase restores normal standing model axes and returns cleanly to gameplay alignment")
- if OS.get_cmdline_user_args().has("--no-model") or not FileAccess.file_exists(ProjectSettings.globalize_path(actor.MODEL_PATH)):
+ if actor.BALL_FORM_ONLY or OS.get_cmdline_user_args().has("--no-model") or not FileAccess.file_exists(ProjectSettings.globalize_path(actor.MODEL_PATH)):
   actor.show_event("trick", 0.52)
   advance_presenter(0.2)
   check(not actor.model_available and actor.spin_root.visible and not actor.upright.visible, "Unavailable model retains a visible spin-ball throughout uncurl events")

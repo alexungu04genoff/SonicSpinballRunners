@@ -9,6 +9,8 @@ This document records the project's intended direction, not a claim that its sys
 - **Future:** explicitly outside the current phase; not a commitment to implement now.
 - **Implemented:** behavior observed in repository source or documented verification. This is distinct from proposed experiments and does not imply new testing during a documentation update.
 
+**Confirmed presentation direction — 2026-10-24:** All four playable characters (Sonic, Tails, Knuckles and Shadow) remain in ball form in every gameplay state. Preserve state transitions, special feedback and the collisionless presentation boundary. Detailed character models and animations are deferred for refinement with a 3D modeler; keep the existing preparation pipeline and state hooks available.
+
 ### Current design and implementation snapshot — 2026-10-24
 
 The current product defaults to an endlessly replayable Free Play physics sandbox. Standalone Score Attack adds a single-table objective; optional Green Hill Zone adds the first three-Act loop with score gates, checkpoint retries and Chao drafts. All modes share authoritative invisible 2D physics, seeded geometry, profiles, modifiers and the existing score events. The primitive playground and integrated Green Hill presentation remain separate launch options. Zone 2, permanent progression, limited lives, bosses, shops and rarity are outside the current prototype.

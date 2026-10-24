@@ -100,10 +100,7 @@ if ($ImportOnly) {
     return
 }
 
-$assetPath = Join-Path $PSScriptRoot ('local\runtime\{0}.glb' -f $Character.ToLowerInvariant())
-if (-not $Playground -and $Character -in @('Sonic', 'Tails') -and -not (Test-Path -LiteralPath $assetPath -PathType Leaf)) {
-    Write-Warning "Local $Character GLB is missing. The scene will use its spin-ball fallback. See README.md for preparation."
-}
+# All characters currently use procedural ball form; local models are not required.
 
 # Keep Godot's Compatibility renderer, but use Direct3D 11 through ANGLE by
 # default. Native NVIDIA OpenGL crashed inside nvoglv64.dll during Zone rebuilds.

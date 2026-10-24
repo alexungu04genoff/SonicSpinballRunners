@@ -1,5 +1,7 @@
 extends Node3D
 ## Collisionless character adapter. Only observations flow from the 2D simulation.
+# Keep state/pose hooks and the local model pipeline for future art refinement.
+const BALL_FORM_ONLY := true
 const MODEL_PATH := "res://experiments/visual_lab/local/runtime/sonic.glb"
 const MODEL_PATHS := {
  "sonic": MODEL_PATH,
@@ -151,6 +153,9 @@ func _load_model() -> void:
  animation_player = null
  model_available = false
  _clips.clear()
+ if BALL_FORM_ONLY:
+  model_status = character_id.capitalize() + " · ball form · animation states retained"
+  return
  model_status = "Local %s asset not prepared" % character_id.capitalize()
  if not MODEL_PATHS.has(character_id):
   model_status = character_id.capitalize() + " · colored prototype ball"
@@ -462,10 +467,10 @@ func _update_pose_transform(delta: float) -> void:
   upright.scale = Vector3.ONE * 0.85 * lerpf(0.25, 1.0, uncurl_amount)
  var ball_scale := 1.0 if close_view else 1.12
  # A short scale overlap suggests uncurl/re-curl without tumbling the upright rig.
- spin_root.scale = Vector3.ONE * ball_scale * (1.0 if not model_available else maxf(0.001, 1.0 - uncurl_amount))
+ spin_root.scale = Vector3.ONE * ball_scale * (1.0 if BALL_FORM_ONLY or not model_available else maxf(0.001, 1.0 - uncurl_amount))
  spin_root.position = anchor + Vector3.UP * (TablePresentation.BALL_HEIGHT + 0.025)
- upright.visible = model_available and uncurl_amount > 0.001
- spin_root.visible = not model_available or uncurl_amount < 0.999
+ upright.visible = not BALL_FORM_ONLY and model_available and uncurl_amount > 0.001
+ spin_root.visible = BALL_FORM_ONLY or not model_available or uncurl_amount < 0.999
  marker.position = TablePresentation.map_point(ball.position, 0.015)
 
 func _process(delta: float) -> void:
@@ -498,10 +503,10 @@ func _process(delta: float) -> void:
  var travel := ball.position - _last_position
  if _last_position != Vector2.INF and travel.length() > 0.001 and travel.length() < 100.0:
   spin_root.rotate(Vector3(travel.y, 0, -travel.x).normalized(), travel.length() / PlaygroundBall.RADIUS)
- if close_view and pose == "roll" and not capture_hold:
+ if close_view and (BALL_FORM_ONLY or pose == "roll") and not capture_hold:
   spin_root.rotate(Vector3(1, 0, 0.5).normalized(), delta * 4.5)
  _update_effects(physics_delta)
  _last_position = ball.position
- var focus := upright.position + Vector3(0.0, 0.52, 0.0)
+ var focus := spin_root.position if BALL_FORM_ONLY else upright.position + Vector3(0.0, 0.52, 0.0)
  close_camera.position = focus + Vector3(0.65, 0.65, 2.4)
  close_camera.look_at(focus)

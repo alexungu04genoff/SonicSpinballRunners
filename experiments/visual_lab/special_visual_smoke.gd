@@ -51,7 +51,7 @@ func run() -> void:
  await frames(5)
  actor = game.character
  check(actor.character_id == "sonic" and actor.specials == game.specials and actor.state == actor.State.SPIN and actor.spin_material.albedo_color.b > actor.spin_material.albedo_color.r and game.presentation.find_children("*", "CollisionObject3D", true, false).is_empty(), "Sonic starts blue and curled; the adapter observes shared specials and has no 3D collisions")
- var sonic_model_expected := not OS.get_cmdline_user_args().has("--no-model") and FileAccess.file_exists("res://experiments/visual_lab/local/runtime/sonic.glb")
+ var sonic_model_expected: bool = not actor.BALL_FORM_ONLY and not OS.get_cmdline_user_args().has("--no-model") and FileAccess.file_exists("res://experiments/visual_lab/local/runtime/sonic.glb")
  check((actor.model_available and skeleton() != null and actor._clips.has("homing") and actor._clips.has("impact")) if sonic_model_expected else (not actor.model_available and actor.spin_root.visible), "Sonic loads the prepared skin and authored special clips, or keeps a visible asset-free fallback")
  # The isolated bumper and initial ball placement are deliberately controlled.
  # The authoritative 2D collision still supplies the special hit and score.
@@ -94,7 +94,7 @@ func run() -> void:
  check(actor.state == actor.State.SPIN and actor.pose == "roll" and actor.uncurl_amount < 0.001 and actor.spin_root.visible, "Homing impact finishes by blending fully back to spin")
  game.specials.select_character("tails")
  actor._process(0.0)
- var tails_model_expected := not OS.get_cmdline_user_args().has("--no-model") and FileAccess.file_exists("res://experiments/visual_lab/local/runtime/tails.glb")
+ var tails_model_expected: bool = not actor.BALL_FORM_ONLY and not OS.get_cmdline_user_args().has("--no-model") and FileAccess.file_exists("res://experiments/visual_lab/local/runtime/tails.glb")
  check(actor.character_id == "tails" and actor.spin_material.albedo_color.r > actor.spin_material.albedo_color.b and actor.state == actor.State.SPIN and ((actor.model_available and actor._clips.has("fly") and skeleton() != null) if tails_model_expected else (not actor.model_available and actor.spin_root.visible)), "Character selection swaps to orange Tails and its flight skin, with an independent fallback")
  var rig := skeleton()
  var tails_changed := not tails_model_expected
@@ -164,6 +164,20 @@ func run() -> void:
  for signal_name: String in ["character_changed", "homing_started", "homing_ended", "special_hit", "flight_started", "flight_ended"]:
   listeners_ok = listeners_ok and listener_count(signal_name) == 1
  check(regenerated and previous_actor.get_ref() == null and actor.character_id == "sonic" and actor.state == actor.State.SPIN and listeners_ok, "Regeneration frees the old character and binds exactly one listener per special event to the replacement")
+ # Ball form is a presentation policy, independent of the current state or assets.
+ for id: String in CharacterSpecials.CHARACTERS:
+  game.specials.select_character(id)
+  var stable_ball: bool = not actor.model_available and actor.model == null
+  var gameplay_before := snapshot()
+  for visual_state: int in actor.State.values():
+   for study: bool in [false, true]:
+    actor.state = visual_state
+    actor.close_view = study
+    actor._update_pose_transform(0.2)
+    stable_ball = stable_ball and actor.spin_root.visible and not actor.upright.visible and actor.state == visual_state
+    stable_ball = stable_ball and actor.spin_root.scale.is_equal_approx(Vector3.ONE * (1.0 if study else 1.12))
+  check(stable_ball and snapshot() == gameplay_before, "%s retains full ball form in every presentation state and study, without loading a model or altering gameplay" % id.capitalize())
+ actor.close_view = false
  paused = false
  game.free()
  await frames(3)

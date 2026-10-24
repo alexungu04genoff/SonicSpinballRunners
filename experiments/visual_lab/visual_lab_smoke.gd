@@ -33,7 +33,7 @@ func run() -> void:
  check(collision_count(game.presentation) == 0, "Scenery and imported character add no 3D collision objects")
  check(not game.debug_panel.visible and game.presentation.camera.current, "Dedicated play view starts without the physics debug panels")
  var actor: Node3D = game.character
- var local_model_exists := FileAccess.file_exists(ProjectSettings.globalize_path(actor.MODEL_PATH))
+ var local_model_exists: bool = not actor.BALL_FORM_ONLY and FileAccess.file_exists(ProjectSettings.globalize_path(actor.MODEL_PATH))
  if local_model_exists and not OS.get_cmdline_user_args().has("--no-model"):
   check(actor.model_available, "Prepared Sonic GLB loads at runtime")
   check(actor._clips.has("idle") and actor._clips.has("jump") and actor._clips.has("trick"), "Imported animation player exposes all three authored clips")

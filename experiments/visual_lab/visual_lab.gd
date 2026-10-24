@@ -369,7 +369,9 @@ func _process(_delta: float) -> void:
  var construction_name: String = PlaygroundDebugPanel.ZONE_LAYOUT_NAMES[generation_grid_mode] if zone_enabled else GRID_MODE_NAMES[generation_grid_mode]
  status_label.text = "Seed %d · %s · %s · Section %d/%d" % [generation_seed, TableGenerator.DIFFICULTY_NAMES[generation_difficulty], construction_name, maxi(1, section + 1), chunks.size()]
  status_label.tooltip_text = character.model_status
- if not character.model_available:
+ if character.BALL_FORM_ONLY:
+  status_label.text += " · Ball form"
+ elif not character.model_available:
   status_label.text += " · Spin-ball fallback"
  for button: Button in layout_buttons:
   button.disabled = not can_regenerate()
