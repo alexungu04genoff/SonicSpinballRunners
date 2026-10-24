@@ -100,16 +100,27 @@ func check_definitions() -> void:
   var bounds := bounds_of(Objects.local_points(bumper, cell_size))
   check(bounds.size == Vector2.ONE * cell_size * 0.5 and bounds.get_center() == Vector2.ZERO, "Round bumper diameter is half a cell and remains centered: " + str(cell_size))
   check(bumper == before, "Sizing a bumper never changes its authored position or angle")
-  check(Objects.local_points(Objects.make_placement("triangle_bumper"), cell_size) == PackedVector2Array([Vector2(-40, 35), Vector2(-15, -55), Vector2(45, 35)]), "Sling keeps its 85 by 90 pixel body and original local origin")
+  var sling := Objects.make_placement("triangle_bumper")
+  var sling_points := Objects.local_points(sling, cell_size)
+  var sling_bounds := bounds_of(sling_points)
+  check(is_equal_approx(sling_bounds.size.y / cell_size, 0.6) and sling_bounds.size.x < sling_bounds.size.y, "Sling dominant dimension is 0.6 cell")
+  check(sling_points[0].is_equal_approx(Vector2(-40, 35) * cell_size / 150.0) and sling_points[1].is_equal_approx(Vector2(-15, -55) * cell_size / 150.0) and sling_points[2].is_equal_approx(Vector2(45, 35) * cell_size / 150.0), "Sling scales uniformly about its existing authored origin")
   for hand: String in ["left_flipper", "right_flipper"]:
-   check(bounds_of(Objects.local_points(Objects.make_placement(hand), cell_size)) == Rect2(-13, -13, 156, 26), "Flipper keeps its 130-pixel centerline and 13-pixel cap radius: " + hand)
+   var flipper_bounds := bounds_of(Objects.local_points(Objects.make_placement(hand), cell_size))
+   check(flipper_bounds.position.is_equal_approx(Vector2(-0.05, -0.05) * cell_size) and flipper_bounds.size.is_equal_approx(Vector2(0.9, 0.1) * cell_size), "Flipper is 0.9 cell long and 0.1 cell thick, with its rounded pivot centered at the saved origin: " + hand)
+ var document := make_fixture()
+ var fingerprint: String = document.fingerprint()
+ for cell_size: float in [25.0, 100.0]:
+  for placement: Dictionary in document.gameplay_objects:
+   Objects.local_points(placement, cell_size)
+ check(document.fingerprint() == fingerprint, "Resolving every object at different preview sizes never mutates stored transforms or terrain")
  var left := Objects.make_placement("left_flipper")
  var right := Objects.make_placement("right_flipper")
  check(absf(deg_to_rad(left.rotation_degrees) - 0.32) < 1e-12 and absf(deg_to_rad(right.rotation_degrees) - (PI - 0.32)) < 1e-12, "Left and right factories use actual resting orientations")
  check(absf(deg_to_rad(left.rotation_degrees - Objects.FLIPPER_SWING_DEGREES) + 0.48) < 1e-12 and absf(deg_to_rad(right.rotation_degrees + Objects.FLIPPER_SWING_DEGREES) - (PI + 0.48)) < 1e-12, "Handed swing direction reaches the current active angle")
  definitions[0].label = "Changed by caller"
  check(Objects.get_definition("round_bumper").label == "Round Bumper", "Palette callers cannot mutate shared definitions")
- print("PASS | Four pure-data object definitions and physical preview dimensions")
+ print("PASS | Four pure-data object definitions and cell-relative preview dimensions")
 
 func check_validation_and_copy() -> void:
  var document := make_fixture()

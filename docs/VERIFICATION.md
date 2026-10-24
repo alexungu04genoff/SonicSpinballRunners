@@ -2,6 +2,15 @@
 
 Latest checks: 2026-10-25. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
+## Gameplay-object and marker scale pass — 2026-10-25
+
+`scripts/act_editor/preview_dimensions.gd` centralizes editor sizing: round bumper diameter 0.5 cell, sling height 0.6 cell, flipper centerline 0.8 cell with 0.05-cell rounded caps (0.9×0.1-cell total body), and a 0.24-cell Spawn ring. Pivot marks, outlines, swing arrows, Activation arrows and connector handles are compact. Connector spans and full-width Activation retain their extents. Annotation scale clamps only at extreme zoom levels; object silhouettes always follow the construction-cell ratio. Terrain geometry and runtime physics are unchanged.
+
+- Gameplay regression: **493 checks + 76 fresh-process checks passed**. Four cell sizes verify object dimensions, centered bumper/pivot geometry, uniform sling scaling about its existing origin, unchanged authored transforms after preview generation, and exact save/restart/load positions and angles.
+- ANGLE gameplay editor: **68 checks + 5 fresh-editor checks passed**. Headless terrain editor: **92 checks passed**. Selection, dragging, Alt positioning, numeric angles, palette drops, undo/redo and existing terrain workflows remain green.
+- Lifecycle editor: **49 headless and 50 ANGLE graphical checks passed**, each with **5 fresh-editor checks**. Spawn movement, marker history, independent metadata positions, gutter rejection and exact persistence remain intact.
+- Isolated editor import passed. Both rendered captures were inspected against the grid: gameplay objects sit within cells, flipper pivots remain visible, and Spawn/guide markers are unobtrusive. Error logs are empty. Subjective sizing remains tunable in the shared dimensions file.
+
 ## Standard bumper scale — 2026-10-25
 
 The editor round bumper now derives radius from `0.25 × cell_size`, giving a half-cell diameter while preserving the authored center. Canvas, placement ghost and hit testing use the same geometry. Palette thumbnails continue to fit their own icon boxes. Sling geometry remains 85×90 local pixels; flipper bodies remain 156×26 pixels before rotation, including rounded caps. Terrain dimensions and runtime physics are untouched.

@@ -17,6 +17,7 @@ const ActData = preload("res://scripts/act_editor/act_geometry.gd")
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const ObjectPreview = preload("res://scripts/act_editor/gameplay_preview.gd")
+const PreviewDimensions = preload("res://scripts/act_editor/preview_dimensions.gd")
 const GRID_MARGIN := 48.0
 const MIN_CELL_PIXELS := 12.0
 const MAX_CELL_PIXELS := 240.0
@@ -465,6 +466,7 @@ func _draw_marker(kind: String, value: Variant, selected: bool, ghost: bool, val
   color = INVALID_MARKER_COLOR
  color.a = 0.65 if ghost else 1.0
  var font := get_theme_default_font()
+ var unit := PreviewDimensions.marker_unit(_cell_pixels)
  if kind == "activation":
   var start := local_pixels_to_screen(Vector2(0, float(value)))
   var end := local_pixels_to_screen(Vector2(document.terrain_bounds().size.x, float(value)))
@@ -473,30 +475,37 @@ func _draw_marker(kind: String, value: Variant, selected: bool, ghost: bool, val
   if start.x >= end.x or start.y < -30.0 or start.y > size.y + 30.0:
    return
   if selected:
-   draw_line(start, end, Color(color, 0.16), 12.0, true)
-  _draw_dashes(start, end, color, 3.0 if selected else 2.0)
+   draw_line(start, end, Color(color, 0.16), PreviewDimensions.SELECTED_OUTLINE_PIXELS * 2.0, true)
+  _draw_dashes(start, end, color, PreviewDimensions.SELECTED_OUTLINE_PIXELS if selected else PreviewDimensions.OUTLINE_PIXELS)
   var arrow := Vector2(lerpf(start.x, end.x, 0.75), start.y)
-  draw_line(arrow + Vector2(0, 7), arrow - Vector2(0, 12), color, 2.0, true)
-  draw_line(arrow - Vector2(0, 12), arrow + Vector2(-4, -7), color, 2.0, true)
-  draw_line(arrow - Vector2(0, 12), arrow + Vector2(4, -7), color, 2.0, true)
+  _draw_marker_arrow(arrow, unit, color)
   var label := "ACTIVATION · CROSS UP"
   var label_width := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 11).x
   draw_rect(Rect2(start + Vector2(8, -24), Vector2(label_width + 8, 17)), Color(0.04, 0.09, 0.13, 0.9))
   draw_string(font, start + Vector2(12, -11), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, color)
  else:
   var point := local_pixels_to_screen(value)
+  var radius := PreviewDimensions.SPAWN_RADIUS_CELLS * unit
+  var crosshair := PreviewDimensions.CROSSHAIR_RADIUS_CELLS * unit
   if selected:
-   draw_circle(point, 16.0, Color(color, 0.22))
-  draw_circle(point, 10.0, Color("192031"))
-  draw_arc(point, 10.0, 0, TAU, 32, color, 2.0, true)
-  draw_line(point + Vector2(-5, 0), point + Vector2(5, 0), color, 2.0, true)
-  draw_line(point + Vector2(0, -5), point + Vector2(0, 5), color, 2.0, true)
-  draw_circle(point, 2.0, Color.WHITE)
-  var tip := point + Vector2(0, -26)
-  draw_line(point + Vector2(0, -13), tip, color, 2.0, true)
-  draw_line(tip, tip + Vector2(-4, 5), color, 2.0, true)
-  draw_line(tip, tip + Vector2(4, 5), color, 2.0, true)
-  draw_string(font, point + Vector2(16, 4), "SPAWN", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, color)
+   draw_circle(point, radius + PreviewDimensions.SELECTED_OUTLINE_PIXELS, Color(color, 0.22))
+  draw_circle(point, radius, Color("192031"))
+  draw_arc(point, radius, 0, TAU, 32, color, PreviewDimensions.OUTLINE_PIXELS, true)
+  draw_line(point + Vector2(-crosshair, 0), point + Vector2(crosshair, 0), color, 1.0, true)
+  draw_line(point + Vector2(0, -crosshair), point + Vector2(0, crosshair), color, 1.0, true)
+  draw_circle(point, maxf(1.0, PreviewDimensions.PIVOT_RADIUS_CELLS * unit), Color.WHITE)
+  var arrow_center := point - Vector2(0, radius + PreviewDimensions.ARROW_LENGTH_CELLS * unit * 0.5 + 2.0)
+  _draw_marker_arrow(arrow_center, unit, color)
+  draw_string(font, point + Vector2(radius + PreviewDimensions.LABEL_GAP_PIXELS, 4), "SPAWN", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, color)
+
+
+func _draw_marker_arrow(center: Vector2, unit: float, color: Color) -> void:
+ var half_length := PreviewDimensions.ARROW_LENGTH_CELLS * unit * 0.5
+ var head := PreviewDimensions.ARROW_HEAD_CELLS * unit
+ var tip := center - Vector2(0, half_length)
+ draw_line(center + Vector2(0, half_length), tip, color, PreviewDimensions.OUTLINE_PIXELS, true)
+ draw_line(tip, tip + Vector2(-head, head), color, PreviewDimensions.OUTLINE_PIXELS, true)
+ draw_line(tip, tip + Vector2(head, head), color, PreviewDimensions.OUTLINE_PIXELS, true)
 
 
 func _draw_gameplay_objects() -> void:
@@ -536,21 +545,20 @@ func _draw_connector(kind: String, start_x: int, width: int, selected: bool, gho
  var start := grid_to_screen(Vector2(start_x, _connector_row(kind)))
  var end := grid_to_screen(Vector2(start_x + width, _connector_row(kind)))
  var color := Color(CONNECTOR_COLOR, 0.48 if ghost else 1.0)
+ var unit := PreviewDimensions.marker_unit(_cell_pixels)
+ var handle := PreviewDimensions.CONNECTOR_HANDLE_CELLS * unit
  if selected:
-  draw_line(start, end, Color("d1ffe2"), 10.0, true)
- draw_line(start, end, Color("123c30"), 8.0, true)
- draw_line(start, end, color, 5.0, true)
+  draw_line(start, end, Color("d1ffe2"), PreviewDimensions.SELECTED_OUTLINE_PIXELS * 2.0, true)
+ draw_line(start, end, Color("123c30"), PreviewDimensions.SELECTED_OUTLINE_PIXELS + 1.0, true)
+ draw_line(start, end, color, PreviewDimensions.OUTLINE_PIXELS + 1.0, true)
  for point: Vector2 in [start, end]:
-  draw_line(point - Vector2(0, 7), point + Vector2(0, 7), color, 2.0, true)
+  draw_line(point - Vector2(0, handle), point + Vector2(0, handle), color, PreviewDimensions.OUTLINE_PIXELS, true)
   if selected:
-   draw_rect(Rect2(point - Vector2(4, 4), Vector2(8, 8)), Color("d1ffe2"))
-   draw_rect(Rect2(point - Vector2(2, 2), Vector2(4, 4)), color)
+   draw_rect(Rect2(point - Vector2.ONE * handle, Vector2.ONE * handle * 2.0), Color("d1ffe2"))
+   draw_rect(Rect2(point - Vector2.ONE * handle * 0.5, Vector2.ONE * handle), color)
  # Both annotations point upward: Entry into the Act; Exit out of the Act.
  var center := (start + end) * 0.5
- var tip := center - Vector2(0, 13)
- draw_line(center + Vector2(0, 13), tip, color, 2.0, true)
- draw_line(tip, tip + Vector2(-4, 5), color, 2.0, true)
- draw_line(tip, tip + Vector2(4, 5), color, 2.0, true)
+ _draw_marker_arrow(center, unit, color)
  if not show_label:
   return
  var font := get_theme_default_font()
