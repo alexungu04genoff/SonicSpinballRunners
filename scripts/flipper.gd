@@ -2,6 +2,7 @@ class_name PlaygroundFlipper
 extends AnimatableBody2D
 
 signal struck
+signal shot_fired(contact_position: Vector2, impulse: Vector2, contact_fraction: float)
 const LENGTH: float = 150.0
 const RADIUS: float = 13.0
 var length: float = LENGTH
@@ -52,6 +53,15 @@ func active_angle() -> float:
 func tip() -> Vector2:
  return global_position + Vector2.RIGHT.rotated(rotation) * length
 
+func strike_direction(contact_fraction: float) -> Vector2:
+ # Keep an upward arcade bias while letting heel/tip contact and swing timing aim.
+ # The mirrored surface normal supplies orientation; strength stays in the resolver.
+ var axis := Vector2.RIGHT.rotated(rotation)
+ var normal := Vector2(axis.y, -axis.x) * side
+ var normal_angle := atan2(normal.x * side, -normal.y)
+ var inward_angle := clampf(0.12 + 0.45 * normal_angle + 0.5 * (0.65 - clampf(contact_fraction, 0.0, 1.0)), -0.18, 0.55)
+ return Vector2.UP.rotated(side * inward_angle)
+
 func _physics_process(delta: float) -> void:
  if not enabled:
   return
@@ -59,19 +69,31 @@ func _physics_process(delta: float) -> void:
  if pressed and not held:
   swing_remaining = 0.11
   struck_this_swing = false
+ if not pressed:
+  swing_remaining = 0.0
  held = pressed
+ var old_angle := rotation
  var old_tip: Vector2 = tip()
  rotation = move_toward(rotation, active_angle() if held else rest_angle(), (12.0 if held else 7.0) * delta)
  if swing_remaining > 0.0:
+  # A two-tick follow-through is forgiving without powering a stationary hold.
+  if is_equal_approx(old_angle, rotation):
+   swing_remaining = minf(swing_remaining, 2.0 * delta)
   swing_remaining -= delta
   if not struck_this_swing and not ball.serve_pending:
    var nearest: Vector2 = Geometry2D.get_closest_point_to_segment(ball.global_position, global_position, tip())
    var old_nearest: Vector2 = Geometry2D.get_closest_point_to_segment(ball.global_position, global_position, old_tip)
-   var distance: float = minf(ball.global_position.distance_to(nearest), ball.global_position.distance_to(old_nearest))
-   if distance < RADIUS + PlaygroundBall.RADIUS + 9.0 and ball.global_position.y < global_position.y + 35.0:
-    var leverage: float = clampf(nearest.distance_to(global_position) / length, 0.35, 1.0)
-    var direction := Vector2(side * 0.25, -1.0).normalized()
-    ball.apply_central_impulse(direction * float(tuning.effective.flipper_launch_strength) * (0.65 + 0.35 * leverage) * ball.mass)
+   var old_is_closer := ball.global_position.distance_squared_to(old_nearest) < ball.global_position.distance_squared_to(nearest)
+   var contact := old_nearest if old_is_closer else nearest
+   var axis := Vector2.RIGHT.rotated(old_angle if old_is_closer else rotation)
+   var upward_normal := Vector2(axis.y, -axis.x) * side
+   var distance := ball.global_position.distance_to(contact)
+   if distance < RADIUS + PlaygroundBall.RADIUS + 9.0 and (ball.global_position - contact).dot(upward_normal) > 0.0:
+    var fraction := clampf(contact.distance_to(global_position) / length, 0.0, 1.0)
+    var leverage := clampf(fraction, 0.35, 1.0)
+    var impulse := strike_direction(fraction) * float(tuning.effective.flipper_launch_strength) * (0.65 + 0.35 * leverage) * ball.mass
+    ball.apply_central_impulse(impulse)
     struck_this_swing = true
     strikes += 1
     struck.emit()
+    shot_fired.emit(contact, impulse, fraction)

@@ -49,7 +49,7 @@ func run() -> void:
     print("HARD ROOM RECOVERY | ", name, " | mirrored=", mirrored, " | ", witness)
     check(witness.success, "%s paddle %d mirrored=%s catches a descending ball and scores its authored target" % [name, paddle_index, mirrored])
     report.append(witness)
- check(paddle_counts.has(0) and paddle_counts.has(1) and paddle_counts.has(2), "Hard library deliberately varies zero, one and two-paddle rooms")
+ check(paddle_counts.has(0) and paddle_counts.has(1), "Hard rooms use optional single catches or leave recovery to the neighboring Act deck")
  check(outlines.size() == RECIPES.size(), "All six Hard outlines differ before mirroring")
  var layout := ZoneGenerator.generate(24, 0, TableGenerator.Difficulty.HARD)
  check(layout.valid, "Hard seed 24 generates for final shaped-room recovery checks: %s / %s" % [layout.get("errors", []), layout.get("rejected", [])])

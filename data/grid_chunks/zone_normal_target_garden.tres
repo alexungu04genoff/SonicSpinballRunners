@@ -5,7 +5,7 @@ script = ExtResource("1")
 recipe_id = "zone_normal_target_garden"
 title = "TARGET GARDEN"
 zone_role = "interaction"
-shot_description = "A broad room with an offset target garden. The left recovery feeds the small target cluster; the right recovery attacks the large target and upper lane."
+shot_description = "Side shoulders feed descending wall returns onto the recovery pair. The left paddle attacks the small target cluster; the right paddle attacks the large target and upper lane."
 estimated_difficulty = 46.0
 dimensions = Vector2i(16, 14)
 top_span = Vector2i(3, 13)
@@ -13,20 +13,20 @@ bottom_span = Vector2i(2, 14)
 placements = Array[Dictionary]([
 {"piece": "slope_shallow_left", "cell": Vector2i(3, 0), "chain": "left"},
 {"piece": "slope_shallow_left", "cell": Vector2i(2, 2), "chain": "left"},
-{"piece": "rail_v", "cell": Vector2i(1, 4), "span": 6, "chain": "left"},
-{"piece": "slope_shallow_right", "cell": Vector2i(1, 10), "chain": "left"},
-{"piece": "rail_v", "cell": Vector2i(2, 12), "span": 2, "chain": "left"},
+{"piece": "rail_v", "cell": Vector2i(1, 4), "span": 2, "chain": "left"},
+{"piece": "slope_shallow_right", "cell": Vector2i(1, 6), "chain": "left"},
+{"piece": "rail_v", "cell": Vector2i(2, 8), "span": 6, "chain": "left"},
 {"piece": "slope_shallow_right", "cell": Vector2i(13, 0), "chain": "right"},
 {"piece": "slope_shallow_right", "cell": Vector2i(14, 2), "chain": "right"},
-{"piece": "rail_v", "cell": Vector2i(15, 4), "span": 6, "chain": "right"},
-{"piece": "slope_shallow_left", "cell": Vector2i(15, 10), "chain": "right"},
-{"piece": "rail_v", "cell": Vector2i(14, 12), "span": 2, "chain": "right"},
+{"piece": "rail_v", "cell": Vector2i(15, 4), "span": 2, "chain": "right"},
+{"piece": "slope_shallow_left", "cell": Vector2i(15, 6), "chain": "right"},
+{"piece": "rail_v", "cell": Vector2i(14, 8), "span": 6, "chain": "right"},
 {"piece": "bumper_small", "cell": Vector2i(5, 4)},
 {"piece": "bumper", "cell": Vector2i(7, 5)},
 {"piece": "bumper_small", "cell": Vector2i(5, 7)},
 {"piece": "bumper_large", "cell": Vector2i(11, 4)},
-{"piece": "flipper_left", "cell": Vector2i(3, 10), "role": "side_recovery", "shot_target": Vector2i(5, 7)},
-{"piece": "flipper_right", "cell": Vector2i(13, 10), "role": "side_recovery", "shot_target": Vector2i(11, 4)},
+{"piece": "side_flipper_left", "cell": Vector2i(4, 10), "role": "side_recovery", "shot_target": Vector2i(5, 7)},
+{"piece": "side_flipper_right", "cell": Vector2i(12, 10), "role": "side_recovery", "shot_target": Vector2i(11, 4)},
 {"piece": "ring", "cell": Vector2i(8, 1)},
 {"piece": "ring", "cell": Vector2i(8, 3)},
 {"piece": "ring", "cell": Vector2i(10, 6)},

@@ -2,6 +2,38 @@
 
 Latest checks: 2026-10-24. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
+## Middle-flipper feeds and directional aiming — 2026-10-24
+
+Zone generator v4 changes three existing recipes: Target Garden's shoulders now guide wall returns into its pair; Bank Vault loses its redundant right short paddle; Offset Climb lowers its 80px paddle by 50px to meet the opposing-bank return. Other Normal/Hard room shapes and selection remain intact. Existing grid clearance and connector validation are unchanged. The shared flipper now derives a bounded upward impulse direction from contact position and actual swing orientation, with unchanged resolved strength/leverage. Release cancels assistance, underside contacts receive no powered boost, and raised follow-through is limited to two physics ticks.
+
+`flipper_aim_regression.gd`: **21 checks passed** using actual falling bodies and button presses. Twelve mirrored contact/timing samples each produce one useful upward strike. Representative heel and tip impulses differ by about 16 degrees (approximately 23 versus 6 degrees inward); changing press timing on the same middle contact changes direction by about 6 degrees. No-input, premature, expired-held, released-during-the-window and underside samples receive no powered recovery and can fall below the paddle. Spring scales the resolved impulse by exactly 1.35 once. These measure real emitted impulses and physical trajectories, not just the direction helper's output.
+
+`normal_flipper_feeds.gd`: **61 checks passed** on final shaped Normal 28 rooms. All seven selected paddles have fixed, clear gravity-drop starts at least 300px upstream, repeated in both mirrors. Six recoveries reach their declared scoring target; Balcony passes through the safe upper opening. Fourteen matched unpressed drops fall to lower recovery, four early Garden taps miss, and ten mirrored upward passages clear resting paddles. Garden's new shoulders convert the previously missed wall-side drops into inward-moving catches and actual bumper hits. Crosscourt's existing bank-fed recovery remains; it did not need another shoulder. Existing Normal room checks also passed **48** assertions.
+
+`hard_flipper_feeds.gd`: **25 checks passed** on Bank Vault, Offset Climb and Target Cove in both mirrors, from rest 300–400px upstream. Vault follows wall/bumper contacts into a scored catch. Climb follows its opposite bank into a tip catch and upper exit. Cove's three-bumper sequence feeds its opposite paddle and declared ring. Matched no-input and premature-input samples fall to lower recovery. Existing Hard room checks passed **32** assertions, including mirrored upward shots and target hits. The count changed because the removed Bank Vault paddle no longer requires its own shot fixtures; physical clearance requirements were not reduced.
+
+### Recorded shots
+
+Five graphical runs of `flipper_feel_capture.gd` passed in the actual nine-chunk Green Hill game. Each starts with one explicit upstream position and zero velocity, then uses one ordinary flipper-button press or no input. There are no subsequent body, score, meter or force edits. The review camera is fixed; gates, scoring, ball physics and presentation remain active. The clips label their controlled-drop setup and pause only after the visible outcome.
+
+| Clip in `test-results/flipper-feel-review/` | Observed result at 120 Hz |
+| --- | --- |
+| `normal-garden-timed.mp4` | Right press at tick 112, strike 113, actual target contact 125. |
+| `normal-garden-miss.mp4` | Same gravity drop, no press; falls into lower recovery. |
+| `hard-vault-timed.mp4` | Left press/strike 209, actual target contact 225. |
+| `hard-vault-miss.mp4` | Same gravity drop, no press; falls into lower recovery. |
+| `hard-climb-timed.mp4` | Tip strike at tick 151, 545px upward recovery, then a physical rebound from the still-locked Act gate. |
+
+Each clip is 5.617 seconds, H.264 at 1280×900/60fps, encoded from the 120fps Godot recording and decoded without errors. Matching drop/strike/outcome stills and JSON trajectories are in the same ignored local review folder. The Climb demonstration proves useful recovery and gate collision, not an unlocked Act completion. The previous layout-review screenshots remain separately preserved.
+
+### Ordinary-input runs and compatibility
+
+With the same existing timed-flipper/steering policy, earned specials and normal Chao draft choices, Normal 28 completed with Sonic in **105.775 seconds** (11,700 points, three specials, one Homing hit) and Tails in **156.358 seconds** (16,525 points, four flights). Both used one ball. Hard 24 remained incomplete after 240 seconds: Sonic completed one Act (32,150 points, six specials/five Homing hits); Tails completed two (30,825 points, seven flights). Neither escaped the course, and both used one ball. These are automated simulated times, not human completion estimates. The new response benefits the Normal samples but does not universally improve the same bot's Hard aiming.
+
+Final shared checks passed: physics **38**, primary/middle flipper recovery **12**, side/upper recovery **10**, Chao Lab **29**, Character Lab **70**, Scorecraft **37**, Score Attack **26**, Act pinball **38**, Zone lifecycle **34**, Zone composition **103**, and the isolated Godot import. The Chao comparison retains approximately 11% greater observed upward speed and 19–22% greater height in the two tested profiles; the earlier, stronger inward bias failed that meaningful-power check and was retuned. Native moving-paddle response still contributes to total velocity, so 35% more added impulse does not promise 35% more final speed.
+
+The broad physics test initially labelled an already-drained body falling below the table during its respawn delay as a rail escape. Its eligibility now matches active-shot state and is sampled before stepping, so a real escape cannot be hidden by a newly triggered respawn. No bounds or active-shot collision requirement was relaxed. Additional legacy upper catches passed all 18 mirrored physical fixtures unchanged. Human playtesting still needs to judge the timing window, whether the short Climb catch earns its visual placement, and Hard 24's demanding final routes. The controlled catches support deliberate shot design; they do not establish enjoyment or a universal success rate.
+
 ## Normal/Hard authored Act composition — 2026-10-24
 
 Zone generator v3 replaces the repeated development corridors with six Normal and six Hard rooms. Each Act combines recovery, a distinct interaction chamber and an exit approach; the final Act retains a shaped capped objective room. Normal uses 160px Curve collars, Hard uses 240px Bank collars, and both retain the existing maximum bank grade of 0.75. The full compiler clearance checks run again after shaping. Official Easy selection and standalone Free Play/Score Attack resources remain intact.

@@ -87,7 +87,7 @@ Kit v3 gives deliberately mounted bumpers a `wall_attachment` descriptor. This i
 
 ## Authored Zone library
 
-Green Hill Zone generator v3 retains eight Easy relay recipes and adds six dedicated Normal and six dedicated Hard rooms. Every nine-chunk course selects five distinct relay IDs, plus its final cap and three reusable launch/drain decks. Mirroring and safe whole-chunk horizontal shifts provide variation within each authored purpose. Narrower sections share one legal horizontal alignment within a course so adjacent recovery paddles are not squeezed by opposing shifts.
+Green Hill Zone generator v4 retains eight Easy relay recipes and six dedicated Normal and six dedicated Hard rooms. Its focused recovery revision adjusts three existing recipes without adding room types or changing selection. Every nine-chunk course selects five distinct relay IDs, plus its final cap and three reusable launch/drain decks. Mirroring and safe whole-chunk horizontal shifts provide variation within each authored purpose. Narrower sections share one legal horizontal alignment within a course so adjacent recovery paddles are not squeezed by opposing shifts.
 
 Normal and Hard Acts use **recovery deck → interaction chamber → exit approach**. The final Act uses a capped objective room in the approach slot. All three interaction rooms are distinct, and the first two Acts use different approach recipes. Rooms within an Act share their horizontal orientation so the authored side routes remain coherent. Official Easy keeps its existing broad library and selection policy. No Act receives an automatic difficulty increase.
 
@@ -108,7 +108,7 @@ Normal and Hard Acts use **recovery deck → interaction chamber → exit approa
 
 | Recipe | Role; paddles | Intended shot / recovery pattern |
 | --- | --- | --- |
-| `zone_normal_target_garden.tres` | Interaction; 2 | Broad chamber with an off-center small-target garden and a separate large target. Each recovery paddle feeds a different scoring side. |
+| `zone_normal_target_garden.tres` | Interaction; 2 | Shallow side shoulders feed descending wall returns to paddles 75px off the wall. Each paddle attacks a different target group. |
 | `zone_normal_bank_return.tres` | Interaction; 1 | Left bank and sling return misses toward one recovery paddle; its follow-up follows the left ring lane, with a wide right rebound route. |
 | `zone_normal_crosscourt.tres` | Interaction; 2 | Unequal-height catches and opposing slings send returns around either side of the central target. |
 | `zone_normal_offset_crown.tres` | Approach; 1 short | Broad right entrance and left recovery pocket; a precision follow-up climbs the ring arc toward the offset opening. |
@@ -120,9 +120,9 @@ Normal and Hard Acts use **recovery deck → interaction chamber → exit approa
 | Recipe | Role; paddles | Intended shot / recovery pattern |
 | --- | --- | --- |
 | `zone_hard_target_cove.tres` | Interaction; 1 | Right return catch aims into an offset target garden; the left sling route offers additional rings. |
-| `zone_hard_bank_vault.tres` | Interaction; 2, including 1 short | Rounded bank feeds the central vault. Unequal catches serve the central targets and a shorter right-side precision route. |
+| `zone_hard_bank_vault.tres` | Interaction; 1 | Rounded bank feeds one left recovery paddle into the central vault. Missed right-side returns fall to the Act deck. |
 | `zone_hard_split_orbit.tres` | Interaction; 0 | Zigzag target chain offers direct scoring, with a wider outside orbit; missed momentum returns toward the Act deck. |
-| `zone_hard_offset_climb.tres` | Approach; 1 short | Left precision catch aims at the upper-right target and the offset exit beyond it. |
+| `zone_hard_offset_climb.tres` | Approach; 1 short | Opposing upper bank feeds a lower-left precision catch, which returns toward the upper-right target or offset exit. |
 | `zone_hard_needle_gate.tres` | Approach; 0 | Thread two upper targets for the direct route or bank around their outside edges toward the exit. |
 | `zone_hard_switchback.tres` | Approach; 1 | Left shoulder catch aims through alternating target and sling approaches. |
 

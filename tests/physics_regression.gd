@@ -183,13 +183,20 @@ func run() -> void:
  var escaped: bool = false
  var trapped_ticks: int = 0
  var worst_trapped_ticks: int = 0
+ var previous_sample: Dictionary = {}
  for i in 2400:
   game.controls.virtual_left = game.ball.position.y > 1130 and (i % 36 < 18)
   game.controls.virtual_right = game.controls.virtual_left
   game.controls.virtual_steering = sin(float(i) / 110.0) * 0.7
+  # After a detected drain the body falls below the table during the respawn delay.
+  # Sample eligibility before stepping so an escape cannot hide behind a new respawn.
+  var active_shot: bool = game.respawn_time < 0.0 and not game.ball.serve_pending and not game.ball._teleport_pending
   await frames(1)
-  if game.ball.position.x < 20 or game.ball.position.x > 780 or game.ball.position.y < 10:
+  if active_shot and (game.ball.position.x < 20 or game.ball.position.x > 780 or game.ball.position.y < 10):
+   if not escaped:
+    print("ESCAPE TRACE | previous=", previous_sample, " current=", {"tick": i, "position": game.ball.position, "velocity": game.ball.linear_velocity, "respawn": game.respawn_time})
    escaped = true
+  previous_sample = {"tick": i, "position": game.ball.position, "velocity": game.ball.linear_velocity, "respawn": game.respawn_time}
   trapped_ticks = trapped_ticks + 1 if game.ball.linear_velocity.length() < 5 and not game.ball.serve_pending else 0
   worst_trapped_ticks = maxi(worst_trapped_ticks, trapped_ticks)
  check(not escaped, "20-second simulated play stays inside side/top rails")
