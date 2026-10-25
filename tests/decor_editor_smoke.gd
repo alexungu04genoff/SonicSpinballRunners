@@ -2,6 +2,12 @@ extends "res://tests/act_gameplay_editor_smoke.gd"
 const Slots = preload("res://scripts/act_editor/decor_slots.gd")
 const DECOR_SAVE := "res://test-results/decor-editor.tres"
 
+func click_control(control: Control) -> void:
+	# The expanded Decor inspector scrolls at shorter window heights.
+	if editor.decor_scroll.is_ancestor_of(control):
+		editor.decor_scroll.ensure_control_visible(control)
+	await super.click_control(control)
+
 func run() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results"))
 	root.gui_embed_subwindows = true

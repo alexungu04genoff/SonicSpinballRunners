@@ -3,6 +3,7 @@ extends RefCounted
 const Slots = preload("res://scripts/act_editor/decor_slots.gd")
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 const MAX_SLOTS := 400
+const MAX_FREQUENCY := 500.0
 const RADII := {"small": .25, "medium": .42, "large": .85, "landmark": 1.65}
 
 static func is_scattered(slot: Dictionary) -> bool:
@@ -19,7 +20,7 @@ static func fits(point: Vector2, clearance: float, terrain: Array, occupied: Arr
   if point.distance_to(other.position) < clearance + radius(other, cell_size) + cell_size * .08: return false
  return true
 
-static func generate(document: Resource, frequency: float, seed_value: int) -> Array:
+static func generate(document: Resource, frequency: float, seed_value: int, small_percent: float = 75.0) -> Array:
  var result: Array = []
  if frequency <= 0: return result
  var rng := RandomNumberGenerator.new()
@@ -39,7 +40,9 @@ static func generate(document: Resource, frequency: float, seed_value: int) -> A
  var candidates: Array[Vector2] = []
  # Jittered samples cover disconnected and curved terrain without favoring large
  # overlapping stamps. Bound the sampling work for unusually large custom Acts.
- var step := maxf(.4, sqrt(float(document.grid_size.x) * document.grid_size.y / 25000.0))
+ # Dense requests search more candidate gaps instead of relaxing prop clearance.
+ var sampling_density := clampf(frequency / 100.0, 1.0, MAX_FREQUENCY / 100.0)
+ var step := maxf(.4 / sqrt(sampling_density), sqrt(float(document.grid_size.x) * document.grid_size.y / 25000.0))
  for y in ceili(document.grid_size.y / step):
   for x in ceili(document.grid_size.x / step):
    var point := Vector2((x + rng.randf()) * step, (y + rng.randf()) * step) * cell_size
@@ -49,14 +52,17 @@ static func generate(document: Resource, frequency: float, seed_value: int) -> A
   var swap := candidates[i]
   candidates[i] = candidates[j]
   candidates[j] = swap
- var target := mini(MAX_SLOTS, roundi(candidates.size() * clampf(frequency, 0, 100) / 400.0))
- var medium_count := roundi(target * .25)
+ # Normalize the finer sampling so frequency still describes the same area density.
+ var target := mini(MAX_SLOTS, roundi(candidates.size() * step * step / .16 * clampf(frequency, 0, MAX_FREQUENCY) / 400.0))
+ var medium_count := roundi(target * (1.0 - clampf(small_percent, 0, 100) / 100.0))
  # Interleave sizes so crowded terrain cannot consume its whole budget on
- # medium props before the intended small majority gets a chance to fit.
+ # one size before the other gets a chance to fit. The rounded quotas also
+ # support all-small and all-medium mixes without special placement paths.
  var remaining := {"small": target - medium_count, "medium": medium_count}
  var cursor := {"small": 0, "medium": 0}
  for index in target:
-  var type := "medium" if remaining.medium > 0 and (index % 4 == 3 or remaining.small == 0) else "small"
+  var medium_turn := floori(float((index + 1) * medium_count) / target) > floori(float(index * medium_count) / target)
+  var type := "medium" if remaining.medium > 0 and (medium_turn or remaining.small == 0) else "small"
   if remaining[type] == 0: break
   var placed := false
   while cursor[type] < candidates.size():
@@ -76,6 +82,5 @@ static func generate(document: Resource, frequency: float, seed_value: int) -> A
    placed = true
    break
   if not placed:
-   if type == "small": break
-   remaining.medium = 0
+   remaining[type] = 0
  return result

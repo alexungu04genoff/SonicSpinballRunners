@@ -39,6 +39,21 @@ func run() -> void:
 	check(spaced, "Scatter respects clearance from manual and generated props")
 	check(Scatter.generate(act, 15, 123).size() < generated.size() and Scatter.generate(act, 80, 123).size() > generated.size(), "Frequency controls population")
 	check(Scatter.generate(act, 0, 123).is_empty() and Scatter.generate(ActData.new(), 100, 123).is_empty(), "Zero density and empty terrain generate nothing")
+	for percent: int in [0, 20, 50, 80, 100]:
+		var mixed := Scatter.generate(act, 20, 123, percent)
+		var small_count := mixed.filter(func(slot): return slot.slot_type == "small").size()
+		check(not mixed.is_empty() and absi(small_count - roundi(mixed.size() * percent / 100.0)) <= 1, "Configurable mix honors %d%% small, including single-size endpoints" % percent)
+	var dense := Scatter.generate(act, 500, 123, 100)
+	check(dense.size() > Scatter.generate(act, 100, 123, 100).size() and dense.size() <= Scatter.MAX_SLOTS, "Frequency above 100% fills more available space within the prop limit")
+	var dense_clear := true
+	occupied = act.decor_slots.duplicate(true)
+	for slot: Dictionary in dense:
+		var clearance := Scatter.radius(slot, act.cell_size)
+		dense_clear = dense_clear and act.terrain_bounds().grow(-clearance).has_point(slot.position)
+		for other: Dictionary in occupied:
+			dense_clear = dense_clear and slot.position.distance_to(other.position) >= clearance + Scatter.radius(other, act.cell_size) + act.cell_size * .08
+		occupied.append(slot)
+	check(dense_clear, "Maximum frequency retains terrain and prop clearance")
 	var curved: Resource = ActData.load_document("res://data/acts/decor_loop_court.tres").document
 	var on_terrain := true
 	var curved_scatter := Scatter.generate(curved, 80, 99)
@@ -97,18 +112,28 @@ func run() -> void:
 	check(editor.document.decor_slots.size() == 5, "Zero frequency clears only scatter, retaining all manual props")
 	editor.undo()
 	check(editor.document.decor_slots.size() > 5, "Clear scatter can be undone")
+	var before_settings: String = editor.document.fingerprint()
+	editor.decor_frequency_field.value = 237
+	editor.decor_small_percent_field.value = 100
+	check(editor.decor_frequency_field.value == 237 and editor.decor_medium_percent_label.text == "Medium 0%" and editor.document.fingerprint() == before_settings, "Fine frequency and complementary mix controls wait for Randomize")
+	await click_control(editor.buttons.decor_randomize)
+	check(editor.document.decor_slots.slice(5).all(func(slot): return slot.slot_type == "small"), "Randomize uses the chosen all-small mix")
+	editor.decor_small_percent_field.value = 0
+	await click_control(editor.buttons.decor_randomize)
+	check(editor.document.decor_slots.size() > 5 and editor.document.decor_slots.slice(5).all(func(slot): return slot.slot_type == "medium"), "Randomize uses the chosen all-medium mix")
 	editor.composite_preview_active = true
 	editor._refresh()
 	var blocked: String = editor.document.fingerprint()
 	editor.randomize_decor()
-	check(editor.buttons.decor_randomize.disabled and editor.document.fingerprint() == blocked, "Pending terrain preview blocks randomization")
+	check(editor.buttons.decor_randomize.disabled and not editor.decor_small_percent_field.editable and editor.document.fingerprint() == blocked, "Pending terrain preview blocks randomization and mix editing")
 	editor.composite_preview_active = false
 	if DisplayServer.get_name() != "headless":
 		editor.load_from("res://data/acts/decor_loop_court.tres")
 		# Show hand-authored landmarks with scattered small dressing. Only this
 		# in-memory capture draft changes; the saved example is untouched.
 		editor.document.decor_slots = editor.document.decor_slots.filter(func(slot): return slot.slot_type in ["large", "landmark"])
-		editor.decor_frequency_field.value = 60
+		editor.decor_frequency_field.value = 150
+		editor.decor_small_percent_field.value = 65
 		editor.randomize_decor()
 		await choose_tab(3)
 		for frame in 4: await process_frame

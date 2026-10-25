@@ -84,6 +84,8 @@ var decor_variant_field: OptionButton
 var _decor_preview_skin: RefCounted
 var decor_scale_field: SpinBox
 var decor_frequency_field: SpinBox
+var decor_small_percent_field: SpinBox
+var decor_medium_percent_label: Label
 var decor_position_fields: Array[LineEdit] = []
 var decor_visible_field: CheckBox
 var decor_snap_field: CheckBox
@@ -541,14 +543,30 @@ func _build_decor_palette(parent: Node) -> void:
 	decor_scroll.add_child(decor_list)
 	decor_frequency_field = SpinBox.new()
 	decor_frequency_field.min_value = 0
-	decor_frequency_field.max_value = 100
-	decor_frequency_field.step = 5
+	decor_frequency_field.max_value = DecorScatter.MAX_FREQUENCY
+	decor_frequency_field.step = 1
 	decor_frequency_field.value = 40
 	decor_frequency_field.prefix = "Frequency"
 	decor_frequency_field.suffix = "%"
-	decor_frequency_field.tooltip_text = "Scatter density on raised terrain. 0% clears scattered props. Applied when you click Randomize."
+	decor_frequency_field.tooltip_text = "Scatter density from 0–500%, in 1% steps. Above 100% requests denser scatter; available terrain and spacing still limit the count. 0% clears scattered props. Applied when you click Randomize."
 	decor_list.add_child(decor_frequency_field)
-	_button(decor_list, "decor_randomize", "Randomize small / medium", randomize_decor, "Replace scattered decor with a new 75% small / 25% medium mix where space permits. Varies scale and rotation; preserves manual props. One Undo step.")
+	var mix_row := HBoxContainer.new()
+	decor_list.add_child(mix_row)
+	decor_small_percent_field = SpinBox.new()
+	decor_small_percent_field.min_value = 0
+	decor_small_percent_field.max_value = 100
+	decor_small_percent_field.step = 1
+	decor_small_percent_field.value = 75
+	decor_small_percent_field.prefix = "Small"
+	decor_small_percent_field.suffix = "%"
+	decor_small_percent_field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	decor_small_percent_field.tooltip_text = "Share of small props; the rest are medium. 0% means all medium, 100% means all small. Applied when you click Randomize."
+	mix_row.add_child(decor_small_percent_field)
+	decor_medium_percent_label = Label.new()
+	decor_medium_percent_label.text = "Medium 25%"
+	mix_row.add_child(decor_medium_percent_label)
+	decor_small_percent_field.value_changed.connect(func(value): decor_medium_percent_label.text = "Medium %d%%" % (100 - roundi(value)))
+	_button(decor_list, "decor_randomize", "Randomize small / medium", randomize_decor, "Replace scattered decor using the chosen size mix where space permits. Varies scale and rotation; preserves manual props. One Undo step.")
 	decor_list.add_child(HSeparator.new())
 	for type: String in Decor.TYPES:
 		_button(decor_list, "decor_" + type, type.capitalize() + " slot", choose_decor.bind(type), "Place a generic visual slot on raised terrain. Free placement by default.")
@@ -650,7 +668,7 @@ func randomize_decor() -> void:
 	canvas.cancel_gesture()
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
-	var generated := DecorScatter.generate(document, decor_frequency_field.value, rng.randi())
+	var generated := DecorScatter.generate(document, decor_frequency_field.value, rng.randi(), decor_small_percent_field.value)
 	var kept: Array = []
 	for slot: Dictionary in document.decor_slots:
 		if not DecorScatter.is_scattered(slot): kept.append(slot)
@@ -713,6 +731,7 @@ func _commit_decor_position() -> void:
 
 func _refresh_decor_controls() -> void:
 	decor_frequency_field.editable = not composite_preview_active
+	decor_small_percent_field.editable = not composite_preview_active
 	buttons.decor_randomize.disabled = composite_preview_active
 	var slot := _active_decor()
 	var active := not slot.is_empty() and not composite_preview_active
