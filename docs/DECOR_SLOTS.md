@@ -47,7 +47,7 @@ Act records contain no mesh paths, Green Hill prop names or skin IDs. Slot IDs a
 
 `DecorSkin.resolve()` hashes the JSON array `[act_identity, slot_id, skin_id]` with SHA-256, converts its first eight hexadecimal digits to an integer, then takes modulo the selected pool length. It does not consume gameplay RNG. Reloading, reordering slots, deleting other slots, or editing unrelated geometry cannot reshuffle an existing slot. Changing the slot type/hint or active skin selects a different pool. Changing a skin's pool membership/order can change its choices; preserve published pool order when visual continuity matters.
 
-The document fingerprint, deep-copy history, validation, and atomic save/reload comparison include the new fields. Angles and scale use the existing exact numeric byte storage convention. Formats 2–6 load in memory with no decor and no file rewrite; the next explicit save writes format 7. Old format declarations cannot carry decor data. Format-6 composites retain their existing exact outlines.
+The document fingerprint, deep-copy history, validation, and atomic save/reload comparison include the new fields. Angles and scale use the existing exact numeric byte storage convention. Formats 2–6 load in memory with no decor and no file rewrite. Format 7 introduced decor; current saves use format 8, which also supports fractional and half-size terrain. Existing format-7 decor remains unchanged on load. Formats below 7 cannot carry decor data. Format-6 composites retain their existing exact outlines.
 
 ## Skin and runtime ownership
 

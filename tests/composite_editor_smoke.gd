@@ -25,12 +25,13 @@ func check(condition: bool, label: String) -> void:
 		push_error("FAIL | " + label)
 
 
-func move_pointer(position: Vector2, mask: int = 0) -> void:
+func move_pointer(position: Vector2, mask: int = 0, alt: bool = false) -> void:
 	var event := InputEventMouseMotion.new()
 	event.position = position
 	event.global_position = position
 	event.relative = position - mouse_position
 	event.button_mask = mask
+	event.alt_pressed = alt
 	# One viewport event is enough here. Re-injecting it through Input would
 	# dispatch the same relative pan movement twice; no OS drag lookup is used.
 	root.push_input(event, true)
@@ -379,6 +380,69 @@ func check_corner_pins() -> void:
 	check(not editor.composite_preview_active and editor._composite_protected_indices.is_empty() and editor.canvas._smoothing_corners.is_empty(), "Cancel discards pins and removes corner handles")
 
 
+func check_fine_terrain() -> void:
+	editor.new_document()
+	editor.add_placement(stamp("triangle_1x2", Vector2i(3, 3)))
+	editor.canvas.select_piece(0)
+	editor.composite_strength.value = 500
+	editor.composite_preserve_corners.button_pressed = false
+	editor.composite_only_joins.button_pressed = false
+	editor.composite_allow_reshaping.button_pressed = false
+	editor._refresh()
+	await click_control(editor.buttons.smooth)
+	check(editor.buttons.composite_apply.disabled and editor.composite_hint.text.contains("5%"), "Rejected 500% triangle explains why Apply is disabled beside the controls")
+	await click_control(editor.composite_allow_reshaping)
+	check(not editor.composite_preview.is_empty() and not editor.buttons.composite_apply.disabled, "Allow reshaping makes the valid 500% single triangle applicable")
+	await click_control(editor.buttons.composite_apply)
+	check(editor.document.placements[0].shape_id == "composite", "Strong single-shape smoothing applies successfully")
+	editor.undo()
+	editor.composite_allow_reshaping.button_pressed = false
+	editor.terrain_snap_field.select(1)
+	editor.terrain_snap_field.item_selected.emit(1)
+	editor.terrain_scale_field.select(1)
+	editor.terrain_scale_field.item_selected.emit(1)
+	await process_frame
+	check(Shapes.scaled_size(editor.document.placements[0]) == Vector2(0.5, 1.0), "Half-size control scales the selected triangle's actual frame")
+	var start := grid_position(Vector2(3.15, 3.75))
+	var end: Vector2 = start + Vector2(0.63, 0.56) * editor.canvas._cell_pixels
+	await move_pointer(start)
+	await mouse_button(start, true)
+	await move_pointer(end, MOUSE_BUTTON_MASK_LEFT)
+	await mouse_button(end, false)
+	check(Shapes.placement_position(editor.document.placements[0]) == Vector2(3.5, 3.5), "Terrain drag snaps to half-cell intersections")
+	start = grid_position(Vector2(3.65, 4.25))
+	end = start + Vector2(0.237, 0.319) * editor.canvas._cell_pixels
+	await move_pointer(start)
+	await mouse_button(start, true, false, true)
+	await move_pointer(end, MOUSE_BUTTON_MASK_LEFT, true)
+	var preview_position: Vector2 = editor.canvas._drag_anchor
+	await mouse_button(end, false, false, false)
+	var placement: Dictionary = editor.document.placements[0]
+	check(Shapes.placement_position(placement) == preview_position and preview_position.distance_to(Vector2(3.737, 3.819)) < 0.0001, "Alt-drag moves terrain freely and releasing Alt alone does not snap it")
+	var before_rotation := Shapes.placement_position(placement)
+	editor.rotate_active()
+	check(Shapes.placement_position(editor.document.placements[0]) == before_rotation and Shapes.scaled_size(editor.document.placements[0]) == Vector2(1.0, 0.5), "Rotation retains a free position and the half-size footprint")
+	var exact: Dictionary = editor.document.placements[0].duplicate(true)
+	check(editor.save_to(SAVE_PATH) and editor.load_from(SAVE_PATH) and editor.document.placements[0] == exact, "Free half-size terrain saves and reloads exactly")
+	editor.canvas.select_piece(0)
+	editor._refresh()
+	editor.duplicate_selected()
+	check(editor.document.placements.size() == 2 and Shapes.placement_position(editor.document.placements[1]) == Shapes.placement_position(exact) + Vector2(0.5, 0.5), "Duplicate preserves free coordinates and offsets by the selected subgrid")
+	editor.choose_shape("wall_1x2")
+	editor.terrain_scale_field.select(1)
+	editor.terrain_scale_field.item_selected.emit(1)
+	await click_at(grid_position(Vector2(6.26, 6.26)))
+	var wall: Dictionary = editor.document.placements.back()
+	check(wall.shape_id == "wall_1x2" and Shapes.placement_position(wall) == Vector2(6.5, 6.5) and Shapes.scaled_size(wall) == Vector2(0.5, 1.0), "Half-size open wall stamps on the half-cell grid")
+	await click_at(grid_position(Vector2(8.137, 7.283)), false, true)
+	check(Shapes.placement_position(editor.document.placements.back()).distance_to(Vector2(8.137, 7.283)) < 0.0001, "Alt stamping bypasses the half-cell grid for open terrain too")
+	if DisplayServer.get_name() != "headless":
+		await RenderingServer.frame_post_draw
+		check(root.get_texture().get_image().save_png("res://test-results/fine-terrain-editor.png") == OK, "Half-grid and half-size controls captured")
+	editor.terrain_snap_field.select(0)
+	editor.terrain_snap_field.item_selected.emit(0)
+
+
 func capture_preview() -> void:
 	await reset_fixture()
 	var left := stamp("triangle_2x2", Vector2i(0, 4))
@@ -416,6 +480,7 @@ func run() -> void:
 	await check_protected_primitive()
 	await check_join_controls()
 	await check_corner_pins()
+	await check_fine_terrain()
 	await capture_preview()
 	print("RESULT | Composite editor UI | %d checks | %d failures" % [checks, failures])
 	editor.queue_free()

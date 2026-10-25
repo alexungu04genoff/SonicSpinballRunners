@@ -56,6 +56,10 @@ var composite_strength: SpinBox
 var composite_preserve_corners: CheckBox
 var composite_angle: SpinBox
 var composite_only_joins: CheckBox
+var composite_allow_reshaping: CheckBox
+var terrain_snap_field: OptionButton
+var terrain_scale_field: OptionButton
+var _composite_error := ""
 var _composite_join_indices := PackedInt32Array()
 var _composite_protected_indices := PackedInt32Array()
 var composite_hint: Label
@@ -82,7 +86,7 @@ func _ready() -> void:
 	_build_ui()
 	_build_dialogs()
 	new_document()
-	_set_status("Choose Terrain or Gameplay. Gameplay anchors snap to the grid; hold Alt for free placement.")
+	_set_status("Choose Terrain or Gameplay. Terrain supports half-cell snapping and half size; hold Alt for free placement.")
 
 func _exit_tree() -> void:
 	get_tree().auto_accept_quit = _previous_auto_quit
@@ -294,6 +298,22 @@ func _build_ui() -> void:
 	connector_summary.add_theme_font_size_override("font_size", 13)
 	connector_summary.add_theme_color_override("font_color", Color("76edab"))
 	connectors.add_child(connector_summary)
+	terrain_snap_field = OptionButton.new()
+	terrain_snap_field.add_item("Snap: 1 cell")
+	terrain_snap_field.add_item("Snap: ½ cell")
+	terrain_snap_field.tooltip_text = "Terrain placement and movement grid. Hold Alt for free positioning."
+	terrain_snap_field.item_selected.connect(func(index):
+		canvas.terrain_snap_step = 0.5 if index == 1 else 1.0
+		canvas.queue_redraw()
+		canvas.grab_focus())
+	connectors.add_child(terrain_snap_field)
+	terrain_scale_field = OptionButton.new()
+	terrain_scale_field.add_item("Size: 1×")
+	terrain_scale_field.add_item("Size: 0.5×")
+	terrain_scale_field.tooltip_text = "Uniform terrain size about the frame's top-left. Applies to the brush or one selected piece."
+	terrain_scale_field.item_selected.connect(func(index):
+		if not _refreshing: _transform_active("half_size" if index == 1 else "full_size"))
+	connectors.add_child(terrain_scale_field)
 	composite_bar = HBoxContainer.new()
 	composite_bar.add_theme_constant_override("separation", 6)
 	workspace.add_child(composite_bar)
@@ -347,6 +367,13 @@ func _build_ui() -> void:
 		if composite_preview_active and _composite_operation == "merge_smooth": _rebuild_composite_preview()
 		else: _refresh())
 	sculpt_settings.add_child(composite_only_joins)
+	composite_allow_reshaping = CheckBox.new()
+	composite_allow_reshaping.text = "Allow reshaping"
+	composite_allow_reshaping.tooltip_text = "Allow smoothing to change up to 25% of the shape's area instead of 5%. All collision-validity checks still apply."
+	composite_allow_reshaping.focus_mode = Control.FOCUS_NONE
+	composite_allow_reshaping.toggled.connect(func(_pressed):
+		if composite_preview_active and _composite_operation != "merge": _rebuild_composite_preview())
+	sculpt_settings.add_child(composite_allow_reshaping)
 	composite_hint = Label.new()
 	composite_hint.add_theme_font_size_override("font_size", 12)
 	composite_hint.add_theme_color_override("font_color", Color("9cb3c6"))
@@ -749,7 +776,8 @@ func _rebuild_composite_preview() -> void:
 	var result: Dictionary = {"placement": _composite_base.duplicate(true), "error": ""}
 	if _composite_operation != "merge":
 		var joins: Variant = _composite_join_indices if composite_only_joins.button_pressed and _composite_operation == "merge_smooth" else null
-		result = Composite.smooth(_composite_base, composite_strength.value / 100.0, composite_preserve_corners.button_pressed, composite_angle.value, joins, _composite_protected_indices)
+		result = Composite.smooth(_composite_base, composite_strength.value / 100.0, composite_preserve_corners.button_pressed, composite_angle.value, joins, _composite_protected_indices, composite_allow_reshaping.button_pressed)
+	_composite_error = result.error
 	composite_preview = result.placement
 	canvas.set_composite_preview(composite_preview, true)
 	canvas.set_smoothing_corners(_composite_base if _composite_operation != "merge" else {}, _composite_protected_indices)
@@ -810,6 +838,7 @@ func _clear_composite_preview() -> void:
 	_composite_protected_indices.clear()
 	_composite_fingerprint = ""
 	_composite_operation = ""
+	_composite_error = ""
 	canvas.set_composite_preview({}, false)
 
 func cancel_composite_preview() -> void:
@@ -891,20 +920,19 @@ func add_placement(placement: Dictionary) -> void:
 	_set_status("Placed %s. %d independent terrain pieces." % [Shapes.definition_for_placement(placement).label, document.placements.size()])
 	_refresh()
 
-func move_placement(index: int, anchor: Vector2i) -> void:
+func move_placement(index: int, anchor: Vector2) -> void:
 	if index < 0 or index >= document.placements.size():
 		return
 	var placement: Dictionary = document.placements[index]
 	anchor = _clamp_anchor(placement, anchor)
-	if anchor == placement.anchor:
+	if anchor == Shapes.placement_position(placement):
 		return
 	_record_edit()
-	placement.anchor = anchor
+	Shapes.set_placement_position(placement, anchor)
 	_refresh()
 
-func _clamp_anchor(placement: Dictionary, anchor: Vector2i) -> Vector2i:
-	var frame: Vector2i = Shapes.transformed_size(placement)
-	return Vector2i(clampi(anchor.x, 0, document.grid_size.x - frame.x), clampi(anchor.y, 0, document.grid_size.y - frame.y))
+func _clamp_anchor(placement: Dictionary, anchor: Vector2) -> Vector2:
+	return anchor.clamp(Vector2.ZERO, (Vector2(document.grid_size) - Shapes.scaled_size(placement)).max(Vector2.ZERO))
 
 func add_gameplay_placement(placement: Dictionary) -> void:
 	var candidate: Resource = document.copy_document()
@@ -988,7 +1016,7 @@ func duplicate_selected() -> void:
 		return
 	if _terrain_selection().size() == 1:
 		var terrain: Dictionary = document.placements[canvas.selected_index].duplicate(true)
-		terrain.anchor = _clamp_anchor(terrain, terrain.anchor + Vector2i.ONE)
+		Shapes.set_placement_position(terrain, _clamp_anchor(terrain, Shapes.placement_position(terrain) + Vector2.ONE * canvas.terrain_snap_step))
 		canvas.cancel_gesture()
 		add_placement(terrain)
 		canvas.select_piece(document.placements.size() - 1)
@@ -1046,13 +1074,19 @@ func _transform_active(operation: String) -> void:
 		var previous_h: bool = placement.flip_h
 		placement.flip_h = placement.flip_v
 		placement.flip_v = previous_h
+	elif operation in ["half_size", "full_size"]:
+		var scale_value := 0.5 if operation == "half_size" else 1.0
+		if float(placement.get("terrain_scale", 1.0)) == scale_value: return
+		if scale_value == 1.0: placement.erase("terrain_scale")
+		else: placement["terrain_scale"] = scale_value
 	else:
 		placement[operation] = not placement[operation]
-	var frame: Vector2i = Shapes.transformed_size(placement)
+	var frame := Shapes.scaled_size(placement)
 	if frame.x > document.grid_size.x or frame.y > document.grid_size.y:
-		_set_status("This rotated footprint does not fit inside the Act.")
+		_refresh()
+		_set_status("This terrain footprint does not fit inside the Act.")
 		return
-	placement.anchor = _clamp_anchor(placement, placement.anchor)
+	Shapes.set_placement_position(placement, _clamp_anchor(placement, Shapes.placement_position(placement)))
 	if not canvas.brush.is_empty():
 		canvas.set_brush(placement)
 	else:
@@ -1392,9 +1426,9 @@ func _refresh() -> void:
 		detail_label.text = "%d terrain pieces · %d gameplay objects · %d ring trails · Alt-click cycles overlaps." % [document.placements.size(), document.gameplay_objects.size(), document.ring_trails.size()]
 	else:
 		var definition: Dictionary = Shapes.definition_for_placement(active)
-		var frame: Vector2i = Shapes.transformed_size(active)
+		var frame := Shapes.scaled_size(active)
 		mode_label.text = ("STAMP  ·  " if not canvas.brush.is_empty() else "SELECTED  ·  ") + definition.label
-		detail_label.text = "Frame %d × %d cells  ·  %d°  ·  H %s / V %s%s" % [frame.x, frame.y, active.quarter_turns * 90, "on" if active.flip_h else "off", "on" if active.flip_v else "off", "  ·  Anchor (%d, %d)" % [active.anchor.x, active.anchor.y] if canvas.brush.is_empty() else "  ·  Click to place; Esc to select"]
+		detail_label.text = "Frame %s × %s cells · %d° · H %s / V %s · Alt: free move%s" % [frame.x, frame.y, active.quarter_turns * 90, "on" if active.flip_h else "off", "on" if active.flip_v else "off", " · Position %s" % Shapes.placement_position(active) if canvas.brush.is_empty() else " · Click to place"]
 	_refresh_composite_controls()
 	_refresh_decor_controls()
 	canvas.queue_redraw()
@@ -1411,11 +1445,16 @@ func _refresh_composite_controls() -> void:
 	buttons.smooth.tooltip_text = smooth_error if not smooth_error.is_empty() else "Preview conservative corner smoothing on the selected outline"
 	buttons.composite_apply.visible = composite_preview_active
 	buttons.composite_cancel.visible = composite_preview_active
+	var terrain: Dictionary = canvas.brush if not canvas.brush.is_empty() else (document.placements[canvas.selected_index] if canvas.selected_index >= 0 else {})
+	terrain_snap_field.disabled = composite_preview_active
+	terrain_scale_field.disabled = composite_preview_active or terrain.is_empty() or _terrain_selection().size() > 1
+	terrain_scale_field.select(1 if not terrain.is_empty() and float(terrain.get("terrain_scale", 1.0)) == 0.5 else 0)
 	buttons.composite_clear_pins.visible = composite_preview_active and _composite_operation != "merge"
 	composite_strength.editable = not composite_preview_active or _composite_operation != "merge"
 	composite_preserve_corners.disabled = composite_preview_active and _composite_operation == "merge"
 	composite_angle.editable = composite_preserve_corners.button_pressed and not composite_preserve_corners.disabled
 	composite_only_joins.disabled = composite_preview_active and _composite_operation != "merge_smooth"
+	composite_allow_reshaping.disabled = composite_preview_active and _composite_operation == "merge"
 	composite_hint.text = merge_error if not merge_error.is_empty() else "%d filled pieces selected. Preview before applying; no source changes until Apply." % _terrain_selection().size()
 	if _terrain_selection().size() == 1 and smooth_error.is_empty():
 		composite_hint.text = "Smooth this piece, or Ctrl-click more filled terrain to merge."
@@ -1431,6 +1470,9 @@ func _refresh_composite_controls() -> void:
 		composite_hint.text = "Preview only. Adjust strength, then Apply or Cancel. Other editing is paused."
 		if _composite_operation != "merge":
 			composite_hint.text = "Click corner dots to protect/release. Pink = do not smooth · %d pinned · Apply / Cancel" % _composite_protected_indices.size()
+		if not _composite_error.is_empty():
+			composite_hint.text = _composite_error
+		buttons.composite_apply.tooltip_text = _composite_error if not _composite_error.is_empty() else "Apply the displayed contour in one undo step"
 	composite_hint.tooltip_text = composite_hint.text
 	title_field.editable = not composite_preview_active
 	cell_size_field.editable = not composite_preview_active
@@ -1505,6 +1547,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN:
 				if _terrain_selection().size() == 1:
 					var direction: Vector2i = {KEY_LEFT: Vector2i.LEFT, KEY_RIGHT: Vector2i.RIGHT, KEY_UP: Vector2i.UP, KEY_DOWN: Vector2i.DOWN}[event.keycode]
-					move_placement(canvas.selected_index, document.placements[canvas.selected_index].anchor + direction)
+					var distance: float = 1.0 / float(document.cell_size) if event.alt_pressed else canvas.terrain_snap_step
+					move_placement(canvas.selected_index, Shapes.placement_position(document.placements[canvas.selected_index]) + Vector2(direction) * distance)
 			_: return
 	get_viewport().set_input_as_handled()

@@ -1,7 +1,7 @@
 class_name ActGeometry
 extends Resource
 ## A single Act's terrain, connectors, gameplay objects and lifecycle authoring data.
-const FORMAT_VERSION := 7
+const FORMAT_VERSION := 8
 ## The system gutter is outside terrain bounds and is never a thirteenth terrain row.
 const RED_GUTTER_CELLS := 1
 const SHAPES = preload("res://scripts/act_editor/terrain_shapes.gd")
@@ -19,6 +19,7 @@ const PLACEMENT_TYPES := {
  "flip_v": TYPE_BOOL,
 }
 const COMPOSITE_FIELDS := ["composite_version", "outline", "smoothing_strength"]
+const OPTIONAL_TRANSFORM_FIELDS := ["offset", "terrain_scale"]
 
 # Dynamic exports preserve malformed input for validation. Typed Resource fields
 # otherwise coerce bool/float versions to integers and invalid arrays to empty ones.
@@ -134,10 +135,21 @@ func validation_errors() -> PackedStringArray:
     errors.append(prefix + "%s must be %s." % [key, type_string(PLACEMENT_TYPES[key])])
     valid_types = false
   for key: Variant in placement:
-   if typeof(key) != TYPE_STRING or (not PLACEMENT_TYPES.has(key) and (not composite or key not in COMPOSITE_FIELDS)):
+   if typeof(key) != TYPE_STRING or (not PLACEMENT_TYPES.has(key) and key not in OPTIONAL_TRANSFORM_FIELDS and (not composite or key not in COMPOSITE_FIELDS)):
     errors.append(prefix + "unrecognized placement field; only terrain reference and transform fields are supported.")
   if not valid_types:
    continue
+  if placement.has("offset"):
+   if typeof(placement.offset) != TYPE_VECTOR2:
+    errors.append(prefix + "offset must be a fractional-cell Vector2.")
+    continue
+   if not placement.offset.is_finite() or placement.offset.x < 0.0 or placement.offset.y < 0.0 or placement.offset.x >= 1.0 or placement.offset.y >= 1.0:
+    errors.append(prefix + "offset must be finite and between 0 (inclusive) and 1 (exclusive).")
+    continue
+  if placement.has("terrain_scale"):
+   if typeof(placement.terrain_scale) not in [TYPE_INT, TYPE_FLOAT] or placement.terrain_scale not in [0.5, 1.0]:
+    errors.append(prefix + "terrain_scale must be 0.5 or 1.0.")
+    continue
   if composite:
    var composite_errors := _composite_validation_errors(placement)
    for error: String in composite_errors: errors.append(prefix + error)
@@ -150,8 +162,8 @@ func validation_errors() -> PackedStringArray:
    errors.append(prefix + "base footprint does not match its shape definition.")
   if placement.quarter_turns < 0 or placement.quarter_turns > 3:
    errors.append(prefix + "rotation must be 0, 1, 2 or 3 quarter-turns.")
-  var frame: Vector2i = SHAPES.transformed_size(placement)
-  var anchor: Vector2i = placement.anchor
+  var frame := SHAPES.scaled_size(placement)
+  var anchor := SHAPES.placement_position(placement)
   # Frame bounds are the only spatial restriction. Overlap is deliberately valid.
   if valid_grid_type and (anchor.x < 0 or anchor.y < 0 or anchor.x > grid_size.x - frame.x or anchor.y > grid_size.y - frame.y):
    errors.append(prefix + "the transformed footprint must fit inside this Act.")
@@ -275,6 +287,8 @@ func fingerprint() -> String:
      placement.get("shape_id"), placement.get("base_size"), placement.get("anchor"),
      placement.get("quarter_turns"), placement.get("flip_h"), placement.get("flip_v"),
     ])
+    if placement.has("offset") or placement.has("terrain_scale"):
+     ordered_placements.back().append_array([placement.get("offset", Vector2.ZERO), placement.get("terrain_scale", 1.0)])
     if placement.get("shape_id") == "composite":
      var strength: Variant = placement.get("smoothing_strength")
      if typeof(strength) in [TYPE_INT, TYPE_FLOAT]: strength = float(strength)
@@ -344,8 +358,8 @@ static func load_document(path: String) -> Dictionary:
   return {"document": null, "error": "The selected file is not an Act Geometry resource."}
  if not loaded._format_version_was_set or not loaded._library_version_was_set:
   return {"document": null, "error": "This Act file is missing its required format or terrain library version."}
- if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4, 5, 6] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
-  if typeof(loaded.decor_slots) != TYPE_ARRAY or not loaded.decor_slots.is_empty() or loaded.decor_seed != "":
+ if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4, 5, 6, 7] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
+  if loaded.format_version < 7 and (typeof(loaded.decor_slots) != TYPE_ARRAY or not loaded.decor_slots.is_empty() or loaded.decor_seed != ""):
    return {"document": null, "error": "Previous Act formats cannot contain decor slots or a decor seed."}
   if loaded.format_version == 2 and (typeof(loaded.gameplay_objects) != TYPE_ARRAY or not loaded.gameplay_objects.is_empty()):
    return {"document": null, "error": "Terrain-and-connector format 2 cannot contain gameplay object data."}
@@ -357,8 +371,15 @@ static func load_document(path: String) -> Dictionary:
    for placement: Variant in loaded.placements:
     if placement is Dictionary and (placement.get("shape_id") == "composite" or placement.has("outline") or placement.has("composite_version") or placement.has("smoothing_strength")):
      return {"document": null, "error": "Previous Act formats cannot contain composite terrain."}
-  # Old Acts keep their exact authored data; only explicit saving writes v7.
+  if typeof(loaded.placements) == TYPE_ARRAY:
+   for placement: Variant in loaded.placements:
+    if placement is Dictionary and (placement.has("offset") or placement.has("terrain_scale")):
+     return {"document": null, "error": "Fractional terrain transforms require Act format 8."}
+  # Old Acts keep their exact authored data; only explicit saving writes v8.
   loaded.format_version = FORMAT_VERSION
+ var transform_decode_error := _decode_stored_terrain_transforms(loaded)
+ if not transform_decode_error.is_empty():
+  return {"document": null, "error": transform_decode_error}
  var composite_decode_error := _decode_stored_composites(loaded)
  if not composite_decode_error.is_empty():
   return {"document": null, "error": composite_decode_error}
@@ -389,6 +410,18 @@ static func load_document(path: String) -> Dictionary:
  if not errors.is_empty():
   return {"document": null, "error": "\n".join(errors)}
  return {"document": loaded, "error": ""}
+
+static func _decode_stored_terrain_transforms(document: Resource) -> String:
+ if typeof(document.placements) != TYPE_ARRAY: return ""
+ for placement: Variant in document.placements:
+  if not placement is Dictionary: continue
+  if typeof(placement.get("offset")) == TYPE_PACKED_BYTE_ARRAY:
+   var payload: PackedByteArray = placement.offset
+   var layout := var_to_bytes(Vector2.ZERO)
+   if payload.size() != layout.size() or payload.decode_u32(0) != layout.decode_u32(0):
+    return "Invalid stored terrain offset."
+   placement.offset = bytes_to_var(payload)
+ return ""
 
 static func _decode_stored_composites(document: Resource) -> String:
  if typeof(document.placements) != TYPE_ARRAY: return ""
@@ -440,6 +473,7 @@ static func _decode_numeric_payload(payload: PackedByteArray) -> Variant:
 func _storage_document() -> Resource:
  var stored: Resource = copy_document()
  for placement: Dictionary in stored.placements:
+  if placement.has("offset"): placement.offset = var_to_bytes(placement.offset)
   if placement.shape_id == "composite":
    # Preserve every float bit across text Resource serialization and new sessions.
    placement.outline = var_to_bytes(placement.outline)

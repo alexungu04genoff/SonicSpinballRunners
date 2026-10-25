@@ -32,7 +32,7 @@ static func merge(placements: Array) -> Dictionary:
    return _failure("Selected terrain must have an integer grid anchor.")
   var polygon := SHAPES.transformed_points(placement)
   for point_index in polygon.size():
-   polygon[point_index] += Vector2(placement.anchor)
+   polygon[point_index] += SHAPES.placement_position(placement)
   var pieces: Array[PackedVector2Array] = [polygon]
   # The filled U's two lobes meet at one bottom point. Keep their exact geometry;
   # another selected piece can bridge them into a valid, solid composite.
@@ -104,7 +104,7 @@ static func _boundary_follows(polygon: PackedVector2Array, point: Vector2, neigh
    return true
  return false
 
-static func smooth(placement: Dictionary, strength: float, preserve_corners: bool = false, preserve_angle_degrees: float = 90.0, join_indices: Variant = null, protected_indices: PackedInt32Array = PackedInt32Array()) -> Dictionary:
+static func smooth(placement: Dictionary, strength: float, preserve_corners: bool = false, preserve_angle_degrees: float = 90.0, join_indices: Variant = null, protected_indices: PackedInt32Array = PackedInt32Array(), allow_reshaping: bool = false) -> Dictionary:
  if not is_finite(strength) or strength < 0.0 or strength > MAX_STRENGTH:
   return _failure("Smoothing strength must be between 0% and 500%.")
  if not is_finite(preserve_angle_degrees) or preserve_angle_degrees < 1.0 or preserve_angle_degrees > 179.0:
@@ -169,8 +169,9 @@ static func smooth(placement: Dictionary, strength: float, preserve_corners: boo
   return _failure("Smoothing would produce invalid terrain. Reduce strength. " + error)
  var original_area := absf(_signed_area(outline))
  var rounded_area := absf(_signed_area(rounded))
- if absf(rounded_area - original_area) > original_area * 0.05:
-  return _failure("Smoothing would change this small shape too much. Reduce strength.")
+ var area_limit := 0.25 if allow_reshaping else 0.05
+ if absf(rounded_area - original_area) > original_area * area_limit:
+  return _failure("Smoothing changes more than %d%% of this shape's area. Reduce strength, pin corners%s." % [roundi(area_limit * 100.0), "" if allow_reshaping else " or enable Allow reshaping"])
  result["outline"] = rounded
  return {"placement": result, "error": ""}
 

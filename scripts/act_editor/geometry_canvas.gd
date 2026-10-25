@@ -6,7 +6,7 @@ signal selection_changed(index: int)
 signal terrain_selection_changed(indices: Array[int])
 signal composite_preview_cancel_requested
 signal composite_corner_toggled(index: int)
-signal move_requested(index: int, anchor: Vector2i)
+signal move_requested(index: int, anchor: Vector2)
 signal connector_requested(kind: String, start_x: int, width: int)
 signal connector_selection_changed(kind: String)
 signal gameplay_placement_requested(placement: Dictionary)
@@ -47,6 +47,7 @@ var preview_active := false
 var _smoothing_corners := PackedVector2Array()
 var _smoothing_corner_indices := PackedInt32Array()
 var _protected_corners := PackedInt32Array()
+var terrain_snap_step := 1.0
 var brush: Dictionary = {}
 var connector_tool := ""
 var selected_connector := ""
@@ -83,8 +84,9 @@ var _cursor_position := Vector2.ZERO
 var _panning := false
 var _drag_index := -1
 var _drag_start_pointer := Vector2.ZERO
-var _drag_start_anchor := Vector2i.ZERO
-var _drag_anchor := Vector2i.ZERO
+var _drag_start_anchor := Vector2.ZERO
+var _drag_anchor := Vector2.ZERO
+var _drag_last_pointer := Vector2.ZERO
 var _drag_moved := false
 var _drop_brush: Dictionary = {}
 var _last_status := ""
@@ -215,7 +217,7 @@ func set_smoothing_corners(source: Dictionary, protected_indices: PackedInt32Arr
  _protected_corners = protected_indices.duplicate()
  if not source.is_empty():
   var points := Shapes.transformed_points(source)
-  var anchor := Vector2(source.get("anchor", Vector2i.ZERO))
+  var anchor := Shapes.placement_position(source)
   for index in points.size():
    var incoming := points[index] - points[posmod(index - 1, points.size())]
    var outgoing := points[(index + 1) % points.size()] - points[index]
@@ -579,10 +581,10 @@ func connector_handle_at(kind: String, local_position: Vector2) -> String:
  return "move"
 
 
-func legal_anchor_for(placement: Dictionary, grid_position: Vector2) -> Vector2i:
- var footprint: Vector2i = Shapes.transformed_size(placement)
- var limit := (_grid_size() - footprint).max(Vector2i.ZERO)
- return Vector2i(clampi(roundi(grid_position.x), 0, limit.x), clampi(roundi(grid_position.y), 0, limit.y))
+func legal_anchor_for(placement: Dictionary, grid_position: Vector2, free_move: bool = false) -> Vector2:
+ var limit := (Vector2(_grid_size()) - Shapes.scaled_size(placement)).max(Vector2.ZERO)
+ var point := grid_position if free_move else grid_position.snapped(Vector2.ONE * terrain_snap_step)
+ return point.clamp(Vector2.ZERO, limit)
 
 
 func hit_indices_at(local_position: Vector2) -> Array[int]:
@@ -595,7 +597,7 @@ func hit_indices_at(local_position: Vector2) -> Array[int]:
   var definition: Dictionary = Shapes.definition_for_placement(placement)
   if definition.is_empty():
    continue
-  var anchor: Vector2i = placement.get("anchor", Vector2i.ZERO)
+  var anchor := Shapes.placement_position(placement)
   var local_point := grid_point - Vector2(anchor)
   var points: PackedVector2Array = Shapes.transformed_points(placement)
   var closed: bool = definition.get("closed", false)
@@ -622,20 +624,20 @@ func _draw() -> void:
   var placement: Dictionary = placements[index]
   if index == _drag_index and _drag_moved:
    placement = placement.duplicate(true)
-   placement["anchor"] = _drag_anchor
+   Shapes.set_placement_position(placement, _drag_anchor)
   _draw_piece(placement, false, false)
  for index in selected_indices:
   if index < 0 or index >= placements.size():
    continue
   var selected: Dictionary = placements[index].duplicate(true)
   if index == _drag_index and _drag_moved:
-   selected["anchor"] = _drag_anchor
+   Shapes.set_placement_position(selected, _drag_anchor)
   _draw_piece(selected, true, false)
   _draw_footprint(selected, Color(SELECTION_COLOR, 0.55))
  var active_brush := _drop_brush if not _drop_brush.is_empty() else brush
  if not preview_active and (_hovering or not _drop_brush.is_empty()) and _inside_grid(_cursor_position) and _valid_stamp(active_brush):
   var ghost := active_brush.duplicate(true)
-  ghost["anchor"] = legal_anchor_for(ghost, screen_to_grid(_cursor_position))
+  Shapes.set_placement_position(ghost, legal_anchor_for(ghost, screen_to_grid(_cursor_position), _alt_held))
   _draw_piece(ghost, false, true)
   _draw_footprint(ghost, Color(0.75, 0.91, 1.0, 0.5))
  _draw_gameplay_objects()
@@ -665,7 +667,7 @@ func _draw_composite_preview() -> void:
  var points: PackedVector2Array = Shapes.transformed_points(composite_preview)
  if points.size() < 3:
   return
- var anchor := Vector2(composite_preview.get("anchor", Vector2i.ZERO))
+ var anchor := Shapes.placement_position(composite_preview)
  for index in points.size():
   points[index] = grid_to_screen(points[index] + anchor)
  draw_colored_polygon(points, Color(COMPOSITE_PREVIEW_COLOR, 0.32))
@@ -903,6 +905,13 @@ func _draw_grid() -> void:
  var first_y := clampi(floori(visible_start.y / line_step) * line_step, 0, dimensions.y)
  var last_x := clampi(ceili(visible_end.x), 0, dimensions.x)
  var last_y := clampi(ceili(visible_end.y), 0, dimensions.y)
+ if terrain_snap_step == 0.5 and _cell_pixels >= 24.0:
+  for x in range(maxi(0, floori(visible_start.x)), last_x):
+   var screen_x := grid_to_screen(Vector2(x + 0.5, 0)).x
+   draw_line(Vector2(screen_x, visible_bounds.position.y), Vector2(screen_x, visible_bounds.end.y), Color("1d2c3e"), 1.0)
+  for y in range(maxi(0, floori(visible_start.y)), last_y):
+   var screen_y := grid_to_screen(Vector2(0, y + 0.5)).y
+   draw_line(Vector2(visible_bounds.position.x, screen_y), Vector2(visible_bounds.end.x, screen_y), Color("1d2c3e"), 1.0)
  for x in range(first_x, last_x + 1, line_step):
   var screen_x := grid_to_screen(Vector2(x, 0)).x
   draw_line(Vector2(screen_x, visible_bounds.position.y), Vector2(screen_x, visible_bounds.end.y), Color("2b3d51"), 1.0, true)
@@ -934,7 +943,7 @@ func _draw_piece(placement: Dictionary, selected: bool, ghost: bool) -> void:
  if definition.is_empty():
   return
  var points: PackedVector2Array = Shapes.transformed_points(placement)
- var anchor: Vector2i = placement.get("anchor", Vector2i.ZERO)
+ var anchor := Shapes.placement_position(placement)
  for point_index in points.size():
   points[point_index] = grid_to_screen(points[point_index] + Vector2(anchor))
  if points.size() < 2:
@@ -955,8 +964,8 @@ func _draw_piece(placement: Dictionary, selected: bool, ghost: bool) -> void:
 
 
 func _draw_footprint(placement: Dictionary, color: Color) -> void:
- var anchor: Vector2i = placement.get("anchor", Vector2i.ZERO)
- var footprint: Vector2i = Shapes.transformed_size(placement)
+ var anchor := Shapes.placement_position(placement)
+ var footprint := Shapes.scaled_size(placement)
  var top_left := grid_to_screen(Vector2(anchor))
  var bottom_right := grid_to_screen(Vector2(anchor + footprint))
  var top_right := Vector2(bottom_right.x, top_left.y)
@@ -1063,8 +1072,9 @@ func _gui_input(event: InputEvent) -> void:
   elif not event.echo and selected_indices.size() == 1 and selected_index >= 0 and selected_index < _placements().size():
    var direction: Vector2i = {KEY_LEFT: Vector2i.LEFT, KEY_RIGHT: Vector2i.RIGHT, KEY_UP: Vector2i.UP, KEY_DOWN: Vector2i.DOWN}[event.keycode]
    var placement: Dictionary = _placements()[selected_index]
-   var anchor: Vector2i = placement.get("anchor", Vector2i.ZERO)
-   move_requested.emit(selected_index, legal_anchor_for(placement, Vector2(anchor + direction)))
+   var anchor := Shapes.placement_position(placement)
+   var distance := 1.0 / _local_cell_size() if event.alt_pressed else terrain_snap_step
+   move_requested.emit(selected_index, legal_anchor_for(placement, anchor + Vector2(direction) * distance, true))
   accept_event()
  elif event is InputEventMouseButton:
   _cursor_position = event.position
@@ -1097,7 +1107,7 @@ func _gui_input(event: InputEvent) -> void:
     elif not _connector_drag_kind.is_empty():
      _update_connector_drag(event.position)
     elif _drag_index >= 0:
-     _update_drag(event.position)
+     _update_drag(event.position, event.alt_pressed)
     _end_primary()
    accept_event()
  elif event is InputEventMouseMotion:
@@ -1117,7 +1127,7 @@ func _gui_input(event: InputEvent) -> void:
   elif not _connector_drag_kind.is_empty():
    _update_connector_drag(event.position)
   elif _drag_index >= 0:
-   _update_drag(event.position)
+   _update_drag(event.position, event.alt_pressed)
   elif not marker_tool.is_empty():
    _set_marker_status(marker_tool, _marker_position_value(marker_tool, screen_to_local_pixels(event.position), event.alt_pressed), _inside_grid(event.position))
   elif not gameplay_brush.is_empty() and _inside_grid(event.position):
@@ -1129,8 +1139,8 @@ func _gui_input(event: InputEvent) -> void:
    else:
     _set_status("%s belongs on the %s border. Click or drag there to define its span." % [connector_tool.capitalize(), border])
   elif not brush.is_empty() and _inside_grid(event.position):
-   var anchor := legal_anchor_for(brush, screen_to_grid(event.position))
-   _set_status("Place at (%d, %d). Click to stamp; right-click or Esc to select." % [anchor.x, anchor.y])
+   var anchor := legal_anchor_for(brush, screen_to_grid(event.position), event.alt_pressed)
+   _set_status("Place at %s cells. Alt: free position; right-click or Esc to select." % anchor)
   queue_redraw()
   accept_event()
 
@@ -1194,7 +1204,7 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
  if not brush.is_empty():
   if _inside_grid(pointer) and _valid_stamp(brush):
    var placement := brush.duplicate(true)
-   placement["anchor"] = legal_anchor_for(placement, screen_to_grid(pointer))
+   Shapes.set_placement_position(placement, legal_anchor_for(placement, screen_to_grid(pointer), cycle_overlaps))
    placement_requested.emit(placement)
   return
  # Alt-click preserves access to terrain that shares a connector's border.
@@ -1268,7 +1278,8 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
    var placement: Dictionary = _placements()[target.index]
    _drag_index = target.index
    _drag_start_pointer = screen_to_grid(pointer)
-   _drag_start_anchor = placement.get("anchor", Vector2i.ZERO)
+   _drag_start_anchor = Shapes.placement_position(placement)
+   _drag_last_pointer = pointer
    _drag_anchor = _drag_start_anchor
    _drag_moved = false
   if hits.size() > 1:
@@ -1310,18 +1321,21 @@ func _finish_cycle_click() -> void:
  _select_hit_target(target)
 
 
-func _update_drag(pointer: Vector2) -> void:
+func _update_drag(pointer: Vector2, free_move: bool = false) -> void:
  var placements := _placements()
  if _drag_index >= placements.size():
   cancel_gesture()
   return
+ if pointer.distance_squared_to(_drag_last_pointer) <= POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
+  return
+ _drag_last_pointer = pointer
  var delta := screen_to_grid(pointer) - _drag_start_pointer
  if not _drag_moved and delta.length() * _cell_pixels < 3.0:
   return
  _drag_moved = true
  _pending_cycle_target = {}
- _drag_anchor = legal_anchor_for(placements[_drag_index], Vector2(_drag_start_anchor) + delta)
- _set_status("Move to (%d, %d). Release to apply; Esc cancels." % [_drag_anchor.x, _drag_anchor.y])
+ _drag_anchor = legal_anchor_for(placements[_drag_index], _drag_start_anchor + delta, free_move)
+ _set_status("Move to %s cells. Release to apply; Alt moves freely; Esc cancels." % _drag_anchor)
 
 
 func _marker_position_value(kind: String, position: Vector2, free_move: bool) -> Variant:
@@ -1590,7 +1604,7 @@ func _drop_data(at_position: Vector2, data: Variant) -> void:
   gameplay_placement_requested.emit(object)
   return
  var placement: Dictionary = data["terrain_stamp"].duplicate(true)
- placement["anchor"] = legal_anchor_for(placement, screen_to_grid(at_position))
+ Shapes.set_placement_position(placement, legal_anchor_for(placement, screen_to_grid(at_position), _alt_held))
  set_brush(data["terrain_stamp"])
  placement_requested.emit(placement)
 
@@ -1610,7 +1624,7 @@ func _valid_stamp(placement: Dictionary) -> bool:
   return false
  if Shapes.definition_for_placement(placement).is_empty():
   return false
- var footprint: Vector2i = Shapes.transformed_size(placement)
+ var footprint := Shapes.scaled_size(placement)
  var dimensions := _grid_size()
  return footprint.x > 0 and footprint.y > 0 and footprint.x <= dimensions.x and footprint.y <= dimensions.y
 

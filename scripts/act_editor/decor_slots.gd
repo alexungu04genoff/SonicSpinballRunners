@@ -59,6 +59,6 @@ static func supported_in_document(point: Vector2, document: Resource) -> bool:
  var terrain: Array = []
  for placement: Dictionary in document.placements:
   var points: PackedVector2Array = Shapes.transformed_points(placement)
-  for i in points.size(): points[i] = (points[i] + Vector2(placement.anchor)) * float(document.cell_size)
+  for i in points.size(): points[i] = (points[i] + Shapes.placement_position(placement)) * float(document.cell_size)
   terrain.append({"points": points, "closed": Shapes.definition_for_placement(placement).closed})
  return supported_by_terrain(point, terrain, float(document.cell_size))

@@ -27,6 +27,21 @@ static func transformed_size(placement: Dictionary) -> Vector2i:
  var size: Vector2i = definition.size
  return Vector2i(size.y, size.x) if posmod(placement.get("quarter_turns", 0), 2) else size
 
+static func placement_position(placement: Dictionary) -> Vector2:
+ return Vector2(placement.get("anchor", Vector2i.ZERO)) + placement.get("offset", Vector2.ZERO)
+
+static func set_placement_position(placement: Dictionary, position: Vector2) -> void:
+ var anchor := Vector2i(floori(position.x), floori(position.y))
+ placement["anchor"] = anchor
+ var offset := position - Vector2(anchor)
+ if offset == Vector2.ZERO:
+  placement.erase("offset")
+ else:
+  placement["offset"] = offset
+
+static func scaled_size(placement: Dictionary) -> Vector2:
+ return Vector2(transformed_size(placement)) * float(placement.get("terrain_scale", 1.0))
+
 static func transformed_points(placement: Dictionary) -> PackedVector2Array:
  var definition := definition_for_placement(placement)
  var result := PackedVector2Array()
@@ -46,7 +61,7 @@ static func transformed_points(placement: Dictionary) -> PackedVector2Array:
    point.x = frame.x - point.x
   if placement.get("flip_v", false) == true:
    point.y = frame.y - point.y
-  result.append(point)
+  result.append(point * float(placement.get("terrain_scale", 1.0)))
  return result
 
 static func definition_for_placement(placement: Dictionary) -> Dictionary:

@@ -265,6 +265,52 @@ func check_pinned_corners() -> void:
 		check(not Composite.smooth(square, 1.0, false, 90.0, null, PackedInt32Array([index])).error.is_empty(), "Invalid protected corner indices reject safely")
 
 
+func check_fine_transforms() -> void:
+	var triangle := stamp("triangle_1x2", Vector2i(2, 2))
+	check(not Composite.smooth(triangle, 5.0).error.is_empty(), "Conservative area guard explains rejected high-strength triangle")
+	var reshaped: Dictionary = Composite.smooth(triangle, 5.0, false, 90.0, null, PackedInt32Array(), true)
+	check(reshaped.error.is_empty() and Composite.validation_error(reshaped.placement.outline).is_empty(), "Explicit reshaping allows a valid 500% small triangle")
+	var source := stamp("triangle_3x2", Vector2i(2, 2))
+	for turns in range(4):
+		for mirrors in range(4):
+			var full := source.duplicate(true)
+			full.quarter_turns = turns
+			full.flip_h = bool(mirrors & 1)
+			full.flip_v = bool(mirrors & 2)
+			var half := full.duplicate(true)
+			half["terrain_scale"] = 0.5
+			Shapes.set_placement_position(half, Vector2(2.1234567, 3.9876543))
+			var expected := Shapes.transformed_points(full)
+			for i in expected.size(): expected[i] *= 0.5
+			check(Shapes.transformed_points(half) == expected and Shapes.scaled_size(half) == Vector2(Shapes.transformed_size(full)) * 0.5, "Half-size respects every rotation and mirror")
+			var document := Document.new()
+			document.placements = [half]
+			check(document.validation_errors().is_empty(), "Free half-size transform passes bounds and schema")
+	var left := stamp("rectangle_2x2", Vector2i(2, 2))
+	left["terrain_scale"] = 0.5
+	Shapes.set_placement_position(left, Vector2(2.5, 2.5))
+	var right := left.duplicate(true)
+	Shapes.set_placement_position(right, Vector2(3.5, 2.5))
+	var merged: Dictionary = Composite.merge([left, right])
+	check(merged.error.is_empty() and is_equal_approx(polygon_area(merged.placement.outline), 2.0) and not merged.placement.has("terrain_scale"), "Merge bakes scaled fractional silhouettes once without double scaling")
+	var doc := Document.new()
+	var edge := left.duplicate(true)
+	Shapes.set_placement_position(edge, Vector2(11, 11))
+	doc.placements = [edge]
+	check(doc.validation_errors().is_empty(), "Scaled frame may touch the exact terrain boundary")
+	Shapes.set_placement_position(edge, Vector2(11.001, 11))
+	check(not doc.validation_errors().is_empty(), "Fractional frame crossing the terrain boundary rejects")
+	for change in [{"offset": Vector2(NAN, 0)}, {"offset": Vector2(-0.1, 0)}, {"offset": Vector2(1, 0)}, {"offset": Vector2i.ZERO}, {"terrain_scale": 0.0}, {"terrain_scale": true}, {"terrain_scale": 2.0}]:
+		var invalid := source.duplicate(true)
+		invalid.merge(change, true)
+		doc.placements = [invalid]
+		check(not doc.validation_errors().is_empty(), "Malformed fractional terrain transform rejects")
+	var legacy_path := "res://data/acts/decor_garden_steps.tres"
+	var legacy_bytes := FileAccess.get_file_as_bytes(legacy_path)
+	var migrated: Dictionary = Document.load_document(legacy_path)
+	check(migrated.document != null and not migrated.document.decor_slots.is_empty() and migrated.document.format_version == Document.FORMAT_VERSION and FileAccess.get_file_as_bytes(legacy_path) == legacy_bytes, "Format 7 decorated Act migrates without losing decor or rewriting its source")
+
+
 func check_transforms() -> void:
 	if merged_examples.is_empty(): return
 	var source := merged_examples[0]
@@ -307,6 +353,11 @@ func check_storage() -> Resource:
 	document.placements.append(Composite.smooth(stamp("rectangle_3x3", Vector2i(2, 2)), 2.0, true).placement)
 	document.placements.append(Composite.smooth(stamp("rectangle_3x3", Vector2i(2, 2)), 2.0).placement)
 	document.placements.append(Composite.smooth(stamp("rectangle_3x3", Vector2i(2, 2)), 5.0, true).placement)
+	for id in ["triangle_1x2", "wall_1x2"]:
+		var fine := stamp(id, Vector2i(2, 2), 1, true)
+		fine["terrain_scale"] = 0.5
+		Shapes.set_placement_position(fine, Vector2(2.1234567, 3.9876543))
+		document.placements.append(fine)
 	var exact := exact_placement_bytes(document.placements)
 	check(document.validation_errors().is_empty(), "Composite collection passes the versioned Act schema", str(document.validation_errors()))
 	check(document.save_document(SAVE_PATH) == OK, "Composite document saves through staged and verified persistence")
@@ -378,6 +429,8 @@ func check_runtime(saved: Resource) -> void:
 	var document: Resource = saved.copy_document()
 	# One explicitly merged object must become exactly one collision body and prism.
 	document.placements = [saved.placements[1] if saved.placements.size() > 1 else saved.placements[0]]
+	document.placements[0]["terrain_scale"] = 0.5
+	Shapes.set_placement_position(document.placements[0], Vector2(2.237, 2.819))
 	document.grid_size = Vector2i(9, 8)
 	document.spawn_position = Vector2(225, 350)
 	var before: String = document.fingerprint()
@@ -404,7 +457,7 @@ func check_runtime(saved: Resource) -> void:
 	var terrain: Dictionary = result.terrain[0]
 	var expected := Shapes.transformed_points(document.placements[0])
 	for index in expected.size():
-		expected[index] = expected[index] * float(document.cell_size) + Vector2(document.placements[0].anchor) * float(document.cell_size)
+		expected[index] = expected[index] * float(document.cell_size) + Shapes.placement_position(document.placements[0]) * float(document.cell_size)
 	check(terrain.shape_id == "composite" and terrain.closed and terrain.points == expected and terrain.collision is CollisionPolygon2D
 		and terrain.collision.build_mode == CollisionPolygon2D.BUILD_SOLIDS and terrain.collision.polygon == expected,
 		"Runtime descriptor and solid collider use the editor's identical final transformed outline")
@@ -529,6 +582,7 @@ func run() -> void:
 		check_extended_smoothing()
 		check_join_smoothing()
 		check_pinned_corners()
+		check_fine_transforms()
 		check_transforms()
 		await check_runtime(check_storage())
 	print("RESULT | Composite terrain | %d checks | %d failures" % [checks, failures])

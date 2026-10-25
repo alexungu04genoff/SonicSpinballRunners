@@ -75,7 +75,7 @@ func run() -> void:
   ResourceSaver.save(old, path)
   var bytes := FileAccess.get_file_as_bytes(path)
   var migrated := Act.load_document(path)
-  check(migrated.document != null and migrated.document.decor_slots.is_empty() and migrated.document.format_version == 7 and bytes == FileAccess.get_file_as_bytes(path), "Format %d loads empty decor without rewriting source" % version)
+  check(migrated.document != null and migrated.document.decor_slots.is_empty() and migrated.document.format_version == Act.FORMAT_VERSION and bytes == FileAccess.get_file_as_bytes(path), "Format %d loads empty decor without rewriting source" % version)
  for file: String in ["decor_terraces", "decor_garden_steps", "decor_loop_court"]:
   var example := Act.load_document("res://data/acts/%s.tres" % file)
   check(example.document != null, "Example validates: " + file)

@@ -46,7 +46,7 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
   var placement: Dictionary = document.placements[index]
   var definition: Dictionary = Shapes.definition_for_placement(placement)
   var points := PackedVector2Array()
-  var anchor := Vector2(placement.anchor) * float(document.cell_size)
+  var anchor := Shapes.placement_position(placement) * float(document.cell_size)
   for point: Vector2 in Shapes.transformed_points(placement):
    points.append(point * float(document.cell_size) + anchor)
   var body := StaticBody2D.new()
