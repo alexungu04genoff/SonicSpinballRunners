@@ -157,9 +157,9 @@ func _composite_validation_errors(placement: Dictionary) -> PackedStringArray:
  if typeof(placement.get("composite_version")) != TYPE_INT or placement.get("composite_version") != COMPOSITES.VERSION:
   errors.append("composite_version must be the supported integer version %d." % COMPOSITES.VERSION)
  if typeof(placement.get("smoothing_strength")) not in [TYPE_INT, TYPE_FLOAT]:
-  errors.append("smoothing_strength must be a number between 0 and 2 (0%–200%).")
+  errors.append("smoothing_strength must be a number between 0 and 5 (0%–500%).")
  elif not is_finite(placement.smoothing_strength) or placement.smoothing_strength < 0.0 or placement.smoothing_strength > COMPOSITES.MAX_STRENGTH:
-  errors.append("smoothing_strength must be finite and between 0 and 2 (0%–200%).")
+  errors.append("smoothing_strength must be finite and between 0 and 5 (0%–500%).")
  if placement.base_size.x <= 0 or placement.base_size.y <= 0 or placement.base_size.x > COMPOSITES.MAX_COORDINATE or placement.base_size.y > COMPOSITES.MAX_COORDINATE:
   errors.append("composite base footprint must be positive and within the supported terrain extent.")
  if typeof(placement.get("outline")) != TYPE_PACKED_VECTOR2_ARRAY:

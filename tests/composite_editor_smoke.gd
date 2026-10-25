@@ -279,6 +279,45 @@ func check_protected_primitive() -> void:
 	check(editor.document.fingerprint() == before, "Undo protected smoothing restores the exact primitive")
 
 
+func check_join_controls() -> void:
+	editor.new_document()
+	var left := stamp("triangle_2x2", Vector2i(1, 3))
+	left.flip_h = true
+	editor.add_placement(left)
+	editor.add_placement(stamp("rectangle_2x2", Vector2i(3, 3)))
+	editor.add_placement(stamp("triangle_2x2", Vector2i(5, 3)))
+	var selected: Array[int] = [0, 1, 2]
+	editor.canvas.set_terrain_selection(selected)
+	editor.composite_preserve_corners.button_pressed = false
+	editor._refresh()
+	await click_control(editor.composite_only_joins)
+	check(editor.composite_only_joins.button_pressed and editor.buttons.smooth.disabled, "Join-only mode requires Merge + Smooth instead of guessing a single outline's old seams")
+	var before: String = editor.document.fingerprint()
+	var history_size: int = editor.undo_stack.size()
+	editor.composite_strength.get_line_edit().text = "500"
+	await click_control(editor.buttons.merge_smooth)
+	check(editor.composite_preview_active and not editor.composite_preview.is_empty() and editor.composite_strength.value == 500, "Merge + Smooth commits typed strength without Enter and previews the actual 500% join-only result")
+	check(editor.composite_preview.outline.has(Vector2(0, 2)) and editor.composite_preview.outline.has(Vector2(6, 2)), "500% editor preview keeps both original triangle tips exact")
+	await click_control(editor.composite_preserve_corners)
+	editor.composite_angle.value = 135
+	await process_frame
+	check(editor.composite_angle.editable and editor.composite_preview.outline == editor._composite_base.outline, "Editable preserved angle can protect the 135-degree connection corners too")
+	editor.composite_angle.value = 45
+	await process_frame
+	check(editor.composite_preview.outline != editor._composite_base.outline and editor.composite_preview.outline.has(Vector2(0, 2)), "Changing protected angle rebuilds the preview while preserving untouched tips")
+	check(editor.document.fingerprint() == before and editor.undo_stack.size() == history_size, "Join and angle settings never add preview history")
+	if DisplayServer.get_name() != "headless":
+		await RenderingServer.frame_post_draw
+		check(root.get_texture().get_image().save_png("res://test-results/join-only-smoothing-preview.png") == OK, "500% join-only preview capture saved")
+	var expected: Dictionary = editor.composite_preview.duplicate(true)
+	await click_control(editor.buttons.composite_apply)
+	check(editor.document.placements.size() == 1 and editor.document.placements[0] == expected and editor.undo_stack.size() == history_size + 1, "Join-only Apply commits one exact composite in one history step")
+	check(editor.save_to(SAVE_PATH) and editor.load_from(SAVE_PATH) and editor.document.placements[0] == expected, "500% join-only result saves and reloads exactly without source seams")
+	editor.composite_only_joins.button_pressed = false
+	editor.composite_preserve_corners.button_pressed = false
+	editor.composite_angle.value = 90
+
+
 func capture_preview() -> void:
 	await reset_fixture()
 	var left := stamp("triangle_2x2", Vector2i(0, 4))
@@ -314,6 +353,7 @@ func run() -> void:
 	await check_composite_edits_and_persistence()
 	await check_unchanged_smoothing()
 	await check_protected_primitive()
+	await check_join_controls()
 	await capture_preview()
 	print("RESULT | Composite editor UI | %d checks | %d failures" % [checks, failures])
 	editor.queue_free()

@@ -210,12 +210,40 @@ func check_extended_smoothing() -> void:
 			check(rounded.placement.outline.has(point), "Right-angle vertex remains exact independent of winding: " + str(point))
 		check(not rounded.placement.outline.has(Vector2(2, 2)) and not rounded.placement.outline.has(Vector2(0, 4)), "Preserving square corners still rounds oblique joins")
 	for example in merged_examples:
-		for strength in [1.0, 1.25, 1.5, 1.75, 2.0]:
+		for strength in [1.0, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0, 5.0]:
 			for preserve in [false, true]:
 				var result: Dictionary = Composite.smooth(example, strength, preserve)
 				check((not result.error.is_empty() and result.placement.is_empty()) or (result.error.is_empty() and Composite.validation_error(result.placement.outline).is_empty()), "Extended strength either validates or rejects without an applyable invalid outline")
-	check(not Composite.smooth(square, 2.01).error.is_empty(), "Strength above 200% rejects clearly")
+	check(not Composite.smooth(square, 5.01).error.is_empty(), "Strength above 500% rejects clearly")
 	check(Composite.smooth(square, 0.0, true).placement.outline == original, "Zero strength remains exact with preservation enabled")
+
+
+func check_join_smoothing() -> void:
+	var sources: Array = [stamp("triangle_2x2", Vector2i(1, 3), 0, true), stamp("rectangle_2x2", Vector2i(3, 3)), stamp("triangle_2x2", Vector2i(5, 3))]
+	var union: Dictionary = Composite.merge(sources)
+	check(union.error.is_empty() and union.join_indices.size() == 2, "Triangle-square-triangle identifies exactly the two source connections")
+	var rounded: Dictionary = Composite.smooth(union.placement, 5.0, false, 90.0, union.join_indices)
+	check(rounded.error.is_empty(), "Join-only smoothing works at 500%", rounded.error)
+	if not rounded.placement.is_empty():
+		check(rounded.placement.outline.has(Vector2(0, 2)) and rounded.placement.outline.has(Vector2(6, 2)), "Join-only smoothing preserves both original triangle tips exactly")
+		check(not rounded.placement.outline.has(Vector2(2, 0)) and not rounded.placement.outline.has(Vector2(4, 0)), "Only the slope-to-square connections are rounded")
+		var lighter: Dictionary = Composite.smooth(union.placement, 2.0, false, 90.0, union.join_indices)
+		check(polygon_area(rounded.placement.outline) < polygon_area(lighter.placement.outline), "500% makes a broader connection curve than 200%")
+		merged_examples.append(rounded.placement)
+	var reordered: Dictionary = Composite.merge([sources[2], sources[0], sources[1]])
+	check(reordered.placement == union.placement and reordered.join_indices == union.join_indices, "Join detection is independent of selection order")
+	var contained: Dictionary = Composite.merge([stamp("rectangle_3x3", Vector2i(2, 2)), stamp("rectangle_1x1", Vector2i(3, 3))])
+	check(contained.join_indices.is_empty() and Composite.smooth(contained.placement, 5.0, false, 90.0, contained.join_indices).placement.outline == contained.placement.outline, "Contained terrain has no exposed joins and preserves all corners")
+	var overlap: Dictionary = Composite.merge([stamp("rectangle_3x3", Vector2i(2, 2)), stamp("circle_3x3", Vector2i(3, 1))])
+	check(overlap.error.is_empty() and not overlap.join_indices.is_empty(), "Curved overlaps identify newly exposed boundary connections")
+	var later: Dictionary = Composite.merge([union.placement, stamp("circle_2x2", Vector2i(3, 2))])
+	check(later.error.is_empty() and not later.join_indices.is_empty(), "Composite plus primitive identifies the current merge's joins")
+	var triangle := stamp("triangle_3x3", Vector2i(2, 2), 1, true)
+	var protected: Dictionary = Composite.smooth(triangle, 1.0, true, 45.0)
+	check(protected.error.is_empty() and protected.placement.outline.has(Vector2.ZERO) and protected.placement.outline.has(Vector2(3, 3)) and not protected.placement.outline.has(Vector2(0, 3)), "Editable 45-degree preservation protects acute tips while rounding the square corner")
+	for angle in [0.0, 180.0, NAN]:
+		check(not Composite.smooth(triangle, 1.0, true, angle).error.is_empty(), "Invalid preserved angles reject clearly")
+	check(not Composite.smooth(union.placement, 1.0, false, 90.0, PackedInt32Array([9999])).error.is_empty(), "Invalid join indices cannot produce an applyable result")
 
 
 func check_transforms() -> void:
@@ -259,6 +287,7 @@ func check_storage() -> Resource:
 			document.placements.append(smooth.placement)
 	document.placements.append(Composite.smooth(stamp("rectangle_3x3", Vector2i(2, 2)), 2.0, true).placement)
 	document.placements.append(Composite.smooth(stamp("rectangle_3x3", Vector2i(2, 2)), 2.0).placement)
+	document.placements.append(Composite.smooth(stamp("rectangle_3x3", Vector2i(2, 2)), 5.0, true).placement)
 	var exact := exact_placement_bytes(document.placements)
 	check(document.validation_errors().is_empty(), "Composite collection passes the versioned Act schema", str(document.validation_errors()))
 	check(document.save_document(SAVE_PATH) == OK, "Composite document saves through staged and verified persistence")
@@ -479,6 +508,7 @@ func run() -> void:
 		check_rejections()
 		check_smoothing()
 		check_extended_smoothing()
+		check_join_smoothing()
 		check_transforms()
 		await check_runtime(check_storage())
 	print("RESULT | Composite terrain | %d checks | %d failures" % [checks, failures])
