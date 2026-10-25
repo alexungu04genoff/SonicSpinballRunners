@@ -202,10 +202,13 @@ func _ready() -> void:
  var camera_specs := {
   "zoom": [0.6, 2.5, 0.1, "Follow zoom [multiplier]"],
   "dead_zone_y": [0.0, 250.0, 5.0, "Vertical dead zone [px]"],
+  "dead_zone_x": [0.0, 100.0, 1.0, "Horizontal dead zone [px]"],
   "look_ahead": [0.0, 250.0, 5.0, "Upward look-ahead [px]"],
-  "vertical_response": [1.0, 12.0, 0.25, "Vertical response [1/s]"],
+  "screen_target_y": [0.3, 0.6, 0.01, "Ball vertical screen target [fraction]"],
+  "screen_margin_y": [0.1, 0.3, 0.01, "Vertical visibility margin [fraction]"],
+  "vertical_response": [0.5, 60.0, 0.5, "Vertical response [1/s]"],
   "horizontal_response": [0.25, 6.0, 0.25, "Horizontal response [1/s]"],
-  "max_speed": [600.0, 4000.0, 100.0, "Camera speed limit [px/s]"],
+  "max_speed": [400.0, 8000.0, 100.0, "Soft camera speed limit [px/s]"],
  }
  for key: String in camera_specs:
   var spec: Array = camera_specs[key]

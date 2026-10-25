@@ -8,7 +8,7 @@ Optional presentation experiment in the **normal Green Hill application**. Start
 - Click **Retro...** in the normal toolbar or press **Shift+F4** to open the live panel. Check any combination of effects and adjust sliders immediately, including while paused.
 - **F1** also provides a multiselect menu that stays open while checking effects.
 - **All OFF** clears the selection. **Reset tuning** restores parameter defaults while retaining selected effects. Closing the panel retains the current settings.
-- **F11 / Fullscreen** in the footer switches to fullscreen; press F11 again or click Windowed to restore the previous window mode and dimensions. Launch stays windowed.
+- **F11 / Play View** in the footer enters fullscreen gameplay with all development panels, selectors, diagnostics and overlays hidden. Score, specials, Scorecraft and gameplay modals remain. F11 restores the previous window mode, dimensions, position and development UI. Launch stays windowed. Retro effects remain active, but their development controls and F4 shortcut are hidden/disabled during Player View.
 
 Green Hill starts with **Dramatic Pinball** and **follow zoom 2.0**, including authored Acts. F1 still exposes all camera choices; overview retains its complete-table framing. Shared Physics Playground camera defaults are unchanged.
 
@@ -70,6 +70,10 @@ The physics regression compares all 600 ticks of identical launch, steering and 
 The optional `--benchmark` uses the static scene, VSync disabled, no FPS cap, 90 warmup frames and 240 samples per effect or stack, then reverses the order. It includes Pixel+CRT and all four effects. Shader startup and screenshot readback are excluded. Reports distinguish wall-frame duration, CPU rendering time and GPU query results. These are local static-scene measurements, not a hardware-independent FPS claim or moving-game benchmark. For native GPU timestamps, use `--rendering-driver opengl3` and append `--native-report` after `--`.
 
 ## Startup defaults and fullscreen verification — 2026-10-25
+
+The later Player View pass replaces the simple fullscreen toggle with a clean gameplay view. Graphical `tests/player_view_smoke.gd`: **49 checks, zero failures**, including native fullscreen/window restoration, maximized windows, development panel/overlay restoration, character study, 8,000 px/s upward observation probes at 30/60/120 Hz, three camera presets, three zoom levels, a 200 ms hitch, authored scaling and a live 1,800 px/s upward launch. The live launch remained inside the 22–78% vertical safety band. The same graphical suite and editor import passed in an isolated copy containing only this pass over committed code. Fullscreen screenshots were visually inspected.
+
+Related checks: vertical camera **22/22**, authored main-game integration **70/70**, headless Retro adapter **68/68**, and exact 600-tick Retro physics replays **8/8**. Camera comfort and flipper timing still need human playtesting. F1 camera controls expose the provisional strict-Y/soft-X settings; Player View retains gameplay follow zoom instead of selecting overview.
 
 Headless retro smoke: **68 checks, zero failures**. ANGLE rendered smoke: **103 checks, zero failures**, including the actual fullscreen button and F11 round-trip with window-size restoration. Authored main-game regression: **70 checks, zero failures**, including startup perspective, zoom controls, overview and fast-ball camera tracking. Exact 120 Hz physics replay: **8 checks, zero failures**. The startup preview was visually inspected. Sandbox runs emit the same certificate-store read warning documented below; no script or shader errors occurred. Fullscreen remains opt-in and runtime slider edits remain session-only.
 

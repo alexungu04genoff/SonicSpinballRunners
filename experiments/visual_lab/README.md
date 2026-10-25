@@ -45,7 +45,7 @@ Discovered tools: **Godot 4.7.2 stable**, **Blender 5.2.3 LTS**. The launcher al
 | Escape / Menu | Pause or resume; leave character study |
 | R / Back | Reset and relaunch |
 | F1 / Tuning button | Open the complete existing physics, camera, seed and construction-grid controls |
-| F11 / Fullscreen button | Toggle fullscreen and restore the previous window size |
+| F11 / Play View button | Fullscreen gameplay with development UI hidden; press again to restore the development window and tools |
 | F4 | Cycle OFF, PIXEL / DITHER, N64-ish, CRT and VHS; custom stacks return to OFF |
 | Retro... / Shift+F4 | Open live effect checkboxes and tuning sliders; F1 also has a multiselect menu. HUD stays crisp |
 | O / Overview button | Toggle full-course overview and ball-follow camera |

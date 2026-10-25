@@ -39,6 +39,13 @@ var fullscreen_button: Button
 var _windowed_mode := DisplayServer.WINDOW_MODE_WINDOWED
 var _windowed_size := Vector2i.ZERO
 var _windowed_position := Vector2i.ZERO
+var player_view := false
+var development_footer: PanelContainer
+var development_subtitle: Label
+var player_hint: Label
+var _development_state: Dictionary = {}
+var _development_visibility: Dictionary = {}
+var _overlay_visibility: Array[bool] = []
 
 func _ready() -> void:
  DisplayServer.window_set_title("Sonic Spinball Runners — Green Hill Visual Lab")
@@ -71,6 +78,7 @@ func _ready() -> void:
  retro_controls.name = "RetroControls"
  add_child(retro_controls)
  retro_controls.install(retro_filter, debug_panel.camera_presets.get_parent(), play_buttons)
+ get_viewport().size_changed.connect(_position_player_hud)
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--capture="):
    _capture_kind = argument.trim_prefix("--capture=")
@@ -135,6 +143,9 @@ func _build_presentation() -> void:
 func _rebuild_presentation() -> void:
  super._rebuild_presentation()
  character.refresh_playfield()
+ if player_view:
+  for overlay: Node3D in _development_overlays():
+   overlay.hide()
 
 func _add_zone_presentation() -> void:
  _add_area_feedback()
@@ -218,7 +229,8 @@ func _build_lab_ui() -> void:
  title_panel.add_child(title_stack)
  title_stack.add_child(_label("SONIC SPINBALL RUNNERS", 13, Color("a4e5e3")))
  title_stack.add_child(_label("GREEN HILL", 31, Color("ffe373")))
- title_stack.add_child(_label("P L A Y A B L E   S A N D B O X", 12, Color("ffffff")))
+ development_subtitle = _label("P L A Y A B L E   S A N D B O X", 12, Color("ffffff"))
+ title_stack.add_child(development_subtitle)
  var score_panel := PanelContainer.new()
  score_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
  score_panel.position = Vector2(-250, 24)
@@ -233,6 +245,7 @@ func _build_lab_ui() -> void:
  score_label_lab = _label("00 / 000000", 25, Color("ffe373"))
  scores.add_child(score_label_lab)
  var footer := PanelContainer.new()
+ development_footer = footer
  footer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
  footer.offset_left = 24
  footer.offset_right = -24
@@ -268,8 +281,8 @@ func _build_lab_ui() -> void:
  source_note.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  source_note.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
  source_row.add_child(source_note)
- fullscreen_button = _button("F11  Fullscreen", toggle_fullscreen)
- fullscreen_button.tooltip_text = "Toggle fullscreen; F11 returns to your previous window size."
+ fullscreen_button = _button("F11  Play View", toggle_fullscreen)
+ fullscreen_button.tooltip_text = "Fullscreen Player View; F11 restores the development window and tools."
  source_row.add_child(fullscreen_button)
  play_buttons = HBoxContainer.new()
  play_buttons.add_theme_constant_override("separation", 8)
@@ -307,6 +320,12 @@ func _build_lab_ui() -> void:
  view_button = _button("C  Character close-up", func(): _set_close_view(not close_view))
  top_row.add_child(view_button)
  stack.add_child(_label("Q / E  Flippers    SPACE  Special    ← / →  Steer    ESC  Pause    R  Reset    O  Overview    F1  Tuning    F4  Retro filter    •    Pause or wait at serve to build", 13, Color("cce5e0")))
+ player_hint = _label("", 16, Color("ffe373"))
+ root.add_child(player_hint)
+ player_hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+ player_hint.offset_top = -40
+ player_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+ player_hint.hide()
  act_picker = FileDialog.new()
  act_picker.title = "Load an authored Act into Green Hill"
  act_picker.access = FileDialog.ACCESS_FILESYSTEM
@@ -391,27 +410,91 @@ func _input(event: InputEvent) -> void:
   if event.physical_keycode == KEY_F11 or event.keycode == KEY_F11:
    toggle_fullscreen()
    get_viewport().set_input_as_handled()
+  elif player_view and event.physical_keycode in [KEY_F1, KEY_F4, KEY_C, KEY_O, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6]:
+   get_viewport().set_input_as_handled()
 
 func toggle_fullscreen() -> void:
- if DisplayServer.get_name() == "headless":
+ # Modal source/Chao editors own pause and focus until dismissed.
+ if is_source_picker_open() or debug_panel.challenge_panel.chao_lab.visible:
   return
- var mode := DisplayServer.window_get_mode()
- if mode in [DisplayServer.WINDOW_MODE_FULLSCREEN, DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN]:
-  DisplayServer.window_set_mode(_windowed_mode)
-  if _windowed_mode == DisplayServer.WINDOW_MODE_WINDOWED and _windowed_size != Vector2i.ZERO:
-   DisplayServer.window_set_size(_windowed_size)
-   DisplayServer.window_set_position(_windowed_position)
-  fullscreen_button.text = "F11  Fullscreen"
- else:
-  _windowed_mode = mode
+ var window := get_window()
+ var challenge: ScoreAttackPanel = debug_panel.challenge_panel
+ if not player_view:
+  _windowed_mode = DisplayServer.window_get_mode()
   _windowed_size = DisplayServer.window_get_size()
   _windowed_position = DisplayServer.window_get_position()
-  DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
-  fullscreen_button.text = "F11  Windowed"
+  _development_state = {
+   "aspect": window.content_scale_aspect,
+   "offsets": Vector4(view_container.offset_left, view_container.offset_top, view_container.offset_right, view_container.offset_bottom),
+   "follow": presentation.camera_follow_enabled, "close": close_view,
+   "character_position": challenge.character_panel.position,
+   "zone_position": challenge.zone_panel.hud.position, "victory_position": challenge.victory.position,
+  }
+  if close_view:
+   _set_close_view(false)
+  _development_visibility.clear()
+  for item: Node in [debug_panel, development_footer, development_subtitle, retro_controls, challenge.get_child(0), challenge.character_panel.combo_hud.toggle]:
+   _development_visibility[item] = item.visible
+   item.visible = false
+  _development_visibility[lab_ui] = lab_ui.visible
+  lab_ui.visible = true
+  _overlay_visibility.clear()
+  for overlay: Node3D in _development_overlays():
+   _overlay_visibility.append(overlay.visible)
+   overlay.hide()
+  retro_controls.set_process_unhandled_key_input(false)
+  player_view = true
+  player_hint.show()
+  window.content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND
+  view_container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  if not presentation.camera_follow_enabled:
+   presentation.set_camera_follow(true)
+  if DisplayServer.get_name() != "headless":
+   DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+  _position_player_hud()
+ else:
+  player_view = false
+  player_hint.hide()
+  window.content_scale_aspect = _development_state.aspect
+  if DisplayServer.get_name() != "headless":
+   DisplayServer.window_set_mode(_windowed_mode)
+   if _windowed_mode == DisplayServer.WINDOW_MODE_WINDOWED:
+    DisplayServer.window_set_size(_windowed_size)
+    DisplayServer.window_set_position(_windowed_position)
+  var offsets: Vector4 = _development_state.offsets
+  view_container.offset_left = offsets.x
+  view_container.offset_top = offsets.y
+  view_container.offset_right = offsets.z
+  view_container.offset_bottom = offsets.w
+  for item: Node in _development_visibility:
+   if is_instance_valid(item):
+    item.visible = _development_visibility[item]
+  var overlays := _development_overlays()
+  for index in overlays.size():
+   overlays[index].visible = _overlay_visibility[index]
+  retro_controls.set_process_unhandled_key_input(true)
+  challenge.character_panel.position = _development_state.character_position
+  challenge.zone_panel.hud.position = _development_state.zone_position
+  challenge.victory.position = _development_state.victory_position
+  presentation.set_camera_follow(_development_state.follow)
+  if _development_state.close:
+   _set_close_view(true)
  get_viewport().gui_release_focus()
 
+func _development_overlays() -> Array[Node3D]:
+ return [presentation.physics_overlay, presentation.chunk_overlay, presentation.connector_overlay, presentation.construction_grid_overlay]
+
+func _position_player_hud() -> void:
+ if not player_view:
+  return
+ var available := get_viewport().get_visible_rect().size
+ var challenge: ScoreAttackPanel = debug_panel.challenge_panel
+ challenge.character_panel.position = Vector2(available.x - 275, 140)
+ challenge.zone_panel.hud.position = Vector2(24, 155)
+ challenge.victory.position = (available - challenge.victory.size) * 0.5
+
 func _unhandled_key_input(event: InputEvent) -> void:
- if is_source_picker_open() or not event is InputEventKey or not event.pressed or event.echo:
+ if player_view or is_source_picker_open() or not event is InputEventKey or not event.pressed or event.echo:
   return
  match event.physical_keycode:
   KEY_1: _select_pose("roll")
@@ -426,14 +509,14 @@ func _unhandled_key_input(event: InputEvent) -> void:
   KEY_O: _toggle_overview()
 
 func _toggle_overview() -> void:
- if close_view:
+ if player_view or close_view:
   return
  presentation.set_camera_follow(not presentation.camera_follow_enabled)
  debug_panel.camera_follow.set_pressed_no_signal(presentation.camera_follow_enabled)
  get_viewport().gui_release_focus()
 
 func toggle_debug() -> void:
- if is_source_picker_open() or zone.state == ZoneRun.State.DRAFT:
+ if player_view or is_source_picker_open() or zone.state == ZoneRun.State.DRAFT:
   return
  if close_view:
   _set_close_view(false)
@@ -476,6 +559,8 @@ func _physics_process(delta: float) -> void:
 func _process(_delta: float) -> void:
  if not is_instance_valid(character) or not is_instance_valid(pose_label):
   return
+ if player_view:
+  player_hint.text = "PAUSED · Esc / Menu to resume" if get_tree().paused else ("Enter / X to launch · Q / E flippers · ← / → steer · Space / A special" if ball.serve_pending else "")
  var context := "CHARACTER STUDY" if close_view else ("PAUSED" if get_tree().paused else ("READY TO ROLL IN" if ball.serve_pending else "LIVE PLAY"))
  if score_attack.state == ScoreAttack.State.COMPLETE and not close_view:
   context = "SCORE ATTACK CLEAR"

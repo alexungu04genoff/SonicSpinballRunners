@@ -104,8 +104,9 @@ func run() -> void:
   var one_twenty := simulate(120, descending)
   check(sixty.monotonic and one_twenty.monotonic and sixty.framed and one_twenty.framed and sixty.max_step <= float(p.camera_settings.max_speed) / 60.0 + 0.001 and one_twenty.max_step <= float(p.camera_settings.max_speed) / 120.0 + 0.001, "Camera tracks %s at 60/120 Hz with visible ball and bounded monotonic movement" % ("descent" if descending else "ascent"), str([sixty, one_twenty]))
   check(sixty.focus.distance_to(one_twenty.focus) < 15.0, "Camera response is consistent across 60/120 Hz")
- p.reset_camera(Vector2(400, 1100))
- game.ball.position = Vector2(400, p.camera_focus.y + p.camera_settings.look_ahead + 25.0)
+ game.ball.position = Vector2(400, 1100)
+ p.reset_camera(game.ball.position)
+ game.ball.position.y += float(p.camera_settings.dead_zone_y) * 0.5
  var stationary := p.camera_focus
  p._update_camera(0.05)
  check(p.camera_focus.is_equal_approx(stationary), "Vertical dead zone absorbs small ball movement")
@@ -116,7 +117,7 @@ func run() -> void:
  game.ball.position = Vector2(100, 200)
  prior = p.camera_focus
  p._update_camera(1.0 / 60.0)
- check(p.camera_focus.distance_to(prior) <= float(p.camera_settings.max_speed) / 60.0 + 0.001 and p.camera.basis.is_equal_approx(fixed_rotation), "Abrupt rebound observation respects movement cap and keeps rotation fixed")
+ check(visible_point(p, TablePresentation.map_point(game.ball.position, p.ball_height())) and p.camera.basis.is_equal_approx(fixed_rotation), "Abrupt rebound prioritizes ball visibility over the soft speed cap and keeps rotation fixed")
  prior = p.camera_focus
  p._process(0.5)
  check(p.camera_focus == prior, "Pause freezes follow despite changed ball observations")

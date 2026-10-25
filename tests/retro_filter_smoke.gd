@@ -146,14 +146,14 @@ func run() -> void:
   var window_mode := DisplayServer.window_get_mode()
   game.fullscreen_button.pressed.emit()
   await frames(12)
-  check(DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN and game.fullscreen_button.text == "F11  Windowed", "Fullscreen button enters fullscreen and offers Windowed")
+  check(DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN and game.player_view and not game.development_footer.is_visible_in_tree(), "Play View button enters fullscreen and hides the development toolbar")
   check(game.view.size == Vector2i(game.view_container.size), "World viewport follows fullscreen sizing")
   var fullscreen_key := InputEventKey.new()
   fullscreen_key.physical_keycode = KEY_F11
   fullscreen_key.pressed = true
   root.push_input(fullscreen_key, true)
   await frames(12)
-  check(DisplayServer.window_get_mode() == window_mode and DisplayServer.window_get_size() == window_size and game.fullscreen_button.text == "F11  Fullscreen", "F11 restores the previous window mode and dimensions")
+  check(DisplayServer.window_get_mode() == window_mode and DisplayServer.window_get_size() == window_size and not game.player_view and game.fullscreen_button.text == "F11  Play View", "F11 restores the previous development window mode and dimensions")
  if graphical and OS.get_cmdline_user_args().has("--benchmark"):
   DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
   Engine.max_fps = 0

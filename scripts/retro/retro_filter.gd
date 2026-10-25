@@ -42,6 +42,7 @@ func attach(target: SubViewportContainer, viewport: SubViewport) -> void:
  _output = TextureRect.new()
  _output.name = "RetroWorldOutput"
  _output.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+ _output.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
  _output.mouse_filter = Control.MOUSE_FILTER_IGNORE
  _output.texture = world_view.get_texture()
  container.add_child(_output)

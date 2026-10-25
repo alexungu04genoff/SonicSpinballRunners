@@ -19,8 +19,8 @@ var camera_preset: int = CameraPreset.REAL_PINBALL
 var camera_follow_enabled: bool = true
 ## Distances are physics pixels, speed is pixels/second, response is inverse seconds.
 ## Zoom is a dimensionless multiplier on each source's default follow framing.
-var camera_settings: Dictionary = {"zoom": 1.0, "dead_zone_y": 100.0, "look_ahead": 100.0, "vertical_response": 5.0, "horizontal_response": 2.0, "max_speed": 1800.0}
-const CAMERA_LIMITS: Dictionary = {"zoom": Vector2(0.6, 2.5), "dead_zone_y": Vector2(0, 250), "look_ahead": Vector2(0, 250), "vertical_response": Vector2(0.5, 12), "horizontal_response": Vector2(0.25, 6), "max_speed": Vector2(400, 4000)}
+var camera_settings: Dictionary = {"zoom": 1.0, "dead_zone_y": 12.0, "dead_zone_x": 18.0, "look_ahead": 0.0, "screen_target_y": 0.38, "screen_margin_y": 0.22, "vertical_response": 28.0, "horizontal_response": 2.0, "max_speed": 4000.0}
+const CAMERA_LIMITS: Dictionary = {"zoom": Vector2(0.6, 2.5), "dead_zone_y": Vector2(0, 250), "dead_zone_x": Vector2(0, 100), "look_ahead": Vector2(0, 250), "screen_target_y": Vector2(0.3, 0.6), "screen_margin_y": Vector2(0.1, 0.3), "vertical_response": Vector2(0.5, 60), "horizontal_response": Vector2(0.25, 6), "max_speed": Vector2(400, 8000)}
 const FOLLOW_HEIGHT: float = 1100.0
 const FOLLOW_REFERENCE_WIDTH: float = 800.0
 const AUTHORED_FOLLOW_ZOOM: float = 2.0
@@ -463,10 +463,14 @@ func reset_camera(at: Vector2 = Vector2.INF) -> void:
  if not is_instance_valid(camera):
   return
  var point := ball.position if at == Vector2.INF else at
- point.x = _horizontal_follow_target(point.x)
- camera_focus = _clamp_focus(point + Vector2(0, -float(camera_settings.look_ahead) / _follow_zoom())) if camera_follow_enabled else table_bounds.get_center()
+ camera_focus = _clamp_focus(Vector2(_horizontal_follow_target(point.x), point.y)) if camera_follow_enabled else table_bounds.get_center()
  camera_target = camera_focus
  _configure_camera()
+ if camera_follow_enabled:
+  camera_focus.y = _framed_focus(camera_focus, point).y
+  camera_focus = _keep_ball_in_view(_clamp_focus(camera_focus), point)
+  camera_target = camera_focus
+  camera.position = map_point(camera_focus) + _camera_offset
 
 func _follow_zoom() -> float:
  return float(camera_settings.zoom) * (AUTHORED_FOLLOW_ZOOM if authored_mode else 1.0)
@@ -531,11 +535,18 @@ func _configure_camera() -> void:
 func _update_camera(delta: float) -> void:
  if Vector2(camera.get_viewport().size) != _camera_viewport_size:
   _configure_camera()
+  if camera_follow_enabled:
+   camera_focus = _keep_ball_in_view(camera_focus)
+   camera.position = map_point(camera_focus) + _camera_offset
  if not camera_follow_enabled or delta <= 0.0:
   return
  # The ball only supplies observations. No transform or impulse is written to physics.
- var desired := Vector2(_horizontal_follow_target(ball.position.x), ball.position.y - float(camera_settings.look_ahead) / _follow_zoom())
- camera_target = Vector2(desired.x, camera_focus.y)
+ var desired := _framed_focus(Vector2(_horizontal_follow_target(ball.position.x), ball.position.y))
+ camera_target = camera_focus
+ var horizontal_error := desired.x - camera_focus.x
+ var horizontal_dead_zone := float(camera_settings.dead_zone_x) / _follow_zoom()
+ if absf(horizontal_error) > horizontal_dead_zone:
+  camera_target.x = desired.x - signf(horizontal_error) * horizontal_dead_zone
  var vertical_error := desired.y - camera_focus.y
  var dead_zone := float(camera_settings.dead_zone_y) / _follow_zoom()
  if absf(vertical_error) > dead_zone:
@@ -544,28 +555,42 @@ func _update_camera(delta: float) -> void:
  # Exponential response is frame-rate independent; the speed limit bounds impact jumps.
  var step := minf(delta, 0.05)
  var next := Vector2(lerpf(camera_focus.x, camera_target.x, 1.0 - exp(-float(camera_settings.horizontal_response) * step)), lerpf(camera_focus.y, camera_target.y, 1.0 - exp(-float(camera_settings.vertical_response) * step)))
- if _follow_zoom() > 1.0:
-  next = _keep_ball_in_view(next)
  camera_focus += (next - camera_focus).limit_length(float(camera_settings.max_speed) * step)
- camera_focus = _clamp_focus(camera_focus)
+ # Readability wins over damping, frame caps and table-edge framing. Apply this
+ # after the normal movement cap, including at 1x zoom and after long frames.
+ camera_focus = _keep_ball_in_view(_clamp_focus(camera_focus))
  camera.position = map_point(camera_focus) + _camera_offset
 
-func _keep_ball_in_view(focus: Vector2) -> Vector2:
- # At close zoom, damped tracking must catch a fast ball before it reaches the
- # screen edge. Project on the ball's visual plane; retain the common speed cap.
+func _framed_focus(focus: Vector2, at: Vector2 = Vector2.INF) -> Vector2:
+ var point := ball.position if at == Vector2.INF else at
  camera.position = map_point(focus) + _camera_offset
- var world := map_point(ball.position, ball_height())
+ var screen := camera.unproject_position(map_point(point, ball_height()))
+ screen.y = _camera_viewport_size.y * float(camera_settings.screen_target_y)
+ var framed := _focus_for_screen_point(focus, screen, point)
+ return Vector2(focus.x, framed.y - float(camera_settings.look_ahead) / _follow_zoom())
+
+func _keep_ball_in_view(focus: Vector2, at: Vector2 = Vector2.INF) -> Vector2:
+ # Project on the ball's visual plane. Safety correction is deliberately not
+ # speed-limited: even an upward shot during a frame hitch must remain visible.
+ camera.position = map_point(focus) + _camera_offset
+ var point := ball.position if at == Vector2.INF else at
+ var world := map_point(point, ball_height())
  var screen := camera.unproject_position(world)
- var safe := Rect2(_camera_viewport_size * 0.18, _camera_viewport_size * Vector2(0.58, 0.64))
+ var margin := Vector2(0.12, float(camera_settings.screen_margin_y))
+ var safe := Rect2(_camera_viewport_size * margin, _camera_viewport_size * (Vector2.ONE - 2.0 * margin))
  var inside := screen.clamp(safe.position, safe.end)
  if inside.is_equal_approx(screen):
   return focus
- var origin := camera.project_ray_origin(inside)
- var ray := camera.project_ray_normal(inside)
+ return _focus_for_screen_point(focus, inside, point)
+
+func _focus_for_screen_point(focus: Vector2, screen: Vector2, point: Vector2) -> Vector2:
+ var world := map_point(point, ball_height())
+ var origin := camera.project_ray_origin(screen)
+ var ray := camera.project_ray_normal(screen)
  if absf(ray.y) < 0.001:
   return focus
  var on_plane := origin + ray * ((world.y - origin.y) / ray.y)
- return _clamp_focus(focus + unmap_point(world - on_plane))
+ return focus + unmap_point(world - on_plane)
 
 func terrain_side_material() -> Material:
  return material(RAIL_SIDE_COLOR)
