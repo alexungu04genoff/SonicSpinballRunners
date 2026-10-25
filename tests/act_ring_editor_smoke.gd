@@ -23,7 +23,7 @@ func run() -> void:
 		print("RESULT | Fresh ring editor | %d checks | %d failures" % [checks, failures])
 		quit(0 if failures == 0 else 1)
 		return
-	await choose_tab(1)
+	await choose_tab(4)
 	await ring_tool()
 	await click_at(grid_position(Vector2(2, 2)))
 	check(editor.document.ring_trails.size() == 1 and Rings.positions(editor.document.ring_trails[0]).size() == 1, "One click creates one ring")
@@ -91,7 +91,7 @@ func run() -> void:
 	await choose_tab(0)
 	await choose_terrain("rectangle_3x3")
 	await click_at(grid_position(Vector2(3, 3)))
-	await choose_tab(1)
+	await choose_tab(4)
 	await ring_tool()
 	await drag(grid_position(Vector2(3, 4)), grid_position(Vector2(6, 5)))
 	check(editor.document.ring_trails.size() == saved_count + 1 and editor.document.placements.size() == 1, "Rings may overlap solid terrain without repair or rejection")

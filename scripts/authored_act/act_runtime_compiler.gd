@@ -42,6 +42,7 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
  var mechanics := Mechanics.new()
  mechanics.name = "PinballMechanics"
  mechanics.ball = ball
+ mechanics.banks = document.switch_banks.duplicate(true)
  act_root.add_child(mechanics)
  result.mechanics = mechanics
  var wall_material := PhysicsMaterial.new()
@@ -92,16 +93,17 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
   var descriptor := placement.duplicate(true)
   var body: Node2D
   match placement.type:
-   "spinner", "magnetic_field", "elevated_rail":
+   "spinner", "magnetic_field", "elevated_rail", "one_way_gate", "switch_target", "spring":
     body = Node2D.new()
     body.position = placement.position
     body.rotation_degrees = placement.rotation_degrees
     mechanics.add_object(placement, descriptor)
    "round_bumper":
-    descriptor.radius = Dimensions.ROUND_RADIUS_CELLS * cell_size
+    descriptor.radius = Dimensions.ROUND_RADIUS_CELLS * cell_size * float(Objects.properties(placement).scale)
     body = BumperFactory.create({"kind": "circle", "position": placement.position, "rotation": deg_to_rad(float(placement.rotation_degrees)), "radius": descriptor.radius}, bumper_material)
    "triangle_bumper":
     descriptor.points = Dimensions.sling_points(cell_size)
+    for i in descriptor.points.size(): descriptor.points[i] *= float(Objects.properties(placement).scale)
     body = BumperFactory.create({"kind": "triangle", "position": placement.position, "rotation": deg_to_rad(float(placement.rotation_degrees)), "points": descriptor.points}, bumper_material)
    "left_flipper", "right_flipper":
     var flipper := Flipper.new()
@@ -166,13 +168,25 @@ static func _validate_rail_clearance(result: Dictionary, ball_radius: float) -> 
     elif object.type == "triangle_bumper":
      var local := (point - Vector2(object.position)).rotated(-deg_to_rad(float(object.rotation_degrees)))
      touching = _near_outline(local, object.points, true, footprint)
-     obstacle_height = float(result.cell_size) * 0.18
+     obstacle_height = float(result.cell_size) * 0.18 * float(Objects.properties(object).scale)
     elif object.type in ["left_flipper", "right_flipper"]:
      obstacle_height = 28.5 * float(object.radius) / Flipper.RADIUS
      for angle_step in 13:
       var angle := deg_to_rad(float(object.rotation_degrees)) - float(object.side) * 0.8 * angle_step / 12.0
       var tip: Vector2 = object.position + Vector2.from_angle(angle) * float(object.length)
       if Geometry2D.get_closest_point_to_segment(point, object.position, tip).distance_to(point) < footprint + float(object.radius): touching = true
+    elif object.type == "switch_target":
+     touching = point.distance_to(object.position) < footprint + Objects.SWITCH_RADIUS
+     obstacle_height = 14.0
+    elif object.type in ["one_way_gate", "spring"]:
+     var props := Objects.properties(object)
+     var side := Vector2.RIGHT.rotated(deg_to_rad(float(object.rotation_degrees)))
+     var depth := 4.0 if object.type == "one_way_gate" else float(props.width) * 0.5
+     var half_segment := float(props.width) * 0.5 - depth
+     var a: Vector2 = object.position - side * half_segment
+     var b: Vector2 = object.position + side * half_segment
+     touching = Geometry2D.get_closest_point_to_segment(point, a, b).distance_to(point) < footprint + depth
+     obstacle_height = 30.0 if object.type == "one_way_gate" else float(props.width) * 0.8
     if touching and height < obstacle_height + margin:
-     return "Rail %s: route overlaps a lower bumper or flipper sweep; needs %.1f px elevation here (currently %.1f). Move the mouth or raise the crossing." % [item.object_id, obstacle_height + margin, height]
+     return "Rail %s: route overlaps lower gameplay hardware or a flipper sweep; needs %.1f px elevation here (currently %.1f). Move the mouth or raise the crossing." % [item.object_id, obstacle_height + margin, height]
  return ""

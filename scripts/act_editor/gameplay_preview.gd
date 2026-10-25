@@ -20,6 +20,9 @@ static func draw_object(target: CanvasItem, placement: Dictionary, anchor: Vecto
  var points := rotated_points(placement, cell_size)
  for index in points.size():
   points[index] = anchor + points[index] * scale_factor
+ if placement.type in ["one_way_gate", "switch_target", "spring"]:
+  _draw_gimmick(target, placement, anchor, scale_factor, points, selected, ghost)
+  return
  if placement.type in ["spinner", "magnetic_field", "elevated_rail"]:
   _draw_mechanic(target, placement, anchor, scale_factor, points, selected, ghost)
   return
@@ -102,3 +105,28 @@ static func _arrow(target: CanvasItem, a: Vector2, b: Vector2, color: Color) -> 
  var back := (a - b).normalized() * 7.0
  target.draw_line(b, b + back.rotated(0.5), color, 1.5, true)
  target.draw_line(b, b + back.rotated(-0.5), color, 1.5, true)
+
+static func _draw_gimmick(target: CanvasItem, item: Dictionary, anchor: Vector2, scale_factor: float, points: PackedVector2Array, selected: bool, ghost: bool) -> void:
+ var props := Objects.properties(item)
+ var color: Color = Objects.COLORS.get(props.get("color", ""), Color("66e0b2"))
+ if ghost: color.a = 0.55
+ var state: Dictionary = item.get("mechanic", {})
+ var open: bool = state.get("open", props.get("initial_state") == "open")
+ if item.type == "one_way_gate" and open:
+  for i in points.size(): target.draw_line(points[i], points[(i + 1) % points.size()], Color(color, 0.25), 1.0, true)
+ else:
+  target.draw_colored_polygon(points, Color(color, 0.6))
+  var outline := points.duplicate()
+  outline.append(points[0])
+  target.draw_polyline(outline, SELECTION_COLOR if selected else color, 3.0 if selected else 1.5, true)
+ if item.type == "switch_target":
+  target.draw_circle(anchor, Objects.SWITCH_RADIUS * scale_factor * 0.65, color.lightened(0.3) if state.get("active", false) else color.darkened(0.35))
+  var text: String = "ON" if state.get("active", false) else props.label
+  if not text.is_empty(): target.draw_string(ThemeDB.fallback_font, anchor + Vector2(0, -22), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, color)
+ elif item.type == "spring":
+  target.draw_circle(anchor, 6.0 * scale_factor, Color("2362c9"))
+  target.draw_circle(anchor, 3.0 * scale_factor, Color("ffe05a"))
+ if item.type != "switch_target":
+  var forward := Objects.forward(item)
+  _arrow(target, anchor - forward * 14, anchor + forward * 28, color)
+ if selected: target.draw_arc(anchor, 6, 0, TAU, 24, Color.WHITE, 1.5, true)

@@ -3,10 +3,13 @@ extends Node
 signal scoring_tick(object_id: String, points: int)
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const RailPath = preload("res://scripts/authored_act/rail_path.gd")
+const Contact = preload("res://scripts/authored_act/gimmick_geometry.gd")
 const MAX_FIELD_ACCELERATION := 600.0
 const MAX_TICKS_PER_STEP := 2
 var ball: PlaygroundBall
 var items: Array[Dictionary] = []
+var banks: Array = []
+var by_id: Dictionary = {}
 var ramp: Dictionary = {}
 var progress := 0.0
 var speed := 0.0
@@ -30,11 +33,18 @@ func add_object(placement: Dictionary, descriptor: Dictionary) -> void:
  item["angle"] = 0.0
  item["tick_rotation"] = 0.0
  item["cooldown"] = 0.0
+ item["active"] = false
+ item["open"] = item.properties.get("initial_state", "closed") == "open"
+ item["latched"] = false
+ item["passing"] = false
+ item["pulse"] = 0.0
+ item["launch_count"] = 0
  if item.type == "elevated_rail":
   var control: PackedVector2Array = item.properties.points.duplicate()
   for i in control.size(): control[i] = item.position + control[i].rotated(deg_to_rad(float(item.rotation_degrees)))
   item["path"] = RailPath.build(control)
  items.append(item)
+ by_id[item.object_id] = item
  descriptor["mechanic"] = item
 
 func reset() -> void:
@@ -45,6 +55,13 @@ func reset() -> void:
   item.angle = 0.0
   item.tick_rotation = 0.0
   item.cooldown = 0.0
+  item.active = false
+  item.open = item.properties.get("initial_state", "closed") == "open"
+  item.latched = false
+  item.passing = false
+  item.pulse = 0.0
+  item.launch_count = 0
+ for bank: Dictionary in banks: bank["complete"] = false
 
 func leave_ramp() -> void:
  if is_instance_valid(ball) and not ramp.is_empty():
@@ -63,6 +80,7 @@ func tick(dt: float) -> void:
  var budget := MAX_TICKS_PER_STEP
  for item: Dictionary in items:
   item.cooldown = maxf(0.0, item.cooldown - dt)
+  item.pulse = maxf(0.0, item.pulse - dt)
   if item.type != "spinner": continue
   var rotation_step: float = item.spin * dt
   item.angle = fposmod(item.angle + rotation_step, TAU)
@@ -111,6 +129,13 @@ func observe_motion(state: PhysicsDirectBodyState2D) -> bool:
  var hit := PhysicsTestMotionResult2D.new()
  if PhysicsServer2D.body_test_motion(ball.get_rid(), query, hit): motion = hit.get_travel()
  var end := start + motion
+ if _observe_gimmicks(state, start, motion):
+  # Launches and one-way responses remain ordinary free flight on the same ball.
+  # The native-body sweep still protects the new direction against nearby terrain.
+  ball.flipper_launch_pending = false
+  ball._guard_fast_motion(state)
+  ball._previous_step_velocity = state.linear_velocity
+  return true
  for item: Dictionary in items:
   if item.type == "spinner" and item.cooldown <= 0.0:
    var forward := Vector2.UP.rotated(deg_to_rad(float(item.rotation_degrees)))
@@ -137,6 +162,80 @@ func observe_motion(state: PhysicsDirectBodyState2D) -> bool:
    ball._reset_steering("Elevated rail")
    ball.flipper_launch_pending = false
    advance_ramp(state, state.step * (1.0 - fraction))
+   return true
+ return false
+
+func _activate_switch(item: Dictionary) -> void:
+ if item.active: return
+ item.active = true
+ item.pulse = 0.25
+ if int(item.properties.score_reward) > 0:
+  scoring_tick.emit(item.object_id, int(item.properties.score_reward))
+ for bank: Dictionary in banks:
+  if bank.get("complete", false): continue
+  var complete: bool = not bank.members.is_empty()
+  for id: String in bank.members:
+   if not by_id.has(id) or not by_id[id].active: complete = false
+  if not complete: continue
+  bank["complete"] = true
+  for id: String in bank.gates:
+   if by_id.has(id): by_id[id].open = true
+
+func _observe_gimmicks(state: PhysicsDirectBodyState2D, start: Vector2, motion: Vector2) -> bool:
+ var events: Array[Dictionary] = []
+ for item: Dictionary in items:
+  var contact := {}
+  if item.type == "switch_target":
+   if item.active: continue
+   contact = Contact.circle_hit(start, motion, item.position, Objects.SWITCH_RADIUS + ball.radius)
+  elif item.type in ["one_way_gate", "spring"]:
+   var forward := Objects.forward(item)
+   var depth := 4.0 if item.type == "one_way_gate" else float(item.properties.width) * 0.5
+   var half_segment := float(item.properties.width) * 0.5 - depth
+   var radius := ball.radius + depth
+   var overlap := Contact.capsule_hit(start, Vector2.ZERO, item.position, forward, half_segment, radius + 0.5)
+   if item.type == "spring":
+    if overlap.is_empty(): item.latched = false
+    if item.latched or item.cooldown > 0.0: continue
+   else:
+    if item.open: continue
+    if overlap.is_empty(): item.passing = false
+    var distance: float = (start - Vector2(item.position)).dot(forward)
+    # A ball entering from the allowed side stays unblocked until fully clear,
+    # even if gravity reverses it while it straddles the flap.
+    if not overlap.is_empty() and distance < 0.0: item.passing = true
+    if item.passing or distance < 0.0 or motion.dot(forward) >= 0.0: continue
+   contact = Contact.capsule_hit(start, motion, item.position, forward, half_segment, radius)
+   if item.type == "one_way_gate" and not contact.is_empty() and motion.dot(contact.normal) >= 0.0: continue
+  else: continue
+  if not contact.is_empty():
+   contact["item"] = item
+   events.append(contact)
+ events.sort_custom(func(a: Dictionary, b: Dictionary):
+  if is_equal_approx(a.fraction, b.fraction): return str(a.item.object_id) < str(b.item.object_id)
+  return a.fraction < b.fraction)
+ for event: Dictionary in events:
+  var item: Dictionary = event.item
+  if item.type == "switch_target":
+   _activate_switch(item)
+  elif item.type == "one_way_gate":
+   if item.open: continue # An earlier switch contact may complete its bank this step.
+   var incoming := state.linear_velocity.dot(event.normal)
+   if incoming >= 0.0: continue
+   state.transform = Transform2D(0.0, start + motion * float(event.fraction) + Vector2(event.normal) * 0.05)
+   state.linear_velocity -= Vector2(event.normal) * incoming * (1.0 + float(ball.tuning.effective.wall_restitution))
+   ball._reset_steering("One-way gate")
+   item.pulse = 0.15
+   return true
+  elif item.type == "spring":
+   item.latched = true
+   item.cooldown = 0.12
+   item.pulse = 0.2
+   item.launch_count += 1
+   state.transform = Transform2D(0.0, start + motion * float(event.fraction))
+   state.linear_velocity = Objects.forward(item) * float(item.properties.launch_strength)
+   state.angular_velocity = 0.0
+   ball._reset_steering("Spring launch")
    return true
  return false
 

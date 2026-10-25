@@ -348,7 +348,7 @@ func _build_authored_objects(runtime: Dictionary) -> void:
  var debug_mat := debug_material(Color("70ff85"))
  var overlay_vertices := PackedVector3Array()
  for item: Dictionary in runtime.objects:
-  if item.type in ["left_flipper", "right_flipper", "spinner", "magnetic_field", "elevated_rail"]:
+  if item.type in ["left_flipper", "right_flipper"] or item.has("mechanic"):
    continue # Shared moving visuals above already use the real body dimensions.
   var visual := Node3D.new()
   visual.name = "Authored_" + str(item.type)
@@ -364,7 +364,7 @@ func _build_authored_objects(runtime: Dictionary) -> void:
     overlay_vertices.append(map_point(item.position + Vector2.from_angle((i + 1) * TAU / 32) * item.radius, OVERLAY_HEIGHT))
   else:
    var points: PackedVector2Array = item.points
-   var height := authored_cell_size * SCALE * 0.18
+   var height := authored_cell_size * SCALE * 0.18 * float(preload("res://scripts/act_editor/gameplay_objects.gd").properties(item).scale)
    PinballModels.triangle_bumper(self, visual, points, height, _pinball_materials)
    for i in points.size():
     var a: Vector2 = item.position + points[i].rotated(deg_to_rad(float(item.rotation_degrees)))

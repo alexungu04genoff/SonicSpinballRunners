@@ -1,0 +1,203 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=3]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_b5wx8"]
+
+[resource]
+script = ExtResource("1_b5wx8")
+format_version = 13
+library_version = 2
+title = "Switch Court — Open the Sky Lane"
+grid_size = Vector2i(12, 16)
+placements = [{
+"anchor": Vector2i(0, 7),
+"base_size": Vector2i(5, 1),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray(35, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 160, 64, 0, 0, 0, 0, 0, 0, 160, 64, 205, 204, 76, 62, 0, 0, 0, 0, 205, 204, 76, 62),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0)
+}, {
+"anchor": Vector2i(7, 7),
+"base_size": Vector2i(5, 1),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray(35, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 160, 64, 0, 0, 0, 0, 0, 0, 160, 64, 205, 204, 76, 62, 0, 0, 0, 0, 205, 204, 76, 62),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0)
+}, {
+"anchor": Vector2i(0, 0),
+"base_size": Vector2i(1, 16),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray(35, 0, 0, 0, 4, 0, 0, 0, 205, 204, 204, 62, 0, 0, 0, 0, 154, 153, 25, 63, 0, 0, 0, 0, 154, 153, 25, 63, 0, 0, 128, 65, 205, 204, 204, 62, 0, 0, 128, 65),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0)
+}, {
+"anchor": Vector2i(11, 0),
+"base_size": Vector2i(1, 16),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray(35, 0, 0, 0, 4, 0, 0, 0, 205, 204, 204, 62, 0, 0, 0, 0, 154, 153, 25, 63, 0, 0, 0, 0, 154, 153, 25, 63, 0, 0, 128, 65, 205, 204, 204, 62, 0, 0, 128, 65),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0)
+}, {
+"anchor": Vector2i(0, 13),
+"base_size": Vector2i(5, 3),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray(35, 0, 0, 0, 4, 0, 0, 0, 205, 204, 204, 62, 0, 0, 0, 0, 0, 0, 160, 64, 51, 51, 211, 63, 0, 0, 160, 64, 205, 204, 12, 64, 205, 204, 204, 62, 0, 0, 64, 64),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0)
+}, {
+"anchor": Vector2i(7, 13),
+"base_size": Vector2i(5, 3),
+"composite_version": 1,
+"flip_h": true,
+"flip_v": false,
+"outline": PackedByteArray(35, 0, 0, 0, 4, 0, 0, 0, 205, 204, 204, 62, 0, 0, 0, 0, 0, 0, 160, 64, 51, 51, 211, 63, 0, 0, 160, 64, 205, 204, 12, 64, 205, 204, 204, 62, 0, 0, 64, 64),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0)
+}, {
+"anchor": Vector2i(0, 0),
+"base_size": Vector2i(5, 1),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray(35, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 160, 64, 0, 0, 0, 0, 0, 0, 160, 64, 205, 204, 76, 62, 0, 0, 0, 0, 205, 204, 76, 62),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0)
+}, {
+"anchor": Vector2i(7, 0),
+"base_size": Vector2i(5, 1),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray(35, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 160, 64, 0, 0, 0, 0, 0, 0, 160, 64, 205, 204, 76, 62, 0, 0, 0, 0, 205, 204, 76, 62),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0)
+}]
+gameplay_objects = [{
+"object_id": "blue",
+"position": Vector2(220, 520),
+"properties": {
+"color": "blue",
+"label": "1",
+"score_reward": PackedByteArray(3, 0, 0, 0, 0, 0, 200, 65)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "switch_target"
+}, {
+"object_id": "red",
+"position": Vector2(300, 520),
+"properties": {
+"color": "red",
+"label": "2",
+"score_reward": PackedByteArray(3, 0, 0, 0, 0, 0, 200, 65)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "switch_target"
+}, {
+"object_id": "green",
+"position": Vector2(380, 520),
+"properties": {
+"color": "green",
+"label": "3",
+"score_reward": PackedByteArray(3, 0, 0, 0, 0, 0, 200, 65)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "switch_target"
+}, {
+"object_id": "sky_gate",
+"position": Vector2(300, 350),
+"properties": {
+"initial_state": "closed",
+"visual_mode": "auto",
+"width": PackedByteArray(3, 0, 0, 0, 0, 0, 200, 66)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 52, 67),
+"type": "one_way_gate"
+}, {
+"object_id": "sky_spring",
+"position": Vector2(300, 295),
+"properties": {
+"color": "red",
+"launch_strength": PackedByteArray(3, 0, 0, 0, 0, 128, 9, 68),
+"width": PackedByteArray(3, 0, 0, 0, 0, 0, 32, 66)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "spring"
+}, {
+"object_id": "small",
+"position": Vector2(160, 610),
+"properties": {
+"scale": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 63)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "round_bumper"
+}, {
+"object_id": "large",
+"position": Vector2(440, 600),
+"properties": {
+"scale": PackedByteArray(3, 0, 1, 0, 205, 204, 204, 204, 204, 204, 252, 63)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "round_bumper"
+}, {
+"object_id": "sling",
+"position": Vector2(150, 640),
+"properties": {
+"scale": PackedByteArray(3, 0, 1, 0, 102, 102, 102, 102, 102, 102, 230, 63)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 240, 193),
+"type": "triangle_bumper"
+}, {
+"object_id": "left",
+"position": Vector2(260, 735),
+"properties": {},
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 169, 103, 2, 150, 171, 85, 50, 64),
+"type": "left_flipper"
+}, {
+"object_id": "right",
+"position": Vector2(340, 735),
+"properties": {},
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 11, 179, 63, 141, 74, 53, 100, 64),
+"type": "right_flipper"
+}]
+switch_banks = [{
+"bank_id": "sky_bank",
+"gates": ["sky_gate"],
+"label": "Open the Sky Lane",
+"members": ["blue", "red", "green"]
+}]
+ring_trails = [{
+"end": Vector2(390, 230),
+"fill": true,
+"kind": "ellipse",
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"spacing": PackedByteArray(3, 0, 0, 0, 0, 0, 240, 65),
+"start": Vector2(210, 90)
+}, {
+"end": Vector2(450, 600),
+"fill": false,
+"kind": "ellipse",
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"spacing": PackedByteArray(3, 0, 0, 0, 0, 0, 12, 66),
+"start": Vector2(150, 450)
+}]
+exit_start_x = 5
+exit_width = 2
+activation_y = PackedByteArray(3, 0, 0, 0, 0, 0, 135, 67)
+spawn_position = Vector2(300, 710)

@@ -7,6 +7,7 @@ const PaletteItem = preload("res://scripts/act_editor/terrain_palette_item.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const GameplayPaletteItem = preload("res://scripts/act_editor/gameplay_palette_item.gd")
 const Rings = preload("res://scripts/act_editor/ring_trails.gd")
+const Banks = preload("res://scripts/act_editor/switch_banks.gd")
 const Composite = preload("res://scripts/act_editor/composite_terrain.gd")
 const Decor = preload("res://scripts/act_editor/decor_slots.gd")
 const DecorScatter = preload("res://scripts/act_editor/decor_scatter.gd")
@@ -56,6 +57,14 @@ var marker_buttons: Dictionary = {}
 var marker_list: VBoxContainer
 var marker_summary: Label
 var ring_spacing_field: SpinBox
+var rings_scroll: ScrollContainer
+var rings_list: VBoxContainer
+var ring_fill_field: CheckBox
+var ring_radius_fields: Array[SpinBox] = []
+var ring_rotation_field: SpinBox
+var ring_ellipse_settings: VBoxContainer
+var bank_controls: VBoxContainer
+var selected_bank_id := ""
 var composite_bar: HBoxContainer
 var composite_strength: SpinBox
 var composite_preserve_corners: CheckBox
@@ -152,6 +161,7 @@ func _build_ui() -> void:
 	_button(header, "save", "Save", _save_current, "Ctrl+S")
 	_button(header, "save_as", "Save As", _open_save_dialog, "Ctrl+Shift+S")
 	_button(header, "example", "Example", func(): request_action("example"), "Open the example as a new editable copy")
+	_button(header, "gimmicks", "Pinball Example", func(): request_action("gimmicks"), "Open Switch Court: switches, linked gate, spring, ring pool and scaled bumpers")
 	_button(header, "quit", "Close", func(): request_action("quit"), "Close with an unsaved-changes check")
 	file_label = Label.new()
 	file_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -186,6 +196,7 @@ func _build_ui() -> void:
 	palette_tabs.add_tab("Gameplay")
 	palette_tabs.add_tab("Act Markers")
 	palette_tabs.add_tab("Decor")
+	palette_tabs.add_tab("Rings")
 	palette_tabs.tab_changed.connect(_change_palette_tab)
 	palette.add_child(palette_tabs)
 	palette_heading = Label.new()
@@ -235,9 +246,21 @@ func _build_ui() -> void:
 		item.pressed.connect(choose_gameplay.bind(definition.id))
 		gameplay_list.add_child(item)
 		gameplay_buttons[definition.id] = item
-	_button(gameplay_list, "rings", "◎  Rings — click / drag", choose_rings, "Click for one ring; drag in any direction for a trail. Alt frees endpoints.")
+	bank_controls = VBoxContainer.new()
+	gameplay_list.add_child(bank_controls)
+	gameplay_list.move_child(bank_controls, 0)
+	rings_scroll = ScrollContainer.new()
+	rings_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	rings_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	rings_scroll.visible = false
+	palette.add_child(rings_scroll)
+	rings_list = VBoxContainer.new()
+	rings_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	rings_scroll.add_child(rings_list)
+	_button(rings_list, "rings", "Trail / Line Draw", choose_rings, "Click for one ring; drag in any direction for a trail. Alt frees endpoints.")
+	_button(rings_list, "ring_circle", "Circle / Ellipse Draw", choose_ring_circle, "Drag opposite bounds corners; release to commit one undo action.")
 	var ring_settings := HBoxContainer.new()
-	gameplay_list.add_child(ring_settings)
+	rings_list.add_child(ring_settings)
 	var ring_label := Label.new()
 	ring_label.text = "Spacing"
 	ring_settings.add_child(ring_label)
@@ -253,6 +276,39 @@ func _build_ui() -> void:
 	ring_spacing_field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ring_spacing_field.value_changed.connect(_change_ring_spacing)
 	ring_settings.add_child(ring_spacing_field)
+	ring_ellipse_settings = VBoxContainer.new()
+	rings_list.add_child(ring_ellipse_settings)
+	ring_fill_field = CheckBox.new()
+	ring_fill_field.text = "Fill interior (hex rows)"
+	ring_fill_field.toggled.connect(func(value: bool): _change_ring_pattern("fill", value))
+	ring_ellipse_settings.add_child(ring_fill_field)
+	for axis in 2:
+		var row := HBoxContainer.new()
+		ring_ellipse_settings.add_child(row)
+		var label := Label.new()
+		label.text = "Radius " + ("X" if axis == 0 else "Y")
+		row.add_child(label)
+		var field := SpinBox.new()
+		field.min_value = 1.0
+		field.max_value = 10000.0
+		field.step = 0.01
+		field.suffix = "px"
+		field.value = 50.0
+		field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		field.value_changed.connect(func(value: float): _change_ring_radius(axis, value))
+		row.add_child(field)
+		ring_radius_fields.append(field)
+	ring_rotation_field = SpinBox.new()
+	ring_rotation_field.min_value = -36000
+	ring_rotation_field.max_value = 36000
+	ring_rotation_field.step = 0.1
+	ring_rotation_field.suffix = "degrees"
+	ring_rotation_field.value_changed.connect(func(value: float): _change_ring_pattern("rotation_degrees", value))
+	ring_ellipse_settings.add_child(ring_rotation_field)
+	var ring_hint := Label.new()
+	ring_hint.text = "Drag bounds to size an ellipse.\nEqual radii make a circle.\nSpacing controls ring count.\nAlt: free bounds. One gesture: one Undo."
+	ring_hint.add_theme_font_size_override("font_size", 12)
+	rings_list.add_child(ring_hint)
 	var object_hint := Label.new()
 	object_hint.text = "Snap to grid intersections.\nHold Alt for exact placement.\n\nCyan: bumpers / sling\nYellow: flippers / ring trails\nCrosshair: anchor / pivot"
 	object_hint.add_theme_color_override("font_color", Color("9cb3c6"))
@@ -456,6 +512,7 @@ func _build_ui() -> void:
 	object_properties.add_child(handedness_field)
 	_button(object_properties, "duplicate", "Duplicate", duplicate_selected, "Ctrl+D • duplicate selected terrain, gameplay object or ring trail")
 	mechanics_properties = HFlowContainer.new()
+	mechanics_properties.add_theme_constant_override("h_separation", 10)
 	workspace.add_child(mechanics_properties)
 	canvas.rail_points_changed.connect(set_rail_points)
 	detail_label = Label.new()
@@ -803,15 +860,48 @@ func _change_palette_tab(index: int) -> void:
 	marker_list.visible = index == 2
 	decor_list.visible = index == 3
 	decor_scroll.visible = index == 3
-	palette_heading.text = ["TERRAIN LIBRARY  /  %d stamps" % Shapes.definitions().size(), "GAMEPLAY  /  7 objects + Rings", "ACT MARKERS  /  4 tools", "DECOR  /  4 generic slots"][index]
+	rings_scroll.visible = index == 4
+	palette_heading.text = ["TERRAIN LIBRARY  /  %d stamps" % Shapes.definitions().size(), "GAMEPLAY  /  %d objects" % Objects.definitions().size(), "ACT MARKERS  /  4 tools", "DECOR  /  4 generic slots", "RINGS  /  Line + Circle"][index]
 	if index == 3 and canvas.selected_decor_index >= 0: _refresh()
 	else: _select_mode()
 
 func choose_rings() -> void:
 	canvas.grab_focus()
+	canvas.ring_kind = "line"
 	canvas.set_ring_tool()
 	_set_status("Rings: click for one; drag in any direction for a trail. Alt frees endpoints. One drag = one undo.")
 	_refresh()
+
+func choose_ring_circle() -> void:
+	canvas.grab_focus()
+	canvas.ring_kind = "ellipse"
+	canvas.set_ring_tool()
+	_set_status("Circle / Ellipse: drag opposite bounds corners. Fill uses deterministic hex rows. Release commits one edit.")
+	_refresh()
+
+func _change_ring_pattern(key: String, value: Variant) -> void:
+	if _refreshing: return
+	if key == "fill": canvas.ring_fill = value
+	else: canvas.ring_rotation = value
+	if canvas.selected_ring_index >= 0:
+		var trail: Dictionary = document.ring_trails[canvas.selected_ring_index].duplicate(true)
+		if trail.get("kind") == "ellipse":
+			trail[key] = value
+			set_ring_trail(canvas.selected_ring_index, trail)
+	canvas.queue_redraw()
+
+func _change_ring_radius(axis: int, value: float) -> void:
+	if _refreshing: return
+	canvas.ring_radii[axis] = value
+	if canvas.selected_ring_index < 0: return
+	var trail: Dictionary = document.ring_trails[canvas.selected_ring_index].duplicate(true)
+	if trail.get("kind") != "ellipse": return
+	var center: Vector2 = (trail.start + trail.end) * 0.5
+	var radii: Vector2 = (trail.end - trail.start).abs() * 0.5
+	radii[axis] = value
+	trail.start = center - radii
+	trail.end = center + radii
+	set_ring_trail(canvas.selected_ring_index, trail)
 
 func set_ring_trail(index: int, trail: Dictionary) -> void:
 	if index < -1 or index >= document.ring_trails.size():
@@ -827,7 +917,7 @@ func set_ring_trail(index: int, trail: Dictionary) -> void:
 		document.ring_trails.append(trail.duplicate(true))
 	else:
 		document.ring_trails[index] = trail.duplicate(true)
-	_set_status("%d rings in one trail. Select / Move to drag the group or its small endpoint handles." % Rings.positions(trail).size())
+	_set_status("%d rings in one pattern. Select / Move to drag the group or its bounds handles." % Rings.positions(trail).size())
 	_refresh()
 
 func _change_ring_spacing(value: float) -> void:
@@ -859,7 +949,7 @@ func _select_mode() -> void:
 		return
 	canvas.grab_focus()
 	canvas.select_piece(-1)
-	_set_status("Click to select; Ctrl-click toggles terrain for Merge. Alt-click cycles overlaps. Drag a single selection to move.")
+	_set_status("Ctrl-click selects terrain for Merge or switches for a Bank. Alt-click cycles overlaps. Drag to move.")
 	_refresh()
 
 func _terrain_selection() -> Array[int]:
@@ -1099,6 +1189,7 @@ func move_gameplay_placement(index: int, position: Vector2) -> void:
 func _active_gameplay() -> Dictionary:
 	if not canvas.gameplay_brush.is_empty():
 		return canvas.gameplay_brush
+	if canvas.selected_gameplay_indices.size() > 1: return {}
 	if canvas.selected_gameplay_index >= 0 and canvas.selected_gameplay_index < document.gameplay_objects.size():
 		return document.gameplay_objects[canvas.selected_gameplay_index]
 	return {}
@@ -1299,7 +1390,13 @@ func delete_selected() -> void:
 	if canvas.selected_gameplay_index >= 0:
 		canvas.cancel_gesture()
 		_record_edit()
-		document.gameplay_objects.remove_at(canvas.selected_gameplay_index)
+		var indices: Array[int] = canvas.selected_gameplay_indices.duplicate()
+		var ids: Array = []
+		for index: int in indices: ids.append(Objects.identity(document.gameplay_objects[index], index))
+		Banks.remove_objects(document.switch_banks, ids)
+		indices.sort()
+		indices.reverse()
+		for index: int in indices: document.gameplay_objects.remove_at(index)
 		canvas.select_gameplay(-1)
 		_refresh()
 		return
@@ -1318,6 +1415,7 @@ func delete_selected() -> void:
 func _snapshot() -> Dictionary:
 	return {"document": document.copy_document(), "selected": canvas.selected_index,
 		"terrain_selection": _terrain_selection(),
+		"gameplay_selection": canvas.selected_gameplay_indices.duplicate(), "bank": selected_bank_id,
 		"connector": canvas.selected_connector, "gameplay": canvas.selected_gameplay_index,
 		"marker": canvas.selected_marker, "ring": canvas.selected_ring_index, "decor": canvas.selected_decor_index}
 
@@ -1355,6 +1453,7 @@ func _restore_snapshot(snapshot: Dictionary) -> void:
 	var active_gameplay_brush: Dictionary = canvas.gameplay_brush.duplicate(true)
 	var active_ring_tool: bool = canvas.ring_tool
 	document = snapshot.document
+	selected_bank_id = snapshot.get("bank", "")
 	_title_edit_recorded = false
 	canvas.set_document(document, false)
 	if not active_decor_brush.is_empty():
@@ -1372,7 +1471,9 @@ func _restore_snapshot(snapshot: Dictionary) -> void:
 	elif not snapshot.get("marker", "").is_empty():
 		canvas.select_marker(snapshot.marker)
 	elif snapshot.get("gameplay", -1) >= 0:
-		canvas.select_gameplay(snapshot.gameplay)
+		var indices: Array[int] = []
+		indices.assign(snapshot.get("gameplay_selection", [snapshot.gameplay]))
+		canvas.set_gameplay_selection(indices)
 	elif snapshot.get("ring", -1) >= 0:
 		canvas.select_ring(snapshot.ring)
 	else:
@@ -1389,6 +1490,7 @@ func new_document() -> void:
 	document = ActData.new()
 	_title_edit_recorded = false
 	current_path = ""
+	selected_bank_id = ""
 	undo_stack.clear()
 	redo_stack.clear()
 	saved_fingerprint = document.fingerprint()
@@ -1423,6 +1525,7 @@ func load_from(path: String) -> bool:
 		return false
 	_clear_composite_preview()
 	document = result.document
+	selected_bank_id = ""
 	_title_edit_recorded = false
 	current_path = path
 	saved_fingerprint = document.fingerprint()
@@ -1462,8 +1565,8 @@ func _continue_action() -> void:
 			load_dialog.current_dir = ProjectSettings.globalize_path(DEFAULT_ACT_DIRECTORY)
 			load_dialog.popup_centered()
 		"quit": get_tree().quit()
-		"example":
-			if load_from(EXAMPLE_PATH):
+		"example", "gimmicks":
+			if load_from("res://data/acts/switch_gate_spring.tres" if action == "gimmicks" else EXAMPLE_PATH):
 				current_path = ""
 				saved_fingerprint = ""
 				_refresh()
@@ -1556,8 +1659,15 @@ func _refresh() -> void:
 	buttons.redo.disabled = redo_stack.is_empty()
 	buttons.delete.disabled = canvas.selected_decor_index < 0 and canvas.selected_index < 0 and canvas.selected_gameplay_index < 0 and canvas.selected_ring_index < 0 and canvas.selected_connector.is_empty() and canvas.selected_marker.is_empty()
 	buttons.duplicate.disabled = canvas.selected_decor_index < 0 and canvas.selected_gameplay_index < 0 and canvas.selected_ring_index < 0 and _terrain_selection().size() != 1
+	if canvas.selected_gameplay_indices.size() > 1: buttons.duplicate.disabled = true
 	var ring_spacing: float = document.ring_trails[canvas.selected_ring_index].spacing / float(document.cell_size) if canvas.selected_ring_index >= 0 else canvas.ring_spacing_cells
 	ring_spacing_field.set_value_no_signal(ring_spacing)
+	var selected_pattern: Dictionary = document.ring_trails[canvas.selected_ring_index] if canvas.selected_ring_index >= 0 else {}
+	ring_ellipse_settings.visible = selected_pattern.get("kind", canvas.ring_kind) == "ellipse"
+	ring_fill_field.set_pressed_no_signal(selected_pattern.get("fill", canvas.ring_fill))
+	ring_rotation_field.set_value_no_signal(selected_pattern.get("rotation_degrees", canvas.ring_rotation))
+	var radii: Vector2 = (selected_pattern.end - selected_pattern.start).abs() * 0.5 if selected_pattern.get("kind") == "ellipse" else canvas.ring_radii
+	for axis in 2: ring_radius_fields[axis].set_value_no_signal(radii[axis])
 	connector_summary.text = _connector_description("entry") + "   |   " + _connector_description("exit")
 	connector_summary.tooltip_text = connector_summary.text + "\nCompatibility compares width only; horizontal positions may differ."
 	marker_summary.text = "Activation: " + ("unset" if document.activation_y == null else "Y %s px" % var_to_str(document.activation_y))
@@ -1577,14 +1687,15 @@ func _refresh() -> void:
 	angle_field.text = _angle_display_text
 	angle_field.placeholder_text = "Select a shape"
 	handedness_field.disabled = gameplay.is_empty() or gameplay.type not in ["left_flipper", "right_flipper"]
+	handedness_field.visible = not handedness_field.disabled
 	handedness_field.select(1 if not gameplay.is_empty() and gameplay.type == "right_flipper" else 0)
 	if not decor.is_empty():
 		mode_label.text = ("PLACE" if not canvas.decor_brush.is_empty() else "SELECTED") + " · " + decor.slot_type.capitalize() + " decor"
 		var variant := "Variant %d" % (int(decor.get("variant_index", 0)) + 1) if decor.get("variant_mode", "auto") == "fixed" else "Auto variant"
 		detail_label.text = "%s px · %s° · %s · %s · Presentation only" % [decor.position, var_to_str(decor.rotation_degrees), decor.placement_hint, variant]
 	elif canvas.ring_tool or canvas.selected_ring_index >= 0:
-		mode_label.text = "DRAW RINGS" if canvas.ring_tool else "SELECTED  ·  Ring trail"
-		detail_label.text = "Click / drag · Alt frees endpoints · Generated rings never snap · Select trail to move or resize · Delete removes trail"
+		mode_label.text = "DRAW RINGS" if canvas.ring_tool else "SELECTED  ·  Ring pattern"
+		detail_label.text = "Click / drag · Alt frees bounds · Generated rings never snap · Select pattern to move or resize · Delete removes pattern"
 	elif not canvas.marker_tool.is_empty():
 		mode_label.text = "PLACE  ·  " + ("Activation Trigger" if canvas.marker_tool == "activation" else "Spawn Point")
 		detail_label.text = "Inside terrain bounds only · grid snap / Alt free position · red gutter is system-owned"
@@ -1598,6 +1709,9 @@ func _refresh() -> void:
 		mode_label.text = "SELECTED CONNECTOR  ·  " + _connector_description(canvas.selected_connector)
 		var next_width: int = document.exit_width
 		detail_label.text = "Drag middle to move · endpoint handles resize · Delete removes · Left/Right nudge" + (" · Next entry width: %d" % next_width if next_width > 0 else "")
+	elif canvas.selected_gameplay_indices.size() > 1:
+		mode_label.text = "%d GAMEPLAY OBJECTS SELECTED" % canvas.selected_gameplay_indices.size()
+		detail_label.text = "Ctrl-click toggles selection · Gameplay palette: Create Switch Bank · Delete removes selected objects"
 	elif not gameplay.is_empty():
 		var definition: Dictionary = Objects.get_definition(gameplay.type)
 		mode_label.text = ("PLACE  ·  " if not canvas.gameplay_brush.is_empty() else "SELECTED  ·  ") + definition.label
@@ -1617,10 +1731,17 @@ func _refresh() -> void:
 	_refresh_composite_controls()
 	_refresh_decor_controls()
 	_refresh_mechanics_properties()
+	_refresh_banks()
 	canvas.queue_redraw()
 	_refreshing = false
 
 func _refresh_composite_controls() -> void:
+	var terrain_context: bool = composite_preview_active or not _active_terrain().is_empty() or (palette_tabs.current_tab == 0 and _active_gameplay().is_empty() and canvas.selected_gameplay_indices.is_empty() and canvas.selected_ring_index < 0)
+	composite_bar.visible = terrain_context
+	composite_strength.get_parent().visible = terrain_context
+	composite_hint.visible = terrain_context
+	terrain_snap_field.visible = terrain_context
+	terrain_scale_field.visible = terrain_context
 	var merge_error := _composite_selection_error("merge")
 	var smooth_error := _composite_selection_error("smooth")
 	buttons.merge.disabled = not merge_error.is_empty()
@@ -1766,7 +1887,7 @@ func _refresh_mechanics_properties() -> void:
 		mechanics_properties.remove_child(child)
 		child.queue_free()
 	var item := _active_gameplay()
-	mechanics_properties.visible = not item.is_empty() and item.type in ["spinner", "magnetic_field", "elevated_rail"]
+	mechanics_properties.visible = not item.is_empty() and canvas.selected_gameplay_indices.size() <= 1
 	if not mechanics_properties.visible: return
 	for axis: String in ["x", "y"]:
 		_mechanic_number(axis.to_upper() + " px", item.position[axis], func(value: float):
@@ -1777,8 +1898,41 @@ func _refresh_mechanics_properties() -> void:
 				item.position = at
 				_refresh())
 	var properties := Objects.properties(item)
+	var identity := Label.new()
+	identity.text = item.get("object_id", "Unsaved brush")
+	identity.tooltip_text = "Stable object ID used by switch banks. Duplicating creates a new identity."
+	identity.add_theme_font_size_override("font_size", 11)
+	mechanics_properties.add_child(identity)
 	for key: String in Objects.property_limits(item.type):
 		_mechanic_number(key.replace("_", " ").capitalize(), float(properties[key]), func(value: float): set_gameplay_property(key, value))
+	if item.type == "one_way_gate":
+		_mechanic_choice("Initial", "initial_state", ["closed", "open"], properties.initial_state)
+		var visual := Label.new()
+		visual.text = "Theme: Auto · Arrow: allowed direction"
+		mechanics_properties.add_child(visual)
+	if item.type in ["switch_target", "spring"]:
+		_mechanic_choice("Color", "color", ["red", "yellow", "blue"] if item.type == "spring" else ["blue", "red", "yellow", "green"], properties.color)
+	if item.type == "switch_target":
+		var label := LineEdit.new()
+		label.placeholder_text = "Optional switch label"
+		label.text = properties.label
+		label.max_length = 80
+		label.custom_minimum_size.x = 140
+		label.text_submitted.connect(func(value: String): set_gameplay_property("label", value); canvas.grab_focus())
+		label.focus_exited.connect(func():
+			if label.text != properties.label: set_gameplay_property("label", label.text))
+		mechanics_properties.add_child(label)
+	if item.type == "spring":
+		var profile := OptionButton.new()
+		profile.add_item("Arc: Balanced")
+		profile.add_item("Arc: Floaty")
+		profile.select(1 if is_equal_approx(canvas.trajectory_gravity_scale, preload("res://data/floaty.tres").gravity_scale) else 0)
+		profile.item_selected.connect(func(index: int):
+			var selected_profile: Resource = load("res://data/floaty.tres" if index == 1 else "res://data/balanced.tres")
+			canvas.trajectory_gravity_scale = selected_profile.gravity_scale
+			canvas.queue_redraw())
+		mechanics_properties.add_child(profile)
+		detail_label.text = "Instant launch · Color is cosmetic · Arc: 2 seconds, no collisions / steering / modifiers · Dots every 0.25 s"
 	if item.type == "magnetic_field":
 		var mode := OptionButton.new()
 		mode.add_item("Attract")
@@ -1811,3 +1965,110 @@ func _mechanic_number(label_text: String, value: float, action: Callable) -> voi
 	field.text_submitted.connect(func(_text): commit.call(); canvas.grab_focus())
 	field.focus_exited.connect(commit)
 	mechanics_properties.add_child(field)
+
+func _mechanic_choice(label_text: String, key: String, choices: Array, value: String) -> void:
+	var field := OptionButton.new()
+	for choice: String in choices: field.add_item(label_text + ": " + choice.capitalize())
+	field.select(choices.find(value))
+	field.item_selected.connect(func(index: int): set_gameplay_property(key, choices[index]))
+	mechanics_properties.add_child(field)
+
+func _selected_switch_ids() -> Array:
+	var result: Array = []
+	for index: int in canvas.selected_gameplay_indices:
+		var item: Dictionary = document.gameplay_objects[index]
+		if item.type != "switch_target": return []
+		result.append(Objects.identity(item, index))
+	return result
+
+func create_switch_bank() -> void:
+	var members := _selected_switch_ids()
+	if members.size() < 2: return
+	_record_edit()
+	selected_bank_id = "bank_" + Objects.new_id()
+	document.switch_banks.append({"bank_id": selected_bank_id, "label": "Bank %d" % (document.switch_banks.size() + 1), "members": members, "gates": []})
+	_refresh()
+	_set_status("Bank created. Check one or more gates below to open them when every member is pressed.")
+
+func set_bank_gates(bank_id: String, gates: Array) -> void:
+	for bank: Dictionary in document.switch_banks:
+		if bank.bank_id != bank_id or bank.gates == gates: continue
+		var candidate: Resource = document.copy_document()
+		for other: Dictionary in candidate.switch_banks:
+			if other.bank_id == bank_id: other.gates = gates.duplicate()
+		if not Banks.validation_errors(candidate.switch_banks, candidate.gameplay_objects).is_empty(): return
+		_record_edit()
+		bank.gates = gates.duplicate()
+		_refresh()
+		return
+
+func _refresh_banks() -> void:
+	for child in bank_controls.get_children():
+		bank_controls.remove_child(child)
+		child.queue_free()
+	var create := Button.new()
+	create.text = "Create Switch Bank (%d selected)" % canvas.selected_gameplay_indices.size()
+	create.disabled = _selected_switch_ids().size() < 2
+	create.tooltip_text = "Select / Move, then Ctrl-click several switches."
+	create.pressed.connect(create_switch_bank)
+	bank_controls.add_child(create)
+	if document.switch_banks.is_empty(): return
+	var picker := OptionButton.new()
+	picker.add_item("Select a switch bank…")
+	var active: Dictionary = {}
+	for i in document.switch_banks.size():
+		var bank: Dictionary = document.switch_banks[i]
+		picker.add_item(bank.label)
+		if bank.bank_id == selected_bank_id:
+			picker.select(i + 1)
+			active = bank
+	picker.item_selected.connect(func(index: int):
+		selected_bank_id = document.switch_banks[index - 1].bank_id if index > 0 else ""
+		_refresh())
+	bank_controls.add_child(picker)
+	if active.is_empty(): return
+	var label := LineEdit.new()
+	label.text = active.label
+	label.max_length = 80
+	var commit_label := func():
+		if label.text != active.label:
+			_record_edit()
+			active.label = label.text
+			_refresh()
+	label.text_submitted.connect(func(_value: String): commit_label.call(); canvas.grab_focus())
+	label.focus_exited.connect(commit_label)
+	bank_controls.add_child(label)
+	var help := Label.new()
+	help.text = "%d switches · Complete bank opens:" % active.members.size()
+	help.add_theme_font_size_override("font_size", 12)
+	bank_controls.add_child(help)
+	for i in document.gameplay_objects.size():
+		var item: Dictionary = document.gameplay_objects[i]
+		if item.type != "one_way_gate": continue
+		var id := Objects.identity(item, i)
+		var gate := CheckBox.new()
+		gate.text = "Gate %d · %s" % [i + 1, item.position]
+		gate.tooltip_text = id
+		gate.set_pressed_no_signal(active.gates.has(id))
+		gate.toggled.connect(func(enabled: bool):
+			var gates: Array = active.gates.duplicate()
+			if enabled: gates.append(id)
+			else: gates.erase(id)
+			set_bank_gates(active.bank_id, gates))
+		bank_controls.add_child(gate)
+	var replace_members := Button.new()
+	replace_members.text = "Use selected switches as members"
+	replace_members.disabled = _selected_switch_ids().is_empty()
+	replace_members.pressed.connect(func():
+		_record_edit()
+		active.members = _selected_switch_ids()
+		_refresh())
+	bank_controls.add_child(replace_members)
+	var remove := Button.new()
+	remove.text = "Dissolve bank (keep objects)"
+	remove.pressed.connect(func():
+		_record_edit()
+		document.switch_banks.erase(active)
+		selected_bank_id = ""
+		_refresh())
+	bank_controls.add_child(remove)

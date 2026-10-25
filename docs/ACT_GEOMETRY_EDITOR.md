@@ -1,5 +1,7 @@
 # Act Geometry Editor
 
+**Current authored gimmicks (format 13):** Gameplay now includes one-way gates, colored switches/banks, instant springs and scalable bumpers. The separate **Rings** tab offers line and circle/ellipse drawing with optional fill. **Pinball Example** opens the switch/gate/spring objective as an editable copy. See [controls, lifecycle, format and verification](AUTHORED_GIMMICKS.md); historical format notes below describe earlier milestones.
+
 This standalone scene edits **one Act**, initially **12 columns × 12 rows**, with terrain, gameplay objects and optional Act markers. A system-owned red gutter appears below the terrain; it adds no terrain row. Authoring Resources remain independent of the existing generator, playable layouts and physics.
 
 ## Launch
@@ -14,7 +16,7 @@ The Windows launcher uses the project's working ANGLE backend. For another Godot
 
 ## Build an Act
 
-1. Choose **Terrain**, **Gameplay** or **Act Markers**. Click a tool; terrain and the four gameplay-object palette items can also be dragged onto the canvas. **Gameplay → Rings** draws trails directly on the canvas. Terrain supports search by name/size and family filtering.
+1. Choose **Terrain**, **Gameplay**, **Act Markers**, **Decor** or **Rings**. Click a tool; terrain and gameplay-object palette items can also be dragged onto the canvas. **Rings** draws trails and ellipses directly on the canvas. Terrain supports search by name/size and family filtering.
 2. Terrain and gameplay stamps show a cursor preview; click to place and keep clicking to repeat. Act markers select themselves after placement; choose the tool again to replace a marker.
 3. Press **Esc**, right-click, or choose **Select / Move**. Click terrain, gameplay or a marker, then drag to move it. Hold **Alt** for free movement, including terrain.
 4. Rotate terrain/gameplay, flip terrain, or delete any selection. With a terrain/gameplay stamp active, transforms change the next stamp instead. Markers have no rotation or flip controls.
@@ -82,7 +84,7 @@ The saved final contour is the sole geometry source for editor drawing, hit test
 
 ## Gameplay objects
 
-The **Gameplay** tab contains **Round Bumper**, **Triangle Bumper / Sling**, **Left Flipper**, **Right Flipper** and the **Rings** drawing tool. Cyan bumpers, yellow flippers and tiny gold rings are distinct from terrain geometry. These are collisionless authoring previews: they do not fire, swing, collect, collide or create physics bodies.
+The **Gameplay** tab contains **Round Bumper**, **Triangle Bumper / Sling**, **Left Flipper**, **Right Flipper**, **One-Way Gate**, **Switch Target**, **Spring**, **Spinner**, **Magnetic Field** and **Elevated Ramp / Rail**. Ring drawing has its own **Rings** tab. Cyan bumpers, yellow flippers and tiny gold rings are distinct from terrain geometry. These are collisionless authoring previews: they do not fire, swing, collect, collide or create physics bodies.
 
 - **Anchors:** a round bumper uses its center; a flipper uses its pivot. A triangle bumper retains the same origin relative to its uniformly scaled silhouette. The small crosshair marks this point. Preview sizing never shifts the authored position.
 - **Position:** normal placement and dragging snap the anchor to the nearest grid intersection. Hold **Alt** to use continuous local-pixel coordinates, including while a drag is already in progress. The canvas reports **SNAP ON** or **FREE MOVE**. Releasing Alt without moving the pointer does not round a freely placed position; later pointer movement resumes snapping. Arrow nudges preserve the existing fractional offset.
@@ -108,7 +110,7 @@ Slots store generic types, surface/edge/either hints and stable IDs, never Green
 
 ## Ring trails
 
-Choose **Gameplay → Rings**, then click once for one ring, or drag in any direction for an evenly spaced trail. Release to commit the whole trail as **one undo step**. The tool stays active for repeated trails. Esc or right-click cancels an unfinished gesture and returns to selection mode.
+Choose **Rings → Trail / Line Draw**, then click once for one ring, or drag in any direction for an evenly spaced trail. Release to commit the whole trail as **one undo step**. The tool stays active for repeated trails. Esc or right-click cancels an unfinished gesture and returns to selection mode. For circles, ellipses and filled pools, see [the Circle / Ellipse Draw workflow](AUTHORED_GIMMICKS.md#rings--circle--ellipse-draw).
 
 Endpoints snap to grid intersections normally; hold **Alt** for exact local-pixel endpoints. Intermediate rings are linearly interpolated and never individually grid-snapped, so diagonal trails stay smooth. Releasing Alt without moving does not re-snap the current preview. Ring placement can overlap filled terrain and other objects; no occupancy, collision or reachability correction occurs.
 

@@ -79,7 +79,7 @@ func bounds_of(points: PackedVector2Array) -> Rect2:
 
 func check_definitions() -> void:
  var definitions: Array = Objects.definitions()
- check(definitions.size() == 7, "Gameplay palette contains the four original and three pinball mechanics")
+ check(definitions.size() == 10, "Gameplay palette contains the four original objects and six authored mechanics")
  var ids: Array = definitions.map(func(definition: Dictionary): return definition.id)
  for id: String in ["round_bumper", "triangle_bumper", "left_flipper", "right_flipper"]:
   check(ids.has(id), "Gameplay definition exists: " + id)

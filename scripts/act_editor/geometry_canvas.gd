@@ -57,10 +57,19 @@ var brush: Dictionary = {}
 var connector_tool := ""
 var selected_connector := ""
 var gameplay_brush: Dictionary = {}
-var selected_gameplay_index := -1
+var selected_gameplay_indices: Array[int] = []
+var selected_gameplay_index := -1:
+ set(value):
+  selected_gameplay_index = value
+  selected_gameplay_indices.assign([value] if value >= 0 else [])
 var marker_tool := ""
 var selected_marker := ""
 var ring_tool := false
+var ring_kind := "line"
+var ring_fill := false
+var ring_rotation := 0.0
+var ring_radii := Vector2(50, 50)
+var trajectory_gravity_scale: float = preload("res://data/balanced.tres").gravity_scale
 var selected_ring_index := -1
 var decor_brush: Dictionary = {}
 var selected_decor_index := -1
@@ -309,6 +318,15 @@ func select_gameplay(index: int) -> void:
  selected_gameplay_index = index if index >= 0 and index < _gameplay_objects().size() else -1
  marker_tool = ""
  selected_marker = ""
+ queue_redraw()
+
+func set_gameplay_selection(indices: Array[int]) -> void:
+ select_gameplay(-1)
+ var valid: Array[int] = []
+ for index: int in indices:
+  if index >= 0 and index < _gameplay_objects().size() and not valid.has(index): valid.append(index)
+ selected_gameplay_index = valid.back() if not valid.is_empty() else -1
+ selected_gameplay_indices = valid
  queue_redraw()
 
 
@@ -693,7 +711,9 @@ func _draw_rings() -> void:
   _draw_ring_trail(_ring_preview, true, true)
  elif ring_tool and _hovering and _inside_grid(_cursor_position):
   var point := legal_gameplay_position(screen_to_local_pixels(_cursor_position), _alt_held)
-  _draw_ring_trail({"start": point, "end": point, "spacing": ring_spacing_cells * _local_cell_size()}, false, true)
+  var pattern := {"start": point, "end": point, "spacing": ring_spacing_cells * _local_cell_size()}
+  if ring_kind == "ellipse": pattern.merge({"kind": "ellipse", "end": point + ring_radii * 2.0, "fill": ring_fill, "rotation_degrees": ring_rotation}, true)
+  _draw_ring_trail(pattern, false, true)
 
 func _draw_ring_trail(trail: Dictionary, selected: bool, ghost: bool) -> void:
  var color := Color("ffd95e")
@@ -704,6 +724,13 @@ func _draw_ring_trail(trail: Dictionary, selected: bool, ghost: bool) -> void:
   var start := local_pixels_to_screen(trail.start)
   var end := local_pixels_to_screen(trail.end)
   draw_line(start, end, Color(color, 0.3), 1.0, true)
+  if trail.get("kind") == "ellipse":
+   var outline := PackedVector2Array()
+   var center: Vector2 = (trail.start + trail.end) * 0.5
+   var radii: Vector2 = (trail.end - trail.start).abs() * 0.5
+   for i in 65:
+    outline.append(local_pixels_to_screen(center + (Vector2.from_angle(TAU * i / 64.0) * radii).rotated(deg_to_rad(float(trail.rotation_degrees)))))
+   draw_polyline(outline, Color(color, 0.35), 1.0, true)
   var radius := clampf(PreviewDimensions.RING_HANDLE_RADIUS_CELLS * _cell_pixels, 2.0, 5.0)
   for point: Vector2 in [start, end]:
    draw_rect(Rect2(point - Vector2.ONE * radius, Vector2.ONE * radius * 2), Color("fff0b0"), false, 1.0)
@@ -717,6 +744,8 @@ func _begin_ring_drag(index: int, pointer: Vector2, mode: String) -> void:
  if mode == "create":
   var point := legal_gameplay_position(_ring_start_pointer, _alt_held)
   _ring_original = {"start": point, "end": point, "spacing": ring_spacing_cells * _local_cell_size()}
+  if ring_kind == "ellipse":
+   _ring_original.merge({"kind": "ellipse", "end": point + ring_radii * 2.0, "fill": ring_fill, "rotation_degrees": ring_rotation}, true)
  else:
   _ring_original = document.ring_trails[index].duplicate(true)
  _ring_preview = _ring_original.duplicate(true)
@@ -839,7 +868,8 @@ func _draw_gameplay_objects() -> void:
   var point: Vector2 = placement.position
   if index == _gameplay_drag_index and _gameplay_drag_moved:
    point = _gameplay_drag_position
-  ObjectPreview.draw_object(self, placement, local_pixels_to_screen(point), scale_factor, _local_cell_size())
+  ObjectPreview.draw_object(self, placement, local_pixels_to_screen(point), scale_factor, _local_cell_size(), selected_gameplay_indices.has(index))
+  if placement.type == "spring" and selected_gameplay_indices.has(index): _draw_spring_trajectory(placement)
  if selected_gameplay_index >= 0 and selected_gameplay_index < objects.size():
   var placement: Dictionary = objects[selected_gameplay_index]
   var point: Vector2 = _gameplay_drag_position if selected_gameplay_index == _gameplay_drag_index and _gameplay_drag_moved else placement.position
@@ -852,6 +882,33 @@ func _draw_gameplay_objects() -> void:
  if _rail_draft.is_empty() and (_hovering or not _drop_gameplay_brush.is_empty()) and _inside_grid(_cursor_position) and _valid_gameplay_stamp(active_brush):
   var point := legal_gameplay_position(screen_to_local_pixels(_cursor_position), _alt_held)
   ObjectPreview.draw_object(self, active_brush, local_pixels_to_screen(point), scale_factor, _local_cell_size(), false, true)
+  if active_brush.type == "spring":
+   var shown := active_brush.duplicate(true)
+   shown.position = point
+   _draw_spring_trajectory(shown)
+ _draw_bank_links()
+
+func _draw_spring_trajectory(item: Dictionary) -> void:
+ var points := Objects.spring_trajectory(item, trajectory_gravity_scale, Objects.Dimensions.BALL_RADIUS_CELLS * _local_cell_size())
+ for i in points.size(): points[i] = local_pixels_to_screen(points[i])
+ draw_polyline(points, Color(1.0, 0.8, 0.3, 0.65), 1.5, true)
+ for i in range(0, points.size(), 10): draw_circle(points[i], 2.5, Color("ffd24e"))
+
+func _draw_bank_links() -> void:
+ var positions := {}
+ for i in document.gameplay_objects.size():
+  positions[Objects.identity(document.gameplay_objects[i], i)] = local_pixels_to_screen(document.gameplay_objects[i].position)
+ for bank: Dictionary in document.switch_banks:
+  var center := Vector2.ZERO
+  for id: String in bank.members: center += Vector2(positions.get(id, Vector2.ZERO))
+  center /= maxf(1.0, bank.members.size())
+  for id: String in bank.members:
+   if positions.has(id): _draw_dashes(positions[id], center, Color(0.5, 0.8, 1.0, 0.5))
+  for id: String in bank.gates:
+   if positions.has(id):
+    _draw_dashes(center, positions[id], Color(0.5, 0.8, 1.0, 0.5))
+    ObjectPreview._arrow(self, center.lerp(positions[id], 0.8), positions[id], Color("81caff"))
+  draw_string(ThemeDB.fallback_font, center + Vector2(7, -10), bank.label, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("81caff"))
 
 
 func _draw_connectors() -> void:
@@ -1266,6 +1323,14 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
   if cycle_overlaps and not click_target.is_empty():
    target = click_target
    click_target = {}
+  if target.get("kind") == "gameplay":
+   var indices: Array[int] = selected_gameplay_indices.duplicate()
+   if indices.has(target.index): indices.erase(target.index)
+   else: indices.append(target.index)
+   set_gameplay_selection(indices)
+   _emit_selection_changed()
+   _set_status("%d gameplay objects selected. Select switches to create a bank." % indices.size())
+   return
   if target.get("kind") == "terrain":
    var indices: Array[int] = selected_indices.duplicate()
    if indices.has(target.index):

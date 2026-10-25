@@ -1,12 +1,13 @@
 class_name ActGeometry
 extends Resource
 ## A single Act's terrain, connectors, gameplay objects and lifecycle authoring data.
-const FORMAT_VERSION := 12
+const FORMAT_VERSION := 13
 ## The system gutter is outside terrain bounds and is never a thirteenth terrain row.
 const RED_GUTTER_CELLS := 1
 const SHAPES = preload("res://scripts/act_editor/terrain_shapes.gd")
 const OBJECTS = preload("res://scripts/act_editor/gameplay_objects.gd")
 const RINGS = preload("res://scripts/act_editor/ring_trails.gd")
+const BANKS = preload("res://scripts/act_editor/switch_banks.gd")
 const COMPOSITES = preload("res://scripts/act_editor/composite_terrain.gd")
 const DECOR = preload("res://scripts/act_editor/decor_slots.gd")
 const SCRIPT_PATH := "res://scripts/act_editor/act_geometry.gd"
@@ -37,6 +38,7 @@ const OPTIONAL_TRANSFORM_FIELDS := ["offset", "terrain_scale", "fine_rotation_de
 @export var placements = []
 ## Gameplay centers/pivots use exact local pixel coordinates, independently of terrain.
 @export var gameplay_objects = []
+@export var switch_banks = []
 ## One record per gesture; generated positions never snap to the terrain grid.
 @export var ring_trails = []
 ## Stable identity survives Save As; populated when the first decoration is authored.
@@ -116,6 +118,7 @@ func validation_errors() -> PackedStringArray:
   elif valid_grid_type and (connector.width > grid_size.x or connector.start_x > grid_size.x - connector.width):
    errors.append("%s connector span must fit inside the Act's horizontal grid boundary." % kind.capitalize())
  errors.append_array(_gameplay_validation_errors())
+ errors.append_array(BANKS.validation_errors(switch_banks, gameplay_objects))
  errors.append_array(_ring_validation_errors())
  errors.append_array(_decor_validation_errors())
  errors.append_array(_lifecycle_validation_errors())
@@ -342,12 +345,14 @@ func fingerprint() -> String:
     var spacing: Variant = trail.get("spacing")
     if typeof(spacing) in [TYPE_INT, TYPE_FLOAT]: spacing = float(spacing)
     ordered_trails.append([trail.get("start"), trail.get("end"), spacing])
+    if trail.has("kind"):
+     ordered_trails.back().append_array([trail.kind, trail.get("fill"), float(trail.get("rotation_degrees", 0.0))])
    else:
     ordered_trails.append(trail)
  else:
   ordered_trails.append(ring_trails)
  # Hash native scalar bits: decimal formatting can collapse adjacent float values.
- return var_to_bytes([format_version, library_version, title, grid_size, normalized_cell_size, ordered_placements, entry_start_x, entry_width, exit_start_x, exit_width, ordered_objects, normalized_activation, spawn_position, ordered_trails, decor_seed, DECOR.fingerprint_records(decor_slots)]).hex_encode().sha256_text()
+ return var_to_bytes([format_version, library_version, title, grid_size, normalized_cell_size, ordered_placements, entry_start_x, entry_width, exit_start_x, exit_width, ordered_objects, normalized_activation, spawn_position, ordered_trails, decor_seed, DECOR.fingerprint_records(decor_slots), BANKS.fingerprint_records(switch_banks)]).hex_encode().sha256_text()
 
 func copy_document() -> Resource:
  var result: Resource = get_script().new()
@@ -358,6 +363,7 @@ func copy_document() -> Resource:
  result.cell_size = cell_size
  result.placements = placements.duplicate(true) if typeof(placements) == TYPE_ARRAY else placements
  result.gameplay_objects = gameplay_objects.duplicate(true) if typeof(gameplay_objects) == TYPE_ARRAY else gameplay_objects
+ result.switch_banks = switch_banks.duplicate(true) if typeof(switch_banks) == TYPE_ARRAY else switch_banks
  result.ring_trails = ring_trails.duplicate(true) if typeof(ring_trails) == TYPE_ARRAY else ring_trails
  result.decor_seed = decor_seed
  result.decor_slots = decor_slots.duplicate(true) if typeof(decor_slots) == TYPE_ARRAY else decor_slots
@@ -380,8 +386,17 @@ static func load_document(path: String) -> Dictionary:
   return {"document": null, "error": "The selected file is not an Act Geometry resource."}
  if not loaded._format_version_was_set or not loaded._library_version_was_set:
   return {"document": null, "error": "This Act file is missing its required format or terrain library version."}
- if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4, 5, 6, 7, 8, 9, 10, 11] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
-  if typeof(loaded.decor_slots) == TYPE_ARRAY:
+ if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
+  if typeof(loaded.switch_banks) != TYPE_ARRAY or not loaded.switch_banks.is_empty():
+   return {"document": null, "error": "Switch banks require Act format 13."}
+  if typeof(loaded.gameplay_objects) == TYPE_ARRAY:
+   for item: Variant in loaded.gameplay_objects:
+    if item is Dictionary and item.get("type") in ["one_way_gate", "switch_target", "spring"]:
+     return {"document": null, "error": "Gates, switches and springs require Act format 13."}
+  if typeof(loaded.ring_trails) == TYPE_ARRAY:
+   for trail: Variant in loaded.ring_trails:
+    if trail is Dictionary and trail.has("kind"): return {"document": null, "error": "Ring ellipses require Act format 13."}
+  if loaded.format_version < 12 and typeof(loaded.decor_slots) == TYPE_ARRAY:
    for slot: Variant in loaded.decor_slots:
     if slot is Dictionary and slot.has("placement_source"):
      return {"document": null, "error": "Scattered decor ownership requires Act format 12."}
@@ -425,11 +440,12 @@ static func load_document(path: String) -> Dictionary:
   loaded.activation_y = decoded
  if typeof(loaded.ring_trails) == TYPE_ARRAY:
   for trail: Variant in loaded.ring_trails:
-   if trail is Dictionary and typeof(trail.get("spacing")) == TYPE_PACKED_BYTE_ARRAY:
-    var decoded: Variant = _decode_numeric_payload(trail.spacing)
-    if decoded == null:
-     return {"document": null, "error": "Ring trail: invalid stored spacing."}
-    trail.spacing = decoded
+   if not trail is Dictionary: continue
+   for key: String in ["spacing", "rotation_degrees"]:
+    if typeof(trail.get(key)) == TYPE_PACKED_BYTE_ARRAY:
+     var decoded: Variant = _decode_numeric_payload(trail[key])
+     if decoded == null: return {"document": null, "error": "Ring pattern: invalid stored " + key}
+     trail[key] = decoded
  if typeof(loaded.decor_slots) == TYPE_ARRAY:
   for slot: Variant in loaded.decor_slots:
    if not slot is Dictionary: continue
@@ -530,6 +546,7 @@ func _storage_document() -> Resource:
   stored.activation_y = var_to_bytes(stored.activation_y)
  for trail: Dictionary in stored.ring_trails:
   trail.spacing = var_to_bytes(trail.spacing)
+  if trail.has("rotation_degrees"): trail.rotation_degrees = var_to_bytes(trail.rotation_degrees)
  for slot: Dictionary in stored.decor_slots:
   slot.rotation_degrees = var_to_bytes(slot.rotation_degrees)
   if slot.has("scale"): slot.scale = var_to_bytes(slot.scale)

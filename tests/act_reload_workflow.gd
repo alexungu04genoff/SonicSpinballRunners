@@ -103,12 +103,13 @@ func run() -> void:
 	check(p.overview_zoom == 1.0 and p.camera_focus == p.table_bounds.get_center(), "Follow then overview restores default framing")
 	check(FileAccess.get_file_as_bytes(RELOAD_PATH) == saved_bytes, "Reload never writes back to the Act")
 	game.set_theme("green_hill")
-	document.decor_slots[0].variant_index = 2
+	# Green Hill now provides variant 2 (grass tuft); keep this fixture missing.
+	document.decor_slots[0].variant_index = 99
 	check(document.save_document(RELOAD_PATH) == OK, "Save a generic variant missing from Green Hill")
 	paused = true
 	await key(KEY_F5)
 	await await_rebuild()
-	check(paused and not game.controls.input_blocked and game.authored_document.decor_slots[0].variant_index == 2, "F5 reloads while preserving an existing pause")
+	check(paused and not game.controls.input_blocked and game.authored_document.decor_slots[0].variant_index == 99, "F5 reloads while preserving an existing pause")
 	check(game.presentation.decor_warnings.size() == 1 and game.presentation.decor_root.get_child_count() == 3 and game.source_note.tooltip_text.contains("using Auto"), "Missing theme variant falls back and reports its warning in the main HUD")
 	var stable_root: Node = game._authored_root
 	var stable_fingerprint: String = game.authored_document.fingerprint()

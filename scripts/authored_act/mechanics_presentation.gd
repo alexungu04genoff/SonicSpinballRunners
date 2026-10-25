@@ -1,9 +1,11 @@
 extends Node3D
 ## Collisionless pinball visuals; theme materials never alter the shared rail geometry.
 const RailPath = preload("res://scripts/authored_act/rail_path.gd")
+const Gimmicks = preload("res://scripts/authored_act/gimmick_models.gd")
 var table: TablePresentation
 var spinners: Array[Dictionary] = []
 var fields: Array[Dictionary] = []
+var gimmicks: Array[Dictionary] = []
 var elapsed := 0.0
 
 func build(presenter: TablePresentation, runtime: Dictionary) -> void:
@@ -17,6 +19,10 @@ func build(presenter: TablePresentation, runtime: Dictionary) -> void:
    "spinner": _spinner(item)
    "magnetic_field": _field(item)
    "elevated_rail": _rail(item)
+   "one_way_gate", "switch_target", "spring":
+    var entry := Gimmicks.build(table, self, item)
+    gimmicks.append(entry)
+    Gimmicks.update(entry)
 
 func _box(size: Vector3, color: Color, at: Vector3, parent: Node3D) -> MeshInstance3D:
  var mesh := BoxMesh.new()
@@ -209,6 +215,7 @@ func _pipe_section(surface: SurfaceTool, path: Dictionary, width: float, peak: f
 
 func _process(delta: float) -> void:
  elapsed += delta
+ for entry: Dictionary in gimmicks: Gimmicks.update(entry)
  for entry: Dictionary in spinners: entry.paddle.rotation.x = float(entry.item.angle)
  for field: Dictionary in fields:
   for i in field.arcs.get_child_count():
