@@ -59,7 +59,7 @@ The standard round bumper has **diameter `0.5 × cell_size`** and **radius `0.25
 
 The sling's dominant dimension is **0.6 cell** (about 0.567 cell wide). Each flipper has a **0.65-cell pivot-to-tip centerline**, a 0.05-cell cap radius and a thin 0.1-cell body: **0.75 cell overall length**. At the default 50 px cell size, the sling is about 28.33×30 px and the flipper body is 37.5×5 px before rotation. Both hands retain their resting angles and swing direction; swing guides use the same reduced centerline length.
 
-Tune these editor dimensions in `scripts/act_editor/preview_dimensions.gd`. It also centralizes the compact Spawn ring (0.24-cell diameter), pivot crosshairs, guide arrows, connector handles and outline widths. Small annotation units clamp at extreme zoom levels for readability; object silhouettes retain their exact cell-relative proportions. Connector span lengths and the full-width Activation line remain unchanged. Palette icons fit their thumbnail boxes independently of canvas scale. No runtime physics dimensions are changed.
+Tune shared authored gameplay dimensions in `scripts/act_dimensions.gd`; both the editor and authored runtime consume them. `scripts/act_editor/preview_dimensions.gd` keeps compact Spawn rings (0.24-cell diameter), pivot crosshairs, guide arrows, connector handles and outline widths. Small annotation units clamp at extreme zoom levels for readability; object silhouettes retain their exact cell-relative proportions. Connector span lengths and the full-width Activation line remain unchanged. Palette icons fit their thumbnail boxes independently of canvas scale. Generated tables retain their existing physics dimensions.
 
 Saved object records still contain only type, exact local position and angle. Preview size is derived separately and is never baked into position, stored as a new transform or used to rescale saved coordinates. Spawn position is likewise independent of its indicator size. Terrain definitions keep their exact cell footprints.
 
@@ -75,7 +75,7 @@ The compact **Spacing** field defaults to **0.4 cells between centers**. Both en
 
 In **Select / Move**, click any ring to select the whole trail. Drag its body to move both endpoints together; once selected, drag either small endpoint handle to reshape the trail. A single ring moves as one point. Normal group movement snaps the start while preserving the trail's relative shape. Alt enables free movement; arrows move one cell and Alt+arrows move one pixel. Delete removes the whole trail, and Ctrl+D duplicates it one cell diagonally. Creation, movement, endpoint edits, spacing changes, duplication and deletion use the shared undo/redo history. Alt-click includes ring trails when cycling overlapping items.
 
-Rings have a **0.18-cell diameter**, centralized as `RING_RADIUS_CELLS` in `preview_dimensions.gd`. Selection adds only a faint endpoint line and small handles. `ring_trails.gd` owns deterministic generation and default spacing; it has no runtime dependencies. A trail is limited to 4,096 rings to reject unbounded resource input without freezing the editor.
+Rings have a **0.18-cell diameter**, centralized as `RING_RADIUS_CELLS` in `scripts/act_dimensions.gd`. Selection adds only a faint endpoint line and small handles. `ring_trails.gd` owns deterministic generation and default spacing; it has no runtime dependencies. The authored playtest uses this same generation function, existing swept ring collection and Green Hill pickup presentation. A trail is limited to 4,096 rings to reject unbounded resource input without freezing the editor.
 
 This feature is **authoring and persistence only**. The existing authored-Act playtest does not instantiate these trails yet; no ring collection, scoring, magnetism, collision, character interaction or procedural ring routes are added.
 
@@ -160,7 +160,7 @@ Use `ActGeometry.load_document()` and `save_document()` for persistence. In memo
 
 Transforms apply clockwise quarter-turns, then mirrors along the final screen axes. Rotate composes another clockwise turn with existing mirrors. Saves reference shape IDs instead of duplicating points. Normal field/shape validation and the existing unsaved-change workflow remain in place.
 
-The canvas emits edit requests; the editor owns mutations and history. No grid-occupancy masks, boolean union, collision compilation or procedural-chunk assumptions enter the authoring model. Save a file with Spawn, then load it in the standalone [Authored Act Playtest](AUTHORED_ACT_PLAYTEST.md) to play its exact geometry with existing gameplay physics. Runtime compilation remains separate from authoring. Rings, boost pads, hazards, difficulty/reachability checks, horizontal Act alignment and Zone assembly remain deferred.
+The canvas emits edit requests; the editor owns mutations and history. No grid-occupancy masks, boolean union, collision compilation or procedural-chunk assumptions enter the authoring model. Save a file with Spawn, then load it in the standalone [Authored Act Playtest](AUTHORED_ACT_PLAYTEST.md) to play its exact geometry with existing gameplay physics and Green Hill presentation. Runtime compilation remains separate from authoring. Boost pads, hazards, difficulty/reachability checks, horizontal Act alignment and Zone assembly remain deferred.
 
 ## Verification
 

@@ -1,7 +1,7 @@
 class_name ActGameplayObjects
 extends RefCounted
 ## Editor-only silhouettes in local pixels. No bodies or gameplay scripts.
-const Dimensions = preload("res://scripts/act_editor/preview_dimensions.gd")
+const Dimensions = preload("res://scripts/act_dimensions.gd")
 const FLIPPER_SWING_DEGREES := rad_to_deg(0.8)
 const CURVE_STEPS := 24
 
@@ -43,10 +43,7 @@ static func local_points(placement: Dictionary, cell_size: float) -> PackedVecto
    points[CURVE_STEPS * 2] = Vector2(-radius, 0)
    points[CURVE_STEPS * 3] = Vector2(0, -radius)
   "triangle_bumper":
-   # Uniformly scale the original 90-pixel-tall triangle about its authored origin.
-   var scale_factor := Dimensions.SLING_HEIGHT_CELLS * cell_size / 90.0
-   for point: Vector2 in [Vector2(-40, 35), Vector2(-15, -55), Vector2(45, 35)]:
-    points.append(point * scale_factor)
+   points = Dimensions.sling_points(cell_size)
   "left_flipper", "right_flipper":
    # The paddle is a capsule around the pivot-to-tip centerline.
    # Both hands share this unrotated body; rest angle and swing sign differ.

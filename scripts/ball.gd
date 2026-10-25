@@ -6,6 +6,13 @@ signal physical_impact(collider: Node2D, normal: Vector2, speed: float)
 signal launch_started
 signal launched(impulse: Vector2)
 const RADIUS: float = 14.0
+## Generated tables keep the legacy radius; authored Acts set their cell-relative size.
+var radius: float = RADIUS:
+ set(value):
+  radius = value
+  if _collision_circle != null:
+   _collision_circle.radius = radius
+var _collision_circle: CircleShape2D
 var tuning: PhysicsTuning
 var controls: PlaygroundInput
 var steering_contribution: float = 0.0
@@ -42,9 +49,9 @@ func _ready() -> void:
  linear_damp_mode = RigidBody2D.DAMP_MODE_REPLACE
  linear_damp = 0.0
  var shape := CollisionShape2D.new()
- var circle := CircleShape2D.new()
- circle.radius = RADIUS
- shape.shape = circle
+ _collision_circle = CircleShape2D.new()
+ _collision_circle.radius = radius
+ shape.shape = _collision_circle
  add_child(shape)
  physics_material_override = PhysicsMaterial.new()
  physics_material_override.friction = 0.0
@@ -199,11 +206,11 @@ func _guard_fast_motion(state: PhysicsDirectBodyState2D) -> void:
  # observed on this Godot build. Rebound occurs at most one physics tick early.
  # The query uses actual 2D collision shapes, including moving flippers.
  var motion: Vector2 = state.linear_velocity * state.step
- if motion.length() < RADIUS * 0.5:
+ if motion.length() < radius * 0.5:
   return
  _motion_query.from = state.transform
  _motion_query.motion = motion
- _motion_query.margin = 0.08
+ _motion_query.margin = 0.08 * radius / RADIUS
  if not PhysicsServer2D.body_test_motion(get_rid(), _motion_query, _motion_result):
   return
  var normal: Vector2 = _motion_result.get_collision_normal()

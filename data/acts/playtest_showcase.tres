@@ -1,10 +1,10 @@
 [gd_resource type="Resource" script_class="ActGeometry" format=3]
 
-[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_dtc6p"]
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_lrklg"]
 
 [resource]
-script = ExtResource("1_dtc6p")
-format_version = 4
+script = ExtResource("1_lrklg")
+format_version = 5
 library_version = 2
 title = "Authored Playtest — Curve Relay"
 cell_size = 100.0
@@ -129,4 +129,4 @@ entry_width = 2
 exit_start_x = 5
 exit_width = 2
 activation_y = PackedByteArray(3, 0, 0, 0, 0, 128, 84, 68)
-spawn_position = Vector2(530.5, 960.25)
+spawn_position = Vector2(482.5, 960.25)

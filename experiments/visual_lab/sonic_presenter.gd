@@ -70,10 +70,11 @@ func _ready() -> void:
  add_child(spin_root)
  spin_material = table.material(Color("075dd2"), 0.05)
  spin_material.roughness = 0.38
- table.mesh_node(table.sphere(0.17), spin_material, Vector3.ZERO, spin_root)
+ var spin_radius := ball.radius * TablePresentation.SCALE if table.authored_mode else 0.17
+ table.mesh_node(table.sphere(spin_radius), spin_material, Vector3.ZERO, spin_root)
  var stripe := TorusMesh.new()
- stripe.inner_radius = 0.167
- stripe.outer_radius = 0.175
+ stripe.inner_radius = spin_radius * 0.96 if table.authored_mode else 0.167
+ stripe.outer_radius = spin_radius if table.authored_mode else 0.175
  stripe.rings = 24
  stripe.ring_segments = 8
  var streak := table.mesh_node(stripe, table.material(Color("68caff"), 0.28), Vector3.ZERO, spin_root)
@@ -93,8 +94,8 @@ func _ready() -> void:
  marker.name = "AuthoritativeBallContactMarker"
  add_child(marker)
  var disk := CylinderMesh.new()
- disk.top_radius = 0.22
- disk.bottom_radius = 0.22
+ disk.top_radius = spin_radius * 1.3 if table.authored_mode else 0.22
+ disk.bottom_radius = disk.top_radius
  disk.height = 0.004
  disk.radial_segments = 32
  var shadow := table.material(Color(0.015, 0.055, 0.03, 0.42))
@@ -103,8 +104,8 @@ func _ready() -> void:
  var disk_visual := table.mesh_node(disk, shadow, Vector3.ZERO, marker)
  disk_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  var ring := TorusMesh.new()
- ring.inner_radius = PlaygroundBall.RADIUS * TablePresentation.SCALE
- ring.outer_radius = ring.inner_radius + 0.018
+ ring.inner_radius = ball.radius * TablePresentation.SCALE
+ ring.outer_radius = ring.inner_radius + (spin_radius * 0.12 if table.authored_mode else 0.018)
  ring.rings = 32
  ring.ring_segments = 8
  var contact := table.mesh_node(ring, table.material(Color("fff2a7"), 0.2), Vector3(0, 0.009, 0), marker)
@@ -113,12 +114,17 @@ func _ready() -> void:
  study_root = Node3D.new()
  study_root.name = "PausedCharacterStudy"
  add_child(study_root)
- if table.has_method("build_study"):
+ if table.authored_mode and BALL_FORM_ONLY:
+  # Standalone authored play has no character study UI. Avoid building its
+  # decorative island while preserving the legacy visual-lab inspection path.
+  study_root.position = study_origin
+ elif table.has_method("build_study"):
   table.call("build_study", study_root, study_origin)
  else:
   study_root.position = study_origin
- var study_shadow := table.mesh_node(disk, shadow, Vector3(0, 0.014, 0), study_root)
- study_shadow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+ if not (table.authored_mode and BALL_FORM_ONLY):
+  var study_shadow := table.mesh_node(disk, shadow, Vector3(0, 0.014, 0), study_root)
+  study_shadow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  study_root.visible = false
  close_camera = Camera3D.new()
  close_camera.name = "CharacterInspectionCamera"
@@ -283,16 +289,17 @@ func _inspect_import(node: Node) -> void:
    _inspect_import(child)
 
 func _build_effects() -> void:
+ var effect_scale := ball.radius / PlaygroundBall.RADIUS if table.authored_mode else 1.0
  for i in 7:
   var mat := table.material(Color("59c9ff"))
   mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-  var dot := table.mesh_node(table.sphere(0.07 * (1.0 - float(i) / 9.0)), mat, Vector3.ZERO, self)
+  var dot := table.mesh_node(table.sphere(0.07 * effect_scale * (1.0 - float(i) / 9.0)), mat, Vector3.ZERO, self)
   dot.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
   dot.visible = false
   trail.append(dot)
  var hoop := TorusMesh.new()
- hoop.inner_radius = 0.23
- hoop.outer_radius = 0.255
+ hoop.inner_radius = 0.23 * effect_scale
+ hoop.outer_radius = 0.255 * effect_scale
  hoop.rings = 32
  hoop.ring_segments = 8
  pulse_material = table.material(Color("fff4b0"))
@@ -310,9 +317,9 @@ func _build_effects() -> void:
  target_ring.scale = Vector3.ONE * 1.65
  for i in 4:
   var tick := BoxMesh.new()
-  tick.size = Vector3(0.12, 0.02, 0.025)
+  tick.size = Vector3(0.12, 0.02, 0.025) * effect_scale
   var angle := i * PI * 0.5
-  var tick_node := table.mesh_node(tick, target_mat, Vector3(cos(angle), 0, sin(angle)) * 0.48, target_marker)
+  var tick_node := table.mesh_node(tick, target_mat, Vector3(cos(angle), 0, sin(angle)) * 0.48 * effect_scale, target_marker)
   tick_node.rotation.y = -angle
  var wind_mat := table.material(Color(1.0, 0.76, 0.35, 0.45), 0.2)
  wind_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -465,10 +472,10 @@ func _update_pose_transform(delta: float) -> void:
   var hop := sin(progress * PI) * (0.12 if state == State.JUMP else (0.06 if state in [State.TRICK, State.IMPACT] else 0.0))
   upright.position = anchor + Vector3.UP * lerpf(TablePresentation.BALL_HEIGHT + 0.025, POSE_HEIGHT + hop, uncurl_amount)
   upright.scale = Vector3.ONE * 0.85 * lerpf(0.25, 1.0, uncurl_amount)
- var ball_scale := 1.0 if close_view else 1.12
+ var ball_scale := 1.0 if close_view or table.authored_mode else 1.12
  # A short scale overlap suggests uncurl/re-curl without tumbling the upright rig.
  spin_root.scale = Vector3.ONE * ball_scale * (1.0 if BALL_FORM_ONLY or not model_available else maxf(0.001, 1.0 - uncurl_amount))
- spin_root.position = anchor + Vector3.UP * (TablePresentation.BALL_HEIGHT + 0.025)
+ spin_root.position = anchor + Vector3.UP * (table.ball_height() if table.authored_mode else TablePresentation.BALL_HEIGHT + 0.025)
  upright.visible = not BALL_FORM_ONLY and model_available and uncurl_amount > 0.001
  spin_root.visible = BALL_FORM_ONLY or not model_available or uncurl_amount < 0.999
  marker.position = TablePresentation.map_point(ball.position, 0.015)
@@ -502,7 +509,7 @@ func _process(delta: float) -> void:
  _update_pose_transform(physics_delta)
  var travel := ball.position - _last_position
  if _last_position != Vector2.INF and travel.length() > 0.001 and travel.length() < 100.0:
-  spin_root.rotate(Vector3(travel.y, 0, -travel.x).normalized(), travel.length() / PlaygroundBall.RADIUS)
+  spin_root.rotate(Vector3(travel.y, 0, -travel.x).normalized(), travel.length() / ball.radius)
  if close_view and (BALL_FORM_ONLY or pose == "roll") and not capture_hold:
   spin_root.rotate(Vector3(1, 0, 0.5).normalized(), delta * 4.5)
  _update_effects(physics_delta)

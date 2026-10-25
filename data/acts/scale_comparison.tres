@@ -1,0 +1,91 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=3]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_dlyai"]
+
+[resource]
+script = ExtResource("1_dlyai")
+format_version = 5
+library_version = 2
+title = "Scale Comparison · 50 px cells"
+placements = [{
+"anchor": Vector2i(1, 2),
+"base_size": Vector2i(1, 1),
+"flip_h": false,
+"flip_v": false,
+"quarter_turns": 0,
+"shape_id": "rectangle_1x1"
+}, {
+"anchor": Vector2i(9, 2),
+"base_size": Vector2i(1, 3),
+"flip_h": false,
+"flip_v": false,
+"quarter_turns": 0,
+"shape_id": "rectangle_1x3"
+}, {
+"anchor": Vector2i(1, 5),
+"base_size": Vector2i(2, 2),
+"flip_h": false,
+"flip_v": false,
+"quarter_turns": 0,
+"shape_id": "rectangle_2x2"
+}, {
+"anchor": Vector2i(4, 6),
+"base_size": Vector2i(1, 3),
+"flip_h": false,
+"flip_v": false,
+"quarter_turns": 1,
+"shape_id": "wall_1x3"
+}, {
+"anchor": Vector2i(7, 6),
+"base_size": Vector2i(1, 2),
+"flip_h": false,
+"flip_v": false,
+"quarter_turns": 1,
+"shape_id": "wall_1x2"
+}, {
+"anchor": Vector2i(0, 8),
+"base_size": Vector2i(1, 3),
+"flip_h": false,
+"flip_v": false,
+"quarter_turns": 0,
+"shape_id": "wall_1x3"
+}, {
+"anchor": Vector2i(11, 8),
+"base_size": Vector2i(1, 3),
+"flip_h": true,
+"flip_v": false,
+"quarter_turns": 0,
+"shape_id": "wall_1x3"
+}]
+gameplay_objects = [{
+"position": Vector2(250.5, 150.25),
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "round_bumper"
+}, {
+"position": Vector2(350.25, 150.5),
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 66),
+"type": "triangle_bumper"
+}, {
+"position": Vector2(225.5, 475.25),
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 169, 103, 2, 150, 171, 85, 50, 64),
+"type": "left_flipper"
+}, {
+"position": Vector2(374.5, 475.25),
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 11, 179, 63, 141, 74, 53, 100, 64),
+"type": "right_flipper"
+}]
+ring_trails = [{
+"end": Vector2(325.5, 250.25),
+"spacing": PackedByteArray(3, 0, 0, 0, 0, 0, 200, 65),
+"start": Vector2(225.5, 250.25)
+}, {
+"end": Vector2(350.5, 325.25),
+"spacing": PackedByteArray(3, 0, 0, 0, 0, 0, 200, 65),
+"start": Vector2(250.5, 400.25)
+}]
+entry_start_x = 5
+entry_width = 2
+exit_start_x = 5
+exit_width = 2
+activation_y = PackedByteArray(3, 0, 0, 0, 0, 128, 212, 67)
+spawn_position = Vector2(240.5, 440.25)

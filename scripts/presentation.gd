@@ -7,6 +7,7 @@ const RING_HEIGHT: float = 0.23
 ## Cosmetic timing only; character profiles control pickup radius, never flight speed.
 const RING_PICKUP_DURATION: float = 0.20
 const OVERLAY_HEIGHT: float = 0.015
+const AuthoredActData := preload("res://scripts/act_editor/act_geometry.gd")
 enum CameraPreset { TOP_DOWN, REAL_PINBALL, DRAMATIC_PINBALL }
 const CAMERA_NAMES: Array[String] = ["Top-down reference", "Real Pinball", "Dramatic Pinball"]
 var camera_preset: int = CameraPreset.REAL_PINBALL
@@ -40,6 +41,8 @@ var flash_times: Dictionary = {}
 var camera: Camera3D
 var _last_ball_position: Vector2
 var dynamic_geometry: ImmediateMesh
+var authored_mode := false
+var authored_cell_size := 50.0
 
 static func map_point(point: Vector2, height: float = 0.0) -> Vector3:
  return Vector3(point.x * SCALE, height, point.y * SCALE)
@@ -98,6 +101,20 @@ func line(a: Vector2, b: Vector2, radius: float, height: float, mat: Material, p
  return instance
 
 func build(chunks: Array[TableChunk], junctions: Variant = [], bounds: Rect2 = Rect2()) -> void:
+ authored_mode = false
+ _build_shared(chunks, junctions, bounds)
+
+func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
+ # The shared camera, lights and moving visuals accept compiler data directly.
+ # An authored Act never needs a generated chunk or procedural layout.
+ authored_mode = true
+ authored_cell_size = cell_size
+ camera_follow_enabled = false
+ _build_shared([], [], bounds)
+ _build_authored_objects(runtime)
+ _build_authored_grid(bounds, cell_size)
+
+func _build_shared(chunks: Array[TableChunk], junctions: Variant, bounds: Rect2) -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
  table_bounds = bounds
  if not table_bounds.has_area():
@@ -229,11 +246,11 @@ func build(chunks: Array[TableChunk], junctions: Variant = [], bounds: Rect2 = R
     _rect_outline(junction.passage, debug_mat, connector_overlay)
  for ring: Dictionary in ring_field.rings:
   var torus := TorusMesh.new()
-  torus.inner_radius = 0.075
-  torus.outer_radius = 0.135
+  torus.inner_radius = ring_field.ring_radius * SCALE * 0.55 if authored_mode else 0.075
+  torus.outer_radius = ring_field.ring_radius * SCALE if authored_mode else 0.135
   torus.rings = 16
   torus.ring_segments = 8
-  ring_visuals.append(mesh_node(torus, gold, map_point(ring.position, RING_HEIGHT)))
+  ring_visuals.append(mesh_node(torus, gold, map_point(ring.position, ring_height())))
  ring_field.pickup_claimed.connect(_on_ring_claimed)
  ring_field.rack_reset.connect(clear_ring_pickups)
  clear_ring_pickups()
@@ -241,19 +258,20 @@ func build(chunks: Array[TableChunk], junctions: Variant = [], bounds: Rect2 = R
   var pivot := Node3D.new()
   pivot.position = map_point(flipper.position)
   add_child(pivot)
-  _paddle(flipper.length * SCALE, PlaygroundFlipper.RADIUS * SCALE, 0.23, 0.0, material(Color("307ac3")), pivot)
-  _paddle(flipper.length * SCALE, PlaygroundFlipper.RADIUS * SCALE * 0.72, 0.035, 0.23, material(Color("b0e6ff")), pivot)
-  mesh_node(cylinder(0.06, 0.02), gold, Vector3(0, 0.275, 0), pivot)
+  var height_scale := flipper.radius / PlaygroundFlipper.RADIUS if authored_mode else 1.0
+  _paddle(flipper.length * SCALE, flipper.radius * SCALE, 0.23 * height_scale, 0.0, material(Color("307ac3")), pivot)
+  _paddle(flipper.length * SCALE, flipper.radius * SCALE * 0.72, 0.035 * height_scale, 0.23 * height_scale, material(Color("b0e6ff")), pivot)
+  mesh_node(cylinder(0.06 * height_scale, 0.02 * height_scale), gold, Vector3(0, 0.275 * height_scale, 0), pivot)
   flipper_visuals.append(pivot)
   var retracted := Node3D.new()
   retracted.position = pivot.position
   add_child(retracted)
-  _paddle(flipper.length * SCALE, PlaygroundFlipper.RADIUS * SCALE * 0.45, 0.02, 0.006, material(Color("82978d")), retracted)
+  _paddle(flipper.length * SCALE, flipper.radius * SCALE * 0.45, 0.02 * height_scale, 0.006, material(Color("82978d")), retracted)
   flipper_retracted_visuals.append(retracted)
- ball_visual = mesh_node(sphere(PlaygroundBall.RADIUS * SCALE), material(Color("4f97ff"), 0.12), map_point(ball.position, BALL_HEIGHT))
+ ball_visual = mesh_node(sphere(ball.radius * SCALE), material(Color("4f97ff"), 0.12), map_point(ball.position, ball_height()))
  var stripe := TorusMesh.new()
- stripe.inner_radius = 0.134
- stripe.outer_radius = 0.146
+ stripe.inner_radius = ball.radius * SCALE * 0.96 if authored_mode else 0.134
+ stripe.outer_radius = ball.radius * SCALE * 1.04 if authored_mode else 0.146
  mesh_node(stripe, material(Color("e5f4ff")), Vector3.ZERO, ball_visual)
  # Drain and serve guides have no gameplay collision.
  for chunk: TableChunk in chunks:
@@ -265,6 +283,75 @@ func build(chunks: Array[TableChunk], junctions: Variant = [], bounds: Rect2 = R
    _label("DRAIN", drain + Vector2(0, -60), 18, Color("ee8693"))
  _update_serve_markers()
  _update_checkpoint_visuals()
+
+func ball_height() -> float:
+ return ball.radius * SCALE + authored_cell_size * SCALE * 0.02 if authored_mode else BALL_HEIGHT
+
+func ring_height() -> float:
+ return ring_field.ring_radius * SCALE + authored_cell_size * SCALE * 0.03 if authored_mode else RING_HEIGHT
+
+func _build_authored_objects(runtime: Dictionary) -> void:
+ var bumper_mat := material(Color("b34039"))
+ var bumper_top := material(Color("ff8962"))
+ var gold := material(Color("ffd568"), 0.08)
+ var debug_mat := debug_material(Color("70ff85"))
+ var overlay_vertices := PackedVector3Array()
+ for item: Dictionary in runtime.objects:
+  if item.type in ["left_flipper", "right_flipper"]:
+   continue # Shared moving visuals above already use the real body dimensions.
+  var visual := Node3D.new()
+  visual.name = "Authored_" + str(item.type)
+  visual.position = map_point(item.position)
+  visual.rotation.y = -deg_to_rad(float(item.rotation_degrees))
+  add_child(visual)
+  if item.type == "round_bumper":
+   var radius: float = item.radius * SCALE
+   var height_scale := float(item.radius) / 38.0
+   mesh_node(cylinder(radius, 0.32 * height_scale), bumper_mat, Vector3(0, 0.16 * height_scale, 0), visual)
+   var bevel := cylinder(radius, 0.08 * height_scale)
+   bevel.top_radius = radius * 0.88
+   mesh_node(bevel, bumper_top, Vector3(0, 0.36 * height_scale, 0), visual)
+   mesh_node(cylinder(radius * 0.60, 0.02 * height_scale), gold, Vector3(0, 0.41 * height_scale, 0), visual)
+   for i in 32:
+    overlay_vertices.append(map_point(item.position + Vector2.from_angle(i * TAU / 32) * item.radius, OVERLAY_HEIGHT))
+    overlay_vertices.append(map_point(item.position + Vector2.from_angle((i + 1) * TAU / 32) * item.radius, OVERLAY_HEIGHT))
+  else:
+   var points: PackedVector2Array = item.points
+   var height := authored_cell_size * SCALE * 0.18
+   mesh_node(_prism(points, height, bumper_mat, bumper_top), null, Vector3.ZERO, visual)
+   for i in points.size():
+    var a: Vector2 = item.position + points[i].rotated(deg_to_rad(float(item.rotation_degrees)))
+    var b: Vector2 = item.position + points[(i + 1) % points.size()].rotated(deg_to_rad(float(item.rotation_degrees)))
+    overlay_vertices.append(map_point(a, OVERLAY_HEIGHT))
+    overlay_vertices.append(map_point(b, OVERLAY_HEIGHT))
+  bumper_visuals[item.body.get_instance_id()] = visual
+ for terrain: Dictionary in runtime.terrain:
+  var points: PackedVector2Array = terrain.points
+  var count := points.size() if terrain.closed else points.size() - 1
+  for i in count:
+   overlay_vertices.append(map_point(points[i], OVERLAY_HEIGHT))
+   overlay_vertices.append(map_point(points[(i + 1) % points.size()], OVERLAY_HEIGHT))
+ if not overlay_vertices.is_empty():
+  # Static authoring guides share one draw call, including every exact open-path
+  # segment. Creating a cylinder node per segment made curved Acts slow to load.
+  var arrays: Array = []
+  arrays.resize(Mesh.ARRAY_MAX)
+  arrays[Mesh.ARRAY_VERTEX] = overlay_vertices
+  var overlay_mesh := ArrayMesh.new()
+  overlay_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_LINES, arrays)
+  var overlay := mesh_node(overlay_mesh, debug_mat, Vector3.ZERO, physics_overlay)
+  overlay.name = "AuthoredStaticPhysicsLines"
+
+func _build_authored_grid(bounds: Rect2, cell_size: float) -> void:
+ var grid_mat := debug_material(Color("437f9e"))
+ # The bounds include the automatic gutter, which has no terrain grid.
+ var terrain_end := bounds.end - Vector2(0, cell_size * AuthoredActData.RED_GUTTER_CELLS)
+ for x in range(int(round(bounds.size.x / cell_size)) + 1):
+  var at := bounds.position.x + x * cell_size
+  line(Vector2(at, bounds.position.y), Vector2(at, terrain_end.y), 0.005, OVERLAY_HEIGHT, grid_mat, construction_grid_overlay)
+ for y in range(int(round((terrain_end.y - bounds.position.y) / cell_size)) + 1):
+  var at := bounds.position.y + y * cell_size
+  line(Vector2(bounds.position.x, at), Vector2(terrain_end.x, at), 0.005, OVERLAY_HEIGHT, grid_mat, construction_grid_overlay)
 
 func _build_serve_marker(data: ChunkData) -> void:
  var serve := data.world_point(data.markers.serve)
@@ -486,7 +573,7 @@ func flash_bumper(body: Node) -> void:
 func _on_ring_claimed(index: int) -> void:
  var visual := ring_visuals[index]
  # Start from the authored position even if the rack reset and pickup share a frame.
- visual.position = map_point(ring_field.rings[index].position, RING_HEIGHT)
+ visual.position = map_point(ring_field.rings[index].position, ring_height())
  visual.scale = Vector3.ONE
  visual.visible = true
  ring_pickups[index] = {"start": visual.position, "elapsed": 0.0}
@@ -496,7 +583,7 @@ func clear_ring_pickups() -> void:
  ring_pickups.clear()
  for i in ring_visuals.size():
   ring_visuals[i].visible = ring_field.rings[i].active
-  ring_visuals[i].position = map_point(ring_field.rings[i].position, RING_HEIGHT)
+  ring_visuals[i].position = map_point(ring_field.rings[i].position, ring_height())
   ring_visuals[i].scale = Vector3.ONE
 
 func _update_ring_visuals(delta: float) -> void:
@@ -516,7 +603,7 @@ func _update_ring_visuals(delta: float) -> void:
   else:
    visual.visible = ring_field.rings[i].active
    if visual.visible:
-    visual.position = map_point(ring_field.rings[i].position, RING_HEIGHT)
+    visual.position = map_point(ring_field.rings[i].position, ring_height())
     visual.scale = Vector3.ONE
 
 func _process(delta: float) -> void:
@@ -525,10 +612,10 @@ func _process(delta: float) -> void:
  if not is_instance_valid(ball_visual):
   return
  _update_camera(delta)
- ball_visual.position = map_point(ball.position, BALL_HEIGHT)
+ ball_visual.position = map_point(ball.position, ball_height())
  var travel: Vector2 = ball.position - _last_ball_position
  if travel.length() > 0.001 and travel.length() < 100:
-  ball_visual.rotate(Vector3(travel.y, 0, -travel.x).normalized(), travel.length() / PlaygroundBall.RADIUS)
+  ball_visual.rotate(Vector3(travel.y, 0, -travel.x).normalized(), travel.length() / ball.radius)
  _last_ball_position = ball.position
  for i in flippers.size():
   flipper_visuals[i].rotation.y = -flippers[i].rotation
@@ -548,7 +635,7 @@ func _process(delta: float) -> void:
 func _draw_dynamic_geometry() -> void:
  dynamic_geometry.clear_surfaces()
  dynamic_geometry.surface_begin(Mesh.PRIMITIVE_LINES)
- _debug_circle(ball.position, PlaygroundBall.RADIUS)
+ _debug_circle(ball.position, ball.radius)
  for checkpoint: Dictionary in checkpoint_visuals:
   if checkpoint.body.collision_layer != 0:
    _debug_capsule(checkpoint.a, checkpoint.b, checkpoint.radius)
@@ -557,7 +644,7 @@ func _draw_dynamic_geometry() -> void:
    continue
   var a: Vector2 = flipper.position
   var b: Vector2 = flipper.tip()
-  _debug_capsule(a, b, PlaygroundFlipper.RADIUS)
+  _debug_capsule(a, b, flipper.radius)
  dynamic_geometry.surface_end()
 
 func _debug_capsule(a: Vector2, b: Vector2, radius: float) -> void:

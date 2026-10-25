@@ -39,8 +39,9 @@ func check_solid_regions() -> void:
 		await frames(2)
 
 
-func trajectory(placements: Array, start: Vector2, velocity: Vector2, ticks: int, objects: Array = []) -> Dictionary:
+func trajectory(placements: Array, start: Vector2, velocity: Vector2, ticks: int, objects: Array = [], cell_size: float = 50.0) -> Dictionary:
 	var document := new_document()
+	document.cell_size = cell_size
 	document.placements = placements.duplicate(true)
 	document.gameplay_objects = objects.duplicate(true)
 	var env := await physical_environment(document)
@@ -85,36 +86,22 @@ func check_terrain_contacts() -> void:
 
 
 func check_bumper_contacts() -> void:
-	var round_bumper := [{"type": "round_bumper", "position": Vector2(250.5, 200.25), "rotation_degrees": 32.0}]
-	var round_hit := await trajectory([], Vector2(250.5, 100.25), Vector2(0, 600), 22, round_bumper)
-	check(round_hit.bumper_hits == 1 and round_hit.velocity.y < -600 and round_hit.immutable, "Real round bumper fires its production response once at the fractional center", str(round_hit))
-	var triangle := [{"type": "triangle_bumper", "position": Vector2(250.5, 200.25), "rotation_degrees": 32.0}]
-	var axis := Vector2.DOWN.rotated(deg_to_rad(32))
-	var sling_hit := await trajectory([], Vector2(250.5, 200.25) + Vector2(-15, -120).rotated(deg_to_rad(32)), axis * 600, 22, triangle)
-	check(sling_hit.bumper_hits == 1 and sling_hit.velocity.dot(axis) < -200 and sling_hit.immutable, "Rotated real triangle sling fires from its authored anchor and orientation", str(sling_hit))
+	for cell_size in [50.0, 100.0]:
+		var center := Vector2(250.5, 200.25)
+		var round_bumper := [{"type": "round_bumper", "position": center, "rotation_degrees": 32.0}]
+		var round_hit := await trajectory([], center - Vector2(0, 2 * cell_size), Vector2(0, 12 * cell_size), 22, round_bumper, cell_size)
+		check(round_hit.bumper_hits == 1 and round_hit.velocity.y < -600 and round_hit.immutable, "Compact round bumper fires once at the exact fractional center with %.0f-pixel cells" % cell_size, str(round_hit))
+		var triangle := [{"type": "triangle_bumper", "position": center, "rotation_degrees": 32.0}]
+		var axis := Vector2.DOWN.rotated(deg_to_rad(32))
+		var sling_hit := await trajectory([], center + Vector2(-0.10, -1.5).rotated(deg_to_rad(32)) * cell_size, axis * 12 * cell_size, 22, triangle, cell_size)
+		check(sling_hit.bumper_hits == 1 and sling_hit.velocity.dot(axis) < -200 and sling_hit.immutable, "Compact rotated sling fires from its exact anchor with %.0f-pixel cells" % cell_size, str(sling_hit))
+		var wall := await trajectory([stamp("wall_1x3")], Vector2(1, 3) * cell_size, Vector2(8000, 0), 5, [], cell_size)
+		check(wall.velocity.x < 0 and wall.position.x < 2 * cell_size and wall.sweeps > 0, "Actual authored ball radius protects fast open-rail collision with %.0f-pixel cells" % cell_size, str(wall))
 
 
 func check_flipper_contacts() -> void:
-	for side in [1.0, -1.0]:
-		for offset in [0.0, PI * 0.5]:
-			var document := new_document()
-			var default_angle: float = 0.32 if side > 0 else PI - 0.32
-			document.gameplay_objects = [{"type": "left_flipper" if side > 0 else "right_flipper", "position": Vector2(300.5, 300.25), "rotation_degrees": rad_to_deg(default_angle + offset)}]
-			var env := await physical_environment(document)
-			var paddle: PlaygroundFlipper = env.runtime.flippers[0]
-			var origin: Vector2 = paddle.position
-			var shot := {"count": 0, "impulse": Vector2.ZERO}
-			paddle.shot_fired.connect(func(_point: Vector2, impulse: Vector2, _fraction: float): shot.count += 1; shot.impulse = impulse)
-			env.ball.teleport_to(origin + Vector2(side * 84.5, -20).rotated(offset), Vector2(0, 100).rotated(offset))
-			await frames(2)
-			env.controls.virtual_left = side > 0
-			env.controls.virtual_right = side < 0
-			await frames(16)
-			check(shot.count == 1 and shot.impulse.dot(Vector2.UP.rotated(offset)) > 600 and paddle.position == origin, "Real %s flipper strikes once around its authored pivot at offset%.0f°" % ["left" if side > 0 else "right", rad_to_deg(offset)], str(shot))
-			await frames(20)
-			check(shot.count == 1, "Holding an authored flipper cannot repeat its powered strike")
-			env.world.free()
-			await frames(2)
+	for cell_size in [50.0, 100.0]:
+		await check_flipper_contacts_at_scale(cell_size)
 	var baseline := PlaygroundFlipper.new()
 	var rotated := PlaygroundFlipper.new()
 	for side in [1.0, -1.0]:
@@ -128,13 +115,51 @@ func check_flipper_contacts() -> void:
 	rotated.free()
 
 
+func check_flipper_contacts_at_scale(cell_size: float) -> void:
+	for side in [1.0, -1.0]:
+		for offset in [0.0, PI * 0.5]:
+			var document := new_document()
+			document.cell_size = cell_size
+			var default_angle: float = 0.32 if side > 0 else PI - 0.32
+			document.gameplay_objects = [{"type": "left_flipper" if side > 0 else "right_flipper", "position": Vector2(300.5, 300.25), "rotation_degrees": rad_to_deg(default_angle + offset)}]
+			var env := await physical_environment(document)
+			var paddle: PlaygroundFlipper = env.runtime.flippers[0]
+			var origin: Vector2 = paddle.position
+			var shot := {"count": 0, "impulse": Vector2.ZERO}
+			paddle.shot_fired.connect(func(_point: Vector2, impulse: Vector2, _fraction: float): shot.count += 1; shot.impulse = impulse)
+			env.ball.teleport_to(origin + Vector2(side * 0.4225, -0.10).rotated(offset) * cell_size, Vector2(0, 2 * cell_size).rotated(offset))
+			await frames(2)
+			env.controls.virtual_left = side > 0
+			env.controls.virtual_right = side < 0
+			await frames(16)
+			check(shot.count == 1 and shot.impulse.dot(Vector2.UP.rotated(offset)) > 600 and paddle.position == origin, "Compact %s flipper strikes once at its exact pivot with %.0f-pixel cells and %.0f° offset" % ["left" if side > 0 else "right", cell_size, rad_to_deg(offset)], str(shot))
+			await frames(20)
+			check(shot.count == 1, "Holding an authored flipper cannot repeat its powered strike")
+			env.world.free()
+			await frames(2)
+	var distant_document := new_document()
+	distant_document.cell_size = cell_size
+	distant_document.gameplay_objects = [{"type": "left_flipper", "position": Vector2(300.5, 300.25), "rotation_degrees": rad_to_deg(0.32)}]
+	var distant_env := await physical_environment(distant_document)
+	var distant_paddle: PlaygroundFlipper = distant_env.runtime.flippers[0]
+	var axis := Vector2.RIGHT.rotated(distant_paddle.rotation)
+	var normal := Vector2(axis.y, -axis.x)
+	distant_env.ball.teleport_to(distant_paddle.tip() + axis * 0.4 * cell_size + normal * 0.04 * cell_size)
+	await frames(2)
+	distant_env.controls.virtual_left = true
+	await frames(16)
+	check(distant_paddle.strikes == 0, "Scaled contact allowance cannot strike a ball outside the compact paddle's reach")
+	distant_env.world.free()
+	await frames(2)
+
+
 func check_showcase_spawn() -> void:
 	var loaded: Dictionary = ActData.load_document("res://data/acts/playtest_showcase.tres")
 	check(loaded.document != null, "Development showcase loads through the editor format", loaded.error)
 	if loaded.document == null: return
 	var env := await physical_environment(loaded.document)
 	var shape := CircleShape2D.new()
-	shape.radius = PlaygroundBall.RADIUS
+	shape.radius = env.ball.radius
 	var query := PhysicsShapeQueryParameters2D.new()
 	query.shape = shape
 	query.transform = Transform2D(0, loaded.document.spawn_position)
@@ -147,7 +172,7 @@ func check_showcase_spawn() -> void:
 	for tick in 180:
 		for paddle: PlaygroundFlipper in env.runtime.flippers:
 			var nearest := Geometry2D.get_closest_point_to_segment(env.ball.position, paddle.position, paddle.tip())
-			if env.ball.linear_velocity.y > 0 and env.ball.position.distance_to(nearest) < 55:
+			if env.ball.linear_velocity.y > 0 and env.ball.position.distance_to(nearest) < paddle.radius + env.ball.radius + 15.0 * env.ball.radius / PlaygroundBall.RADIUS:
 				if paddle.side > 0: env.controls.virtual_left = true
 				else: env.controls.virtual_right = true
 		await frames(1)

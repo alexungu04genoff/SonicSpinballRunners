@@ -6,6 +6,8 @@ signal scoring_pickup(position: Vector2, source: String, multiplier: int)
 signal pickup_claimed(index: int)
 signal rack_reset
 const CONTACT_RADIUS := PlaygroundBall.RADIUS + 12.0
+## Per-instance geometry; ordinary tables retain their original 12 px ring contact.
+var ring_radius := 12.0
 var rings: Array[Dictionary] = []
 var ball: PlaygroundBall
 var tuning: PhysicsTuning
@@ -42,12 +44,12 @@ func claim_ring(index: int, source: String = "", multiplier: int = 1) -> bool:
  return true
 
 func _physics_process(_delta: float) -> void:
- if ball.serve_pending:
-  previous_ball_position = ball.position
+ if ball.serve_pending or ball._teleport_pending:
+  previous_ball_position = ball._teleport_position if ball._teleport_pending else ball.position
   return
  # Radius is measured from the swept ball center to the stationary ring center.
  # A disabled or small magnet must never shrink the existing direct-contact pickup.
- var radius := maxf(CONTACT_RADIUS, float(tuning.effective.ring_magnet_radius))
+ var radius := maxf(ball.radius + ring_radius, float(tuning.effective.ring_magnet_radius))
  for i in rings.size():
   var ring: Dictionary = rings[i]
   if not ring.active or not ring_eligible(ring):

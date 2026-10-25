@@ -6,6 +6,7 @@ signal shot_fired(contact_position: Vector2, impulse: Vector2, contact_fraction:
 const LENGTH: float = 150.0
 const RADIUS: float = 13.0
 var length: float = LENGTH
+var radius: float = RADIUS
 var side: float = 1.0
 var ball: PlaygroundBall
 var controls: PlaygroundInput
@@ -35,8 +36,8 @@ func _ready() -> void:
  # The body's transform is driven at the fixed physics tick. Godot estimates its velocity.
  var collision := CollisionShape2D.new()
  var capsule := CapsuleShape2D.new()
- capsule.radius = RADIUS
- capsule.height = length + RADIUS * 2.0
+ capsule.radius = radius
+ capsule.height = length + radius * 2.0
  collision.shape = capsule
  collision.position.x = length / 2.0
  collision.rotation = PI / 2.0
@@ -96,7 +97,9 @@ func _physics_process(delta: float) -> void:
    var axis := Vector2.RIGHT.rotated(old_angle if old_is_closer else rotation)
    var upward_normal := Vector2(axis.y, -axis.x) * side
    var distance := ball.global_position.distance_to(contact)
-   if distance < RADIUS + PlaygroundBall.RADIUS + 9.0 and (ball.global_position - contact).dot(upward_normal) > 0.0:
+   # Preserve the legacy contact allowance while scaling it with the actual ball.
+   var contact_allowance := 9.0 * ball.radius / PlaygroundBall.RADIUS
+   if distance < radius + ball.radius + contact_allowance and (ball.global_position - contact).dot(upward_normal) > 0.0:
     var fraction := clampf(contact.distance_to(global_position) / length, 0.0, 1.0)
     var leverage := clampf(fraction, 0.35, 1.0)
     var impulse := strike_direction(fraction) * float(tuning.effective.flipper_launch_strength) * (0.65 + 0.35 * leverage) * ball.mass

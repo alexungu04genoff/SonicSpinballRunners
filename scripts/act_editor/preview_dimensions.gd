@@ -1,10 +1,11 @@
 extends RefCounted
-## Editor-only tuning in construction cells. Never rescales authored coordinates.
-const ROUND_RADIUS_CELLS := 0.25
-const SLING_HEIGHT_CELLS := 0.60
-const FLIPPER_LENGTH_CELLS := 0.65 # Pivot-to-tip centerline; caps give 0.75 overall.
-const FLIPPER_RADIUS_CELLS := 0.05
-const RING_RADIUS_CELLS := 0.09 # 0.18-cell collectible diameter.
+## Editor annotations plus aliases to the shared authored physical proportions.
+const AuthoredDimensions = preload("res://scripts/act_dimensions.gd")
+const ROUND_RADIUS_CELLS := AuthoredDimensions.ROUND_RADIUS_CELLS
+const SLING_HEIGHT_CELLS := AuthoredDimensions.SLING_HEIGHT_CELLS
+const FLIPPER_LENGTH_CELLS := AuthoredDimensions.FLIPPER_LENGTH_CELLS
+const FLIPPER_RADIUS_CELLS := AuthoredDimensions.FLIPPER_RADIUS_CELLS
+const RING_RADIUS_CELLS := AuthoredDimensions.RING_RADIUS_CELLS
 const RING_HANDLE_RADIUS_CELLS := 0.06
 
 const SPAWN_RADIUS_CELLS := 0.12

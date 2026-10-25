@@ -3,6 +3,7 @@ extends Node2D
 var document: Resource
 var runtime: Dictionary = {}
 var ball: PlaygroundBall
+var ring_field: RingField
 var units_per_pixel := 1.0
 
 func _process(_delta: float) -> void:
@@ -48,6 +49,10 @@ func _draw() -> void:
    points.append(points[0])
    draw_polyline(points, color, 1.5 * units_per_pixel, true)
   draw_circle(body.position, 2.5 * units_per_pixel, Color.WHITE)
+ if is_instance_valid(ring_field):
+  for ring: Dictionary in ring_field.rings:
+   if ring.active:
+    draw_arc(ring.position, ring_field.ring_radius, 0, TAU, 24, Color("ffda70"), 1.5 * units_per_pixel, true)
  if document.activation_y != null:
   var y := float(document.activation_y)
   draw_dashed_line(Vector2(0, y), Vector2(bounds.end.x, y), Color("62eee3"), 1.5 * units_per_pixel, 8 * units_per_pixel)
@@ -58,8 +63,8 @@ func _draw() -> void:
  draw_arc(spawn, 7 * units_per_pixel, 0, TAU, 32, Color("f4aedd"), 1.5 * units_per_pixel, true)
  _label(spawn + Vector2(10, -6) * units_per_pixel, "SPAWN", Color("f4aedd"))
  if is_instance_valid(ball):
-  draw_circle(ball.position, PlaygroundBall.RADIUS, Color("f7fbff"))
-  draw_arc(ball.position, PlaygroundBall.RADIUS, 0, TAU, 32, Color("76cafa"), 1.5 * units_per_pixel, true)
+  draw_circle(ball.position, ball.radius, Color("f7fbff"))
+  draw_arc(ball.position, ball.radius, 0, TAU, 32, Color("76cafa"), 1.5 * units_per_pixel, true)
 
 func _connector(kind: String, y: float) -> void:
  var span: Dictionary = document.get_connector(kind)

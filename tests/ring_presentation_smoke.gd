@@ -41,6 +41,9 @@ func prepare() -> void:
  events = 0
  game.tuning.set_value("ring_magnet_radius", 50)
  game.ball.position = Vector2(190, 180)
+ # This frozen-body fixture supplies its own settled position instead of letting
+ # the physics server consume the previous reset's queued teleport.
+ game.ball._teleport_pending = false
  game.ball.serve_pending = false
  field.previous_ball_position = game.ball.position
 
@@ -62,6 +65,10 @@ func run() -> void:
  field.collected.connect(func(_where: Vector2): events += 1)
  var presentation: TablePresentation = game.presentation
  presentation.set_process(false)
+ prepare()
+ game.ball.teleport_to(Vector2(190, 500))
+ field._physics_process(STEP)
+ check(events == 0 and field.rings[0].active and presentation.ring_pickups.is_empty(), "Queued teleports cannot collect rings along an artificial movement segment")
  prepare()
  field._physics_process(STEP)
  presentation._process(1.0)
@@ -137,6 +144,7 @@ func run() -> void:
  paused = false
  game.presentation.set_process(false)
  game.ball.freeze = true
+ game.ball._teleport_pending = false # Settle the regenerated frozen-body fixture.
  game.ball.serve_pending = false
  game.ball.position = field.rings[0].position
  field.previous_ball_position = game.ball.position

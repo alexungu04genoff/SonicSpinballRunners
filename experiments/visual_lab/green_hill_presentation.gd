@@ -37,6 +37,9 @@ var scenery_root: Node3D
 var _grass: ShaderMaterial
 var _cliff: ShaderMaterial
 var _outlines: Array[PackedVector2Array] = []
+## Presentation-only union; the compiler's collision polygons remain untouched.
+var authored_terrain_polygons: Array[PackedVector2Array] = []
+var authored_open_paths: Array[PackedVector2Array] = []
 
 func material(color: Color, glow: float = 0.0) -> StandardMaterial3D:
  # Reuse the original collision-matched mesh silhouettes with a cohesive toy palette.
@@ -53,18 +56,7 @@ func material(color: Color, glow: float = 0.0) -> StandardMaterial3D:
 
 func build(chunks: Array[TableChunk], junctions: Variant = [], bounds: Rect2 = Rect2()) -> void:
  super.build(chunks, junctions, bounds)
- var old_floor := get_node_or_null("TableFloor")
- if old_floor != null:
-  remove_child(old_floor)
-  old_floor.free()
- _grass = _shader_material(GRASS_SHADER)
- _cliff = _shader_material(CLIFF_SHADER)
- terrain_root = Node3D.new()
- terrain_root.name = "GreenHillTerrain"
- add_child(terrain_root)
- scenery_root = Node3D.new()
- scenery_root.name = "GreenHillScenery"
- add_child(scenery_root)
+ _initialize_terrain_skin()
  for chunk: TableChunk in chunks:
   var outline := chunk.data.world_polygon(chunk.data.playfield_outline)
   if outline.size() >= 3:
@@ -84,6 +76,64 @@ func build(chunks: Array[TableChunk], junctions: Variant = [], bounds: Rect2 = R
   terrain_polygons = remaining
  for outline: PackedVector2Array in terrain_polygons:
   _make_land(outline, 1.45, terrain_root)
+ _finish_terrain_skin()
+
+func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
+ super.build_authored(runtime, bounds, cell_size)
+ _initialize_terrain_skin()
+ for terrain: Dictionary in runtime.terrain:
+  var points: PackedVector2Array = terrain.points.duplicate()
+  if terrain.closed:
+   _outlines.append(points)
+  else:
+   authored_open_paths.append(points)
+ authored_terrain_polygons = _merge_authored_land(_outlines)
+ var unit := cell_size * SCALE
+ for outline: PackedVector2Array in authored_terrain_polygons:
+  _make_land(outline, unit * 1.45, terrain_root, 0.0, 0.0)
+ for path: PackedVector2Array in authored_open_paths:
+  # A narrow ribbon follows consecutive segments only. There is no final-to-first
+  # segment and no filled interior, including for U-shaped or curved open walls.
+  var rail := Node3D.new()
+  rail.name = "OpenTerrainRail"
+  terrain_root.add_child(rail)
+  for ribbon: PackedVector2Array in Geometry2D.offset_polyline(path, cell_size * 0.02, Geometry2D.JOIN_ROUND, Geometry2D.END_ROUND):
+   _make_land(ribbon, unit * 0.35, rail, unit * 0.08, 0.0)
+ _finish_terrain_skin()
+
+func _merge_authored_land(outlines: Array[PackedVector2Array]) -> Array[PackedVector2Array]:
+ var result: Array[PackedVector2Array] = []
+ for outline: PackedVector2Array in outlines:
+  var candidate := outline
+  var index := 0
+  while index < result.size():
+   var merged := Geometry2D.merge_polygons(candidate, result[index])
+   # Multiple contours may include holes. Keeping their original solids avoids
+   # accidentally painting over those holes; only a single valid contour merges.
+   if merged.size() == 1 and not Geometry2D.triangulate_polygon(merged[0]).is_empty():
+    candidate = merged[0]
+    result.remove_at(index)
+    index = 0 # A union may now touch an earlier, previously separate solid.
+   else:
+    index += 1
+  result.append(candidate)
+ return result
+
+func _initialize_terrain_skin() -> void:
+ var old_floor := get_node_or_null("TableFloor")
+ if old_floor != null:
+  remove_child(old_floor)
+  old_floor.free()
+ _grass = _shader_material(GRASS_SHADER)
+ _cliff = _shader_material(CLIFF_SHADER)
+ terrain_root = Node3D.new()
+ terrain_root.name = "GreenHillTerrain"
+ add_child(terrain_root)
+ scenery_root = Node3D.new()
+ scenery_root.name = "GreenHillScenery"
+ add_child(scenery_root)
+
+func _finish_terrain_skin() -> void:
  _configure_daylight()
  _build_distant_landscape()
  _decorate_edges()
@@ -133,7 +183,7 @@ func _configure_daylight() -> void:
    child.light_energy = 0.78
    child.shadow_normal_bias = 2.0
 
-func _make_land(outline: PackedVector2Array, depth: float, parent: Node3D) -> void:
+func _make_land(outline: PackedVector2Array, depth: float, parent: Node3D, top_height: float = 0.0, turf_width: float = 0.045) -> void:
  var points := outline.duplicate()
  if Geometry2D.is_polygon_clockwise(points):
   points.reverse()
@@ -141,7 +191,7 @@ func _make_land(outline: PackedVector2Array, depth: float, parent: Node3D) -> vo
  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
  surface.set_material(_grass)
  for index: int in Geometry2D.triangulate_polygon(points):
-  var vertex := map_point(points[index], -0.003)
+  var vertex := map_point(points[index], top_height - 0.003)
   surface.set_normal(Vector3.UP)
   surface.set_uv(Vector2(vertex.x, vertex.z))
   surface.add_vertex(vertex)
@@ -152,8 +202,8 @@ func _make_land(outline: PackedVector2Array, depth: float, parent: Node3D) -> vo
  surface.set_material(_cliff)
  var distance := 0.0
  for i: int in points.size():
-  var a := map_point(points[i])
-  var b := map_point(points[(i + 1) % points.size()])
+  var a := map_point(points[i], top_height)
+  var b := map_point(points[(i + 1) % points.size()], top_height)
   var segment := a.distance_to(b)
   var outward := Vector3((b - a).z, 0, -(b - a).x).normalized()
   var bottom_a := a - Vector3.UP * depth
@@ -167,14 +217,19 @@ func _make_land(outline: PackedVector2Array, depth: float, parent: Node3D) -> vo
   distance += segment
  var cliff_mesh := mesh_node(surface.commit(), null, Vector3.ZERO, parent)
  cliff_mesh.name = "CheckerCliff"
+ if turf_width <= 0.0:
+  return # Authored silhouettes stop exactly at the physical polygon boundary.
  # A narrow, irregular turf lip makes the edge readable without covering any collider.
  var turf := material(Color("549c24"))
  for i: int in points.size():
   var a: Vector2 = points[i]
   var b: Vector2 = points[(i + 1) % points.size()]
-  line(a, b, 0.045, -0.045, turf, parent)
+  line(a, b, turf_width, top_height - turf_width, turf, parent)
 
 func _boundary_at_y(y: float) -> Vector2:
+ if authored_mode:
+  # Decoration stays outside the Act, including empty spaces between authored solids.
+  return Vector2(table_bounds.position.x, table_bounds.end.x)
  var low := INF
  var high := -INF
  for outline: PackedVector2Array in _outlines:

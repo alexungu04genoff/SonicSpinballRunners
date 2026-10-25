@@ -6,12 +6,7 @@ const Document = preload("res://scripts/act_editor/act_geometry.gd")
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 const BumperFactory = preload("res://scripts/bumper_factory.gd")
 const Flipper = preload("res://scripts/flipper.gd")
-
-# These are the current physical defaults in data/act_bottom.tres. Editor preview
-# proportions are independent and must never change a runtime collider or pivot.
-const ROUND_RADIUS := 38.0
-const TRIANGLE_POINTS := [Vector2(-40, 35), Vector2(-15, -55), Vector2(45, 35)]
-const FLIPPER_LENGTH := 130.0
+const Dimensions = preload("res://scripts/act_dimensions.gd")
 
 static func compile(document: Resource, tuning: PhysicsTuning, controls: PlaygroundInput, ball: PlaygroundBall) -> Dictionary:
  var started := Time.get_ticks_usec()
@@ -32,6 +27,8 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
  if tuning == null or controls == null or ball == null:
   result.error = "Act compilation needs the shared physics tuning, input adapter and gameplay ball."
   return result
+ var cell_size := float(document.cell_size)
+ ball.radius = Dimensions.BALL_RADIUS_CELLS * cell_size
  var act_root := Node2D.new()
  act_root.name = "AuthoredAct"
  var wall_material := PhysicsMaterial.new()
@@ -81,16 +78,17 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
   var body: Node2D
   match placement.type:
    "round_bumper":
-    descriptor.radius = ROUND_RADIUS
-    body = BumperFactory.create({"kind": "circle", "position": placement.position, "rotation": deg_to_rad(float(placement.rotation_degrees)), "radius": ROUND_RADIUS}, bumper_material)
+    descriptor.radius = Dimensions.ROUND_RADIUS_CELLS * cell_size
+    body = BumperFactory.create({"kind": "circle", "position": placement.position, "rotation": deg_to_rad(float(placement.rotation_degrees)), "radius": descriptor.radius}, bumper_material)
    "triangle_bumper":
-    descriptor.points = PackedVector2Array(TRIANGLE_POINTS)
+    descriptor.points = Dimensions.sling_points(cell_size)
     body = BumperFactory.create({"kind": "triangle", "position": placement.position, "rotation": deg_to_rad(float(placement.rotation_degrees)), "points": descriptor.points}, bumper_material)
    "left_flipper", "right_flipper":
     var flipper := Flipper.new()
     flipper.name = "LeftFlipper" if placement.type == "left_flipper" else "RightFlipper"
     flipper.side = 1.0 if placement.type == "left_flipper" else -1.0
-    flipper.length = FLIPPER_LENGTH
+    flipper.length = Dimensions.FLIPPER_LENGTH_CELLS * cell_size
+    flipper.radius = Dimensions.FLIPPER_RADIUS_CELLS * cell_size
     flipper.position = placement.position
     flipper.authored_rest_angle = deg_to_rad(float(placement.rotation_degrees))
     flipper.rotation = flipper.authored_rest_angle
@@ -98,7 +96,7 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
     flipper.controls = controls
     flipper.ball = ball
     descriptor.length = flipper.length
-    descriptor.radius = Flipper.RADIUS
+    descriptor.radius = flipper.radius
     descriptor.side = flipper.side
     result.flippers.append(flipper)
     body = flipper

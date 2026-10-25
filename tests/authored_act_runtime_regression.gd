@@ -3,6 +3,8 @@ extends SceneTree
 const ActData = preload("res://scripts/act_editor/act_geometry.gd")
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 const Compiler = preload("res://scripts/authored_act/act_runtime_compiler.gd")
+const Dimensions = preload("res://scripts/act_dimensions.gd")
+const ObjectPreview = preload("res://scripts/act_editor/gameplay_objects.gd")
 const SOURCE_PATH := "res://test-results/authored-act-runtime-source.tres"
 const AUTOMATIC_PATH := "res://test-results/authored-act-automatic-source.tres"
 var checks := 0
@@ -128,8 +130,23 @@ func check_compilation() -> void:
 
 
 func check_object_mapping() -> void:
+	var legacy := environment()
+	var legacy_paddle := PlaygroundFlipper.new()
+	legacy_paddle.ball = legacy.ball
+	legacy_paddle.controls = legacy.controls
+	legacy_paddle.tuning = legacy.tuning
+	legacy.world.add_child(legacy_paddle)
+	check(legacy.ball.radius == 14.0 and legacy.ball.get_child(0).shape.radius == 14.0 and legacy_paddle.length == 150.0 and legacy_paddle.radius == 13.0 and legacy_paddle.get_child(0).shape.radius == 13.0, "Existing generated runtime defaults retain the 14-pixel ball and 150-by-13-pixel flipper")
+	legacy.world.free()
+	await frames(2)
+	for cell_size in [50.0, 100.0]:
+		await check_object_mapping_at_scale(cell_size)
+
+
+func check_object_mapping_at_scale(cell_size: float) -> void:
 	var env := environment()
 	var document := new_document()
+	document.cell_size = cell_size
 	document.gameplay_objects = [
 		{"type": "round_bumper", "position": Vector2(130.5, 150.25), "rotation_degrees": 32.0},
 		{"type": "triangle_bumper", "position": Vector2(430.5, 150.25), "rotation_degrees": 12.3456789},
@@ -148,12 +165,16 @@ func check_object_mapping() -> void:
 		var object: Dictionary = result.objects[index]
 		var authored: Dictionary = document.gameplay_objects[index]
 		check(object.position == authored.position and object.rotation_degrees == authored.rotation_degrees and object.body.position == authored.position and absf(object.body.rotation - deg_to_rad(authored.rotation_degrees)) < 0.000001, "Exact metadata and engine transforms preserve %s anchor and rest orientation" % authored.type)
-	check(result.objects[0].body.has_meta("bumper") and result.objects[0].body.get_child(0).shape is CircleShape2D and result.objects[0].body.get_child(0).shape.radius == 38.0, "Round bumper uses the real 38-pixel collider rather than the compact editor preview")
-	check(result.objects[1].body.has_meta("bumper") and result.objects[1].body.get_child(0).polygon == PackedVector2Array([Vector2(-40, 35), Vector2(-15, -55), Vector2(45, 35)]), "Sling collider preserves the runtime polygon around its authored origin")
+	check(result.objects[0].body.has_meta("bumper") and result.objects[0].body.get_child(0).shape is CircleShape2D and result.objects[0].body.get_child(0).shape.radius == 0.25 * cell_size and ObjectPreview.local_points(document.gameplay_objects[0], cell_size)[0].x == result.objects[0].radius, "Round collider and editor preview share the approved half-cell diameter at %.0f-pixel cells" % cell_size)
+	var expected_sling := PackedVector2Array()
+	for point: Vector2 in [Vector2(-40, 35), Vector2(-15, -55), Vector2(45, 35)]:
+		expected_sling.append(point * (0.60 * cell_size / 90.0))
+	check(result.objects[1].body.has_meta("bumper") and result.objects[1].body.get_child(0).polygon == ObjectPreview.local_points(document.gameplay_objects[1], cell_size) and same_points(result.objects[1].points, expected_sling), "Sling physics and preview use the same 0.60-cell anchored silhouette")
+	check(is_equal_approx(env.ball.radius, 0.14 * cell_size) and is_equal_approx(env.ball.get_child(0).shape.radius, env.ball.radius) and env.ball.radius < result.objects[0].radius, "Authored ball and its live collider share the deliberate 0.14-cell radius")
 	for index in result.flippers.size():
 		var paddle: PlaygroundFlipper = result.flippers[index]
 		var authored: Dictionary = document.gameplay_objects[index + 2]
-		check(paddle is PlaygroundFlipper and paddle.length == 130.0 and paddle.get_child(0).shape is CapsuleShape2D and paddle.get_child(0).shape.radius == 13.0 and absf(paddle.active_angle() - paddle.rest_angle() + paddle.side * 0.8) < 0.000001, "Runtime flipper keeps its physical dimensions and handed swing about the authored pivot")
+		check(paddle is PlaygroundFlipper and paddle.length == 0.65 * cell_size and paddle.radius == 0.05 * cell_size and paddle.get_child(0).shape is CapsuleShape2D and paddle.get_child(0).shape.radius == paddle.radius and is_equal_approx(paddle.get_child(0).shape.height, 0.75 * cell_size) and absf(paddle.active_angle() - paddle.rest_angle() + paddle.side * 0.8) < 0.000001, "Compact flipper collider retains the approved cell proportions and handed swing")
 		check(paddle.position == authored.position and absf(paddle.rest_angle() - deg_to_rad(authored.rotation_degrees)) < 0.00000001, "Authored flipper rest angle overrides the default without moving its pivot")
 	env.controls.virtual_left = true
 	env.controls.virtual_right = true

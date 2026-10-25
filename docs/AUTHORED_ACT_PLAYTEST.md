@@ -1,10 +1,10 @@
 # Authored Act Playtest
 
-This standalone development scene plays one saved Act using the existing 2D ball, flippers, bumper response and shared physics profile. It compiles the editor's canonical terrain silhouettes directly. It does not invoke procedural generation or alter the normal F5/main-game flow.
+This standalone development scene plays one saved Act through the existing Green Hill 3D presentation. The invisible 2D ball, flippers, bumper response and shared physics profile remain authoritative. It compiles the editor's canonical terrain silhouettes directly, without procedural generation or changes to the normal F5/main-game flow.
 
 ## Launch
 
-On Windows, double-click **Authored Act Playtest.cmd**. Choose **Example** for the included table, or **Load Act** for a saved `.tres` file. Loading leaves the ball waiting at its authored Spawn; press **Enter** or **Serve** to release it into normal gravity.
+On Windows, double-click **Authored Act Playtest.cmd**. Choose **Example** for the curve showcase, **Compare** for a simple scale-reference Act, or **Load Act** for a saved `.tres` file. Loading leaves the ball waiting at its authored Spawn; press **Enter** or **Serve** to release it into normal gravity.
 
 In Godot, open `scenes/authored_act_playtest.tscn` and press **F6**. F5 continues to launch the project's usual main scene.
 
@@ -33,6 +33,8 @@ Use the [Act Geometry Editor](ACT_GEOMETRY_EDITOR.md) to create or change the fi
 | Horizontal steering | Left / Right | Left stick |
 | Reset to Spawn and wait | R | Back / View |
 | Pause / resume | Escape | Menu / Start |
+| Green Hill / underlying 2D debug view | F2 | Toolbar |
+| Construction grid and lifecycle guides in Green Hill | F3 | Toolbar |
 
 **Serve** releases a waiting ball; it does not add a special launch impulse. Time a flipper press as the ball reaches the paddle. Holding a paddle keeps it raised without repeatedly applying the powered strike. **Reset** returns the ball to the saved Spawn with velocity and transient motion cleared. The toolbar also provides Load Act, Example, Reload and Pause.
 
@@ -42,16 +44,25 @@ The Act's top-left remains `(0, 0)`, with X right and Y down. Terrain anchors, q
 
 Gameplay-object records preserve their exact saved position and resting angle. Round bumpers use their center, slings use their existing local polygon origin, and flippers use their pivot. Left/right type controls the swing direction. The playtest adds no invisible perimeter, connector collar, procedural terrain or automatic correction. Unusual or obstructed authored layouts remain unusual or obstructed at runtime.
 
-The editor's compact object silhouettes are deliberately separate from physical size. Runtime uses the existing table dimensions:
+`scripts/act_dimensions.gd` is the shared source for editor silhouettes and authored runtime dimensions. Only dimensions scale with the document's cell size; saved positions, angles and pivots never move:
 
-| Runtime object | Physical size |
-| --- | --- |
-| Ball | Radius 14 px |
-| Round bumper | Radius 38 px |
-| Triangle sling | Local vertices `(-40,35)`, `(-15,-55)`, `(45,35)`; 85×90 px before rotation |
-| Flipper | 130 px pivot-to-tip centerline, capsule radius 13 px |
+| Object | Cell-relative size | At 50 px cells | At 100 px cells |
+| --- | --- | --- | --- |
+| Ball | Radius 0.14 cell | 7 px | 14 px |
+| Round bumper | Radius 0.25 cell; diameter 0.5 cell | 12.5 px radius | 25 px radius |
+| Triangle sling | Height 0.6 cell; width approximately 0.567 cell | 30×28.33 px height/width | 60×56.67 px height/width |
+| Flipper | Centerline 0.65 cell; capsule radius 0.05 cell | 32.5 px + 2.5 px caps | 65 px + 5 px caps |
+| Ring | Radius 0.09 cell | 4.5 px | 9 px |
 
-These sizes do not scale with the construction cell size. The debug view draws the actual runtime bodies around the saved centers and pivots. Compact editor silhouettes can therefore leave apparently clear space that a full-size runtime object occupies; adjust the authored layout after playtesting instead of expecting load-time repositioning.
+The ball deliberately retains its former 14 px radius at 100 px cells and scales down at smaller authored cell sizes. It remains smaller than the bumper at either scale. Gravity, steering, impulses, angular speeds and profile values retain their existing physics units; this is geometry consistency, not a retuning of traversal time across differently sized worlds. Generated tables retain their existing ball and object dimensions. The sling scales about its original polygon origin; the flipper capsule extends one radius behind the pivot and beyond its centerline tip.
+
+## Green Hill and rings
+
+The shared `TablePresentation` accepts generic terrain/object descriptors from the authored compiler. `GreenHillPresentation` reuses its grass, checker cliffs, sky, ocean, lighting and scenery. The authored path creates no `TableChunk` and never calls a generator. Filled stamps use their canonical polygon silhouettes; open stamps use narrow rails following only consecutive vertices. Visual geometry may merge overlapping filled surfaces, while each saved placement retains its independent collider. All 3D nodes are collisionless.
+
+The normal view uses the existing Real Pinball perspective with the complete single Act and gutter framed. X and Y use the same 2D-to-3D mapping scale; camera projection never stretches the underlying geometry. F2 reveals the underlying 2D geometry. F3 adds compact grid, Spawn, Entry, Exit, Activation and drain guides without changing collision or lifecycle behavior.
+
+Saved ring trails expand through the same endpoint/spacing function as the editor. The existing `RingField` handles swept contact and profile magnet collection; the shared presentation supplies the existing cosmetic pickup flight toward the rolling ball. Collection cannot move the ball or award twice for the same active ring. Direct contact uses the actual ball and ring radii; the shared profile's magnet radius stays in physics pixels. Reset/drain restores the rack, and Reload resets the displayed pickup count. No score gate, rack bonus, special ability or progression is added to this standalone scene.
 
 ## Separate lifecycle markers
 
@@ -61,11 +72,11 @@ These sizes do not scale with the construction cell size. The debug view draws t
 - **Red gutter:** the system-owned region begins below the terrain and has the shared one-cell height. Its **bottom**, `Act height + cell_size × RED_GUTTER_CELLS`, is the ball-center drain threshold. The ball may enter the gutter before draining. The threshold applies across all X so a side fall also recovers. A drain resets to Spawn and releases again after 0.25 seconds. The gutter creates no terrain or collision and does not add a thirteenth row.
 - **Exit:** an upward swept crossing of the top-edge connector span displays/logs `ACT EXIT REACHED`. It does not load another Act or permanently end the run.
 
-The complete Act and gutter remain framed in the dedicated 2D playtest view. Presentation and marker annotations do not control physics.
+The complete Act and gutter remain framed in both views. Presentation and marker annotations do not control physics.
 
 ## Included representative table
 
-**Example** loads `data/acts/playtest_showcase.tres`, titled **Authored Playtest — Curve Relay**. It is a format-4 Act with a 12×12 grid and 100 px cells: 1200×1200 px of terrain plus the separate 100 px gutter.
+**Example** loads `data/acts/playtest_showcase.tres`, titled **Authored Playtest — Curve Relay**. It is a format-5 Act with a 12×12 grid and 100 px cells: 1200×1200 px of terrain plus the separate 100 px gutter.
 
 Its 14 terrain placements include mirrored open L walls, rotated straight roof rails, solid lower funnels, a curved ramp overlapped by a circle, an inverted open U and a mirrored open S. All walls are authored geometry. The top roof leaves the Exit physically open from X=500 to X=700. The lower funnels feed a pair of normal flippers with an actual gap between their tips.
 
@@ -74,7 +85,7 @@ Its 14 terrain placements include mirrored open L walls, rotated straight roof r
 | Round bumper center | `(650.5, 350.25)` |
 | Triangle sling origin | `(920.25, 625.5)`, resting angle −25° |
 | Left / right flipper pivots | `(440, 1050)` / `(760, 1050)`; normal resting angles |
-| Spawn | `(530.5, 960.25)`, above the left paddle |
+| Spawn | `(482.5, 960.25)`, above the compact left paddle |
 | Activation | Y=850 |
 | Entry / Exit | Start cell 5, width 2 |
 | Drain threshold | Ball-center Y≥1300 |
@@ -91,8 +102,11 @@ Focused runtime and real-physics regression entry points:
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script res://tests/authored_act_runtime_regression.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script res://tests/authored_act_physics_smoke.gd
 & 'C:\Program Files\Godot\Godot.exe' --path . --rendering-method gl_compatibility --rendering-driver opengl3_angle --script res://tests/authored_act_scene_smoke.gd
+& 'C:\Program Files\Godot\Godot.exe' --path . --rendering-method gl_compatibility --rendering-driver opengl3_angle --script res://tests/authored_green_hill_smoke.gd
 ```
 
 The sample is authored and saved through `ActGeometry.save_document()`, including its exact numeric persistence checks. Runtime verification covers collision topology, transform mapping, actual shared ball/object interactions, lifecycle crossings, drain recovery and source immutability. The graphical scene smoke exercises file selection, toolbar/keyboard controls, a physical flipper launch through Activation and rendered captures. Human playtesting still judges flipper timing, rebound feel and layout quality. See [verification results](VERIFICATION.md) for measured timings and executed checks.
 
-Format-5 ring trails are preserved as authoring data but are not instantiated by this scene yet. Their collection, scoring and runtime presentation remain outside the ring-authoring milestone. Multiple Acts, horizontal alignment, compatibility selection, Zone assembly, score gates, rewards and production presentation also remain outside this scene.
+**Compare** loads `data/acts/scale_comparison.tres`, a simple 50 px-cell reference with straight terrain, all four gameplay-object types, exact fractional anchors, rings and lifecycle markers. Open the same file in the Act Editor; use F3 in the playtest to compare grid-relative footprints and F2 to inspect the authoritative bodies. The rendered comparison smoke also checks equivalent geometry at 100 px cells without scaling saved pivots.
+
+Multiple Acts, horizontal alignment, compatibility selection, Zone assembly, score gates and rewards remain outside this scene. Human playtesting still owns the feel of compact paddles and the preferred camera framing.
