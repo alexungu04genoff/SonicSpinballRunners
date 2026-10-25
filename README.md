@@ -337,3 +337,7 @@ The regression scripts use Godot directly, with no testing dependency. `tests/pr
 Use **Physics** for collision outlines, **Chunks** for transformed section bounds, and **Connectors** for opening rectangles (purple) plus the checked clear passage (green). Outlines are raised slightly above the board for readability; their X/Z footprint derives from gameplay coordinates.
 
 Before expanding the generator, manually evaluate controller feel, launch timing, rail shoulders, lane accessibility, and modifier extremes across the sample seeds. Static connectivity and short simulations cannot prove every trajectory is playable. Character abilities, drafting, touch controls, endless tables, network services, and exports remain outside this milestone.
+
+## Selectable visual themes
+
+Open **Play Green Hill.cmd**, then choose **THEME → Green Hill / Chemical Plant**. Both skins use the same live authored or generated level, physics, score and camera. Chemical Plant adds original low-poly industrial materials, glowing fluid props and night scenery. [Theme pipeline, example scenes, research and comparisons](docs/CHEMICAL_PLANT.md).

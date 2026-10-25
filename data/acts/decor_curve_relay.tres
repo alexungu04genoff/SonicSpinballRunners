@@ -1,0 +1,148 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=3]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_lrklg"]
+
+[resource]
+script = ExtResource("1_lrklg")
+format_version = 7
+library_version = 2
+title = "Theme Demo — Curved Relay"
+cell_size = 100.0
+placements = [{
+"anchor": Vector2i(1, 0),
+"base_size": Vector2i(3, 3),
+"flip_h": false,
+"flip_v": true,
+"quarter_turns": 0,
+"shape_id": "corner_3x3"
+}, {
+"anchor": Vector2i(8, 0),
+"base_size": Vector2i(3, 3),
+"flip_h": true,
+"flip_v": true,
+"quarter_turns": 0,
+"shape_id": "corner_3x3"
+}, {
+"anchor": Vector2i(4, 0),
+"base_size": Vector2i(1, 1),
+"flip_h": false,
+"flip_v": false,
+"quarter_turns": 1,
+"shape_id": "wall_1x1"
+}, {
+"anchor": Vector2i(7, 0),
+"base_size": Vector2i(1, 1),
+"flip_h": false,
+"flip_v": false,
+"quarter_turns": 1,
+"shape_id": "wall_1x1"
+}, {
+"anchor": Vector2i(1, 3),
+"base_size": Vector2i(1, 3),
+"flip_h": false,
+"flip_v": false,
+"quarter_turns": 0,
+"shape_id": "wall_1x3"
+}, {
+"anchor": Vector2i(1, 6),
+"base_size": Vector2i(1, 2),
+"flip_h": false,
+"flip_v": false,
+"quarter_turns": 0,
+"shape_id": "wall_1x2"
+}, {
+"anchor": Vector2i(10, 3),
+"base_size": Vector2i(1, 3),
+"flip_h": true,
+"flip_v": false,
+"quarter_turns": 0,
+"shape_id": "wall_1x3"
+}, {
+"anchor": Vector2i(10, 6),
+"base_size": Vector2i(1, 2),
+"flip_h": true,
+"flip_v": false,
+"quarter_turns": 0,
+"shape_id": "wall_1x2"
+}, {
+"anchor": Vector2i(1, 8),
+"base_size": Vector2i(3, 2),
+"flip_h": false,
+"flip_v": false,
+"quarter_turns": 0,
+"shape_id": "triangle_3x2"
+}, {
+"anchor": Vector2i(8, 8),
+"base_size": Vector2i(3, 2),
+"flip_h": true,
+"flip_v": false,
+"quarter_turns": 0,
+"shape_id": "triangle_3x2"
+}, {
+"anchor": Vector2i(1, 5),
+"base_size": Vector2i(2, 2),
+"flip_h": false,
+"flip_v": false,
+"quarter_turns": 0,
+"shape_id": "slope_2x2"
+}, {
+"anchor": Vector2i(2, 6),
+"base_size": Vector2i(1, 1),
+"flip_h": false,
+"flip_v": false,
+"quarter_turns": 0,
+"shape_id": "circle_1x1"
+}, {
+"anchor": Vector2i(2, 2),
+"base_size": Vector2i(2, 2),
+"flip_h": false,
+"flip_v": true,
+"quarter_turns": 0,
+"shape_id": "u_curve_2x2"
+}, {
+"anchor": Vector2i(8, 3),
+"base_size": Vector2i(1, 3),
+"flip_h": true,
+"flip_v": false,
+"quarter_turns": 0,
+"shape_id": "s_curve_1x3"
+}]
+gameplay_objects = [{
+"position": Vector2(650.5, 350.25),
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "round_bumper"
+}, {
+"position": Vector2(920.25, 625.5),
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 200, 193),
+"type": "triangle_bumper"
+}, {
+"position": Vector2(440, 1050),
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 169, 103, 2, 150, 171, 85, 50, 64),
+"type": "left_flipper"
+}, {
+"position": Vector2(760, 1050),
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 11, 179, 63, 141, 74, 53, 100, 64),
+"type": "right_flipper"
+}]
+entry_start_x = 5
+entry_width = 2
+exit_start_x = 5
+exit_width = 2
+activation_y = PackedByteArray(3, 0, 0, 0, 0, 128, 84, 68)
+spawn_position = Vector2(482.5, 960.25)
+
+decor_seed = "theme-curve-relay-v1"
+decor_slots = [
+{"slot_id": "relay_01", "slot_type": "landmark", "placement_hint": "surface", "position": Vector2(180, 960), "rotation_degrees": -15.0, "variant_mode": "auto", "scale": 0.85},
+{"slot_id": "relay_02", "slot_type": "large", "placement_hint": "edge", "position": Vector2(1040, 960), "rotation_degrees": 20.0, "variant_mode": "auto", "scale": 1.0},
+{"slot_id": "relay_03", "slot_type": "medium", "placement_hint": "surface", "position": Vector2(135, 640), "rotation_degrees": 12.0, "variant_mode": "auto", "scale": 0.9},
+{"slot_id": "relay_04", "slot_type": "small", "placement_hint": "surface", "position": Vector2(250, 650), "rotation_degrees": -25.0, "variant_mode": "auto", "scale": 1.0},
+{"slot_id": "relay_05", "slot_type": "small", "placement_hint": "surface", "position": Vector2(120, 675), "rotation_degrees": 40.0, "variant_mode": "auto", "scale": 1.1},
+{"slot_id": "relay_06", "slot_type": "medium", "placement_hint": "either", "position": Vector2(1080, 950), "rotation_degrees": -8.0, "variant_mode": "auto", "scale": 0.9},
+{"slot_id": "relay_07", "slot_type": "large", "placement_hint": "edge", "position": Vector2(100, 320), "rotation_degrees": 15.0, "variant_mode": "auto", "scale": 1.0},
+{"slot_id": "relay_08", "slot_type": "large", "placement_hint": "edge", "position": Vector2(1100, 480), "rotation_degrees": -17.0, "variant_mode": "auto", "scale": 1.1},
+{"slot_id": "relay_09", "slot_type": "small", "placement_hint": "edge", "position": Vector2(100, 450), "rotation_degrees": 0.0, "variant_mode": "auto", "scale": 1.0},
+{"slot_id": "relay_10", "slot_type": "medium", "placement_hint": "edge", "position": Vector2(1100, 700), "rotation_degrees": 25.0, "variant_mode": "auto", "scale": 0.85},
+{"slot_id": "relay_11", "slot_type": "small", "placement_hint": "edge", "position": Vector2(450, 0), "rotation_degrees": -30.0, "variant_mode": "auto", "scale": 0.85},
+{"slot_id": "relay_12", "slot_type": "small", "placement_hint": "edge", "position": Vector2(750, 0), "rotation_degrees": 18.0, "variant_mode": "auto", "scale": 1.0}
+]

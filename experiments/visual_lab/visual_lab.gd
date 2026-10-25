@@ -1,6 +1,7 @@
 extends "res://scripts/game.gd"
-## Green Hill presentation of the shared playable sandbox, including its debug tools.
-const GreenHill := preload("res://experiments/visual_lab/green_hill_presentation.gd")
+## Selectable presentation themes for the shared playable sandbox and debug tools.
+const ThemedPresentation := preload("res://scripts/themes/themed_presentation.gd")
+const ThemeRegistry := preload("res://scripts/themes/theme_registry.gd")
 const SonicPresenter := preload("res://experiments/visual_lab/sonic_presenter.gd")
 const RetroFilter := preload("res://scripts/retro/retro_filter.gd")
 const RetroControls := preload("res://scripts/retro/retro_controls.gd")
@@ -46,11 +47,17 @@ var player_hint: Label
 var _development_state: Dictionary = {}
 var _development_visibility: Dictionary = {}
 var _overlay_visibility: Array[bool] = []
+@export var theme_id := "green_hill"
+var theme_selector: OptionButton
+var theme_label: Label
 
 func _ready() -> void:
- DisplayServer.window_set_title("Sonic Spinball Runners — Green Hill Visual Lab")
  for argument: String in OS.get_cmdline_user_args():
-  if argument.begins_with("--seed="):
+  if argument.begins_with("--theme="):
+   var requested_theme := argument.trim_prefix("--theme=")
+   if requested_theme in ThemeRegistry.IDS:
+    theme_id = requested_theme
+  elif argument.begins_with("--seed="):
    generation_seed = clampi(int(argument.trim_prefix("--seed=")), 0, 2147483647)
   elif argument.begins_with("--grid="):
    generation_grid_mode = clampi(int(argument.trim_prefix("--grid=")), 0, 2)
@@ -69,6 +76,7 @@ func _ready() -> void:
  ring_field.process_mode = Node.PROCESS_MODE_PAUSABLE
  debug_panel.visible = false
  _build_lab_ui()
+ _refresh_theme_ui()
  _attach_challenge_ui()
  retro_filter = RetroFilter.new()
  retro_filter.name = "RetroFilter"
@@ -119,8 +127,9 @@ func _build_view() -> void:
  _build_presentation()
 
 func _build_presentation() -> void:
- presentation = GreenHill.new()
- presentation.name = "GreenHillPresentation"
+ presentation = ThemedPresentation.new()
+ presentation.set_theme_definition(ThemeRegistry.create(theme_id))
+ presentation.name = "ThemedPresentation"
  presentation.camera_preset = TablePresentation.CameraPreset.DRAMATIC_PINBALL
  presentation.camera_settings.zoom = 2.0
  presentation.ball = ball
@@ -146,6 +155,70 @@ func _rebuild_presentation() -> void:
  if player_view:
   for overlay: Node3D in _development_overlays():
    overlay.hide()
+
+func set_theme(requested_id: String) -> bool:
+ if requested_id not in ThemeRegistry.IDS:
+  return false
+ if requested_id == theme_id:
+  return true
+ if generation_pending or close_view or is_source_picker_open():
+  return false
+ # This rebuild touches only disposable visuals. Preserve the live camera's
+ # damping state as well as its pose; the shared level rebuild normally serves it.
+ var camera_state := {
+  "transform": presentation.camera.global_transform,
+  "focus": presentation.camera_focus, "target": presentation.camera_target,
+  "offset": presentation._camera_offset, "viewport": presentation._camera_viewport_size,
+  "follow": presentation.camera_follow_enabled, "preset": presentation.camera_preset,
+  "settings": presentation.camera_settings.duplicate(true),
+  "projection": presentation.camera.projection, "fov": presentation.camera.fov,
+  "size": presentation.camera.size,
+ }
+ var pickup_state := presentation.ring_pickups.duplicate(true)
+ var bumper_flashes := presentation.flash_times.duplicate()
+ var ball_transform := presentation.ball_visual.transform
+ var ring_transforms: Array[Transform3D] = []
+ var ring_visibility: Array[bool] = []
+ for ring: MeshInstance3D in presentation.ring_visuals:
+  ring_transforms.append(ring.transform)
+  ring_visibility.append(ring.visible)
+ theme_id = requested_id
+ presentation.set_theme_definition(ThemeRegistry.create(theme_id))
+ _rebuild_presentation()
+ presentation.camera_focus = camera_state.focus
+ presentation.camera_target = camera_state.target
+ presentation._camera_offset = camera_state.offset
+ presentation._camera_viewport_size = camera_state.viewport
+ presentation.camera_follow_enabled = camera_state.follow
+ presentation.camera_preset = camera_state.preset
+ presentation.camera_settings = camera_state.settings
+ presentation.camera.projection = camera_state.projection
+ presentation.camera.fov = camera_state.fov
+ presentation.camera.size = camera_state.size
+ presentation.camera.global_transform = camera_state.transform
+ # Pickup flights and bumper flashes use only scalar/vector state. Their new
+ # meshes can resume those effects without changing collected rings or scores.
+ presentation.ring_pickups = pickup_state
+ presentation.flash_times = bumper_flashes
+ presentation.ball_visual.transform = ball_transform
+ for index in presentation.ring_visuals.size():
+  presentation.ring_visuals[index].transform = ring_transforms[index]
+  presentation.ring_visuals[index].visible = ring_visibility[index]
+ _refresh_theme_ui()
+ return true
+
+func _select_theme(index: int) -> void:
+ set_theme(str(theme_selector.get_item_metadata(index)))
+ _refresh_theme_ui()
+ get_viewport().gui_release_focus()
+
+func _refresh_theme_ui() -> void:
+ var title: String = presentation.theme_definition.display_name
+ DisplayServer.window_set_title("Sonic Spinball Runners — " + title)
+ if is_instance_valid(theme_label):
+  theme_label.text = title.to_upper()
+ if is_instance_valid(theme_selector):
+  theme_selector.select(ThemeRegistry.IDS.find(theme_id))
 
 func _add_zone_presentation() -> void:
  _add_area_feedback()
@@ -228,7 +301,8 @@ func _build_lab_ui() -> void:
  title_stack.add_theme_constant_override("separation", 2)
  title_panel.add_child(title_stack)
  title_stack.add_child(_label("SONIC SPINBALL RUNNERS", 13, Color("a4e5e3")))
- title_stack.add_child(_label("GREEN HILL", 31, Color("ffe373")))
+ theme_label = _label("GREEN HILL", 31, Color("ffe373"))
+ title_stack.add_child(theme_label)
  development_subtitle = _label("P L A Y A B L E   S A N D B O X", 12, Color("ffffff"))
  title_stack.add_child(development_subtitle)
  var score_panel := PanelContainer.new()
@@ -277,6 +351,17 @@ func _build_lab_ui() -> void:
  source_row.add_child(source_selector)
  load_act_button = _button("Load Act…", _open_act_picker)
  source_row.add_child(load_act_button)
+ source_row.add_child(_label("THEME", 12, Color("a4e5e3")))
+ theme_selector = OptionButton.new()
+ theme_selector.name = "ThemeSelector"
+ theme_selector.focus_mode = Control.FOCUS_NONE
+ theme_selector.custom_minimum_size.x = 165
+ theme_selector.tooltip_text = "Reskin the same live level; geometry, physics and score stay unchanged."
+ for index in ThemeRegistry.IDS.size():
+  theme_selector.add_item(ThemeRegistry.NAMES[index])
+  theme_selector.set_item_metadata(index, ThemeRegistry.IDS[index])
+ theme_selector.item_selected.connect(_select_theme)
+ source_row.add_child(theme_selector)
  source_note = _label("", 12, Color("a4e5e3"))
  source_note.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  source_note.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -327,7 +412,7 @@ func _build_lab_ui() -> void:
  player_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
  player_hint.hide()
  act_picker = FileDialog.new()
- act_picker.title = "Load an authored Act into Green Hill"
+ act_picker.title = "Load an authored Act"
  act_picker.access = FileDialog.ACCESS_FILESYSTEM
  act_picker.file_mode = FileDialog.FILE_MODE_OPEN_FILE
  act_picker.filters = PackedStringArray(["*.tres ; Authored Act Resource"])
@@ -591,6 +676,7 @@ func _process(_delta: float) -> void:
   source_selector.select(1 if level_source == "authored" else 0)
  source_selector.disabled = generation_pending or close_view or zone.state == ZoneRun.State.DRAFT
  load_act_button.disabled = source_selector.disabled or is_source_picker_open()
+ theme_selector.disabled = generation_pending or close_view or is_source_picker_open()
  source_note.text = last_source_error if not last_source_error.is_empty() else (authored_act_path.get_file() if level_source == "authored" else "Same game · choose a saved Act or a generated layout")
  source_note.tooltip_text = last_source_error if not last_source_error.is_empty() else (authored_act_path if level_source == "authored" else "Loading an Act pauses play and restores the previous pause state.")
  for button: Button in layout_buttons:

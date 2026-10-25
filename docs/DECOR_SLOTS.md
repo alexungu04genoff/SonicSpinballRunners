@@ -1,6 +1,6 @@
 # Theme-aware decoration slots
 
-The Act Editor stores manually placed, theme-independent decor slots. The active presentation skin selects collisionless props. This first version provides Green Hill; future skins can reuse the same authored geometry and slot records.
+The Act Editor stores manually placed, theme-independent decor slots. The active presentation skin selects collisionless props. Green Hill and Chemical Plant now reuse the same authored geometry and slot records. Choose **THEME** in the main game; see [Chemical Plant and the shared theme pipeline](CHEMICAL_PLANT.md) for comparisons, original assets and implementation details.
 
 ## Try the examples
 
@@ -59,7 +59,7 @@ The document fingerprint, deep-copy history, validation, and atomic save/reload 
 
 Every spawned child is a visual `Node3D`/`MeshInstance3D`. There are no collision objects, physics shapes, hit targets, ring records, scores or ball callbacks. The normal presentation rebuild disposes all old props before a source/replay reload. Existing distant scenery and exterior edge-island dressing remain unchanged.
 
-To add a skin, provide its stable ID, pools for all four sizes and three hints, and a factory returning a collisionless `Node3D` in cell units. Assign it to the presentation's `decor_skin` before rebuilding the playfield. No Act schema or physics change is required. There is no production Chemical Plant skin or theme-picker UI yet; runtime regression uses a minimal test-only industrial factory to verify this boundary with the same saved Act.
+To add a decor skin, provide its stable ID, pools for all four sizes and three hints, and a factory returning a collisionless `Node3D` in cell units. A full production theme supplies this skin through `ThemeDefinition.create_decor()` together with materials, environment and background builders. No Act schema or physics change is required. The original decor regression retains its minimal test factory; `theme_runtime_regression.gd` checks both real production themes with the same saved Acts.
 
 ### Green Hill library
 
