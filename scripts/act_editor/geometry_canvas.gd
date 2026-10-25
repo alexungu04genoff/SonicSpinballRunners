@@ -3,6 +3,8 @@ extends Control
 
 signal placement_requested(placement: Dictionary)
 signal selection_changed(index: int)
+signal terrain_selection_changed(indices: Array[int])
+signal composite_preview_cancel_requested
 signal move_requested(index: int, anchor: Vector2i)
 signal connector_requested(kind: String, start_x: int, width: int)
 signal connector_selection_changed(kind: String)
@@ -31,9 +33,13 @@ const POINTER_JITTER_PIXELS := 0.01
 const ACTIVATION_COLOR := Color("62eee3")
 const SPAWN_COLOR := Color("ffd0ee")
 const INVALID_MARKER_COLOR := Color("ff7a88")
+const COMPOSITE_PREVIEW_COLOR := Color("ffd96c")
 
 var document: Resource
 var selected_index := -1
+var selected_indices: Array[int] = []
+var composite_preview: Dictionary = {}
+var preview_active := false
 var brush: Dictionary = {}
 var connector_tool := ""
 var selected_connector := ""
@@ -116,6 +122,9 @@ func set_document(value: Resource, reset_view: bool = true) -> void:
  selected_ring_index = -1
  document = value
  selected_index = -1
+ selected_indices.clear()
+ composite_preview = {}
+ preview_active = false
  brush = {}
  connector_tool = ""
  selected_connector = ""
@@ -136,6 +145,7 @@ func set_brush(value: Dictionary) -> void:
  cancel_gesture()
  brush = value.duplicate(true)
  selected_index = -1
+ selected_indices.clear()
  connector_tool = ""
  selected_connector = ""
  gameplay_brush = {}
@@ -146,11 +156,22 @@ func set_brush(value: Dictionary) -> void:
 
 
 func select_piece(index: int) -> void:
+ var indices: Array[int] = []
+ if index >= 0 and index < _placements().size():
+  indices.append(index)
+ set_terrain_selection(indices)
+
+
+func set_terrain_selection(indices: Array[int]) -> void:
  ring_tool = false
  selected_ring_index = -1
  cancel_gesture()
  brush = {}
- selected_index = index if index >= 0 and index < _placements().size() else -1
+ selected_indices = []
+ for index in indices:
+  if index >= 0 and index < _placements().size() and not selected_indices.has(index):
+   selected_indices.append(index)
+ selected_index = selected_indices.back() if not selected_indices.is_empty() else -1
  connector_tool = ""
  selected_connector = ""
  gameplay_brush = {}
@@ -160,12 +181,20 @@ func select_piece(index: int) -> void:
  queue_redraw()
 
 
+func set_composite_preview(placement: Dictionary, active: bool) -> void:
+ cancel_gesture()
+ composite_preview = placement.duplicate(true)
+ preview_active = active
+ queue_redraw()
+
+
 func set_connector_tool(kind: String) -> void:
  ring_tool = false
  selected_ring_index = -1
  cancel_gesture()
  brush = {}
  selected_index = -1
+ selected_indices.clear()
  selected_connector = ""
  connector_tool = kind if kind in ["entry", "exit"] else ""
  gameplay_brush = {}
@@ -181,6 +210,7 @@ func select_connector(kind: String) -> void:
  cancel_gesture()
  brush = {}
  selected_index = -1
+ selected_indices.clear()
  connector_tool = ""
  selected_connector = kind if kind in ["entry", "exit"] and connector_span(kind).y > 0 else ""
  gameplay_brush = {}
@@ -196,6 +226,7 @@ func set_gameplay_brush(value: Dictionary) -> void:
  cancel_gesture()
  brush = {}
  selected_index = -1
+ selected_indices.clear()
  connector_tool = ""
  selected_connector = ""
  gameplay_brush = value.duplicate(true)
@@ -211,6 +242,7 @@ func select_gameplay(index: int) -> void:
  cancel_gesture()
  brush = {}
  selected_index = -1
+ selected_indices.clear()
  connector_tool = ""
  selected_connector = ""
  gameplay_brush = {}
@@ -438,7 +470,7 @@ func hit_indices_at(local_position: Vector2) -> Array[int]:
  var placements := _placements()
  for index in range(placements.size() - 1, -1, -1):
   var placement: Dictionary = placements[index]
-  var definition: Dictionary = Shapes.get_definition(str(placement.get("shape_id", "")))
+  var definition: Dictionary = Shapes.definition_for_placement(placement)
   if definition.is_empty():
    continue
   var anchor: Vector2i = placement.get("anchor", Vector2i.ZERO)
@@ -470,14 +502,16 @@ func _draw() -> void:
    placement = placement.duplicate(true)
    placement["anchor"] = _drag_anchor
   _draw_piece(placement, false, false)
- if selected_index >= 0 and selected_index < placements.size():
-  var selected: Dictionary = placements[selected_index].duplicate(true)
-  if selected_index == _drag_index and _drag_moved:
+ for index in selected_indices:
+  if index < 0 or index >= placements.size():
+   continue
+  var selected: Dictionary = placements[index].duplicate(true)
+  if index == _drag_index and _drag_moved:
    selected["anchor"] = _drag_anchor
   _draw_piece(selected, true, false)
   _draw_footprint(selected, Color(SELECTION_COLOR, 0.55))
  var active_brush := _drop_brush if not _drop_brush.is_empty() else brush
- if (_hovering or not _drop_brush.is_empty()) and _inside_grid(_cursor_position) and _valid_stamp(active_brush):
+ if not preview_active and (_hovering or not _drop_brush.is_empty()) and _inside_grid(_cursor_position) and _valid_stamp(active_brush):
   var ghost := active_brush.duplicate(true)
   ghost["anchor"] = legal_anchor_for(ghost, screen_to_grid(_cursor_position))
   _draw_piece(ghost, false, true)
@@ -486,6 +520,23 @@ func _draw() -> void:
  _draw_rings()
  _draw_markers()
  _draw_connectors()
+ _draw_composite_preview()
+
+
+func _draw_composite_preview() -> void:
+ if not preview_active or composite_preview.is_empty():
+  return
+ var points: PackedVector2Array = Shapes.transformed_points(composite_preview)
+ if points.size() < 3:
+  return
+ var anchor := Vector2(composite_preview.get("anchor", Vector2i.ZERO))
+ for index in points.size():
+  points[index] = grid_to_screen(points[index] + anchor)
+ draw_colored_polygon(points, Color(COMPOSITE_PREVIEW_COLOR, 0.32))
+ points.append(points[0])
+ # The contrasting halo exposes the exact collision contour over every layer.
+ draw_polyline(points, Color("131923"), 7.0, true)
+ draw_polyline(points, COMPOSITE_PREVIEW_COLOR, 3.0, true)
 
 
 func _draw_rings() -> void:
@@ -743,7 +794,7 @@ func _draw_grid() -> void:
 
 
 func _draw_piece(placement: Dictionary, selected: bool, ghost: bool) -> void:
- var definition: Dictionary = Shapes.get_definition(str(placement.get("shape_id", "")))
+ var definition: Dictionary = Shapes.definition_for_placement(placement)
  if definition.is_empty():
   return
  var points: PackedVector2Array = Shapes.transformed_points(placement)
@@ -808,6 +859,9 @@ func _input(event: InputEvent) -> void:
 func _gui_input(event: InputEvent) -> void:
  if document == null:
   return
+ if preview_active:
+  _composite_preview_input(event)
+  return
  if event is InputEventKey and event.keycode == KEY_ALT:
   _alt_held = event.pressed
   if not _ring_mode.is_empty():
@@ -864,7 +918,7 @@ func _gui_input(event: InputEvent) -> void:
     var start_x := clampi(span.x + offset, 0, _grid_size().x - span.y)
     if start_x != span.x and span.y > 0:
      connector_requested.emit(selected_connector, start_x, span.y)
-  elif not event.echo and selected_index >= 0 and selected_index < _placements().size():
+  elif not event.echo and selected_indices.size() == 1 and selected_index >= 0 and selected_index < _placements().size():
    var direction: Vector2i = {KEY_LEFT: Vector2i.LEFT, KEY_RIGHT: Vector2i.RIGHT, KEY_UP: Vector2i.UP, KEY_DOWN: Vector2i.DOWN}[event.keycode]
    var placement: Dictionary = _placements()[selected_index]
    var anchor: Vector2i = placement.get("anchor", Vector2i.ZERO)
@@ -887,7 +941,7 @@ func _gui_input(event: InputEvent) -> void:
   elif event.button_index == MOUSE_BUTTON_LEFT:
    if event.pressed:
     grab_focus()
-    _begin_primary(event.position, event.alt_pressed)
+    _begin_primary(event.position, event.alt_pressed, event.ctrl_pressed or event.meta_pressed)
    else:
     if not _ring_mode.is_empty():
      _update_ring_drag(event.position, event.alt_pressed)
@@ -937,7 +991,30 @@ func _gui_input(event: InputEvent) -> void:
   accept_event()
 
 
-func _begin_primary(pointer: Vector2, cycle_overlaps: bool) -> void:
+func _composite_preview_input(event: InputEvent) -> void:
+ # Preview is read-only, including when validation left no drawable polygon.
+ # Panning and zooming remain available to inspect the proposed boundary.
+ if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+  composite_preview_cancel_requested.emit()
+ elif event is InputEventMouseButton:
+  if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+   composite_preview_cancel_requested.emit()
+  elif event.button_index == MOUSE_BUTTON_MIDDLE:
+   _panning = event.pressed
+   if _panning:
+    grab_focus()
+  elif event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+   _zoom_at(event.position, 1.12 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0 / 1.12)
+ elif event is InputEventMouseMotion and _panning:
+  _view_origin += event.relative
+  _view_adjusted = true
+  queue_redraw()
+ accept_event()
+
+
+func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool = false) -> void:
+ if preview_active:
+  return
  if ring_tool:
   if _inside_grid(pointer): _begin_ring_drag(-1, pointer, "create")
   return
@@ -971,10 +1048,7 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool) -> void:
  var connector := "" if cycle_overlaps else connector_hit_at(pointer)
  if not connector.is_empty():
   select_connector(connector)
-  selection_changed.emit(-1)
-  gameplay_selection_changed.emit(-1)
-  marker_selection_changed.emit("")
-  connector_selection_changed.emit(connector)
+  _emit_selection_changed()
   _begin_connector_drag(connector, pointer, connector_handle_at(connector, pointer))
   return
  var hits := mixed_hit_indices_at(pointer)
@@ -996,6 +1070,20 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool) -> void:
     click_target = hits[(current_slot + 1) % hits.size()]
    else:
     click_target = hits[0]
+ if toggle_terrain:
+  if cycle_overlaps and not click_target.is_empty():
+   target = click_target
+   click_target = {}
+  if target.get("kind") == "terrain":
+   var indices: Array[int] = selected_indices.duplicate()
+   if indices.has(target.index):
+    indices.erase(target.index)
+   else:
+    indices.append(target.index)
+   set_terrain_selection(indices)
+   _emit_selection_changed()
+   _set_status("%d terrain pieces selected. Ctrl-click toggles; Ctrl+Alt-click reaches overlaps. Click empty space to clear." % selected_indices.size())
+   return
  var ring_mode := "move"
  if target.get("kind") == "ring" and target.index == selected_ring_index:
   var trail: Dictionary = document.ring_trails[target.index]
@@ -1040,7 +1128,12 @@ func _select_hit_target(target: Dictionary) -> void:
   select_gameplay(target.index)
  else:
   select_piece(target.index)
+ _emit_selection_changed()
+
+
+func _emit_selection_changed() -> void:
  selection_changed.emit(selected_index)
+ terrain_selection_changed.emit(selected_indices.duplicate())
  gameplay_selection_changed.emit(selected_gameplay_index)
  connector_selection_changed.emit(selected_connector)
  marker_selection_changed.emit(selected_marker)
@@ -1260,18 +1353,15 @@ func _leave_tool() -> void:
  cancel_gesture()
  brush = {}
  selected_index = -1
+ selected_indices.clear()
  connector_tool = ""
  selected_connector = ""
  gameplay_brush = {}
  selected_gameplay_index = -1
  marker_tool = ""
  selected_marker = ""
- selection_changed.emit(-1)
- connector_selection_changed.emit("")
- gameplay_selection_changed.emit(-1)
- marker_selection_changed.emit("")
- ring_selection_changed.emit(-1)
- _set_status("Selection mode. Click terrain, gameplay objects or Act markers. Alt-click cycles overlaps.")
+ _emit_selection_changed()
+ _set_status("Selection mode. Ctrl-click toggles terrain; Alt-click cycles overlaps. Click terrain, gameplay objects or Act markers.")
  queue_redraw()
 
 
@@ -1293,6 +1383,8 @@ func _on_resized() -> void:
 
 
 func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
+ if preview_active:
+  return false
  if not data is Dictionary:
   return false
  if data.get("gameplay_stamp") is Dictionary:
@@ -1350,7 +1442,7 @@ func _notification(what: int) -> void:
 func _valid_stamp(placement: Dictionary) -> bool:
  if document == null or placement.is_empty():
   return false
- if Shapes.get_definition(str(placement.get("shape_id", ""))).is_empty():
+ if Shapes.definition_for_placement(placement).is_empty():
   return false
  var footprint: Vector2i = Shapes.transformed_size(placement)
  var dimensions := _grid_size()
@@ -1364,11 +1456,14 @@ func _valid_gameplay_stamp(placement: Dictionary) -> bool:
 func _inside_grid(point: Vector2) -> bool:
  # Compare in the same coordinate space as the incoming pointer. Converting an
  # exact left/top edge through a translated Control can lose one float32 ULP.
- # Transforming both operands together retains the half-open right/bottom edges
- # without a tolerance that would admit gutter placement or alter saved values.
+ # Use the exact drawn endpoints: transforming a Rect2 can round its reconstructed
+ # end outward by an ULP and wrongly admit the right/bottom boundary. No tolerance
+ # or snapping is applied to freely authored coordinates.
  var transform := get_global_transform()
- var bounds: Rect2 = transform * Rect2(_view_origin, Vector2(_grid_size()) * _cell_pixels)
- return bounds.has_point(transform * point)
+ var start := transform * grid_to_screen(Vector2.ZERO)
+ var end := transform * grid_to_screen(Vector2(_grid_size()))
+ var global_point := transform * point
+ return global_point.x >= start.x and global_point.y >= start.y and global_point.x < end.x and global_point.y < end.y
 
 
 func _placements() -> Array:

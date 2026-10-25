@@ -21,14 +21,14 @@ static func get_definition(id: String) -> Dictionary:
  return {}
 
 static func transformed_size(placement: Dictionary) -> Vector2i:
- var definition := _placement_definition(placement)
+ var definition := definition_for_placement(placement)
  if definition.is_empty() or typeof(placement.get("quarter_turns", 0)) != TYPE_INT:
   return Vector2i.ZERO
  var size: Vector2i = definition.size
  return Vector2i(size.y, size.x) if posmod(placement.get("quarter_turns", 0), 2) else size
 
 static func transformed_points(placement: Dictionary) -> PackedVector2Array:
- var definition := _placement_definition(placement)
+ var definition := definition_for_placement(placement)
  var result := PackedVector2Array()
  if definition.is_empty() or typeof(placement.get("quarter_turns", 0)) != TYPE_INT:
   return result
@@ -49,9 +49,16 @@ static func transformed_points(placement: Dictionary) -> PackedVector2Array:
   result.append(point)
  return result
 
-static func _placement_definition(placement: Dictionary) -> Dictionary:
+static func definition_for_placement(placement: Dictionary) -> Dictionary:
+ # Composite outlines are final authored geometry, not catalogue primitives.
+ # Validation belongs to ActGeometry; this lookup never repairs stored points.
  if typeof(placement.get("shape_id")) != TYPE_STRING:
   return {}
+ if placement.shape_id == "composite":
+  if typeof(placement.get("base_size")) != TYPE_VECTOR2I or typeof(placement.get("outline")) != TYPE_PACKED_VECTOR2_ARRAY:
+   return {}
+  return {"id": "composite", "family": "Composite terrain", "label": "Composite terrain",
+   "size": placement.base_size, "closed": true, "points": placement.outline.duplicate(), "color": Color("99dfbd")}
  return get_definition(placement.shape_id)
 
 static func _build_catalogue() -> void:

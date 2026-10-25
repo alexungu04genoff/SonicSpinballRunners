@@ -1,7 +1,8 @@
 class_name AuthoredActRuntimeCompiler
 extends RefCounted
 ## Compiles one immutable authoring document into ordinary 2D gameplay bodies.
-## Points are read from the editor's canonical library; no generator is involved.
+## Primitive library points and stored composite outlines share the editor's transforms.
+## Runtime never repeats authoring unions or smoothing.
 const Document = preload("res://scripts/act_editor/act_geometry.gd")
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 const BumperFactory = preload("res://scripts/bumper_factory.gd")
@@ -40,7 +41,7 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
  var terrain_started := Time.get_ticks_usec()
  for index in document.placements.size():
   var placement: Dictionary = document.placements[index]
-  var definition: Dictionary = Shapes.get_definition(placement.shape_id)
+  var definition: Dictionary = Shapes.definition_for_placement(placement)
   var points := PackedVector2Array()
   var anchor := Vector2(placement.anchor) * float(document.cell_size)
   for point: Vector2 in Shapes.transformed_points(placement):

@@ -76,8 +76,9 @@ var _cliff: ShaderMaterial
 var _wall_grass: ShaderMaterial
 var _wall_soil: ShaderMaterial
 var _outlines: Array[PackedVector2Array] = []
-## Presentation-only union; the compiler's collision polygons remain untouched.
+## Primitive presentation unions and exact stored composites; physics stays untouched.
 var authored_terrain_polygons: Array[PackedVector2Array] = []
+var authored_composite_polygons: Array[PackedVector2Array] = []
 var authored_open_paths: Array[PackedVector2Array] = []
 var authored_floor_outline := PackedVector2Array()
 const LAND_DEPTH := 1.45
@@ -86,6 +87,7 @@ func _clear_playfield_geometry() -> void:
  super._clear_playfield_geometry()
  _outlines.clear()
  authored_terrain_polygons.clear()
+ authored_composite_polygons.clear()
  authored_open_paths.clear()
  authored_floor_outline.clear()
 
@@ -143,11 +145,16 @@ func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> voi
  _initialize_terrain_skin()
  for terrain: Dictionary in runtime.terrain:
   var points: PackedVector2Array = terrain.points.duplicate()
-  if terrain.closed:
+  if terrain.get("shape_id", "") == "composite":
+   # Explicit sculpting has already produced the authoritative final contour.
+   # Do not union it again with nearby stamps or quantize smoothed vertices.
+   authored_composite_polygons.append(points)
+  elif terrain.closed:
    _outlines.append(points)
   else:
    authored_open_paths.append(points)
  authored_terrain_polygons = _merge_authored_land(_outlines)
+ authored_terrain_polygons.append_array(authored_composite_polygons)
  # The deck runs beneath the outer walls, with no exterior rectangular shelf.
  # This is a visual footprint only; it never fills or alters physical geometry.
  var floor_bounds := Rect2(bounds.position, bounds.size - Vector2(0, cell_size * AuthoredActData.RED_GUTTER_CELLS))
@@ -191,10 +198,12 @@ func _merge_authored_land(outlines: Array[PackedVector2Array]) -> Array[PackedVe
 
 func _authored_floor_boundary(bounds: Rect2) -> PackedVector2Array:
  var rectangle := PackedVector2Array([bounds.position, Vector2(bounds.end.x, bounds.position.y), bounds.end, Vector2(bounds.position.x, bounds.end.y)])
- var boundaries: Array[PackedVector2Array] = authored_terrain_polygons.duplicate()
+ var boundaries: Array[PackedVector2Array] = _outlines.duplicate()
  for path: PackedVector2Array in authored_open_paths:
   boundaries.append_array(Geometry2D.offset_polyline(path, authored_cell_size * 0.02, Geometry2D.JOIN_ROUND, Geometry2D.END_ROUND))
  boundaries = _merge_authored_land(boundaries)
+ # The deck-envelope scan also reads composites directly, without a second union.
+ boundaries.append_array(authored_composite_polygons)
  var left: Array[PackedVector2Array] = []
  var right: Array[PackedVector2Array] = []
  var rows: Array[float] = [bounds.position.y, bounds.end.y]

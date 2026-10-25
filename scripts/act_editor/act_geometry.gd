@@ -1,12 +1,13 @@
 class_name ActGeometry
 extends Resource
 ## A single Act's terrain, connectors, gameplay objects and lifecycle authoring data.
-const FORMAT_VERSION := 5
+const FORMAT_VERSION := 6
 ## The system gutter is outside terrain bounds and is never a thirteenth terrain row.
 const RED_GUTTER_CELLS := 1
 const SHAPES = preload("res://scripts/act_editor/terrain_shapes.gd")
 const OBJECTS = preload("res://scripts/act_editor/gameplay_objects.gd")
 const RINGS = preload("res://scripts/act_editor/ring_trails.gd")
+const COMPOSITES = preload("res://scripts/act_editor/composite_terrain.gd")
 const SCRIPT_PATH := "res://scripts/act_editor/act_geometry.gd"
 const PLACEMENT_TYPES := {
  "shape_id": TYPE_STRING,
@@ -16,6 +17,7 @@ const PLACEMENT_TYPES := {
  "flip_h": TYPE_BOOL,
  "flip_v": TYPE_BOOL,
 }
+const COMPOSITE_FIELDS := ["composite_version", "outline", "smoothing_strength"]
 
 # Dynamic exports preserve malformed input for validation. Typed Resource fields
 # otherwise coerce bool/float versions to integers and invalid arrays to empty ones.
@@ -120,17 +122,22 @@ func validation_errors() -> PackedStringArray:
    errors.append(prefix + "terrain placement must be a dictionary.")
    continue
   var placement: Dictionary = placements[index]
+  var composite: bool = placement.get("shape_id") == "composite"
   var valid_types := true
   for key: String in PLACEMENT_TYPES:
    if not placement.has(key) or typeof(placement[key]) != PLACEMENT_TYPES[key]:
     errors.append(prefix + "%s must be %s." % [key, type_string(PLACEMENT_TYPES[key])])
     valid_types = false
   for key: Variant in placement:
-   if typeof(key) != TYPE_STRING or not PLACEMENT_TYPES.has(key):
+   if typeof(key) != TYPE_STRING or (not PLACEMENT_TYPES.has(key) and (not composite or key not in COMPOSITE_FIELDS)):
     errors.append(prefix + "unrecognized placement field; only terrain reference and transform fields are supported.")
   if not valid_types:
    continue
-  var definition: Dictionary = SHAPES.get_definition(placement.shape_id)
+  if composite:
+   var composite_errors := _composite_validation_errors(placement)
+   for error: String in composite_errors: errors.append(prefix + error)
+   if not composite_errors.is_empty(): continue
+  var definition: Dictionary = SHAPES.definition_for_placement(placement)
   if definition.is_empty():
    errors.append(prefix + "unknown terrain shape '%s'." % placement.shape_id)
    continue
@@ -143,6 +150,28 @@ func validation_errors() -> PackedStringArray:
   # Frame bounds are the only spatial restriction. Overlap is deliberately valid.
   if valid_grid_type and (anchor.x < 0 or anchor.y < 0 or anchor.x > grid_size.x - frame.x or anchor.y > grid_size.y - frame.y):
    errors.append(prefix + "the transformed footprint must fit inside this Act.")
+ return errors
+
+func _composite_validation_errors(placement: Dictionary) -> PackedStringArray:
+ var errors := PackedStringArray()
+ if typeof(placement.get("composite_version")) != TYPE_INT or placement.get("composite_version") != COMPOSITES.VERSION:
+  errors.append("composite_version must be the supported integer version %d." % COMPOSITES.VERSION)
+ if typeof(placement.get("smoothing_strength")) not in [TYPE_INT, TYPE_FLOAT]:
+  errors.append("smoothing_strength must be a number between 0 and 0.75.")
+ elif not is_finite(placement.smoothing_strength) or placement.smoothing_strength < 0.0 or placement.smoothing_strength > COMPOSITES.MAX_STRENGTH:
+  errors.append("smoothing_strength must be finite and between 0 and 0.75.")
+ if placement.base_size.x <= 0 or placement.base_size.y <= 0 or placement.base_size.x > COMPOSITES.MAX_COORDINATE or placement.base_size.y > COMPOSITES.MAX_COORDINATE:
+  errors.append("composite base footprint must be positive and within the supported terrain extent.")
+ if typeof(placement.get("outline")) != TYPE_PACKED_VECTOR2_ARRAY:
+  errors.append("composite outline must be a PackedVector2Array in local cell coordinates.")
+ else:
+  var outline: PackedVector2Array = placement.outline
+  var geometry_error: String = COMPOSITES.validation_error(outline)
+  if not geometry_error.is_empty(): errors.append(geometry_error)
+  for point: Vector2 in outline:
+   if point.x < 0.0 or point.y < 0.0 or point.x > placement.base_size.x or point.y > placement.base_size.y:
+    errors.append("composite outline must stay inside its local base footprint.")
+    break
  return errors
 
 func _lifecycle_validation_errors() -> PackedStringArray:
@@ -220,6 +249,10 @@ func fingerprint() -> String:
      placement.get("shape_id"), placement.get("base_size"), placement.get("anchor"),
      placement.get("quarter_turns"), placement.get("flip_h"), placement.get("flip_v"),
     ])
+    if placement.get("shape_id") == "composite":
+     var strength: Variant = placement.get("smoothing_strength")
+     if typeof(strength) in [TYPE_INT, TYPE_FLOAT]: strength = float(strength)
+     ordered_placements.back().append_array([placement.get("composite_version"), placement.get("outline"), strength])
    else:
     ordered_placements.append(placement)
  else:
@@ -283,15 +316,22 @@ static func load_document(path: String) -> Dictionary:
   return {"document": null, "error": "The selected file is not an Act Geometry resource."}
  if not loaded._format_version_was_set or not loaded._library_version_was_set:
   return {"document": null, "error": "This Act file is missing its required format or terrain library version."}
- if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
+ if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4, 5] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
   if loaded.format_version == 2 and (typeof(loaded.gameplay_objects) != TYPE_ARRAY or not loaded.gameplay_objects.is_empty()):
    return {"document": null, "error": "Terrain-and-connector format 2 cannot contain gameplay object data."}
   if loaded.format_version < 4 and (loaded.activation_y != null or loaded.spawn_position != null):
    return {"document": null, "error": "Previous Act formats cannot contain lifecycle marker data."}
-  if typeof(loaded.ring_trails) != TYPE_ARRAY or not loaded.ring_trails.is_empty():
+  if loaded.format_version < 5 and (typeof(loaded.ring_trails) != TYPE_ARRAY or not loaded.ring_trails.is_empty()):
    return {"document": null, "error": "Previous Act formats cannot contain ring trails."}
-  # Previous Acts gain an empty ring collection; only explicit saving writes v5.
+  if typeof(loaded.placements) == TYPE_ARRAY:
+   for placement: Variant in loaded.placements:
+    if placement is Dictionary and (placement.get("shape_id") == "composite" or placement.has("outline") or placement.has("composite_version") or placement.has("smoothing_strength")):
+     return {"document": null, "error": "Previous Act formats cannot contain composite terrain."}
+  # Old Acts keep their exact authored data; only explicit saving writes v6.
   loaded.format_version = FORMAT_VERSION
+ var composite_decode_error := _decode_stored_composites(loaded)
+ if not composite_decode_error.is_empty():
+  return {"document": null, "error": composite_decode_error}
  var decode_error := _decode_stored_angles(loaded)
  if not decode_error.is_empty():
   return {"document": null, "error": decode_error}
@@ -311,6 +351,30 @@ static func load_document(path: String) -> Dictionary:
  if not errors.is_empty():
   return {"document": null, "error": "\n".join(errors)}
  return {"document": loaded, "error": ""}
+
+static func _decode_stored_composites(document: Resource) -> String:
+ if typeof(document.placements) != TYPE_ARRAY: return ""
+ for index in document.placements.size():
+  var placement: Variant = document.placements[index]
+  if not placement is Dictionary or placement.get("shape_id") != "composite": continue
+  if typeof(placement.get("outline")) == TYPE_PACKED_BYTE_ARRAY:
+   var payload: PackedByteArray = placement.outline
+   var empty_layout := var_to_bytes(PackedVector2Array())
+   var one_layout := var_to_bytes(PackedVector2Array([Vector2.ZERO]))
+   var stride := one_layout.size() - empty_layout.size()
+   # Accept only this engine's packed Vector2 layout and a bounded exact length.
+   # Object/container headers never reach bytes_to_var (object decoding is off).
+   if payload.size() < empty_layout.size() or payload.decode_u32(0) != empty_layout.decode_u32(0):
+    return "Composite %d: invalid stored outline payload." % (index + 1)
+   var count := payload.decode_u32(4)
+   if count < 3 or count > COMPOSITES.MAX_VERTICES or payload.size() != empty_layout.size() + count * stride:
+    return "Composite %d: invalid stored outline length." % (index + 1)
+   placement.outline = bytes_to_var(payload)
+  if typeof(placement.get("smoothing_strength")) == TYPE_PACKED_BYTE_ARRAY:
+   var decoded: Variant = _decode_numeric_payload(placement.smoothing_strength)
+   if decoded == null: return "Composite %d: invalid stored smoothing strength." % (index + 1)
+   placement.smoothing_strength = decoded
+ return ""
 
 static func _decode_stored_angles(document: Resource) -> String:
  if typeof(document.gameplay_objects) != TYPE_ARRAY:
@@ -337,6 +401,11 @@ static func _decode_numeric_payload(payload: PackedByteArray) -> Variant:
 
 func _storage_document() -> Resource:
  var stored: Resource = copy_document()
+ for placement: Dictionary in stored.placements:
+  if placement.shape_id == "composite":
+   # Preserve every float bit across text Resource serialization and new sessions.
+   placement.outline = var_to_bytes(placement.outline)
+   placement.smoothing_strength = var_to_bytes(placement.smoothing_strength)
  for placement: Dictionary in stored.gameplay_objects:
   # Godot 4.7's text float parser can shift arbitrary double scalars by one ULP.
   # Store the angle once as a native numeric byte payload in the same field.

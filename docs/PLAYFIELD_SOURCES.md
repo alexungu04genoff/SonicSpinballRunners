@@ -39,6 +39,8 @@ Generated data is extracted from real installed `TableChunk` descriptors. Author
 
 The compiler installs terrain, bumpers and `PlaygroundFlipper` instances using the game's existing ball, tuning and controls. The game owns their lifetime. Changing source replaces those level objects, updates the existing ball's collision radius, populates the existing ring field and performs the shared new-run reset. Invalid resources are checked before the live geometry is removed. The existing generated optimization may retain an unchanged lower deck and its paddles.
 
+Format-6 composite terrain uses its stored final local-cell polygon and ordinary terrain transform. The compiler builds one solid body per composite; editor hit testing and Green Hill extrusion consume the same transformed points. Composite polygons bypass presentation union and outline cleanup, including the deck-envelope input. Runtime loading performs validation and collision/mesh construction, without repeating editor-time boolean unions or smoothing. Source stamps removed by Apply therefore create no internal cliff faces or overlapping bodies. Primitive stamps and open walls retain their existing paths.
+
 Character abilities query this contract instead of iterating generated chunks. Sonic targets real bumpers, Tails uses the shared flight implementation, Knuckles recognizes eligible static terrain, and Shadow uses the same area-target scoring path. No source-specific ability implementation or tuning profile exists. Generated checkpoint rails and housings retain their previous glide exclusions.
 
 ## Physics, dimensions and presentation

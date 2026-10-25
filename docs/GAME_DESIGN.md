@@ -39,6 +39,14 @@ The depth experiment retains Real Pinball perspective as the default, a lower Dr
 
 See [Act Geometry Editor](ACT_GEOMETRY_EDITOR.md) for launch, controls, the editable example and format/verification details. Human review still owns palette comfort, curve silhouettes and editing feel.
 
+### Composite terrain authoring — 2026-10-25
+
+**Confirmed explicit sculpting workflow:** Terrain multi-selection uses Ctrl-click, with Ctrl+Alt-click reaching covered pieces. Merge unions actual transformed filled silhouettes; Smooth rounds one filled piece or composite; Merge + Smooth combines both. A gold collision-outline preview offers 0/25/50/75% strength and Apply/Cancel. Only Apply replaces sources with one persistent CompositeTerrain and adds one undo step. Undo restores all source records and selection exactly; previews never mutate them.
+
+Format 6 stores the final local-cell outline, version, smoothing metadata and ordinary terrain transform. Formats 2–5 continue loading without source rewrites. Editor drawing, selection, runtime solid collision and Green Hill extrusion consume that same outline; runtime never repeats composite unions or smoothing. Composites support movement, duplication, deletion, quarter-turns, mirrors and later merges with primitives or other composites. Fractional vertices remain unsnapped.
+
+V1 requires one simple connected solid. Open-wall joining, islands, point-only connections and holes are rejected clearly. Filled U lobes can participate when selected terrain bridges them. Conservative corner rounding limits displacement and area change; invalid edges, intersections, triangulation or convex decomposition reject the result. These limits are provisional authoring tuning. No automatic cleanup, gameplay-object merging, Zone assembly or physics-tuning changes are introduced. See [the editor workflow](ACT_GEOMETRY_EDITOR.md#composite-terrain-merge-and-smooth).
+
 ### Ring-trail authoring — 2026-10-25
 
 **Confirmed scoped follow-up:** Gameplay now includes a Rings tool. A click creates one ring; a drag creates an unconstrained straight trail as one authoring group and one undo action. Rings use a centralized 0.18-cell preview diameter and a default maximum center spacing of 0.4 cells. Equal intervals fit both endpoints. Only endpoints snap; Alt frees them and generated coordinates never snap individually. Selection, group movement, both endpoint handles, spacing edits, deletion, duplication and shared history preserve exact coordinates. Terrain overlap is allowed.

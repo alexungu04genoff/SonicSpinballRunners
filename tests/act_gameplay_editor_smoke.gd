@@ -15,7 +15,16 @@ var alt_down := false
 
 
 func _initialize() -> void:
-	call_deferred("run")
+	call_deferred("_run_with_test_viewport")
+
+
+func _run_with_test_viewport() -> void:
+	# Headless windows default to 64x64 even when project content is 1280x900.
+	# Match the authored viewport so native cursor polling and pushed UI events use
+	# the same pixel scale, including exact off-grid palette drag/drop assertions.
+	root.size = Vector2i(ProjectSettings.get_setting("display/window/size/viewport_width", 1280), ProjectSettings.get_setting("display/window/size/viewport_height", 900))
+	await process_frame
+	await run()
 
 
 func check(condition: bool, label: String) -> void:

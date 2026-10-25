@@ -7,6 +7,7 @@ const PaletteItem = preload("res://scripts/act_editor/terrain_palette_item.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const GameplayPaletteItem = preload("res://scripts/act_editor/gameplay_palette_item.gd")
 const Rings = preload("res://scripts/act_editor/ring_trails.gd")
+const Composite = preload("res://scripts/act_editor/composite_terrain.gd")
 const EXAMPLE_PATH := "res://data/acts/curve_garden.tres"
 const HISTORY_LIMIT := 100
 
@@ -49,6 +50,15 @@ var marker_buttons: Dictionary = {}
 var marker_list: VBoxContainer
 var marker_summary: Label
 var ring_spacing_field: SpinBox
+var composite_bar: HBoxContainer
+var composite_strength: SpinBox
+var composite_hint: Label
+var composite_preview_active := false
+var composite_preview: Dictionary = {}
+var _composite_sources: Array[int] = []
+var _composite_base: Dictionary = {}
+var _composite_fingerprint := ""
+var _composite_operation := ""
 
 func _ready() -> void:
 	_previous_auto_quit = get_tree().auto_accept_quit
@@ -264,6 +274,30 @@ func _build_ui() -> void:
 	connector_summary.add_theme_font_size_override("font_size", 13)
 	connector_summary.add_theme_color_override("font_color", Color("76edab"))
 	connectors.add_child(connector_summary)
+	composite_bar = HBoxContainer.new()
+	composite_bar.add_theme_constant_override("separation", 6)
+	workspace.add_child(composite_bar)
+	_button(composite_bar, "merge", "Merge", func(): preview_composite("merge"), "Ctrl-click filled terrain to select two or more pieces, then preview their union")
+	_button(composite_bar, "smooth", "Smooth", func(): preview_composite("smooth"), "Preview conservative corner smoothing on one filled terrain piece or composite")
+	_button(composite_bar, "merge_smooth", "Merge + Smooth", func(): preview_composite("merge_smooth"), "Union selected filled terrain, then smooth the resulting outline")
+	composite_strength = SpinBox.new()
+	composite_strength.min_value = 0
+	composite_strength.max_value = 75
+	composite_strength.step = 25
+	composite_strength.value = 25
+	composite_strength.suffix = "%"
+	composite_strength.custom_minimum_size.x = 90
+	composite_strength.tooltip_text = "Smoothing strength. Preview changes never add history entries."
+	composite_strength.value_changed.connect(func(_value):
+		if composite_preview_active and _composite_operation != "merge": _rebuild_composite_preview())
+	composite_bar.add_child(composite_strength)
+	_button(composite_bar, "composite_apply", "Apply", apply_composite, "Replace the selected sources in one undo step")
+	_button(composite_bar, "composite_cancel", "Cancel", cancel_composite_preview, "Discard the preview; original terrain stays unchanged")
+	composite_hint = Label.new()
+	composite_hint.add_theme_font_size_override("font_size", 12)
+	composite_hint.add_theme_color_override("font_color", Color("9cb3c6"))
+	composite_hint.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	workspace.add_child(composite_hint)
 	canvas = Canvas.new()
 	canvas.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	canvas.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -271,6 +305,8 @@ func _build_ui() -> void:
 	canvas.placement_requested.connect(add_placement)
 	canvas.move_requested.connect(move_placement)
 	canvas.selection_changed.connect(func(_index): _refresh())
+	canvas.terrain_selection_changed.connect(func(_indices): _refresh())
+	canvas.composite_preview_cancel_requested.connect(cancel_composite_preview)
 	canvas.connector_requested.connect(set_connector)
 	canvas.connector_selection_changed.connect(func(_kind): _refresh())
 	canvas.gameplay_placement_requested.connect(add_gameplay_placement)
@@ -304,7 +340,7 @@ func _build_ui() -> void:
 	handedness_field.tooltip_text = "Change handedness and swing direction; preserve the authored pivot and resting angle."
 	handedness_field.item_selected.connect(_change_handedness)
 	object_properties.add_child(handedness_field)
-	_button(object_properties, "duplicate", "Duplicate", duplicate_selected, "Ctrl+D • duplicate the selected gameplay object, offset by one cell")
+	_button(object_properties, "duplicate", "Duplicate", duplicate_selected, "Ctrl+D • duplicate selected terrain, gameplay object or ring trail")
 	detail_label = Label.new()
 	detail_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	detail_label.add_theme_color_override("font_color", Color("b5c8d6"))
@@ -313,7 +349,7 @@ func _build_ui() -> void:
 	status_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	column.add_child(status_label)
 	var help := Label.new()
-	help.text = "R rotate   Shift+R object −15°   H / V terrain flip   Ctrl+D duplicate object   Alt free move / cycle overlaps   Wheel zoom   Middle-drag pan"
+	help.text = "Ctrl-click terrain multi-select   R rotate   H / V terrain flip   Ctrl+D duplicate   Alt free move / cycle overlaps   Wheel zoom   Middle-drag pan"
 	help.add_theme_font_size_override("font_size", 12)
 	help.add_theme_color_override("font_color", Color("8aa5ba"))
 	column.add_child(help)
@@ -324,6 +360,11 @@ func _button(parent: Node, id: String, label: String, action: Callable, hint: St
 	button.tooltip_text = hint
 	button.focus_mode = Control.FOCUS_NONE
 	button.pressed.connect(func():
+		if composite_preview_active:
+			if id in ["composite_apply", "composite_cancel", "fit"]:
+				composite_strength.apply()
+				action.call()
+			return
 		# Toolbar buttons do not take keyboard focus. Commit numeric drafts before
 		# an edit refreshes the fields, then give editing shortcuts to the canvas.
 		cell_size_field.apply()
@@ -444,10 +485,112 @@ func choose_gameplay(id: String) -> void:
 	_refresh()
 
 func _select_mode() -> void:
+	if composite_preview_active:
+		cancel_composite_preview()
+		return
 	canvas.grab_focus()
 	canvas.select_piece(-1)
-	_set_status("Click terrain, gameplay or Act markers. Drag to move; Alt frees object / marker position. Alt-click cycles overlaps.")
+	_set_status("Click to select; Ctrl-click toggles terrain for Merge. Alt-click cycles overlaps. Drag a single selection to move.")
 	_refresh()
+
+func _terrain_selection() -> Array[int]:
+	var indices: Array[int] = []
+	for index: int in canvas.selected_indices:
+		if index >= 0 and index < document.placements.size() and not indices.has(index):
+			indices.append(index)
+	return indices
+
+func _composite_selection_error(operation: String) -> String:
+	var indices := _terrain_selection()
+	if operation == "smooth" and indices.size() != 1:
+		return "Smooth needs one filled terrain piece. Use Merge + Smooth for multiple pieces."
+	if operation != "smooth" and indices.size() < 2:
+		return "Ctrl-click two or more filled terrain pieces to merge."
+	for index: int in indices:
+		var definition := Shapes.definition_for_placement(document.placements[index])
+		if definition.is_empty() or not definition.closed:
+			return "Filled terrain only: deselect open walls / rails. Open-path joining is not supported."
+	return ""
+
+func preview_composite(operation: String) -> void:
+	if composite_preview_active or operation not in ["merge", "smooth", "merge_smooth"]:
+		return
+	var error := _composite_selection_error(operation)
+	if not error.is_empty():
+		_set_status(error)
+		return
+	canvas.cancel_gesture()
+	_composite_sources = _terrain_selection()
+	_composite_sources.sort()
+	var sources: Array = []
+	for index: int in _composite_sources:
+		sources.append(document.placements[index].duplicate(true))
+	var result: Dictionary = {"placement": sources[0], "error": ""} if operation == "smooth" else Composite.merge(sources)
+	if not result.error.is_empty():
+		_set_status(result.error)
+		return
+	_composite_base = result.placement
+	_composite_operation = operation
+	_composite_fingerprint = document.fingerprint()
+	composite_preview_active = true
+	canvas.grab_focus()
+	_rebuild_composite_preview()
+
+func _rebuild_composite_preview() -> void:
+	var result: Dictionary = {"placement": _composite_base.duplicate(true), "error": ""}
+	if _composite_operation != "merge":
+		result = Composite.smooth(_composite_base, composite_strength.value / 100.0)
+	composite_preview = result.placement
+	canvas.set_composite_preview(composite_preview, true)
+	_refresh()
+	if not result.error.is_empty():
+		_set_status(result.error + " Reduce strength or Cancel. Nothing has been changed.")
+	else:
+		_set_status("Preview: the bright contour is the final collision silhouette. Apply replaces %d source piece(s); Cancel keeps them." % _composite_sources.size())
+
+func apply_composite() -> void:
+	if not composite_preview_active or composite_preview.is_empty():
+		return
+	if document.fingerprint() != _composite_fingerprint:
+		cancel_composite_preview()
+		_set_status("The document changed during preview. Select the pieces and preview again.")
+		return
+	var candidate: Resource = document.copy_document()
+	for offset in range(_composite_sources.size() - 1, -1, -1):
+		candidate.placements.remove_at(_composite_sources[offset])
+	var inserted: int = _composite_sources[0]
+	candidate.placements.insert(inserted, composite_preview.duplicate(true))
+	var errors: PackedStringArray = candidate.validation_errors()
+	if not errors.is_empty():
+		_set_status(errors[0] + " Preview not applied.")
+		return
+	if candidate.fingerprint() == document.fingerprint():
+		_clear_composite_preview()
+		_refresh()
+		_set_status("The composite is unchanged. No undo step was added.")
+		return
+	_record_edit()
+	document.placements = candidate.placements
+	_clear_composite_preview()
+	canvas.select_piece(inserted)
+	_refresh()
+	_set_status("CompositeTerrain applied as one edit. Ctrl+Z restores every source piece; merge this composite again to keep sculpting.")
+
+func _clear_composite_preview() -> void:
+	composite_preview_active = false
+	composite_preview = {}
+	_composite_sources.clear()
+	_composite_base = {}
+	_composite_fingerprint = ""
+	_composite_operation = ""
+	canvas.set_composite_preview({}, false)
+
+func cancel_composite_preview() -> void:
+	if not composite_preview_active:
+		return
+	_clear_composite_preview()
+	_refresh()
+	_set_status("Preview canceled. Original terrain and undo history are unchanged.")
 
 func choose_connector(kind: String) -> void:
 	if kind not in ["entry", "exit"]:
@@ -518,7 +661,7 @@ func add_placement(placement: Dictionary) -> void:
 		return
 	_record_edit()
 	document.placements.append(placement.duplicate(true))
-	_set_status("Placed %s. %d independent terrain pieces." % [Shapes.get_definition(placement.shape_id).label, document.placements.size()])
+	_set_status("Placed %s. %d independent terrain pieces." % [Shapes.definition_for_placement(placement).label, document.placements.size()])
 	_refresh()
 
 func move_placement(index: int, anchor: Vector2i) -> void:
@@ -606,6 +749,16 @@ func _change_handedness(index: int) -> void:
 	_refresh()
 
 func duplicate_selected() -> void:
+	if composite_preview_active:
+		return
+	if _terrain_selection().size() == 1:
+		var terrain: Dictionary = document.placements[canvas.selected_index].duplicate(true)
+		terrain.anchor = _clamp_anchor(terrain, terrain.anchor + Vector2i.ONE)
+		canvas.cancel_gesture()
+		add_placement(terrain)
+		canvas.select_piece(document.placements.size() - 1)
+		_refresh()
+		return
 	if canvas.selected_ring_index >= 0:
 		var trail: Dictionary = document.ring_trails[canvas.selected_ring_index].duplicate(true)
 		trail.start += Vector2.ONE * document.cell_size
@@ -639,6 +792,8 @@ func flip_active(horizontal: bool) -> void:
 	_transform_active("flip_h" if horizontal else "flip_v")
 
 func _transform_active(operation: String) -> void:
+	if composite_preview_active or _terrain_selection().size() > 1:
+		return
 	canvas.grab_focus()
 	canvas.cancel_gesture()
 	var placement: Dictionary
@@ -669,6 +824,8 @@ func _transform_active(operation: String) -> void:
 	_refresh()
 
 func delete_selected() -> void:
+	if composite_preview_active:
+		return
 	if canvas.selected_ring_index >= 0:
 		canvas.cancel_gesture()
 		_record_edit()
@@ -693,12 +850,17 @@ func delete_selected() -> void:
 		return
 	canvas.cancel_gesture()
 	_record_edit()
-	document.placements.remove_at(canvas.selected_index)
+	var indices := _terrain_selection()
+	indices.sort()
+	indices.reverse()
+	for index: int in indices:
+		document.placements.remove_at(index)
 	canvas.select_piece(-1)
 	_refresh()
 
 func _snapshot() -> Dictionary:
 	return {"document": document.copy_document(), "selected": canvas.selected_index,
+		"terrain_selection": _terrain_selection(),
 		"connector": canvas.selected_connector, "gameplay": canvas.selected_gameplay_index,
 		"marker": canvas.selected_marker, "ring": canvas.selected_ring_index}
 
@@ -709,6 +871,9 @@ func _record_edit() -> void:
 	redo_stack.clear()
 
 func undo() -> void:
+	if composite_preview_active:
+		cancel_composite_preview()
+		return
 	canvas.cancel_gesture()
 	if undo_stack.is_empty():
 		return
@@ -717,6 +882,9 @@ func undo() -> void:
 	_set_status("Undid one edit.")
 
 func redo() -> void:
+	if composite_preview_active:
+		cancel_composite_preview()
+		return
 	canvas.cancel_gesture()
 	if redo_stack.is_empty():
 		return
@@ -746,13 +914,16 @@ func _restore_snapshot(snapshot: Dictionary) -> void:
 	elif snapshot.get("ring", -1) >= 0:
 		canvas.select_ring(snapshot.ring)
 	else:
-		canvas.select_piece(snapshot.selected if snapshot.selected < document.placements.size() else -1)
+		var indices: Array[int] = []
+		indices.assign(snapshot.get("terrain_selection", [snapshot.selected] if snapshot.selected >= 0 else []))
+		canvas.set_terrain_selection(indices)
 	_refresh()
 
 func is_dirty() -> bool:
 	return document != null and (document.fingerprint() != saved_fingerprint or title_field.text != document.title)
 
 func new_document() -> void:
+	_clear_composite_preview()
 	document = ActData.new()
 	_title_edit_recorded = false
 	current_path = ""
@@ -786,6 +957,7 @@ func load_from(path: String) -> bool:
 	if result.document == null:
 		_show_error("Could not load this Act. Your current edits are still open.\n" + result.error)
 		return false
+	_clear_composite_preview()
 	document = result.document
 	_title_edit_recorded = false
 	current_path = path
@@ -799,6 +971,9 @@ func load_from(path: String) -> bool:
 	return true
 
 func request_action(action: String) -> void:
+	if composite_preview_active:
+		_set_status("Apply or Cancel the composite preview before changing documents or closing.")
+		return
 	if _modal_open():
 		return
 	ring_spacing_field.apply()
@@ -902,6 +1077,8 @@ func _refresh() -> void:
 	if document == null:
 		return
 	_refreshing = true
+	for button: Button in buttons.values():
+		button.disabled = false
 	title_field.text = document.title
 	cell_size_field.set_value_no_signal(document.cell_size)
 	grid_label.text = "   %d × %d cells    Cell size" % [document.grid_size.x, document.grid_size.y]
@@ -909,7 +1086,7 @@ func _refresh() -> void:
 	buttons.undo.disabled = undo_stack.is_empty()
 	buttons.redo.disabled = redo_stack.is_empty()
 	buttons.delete.disabled = canvas.selected_index < 0 and canvas.selected_gameplay_index < 0 and canvas.selected_ring_index < 0 and canvas.selected_connector.is_empty() and canvas.selected_marker.is_empty()
-	buttons.duplicate.disabled = canvas.selected_gameplay_index < 0 and canvas.selected_ring_index < 0
+	buttons.duplicate.disabled = canvas.selected_gameplay_index < 0 and canvas.selected_ring_index < 0 and _terrain_selection().size() != 1
 	var ring_spacing: float = document.ring_trails[canvas.selected_ring_index].spacing / float(document.cell_size) if canvas.selected_ring_index >= 0 else canvas.ring_spacing_cells
 	ring_spacing_field.set_value_no_signal(ring_spacing)
 	connector_summary.text = _connector_description("entry") + "   |   " + _connector_description("exit")
@@ -919,8 +1096,8 @@ func _refresh() -> void:
 	var active: Dictionary = canvas.brush if not canvas.brush.is_empty() else (document.placements[canvas.selected_index] if canvas.selected_index >= 0 else {})
 	var gameplay := _active_gameplay()
 	for key in ["rotate", "flip_h", "flip_v"]:
-		buttons[key].disabled = active.is_empty()
-	buttons.rotate.disabled = active.is_empty() and gameplay.is_empty()
+		buttons[key].disabled = active.is_empty() or _terrain_selection().size() > 1
+	buttons.rotate.disabled = (active.is_empty() and gameplay.is_empty()) or _terrain_selection().size() > 1
 	buttons.rotate.text = "Rotate +15°" if not gameplay.is_empty() else "Rotate +90°"
 	angle_field.editable = not gameplay.is_empty()
 	_angle_display_text = var_to_str(gameplay.rotation_degrees) if not gameplay.is_empty() else ""
@@ -949,16 +1126,55 @@ func _refresh() -> void:
 		mode_label.text = ("PLACE  ·  " if not canvas.gameplay_brush.is_empty() else "SELECTED  ·  ") + definition.label
 		var anchor_label := "Pivot" if gameplay.type in ["left_flipper", "right_flipper"] else "Anchor"
 		detail_label.text = "%s %s px · %s° · Alt: free position · Arrows: 1 cell / Alt: 1 px" % [anchor_label, gameplay.position, var_to_str(gameplay.rotation_degrees)]
+	elif _terrain_selection().size() > 1:
+		mode_label.text = "SELECTED  ·  %d terrain pieces" % _terrain_selection().size()
+		detail_label.text = "Ctrl-click toggles pieces · Merge or Merge + Smooth previews a composite · Delete removes the selection"
 	elif active.is_empty():
 		mode_label.text = "SELECT / MOVE"
 		detail_label.text = "%d terrain pieces · %d gameplay objects · %d ring trails · Alt-click cycles overlaps." % [document.placements.size(), document.gameplay_objects.size(), document.ring_trails.size()]
 	else:
-		var definition: Dictionary = Shapes.get_definition(active.shape_id)
+		var definition: Dictionary = Shapes.definition_for_placement(active)
 		var frame: Vector2i = Shapes.transformed_size(active)
 		mode_label.text = ("STAMP  ·  " if not canvas.brush.is_empty() else "SELECTED  ·  ") + definition.label
 		detail_label.text = "Frame %d × %d cells  ·  %d°  ·  H %s / V %s%s" % [frame.x, frame.y, active.quarter_turns * 90, "on" if active.flip_h else "off", "on" if active.flip_v else "off", "  ·  Anchor (%d, %d)" % [active.anchor.x, active.anchor.y] if canvas.brush.is_empty() else "  ·  Click to place; Esc to select"]
+	_refresh_composite_controls()
 	canvas.queue_redraw()
 	_refreshing = false
+
+func _refresh_composite_controls() -> void:
+	var merge_error := _composite_selection_error("merge")
+	var smooth_error := _composite_selection_error("smooth")
+	buttons.merge.disabled = not merge_error.is_empty()
+	buttons.merge_smooth.disabled = not merge_error.is_empty()
+	buttons.smooth.disabled = not smooth_error.is_empty()
+	buttons.merge.tooltip_text = merge_error if not merge_error.is_empty() else "Preview the geometric union of selected filled silhouettes"
+	buttons.merge_smooth.tooltip_text = buttons.merge.tooltip_text
+	buttons.smooth.tooltip_text = smooth_error if not smooth_error.is_empty() else "Preview conservative corner smoothing on the selected outline"
+	buttons.composite_apply.visible = composite_preview_active
+	buttons.composite_cancel.visible = composite_preview_active
+	composite_strength.editable = not composite_preview_active or _composite_operation != "merge"
+	composite_hint.text = merge_error if not merge_error.is_empty() else "%d filled pieces selected. Preview before applying; no source changes until Apply." % _terrain_selection().size()
+	if _terrain_selection().size() == 1 and smooth_error.is_empty():
+		composite_hint.text = "Smooth this piece, or Ctrl-click more filled terrain to merge."
+	if composite_preview_active:
+		for id: String in buttons:
+			buttons[id].disabled = id not in ["fit", "composite_apply", "composite_cancel"]
+		buttons.composite_apply.disabled = composite_preview.is_empty()
+		angle_field.editable = false
+		handedness_field.disabled = true
+		mode_label.text = "COMPOSITE PREVIEW  ·  Apply / Cancel"
+		detail_label.text = "Gold outline = final collision boundary · Original pieces remain unchanged until Apply · Esc cancels"
+		composite_hint.text = "Preview only. Adjust strength, then Apply or Cancel. Other editing is paused."
+	composite_hint.tooltip_text = composite_hint.text
+	title_field.editable = not composite_preview_active
+	cell_size_field.editable = not composite_preview_active
+	ring_spacing_field.editable = not composite_preview_active
+	for item: Button in palette_buttons.values():
+		item.disabled = composite_preview_active
+	for item: Button in gameplay_buttons.values():
+		item.disabled = composite_preview_active
+	for index in palette_tabs.tab_count:
+		palette_tabs.set_tab_disabled(index, composite_preview_active)
 
 func _refresh_file_state() -> void:
 	var dirty := is_dirty()
@@ -981,6 +1197,11 @@ func _modal_open() -> bool:
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo or _modal_open():
+		return
+	if composite_preview_active:
+		if event.keycode == KEY_ESCAPE:
+			cancel_composite_preview()
+		get_viewport().set_input_as_handled()
 		return
 	var focus := get_viewport().gui_get_focus_owner()
 	var typing := focus is LineEdit or focus is TextEdit
@@ -1015,7 +1236,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			KEY_V: flip_active(false)
 			KEY_DELETE, KEY_BACKSPACE: delete_selected()
 			KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN:
-				if canvas.selected_index >= 0:
+				if _terrain_selection().size() == 1:
 					var direction: Vector2i = {KEY_LEFT: Vector2i.LEFT, KEY_RIGHT: Vector2i.RIGHT, KEY_UP: Vector2i.UP, KEY_DOWN: Vector2i.DOWN}[event.keycode]
 					move_placement(canvas.selected_index, document.placements[canvas.selected_index].anchor + direction)
 			_: return

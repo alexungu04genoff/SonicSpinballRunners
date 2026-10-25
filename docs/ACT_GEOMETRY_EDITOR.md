@@ -32,7 +32,8 @@ The Windows launcher uses the project's working ANGLE backend. For another Godot
 | Move gameplay object or lifecycle marker one local pixel | Alt+Arrow keys |
 | Free gameplay / lifecycle-marker position while placing / dragging | Hold Alt |
 | Cycle terrain, gameplay objects and lifecycle markers under the cursor | Alt-click without dragging |
-| Duplicate selected gameplay object | Ctrl+D or Duplicate |
+| Toggle terrain in a multi-selection / reach covered terrain | Ctrl-click / Ctrl+Alt-click |
+| Duplicate a single terrain piece, gameplay object or ring trail | Ctrl+D or Duplicate |
 | Undo / redo | Ctrl+Z / Ctrl+Y or Ctrl+Shift+Z |
 | Zoom / pan / restore overview | Mouse wheel / middle-drag / Fit Grid |
 | New / Load / Save / Save As | Ctrl+N / Ctrl+O / Ctrl+S / Ctrl+Shift+S |
@@ -44,6 +45,24 @@ The default grid has 144 **cells**, with 13 boundary intersections along each ax
 **Overlaps are allowed.** Frames reserve no cells. Selection tests actual polygons or proximity to open wall segments. Gameplay objects appear above terrain; the last-placed item in each of those layers wins. Lifecycle markers appear above both. Alt-click cycles overlapping terrain, gameplay objects and lifecycle markers, including covered pieces. Dashed frames are guides, not terrain. Alt never disables terrain snapping or its quarter-turn restriction.
 
 Cell size specifies saved local authoring pixels per cell. It does not change terrain grid anchors or footprints, or rescale existing object positions. Gameplay-object preview dimensions follow cell size around their unchanged authored origins. The fitted view scales the Act to the window; zoom controls on-screen size. Grid dimensions are stored in the Resource; this MVP creates 12×12 Acts without a grid-resize tool.
+
+## Composite terrain: Merge and Smooth
+
+1. Enter **Select / Move**, then **Ctrl-click** the filled terrain pieces you want to combine. Every selected piece highlights. Ctrl-click again removes a piece; Ctrl+Alt-click reaches covered terrain. An ordinary click selects one piece; empty space clears selection.
+2. Choose **Merge** for an exact geometric union, or **Merge + Smooth** to round the resulting contour conservatively. **Smooth** operates on one selected filled stamp or existing composite.
+3. Inspect the **gold preview outline**: this is the proposed collision silhouette. Strength offers **0%, 25%, 50% or 75%**. Each change starts from the original preview geometry, so adjusting the value does not accumulate smoothing or history entries. Merge ignores the strength field.
+4. Choose **Apply** to replace the selected sources with one editable **CompositeTerrain**. **Cancel**, Esc or right-click discards the preview. Zoom, pan and Fit Grid remain available while other edits are paused.
+5. **Ctrl+Z** restores all original pieces, their transforms, order and selection in one step. Redo recreates the exact composite. Later, select that composite with another primitive or composite and merge again.
+
+The operation uses the actual transformed filled polygons, never their rectangular frames. Overlap and shared edges are supported. V1 requires one simple connected solid: disconnected islands, point-only connections and holes are rejected with a message. Add a bridging or hole-filling stamp, then try again. Filled U stamps have two lobes meeting at their bottom midpoint; a bridge is required to turn both lobes into a single valid solid. No source geometry changes after a failed operation.
+
+Only closed terrain participates: triangles, curved slopes, rectangles, circles, ovals, capsules, bumps, filled U/S and existing composites. Open walls, diagonal rails, L/J curves and open U/S disable these operations with an explanation. Gameplay objects, rings and connectors never participate.
+
+Smoothing rounds local corners using bounded quadratic segments. At 75%, each corner setback is at most **0.15 cell** and **18.75% of either adjacent edge**. Gentle existing curve samples remain intact. A result with more than 5% net area change, microscopic edges, self-intersections or failed solid decomposition is rejected; reduce strength or cancel. These conservative limits are implementation tuning, not an automatic cleanup rule or a promise that every contour can be smoothed at every strength. Always inspect the preview for intentional ledges and features.
+
+A composite supports snapped whole-object movement, arrow nudges, deletion, duplication, quarter-turns and horizontal/vertical mirrors. Internal outline vertices retain their fractional coordinates; moving or saving never snaps them. Ctrl+D offsets a single terrain copy one cell diagonally, clamped to the Act bounds. Multi-selection supports merging and deletion; select one piece before moving, rotating or duplicating it.
+
+The saved final contour is the sole geometry source for editor drawing, hit testing, runtime 2D solid collision and Green Hill extrusion. Runtime does not re-run composite union or smoothing. Removed sources produce no internal walls or seams. Separate unmerged terrain still keeps its own collision and presentation behavior.
 
 ## Gameplay objects
 
@@ -148,19 +167,21 @@ Filled U uses the exact half-ellipse wall as its upper surface and closes throug
 `scripts/act_editor/act_geometry.gd` stores:
 
 - Explicit `format_version` and `library_version`, plus `title`, `grid_size` and `cell_size`.
-- Ordered independent placements containing `shape_id`, `base_size`, `anchor`, `quarter_turns`, `flip_h` and `flip_v`.
+- Ordered placements containing `shape_id`, `base_size`, `anchor`, `quarter_turns`, `flip_h` and `flip_v`. A `shape_id = "composite"` record additionally stores `composite_version = 1`, `outline: PackedVector2Array` in local cell coordinates and `smoothing_strength`. Its integer frame bounds the outline without quantizing its vertices.
 - `entry_start_x`, `entry_width`, `exit_start_x` and `exit_width`. Width 0 with start 0 means unset; otherwise the integer span must fit the Act's boundary.
 - A separate ordered `gameplay_objects` array. Each dictionary contains `type`, `position: Vector2` in local pixels and `rotation_degrees`. The four type IDs are `round_bumper`, `triangle_bumper`, `left_flipper` and `right_flipper`; the two flipper IDs encode handedness.
 - Separate lifecycle fields: `activation_y` (a local-pixel number or `null`) and `spawn_position` (a local-pixel `Vector2` or `null`). `null` means unset. Neither field changes terrain grid dimensions or connector metadata.
 - A separate ordered `ring_trails` array. Each dictionary contains `start: Vector2`, `end: Vector2` and `spacing` in local pixels. Individual centers are reproduced deterministically from this record without snapping.
 
-The current schema uses **format version 5 / terrain library version 2**. Existing format-2/3/4 Acts retain their authored data and load with an empty ring-trail collection. Format-2/3 Acts also gain unset lifecycle markers; format-2 files gain an empty gameplay-object array. Loading does not rewrite the source file; the next explicit save writes version 5. The earlier fresh-start terrain library still has no legacy shape aliases or version-1 migration path.
+The current schema uses **format version 6 / terrain library version 2**. Existing format-2/3/4/5 Acts retain their authored data. Formats 2–4 gain an empty ring-trail collection; formats 2–3 gain unset lifecycle markers; format 2 gains an empty gameplay-object array. Loading does not rewrite the source file; the next explicit save writes version 6. Older formats cannot contain composite fields. The earlier fresh-start terrain library still has no legacy shape aliases or version-1 migration path.
 
 Use `ActGeometry.load_document()` and `save_document()` for persistence. In memory, `rotation_degrees`, a set `activation_y` and ring `spacing` are numbers. In the saved `.tres`, each uses one native `PackedByteArray` numeric payload, decoded on load. Godot 4.7.2's decimal text parser can change some float64 numbers by one binary unit; this narrow encoding preserves every bit without a second competing value. Local object/Spawn positions and ring endpoints remain native `Vector2` values. Plain numeric scalar fields are also accepted on input. No transform is rounded or snapped while saving or loading.
 
-Transforms apply clockwise quarter-turns, then mirrors along the final screen axes. Rotate composes another clockwise turn with existing mirrors. Saves reference shape IDs instead of duplicating points. Normal field/shape validation and the existing unsaved-change workflow remain in place.
+Composite outlines and their smoothing metadata also use one checked native byte payload per field in the saved Resource. Loading decodes only bounded packed-vector and numeric layouts, then validates the polygon. This preserves exact geometry through save/restart/load. In-memory outlines remain normal packed vectors; no source stamps, alternative contours or runtime recipes are retained.
 
-The canvas emits edit requests; the editor owns mutations and history. No grid-occupancy masks, boolean union, collision compilation or procedural-chunk assumptions enter the authoring model. Save a file with Spawn, then load it through **Play Green Hill.cmd → Level source / Load Act…** to play its exact geometry in the existing game. See [the shared engine contract](PLAYFIELD_SOURCES.md). Runtime compilation remains separate from authoring. Boost pads, hazards, difficulty/reachability checks, horizontal Act alignment and Zone assembly remain deferred.
+Transforms apply clockwise quarter-turns, then mirrors along the final screen axes. Rotate composes another clockwise turn with existing mirrors. Primitive saves reference shape IDs; composites store their final points. Normal field/shape validation and the existing unsaved-change workflow remain in place.
+
+The canvas emits edit requests; the editor owns mutations and history. Boolean union and smoothing are explicit editor-time operations in `composite_terrain.gd`; no automatic terrain cleanup, grid-occupancy masks or procedural-chunk assumptions are added. Save a file with Spawn, then load it through **Play Green Hill.cmd → Level source / Load Act…** to play its exact geometry in the existing game. See [the shared engine contract](PLAYFIELD_SOURCES.md). Runtime compilation remains separate from authoring. Boost pads, hazards, difficulty/reachability checks, horizontal Act alignment and Zone assembly remain deferred.
 
 ## Verification
 
@@ -177,6 +198,8 @@ Use the existing isolated import helper to prevent editor indentation conversion
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script res://tests/act_editor_smoke.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script res://tests/act_gameplay_editor_smoke.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script res://tests/act_lifecycle_editor_smoke.gd
+& 'C:\Program Files\Godot\Godot.exe' --headless --path . --script res://tests/composite_terrain_regression.gd
+& 'C:\Program Files\Godot\Godot.exe' --headless --path . --script res://tests/composite_editor_smoke.gd
 ```
 
 The geometry regression checks all shapes against independent transform calculations, curved fill coverage and triangulation, overlap persistence and a fresh-process reload/edit/re-save. Connector regression checks width-only compatibility, spans, drafts and restart persistence. Gameplay and lifecycle regressions check independent records, validation, exact fractional persistence and previous-format loading. Scene smoke scripts exercise actual pointer/keyboard gestures, both snapping modes, numeric angles, overlap selection, history, marker bounds, gutter rejection and file workflow. Run them graphically with the launcher's ANGLE backend for rendered captures.

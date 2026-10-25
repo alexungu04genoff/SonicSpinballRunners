@@ -2,6 +2,19 @@
 
 Latest checks: 2026-10-25. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
+## Composite terrain authoring — 2026-10-25
+
+Explicit Ctrl-click terrain selection now feeds Merge, Smooth and Merge + Smooth previews. Apply replaces sources with one format-6 CompositeTerrain; Cancel leaves source data and history unchanged. The final stored outline drives editor selection/drawing, solid 2D collision and Green Hill extrusion. Composite rendering bypasses runtime union and preserves one exterior contour.
+
+- `composite_terrain_regression.gd`: **353 graphical ANGLE checks passed**. Cases include triangle/square, triangle/square/triangle, square/circle, curved slope/circle, nine overlaps, filled U/S, capsule/bump, progressive composite/primitive and composite/composite unions, transforms, all four smoothing strengths, rejected holes/islands/open paths, malformed stored payloads, exact fresh-process reload, and old format-5 rings. Real convex physics shapes and 400 point probes match the saved silhouette. Mesh cap-area and cliff-edge checks find no source seams or duplicate interior faces. Normal Green Hill loads the saved composite with zero generator calls and leaves the source file untouched.
+- `composite_editor_smoke.gd`: **57 headless / 59 graphical ANGLE checks passed**. Actual pointer and keyboard events cover selection, hidden pieces, preview locks/pan/zoom, strength changes, all cancellation paths, one-step Apply/undo/redo, deletion, duplication, movement, rotation, mirroring, save/reload and existing gameplay selection. Applying an unchanged 0%-strength composite adds no empty undo step.
+- Existing authoring regressions passed: geometry **3,461**, connectors **108**, gameplay **493**, lifecycle **170**, rings **46**, with their fresh-process checks also passing. Existing editor checks passed: terrain **92**, gameplay **67**, lifecycle **49**, rings **29**, plus fresh editor reload checks.
+- Existing runtime/presentation regressions passed: authored runtime **151**, Green Hill **77**, main game **70**. Isolated editor import and `git diff --check` passed.
+
+The added toolbar exposed a float32 boundary issue: rebuilding a transformed `Rect2` could admit the exact right edge. Canvas bounds now compare the exact drawn endpoints, with no coordinate tolerance or normalization. The shared gameplay UI test fixture initializes the configured viewport instead of headless Godot's artificial 64×64 window; strict fractional-position assertions remain unchanged. Initial lifecycle and palette-drop failures were resolved and their suites rerun successfully.
+
+Inspected `test-results/composite-editor-preview.png`, `composite-editor-applied.png`, `composite-green-hill.png` and `composite-main-game.png`. Logs and captures remain ignored. Restricted runs can emit the existing Windows root-certificate/cache diagnostics; no final script, scene or assertion failure remains. V1 deliberately rejects holes, separate islands, point-only connections and open walls. Human checks remain: selection comfort on dense Acts, preferred smoothing strength, and rolling/flipper feel against newly sculpted terrain.
+
 ## Green Hill walls, inset deck and close follow — 2026-10-25
 
 The plain wall caps/sides now use procedural grass tufts, a leafy turf edge and orange/brown checker soil, informed by [SEGA's Sonic Mania screenshots](https://www.sega.jp/game/detail/sonicmania/). Generated rails and authored solids/open walls share these materials. The darker playable floor remains at gameplay height; raised caps, side faces and shadows distinguish obstacles. On enclosed authored tables the deck follows connected outer side walls, with no rectangular exterior grass shelf. Incomplete side boundaries retain a rectangular fallback; this is presentation inference, not a new authored field or collider.
