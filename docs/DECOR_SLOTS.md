@@ -72,9 +72,15 @@ To add a decor skin, provide its stable ID, pools for all four sizes and three h
 | Small | Single sunflower, small faceted rock |
 | Medium | Medium rock cluster, low shrub, sunflower patch |
 | Large | Left/right leaning palm family (`edge`), tall rock formation or checker pedestal (`surface`); `either` combines these families |
-| Landmark | Faceted checker loop with grass rim and plinth; visual ornament only |
+| Landmark | Variant 1: Turf Loop, with a rounded rectangular checker cliff, continuous inner grass track and separate entry/exit aprons. Variant 2: Rope Bridge, with sagging wooden planks, rope rails and grassy checker-cliff ends. Both are visual ornaments. |
 
 The composition borrows the broad checker silhouettes, palms and sunflower accents visible in [Sonic Generations' Green Hill screenshots](https://www.digitallydownloaded.net/2011/10/sonic-generations-demo-now-available.html) and [Sonic Mania's Green Hill screenshots](https://www.trueachievements.com/n25476/taegx-2016-sonic-mania-showcases-green-hill-and-studiopolis). These were visual references only. No external models, textures or screenshot assets were downloaded into the project. New props are local primitive geometry matching the project's existing low-poly presentation. Sizes and density remain provisional art tuning.
+
+**Landmark revision, 2026-10-25:** The loop's separate radial blocks have been replaced with two continuous meshes. The classic 3D turf-loop screenshot in the Generations gallery above informed its broad outer cliff, grassy inner opening and tangent approaches. The [Generations bridge screenshot](https://pics.alphacoders.com/pictures/view/596117) informed the second landmark's crosswise wooden deck, rope rails and grassy cliff supports. Both were inspected as visual references; the project geometry is original and procedural.
+
+Select a Landmark slot, preview **Green Hill**, and choose **Variant 1 — Turf Loop** or **Variant 2 — Rope Bridge**. All three placement pools share this order. Existing fixed loop slots retain index `0`; the bridge appends index `1`. Auto remains the default, and expanding its pool can change an existing Auto landmark's resolved appearance. Fix the index when a particular silhouette matters. Acts still save only generic mode/index values. At scale 1 the loop spans about 3.04 cells including approaches, and the bridge 2.95 cells; check overhang on narrow islands.
+
+![Green Hill landmarks with production materials and lighting](theme-captures/green-hill-landmarks.png)
 
 ## Verification and manual review
 
@@ -84,8 +90,13 @@ Run from the repository with Godot 4:
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script tests/decor_regression.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script tests/decor_editor_smoke.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script tests/decor_runtime_smoke.gd
+& 'C:\Program Files\Godot\Godot.exe' --headless --path . --script tests/green_hill_landmarks.gd
 ```
 
 Omit `--headless` and add `--rendering-method gl_compatibility --rendering-driver opengl3_angle` for graphical captures. Tests save captures under ignored `test-results/`; this document includes selected captures from the actual editor/game.
+
+The landmark check covers stable pool ordering, fixed selection, finite nondegenerate meshes and collisionless descendants. Its graphical mode captures front and three-quarter views using production materials and lighting.
+
+For the 2026-10-25 landmark revision, an isolated checkout passed 18 graphical landmark checks, 21 graphical main-game decor checks, 29 graphical editor checks and 46 headless decor-data checks, with zero failures or script/shader errors. Front/three-quarter contact sheets and the loop/bridge in main-game overview captures were visually inspected. Subjective composition and overhang on custom Acts remain manual art review.
 
 Manual checklist: place/move a slot at an island edge, rotate it to a non-round angle, duplicate it, save/reload, then compare follow/overview in Green Hill. Check ball readability, overhanging palm leaves, loop placement and the amount of decoration. These are human art/feel judgments; deterministic tests do not establish final gameplay balance.
