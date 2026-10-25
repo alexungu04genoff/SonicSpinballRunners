@@ -172,3 +172,7 @@ func _pipe(p: Node3D, parent: Node3D, a: Vector3, b: Vector3, radius: float, mat
  cylinder.rings = 1
  var mesh: MeshInstance3D = p.mesh_node(cylinder, mat, (a + b) * 0.5, parent)
  mesh.quaternion = Quaternion(Vector3.UP, (b - a).normalized())
+
+func ramp_materials() -> Dictionary:
+ return {"deck": _ramp_deck(Color("43556a"), Color("72869a"), 1),
+  "edge": material(Color("dab548")), "support": material(Color("26384b")), "accent": material(Color("68e1de"), 0.15)}

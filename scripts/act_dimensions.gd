@@ -8,6 +8,10 @@ const FLIPPER_RADIUS_CELLS := 0.05
 const RING_RADIUS_CELLS := 0.09
 ## Preserves the existing 14-pixel ball at a 100-pixel cell; 50-pixel cells use 7.
 const BALL_RADIUS_CELLS := 0.14
+## Fixed vertical dimensions in physics pixels; all themes share these clearances.
+const TERRAIN_HEIGHT_PIXELS := 32.5
+const RAMP_DECK_THICKNESS_PIXELS := 3.0
+const RAMP_CLEARANCE_GAP_PIXELS := 2.0
 
 static func sling_points(cell_size: float) -> PackedVector2Array:
  # Scale the original 90-pixel-tall sling uniformly around its original anchor.

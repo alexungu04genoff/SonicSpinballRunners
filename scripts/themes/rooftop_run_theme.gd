@@ -175,3 +175,7 @@ func build_study(_p: Node3D, parent: Node3D, origin: Vector3) -> void:
   parent.add_child(prop)
   prop.position = Vector3(side * 1.0, 0.04, -0.9)
   prop.scale = Vector3.ONE * 0.65
+
+func ramp_materials() -> Dictionary:
+ return {"deck": _ramp_deck(Color("bf7954"), Color("dba27a"), 2),
+  "edge": material(Color("e8cba0")), "support": material(Color("b69b77")), "accent": material(Color("fff0c7"))}

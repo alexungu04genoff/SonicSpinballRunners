@@ -6,7 +6,7 @@ const BALL_HEIGHT: float = 0.16
 const RING_HEIGHT: float = 0.23
 ## Shared wall styling for generated rails and authored solid/path obstacles.
 const RAIL_HEIGHT: float = 0.30
-const RAIL_CAP_HEIGHT: float = 0.025
+const RAIL_CAP_HEIGHT: float = preload("res://scripts/act_dimensions.gd").TERRAIN_HEIGHT_PIXELS * SCALE - RAIL_HEIGHT
 const RAIL_SIDE_COLOR := Color("267f81")
 const RAIL_TOP_COLOR := Color("64d6bd")
 ## Cosmetic timing only; character profiles control pickup radius, never flight speed.
@@ -821,3 +821,7 @@ func _debug_circle(center: Vector2, radius: float) -> void:
  for i in 32:
   dynamic_geometry.surface_add_vertex(map_point(center + Vector2.from_angle(i * TAU / 32) * radius, OVERLAY_HEIGHT))
   dynamic_geometry.surface_add_vertex(map_point(center + Vector2.from_angle((i + 1) * TAU / 32) * radius, OVERLAY_HEIGHT))
+
+func ramp_materials() -> Dictionary:
+ return {"deck": material(Color("9bb9c8")), "edge": material(Color("587788")),
+  "support": material(Color("4c647b")), "accent": material(Color("dbe7ef"))}

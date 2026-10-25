@@ -1,5 +1,5 @@
 extends Node3D
-## Generic collisionless pinball visuals, shared by every theme.
+## Collisionless pinball visuals; theme materials never alter the shared rail geometry.
 const RailPath = preload("res://scripts/authored_act/rail_path.gd")
 var table: TablePresentation
 var spinners: Array[Dictionary] = []
@@ -64,31 +64,65 @@ func _rail(item: Dictionary) -> void:
  var path: Dictionary = item.path
  var width := float(item.properties.width) * table.SCALE
  var peak := float(item.properties.height)
- var deck := SurfaceTool.new()
- deck.begin(Mesh.PRIMITIVE_TRIANGLES)
- # Deck and two narrow raised edge strips follow exactly the runtime height profile.
- for band: Vector3 in [Vector3(-0.5, 0.5, 0.0), Vector3(-0.54, -0.44, 0.055), Vector3(0.44, 0.54, 0.055)]:
-  for i in path.points.size() - 1:
-   var corners: Array[Vector3] = []
-   for index: int in [i, i + 1]:
-    var distance: float = path.lengths[index]
-    var tangent := RailPath.tangent(path, distance)
-    var side := Vector3(-tangent.y, 0, tangent.x)
-    var center := table.map_point(path.points[index], RailPath.height(path, distance, peak) * table.SCALE + 0.012 + band.z)
-    corners.append(center + side * width * band.x)
-    corners.append(center + side * width * band.y)
-   for vertex: int in [0, 2, 1, 1, 2, 3]: deck.add_vertex(corners[vertex])
- deck.generate_normals()
- var material := table.material(Color("9bb9c8"))
- material.cull_mode = BaseMaterial3D.CULL_DISABLED
- var mesh := table.mesh_node(deck.commit(), material, Vector3.ZERO, self)
- mesh.name = "ElevatedRail_" + str(item.get("object_id", "route"))
- for i in range(10, path.points.size() - 10, 20):
-  var height := RailPath.height(path, path.lengths[i], peak) * table.SCALE
-  _box(Vector3(0.055, height, 0.055), Color("4c647b"), table.map_point(path.points[i], height / 2.0), self)
- # A bright mouth marks forward entry without adding hidden collision geometry.
- var mouth := table.mesh_node(table.cylinder(width * 0.45, 0.012), table.material(Color("62ddbd")), table.map_point(path.points[0], 0.012), self)
- mouth.name = "RailEntry"
+ var style := table.ramp_materials()
+ var thickness := preload("res://scripts/act_dimensions.gd").RAMP_DECK_THICKNESS_PIXELS * table.SCALE
+ var root := Node3D.new()
+ root.name = "ElevatedRail_" + str(item.get("object_id", "route"))
+ add_child(root)
+ # Three meshes keep a readable deck, edge trim and real fascia/underside.
+ # All vertices follow the same elevation samples used by the physical ball.
+ _rail_strip(root, path, width, peak, Vector2(-0.5, 0.5), Vector2.ZERO, style.deck, "Deck")
+ for side: float in [-1.0, 1.0]:
+  _rail_strip(root, path, width, peak, Vector2(side * 0.44, side * 0.54), Vector2(0.035, 0.035), style.edge, "EdgeCap")
+  _rail_strip(root, path, width, peak, Vector2(side * 0.54, side * 0.54), Vector2(-thickness, 0.035), style.support, "Fascia")
+  _rail_strip(root, path, width, peak, Vector2(side * 0.44, side * 0.44), Vector2(0.0, 0.035), style.edge, "InnerEdge")
+ _rail_strip(root, path, width, peak, Vector2(0.54, -0.54), Vector2(-thickness, -thickness), style.support, "Underside")
+ # Slim paired timber/metal/stone posts leave the lane center visually open.
+ var distance := 50.0
+ while distance < float(path.length) - 35.0:
+  var height := maxf(0.0, RailPath.height(path, distance, peak) * table.SCALE + 0.012 - thickness)
+  if height > 0.06:
+   var tangent := RailPath.tangent(path, distance)
+   var across := Vector2(-tangent.y, tangent.x)
+   for side: float in [-1.0, 1.0]:
+    var post := BoxMesh.new()
+    post.size = Vector3(0.045, height, 0.045)
+    table.mesh_node(post, style.support, table.map_point(RailPath.sample(path, distance) + across * side * float(item.properties.width) * 0.46, height / 2.0), root)
+  distance += 80.0
+ # A small inlaid arrow replaces the oversized bright circular entry pad.
+ var marker := SurfaceTool.new()
+ marker.begin(Mesh.PRIMITIVE_TRIANGLES)
+ for vertex: Vector2 in [Vector2(-0.18, 6.0), Vector2(0.18, 6.0), Vector2(0.0, 16.0)]:
+  var d := minf(vertex.y, float(path.length) * 0.15)
+  var tangent := RailPath.tangent(path, d)
+  var point := RailPath.sample(path, d) + Vector2(-tangent.y, tangent.x) * vertex.x * float(item.properties.width)
+  marker.add_vertex(table.map_point(point, RailPath.height(path, d, peak) * table.SCALE + 0.014))
+ marker.generate_normals()
+ table.mesh_node(marker.commit(), style.accent, Vector3.ZERO, root).name = "EntryArrow"
+
+func _rail_strip(parent: Node3D, path: Dictionary, width: float, peak: float, edges: Vector2, offsets: Vector2, material: Material, label: String) -> void:
+ var surface := SurfaceTool.new()
+ surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+ for i in path.points.size() - 1:
+  var corners: Array[Vector3] = []
+  var uvs: Array[Vector2] = []
+  for index: int in [i, i + 1]:
+   var distance: float = path.lengths[index]
+   var tangent := RailPath.tangent(path, distance)
+   var side := Vector3(-tangent.y, 0, tangent.x)
+   var center := table.map_point(path.points[index], RailPath.height(path, distance, peak) * table.SCALE + 0.012)
+   corners.append(center + side * width * edges.x + Vector3.UP * offsets.x)
+   corners.append(center + side * width * edges.y + Vector3.UP * offsets.y)
+   uvs.append(Vector2(width * edges.x, distance * table.SCALE))
+   uvs.append(Vector2(width * edges.y, distance * table.SCALE))
+  for vertex: int in [0, 2, 1, 1, 2, 3]:
+   surface.set_uv(uvs[vertex])
+   surface.add_vertex(corners[vertex])
+ surface.generate_normals()
+ # Edge winding reverses on the opposite side; both faces must remain visible.
+ var double_sided: Material = material.duplicate()
+ if double_sided is BaseMaterial3D: double_sided.cull_mode = BaseMaterial3D.CULL_DISABLED
+ table.mesh_node(surface.commit(), double_sided, Vector3.ZERO, parent).name = label
 
 func _process(delta: float) -> void:
  elapsed += delta

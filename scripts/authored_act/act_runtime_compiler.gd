@@ -16,7 +16,7 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
  var terrain: Array[Dictionary] = []
  var objects: Array[Dictionary] = []
  var flippers: Array[PlaygroundFlipper] = []
- var result := {"root": null, "terrain": terrain, "objects": objects, "flippers": flippers, "timings": {"terrain_ms": 0.0, "objects_ms": 0.0, "total_ms": 0.0}, "error": ""}
+ var result := {"root": null, "cell_size": 0.0, "terrain": terrain, "objects": objects, "flippers": flippers, "timings": {"terrain_ms": 0.0, "objects_ms": 0.0, "total_ms": 0.0}, "error": ""}
  if document == null or document.get_script() != Document:
   result.error = "Choose a valid Act Geometry document."
   return result
@@ -31,6 +31,7 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
   result.error = "Act compilation needs the shared physics tuning, input adapter and gameplay ball."
   return result
  var cell_size := float(document.cell_size)
+ result.cell_size = cell_size
  # Pass immutable generic visual data through; decor never creates physics bodies.
  result.decor_slots = document.decor_slots.duplicate(true)
  result.decor_seed = document.decor_identity()
@@ -151,21 +152,27 @@ static func _validate_rail_clearance(result: Dictionary, ball_radius: float) -> 
    var distance := float(path.length) * step / maxf(1.0, count)
    var point := Mechanics.RailPath.sample(path, distance)
    var height := Mechanics.RailPath.height(path, distance, item.properties.height)
-   if height >= 45.0: continue
+   var margin := Dimensions.RAMP_DECK_THICKNESS_PIXELS + Dimensions.RAMP_CLEARANCE_GAP_PIXELS
+   var footprint := maxf(ball_radius, float(item.properties.width) * 0.54)
    for terrain: Dictionary in result.terrain:
-    if _near_outline(point, terrain.points, terrain.closed, maxf(ball_radius, float(item.properties.width) * 0.5)):
-     return "Rail %s: entry/descent crosses terrain before reaching 45 px clearance. Move the path or lower terrain." % item.object_id
+    if height < Dimensions.TERRAIN_HEIGHT_PIXELS + margin and _near_outline(point, terrain.points, terrain.closed, footprint):
+     return "Rail %s: route needs %.1f px elevation above terrain here (currently %.1f). Raise the rail or move the crossing." % [item.object_id, Dimensions.TERRAIN_HEIGHT_PIXELS + margin, height]
    for object: Dictionary in result.objects:
     var touching := false
+    var obstacle_height := 0.0
     if object.type == "round_bumper":
-     touching = point.distance_to(object.position) < float(object.radius) + ball_radius
+     touching = point.distance_to(object.position) < float(object.radius) + footprint
+     obstacle_height = 42.0 * float(object.radius) / 38.0
     elif object.type == "triangle_bumper":
      var local := (point - Vector2(object.position)).rotated(-deg_to_rad(float(object.rotation_degrees)))
-     touching = _near_outline(local, object.points, true, ball_radius)
+     touching = _near_outline(local, object.points, true, footprint)
+     obstacle_height = float(result.cell_size) * 0.18
     elif object.type in ["left_flipper", "right_flipper"]:
+     obstacle_height = 28.5 * float(object.radius) / Flipper.RADIUS
      for angle_step in 13:
       var angle := deg_to_rad(float(object.rotation_degrees)) - float(object.side) * 0.8 * angle_step / 12.0
       var tip: Vector2 = object.position + Vector2.from_angle(angle) * float(object.length)
-      if Geometry2D.get_closest_point_to_segment(point, object.position, tip).distance_to(point) < ball_radius + float(object.radius): touching = true
-    if touching: return "Rail %s: entry/descent overlaps a lower bumper or flipper sweep. Move the path mouth into clear space." % item.object_id
+      if Geometry2D.get_closest_point_to_segment(point, object.position, tip).distance_to(point) < footprint + float(object.radius): touching = true
+    if touching and height < obstacle_height + margin:
+     return "Rail %s: route overlaps a lower bumper or flipper sweep; needs %.1f px elevation here (currently %.1f). Move the mouth or raise the crossing." % [item.object_id, obstacle_height + margin, height]
  return ""

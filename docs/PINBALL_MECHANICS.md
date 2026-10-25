@@ -30,9 +30,17 @@ Distances use local physics pixels; angles use degrees.
 |---|---|---|
 | Spinner | width 40, tick score 5, decay 2/s, maximum spin 40 rad/s | width 10–300; score 0–25; decay 0.5–8; spin 1–60 |
 | Magnetic field | radius 100, strength 260 px/s², Attract | radius 15–500; strength 0–600; Attract / Repel |
-| Elevated rail | width 40, peak height 80, drag 0.06/s, entry speed 100 px/s | width 18–120; height 45–200; drag 0–1; entry speed 30–600 |
+| Elevated rail | width 40, peak height 40, drag 0.06/s, entry speed 100 px/s | width 18–120; height 10–200; drag 0–1; entry speed 30–600 |
 
 The sandbox uses a 60-pixel rail width, 50-pixel peak height and zero rail drag to make the first route reachable with the default flippers. An input-only regression completes it from the ordinary serve. Inspector validation rejects nonfinite or out-of-range values without silently clamping saved data. Physics retains separate operational safety caps.
+
+New rails default to 40 pixels instead of 80, halving the rise for the same path length. Saved heights stay unchanged: select an existing rail and enter 20, 30 or 40 explicitly. Extending the path also makes its ascent less steep. Height is an exact authored value, not an automatic clearance adjustment.
+
+## Ramp presentation
+
+Ramps inherit the active presentation theme without storing a theme in the Act or changing physics. Green Hill uses timber planks, grass trim and wooden posts; Chemical Plant uses panelled steel, yellow trim and metal posts; Rooftop Run uses terracotta paving and pale stone. Other themes inherit their existing surface and trim materials through the same optional theme hook.
+
+The deck now has a visible 3-pixel fascia/underside and narrow paired supports. A small inlaid directional arrow replaces the large circular entrance pad. Surface patterns follow distance along the route instead of stretching across curves. These remain collisionless visuals on the same raised path.
 
 ## Runtime contract
 
@@ -44,7 +52,7 @@ The sandbox uses a 60-pixel rail width, 50-pixel peak height and zero rail drag 
 
 Route progress uses signed longitudinal speed. Projected gravity, ascent/descent and drag affect that speed; weak uphill shots can roll backwards and leave at the entry. There is no steering while constrained. Exit restores the saved collision state and resolved gravity and releases tangent velocity. Entry speed is capped at 2400 px/s; the same limit applies on the path. A short exit cooldown prevents immediate re-capture. Long stalls roll back after 12 seconds; an obstructed route has a final 30-second reset-to-serve safeguard.
 
-Visual deck height rises smoothly over the first 22% of path length, holds over the center, and descends over the last 22%. The ball presenter reads that exact height; the existing follow camera already frames the ball's visual plane. Runtime loading rejects routes whose low portions intersect terrain, bumpers or a flipper's swept capsule, and requires rail width to exceed the ball diameter by two pixels. Crossings need at least 45 pixels of elevation. Drafts with unsafe mouths remain saveable; failed runtime reloads preserve the current run and ball scale. A final collision query at release handles an unexpectedly obstructed mouth by reversing along the rail.
+Visual deck height rises smoothly over the first 22% of path length, holds over the center, and descends over the last 22%. The ball presenter reads that exact height; the existing follow camera already frames the ball's visual plane. Runtime loading rejects routes whose low portions intersect terrain, bumpers or a flipper's swept capsule, and requires rail width to exceed the ball diameter by two pixels. Clearance follows the actual obstacle height plus a 3-pixel deck and 2-pixel air gap. Ordinary terrain is 32.5 pixels tall, so a crossing needs 37.5 pixels of local elevation; bumper and flipper heights scale with their authored size. The full deck width, including trim, is checked. Low 20–30-pixel routes work above clear floor but cannot pass through taller terrain. Drafts with unsafe mouths remain saveable; failed runtime reloads preserve the current run and ball scale. A final collision query at release handles an unexpectedly obstructed mouth by reversing along the rail.
 
 ## Persistence and lifecycle
 
@@ -56,7 +64,9 @@ Reset and drain clear spinner energy and rail ownership. Removing/reloading an A
 
 `tests/pinball_editor_regression.gd` exercises placement, properties, unique duplication, point gestures, undo/redo and exact persistence in a fresh Godot process. `tests/pinball_mechanics_regression.gd` uses the actual Green Hill application and real 120 Hz physics for scoring, field force, raised traversal, lower-ring exclusion, rollback, pause, reset, drain, invalid replacement, reload and source switching.
 
-The focused suite passes 42 main-game checks and 14 editor checks, including an input-only serve/flipper shot through the complete sandbox route. Run physics checks with `--fixed-fps 120`; editor persistence also launches a fresh Godot process.
+The focused suite passes 42 main-game checks and 21 editor checks, including an input-only serve/flipper shot through the complete sandbox route. Run physics checks with `--fixed-fps 120`; editor persistence also launches a fresh Godot process.
+
+`tests/ramp_height_theme_regression.gd` verifies exact 20/30/40 heights, actual terrain and bumper clearance, theme switches without changing the ball or path, and collisionless theme geometry. Graphical runs save matched theme views under `test-results/ramp-<theme>.png`.
 
 Graphical ANGLE runs capture the editor and raised traversal under `test-results/pinball-editor.png` and `test-results/pinball-crossover.png`. Existing authored gameplay, runtime, reload and Scorecraft regressions cover compatibility. No test framework dependency was added.
 

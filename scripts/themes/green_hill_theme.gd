@@ -281,3 +281,7 @@ func build_study(p: Node3D, parent: Node3D, origin: Vector3) -> void:
  _flower(p, Vector3(-1.17, 0, 0.25), 0.60, parent)
  _flower(p, Vector3(1.08, 0, 0.34), 0.76, parent)
  _flower(p, Vector3(0.88, 0, 0.67), 0.56, parent)
+
+func ramp_materials() -> Dictionary:
+ return {"deck": _ramp_deck(Color("b97d3f"), Color("d2a15d"), 0),
+  "edge": top_material, "support": material(Color("704322")), "accent": material(Color("ffe6a1"))}

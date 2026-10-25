@@ -76,7 +76,7 @@ static func defaults(type: String) -> Dictionary:
  match type:
   "spinner": return {"width": 40.0, "tick_score": 5.0, "decay": 2.0, "max_spin": 40.0}
   "magnetic_field": return {"radius": 100.0, "strength": 260.0, "mode": "attract"}
-  "elevated_rail": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(0, -100), Vector2(100, -170)]), "width": 40.0, "height": 80.0, "drag": 0.06, "entry_speed": 100.0}
+  "elevated_rail": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(0, -100), Vector2(100, -170)]), "width": 40.0, "height": 40.0, "drag": 0.06, "entry_speed": 100.0}
  return {}
 
 static func properties(placement: Dictionary) -> Dictionary:
@@ -88,7 +88,7 @@ static func property_limits(type: String) -> Dictionary:
  match type:
   "spinner": return {"width": [10.0, 300.0], "tick_score": [0.0, 25.0], "decay": [0.5, 8.0], "max_spin": [1.0, 60.0]}
   "magnetic_field": return {"radius": [15.0, 500.0], "strength": [0.0, 600.0]}
-  "elevated_rail": return {"width": [18.0, 120.0], "height": [45.0, 200.0], "drag": [0.0, 1.0], "entry_speed": [30.0, 600.0]}
+  "elevated_rail": return {"width": [18.0, 120.0], "height": [10.0, 200.0], "drag": [0.0, 1.0], "entry_speed": [30.0, 600.0]}
  return {}
 
 static func property_errors(placement: Dictionary) -> PackedStringArray:

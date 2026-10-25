@@ -47,6 +47,8 @@ See [Act Geometry Editor](ACT_GEOMETRY_EDITOR.md) for launch, controls, the edit
 
 Elevated traversal constrains the same authoritative 2D ball to the shared sampled route, explicitly disables lower-table interaction, and restores collision state with tangent momentum at either exit. The collisionless 3D deck and ball use the same elevation profile; the existing camera follows that raised visual plane. Weak shots roll back. Unsafe entry/descent geometry is rejected at runtime load while drafts remain editable. Reset, drain, pause, reload and source switching share the existing engine lifecycle.
 
+**Confirmed ramp refinement:** New ramps default to a 40-pixel peak and accept 10–200 pixels. Saved heights remain exact. Low ramps are valid over clear floor; crossings require the actual obstacle height plus deck thickness and an air gap. Theme-owned deck, trim and support materials provide timber/grass, industrial metal and terracotta/stone identities while preserving identical physics and height profiles.
+
 The proposed Gates / Cannons / Target Banks milestone was absent from the repository when this work began. The user authorized proceeding with engineering judgment; only the minimal shared identity/property foundation was added alongside these three mechanics. Gates, cannons and target banks remain separate work. Values and sandbox shot timing are provisional, not settled balance. See [Authored pinball mechanics](PINBALL_MECHANICS.md) for controls, implementation limits and verification.
 
 ### Theme-aware authored decoration — 2026-10-25

@@ -321,3 +321,6 @@ func _palm(base: Vector3, side: int, size: float, target: Node3D = null) -> void
 func _flower(base: Vector3, size: float, target: Node3D = null) -> void:
  if theme_definition.has_method("_flower"):
   theme_definition._flower(self, base, size, target)
+
+func ramp_materials() -> Dictionary:
+ return theme_definition.ramp_materials()

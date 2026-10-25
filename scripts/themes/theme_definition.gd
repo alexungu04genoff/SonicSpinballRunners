@@ -39,3 +39,16 @@ func create_decor(_presentation: Node3D) -> RefCounted:
 
 func build_study(_presentation: Node3D, parent: Node3D, origin: Vector3) -> void:
  parent.position = origin
+
+func ramp_materials() -> Dictionary:
+ # New themes inherit their existing deck and trim until they supply a ramp style.
+ return {"deck": top_material, "edge": material(edge_trim_color),
+  "support": material(edge_trim_color.darkened(0.45)), "accent": material(edge_trim_color.lightened(0.3))}
+
+func _ramp_deck(base: Color, alternate: Color, kind: int) -> ShaderMaterial:
+ var result := ShaderMaterial.new()
+ result.shader = preload("res://scripts/themes/ramp_deck.gdshader")
+ result.set_shader_parameter("base_color", base)
+ result.set_shader_parameter("alternate_color", alternate)
+ result.set_shader_parameter("surface_kind", kind)
+ return result

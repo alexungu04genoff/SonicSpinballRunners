@@ -68,6 +68,9 @@ func run() -> void:
  canvas._gui_input(enter)
  check(editor.document.gameplay_objects.size() == 3, "Enter commits one path object")
  canvas.select_gameplay(2)
+ for height in [20.0, 30.0, 40.0]:
+  editor.set_gameplay_property("height", height)
+  check(editor.document.gameplay_objects[2].properties.height == height, "Inspector accepts rail height %s" % height)
  canvas.rail_edit = true
  editor._refresh()
  var original: Dictionary = editor.document.gameplay_objects[2].duplicate(true)
