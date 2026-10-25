@@ -12,8 +12,8 @@ Research began before implementation. Five full-size game screenshots were inspe
 | --- | --- | --- |
 | [Unleashed: clock tower, bridge and street frontage](https://www.italyformovies.com/film-serie-tv-games/detail/6393/sonic-unleashed-game) | Orange pitched roofs, pale masonry and ochre plaster, dark shutters, flower pots, ornate railings, strong architectural shadows | Broad gable roofs and eaves, two-tone stone, single green shutter panels, simple rail bars and faceted planted urns |
 | [Unleashed: shaded balcony and narrow alley](https://en.sonicscanf.org/gallery/den-16/spagonia-12/) | Deep window recesses, projecting ledges, stacked balconies, roof chimneys, hanging flowers; bright sky above shaded walls | Dark facade inserts, pale cornices, paired chimney pots and compact rooftop details |
-| [Generations: dense city and roof gardens](https://store.steampowered.com/app/71340/Sonic_Generations_Collection/) — screenshot `ss_f25e6c424073bac81756fe00bdac2b9dba216e89` | Repeated terracotta roofs at several depths, garden terraces, monumental arcade, clock tower and colorful hot-air balloons | Instanced roof districts below the table, cypress planters, repeated segmented arches and a dominant skyline clock |
-| [Generations: clock-tower descent](https://store.steampowered.com/app/71340/Sonic_Generations_Collection/) — screenshot `ss_b678e5f9b8f9aced858c690ad1b87605f0fd2271` | Very dense city viewed from above, clear tower silhouette, brightly striped balloons | A high rooftop table, quieter distant city colors and five background balloons, with no balloon collision |
+| [Generations: dense city and roof gardens](https://store.steampowered.com/app/71340/Sonic_Generations_Collection/) — screenshot `ss_f25e6c424073bac81756fe00bdac2b9dba216e89` | Repeated terracotta roofs at several depths, garden terraces, monumental arcade, clock tower and colorful hot-air balloons | Four isolated terracotta townhouses, planted terraces, one short arcade and a skyline clock |
+| [Generations: clock-tower descent](https://store.steampowered.com/app/71340/Sonic_Generations_Collection/) — screenshot `ss_b678e5f9b8f9aced858c690ad1b87605f0fd2271` | Very dense city viewed from above, clear tower silhouette, brightly striped balloons | A high rooftop table, quieter distant colors and three background balloons, with no balloon collision |
 | [Generations: flower-shop awning and street masonry](https://en.sonicscanf.org/gallery/sonic-generations/rooftop-run-retro-sonic/) | Large awning, shuttered stone frontage, potted flowers, sparse colored confetti | A compact striped café canopy, flower urns and flags; airborne confetti omitted to protect ring readability |
 
 The recurring identity is architecture at different scales: small shutters and pots, medium roofs and gardens, and large arches and towers. Unleashed's inspected images emphasize layered masonry and sun/shade depth. Generations keeps that foundation and emphasizes a festival above a much denser visible city.
@@ -28,8 +28,9 @@ The bench, miniature garden pavilion, cypress terrace, twin-span aqueduct and te
 - **Raised terrain:** saturated terracotta slab caps and pale masonry sides distinguish obstacles from playable paving. Shared extrusion retains every original contour, including open paths and smoothed composites.
 - **Vertical facade:** world-projected staggered blocks, a pale cornice, dark trim and arched recesses below the deck. Normal-weighted projection works on arbitrary silhouettes without changing vertices or colliders. The recesses are surface shading, not physical openings.
 - **Afternoon light:** warm directional sun, blue ambient fill, directional shadows and a saturated blue procedural sky. Material values were reduced after visual review to avoid blown cream highlights. No bloom, imported environment map or theme-specific camera is required.
-- **City:** 114 varied house shells, near rooftop gardens, a repeated elevated arcade, clock tower, low hills, five static hot-air balloons and two canals with slow shader ripples. Dense repetition communicates scale; darker streets ground the buildings below the board. Far colors suggest haze without changing global fog state.
-- **Cost:** shared primitive meshes/materials and background MultiMeshes reduce repeated district draw calls. Individual authored props retain their roots and metadata. No per-frame scenery script, physics simulation or particle emitter is added. This is a Windows prototype; Android performance is unmeasured.
+- **City:** at most four spaced townhouses, one short arcade and one clock tower, with three low hills, three static hot-air balloons and two canals with one bridge each. The sparse composition follows the user's preference for scenery density similar to Green Hill and Chemical Plant. A quiet plaza grounds the architecture below the board; far colors suggest haze without changing global fog state.
+- **Facades:** townhouse window rows scale with wall height and remain below the eaves. Frames and shutters occupy separate depth layers. Clock faces and shutters account for the tower's rectangular footprint. Planted terraces sit beside houses, clear of roofs and windows.
+- **Cost:** shared primitive meshes/materials and background MultiMeshes reduce scenery draw calls. Individual authored props retain their roots and metadata. No per-frame scenery script, physics simulation or particle emitter is added. This is a Windows prototype; Android performance is unmeasured.
 
 Normal follow view intentionally prioritizes the ball and immediate terrain. Overview reveals more of the city. The optional city-study capture uses a review-only camera position; gameplay camera settings are unchanged.
 
@@ -74,7 +75,7 @@ The preferred **N64-ish + VHS + CRT** stack was also captured using current prod
 
 ## Verification
 
-Godot **4.7.2**, Windows, graphical **GL Compatibility / ANGLE / RTX 4060**:
+Initial theme verification used Godot **4.7.2**, Windows, graphical **GL Compatibility / ANGLE / RTX 4060**:
 
 | Check | Result |
 | --- | --- |
@@ -87,6 +88,8 @@ Godot **4.7.2**, Windows, graphical **GL Compatibility / ANGLE / RTX 4060**:
 The capture manifests verify identical fingerprints, camera transforms and ball positions across all eight normal overview/follow comparison groups. Capture scripts also verify source file bytes are unchanged. Selected final captures were visually inspected, including filter OFF and the preferred retro stack. Initial parser and contact-sheet layout issues were corrected before these results. Sandboxed Godot runs reported host certificate/cache-access diagnostics; the final graphical runs outside that restriction reported no shader or script errors.
 
 An isolated copy of committed baseline `b6b6e08` plus only this theme's source changes also completed a clean headless editor import and passed all 302 theme and 91 decor checks. This verifies that the theme does not depend on another chat's uncommitted character or project-setting changes.
+
+The sparse scenery revision reran all 302 theme and 91 decor checks with zero failures. Updated graphical captures cover overview, follow and the preferred retro stack, including an angled view to inspect building bases and facade layering. The selected images above show this revision. Authored decor slots and local Act files remain unchanged.
 
 Run from the repository:
 
@@ -101,4 +104,4 @@ Run from the repository:
 
 Generated output and full manifests are under ignored `test-results/rooftop-review/`; selected images are checked in here. Local First Try files remain user-owned and untracked. Concurrent character, Green Hill and editor work was preserved.
 
-Manual review remains: fast-ball and ring contrast in all four character colors, tall landmark overhang near tight lanes, and preferred city density/shadow strength. Automated checks do not establish final feel or visual polish.
+Manual review remains: fast-ball and ring contrast in all four character colors, tall landmark overhang near tight lanes, and shadow strength. Automated checks do not establish final feel or visual polish.
