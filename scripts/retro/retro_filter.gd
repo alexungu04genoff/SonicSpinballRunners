@@ -21,6 +21,10 @@ var passes: Dictionary = {}
 var _original_material: Material
 var _original_filter: int
 var _original_shrink: int
+var _original_view_index: int
+var _viewport_host: Node
+var _output: TextureRect
+var _resolution_divisor := 1.0
 
 func attach(target: SubViewportContainer, viewport: SubViewport) -> void:
  container = target
@@ -28,6 +32,20 @@ func attach(target: SubViewportContainer, viewport: SubViewport) -> void:
  _original_material = container.material
  _original_filter = container.texture_filter
  _original_shrink = container.stretch_shrink
+ _original_view_index = world_view.get_index()
+ # SubViewportContainer only supports integer divisors. A plain parent and
+ # TextureRect let the same viewport render at fractional resolution scales.
+ _viewport_host = Node.new()
+ _viewport_host.name = "RetroViewportHost"
+ container.add_child(_viewport_host)
+ world_view.reparent(_viewport_host)
+ _output = TextureRect.new()
+ _output.name = "RetroWorldOutput"
+ _output.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+ _output.mouse_filter = Control.MOUSE_FILTER_IGNORE
+ _output.texture = world_view.get_texture()
+ container.add_child(_output)
+ _output.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  # Dither BEFORE upscale so its pattern is locked to source texels. This canvas
  # belongs only to the 3D SubViewport; parent HUD/debug/menu canvases never enter it.
  effect_layer = CanvasLayer.new()
@@ -51,7 +69,7 @@ func attach(target: SubViewportContainer, viewport: SubViewport) -> void:
   effect_layer.add_child(rect)
   rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
   passes[effect] = {"copy": copy, "rect": rect, "material": material}
- container.resized.connect(_refresh_pattern)
+ container.resized.connect(_refresh_output)
  set_preset(Preset.OFF)
 
 func cycle() -> void:
@@ -91,17 +109,18 @@ func apply_settings() -> void:
  if not is_instance_valid(container):
   return
  # OFF restores every property owned by this adapter; there is no identity shader.
- var shrink := _original_shrink
+ var shrink := float(_original_shrink)
  var sampling := _original_filter
  if is_enabled(Preset.PIXEL):
-  shrink = clampi(settings.pixel_resolution_divisor, 1, 4)
+  shrink = clampf(settings.pixel_resolution_divisor, 1, 4)
   sampling = CanvasItem.TEXTURE_FILTER_NEAREST
  if is_enabled(Preset.N64):
-  shrink = maxi(shrink, clampi(settings.n64_resolution_divisor, 1, 4))
+  shrink = maxf(shrink, clampf(settings.n64_resolution_divisor, 1, 4))
   sampling = CanvasItem.TEXTURE_FILTER_LINEAR
  container.material = _original_material
  container.texture_filter = sampling
- container.stretch_shrink = shrink
+ _resolution_divisor = shrink
+ _output.material = _original_material
  effect_layer.visible = not selected_effects.is_empty()
  for effect: int in ORDER:
   passes[effect].copy.visible = is_enabled(effect)
@@ -109,7 +128,7 @@ func apply_settings() -> void:
  for effect: int in [Preset.PIXEL, Preset.N64]:
   var pixel := effect == Preset.PIXEL
   _parameters(passes[effect].material, {
-   "col_depth": clampf(settings.pixel_color_levels if pixel else settings.n64_color_levels, 4, 64),
+   "col_depth": clampf(settings.pixel_color_levels if pixel else settings.n64_color_levels, 1, 256),
    "dith_range": clampf(settings.pixel_dither_strength if pixel else settings.n64_dither_strength, 0, 1),
   })
  _parameters(passes[Preset.CRT].material, {
@@ -127,13 +146,20 @@ func apply_settings() -> void:
   "tracking_height": 0.06, "tracking_distortion": settings.vhs_tracking,
   "tracking_noise": 0.015, "chroma_streak_frequency": 0.0, "dropout_frequency": 0.0,
  })
+ _refresh_output()
+
+func _refresh_output() -> void:
+ if not is_instance_valid(world_view):
+  return
+ world_view.size = Vector2i(container.size / _resolution_divisor).max(Vector2i(2, 2))
  _refresh_pattern()
 
 func _refresh_pattern() -> void:
  if not passes.has(Preset.CRT):
   return
- # Keep at least one source texel per RGB channel when low-resolution effects stack.
- var cell_size := maxf(settings.crt_cell_size, 3.0 * container.stretch_shrink)
+ # Honor the chosen size without a hidden resolution-dependent floor.
+ # Subpixel RGB channels may alias at small cells; this is an experimental control.
+ var cell_size := maxf(settings.crt_cell_size, 1.0)
  _parameters(passes[Preset.CRT].material, {
   "scanline_count": maxf(1, container.size.y / cell_size),
   "mask_density": maxf(1, container.size.x / cell_size),
@@ -148,5 +174,12 @@ func _exit_tree() -> void:
   container.material = _original_material
   container.texture_filter = _original_filter
   container.stretch_shrink = _original_shrink
+  if is_instance_valid(world_view) and not container.is_queued_for_deletion():
+   world_view.reparent(container)
+   container.move_child(world_view, _original_view_index)
+ if is_instance_valid(_output):
+  _output.queue_free()
+ if is_instance_valid(_viewport_host):
+  _viewport_host.queue_free()
  if is_instance_valid(effect_layer):
   effect_layer.queue_free()

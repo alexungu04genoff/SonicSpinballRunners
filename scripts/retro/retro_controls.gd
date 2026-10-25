@@ -3,27 +3,27 @@ extends CanvasLayer
 const Filter := preload("res://scripts/retro/retro_filter.gd")
 const PARAMETERS := {
  Filter.Preset.PIXEL: [
-  ["pixel_resolution_divisor", "Resolution divisor", 1, 4, 1],
-  ["pixel_color_levels", "Color levels", 4, 64, 1],
+  ["pixel_resolution_divisor", "Resolution divisor", 1, 4, 0.1],
+  ["pixel_color_levels", "Color levels", 1, 256, 1],
   ["pixel_dither_strength", "Dither strength", 0, 1, 0.05]],
  Filter.Preset.N64: [
-  ["n64_resolution_divisor", "Resolution divisor", 1, 4, 1],
-  ["n64_color_levels", "Color levels", 4, 64, 1],
+  ["n64_resolution_divisor", "Resolution divisor", 1, 4, 0.1],
+  ["n64_color_levels", "Color levels", 1, 256, 1],
   ["n64_dither_strength", "Dither strength", 0, 1, 0.05]],
  Filter.Preset.CRT: [
-  ["crt_cell_size", "Phosphor cell size [px]", 3, 16, 1],
-  ["crt_scanlines", "Scanline strength", 0, 0.6, 0.01],
-  ["crt_mask", "RGB mask strength", 0, 0.4, 0.01],
-  ["crt_glow", "Phosphor glow", 0, 0.8, 0.01],
-  ["crt_glow_radius", "Glow spread [px]", 1, 8, 0.5],
-  ["crt_brightness", "Brightness", -0.1, 0.2, 0.005],
-  ["crt_vignette", "Vignette", 0, 0.3, 0.01]],
+  ["crt_cell_size", "Phosphor cell size [px]", 1, 64, 0.1],
+  ["crt_scanlines", "Scanline strength", 0, 1, 0.01],
+  ["crt_mask", "RGB mask strength", 0, 1, 0.01],
+  ["crt_glow", "Phosphor glow", 0, 1, 0.01],
+  ["crt_glow_radius", "Glow spread [px]", 0, 8, 0.1],
+  ["crt_brightness", "Brightness", -1, 1, 0.005],
+  ["crt_vignette", "Vignette", 0, 1, 0.01]],
  Filter.Preset.VHS: [
-  ["vhs_chroma_offset", "Chroma offset [px]", 0, 2, 0.05],
-  ["vhs_chroma_bleed", "Chroma bleed [px]", 0, 3, 0.05],
-  ["vhs_wobble", "Wobble", 0, 0.001, 0.00005],
-  ["vhs_grain", "Tape grain", 0, 0.05, 0.001],
-  ["vhs_tracking", "Tracking", 0, 0.002, 0.0001]],
+  ["vhs_chroma_offset", "Chroma offset [px]", 0, 10, 0.05],
+  ["vhs_chroma_bleed", "Chroma bleed [px]", 0, 10, 0.05],
+  ["vhs_wobble", "Wobble", 0, 0.1, 0.00005],
+  ["vhs_grain", "Tape grain", 0, 1, 0.001],
+  ["vhs_tracking", "Tracking", 0, 1, 0.0001]],
 }
 var filter: Filter
 var selector: MenuButton
@@ -152,6 +152,7 @@ func _build_panel() -> void:
    slider.min_value = spec[2]
    slider.max_value = spec[3]
    slider.step = spec[4]
+   slider.tooltip_text = "Range: %s to %s; step: %s" % [spec[2], spec[3], spec[4]]
    slider.custom_minimum_size.x = 220
    slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
    slider.focus_mode = Control.FOCUS_NONE

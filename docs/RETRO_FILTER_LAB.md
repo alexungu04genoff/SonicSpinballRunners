@@ -11,6 +11,8 @@ Optional presentation experiment in the **normal Green Hill application**. Start
 
 Sliders appear for enabled effects in the scrollable panel. Pixel/N64 expose resolution divisor, color levels and dither. CRT exposes phosphor cell size, scanlines, RGB mask, glow intensity/spread, brightness and vignette. VHS exposes chroma offset/bleed, wobble, grain and tracking. The normal HUD has one launcher button.
 
+The full experimental ranges are available without changing the restrained defaults. Hover a slider for its bounds and step. Resolution divisors accept **1.0–4.0 in 0.1 steps**, including 1.1; phosphor cells accept **1–64 px in 0.1 steps**. Color precision accepts 1–256 intervals; dither, scanlines, RGB mask, glow, vignette, VHS grain and tracking span 0–1. Brightness spans -1–1, glow spread 0–8 px, VHS offset/bleed 0–10 px and wobble 0–0.1. Positive minima for divisors, color intervals and cell size avoid undefined division. Extreme settings intentionally allow heavy distortion or an almost blank image; Reset tuning restores the original defaults.
+
 Persistent developer defaults remain in `data/retro_settings.tres` and `scripts/retro/retro_settings.gd`. Inspector resource edits take effect on the next launch. Runtime code can edit the adapter's cloned `settings` resource and call `apply_settings()` without changing selection.
 
 | Effect | World rendering when alone | Default treatment |
@@ -25,9 +27,11 @@ Persistent developer defaults remain in `data/retro_settings.tres` and `scripts/
 
 The fixed order is **Pixel → N64-ish → VHS → CRT**. Pixel and N64 can both be selected: their quantization passes run in order, the larger resolution divisor wins, and N64 selects linear upscale. CRT stays last so its display pattern covers the combined image.
 
-CRT cell size uses output pixels, with a minimum of three source texels per cell to keep its RGB channels distinct at lower resolutions. For example, divisor four imposes a 12 px minimum. Glow and VHS offsets also use output-pixel units.
+CRT cell size uses output pixels with no hidden resolution-dependent minimum. Small cells can alias when their RGB channels fall below source texel size; the experimental control now honors that choice. Glow and VHS offsets also use output-pixel units.
 
-The normal 1280×900 application reserves 210 pixels for its footer, so its **world is 1280×690**. Half resolution is **640×345**. Divisors 1–4 follow F1/window resizing with the viewport's existing integer rounding. MSAA and camera composition remain unchanged.
+The normal 1280×900 application reserves 210 pixels for its footer, so its **world is 1280×690**. Half resolution is **640×345**. Divisor 1.1 renders **1163×627**, rounding down to whole texture pixels. Fractional divisors follow F1/window resizing. MSAA and camera composition remain unchanged.
+
+[Godot's SubViewportContainer shrink property](https://docs.godotengine.org/en/stable/classes/class_subviewportcontainer.html#class-subviewportcontainer-property-stretch-shrink) only accepts integers. The adapter therefore places the existing world viewport under a plain child node and displays its texture through a full-size TextureRect. It controls the viewport size directly; no extra viewport or render pass is added. Removing the adapter restores the original viewport parent/index and container presentation.
 
 Every selected pass runs inside the existing world SubViewport before upscale. An explicit `BackBufferCopy` precedes each pass so it reads the previous result in the same frame. OFF hides all copies/passes and restores the original sampler, resolution and material. There are no history buffers, extra SubViewports, temporal accumulation, deliberate presentation delay or physics-timestep changes.
 
@@ -60,7 +64,13 @@ The physics regression compares all 600 ticks of identical launch, steering and 
 
 The optional `--benchmark` uses the static scene, VSync disabled, no FPS cap, 90 warmup frames and 240 samples per effect or stack, then reverses the order. It includes Pixel+CRT and all four effects. Shader startup and screenshot readback are excluded. Reports distinguish wall-frame duration, CPU rendering time and GPU query results. These are local static-scene measurements, not a hardware-independent FPS claim or moving-game benchmark. For native GPU timestamps, use `--rendering-driver opengl3` and append `--native-report` after `--`.
 
-## Measured results and checks — 2026-10-25
+## Expanded-range verification — 2026-10-25
+
+Headless retro smoke: **66 checks, zero failures**. ANGLE graphical smoke: **98 checks, zero failures**. Exact 120 Hz physics replay: **8 checks, zero failures**, including fractional resolution changes during the run. Coverage includes 1.1/1.7 rendering sizes, F1 resizing, one-pixel phosphor cells, every slider's minimum and maximum, unchanged HUD pixels and full OFF/removal restoration. The live panel capture was visually inspected. Godot emitted a sandbox certificate-store read error at startup; no script, shader or rendering errors occurred. Tiny-cell aliasing and extreme-effect comfort remain manual judgments.
+
+## Stacking milestone measurements — 2026-10-25
+
+These measurements predate fractional resolution support and the expanded slider ranges. They cover default settings, not the newly exposed extremes.
 
 Godot 4.7.2, Windows, NVIDIA GeForce RTX 4060, 1280×900. Each value averages the medians of forward/reverse blocks (480 sampled frames per configuration/backend).
 

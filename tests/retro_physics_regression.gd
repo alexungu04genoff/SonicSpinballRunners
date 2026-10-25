@@ -66,7 +66,7 @@ func record(index: int) -> void:
    game.retro_filter.toggle_effect(Filter.ORDER[(tick / 30) % 4])
    game.retro_controls.fields.crt_cell_size.value = 6 + tick % 11
    game.retro_controls.fields.crt_glow.value = (tick % 90) / 100.0
-   game.retro_controls.fields.pixel_resolution_divisor.value = 1 + (tick / 30) % 4
+   game.retro_controls.fields.pixel_resolution_divisor.value = 1.1 + ((tick / 30) % 4) * 0.7
   game.controls.virtual_left = tick % 90 < 35
   game.controls.virtual_right = tick % 110 < 40
   game.controls.virtual_steering = 0.35 if tick % 180 < 90 else -0.35

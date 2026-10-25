@@ -132,6 +132,7 @@ func run() -> void:
  game.retro_filter.set_preset(Filter.Preset.OFF)
  await frames(4)
  await check_stacking(original)
+ await check_ranges(original)
  if graphical and OS.get_cmdline_user_args().has("--benchmark"):
   DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
   Engine.max_fps = 0
@@ -221,3 +222,40 @@ func check_stacking(original: Array) -> void:
  if graphical:
   var off := await image_now()
   check(off.get_data() == baseline.get_data(), "OFF remains pixel-identical after stacking and live tuning")
+
+func check_ranges(original: Array) -> void:
+ var adapter = game.retro_filter
+ var controls = game.retro_controls
+ adapter.set_effects([Filter.Preset.PIXEL, Filter.Preset.CRT])
+ controls.fields.pixel_resolution_divisor.value = 1.1
+ controls.fields.crt_cell_size.value = 1.0
+ await frames(4)
+ check(is_equal_approx(adapter.settings.pixel_resolution_divisor, 1.1) and game.view.size == Vector2i(game.view_container.size / 1.1), "Resolution divisor 1.1 renders the actual fractional viewport size")
+ check(adapter.passes[Filter.Preset.CRT].material.get_shader_parameter("mask_density") == game.view_container.size.x, "One-pixel phosphor cells have no hidden size clamp")
+ game.toggle_debug()
+ await frames(4)
+ check(game.view.size == Vector2i(game.view_container.size / 1.1), "Fractional resolution follows F1 layout resizing")
+ game.toggle_debug()
+ adapter.toggle_effect(Filter.Preset.N64)
+ controls.fields.n64_resolution_divisor.value = 1.7
+ await frames(4)
+ check(game.view.size == Vector2i(game.view_container.size / 1.7), "Stacked fractional divisors choose the larger value")
+ adapter.set_effects(Filter.ORDER)
+ for maximum in [false, true]:
+  var matched := true
+  for name: String in controls.fields:
+   var slider: HSlider = controls.fields[name]
+   var endpoint := slider.max_value if maximum else slider.min_value
+   slider.value = endpoint
+   matched = matched and is_equal_approx(float(adapter.settings.get(name)), endpoint)
+  await frames(4)
+  check(matched and snapshot() == original, "All sliders accept their %s endpoints without changing gameplay" % ("maximum" if maximum else "minimum"))
+  if graphical:
+   var frame := await image_now()
+   check(frame.get_region(Rect2i(0, 710, 1280, 190)).get_data() == baseline.get_region(Rect2i(0, 710, 1280, 190)).get_data(), "Extreme slider values leave HUD pixels unchanged")
+ controls.reset_tuning()
+ adapter.set_preset(Filter.Preset.OFF)
+ await frames(4)
+ if graphical:
+  var off := await image_now()
+  check(off.get_data() == baseline.get_data(), "OFF restores identical pixels after fractional and extreme tuning")
