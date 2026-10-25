@@ -4,7 +4,7 @@ render_mode diffuse_burley;
 // Directional surface blur keeps the rolled silhouette solid at every frame.
 uniform vec4 fur_color : source_color = vec4(0.025, 0.20, 0.80, 1.0);
 uniform int character_style = 0; // Sonic, Tails, Knuckles, Shadow.
-uniform float blur_amount : hint_range(0.0, 1.0) = 0.9;
+uniform float blur_amount : hint_range(0.0, 3.0) = 2.7;
 varying vec3 sphere_position;
 
 void vertex() {
@@ -59,9 +59,9 @@ void fragment() {
  vec3 color = vec3(0.0);
  float weight_sum = 0.0;
  // Sample around the local roll axis: a soft exposure smear, not transparency.
- for (int i = -5; i <= 5; i++) {
-  float offset = float(i) * 0.15 * blur_amount;
-  float weight = 1.0 - abs(float(i)) / 7.0;
+ for (int i = -30; i <= 30; i++) {
+  float offset = float(i) * 0.025 * blur_amount;
+  float weight = 1.0 - abs(float(i)) / 42.0;
   vec3 sample_direction = vec3(direction.x,
    direction.y * cos(offset) - direction.z * sin(offset),
    direction.y * sin(offset) + direction.z * cos(offset));
@@ -69,7 +69,7 @@ void fragment() {
   weight_sum += weight;
  }
  // Retain some pose definition beneath the directional exposure smear.
- ALBEDO = mix(curled_colors(direction), color / weight_sum, 0.82);
+ ALBEDO = mix(curled_colors(direction), color / weight_sum, 0.94);
  ROUGHNESS = 0.58;
  SPECULAR = 0.32;
 }
