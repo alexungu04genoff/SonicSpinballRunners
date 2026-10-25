@@ -153,7 +153,7 @@ func run() -> void:
   seed_live_state()
   var before := snapshot()
   var green := variants()
-  for theme_id: String in ["chemical_plant", "rooftop_run", "casino_night", "sky_sanctuary", "green_hill", "sky_sanctuary", "casino_night", "rooftop_run", "chemical_plant"]:
+  for theme_id: String in ["chemical_plant", "rooftop_run", "casino_night", "sky_sanctuary", "ice_cap", "green_hill", "ice_cap", "sky_sanctuary", "casino_night", "rooftop_run", "chemical_plant"]:
    var label := example + "/" + theme_id
    check(game.set_theme(theme_id), "Main game switches theme while paused: " + label)
    compare(before, label)

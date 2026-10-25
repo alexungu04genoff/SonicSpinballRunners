@@ -20,6 +20,8 @@ Launch **Play Green Hill.cmd**, choose **Authored Act** in the footer's **Level 
 
 ## Play Green Hill
 
+**Ice Cap** is also selectable through the existing Theme dropdown: matte snow, reflective ice, glacier walls, thirteen original winter props and an animated twilight aurora. Ice remains presentation-only, with identical physics. See [Ice Cap research, comparisons and checks](docs/ICE_CAP.md).
+
 The existing **Theme** dropdown now includes **Sky Sanctuary** alongside Green Hill, Chemical Plant, Rooftop Run and Casino Night. It presents the same Act as pale floating ruins above clouds, with 13 original decor variants and stone/blue-tech ramp materials. See [research, identical-Act comparisons and checks](docs/SKY_SANCTUARY.md).
 
 Double-click **Play Green Hill.cmd** to play the themed version. **Physics Playground.cmd** opens the original debug presentation. Green Hill is integrated on `main` and includes the shared generator v10, 50 px kit with rounded Easy recipes, Normal-flow connections, five flippers, ring collection, unlimited drain recovery and optional Score Attack. Its mode/target strip remains available with the tuning panel hidden, and the shared upper goal and victory/replay controls use the same rules as the physics playground. Third-party Sonic assets remain local and ignored; a procedural spin-ball works without them.

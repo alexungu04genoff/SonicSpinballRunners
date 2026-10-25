@@ -2,6 +2,8 @@
 
 ## Status and use
 
+**Implemented visual theme — 2026-10-25:** Ice Cap is the sixth selectable presentation skin. It combines matte snow and reflective exposed ice, fractured glacier walls, translucent decorative crystals, cold twilight lighting, original winter scenery and slow aurora curtains. Thirteen original decor variants retain generic fixed indices and shared landmark footprints. Elevated rails use theme-owned snowy ice materials. Ice is visual only: friction, collision geometry, gameplay, authored data and camera behavior are unchanged. The aurora comparison, source/license record, same-Act captures and verification are documented in [Ice Cap](ICE_CAP.md). Material brightness and atmospheric composition remain provisional art tuning for human review.
+
 **Implemented visual theme — 2026-10-25:** Sky Sanctuary is the fifth selectable presentation skin. It combines pale carved ruins, restrained moss and blue inlays, a cloud sea with low-poly cloud banks, distant floating architecture and an original orbital relic. Thirteen procedural decor variants retain generic fixed indices and deterministic Auto, including the shared landmark footprints/roles. Existing elevated rails receive theme-owned materials. Acts, physics, scoring, camera behavior and gameplay objects are unchanged; clouds and detached background rubble do not alter the Act schema. No one-way gate system or new Sanctuary mechanics were introduced. See [Sky Sanctuary research, captures and verification](SKY_SANCTUARY.md).
 
 This document records the project's intended direction, not a claim that its systems already exist. Consult it before major gameplay or architectural changes. Update it as decisions are agreed and playtesting provides evidence.
