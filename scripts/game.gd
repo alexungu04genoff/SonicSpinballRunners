@@ -122,6 +122,7 @@ func _ready() -> void:
  if level_source == "authored":
   _authored_root = authored_runtime.root
   world.add_child(_authored_root)
+  authored_runtime.mechanics.scoring_tick.connect(_on_mechanic_score)
   flippers.assign(authored_runtime.flippers)
  else:
   for index in range(chunks.size() - 1, -1, -1):
@@ -462,6 +463,7 @@ func _replace_playfield(candidate: Dictionary, seed_value: int, preference: int,
   authored_runtime = prepared.runtime
   _authored_root = authored_runtime.root
   world.add_child(_authored_root)
+  authored_runtime.mechanics.scoring_tick.connect(_on_mechanic_score)
   flippers.assign(authored_runtime.flippers)
   layout = candidate
   playfield = Playfield.from_authored(authored_document, authored_runtime)
@@ -631,6 +633,11 @@ func toggle_pause() -> void:
   return
  get_tree().paused = not get_tree().paused
 
+func _on_mechanic_score(_object_id: String, points: int) -> void:
+ if respawn_time >= 0.0 or generation_pending or ball.serve_pending: return
+ score += scorecraft.award_spinner(points)
+ _observe_challenge_score()
+
 func _on_bumper_hit(body: Node) -> void:
  var impact: bool = specials.impact_target == body
  _award_bumper(body, "shockwave" if impact else "", specials.definition.shockwave_multiplier if impact else 1, true)
@@ -712,6 +719,7 @@ func _physics_process(delta: float) -> void:
  elif not ball.serve_pending and not ball._teleport_pending and _at_playfield_drain():
   ball_number += 1
   respawn_time = 0.65
+  if is_instance_valid(ball.mechanics): ball.mechanics.reset()
   specials.reset(false, "Drain")
   scorecraft.reset("Drain", true)
   presentation.clear_ring_pickups()
@@ -724,7 +732,8 @@ func _physics_process(delta: float) -> void:
   ring_reset_time -= delta
   if ring_reset_time <= 0:
    ring_field.reset_rings()
- if not ball.serve_pending and not ball._teleport_pending and respawn_time < 0.0:
+ if ball.on_ramp: _goal_motion_ready = false
+ if not ball.on_ramp and not ball.serve_pending and not ball._teleport_pending and respawn_time < 0.0:
   var start := previous_goal_position if _goal_motion_ready else ball.position
   if level_source == "authored":
    var events: Dictionary = ActLifecycle.crossings(authored_document, start, ball.position)

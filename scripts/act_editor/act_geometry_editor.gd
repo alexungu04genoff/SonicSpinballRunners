@@ -28,6 +28,8 @@ var error_dialog: AcceptDialog
 var title_field: LineEdit
 var cell_size_field: SpinBox
 var file_label: Label
+var gameplay_scroll: ScrollContainer
+var mechanics_properties: HFlowContainer
 var detail_label: Label
 var status_label: Label
 var mode_label: Label
@@ -212,10 +214,16 @@ func _build_ui() -> void:
 		item.pressed.connect(choose_shape.bind(definition.id))
 		palette_list.add_child(item)
 		palette_buttons[definition.id] = item
+	gameplay_scroll = ScrollContainer.new()
+	gameplay_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	gameplay_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	gameplay_scroll.visible = false
+	palette.add_child(gameplay_scroll)
 	gameplay_list = VBoxContainer.new()
 	gameplay_list.add_theme_constant_override("separation", 8)
 	gameplay_list.visible = false
-	palette.add_child(gameplay_list)
+	gameplay_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	gameplay_scroll.add_child(gameplay_list)
 	for definition: Dictionary in Objects.definitions():
 		var item := GameplayPaletteItem.new()
 		item.configure(definition)
@@ -442,6 +450,9 @@ func _build_ui() -> void:
 	handedness_field.item_selected.connect(_change_handedness)
 	object_properties.add_child(handedness_field)
 	_button(object_properties, "duplicate", "Duplicate", duplicate_selected, "Ctrl+D • duplicate selected terrain, gameplay object or ring trail")
+	mechanics_properties = HFlowContainer.new()
+	workspace.add_child(mechanics_properties)
+	canvas.rail_points_changed.connect(set_rail_points)
 	detail_label = Label.new()
 	detail_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	detail_label.add_theme_color_override("font_color", Color("b5c8d6"))
@@ -723,11 +734,12 @@ func _change_palette_tab(index: int) -> void:
 	search_field.visible = terrain
 	family_filter.visible = terrain
 	terrain_scroll.visible = terrain
+	gameplay_scroll.visible = index == 1
 	gameplay_list.visible = index == 1
 	marker_list.visible = index == 2
 	decor_list.visible = index == 3
 	decor_scroll.visible = index == 3
-	palette_heading.text = ["TERRAIN LIBRARY  /  %d stamps" % Shapes.definitions().size(), "GAMEPLAY  /  4 objects + Rings", "ACT MARKERS  /  4 tools", "DECOR  /  4 generic slots"][index]
+	palette_heading.text = ["TERRAIN LIBRARY  /  %d stamps" % Shapes.definitions().size(), "GAMEPLAY  /  7 objects + Rings", "ACT MARKERS  /  4 tools", "DECOR  /  4 generic slots"][index]
 	if index == 3 and canvas.selected_decor_index >= 0: _refresh()
 	else: _select_mode()
 
@@ -997,6 +1009,8 @@ func _clamp_anchor(placement: Dictionary, anchor: Vector2) -> Vector2:
 	return anchor.clamp(Vector2.ZERO, (Vector2(document.grid_size) - Shapes.scaled_size(placement)).max(Vector2.ZERO))
 
 func add_gameplay_placement(placement: Dictionary) -> void:
+	placement = placement.duplicate(true)
+	placement["object_id"] = Objects.new_id()
 	var candidate: Resource = document.copy_document()
 	candidate.gameplay_objects.append(placement.duplicate(true))
 	if not candidate.validation_errors().is_empty():
@@ -1535,6 +1549,7 @@ func _refresh() -> void:
 		detail_label.text = "Frame %s × %s cells · %s° · H %s / V %s · Alt: free move%s" % [frame.x, frame.y, Shapes.angle_degrees(active), "on" if active.flip_h else "off", "on" if active.flip_v else "off", " · Position %s" % Shapes.placement_position(active) if canvas.brush.is_empty() else " · Click to place"]
 	_refresh_composite_controls()
 	_refresh_decor_controls()
+	_refresh_mechanics_properties()
 	canvas.queue_redraw()
 	_refreshing = false
 
@@ -1659,3 +1674,73 @@ func _unhandled_key_input(event: InputEvent) -> void:
 					move_placement(canvas.selected_index, Shapes.placement_position(document.placements[canvas.selected_index]) + Vector2(direction) * distance)
 			_: return
 	get_viewport().set_input_as_handled()
+
+func set_gameplay_property(key: String, value: Variant) -> void:
+	var placement := _active_gameplay()
+	if placement.is_empty(): return
+	var candidate := placement.duplicate(true)
+	candidate["properties"] = Objects.properties(placement)
+	candidate.properties[key] = value
+	var errors := Objects.property_errors(candidate)
+	if not errors.is_empty():
+		_set_status(" ".join(errors))
+		return
+	if candidate.properties == placement.get("properties", {}): return
+	if canvas.gameplay_brush.is_empty(): _record_edit()
+	placement["properties"] = candidate.properties
+	_refresh()
+
+func set_rail_points(points: PackedVector2Array) -> void:
+	set_gameplay_property("points", points)
+
+func _refresh_mechanics_properties() -> void:
+	if mechanics_properties == null: return
+	for child in mechanics_properties.get_children():
+		mechanics_properties.remove_child(child)
+		child.queue_free()
+	var item := _active_gameplay()
+	mechanics_properties.visible = not item.is_empty() and item.type in ["spinner", "magnetic_field", "elevated_rail"]
+	if not mechanics_properties.visible: return
+	for axis: String in ["x", "y"]:
+		_mechanic_number(axis.to_upper() + " px", item.position[axis], func(value: float):
+			var at: Vector2 = item.position
+			at[axis] = value
+			if canvas.gameplay_brush.is_empty(): move_gameplay_placement(canvas.selected_gameplay_index, at)
+			else:
+				item.position = at
+				_refresh())
+	var properties := Objects.properties(item)
+	for key: String in Objects.property_limits(item.type):
+		_mechanic_number(key.replace("_", " ").capitalize(), float(properties[key]), func(value: float): set_gameplay_property(key, value))
+	if item.type == "magnetic_field":
+		var mode := OptionButton.new()
+		mode.add_item("Attract")
+		mode.add_item("Repel")
+		mode.select(1 if properties.mode == "repel" else 0)
+		mode.item_selected.connect(func(index: int): set_gameplay_property("mode", "repel" if index == 1 else "attract"))
+		mechanics_properties.add_child(mode)
+	if item.type == "elevated_rail":
+		var edit := CheckButton.new()
+		edit.text = "Edit path points"
+		edit.disabled = not canvas.gameplay_brush.is_empty()
+		edit.set_pressed_no_signal(canvas.rail_edit)
+		edit.toggled.connect(func(enabled: bool): canvas.rail_edit = enabled; canvas.queue_redraw(); canvas.grab_focus())
+		mechanics_properties.add_child(edit)
+		detail_label.text = "Click entry and path points; Enter finishes. Edit path: drag points, click appends, Shift-click inserts, right-click removes. Alt frees placement."
+
+func _mechanic_number(label_text: String, value: float, action: Callable) -> void:
+	var label := Label.new()
+	label.text = label_text
+	mechanics_properties.add_child(label)
+	var field := LineEdit.new()
+	var original := var_to_str(value)
+	field.text = original
+	field.custom_minimum_size.x = 70
+	var commit := func():
+		var value_text := field.text.strip_edges()
+		if value_text == original: return
+		if value_text.is_valid_float() and is_finite(value_text.to_float()): action.call(value_text.to_float())
+		else: _set_status("Enter a finite numeric value.")
+	field.text_submitted.connect(func(_text): commit.call(); canvas.grab_focus())
+	field.focus_exited.connect(commit)
+	mechanics_properties.add_child(field)

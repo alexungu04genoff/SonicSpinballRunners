@@ -334,19 +334,22 @@ func _build_shared(chunks: Array[TableChunk], junctions: Variant, bounds: Rect2)
  _update_checkpoint_visuals()
 
 func ball_height() -> float:
- return ball.radius * SCALE + authored_cell_size * SCALE * 0.02 if authored_mode else BALL_HEIGHT
+ return (ball.radius * SCALE + authored_cell_size * SCALE * 0.02 if authored_mode else BALL_HEIGHT) + ball.ramp_height * SCALE
 
 func ring_height() -> float:
  return ring_field.ring_radius * SCALE + authored_cell_size * SCALE * 0.03 if authored_mode else RING_HEIGHT
 
 func _build_authored_objects(runtime: Dictionary) -> void:
+ var mechanics_visual := preload("res://scripts/authored_act/mechanics_presentation.gd").new()
+ add_child(mechanics_visual)
+ mechanics_visual.build(self, runtime)
  var bumper_mat := material(Color("b34039"))
  var bumper_top := material(Color("ff8962"))
  var gold := material(Color("ffd568"), 0.08)
  var debug_mat := debug_material(Color("70ff85"))
  var overlay_vertices := PackedVector3Array()
  for item: Dictionary in runtime.objects:
-  if item.type in ["left_flipper", "right_flipper"]:
+  if item.type in ["left_flipper", "right_flipper", "spinner", "magnetic_field", "elevated_rail"]:
    continue # Shared moving visuals above already use the real body dimensions.
   var visual := Node3D.new()
   visual.name = "Authored_" + str(item.type)

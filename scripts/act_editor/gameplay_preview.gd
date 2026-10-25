@@ -20,6 +20,9 @@ static func draw_object(target: CanvasItem, placement: Dictionary, anchor: Vecto
  var points := rotated_points(placement, cell_size)
  for index in points.size():
   points[index] = anchor + points[index] * scale_factor
+ if placement.type in ["spinner", "magnetic_field", "elevated_rail"]:
+  _draw_mechanic(target, placement, anchor, scale_factor, points, selected, ghost)
+  return
  if points.size() < 3:
   return
  var color: Color = definition.color
@@ -62,3 +65,40 @@ static func _draw_swing(target: CanvasItem, placement: Dictionary, anchor: Vecto
  target.draw_line(tip, tip + back.rotated(-0.5), color, 1.5, true)
  var end := anchor + Vector2.RIGHT.rotated(rest + swing) * radius
  target.draw_line(anchor, end, Color(color, color.a * 0.18), 1.0, true)
+
+static func _draw_mechanic(target: CanvasItem, placement: Dictionary, anchor: Vector2, scale_factor: float, points: PackedVector2Array, selected: bool, ghost: bool) -> void:
+ var props := Objects.properties(placement)
+ var color: Color = Objects.get_definition(placement.type).color
+ if ghost: color.a = 0.55
+ var angle := deg_to_rad(float(placement.rotation_degrees))
+ if placement.type == "elevated_rail":
+  if points.size() >= 2:
+   target.draw_polyline(points, Color(color, 0.18), maxf(3.0, float(props.width) * scale_factor), true)
+   target.draw_polyline(points, color, 2.0, true)
+   _arrow(target, points[-1] - (points[-1] - points[-2]).normalized() * 18, points[-1], color)
+  for point: Vector2 in props.points:
+   target.draw_circle(anchor + point.rotated(angle) * scale_factor, 5.0 if selected else 3.0, color)
+ elif placement.type == "magnetic_field":
+  var radius := float(props.radius) * scale_factor
+  var repel: bool = props.mode == "repel"
+  color = Color("ff9378") if repel else color
+  target.draw_arc(anchor, radius, 0, TAU, 64, color, 2.0, true)
+  for i in 4:
+   var direction := Vector2.from_angle(i * TAU / 4)
+   var a := anchor + direction * radius * (0.4 if repel else 0.8)
+   var b := anchor + direction * radius * (0.8 if repel else 0.4)
+   _arrow(target, a, b, color)
+ else:
+  if points.size() >= 3:
+   target.draw_colored_polygon(points, color)
+   target.draw_circle(anchor + Vector2(-float(props.width) / 2, 0).rotated(angle) * scale_factor, 3, Color.WHITE)
+   target.draw_circle(anchor + Vector2(float(props.width) / 2, 0).rotated(angle) * scale_factor, 3, Color.WHITE)
+  _arrow(target, anchor + Vector2.DOWN.rotated(angle) * 18, anchor + Vector2.UP.rotated(angle) * 18, color)
+ target.draw_circle(anchor, 3.0, Color.WHITE)
+ if selected: target.draw_arc(anchor, 7.0, 0, TAU, 24, SELECTION_COLOR, 1.5, true)
+
+static func _arrow(target: CanvasItem, a: Vector2, b: Vector2, color: Color) -> void:
+ target.draw_line(a, b, color, 1.5, true)
+ var back := (a - b).normalized() * 7.0
+ target.draw_line(b, b + back.rotated(0.5), color, 1.5, true)
+ target.draw_line(b, b + back.rotated(-0.5), color, 1.5, true)

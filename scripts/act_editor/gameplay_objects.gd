@@ -1,6 +1,7 @@
 class_name ActGameplayObjects
 extends RefCounted
-## Editor-only silhouettes in local pixels. No bodies or gameplay scripts.
+## Shared authored object definitions, properties and collisionless silhouettes.
+const RailPath = preload("res://scripts/authored_act/rail_path.gd")
 const Dimensions = preload("res://scripts/act_dimensions.gd")
 const FLIPPER_SWING_DEGREES := rad_to_deg(0.8)
 const CURVE_STEPS := 24
@@ -11,6 +12,9 @@ static func definitions() -> Array[Dictionary]:
   {"id": "triangle_bumper", "label": "Triangle Bumper / Sling", "color": Color("76cafa")},
   {"id": "left_flipper", "label": "Left Flipper", "color": Color("ffd76b")},
   {"id": "right_flipper", "label": "Right Flipper", "color": Color("ffd76b")},
+  {"id": "spinner", "label": "Spinner", "color": Color("ffc76c")},
+  {"id": "magnetic_field", "label": "Magnetic Field", "color": Color("ba8cff")},
+  {"id": "elevated_rail", "label": "Elevated Ramp / Rail", "color": Color("6ee8dd")},
  ]
 
 static func get_definition(id: String) -> Dictionary:
@@ -27,13 +31,21 @@ static func make_placement(id: String) -> Dictionary:
   angle = rad_to_deg(0.32)
  elif id == "right_flipper":
   angle = rad_to_deg(PI - 0.32)
- return {"type": id, "position": Vector2.ZERO, "rotation_degrees": angle}
+ return {"type": id, "position": Vector2.ZERO, "rotation_degrees": angle, "object_id": new_id(), "properties": defaults(id)}
 
 static func local_points(placement: Dictionary, cell_size: float) -> PackedVector2Array:
  # Rotation is applied by the caller around the saved center/pivot at (0,0).
  # The sling keeps its origin relative to the original silhouette, without re-centering.
  var points := PackedVector2Array()
  match placement.get("type", ""):
+  "spinner":
+   var width := float(properties(placement).width)
+   points = PackedVector2Array([Vector2(-width / 2, -3), Vector2(width / 2, -3), Vector2(width / 2, 3), Vector2(-width / 2, 3)])
+  "magnetic_field":
+   for step in 64:
+    points.append(Vector2.from_angle(TAU * step / 64.0) * float(properties(placement).radius))
+  "elevated_rail":
+   points = RailPath.build(properties(placement).points).points
   "round_bumper":
    var radius := Dimensions.ROUND_RADIUS_CELLS * cell_size
    for step in range(CURVE_STEPS * 4):
@@ -56,3 +68,51 @@ static func local_points(placement: Dictionary, cell_size: float) -> PackedVecto
     var angle := -PI * 0.5 + PI * float(step) / (CURVE_STEPS * 2)
     points.append(Vector2(length, 0) + Vector2.RIGHT.rotated(angle) * radius)
  return points
+
+static func new_id() -> String:
+ return "obj_" + Crypto.new().generate_random_bytes(12).hex_encode()
+
+static func defaults(type: String) -> Dictionary:
+ match type:
+  "spinner": return {"width": 40.0, "tick_score": 5.0, "decay": 2.0, "max_spin": 40.0}
+  "magnetic_field": return {"radius": 100.0, "strength": 260.0, "mode": "attract"}
+  "elevated_rail": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(0, -100), Vector2(100, -170)]), "width": 40.0, "height": 80.0, "drag": 0.06, "entry_speed": 100.0}
+ return {}
+
+static func properties(placement: Dictionary) -> Dictionary:
+ var result := defaults(str(placement.get("type", "")))
+ result.merge(placement.get("properties", {}), true)
+ return result
+
+static func property_limits(type: String) -> Dictionary:
+ match type:
+  "spinner": return {"width": [10.0, 300.0], "tick_score": [0.0, 25.0], "decay": [0.5, 8.0], "max_spin": [1.0, 60.0]}
+  "magnetic_field": return {"radius": [15.0, 500.0], "strength": [0.0, 600.0]}
+  "elevated_rail": return {"width": [18.0, 120.0], "height": [45.0, 200.0], "drag": [0.0, 1.0], "entry_speed": [30.0, 600.0]}
+ return {}
+
+static func property_errors(placement: Dictionary) -> PackedStringArray:
+ var errors := PackedStringArray()
+ if placement.has("object_id") and (typeof(placement.object_id) != TYPE_STRING or placement.object_id.is_empty()):
+  errors.append("object_id must be a nonempty string.")
+ if typeof(placement.get("properties", {})) != TYPE_DICTIONARY:
+  errors.append("properties must be a dictionary.")
+  return errors
+ var values: Dictionary = placement.get("properties", {})
+ var expected := defaults(str(placement.get("type", "")))
+ var limits := property_limits(str(placement.get("type", "")))
+ for key: Variant in values:
+  if not expected.has(key):
+   errors.append("Unknown property: " + str(key))
+  elif limits.has(key):
+   if typeof(values[key]) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(float(values[key])) or float(values[key]) < limits[key][0] or float(values[key]) > limits[key][1]:
+    errors.append(str(key) + " is outside its supported finite range.")
+  elif key == "mode" and values[key] not in ["attract", "repel"]:
+   errors.append("mode must be attract or repel.")
+  elif key == "points":
+   var error := RailPath.validation_error(values[key])
+   if not error.is_empty(): errors.append(error)
+ return errors
+
+static func identity(item: Dictionary, index: int) -> String:
+ return item.get("object_id", "legacy_" + var_to_bytes([index, item.get("type"), item.get("position"), item.get("rotation_degrees")]).hex_encode().sha256_text().left(24))

@@ -13,6 +13,10 @@ var radius: float = RADIUS:
   if _collision_circle != null:
    _collision_circle.radius = radius
 var _collision_circle: CircleShape2D
+var mechanics: Node
+var on_ramp := false
+## Elevation in physics pixels, consumed only by collisionless presentation.
+var ramp_height := 0.0
 var tuning: PhysicsTuning
 var controls: PlaygroundInput
 var steering_contribution: float = 0.0
@@ -59,7 +63,8 @@ func _ready() -> void:
  physics_material_override.bounce = 0.0
 
 func teleport_to(where: Vector2, velocity: Vector2 = Vector2.ZERO, waiting: bool = false) -> void:
- # Reset/serve is the only intentional replacement of the full velocity.
+ # Reset/serve and explicit rail constraints own full velocity replacement.
+ if is_instance_valid(mechanics): mechanics.reset()
  _teleport_position = where
  _teleport_velocity = velocity
  _teleport_pending = true
@@ -140,6 +145,11 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
   state.angular_velocity = 0.0
   _previous_step_velocity = _teleport_velocity
   _teleport_pending = false
+ if is_instance_valid(mechanics):
+  mechanics.tick(state.step)
+  if on_ramp:
+   mechanics.advance_ramp(state, state.step)
+   return
  if serve_pending:
   # Waiting at serve is an explicit reset state, not an active physics trajectory.
   # Clear residual contact recovery after a long teleport until launch releases it.
@@ -210,6 +220,9 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
    if absf(tangent_speed) < float(stats.max_rolling_speed):
     state.apply_central_impulse(tangent * slope * float(stats.rolling_acceleration) * mass * dt)
    state.apply_central_impulse(-tangent * tangent_speed * (1.0 - exp(-float(stats.rolling_drag) * dt)) * mass)
+ if is_instance_valid(mechanics):
+  mechanics.apply_fields(state)
+  if mechanics.observe_motion(state): return
  _guard_fast_motion(state)
  if flipper_contact or flipper_launch_pending:
   # Moving paddles contribute native collision velocity in addition to the

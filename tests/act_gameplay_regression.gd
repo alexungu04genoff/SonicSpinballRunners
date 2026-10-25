@@ -22,6 +22,7 @@ func check(condition: bool, label: String) -> void:
 
 func object_at(id: String, position: Vector2, angle: Variant = null) -> Dictionary:
  var result: Dictionary = Objects.make_placement(id)
+ result.object_id = var_to_bytes([id, position, angle]).hex_encode().sha256_text()
  result.position = position
  if angle != null:
   result.rotation_degrees = angle
@@ -78,7 +79,7 @@ func bounds_of(points: PackedVector2Array) -> Rect2:
 
 func check_definitions() -> void:
  var definitions: Array = Objects.definitions()
- check(definitions.size() == 4, "Gameplay palette contains exactly four requested objects")
+ check(definitions.size() == 7, "Gameplay palette contains the four original and three pinball mechanics")
  var ids: Array = definitions.map(func(definition: Dictionary): return definition.id)
  for id: String in ["round_bumper", "triangle_bumper", "left_flipper", "right_flipper"]:
   check(ids.has(id), "Gameplay definition exists: " + id)

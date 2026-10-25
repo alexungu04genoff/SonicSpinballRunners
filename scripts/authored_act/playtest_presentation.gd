@@ -29,6 +29,9 @@ func _draw() -> void:
    points.append(points[0])
   draw_polyline(points, Color("d6e5ee"), 2.0 * units_per_pixel, true)
  for item: Dictionary in runtime.get("objects", []):
+  if item.has("mechanic"):
+   preload("res://scripts/act_editor/gameplay_preview.gd").draw_object(self, item, item.position, 1.0, float(document.cell_size))
+   continue
   var body: Node2D = item.body
   var points := PackedVector2Array()
   var color := Color("5cd9ed")

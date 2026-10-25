@@ -57,6 +57,10 @@ func award_ring() -> int:
  # Extra rings earn the current multiplier but cannot sustain it indefinitely.
  return _award("ring", RING_POINTS, multiplier if enabled else 1, 0, false)
 
+func award_spinner(points: int) -> int:
+ # Modest fixed ticks cannot advance or sustain a combo, or charge a special.
+ return _award("spinner", clampi(points, 0, 25), 1, 0, false)
+
 func award_rack() -> int:
  # Rack completion is a fixed award, never a combo link or timer refresh.
  return _award("rack", RACK_POINTS, 1, 0, false)

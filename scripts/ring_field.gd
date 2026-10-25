@@ -44,7 +44,7 @@ func claim_ring(index: int, source: String = "", multiplier: int = 1) -> bool:
  return true
 
 func _physics_process(_delta: float) -> void:
- if ball.serve_pending or ball._teleport_pending:
+ if ball.serve_pending or ball._teleport_pending or ball.on_ramp:
   previous_ball_position = ball._teleport_position if ball._teleport_pending else ball.position
   return
  # Radius is measured from the swept ball center to the stationary ring center.

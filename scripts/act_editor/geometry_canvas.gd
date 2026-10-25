@@ -22,6 +22,11 @@ signal status_changed(message: String)
 
 const ActData = preload("res://scripts/act_editor/act_geometry.gd")
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
+signal rail_points_changed(points: PackedVector2Array)
+var rail_edit := false
+var _rail_draft: Dictionary = {}
+var _rail_drag := -1
+var _rail_preview := PackedVector2Array()
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const ObjectPreview = preload("res://scripts/act_editor/gameplay_preview.gd")
 const PreviewDimensions = preload("res://scripts/act_editor/preview_dimensions.gd")
@@ -413,6 +418,8 @@ func fit_view() -> void:
 
 
 func cancel_gesture() -> void:
+ _rail_draft = {}
+ _rail_drag = -1
  _decor_drag_index = -1
  _decor_drag_moved = false
  _ring_mode = ""
@@ -469,14 +476,15 @@ func gameplay_hit_indices_at(local_position: Vector2) -> Array[int]:
   var placement: Dictionary = objects[index]
   var points := ObjectPreview.rotated_points(placement, _local_cell_size())
   var point := pixel_position - Vector2(placement.position)
-  if points.size() < 3:
+  if points.size() < 2:
    continue
-  if Geometry2D.is_point_in_polygon(point, points):
+  if placement.type != "elevated_rail" and Geometry2D.is_point_in_polygon(point, points):
    hits.append(index)
    continue
-  for segment in points.size():
+  for segment in (points.size() - 1 if placement.type == "elevated_rail" else points.size()):
    var nearest := Geometry2D.get_closest_point_to_segment(point, points[segment], points[(segment + 1) % points.size()])
-   if nearest.distance_to(point) <= tolerance:
+   var hit_width := maxf(tolerance, float(Objects.properties(placement).width) * 0.5) if placement.type == "elevated_rail" else tolerance
+   if nearest.distance_to(point) <= hit_width:
     hits.append(index)
     break
  return hits
@@ -835,9 +843,13 @@ func _draw_gameplay_objects() -> void:
  if selected_gameplay_index >= 0 and selected_gameplay_index < objects.size():
   var placement: Dictionary = objects[selected_gameplay_index]
   var point: Vector2 = _gameplay_drag_position if selected_gameplay_index == _gameplay_drag_index and _gameplay_drag_moved else placement.position
-  ObjectPreview.draw_object(self, placement, local_pixels_to_screen(point), scale_factor, _local_cell_size(), true)
+  var shown := placement.duplicate(true)
+  if _rail_drag >= 0: shown.properties.points = _rail_preview
+  ObjectPreview.draw_object(self, shown, local_pixels_to_screen(point), scale_factor, _local_cell_size(), true)
+ if not _rail_draft.is_empty():
+  ObjectPreview.draw_object(self, _rail_draft, local_pixels_to_screen(_rail_draft.position), scale_factor, _local_cell_size(), true, true)
  var active_brush := _drop_gameplay_brush if not _drop_gameplay_brush.is_empty() else gameplay_brush
- if (_hovering or not _drop_gameplay_brush.is_empty()) and _inside_grid(_cursor_position) and _valid_gameplay_stamp(active_brush):
+ if _rail_draft.is_empty() and (_hovering or not _drop_gameplay_brush.is_empty()) and _inside_grid(_cursor_position) and _valid_gameplay_stamp(active_brush):
   var point := legal_gameplay_position(screen_to_local_pixels(_cursor_position), _alt_held)
   ObjectPreview.draw_object(self, active_brush, local_pixels_to_screen(point), scale_factor, _local_cell_size(), false, true)
 
@@ -1002,6 +1014,9 @@ func _input(event: InputEvent) -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
+ if _rail_input(event):
+  accept_event()
+  return
  if document == null:
   return
  if preview_active:
@@ -1194,6 +1209,20 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
   else:
    var border := "bottom" if connector_tool == "entry" else "top"
    _set_status("%s can only be created on the %s border." % [connector_tool.capitalize(), border])
+  return
+ if gameplay_brush.get("type") == "elevated_rail":
+  if _inside_grid(pointer):
+   var at := legal_gameplay_position(screen_to_local_pixels(pointer), cycle_overlaps)
+   if _rail_draft.is_empty():
+    _rail_draft = gameplay_brush.duplicate(true)
+    _rail_draft.position = at
+    _rail_draft.properties = Objects.properties(gameplay_brush)
+    _rail_draft.properties.points = PackedVector2Array([Vector2.ZERO])
+   else:
+    var point := (at - Vector2(_rail_draft.position)).rotated(-deg_to_rad(float(_rail_draft.rotation_degrees)))
+    if point.distance_to(_rail_draft.properties.points[-1]) >= 12.0 and _rail_draft.properties.points.size() < 64:
+     _rail_draft.properties.points.append(point)
+   queue_redraw()
   return
  if not gameplay_brush.is_empty():
   if _inside_grid(pointer) and _valid_gameplay_stamp(gameplay_brush):
@@ -1527,6 +1556,9 @@ func _end_primary() -> void:
 
 
 func _leave_tool() -> void:
+ _rail_draft = {}
+ rail_edit = false
+ _rail_drag = -1
  _clear_decor_selection()
  ring_tool = false
  selected_ring_index = -1
@@ -1666,3 +1698,54 @@ func _set_status(message: String) -> void:
  if message != _last_status:
   _last_status = message
   status_changed.emit(message)
+
+func _rail_input(event: InputEvent) -> bool:
+ if not _rail_draft.is_empty() and event is InputEventKey and event.pressed and event.keycode == KEY_ENTER:
+  if _rail_draft.properties.points.size() >= 2:
+   gameplay_placement_requested.emit(_rail_draft)
+   _rail_draft = {}
+   queue_redraw()
+  return true
+ if not rail_edit or selected_gameplay_index < 0 or selected_gameplay_index >= _gameplay_objects().size(): return false
+ var item: Dictionary = _gameplay_objects()[selected_gameplay_index]
+ if item.type != "elevated_rail":
+  rail_edit = false
+  return false
+ var points: PackedVector2Array = Objects.properties(item).points
+ if event is InputEventMouseButton and event.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
+  grab_focus()
+  var local := (legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed) - Vector2(item.position)).rotated(-deg_to_rad(float(item.rotation_degrees)))
+  var nearest := -1
+  for i in points.size():
+   var screen := local_pixels_to_screen(item.position + points[i].rotated(deg_to_rad(float(item.rotation_degrees))))
+   if screen.distance_to(event.position) <= 10.0: nearest = i
+  if event.pressed:
+   if event.button_index == MOUSE_BUTTON_RIGHT:
+    if nearest >= 0 and points.size() > 2:
+     points.remove_at(nearest)
+     rail_points_changed.emit(points)
+   elif nearest >= 0:
+    _rail_drag = nearest
+    _rail_preview = points.duplicate()
+   elif points.size() < 64:
+    var insert_at := points.size()
+    if event.shift_pressed:
+     var best := INF
+     for i in points.size() - 1:
+      var distance := Geometry2D.get_closest_point_to_segment(local, points[i], points[i + 1]).distance_to(local)
+      if distance < best:
+       best = distance
+       insert_at = i + 1
+    points.insert(insert_at, local)
+    rail_points_changed.emit(points)
+  elif _rail_drag >= 0:
+   var edited := _rail_preview.duplicate()
+   _rail_drag = -1
+   rail_points_changed.emit(edited)
+  queue_redraw()
+  return true
+ if event is InputEventMouseMotion and _rail_drag >= 0:
+  _rail_preview[_rail_drag] = (legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed) - Vector2(item.position)).rotated(-deg_to_rad(float(item.rotation_degrees)))
+  queue_redraw()
+  return true
+ return false

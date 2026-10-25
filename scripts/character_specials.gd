@@ -58,7 +58,7 @@ func select_character(id: String) -> void:
  character_changed.emit(id)
 
 func can_use() -> bool:
- return not get_tree().paused and not game.generation_pending and not game.ball.serve_pending and not game.ball._teleport_pending and game.respawn_time < 0.0 and game.score_attack.state != ScoreAttack.State.COMPLETE and game.zone.state not in [ZoneRun.State.DRAFT, ZoneRun.State.COMPLETE]
+ return not get_tree().paused and not game.generation_pending and not game.ball.on_ramp and not game.ball.serve_pending and not game.ball._teleport_pending and game.respawn_time < 0.0 and game.score_attack.state != ScoreAttack.State.COMPLETE and game.zone.state not in [ZoneRun.State.DRAFT, ZoneRun.State.COMPLETE]
 
 func ready_to_use() -> bool:
  return game.special_meter >= definition.meter_cost and flight_remaining <= 0.0 and homing_remaining <= 0.0 and glide_remaining <= 0.0 and not _area_pending

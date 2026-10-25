@@ -1,0 +1,86 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=3]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_0igmp"]
+
+[resource]
+script = ExtResource("1_0igmp")
+format_version = 11
+library_version = 2
+title = "Pinball Mechanics - Spinner, Magnet, Raised Crossover"
+placements = [{
+"anchor": Vector2i(7, 5),
+"base_size": Vector2i(1, 2),
+"flip_h": false,
+"flip_v": false,
+"offset": PackedByteArray(5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 63),
+"quarter_turns": 1,
+"shape_id": "wall_1x2"
+}, {
+"anchor": Vector2i(7, 6),
+"base_size": Vector2i(1, 2),
+"flip_h": false,
+"flip_v": false,
+"offset": PackedByteArray(5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 63),
+"quarter_turns": 1,
+"shape_id": "wall_1x2"
+}, {
+"anchor": Vector2i(2, 7),
+"base_size": Vector2i(1, 3),
+"flip_h": false,
+"flip_v": false,
+"quarter_turns": 0,
+"shape_id": "wall_1x3"
+}]
+gameplay_objects = [{
+"object_id": "sandbox_spinner",
+"position": Vector2(280, 450),
+"properties": {
+"decay": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 64),
+"max_spin": PackedByteArray(3, 0, 0, 0, 0, 0, 32, 66),
+"tick_score": PackedByteArray(3, 0, 0, 0, 0, 0, 160, 64),
+"width": PackedByteArray(3, 0, 0, 0, 0, 0, 112, 66)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "spinner"
+}, {
+"object_id": "sandbox_magnetic_field",
+"position": Vector2(300, 415),
+"properties": {
+"mode": "attract",
+"radius": PackedByteArray(3, 0, 0, 0, 0, 0, 112, 66),
+"strength": PackedByteArray(3, 0, 0, 0, 0, 0, 12, 67)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "magnetic_field"
+}, {
+"object_id": "sandbox_elevated_rail",
+"position": Vector2(280, 380),
+"properties": {
+"drag": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"entry_speed": PackedByteArray(3, 0, 0, 0, 0, 0, 200, 66),
+"height": PackedByteArray(3, 0, 0, 0, 0, 0, 72, 66),
+"points": PackedByteArray(35, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 194, 0, 0, 180, 66, 0, 0, 112, 194, 0, 0, 52, 67, 0, 0, 32, 194, 0, 0, 52, 67, 0, 0, 160, 66),
+"width": PackedByteArray(3, 0, 0, 0, 0, 0, 112, 66)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "elevated_rail"
+}, {
+"object_id": "sandbox_left_flipper",
+"position": Vector2(240, 530),
+"properties": {},
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 169, 103, 2, 150, 171, 85, 50, 64),
+"type": "left_flipper"
+}, {
+"object_id": "sandbox_right_flipper",
+"position": Vector2(330, 530),
+"properties": {},
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 11, 179, 63, 141, 74, 53, 100, 64),
+"type": "right_flipper"
+}]
+ring_trails = [{
+"end": Vector2(440, 300),
+"spacing": PackedByteArray(3, 0, 0, 0, 0, 0, 200, 65),
+"start": Vector2(350, 300)
+}]
+activation_y = null
+spawn_position = Vector2(280, 470)

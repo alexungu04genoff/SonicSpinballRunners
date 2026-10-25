@@ -1,7 +1,7 @@
 class_name ActGeometry
 extends Resource
 ## A single Act's terrain, connectors, gameplay objects and lifecycle authoring data.
-const FORMAT_VERSION := 10
+const FORMAT_VERSION := 11
 ## The system gutter is outside terrain bounds and is never a thirteenth terrain row.
 const RED_GUTTER_CELLS := 1
 const SHAPES = preload("res://scripts/act_editor/terrain_shapes.gd")
@@ -225,6 +225,7 @@ func _gameplay_validation_errors() -> PackedStringArray:
  if typeof(gameplay_objects) != TYPE_ARRAY:
   errors.append("Gameplay objects must be an array of dictionaries.")
   return errors
+ var ids: Dictionary = {}
  for index in gameplay_objects.size():
   var prefix := "Gameplay object %d: " % (index + 1)
   if typeof(gameplay_objects[index]) != TYPE_DICTIONARY:
@@ -243,9 +244,13 @@ func _gameplay_validation_errors() -> PackedStringArray:
    errors.append(prefix + "rotation_degrees must be a number.")
   elif not is_finite(placement.rotation_degrees):
    errors.append(prefix + "rotation_degrees must be finite.")
+  for error: String in OBJECTS.property_errors(placement): errors.append(prefix + error)
+  if typeof(placement.get("object_id")) == TYPE_STRING:
+   if ids.has(placement.object_id): errors.append(prefix + "duplicate object_id.")
+   ids[placement.object_id] = true
   for key: Variant in placement:
-   if typeof(key) != TYPE_STRING or key not in ["type", "position", "rotation_degrees"]:
-    errors.append(prefix + "unrecognized object field; only type, position and rotation_degrees are supported.")
+   if typeof(key) != TYPE_STRING or key not in ["type", "position", "rotation_degrees", "object_id", "properties"]:
+    errors.append(prefix + "unrecognized object field.")
  # Gameplay data has no grid bounds, occupancy rules, angle normalization or snapping.
  return errors
 
@@ -311,6 +316,17 @@ func fingerprint() -> String:
     if typeof(angle) in [TYPE_FLOAT, TYPE_INT]:
      angle = float(angle)
     ordered_objects.append([placement.get("type"), placement.get("position"), angle])
+    ordered_objects.back().append(OBJECTS.identity(placement, ordered_objects.size() - 1))
+    var props: Variant = placement.get("properties", {})
+    var ordered: Array = []
+    if props is Dictionary:
+     var keys: Array = props.keys()
+     keys.sort()
+     for key: Variant in keys:
+      var value: Variant = props[key]
+      ordered.append([key, float(value) if typeof(value) in [TYPE_INT, TYPE_FLOAT] else value])
+    else: ordered.append(props)
+    ordered_objects.back().append(ordered)
    else:
     ordered_objects.append(placement)
  else:
@@ -364,8 +380,8 @@ static func load_document(path: String) -> Dictionary:
   return {"document": null, "error": "The selected file is not an Act Geometry resource."}
  if not loaded._format_version_was_set or not loaded._library_version_was_set:
   return {"document": null, "error": "This Act file is missing its required format or terrain library version."}
- if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4, 5, 6, 7, 8, 9] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
-  if typeof(loaded.decor_slots) == TYPE_ARRAY:
+ if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4, 5, 6, 7, 8, 9, 10] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
+  if loaded.format_version < 10 and typeof(loaded.decor_slots) == TYPE_ARRAY:
    for slot: Variant in loaded.decor_slots:
     if slot is Dictionary and (slot.get("variant_mode", "auto") != "auto" or slot.has("variant_index")):
      return {"document": null, "error": "Fixed decor variants require Act format 10."}
@@ -387,7 +403,7 @@ static func load_document(path: String) -> Dictionary:
      return {"document": null, "error": "Fractional terrain transforms require Act format 8."}
     if placement is Dictionary and loaded.format_version < 9 and placement.has("fine_rotation_degrees"):
      return {"document": null, "error": "Fine terrain rotation requires Act format 9."}
-  # Old Acts keep their exact authored data; only explicit saving writes v10.
+  # Old Acts keep their exact authored data; only explicit saving writes the current version.
   loaded.format_version = FORMAT_VERSION
  var transform_decode_error := _decode_stored_terrain_transforms(loaded)
  if not transform_decode_error.is_empty():
@@ -418,6 +434,8 @@ static func load_document(path: String) -> Dictionary:
      var decoded: Variant = _decode_numeric_payload(slot[key])
      if decoded == null: return {"document": null, "error": "Decor slot: invalid stored " + key}
      slot[key] = decoded
+ var property_error := _decode_object_properties(loaded)
+ if not property_error.is_empty(): return {"document": null, "error": property_error}
  var errors: PackedStringArray = loaded.validation_errors()
  if not errors.is_empty():
   return {"document": null, "error": "\n".join(errors)}
@@ -500,6 +518,9 @@ func _storage_document() -> Resource:
   # Store the angle once as a native numeric byte payload in the same field.
   # Live documents and undo snapshots retain normal numeric rotation_degrees.
   placement.rotation_degrees = var_to_bytes(placement.rotation_degrees)
+  for key: Variant in placement.get("properties", {}):
+   if typeof(placement.properties[key]) in [TYPE_FLOAT, TYPE_INT, TYPE_PACKED_VECTOR2_ARRAY]:
+    placement.properties[key] = var_to_bytes(placement.properties[key])
  if stored.activation_y != null:
   # Use the same single-authority scalar representation as authored angles.
   stored.activation_y = var_to_bytes(stored.activation_y)
@@ -567,3 +588,29 @@ static func _unused_sibling(target: String, suffix: String) -> String:
 static func _remove_if_present(path: String) -> void:
  if FileAccess.file_exists(path):
   DirAccess.remove_absolute(path)
+
+static func _decode_object_properties(document: Resource) -> String:
+ if typeof(document.gameplay_objects) != TYPE_ARRAY: return ""
+ for index in document.gameplay_objects.size():
+  var item: Variant = document.gameplay_objects[index]
+  if not item is Dictionary: continue
+  # Deterministic legacy identity survives repeated loads; new placements use random IDs.
+  if not item.has("object_id"):
+   item["object_id"] = OBJECTS.identity(item, index)
+  if not item.has("properties"): item["properties"] = {}
+  if not item.properties is Dictionary: continue
+  for key: Variant in item.properties:
+   if typeof(item.properties[key]) != TYPE_PACKED_BYTE_ARRAY: continue
+   var payload: PackedByteArray = item.properties[key]
+   if key == "points":
+    var layout := var_to_bytes(PackedVector2Array())
+    var stride := var_to_bytes(PackedVector2Array([Vector2.ZERO])).size() - layout.size()
+    if payload.size() < 8 or payload.decode_u32(0) != layout.decode_u32(0): return "Invalid stored rail points."
+    var count := payload.decode_u32(4)
+    if count < 2 or count > 64 or payload.size() != layout.size() + count * stride: return "Invalid stored rail point count."
+    item.properties[key] = bytes_to_var(payload)
+   else:
+    var decoded: Variant = _decode_numeric_payload(payload)
+    if decoded == null: return "Invalid stored gameplay property: " + str(key)
+    item.properties[key] = decoded
+ return ""

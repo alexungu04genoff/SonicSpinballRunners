@@ -227,3 +227,7 @@ Use the existing isolated import helper to prevent editor indentation conversion
 The geometry regression checks all shapes against independent transform calculations, curved fill coverage and triangulation, overlap persistence and a fresh-process reload/edit/re-save. Connector regression checks width-only compatibility, spans, drafts and restart persistence. Gameplay and lifecycle regressions check independent records, validation, exact fractional persistence and previous-format loading. Scene smoke scripts exercise actual pointer/keyboard gestures, both snapping modes, numeric angles, overlap selection, history, marker bounds, gutter rejection and file workflow. Run them graphically with the launcher's ANGLE backend for rendered captures.
 
 Human review remains useful for palette comfort, drag precision, curve silhouettes and editing feel. Normal gameplay testing uses the main Green Hill application. The [standalone authored scene](AUTHORED_ACT_PLAYTEST.md) remains a low-level diagnostic; the editor remains focused on authoring.
+
+## Spinner, magnetic field and elevated rail
+
+Gameplay includes three additional authored mechanics and an exact property inspector. Rail placement is a sequence of clicks finished with Enter; selected paths expose move/add/insert/remove control-point gestures. All use normal save/load and history. See [Authored pinball mechanics](PINBALL_MECHANICS.md) for properties, the format-11 contract, runtime clearance rules, and the mechanics sandbox.

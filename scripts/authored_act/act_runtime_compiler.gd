@@ -7,6 +7,8 @@ const Document = preload("res://scripts/act_editor/act_geometry.gd")
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 const BumperFactory = preload("res://scripts/bumper_factory.gd")
 const Flipper = preload("res://scripts/flipper.gd")
+const Mechanics = preload("res://scripts/authored_act/pinball_mechanics.gd")
+const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const Dimensions = preload("res://scripts/act_dimensions.gd")
 
 static func compile(document: Resource, tuning: PhysicsTuning, controls: PlaygroundInput, ball: PlaygroundBall) -> Dictionary:
@@ -32,9 +34,15 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
  # Pass immutable generic visual data through; decor never creates physics bodies.
  result.decor_slots = document.decor_slots.duplicate(true)
  result.decor_seed = document.decor_identity()
+ var previous_radius := ball.radius
  ball.radius = Dimensions.BALL_RADIUS_CELLS * cell_size
  var act_root := Node2D.new()
  act_root.name = "AuthoredAct"
+ var mechanics := Mechanics.new()
+ mechanics.name = "PinballMechanics"
+ mechanics.ball = ball
+ act_root.add_child(mechanics)
+ result.mechanics = mechanics
  var wall_material := PhysicsMaterial.new()
  wall_material.friction = 0.0
  wall_material.bounce = float(tuning.effective.wall_restitution)
@@ -78,9 +86,16 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
  result.timings.terrain_ms = float(Time.get_ticks_usec() - terrain_started) / 1000.0
  var objects_started := Time.get_ticks_usec()
  for placement: Dictionary in document.gameplay_objects:
-  var descriptor := {"type": placement.type, "position": placement.position, "rotation_degrees": placement.rotation_degrees}
+  placement = placement.duplicate(true)
+  placement["object_id"] = Objects.identity(placement, result.objects.size())
+  var descriptor := placement.duplicate(true)
   var body: Node2D
   match placement.type:
+   "spinner", "magnetic_field", "elevated_rail":
+    body = Node2D.new()
+    body.position = placement.position
+    body.rotation_degrees = placement.rotation_degrees
+    mechanics.add_object(placement, descriptor)
    "round_bumper":
     descriptor.radius = Dimensions.ROUND_RADIUS_CELLS * cell_size
     body = BumperFactory.create({"kind": "circle", "position": placement.position, "rotation": deg_to_rad(float(placement.rotation_degrees)), "radius": descriptor.radius}, bumper_material)
@@ -107,7 +122,50 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
   descriptor.body = body
   result.objects.append(descriptor)
   act_root.add_child(body)
+ var rail_error := _validate_rail_clearance(result, ball.radius)
+ if not rail_error.is_empty():
+  act_root.free()
+  ball.radius = previous_radius
+  result.error = rail_error
+  return result
  result.timings.objects_ms = float(Time.get_ticks_usec() - objects_started) / 1000.0
  result.root = act_root
  result.timings.total_ms = float(Time.get_ticks_usec() - started) / 1000.0
  return result
+
+static func _near_outline(point: Vector2, points: PackedVector2Array, closed: bool, clearance: float) -> bool:
+ if closed and Geometry2D.is_point_in_polygon(point, points): return true
+ for i in (points.size() if closed else points.size() - 1):
+  if Geometry2D.get_closest_point_to_segment(point, points[i], points[(i + 1) % points.size()]).distance_to(point) <= clearance: return true
+ return false
+
+static func _validate_rail_clearance(result: Dictionary, ball_radius: float) -> String:
+ for item: Dictionary in result.mechanics.items:
+  if item.type != "elevated_rail": continue
+  if float(item.properties.width) < ball_radius * 2.0 + 2.0:
+   return "Rail %s: width must exceed the ball diameter by at least 2 pixels." % item.object_id
+  var path: Dictionary = item.path
+  if path.length > 20000.0: return "Rail %s: route exceeds 20000 pixels." % item.object_id
+  var count := ceili(float(path.length) / maxf(2.0, ball_radius * 0.5))
+  for step in count + 1:
+   var distance := float(path.length) * step / maxf(1.0, count)
+   var point := Mechanics.RailPath.sample(path, distance)
+   var height := Mechanics.RailPath.height(path, distance, item.properties.height)
+   if height >= 45.0: continue
+   for terrain: Dictionary in result.terrain:
+    if _near_outline(point, terrain.points, terrain.closed, maxf(ball_radius, float(item.properties.width) * 0.5)):
+     return "Rail %s: entry/descent crosses terrain before reaching 45 px clearance. Move the path or lower terrain." % item.object_id
+   for object: Dictionary in result.objects:
+    var touching := false
+    if object.type == "round_bumper":
+     touching = point.distance_to(object.position) < float(object.radius) + ball_radius
+    elif object.type == "triangle_bumper":
+     var local := (point - Vector2(object.position)).rotated(-deg_to_rad(float(object.rotation_degrees)))
+     touching = _near_outline(local, object.points, true, ball_radius)
+    elif object.type in ["left_flipper", "right_flipper"]:
+     for angle_step in 13:
+      var angle := deg_to_rad(float(object.rotation_degrees)) - float(object.side) * 0.8 * angle_step / 12.0
+      var tip: Vector2 = object.position + Vector2.from_angle(angle) * float(object.length)
+      if Geometry2D.get_closest_point_to_segment(point, object.position, tip).distance_to(point) < ball_radius + float(object.radius): touching = true
+    if touching: return "Rail %s: entry/descent overlaps a lower bumper or flipper sweep. Move the path mouth into clear space." % item.object_id
+ return ""

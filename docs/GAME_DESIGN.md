@@ -41,6 +41,14 @@ See [Act Geometry Editor](ACT_GEOMETRY_EDITOR.md) for launch, controls, the edit
 
 **Confirmed finer terrain authoring:** Terrain now supports a selectable one-cell or half-cell subgrid, Alt free placement/dragging and one-local-pixel Alt-arrow nudges. Uniform size choices are 1× and 0.5× for filled primitives, open walls and composites, about the transformed frame's top-left. Quarter-turns and mirrors remain unchanged. Format 8 retains the integer anchor and adds an optional exact fractional-cell offset and terrain scale; formats 2–7 migrate without rewriting their source files. Editor drawing, selection, merge operations, decoration support and runtime collision consume the same transformed geometry. Bounds use the scaled frame. This supersedes the original integer-only terrain movement restriction.
 
+### Spinner, magnetic field and elevated rail — 2026-10-25
+
+**Confirmed and implemented:** Authored Gameplay now includes a pass-through spinner with bounded Scorecraft ticks, a softened attract/repel field applying continuous bounded force, and a path-authored raised rail. Format 11 adds stable object IDs and validated per-type properties to the existing gameplay records; formats 2–10 retain exact transforms on load. The editor owns control points, exact properties, selection, duplication, undo/redo and persistence.
+
+Elevated traversal constrains the same authoritative 2D ball to the shared sampled route, explicitly disables lower-table interaction, and restores collision state with tangent momentum at either exit. The collisionless 3D deck and ball use the same elevation profile; the existing camera follows that raised visual plane. Weak shots roll back. Unsafe entry/descent geometry is rejected at runtime load while drafts remain editable. Reset, drain, pause, reload and source switching share the existing engine lifecycle.
+
+The proposed Gates / Cannons / Target Banks milestone was absent from the repository when this work began. The user authorized proceeding with engineering judgment; only the minimal shared identity/property foundation was added alongside these three mechanics. Gates, cannons and target banks remain separate work. Values and sandbox shot timing are provisional, not settled balance. See [Authored pinball mechanics](PINBALL_MECHANICS.md) for controls, implementation limits and verification.
+
 ### Theme-aware authored decoration — 2026-10-25
 
 **Confirmed and implemented first version:** The Act Editor's Decor palette places generic small, medium, large and landmark slots with surface/edge/either hints, exact local positions, free numeric angles and safe optional scale (0.85–1.15). Composition is manual; the active skin selects a deterministic auto variant using a persistent Act seed, stable slot ID and skin ID. Acts contain no theme-specific mesh names. Format 7 preserves formats 2–6 without source rewrites and includes decor in save/load, validation and shared history.

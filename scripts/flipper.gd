@@ -89,7 +89,7 @@ func _physics_process(delta: float) -> void:
   if is_equal_approx(old_angle, rotation):
    swing_remaining = minf(swing_remaining, 2.0 * delta)
   swing_remaining -= delta
-  if not struck_this_swing and not ball.serve_pending:
+  if not struck_this_swing and not ball.serve_pending and not ball.on_ramp:
    var nearest: Vector2 = Geometry2D.get_closest_point_to_segment(ball.global_position, global_position, tip())
    var old_nearest: Vector2 = Geometry2D.get_closest_point_to_segment(ball.global_position, global_position, old_tip)
    var old_is_closer := ball.global_position.distance_squared_to(old_nearest) < ball.global_position.distance_squared_to(nearest)
