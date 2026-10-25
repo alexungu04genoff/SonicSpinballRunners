@@ -1,0 +1,64 @@
+extends SceneTree
+## Production model builders at close range, across every stage palette.
+const Models = preload("res://scripts/pinball_models.gd")
+
+func _initialize() -> void:
+ call_deferred("run")
+
+func run() -> void:
+ root.size = Vector2i(1500, 1050)
+ var p := TablePresentation.new()
+ p.set_process(false)
+ root.add_child(p)
+ var environment := WorldEnvironment.new()
+ environment.environment = Environment.new()
+ environment.environment.background_mode = Environment.BG_COLOR
+ environment.environment.background_color = Color("121d30")
+ environment.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+ environment.environment.ambient_light_color = Color.WHITE
+ environment.environment.ambient_light_energy = 0.7
+ p.add_child(environment)
+ var light := DirectionalLight3D.new()
+ light.rotation_degrees = Vector3(-60, -25, 0)
+ light.light_energy = 1.5
+ p.add_child(light)
+ var camera := Camera3D.new()
+ p.add_child(camera)
+ camera.position = Vector3(4.2, 11, 9.2)
+ camera.look_at(Vector3(4.2, 0, 3.0))
+ camera.projection = Camera3D.PROJECTION_ORTHOGONAL
+ camera.size = 10.7
+ var index := 0
+ for theme: String in Models.PALETTES:
+  if theme == "default": continue
+  var panel := Node3D.new()
+  p.add_child(panel)
+  panel.position = Vector3((index % 3) * 3.2 + 0.5, 0, (index / 3) * 3.7)
+  var materials := Models.materials(theme)
+  var bumper := Node3D.new()
+  panel.add_child(bumper)
+  Models.round_bumper(p, bumper, 0.5, 1.3, materials)
+  var sling := Node3D.new()
+  panel.add_child(sling)
+  sling.position.x = 1.4
+  Models.triangle_bumper(p, sling, PackedVector2Array([Vector2(-40, 35), Vector2(0, -40), Vector2(40, 35)]), 0.38, materials)
+  var paddle := Node3D.new()
+  panel.add_child(paddle)
+  paddle.position = Vector3(-0.2, 0, 1.05)
+  Models.flipper(p, paddle, 1.65, 0.18, 1.2, materials)
+  var label := Label3D.new()
+  panel.add_child(label)
+  label.text = theme.replace("_", " ").to_upper()
+  label.position = Vector3(0.7, 0.1, 1.85)
+  label.rotation_degrees.x = -55
+  label.font_size = 40
+  label.pixel_size = 0.006
+  index += 1
+ for i in 10: await process_frame
+ if DisplayServer.get_name() != "headless":
+  await RenderingServer.frame_post_draw
+  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results/pinball-models"))
+  root.get_texture().get_image().save_png("res://test-results/pinball-models/gallery.png")
+ print("RESULT | Pinball model palette gallery | 6 themes built")
+ p.free()
+ quit()

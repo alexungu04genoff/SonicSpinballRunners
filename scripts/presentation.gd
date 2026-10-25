@@ -1,6 +1,10 @@
 class_name TablePresentation
 extends Node3D
 ## No CollisionObject3D exists in this tree. This mapping is used for every visual.
+const PinballModels = preload("res://scripts/pinball_models.gd")
+## Optional slot overrides: rubber, face, trim, mark, paddle and base. Rebuild to apply.
+@export var pinball_palette: Dictionary = {}
+var _pinball_materials: Dictionary = {}
 const SCALE: float = 0.01
 const BALL_HEIGHT: float = 0.16
 const RING_HEIGHT: float = 0.23
@@ -201,8 +205,7 @@ func _build_shared(chunks: Array[TableChunk], junctions: Variant, bounds: Rect2)
  floor_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  var rail_mat := terrain_side_material()
  var rail_top := terrain_top_material()
- var bumper_mat := material(Color("b34039"))
- var bumper_top := material(Color("ff8962"))
+ _pinball_materials = PinballModels.materials(_pinball_theme_id(), pinball_palette)
  var gold := material(Color("ffd568"), 0.08)
  var grid_mat := material(Color("1b414c"))
  for x in range(int(table_bounds.position.x + 100), int(table_bounds.end.x), 100):
@@ -256,11 +259,7 @@ func _build_shared(chunks: Array[TableChunk], junctions: Variant, bounds: Rect2)
      body_visual.position = map_point(item.position)
      add_child(body_visual)
      var radius: float = item.radius * SCALE
-     mesh_node(cylinder(radius, 0.32), bumper_mat, Vector3(0, 0.16, 0), body_visual)
-     var bevel := cylinder(radius, 0.08)
-     bevel.top_radius = radius * 0.88
-     mesh_node(bevel, bumper_top, Vector3(0, 0.36, 0), body_visual)
-     mesh_node(cylinder(radius * 0.60, 0.02), gold, Vector3(0, 0.41, 0), body_visual)
+     PinballModels.round_bumper(self, body_visual, radius, 1.0, _pinball_materials)
      bumper_visuals[item.body.get_instance_id()] = body_visual
      _circle_outline(item.position, item.radius, debug_mat)
     "flipper_mount":
@@ -272,7 +271,10 @@ func _build_shared(chunks: Array[TableChunk], junctions: Variant, bounds: Rect2)
      for i in item.points.size():
       line(item.position + item.points[i], item.position + item.points[(i + 1) % item.points.size()], 0.012, OVERLAY_HEIGHT, debug_mat, physics_overlay)
     "triangle":
-     var body_visual := mesh_node(_prism(item.points, 0.34, bumper_mat, bumper_top), null, map_point(item.position))
+     var body_visual := Node3D.new()
+     body_visual.position = map_point(item.position)
+     add_child(body_visual)
+     PinballModels.triangle_bumper(self, body_visual, item.points, 0.34, _pinball_materials)
      bumper_visuals[item.body.get_instance_id()] = body_visual
      for i in item.points.size():
       line(item.position + item.points[i], item.position + item.points[(i + 1) % item.points.size()], 0.012, OVERLAY_HEIGHT, debug_mat, physics_overlay)
@@ -310,9 +312,7 @@ func _build_shared(chunks: Array[TableChunk], junctions: Variant, bounds: Rect2)
   pivot.position = map_point(flipper.position)
   add_child(pivot)
   var height_scale := flipper.radius / PlaygroundFlipper.RADIUS if authored_mode else 1.0
-  _paddle(flipper.length * SCALE, flipper.radius * SCALE, 0.23 * height_scale, 0.0, material(Color("307ac3")), pivot)
-  _paddle(flipper.length * SCALE, flipper.radius * SCALE * 0.72, 0.035 * height_scale, 0.23 * height_scale, material(Color("b0e6ff")), pivot)
-  mesh_node(cylinder(0.06 * height_scale, 0.02 * height_scale), gold, Vector3(0, 0.275 * height_scale, 0), pivot)
+  PinballModels.flipper(self, pivot, flipper.length * SCALE, flipper.radius * SCALE, height_scale, _pinball_materials)
   flipper_visuals.append(pivot)
   var retracted := Node3D.new()
   retracted.position = pivot.position
@@ -345,9 +345,6 @@ func _build_authored_objects(runtime: Dictionary) -> void:
  var mechanics_visual := preload("res://scripts/authored_act/mechanics_presentation.gd").new()
  add_child(mechanics_visual)
  mechanics_visual.build(self, runtime)
- var bumper_mat := material(Color("b34039"))
- var bumper_top := material(Color("ff8962"))
- var gold := material(Color("ffd568"), 0.08)
  var debug_mat := debug_material(Color("70ff85"))
  var overlay_vertices := PackedVector3Array()
  for item: Dictionary in runtime.objects:
@@ -361,18 +358,14 @@ func _build_authored_objects(runtime: Dictionary) -> void:
   if item.type == "round_bumper":
    var radius: float = item.radius * SCALE
    var height_scale := float(item.radius) / 38.0
-   mesh_node(cylinder(radius, 0.32 * height_scale), bumper_mat, Vector3(0, 0.16 * height_scale, 0), visual)
-   var bevel := cylinder(radius, 0.08 * height_scale)
-   bevel.top_radius = radius * 0.88
-   mesh_node(bevel, bumper_top, Vector3(0, 0.36 * height_scale, 0), visual)
-   mesh_node(cylinder(radius * 0.60, 0.02 * height_scale), gold, Vector3(0, 0.41 * height_scale, 0), visual)
+   PinballModels.round_bumper(self, visual, radius, height_scale, _pinball_materials)
    for i in 32:
     overlay_vertices.append(map_point(item.position + Vector2.from_angle(i * TAU / 32) * item.radius, OVERLAY_HEIGHT))
     overlay_vertices.append(map_point(item.position + Vector2.from_angle((i + 1) * TAU / 32) * item.radius, OVERLAY_HEIGHT))
   else:
    var points: PackedVector2Array = item.points
    var height := authored_cell_size * SCALE * 0.18
-   mesh_node(_prism(points, height, bumper_mat, bumper_top), null, Vector3.ZERO, visual)
+   PinballModels.triangle_bumper(self, visual, points, height, _pinball_materials)
    for i in points.size():
     var a: Vector2 = item.position + points[i].rotated(deg_to_rad(float(item.rotation_degrees)))
     var b: Vector2 = item.position + points[(i + 1) % points.size()].rotated(deg_to_rad(float(item.rotation_degrees)))
@@ -825,3 +818,11 @@ func _debug_circle(center: Vector2, radius: float) -> void:
 func ramp_materials() -> Dictionary:
  return {"deck": material(Color("9bb9c8")), "edge": material(Color("587788")),
   "support": material(Color("4c647b")), "accent": material(Color("dbe7ef"))}
+
+func _pinball_theme_id() -> String:
+ # Base and themed renderers share hardware without depending on theme scripts.
+ for property in get_property_list():
+  if property.name == "theme_definition":
+   var definition: RefCounted = get("theme_definition")
+   return str(definition.theme_id)
+ return "default"
