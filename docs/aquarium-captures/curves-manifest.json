@@ -1,0 +1,101 @@
+[
+  {
+    "act": "res://data/acts/decor_curve_relay.tres",
+    "ball": "(482.5, 960.25)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (6.0, 12.1194, 16.66938)]",
+    "draw_calls": 883.0,
+    "filter": "OFF",
+    "fingerprint": "83feb77ec7be865b8517dd45ba03c3ba1abb3eb23b46930c82187de929f51b2e",
+    "framing": "overview",
+    "path": "res://test-results/aquarium-curves/aquarium_park-overview-off.png",
+    "theme": "aquarium_park"
+  },
+  {
+    "act": "res://data/acts/decor_curve_relay.tres",
+    "ball": "(482.5, 960.25)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (6.0, 12.1194, 16.66938)]",
+    "draw_calls": 884.0,
+    "filter": "N64-ish",
+    "fingerprint": "83feb77ec7be865b8517dd45ba03c3ba1abb3eb23b46930c82187de929f51b2e",
+    "framing": "overview",
+    "path": "res://test-results/aquarium-curves/aquarium_park-overview-n64.png",
+    "theme": "aquarium_park"
+  },
+  {
+    "act": "res://data/acts/decor_curve_relay.tres",
+    "ball": "(482.5, 960.25)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (6.0, 12.1194, 16.66938)]",
+    "draw_calls": 886.0,
+    "filter": "N64-ish + VHS + CRT",
+    "fingerprint": "83feb77ec7be865b8517dd45ba03c3ba1abb3eb23b46930c82187de929f51b2e",
+    "framing": "overview",
+    "path": "res://test-results/aquarium-curves/aquarium_park-overview-retro.png",
+    "theme": "aquarium_park"
+  },
+  {
+    "act": "res://data/acts/decor_curve_relay.tres",
+    "ball": "(482.5, 960.25)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (4.825, 2.703684, 12.29957)]",
+    "draw_calls": 562.0,
+    "filter": "OFF",
+    "fingerprint": "83feb77ec7be865b8517dd45ba03c3ba1abb3eb23b46930c82187de929f51b2e",
+    "framing": "follow",
+    "path": "res://test-results/aquarium-curves/aquarium_park-follow-off.png",
+    "theme": "aquarium_park"
+  },
+  {
+    "act": "res://data/acts/decor_curve_relay.tres",
+    "ball": "(482.5, 960.25)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (4.825, 2.703684, 12.29957)]",
+    "draw_calls": 563.0,
+    "filter": "N64-ish",
+    "fingerprint": "83feb77ec7be865b8517dd45ba03c3ba1abb3eb23b46930c82187de929f51b2e",
+    "framing": "follow",
+    "path": "res://test-results/aquarium-curves/aquarium_park-follow-n64.png",
+    "theme": "aquarium_park"
+  },
+  {
+    "act": "res://data/acts/decor_curve_relay.tres",
+    "ball": "(482.5, 960.25)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (4.825, 2.703684, 12.29957)]",
+    "draw_calls": 565.0,
+    "filter": "N64-ish + VHS + CRT",
+    "fingerprint": "83feb77ec7be865b8517dd45ba03c3ba1abb3eb23b46930c82187de929f51b2e",
+    "framing": "follow",
+    "path": "res://test-results/aquarium-curves/aquarium_park-follow-retro.png",
+    "theme": "aquarium_park"
+  },
+  {
+    "act": "res://data/acts/decor_curve_relay.tres",
+    "ball": "(482.5, 960.25)",
+    "camera": "[X: (0.894427, 0.0, -0.447214), Y: (-0.127775, 0.958315, -0.255551), Z: (0.428571, 0.285714, 0.857143), O: (15.0, 5.0, 19.5)]",
+    "draw_calls": 882.0,
+    "filter": "OFF",
+    "fingerprint": "83feb77ec7be865b8517dd45ba03c3ba1abb3eb23b46930c82187de929f51b2e",
+    "framing": "study",
+    "path": "res://test-results/aquarium-curves/park-study.png",
+    "theme": "aquarium_park"
+  },
+  {
+    "act": "res://data/acts/decor_curve_relay.tres",
+    "ball": "(482.5, 960.25)",
+    "camera": "[X: (0.894427, 0.0, -0.447214), Y: (-0.127775, 0.958315, -0.255551), Z: (0.428571, 0.285714, 0.857143), O: (15.0, 5.0, 19.5)]",
+    "draw_calls": 882.0,
+    "filter": "OFF",
+    "fingerprint": "83feb77ec7be865b8517dd45ba03c3ba1abb3eb23b46930c82187de929f51b2e",
+    "framing": "animation",
+    "path": "res://test-results/aquarium-curves/water-t0.png",
+    "theme": "aquarium_park"
+  },
+  {
+    "act": "res://data/acts/decor_curve_relay.tres",
+    "ball": "(482.5, 960.25)",
+    "camera": "[X: (0.894427, 0.0, -0.447214), Y: (-0.127775, 0.958315, -0.255551), Z: (0.428571, 0.285714, 0.857143), O: (15.0, 5.0, 19.5)]",
+    "draw_calls": 882.0,
+    "filter": "OFF",
+    "fingerprint": "83feb77ec7be865b8517dd45ba03c3ba1abb3eb23b46930c82187de929f51b2e",
+    "framing": "animation",
+    "path": "res://test-results/aquarium-curves/water-t2_5.png",
+    "theme": "aquarium_park"
+  }
+]
