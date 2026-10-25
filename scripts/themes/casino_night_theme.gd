@@ -40,7 +40,7 @@ func configure_environment(p: Node3D) -> void:
  world.sky = sky
  world.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
  world.ambient_light_color = Color("c4c9ed")
- world.ambient_light_energy = 0.38
+ world.ambient_light_energy = 0.52
  world.tonemap_mode = Environment.TONE_MAPPER_LINEAR
  # Compatibility supports glow in recent Godot 4 versions. Use only its common
  # controls; no HDR viewport, renderer switch or global project changes needed.
@@ -52,7 +52,7 @@ func configure_environment(p: Node3D) -> void:
  var light: DirectionalLight3D = p._key_light
  light.rotation_degrees = Vector3(-52, -32, 0)
  light.light_color = Color("ffe1b5")
- light.light_energy = 0.68
+ light.light_energy = 0.78
  light.shadow_normal_bias = 2.0
 
 func build_background(p: Node3D) -> void:
@@ -128,6 +128,11 @@ func build_background(p: Node3D) -> void:
 func build_edges(_p: Node3D) -> void:
  # The district already frames the table; keep the immediate lane edges quiet.
  pass
+
+func ramp_materials() -> Dictionary:
+ return {"deck": _shader(preload("res://scripts/themes/casino_ramp_cards.gdshader")),
+  "edge": material(Color("e7bd62")), "support": material(Color("742641")),
+  "accent": material(Color("b52349"))}
 
 func _collect(node: Node3D, transform: Transform3D, batches: Dictionary) -> void:
  var local := transform * node.transform

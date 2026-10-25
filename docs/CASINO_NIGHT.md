@@ -4,6 +4,22 @@ Casino Night is the fourth selectable presentation skin. Launch **Play Green Hil
 
 The same Act, physics, gameplay objects, score, character and camera remain authoritative. Selecting a skin rebuilds only presentation. No slot-machine rules, gambling, rewards, enemies, new scoring or character-specific physics were added. No Sega assets were imported: all meshes and materials are original GDScript and procedural shaders.
 
+## Current surface revision: cards and brighter tops
+
+Following feedback that the navy surfaces hid the ramps and made the whole table too dark, the playable floor now uses broader cobalt-blue lacquer tiles. Raised tops use warm ivory panels with restrained gold inlays; navy walls and the stronger neon remain. Ambient energy is 0.52 and directional energy is 0.78, while bloom and the two local lamps retain the previous tuning.
+
+Casino ramps now have their own procedural playing-card deck: cream faces, alternating hearts/diamonds/spades/clubs, red or dark ink, small corner pips, gold edges and burgundy fascia. Cards follow the existing route UVs through bends and elevation. No ramp mesh, collision, clearance, route, speed or authored data changed.
+
+The [official SEGA Steam screenshot](https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/200590/ss_67642482f0f6b9ef8c4a30929938f9f1f9b1c683.1920x1080.jpg) was inspected directly from the [Casino Night DLC product page](https://store.steampowered.com/app/200590/Sonic_Generations__Casino_Night_DLC/). It shows a dark sky around a saturated blue playfield with bold red/yellow graphics and pale ramp structures. That surface/background contrast informs this revision; the card pattern is an original interpretation of the user's request. The image was viewed in memory and was not imported as a game asset. The embedded browser stalled, so the official image was inspected directly instead.
+
+![Current playing-card ramp and brighter surface finish, filter off](casino-captures/cards-and-bright-tops.png)
+
+![Same local Act with the preferred N64-ish, VHS and CRT stack](casino-captures/cards-and-bright-tops-retro.png)
+
+Verification for this revision: **43 ramp checks and 522 runtime checks passed**, including collisionless visuals, unchanged rail/ball state, theme switching and light cleanup. Two untouched local Acts (`First Try Smooth Decor.tres` and `Third complex.tres`) produced **26 captures with zero failures**. Filter OFF and the preferred stack were inspected; shader/script logs were clean. The local Acts remain untracked. Current runtime counts include the concurrently added fifth theme. Earlier screenshots below document the previous navy-top lighting pass; the two images above show the latest surface finish. Fast-ball tracking on the brighter blue remains a manual playtest.
+
+A subsequent editor import exposed four mixed-indent lines in the existing `game.gd`. Opening the editor reproduced that whitespace change. The four lines were restored to their committed indentation without logic changes, and the runtime/ramp checks were rerun directly. Editor import is not counted as a passing check for this revision.
+
 ## Research and interpretation
 
 Research preceded asset creation. The following game imagery was inspected in the browser; source images were not saved into the repository.
@@ -20,12 +36,12 @@ Our scene combines Sonic 2's graphic palette, Generations' architectural scale, 
 
 ## Materials, lighting and performance
 
-- **Playable surface:** quiet royal-blue panels with dark seams, subdued geometric borders, sparse embossed stars and short blue light inserts. Raised terrain has dark navy panels, gold inset borders and broad pink strips. All patterns use world coordinates and derivative filtering, including authored curves and open rails.
+- **Playable surface:** brighter cobalt panels with soft seams, subdued geometric borders, sparse embossed stars and short blue light inserts. Raised terrain has warm ivory panels, gold inset borders and broad pink strips. Floor and terrace patterns use world coordinates and derivative filtering; ramp cards use route-aligned UVs.
 - **Walls:** large navy recesses, slim gold frames, broad vertical blue inserts and a luminous pink ledge rim. This user-selected finish replaces the original repeating gold circles and red bays. Normal-weighted world projection wraps arbitrary authored outlines; no new collision or geometry repair occurs.
 - **Night light:** warm directional key, cool ambient fill and a dark violet horizon. Shared gameplay materials retain familiar object colors. Rings and flippers sit against the darkest table surfaces.
 - **Emission:** pink, blue, green and amber trims use actual emission at energy 2.8, increased from 1.15 after feedback that the emitters were hard to see. Large silhouettes carry the light; there are no animated flashing bulbs or per-prop lights. Reel faces were darkened after review to reduce competition with gameplay highlights.
 - **Bloom:** enabled in the theme's Environment, before the existing world-only retro passes. Godot 4.7.2's Compatibility renderer supports this path; see [Godot's glow documentation](https://docs.godotengine.org/en/4.5/tutorials/3d/environment_and_post_processing.html). Only supported controls are set: intensity 1.1, bloom 0.12, HDR threshold 0.75 and HDR scale 1.6. No renderer or project-setting change is required. Earlier Godot 4 releases without Compatibility glow will still render emission, but that fallback was not tested.
-- **Local spill:** exactly two unshadowed OmniLights, amber and blue, each with range 4.8 and energy 2.4 (previously 4.0 and 0.7). Visible crown fixtures now identify their positions along the table sides. Slightly reduced ambient/key light improves neon contrast. Emission alone is not claimed to illuminate nearby geometry through GI. The local lights supply that spill. Theme rebuilds clear them; Green Hill explicitly disables glow when returning from Casino.
+- **Local spill:** exactly two unshadowed OmniLights, amber and blue, each with range 4.8 and energy 2.4 (previously 4.0 and 0.7). Visible crown fixtures identify their positions along the table sides. Ambient/key lighting was subsequently raised to improve table readability. Emission alone is not claimed to illuminate nearby geometry through GI. The local lights supply that spill. Theme rebuilds clear them; Green Hill explicitly disables glow when returning from Casino.
 - **District:** thirteen quiet skyline buildings, one giant casino facade, six larger lantern/reel towers and six palms. Static background primitives share meshes/materials and are batched into MultiMeshes. A single original CASINO NIGHT sign remains separate. Immediate lane edges stay clear of scattered fake gameplay objects.
 - **Cost:** the revised terraced Act's overview measured 793 total draw calls for Casino, versus 1135 Green Hill, 821 Chemical Plant and 616 Rooftop Run. Curved Act Casino measured 613. The two visible fixtures add 56 calls over the initial Casino version. These are whole-frame counters including HUD, shadows and gameplay, not GPU-time or FPS benchmarks. Android and low-end devices remain unmeasured.
 
