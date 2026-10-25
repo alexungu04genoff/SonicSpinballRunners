@@ -175,11 +175,21 @@ func check_preview_and_history() -> void:
 	await click_control(editor.buttons.fit)
 	await click_control(editor.buttons.merge_smooth)
 	check(editor.composite_preview_active and not editor.composite_preview.is_empty(), "Merge + Smooth starts a valid combined preview")
-	for strength in [0, 25, 50, 75]:
+	for strength in [0, 25, 50, 75, 100, 125, 150, 175, 200]:
 		editor.composite_strength.value = strength
 		await process_frame
 		check(editor.composite_preview.is_empty() or Composite.validation_error(editor.composite_preview.outline).is_empty(), "Strength %d%% never exposes an invalid applyable outline" % strength)
 	check(editor.undo_stack.size() == history_size and editor.document.fingerprint() == before, "All strength changes stay outside document history")
+	check(editor.composite_strength.value == 200 and not editor.composite_preview.is_empty(), "Editor accepts 200% smoothing and prepares a valid preview")
+	var unprotected: PackedVector2Array = editor.composite_preview.outline.duplicate()
+	await click_control(editor.composite_preserve_corners)
+	check(editor.composite_preserve_corners.button_pressed and not editor.composite_preview.is_empty() and editor.composite_preview.outline != unprotected, "Preserve 90 degrees checkbox updates the active preview")
+	var corners := PackedVector2Array([Vector2(0, 0), Vector2(0, 2)])
+	for corner in corners:
+		check(editor.composite_preview.outline.has(corner), "Protected source corner stays exact in the displayed composite")
+	check(editor.undo_stack.size() == history_size and editor.document.fingerprint() == before, "Corner protection changes preview without recording edits")
+	await click_control(editor.composite_preserve_corners)
+	check(editor.composite_preview.outline == unprotected, "Turning corner protection off rebuilds the original preview without accumulating smoothing")
 	editor.composite_strength.value = 25
 	await process_frame
 	var expected: Dictionary = editor.composite_preview.duplicate(true)
@@ -252,6 +262,23 @@ func check_unchanged_smoothing() -> void:
 	check(not editor.composite_preview_active and not editor.canvas.preview_active and editor.canvas.selected_indices == [0], "Unchanged Apply exits preview and retains the selected composite")
 
 
+func check_protected_primitive() -> void:
+	editor.new_document()
+	editor.add_placement(stamp("rectangle_3x3", Vector2i(2, 3)))
+	editor.canvas.select_piece(0)
+	editor._refresh()
+	var before: String = editor.document.fingerprint()
+	editor.composite_strength.value = 200
+	editor.composite_preserve_corners.button_pressed = true
+	await click_control(editor.buttons.smooth)
+	check(editor.composite_preview_active and editor.composite_preview.outline.size() == 4, "Protected 200% Smooth previews a primitive without rounding its four corners")
+	await click_control(editor.buttons.composite_apply)
+	check(not editor.composite_preview_active and editor.document.placements[0].shape_id == "composite" and editor.document.validation_errors().is_empty(), "Smooth converts a primitive into schema-valid editable CompositeTerrain")
+	check(editor.save_to(SAVE_PATH), "Protected high-strength primitive smoothing saves successfully")
+	await press_key(KEY_Z, true)
+	check(editor.document.fingerprint() == before, "Undo protected smoothing restores the exact primitive")
+
+
 func capture_preview() -> void:
 	await reset_fixture()
 	var left := stamp("triangle_2x2", Vector2i(0, 4))
@@ -261,7 +288,7 @@ func capture_preview() -> void:
 	var selected: Array[int] = [0, 1, 2, 3]
 	editor.canvas.set_terrain_selection(selected)
 	editor._refresh()
-	editor.composite_strength.value = 25
+	editor.composite_strength.value = 200
 	await click_control(editor.buttons.merge_smooth)
 	check(editor.composite_preview_active and not editor.composite_preview.is_empty(), "Four-piece landscape produces a continuous sculpting preview")
 	await move_pointer(grid_position(Vector2(10, 10)))
@@ -286,6 +313,7 @@ func run() -> void:
 	await check_preview_and_history()
 	await check_composite_edits_and_persistence()
 	await check_unchanged_smoothing()
+	await check_protected_primitive()
 	await capture_preview()
 	print("RESULT | Composite editor UI | %d checks | %d failures" % [checks, failures])
 	editor.queue_free()

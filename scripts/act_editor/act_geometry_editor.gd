@@ -52,6 +52,7 @@ var marker_summary: Label
 var ring_spacing_field: SpinBox
 var composite_bar: HBoxContainer
 var composite_strength: SpinBox
+var composite_preserve_corners: CheckBox
 var composite_hint: Label
 var composite_preview_active := false
 var composite_preview: Dictionary = {}
@@ -282,7 +283,7 @@ func _build_ui() -> void:
 	_button(composite_bar, "merge_smooth", "Merge + Smooth", func(): preview_composite("merge_smooth"), "Union selected filled terrain, then smooth the resulting outline")
 	composite_strength = SpinBox.new()
 	composite_strength.min_value = 0
-	composite_strength.max_value = 75
+	composite_strength.max_value = Composite.MAX_STRENGTH * 100.0
 	composite_strength.step = 25
 	composite_strength.value = 25
 	composite_strength.suffix = "%"
@@ -291,6 +292,13 @@ func _build_ui() -> void:
 	composite_strength.value_changed.connect(func(_value):
 		if composite_preview_active and _composite_operation != "merge": _rebuild_composite_preview())
 	composite_bar.add_child(composite_strength)
+	composite_preserve_corners = CheckBox.new()
+	composite_preserve_corners.text = "Preserve 90°"
+	composite_preserve_corners.tooltip_text = "Keep existing right-angle corners and notches (within 1°). Other joins still smooth. Does not restore previously rounded corners."
+	composite_preserve_corners.focus_mode = Control.FOCUS_NONE
+	composite_preserve_corners.toggled.connect(func(_pressed):
+		if composite_preview_active and _composite_operation != "merge": _rebuild_composite_preview())
+	composite_bar.add_child(composite_preserve_corners)
 	_button(composite_bar, "composite_apply", "Apply", apply_composite, "Replace the selected sources in one undo step")
 	_button(composite_bar, "composite_cancel", "Cancel", cancel_composite_preview, "Discard the preview; original terrain stays unchanged")
 	composite_hint = Label.new()
@@ -539,7 +547,7 @@ func preview_composite(operation: String) -> void:
 func _rebuild_composite_preview() -> void:
 	var result: Dictionary = {"placement": _composite_base.duplicate(true), "error": ""}
 	if _composite_operation != "merge":
-		result = Composite.smooth(_composite_base, composite_strength.value / 100.0)
+		result = Composite.smooth(_composite_base, composite_strength.value / 100.0, composite_preserve_corners.button_pressed)
 	composite_preview = result.placement
 	canvas.set_composite_preview(composite_preview, true)
 	_refresh()
@@ -1153,6 +1161,7 @@ func _refresh_composite_controls() -> void:
 	buttons.composite_apply.visible = composite_preview_active
 	buttons.composite_cancel.visible = composite_preview_active
 	composite_strength.editable = not composite_preview_active or _composite_operation != "merge"
+	composite_preserve_corners.disabled = composite_preview_active and _composite_operation == "merge"
 	composite_hint.text = merge_error if not merge_error.is_empty() else "%d filled pieces selected. Preview before applying; no source changes until Apply." % _terrain_selection().size()
 	if _terrain_selection().size() == 1 and smooth_error.is_empty():
 		composite_hint.text = "Smooth this piece, or Ctrl-click more filled terrain to merge."

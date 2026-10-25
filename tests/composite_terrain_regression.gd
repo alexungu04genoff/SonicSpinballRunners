@@ -186,6 +186,38 @@ func check_smoothing() -> void:
 	check(changed, "Nonzero smoothing changes at least one sharp joined outline")
 
 
+func check_extended_smoothing() -> void:
+	var square := stamp("rectangle_3x3", Vector2i(2, 2))
+	var original: PackedVector2Array = Shapes.get_definition(square.shape_id).points
+	var light: Dictionary = Composite.smooth(square, 0.75)
+	var strong: Dictionary = Composite.smooth(square, 2.0)
+	check(strong.error.is_empty() and not strong.placement.is_empty(), "200% smooths a filled primitive into valid terrain", strong.error)
+	if not strong.placement.is_empty():
+		check(polygon_area(strong.placement.outline) < polygon_area(light.placement.outline), "200% produces broader rounding than 75%")
+		check(Composite.validation_error(strong.placement.outline).is_empty(), "Maximum strength retains valid solid collision geometry")
+	var protected: Dictionary = Composite.smooth(square, 2.0, true)
+	check(protected.error.is_empty() and protected.placement.outline == original, "Preserve 90 degrees retains every square corner exactly at 200%")
+	var mixed: Dictionary = Composite.smooth(square, 0.0).placement
+	mixed.base_size = Vector2i(6, 4)
+	mixed.outline = PackedVector2Array([Vector2(0, 0), Vector2(6, 0), Vector2(6, 4), Vector2(4, 4), Vector2(4, 2), Vector2(2, 2), Vector2(0, 4)])
+	for reversed in [false, true]:
+		var fixture := mixed.duplicate(true)
+		if reversed: fixture.outline.reverse()
+		var rounded: Dictionary = Composite.smooth(fixture, 2.0, true)
+		check(rounded.error.is_empty(), "Mixed-angle terrain smooths with protected convex and concave corners", rounded.error)
+		if rounded.placement.is_empty(): continue
+		for point in [Vector2(0, 0), Vector2(6, 0), Vector2(6, 4), Vector2(4, 4), Vector2(4, 2)]:
+			check(rounded.placement.outline.has(point), "Right-angle vertex remains exact independent of winding: " + str(point))
+		check(not rounded.placement.outline.has(Vector2(2, 2)) and not rounded.placement.outline.has(Vector2(0, 4)), "Preserving square corners still rounds oblique joins")
+	for example in merged_examples:
+		for strength in [1.0, 1.25, 1.5, 1.75, 2.0]:
+			for preserve in [false, true]:
+				var result: Dictionary = Composite.smooth(example, strength, preserve)
+				check((not result.error.is_empty() and result.placement.is_empty()) or (result.error.is_empty() and Composite.validation_error(result.placement.outline).is_empty()), "Extended strength either validates or rejects without an applyable invalid outline")
+	check(not Composite.smooth(square, 2.01).error.is_empty(), "Strength above 200% rejects clearly")
+	check(Composite.smooth(square, 0.0, true).placement.outline == original, "Zero strength remains exact with preservation enabled")
+
+
 func check_transforms() -> void:
 	if merged_examples.is_empty(): return
 	var source := merged_examples[0]
@@ -225,6 +257,8 @@ func check_storage() -> Resource:
 		var smooth: Dictionary = Composite.smooth(example, 0.5)
 		if not smooth.placement.is_empty():
 			document.placements.append(smooth.placement)
+	document.placements.append(Composite.smooth(stamp("rectangle_3x3", Vector2i(2, 2)), 2.0, true).placement)
+	document.placements.append(Composite.smooth(stamp("rectangle_3x3", Vector2i(2, 2)), 2.0).placement)
 	var exact := exact_placement_bytes(document.placements)
 	check(document.validation_errors().is_empty(), "Composite collection passes the versioned Act schema", str(document.validation_errors()))
 	check(document.save_document(SAVE_PATH) == OK, "Composite document saves through staged and verified persistence")
@@ -444,6 +478,7 @@ func run() -> void:
 		check_merge_cases()
 		check_rejections()
 		check_smoothing()
+		check_extended_smoothing()
 		check_transforms()
 		await check_runtime(check_storage())
 	print("RESULT | Composite terrain | %d checks | %d failures" % [checks, failures])

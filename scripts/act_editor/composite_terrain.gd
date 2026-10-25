@@ -7,7 +7,8 @@ const MAX_VERTICES := 2048
 const MAX_SELECTION := 128
 const MAX_INPUT_VERTICES := 8192
 const MAX_COORDINATE := 4096.0
-const MAX_STRENGTH := 0.75
+const MAX_STRENGTH := 2.0
+const RIGHT_ANGLE_TOLERANCE_DEGREES := 1.0
 const EDGE_EPSILON := 0.00001
 const AREA_EPSILON := 0.00000001
 
@@ -77,9 +78,9 @@ static func merge(placements: Array) -> Dictionary:
    return _failure("Selection must form one connected solid. Separate islands and point-only joins are not supported; overlap or share an edge.")
  return _placement_from_global(polygons[0])
 
-static func smooth(placement: Dictionary, strength: float) -> Dictionary:
+static func smooth(placement: Dictionary, strength: float, preserve_right_angles: bool = false) -> Dictionary:
  if not is_finite(strength) or strength < 0.0 or strength > MAX_STRENGTH:
-  return _failure("Smoothing strength must be between 0% and 75%.")
+  return _failure("Smoothing strength must be between 0% and 200%.")
  var definition := SHAPES.definition_for_placement(placement)
  if definition.is_empty() or not definition.closed:
   return _failure("Smooth supports filled terrain only.")
@@ -87,11 +88,13 @@ static func smooth(placement: Dictionary, strength: float) -> Dictionary:
  var error := validation_error(outline)
  if not error.is_empty(): return _failure("Cannot smooth this outline: " + error)
  var result := placement.duplicate(true)
- result.shape_id = "composite"
- result.composite_version = VERSION
- result.smoothing_strength = strength
+ # Explicit String keys also satisfy the authoring schema when the input is a
+ # primitive without these fields (dot insertion can create StringName keys).
+ result["shape_id"] = "composite"
+ result["composite_version"] = VERSION
+ result["smoothing_strength"] = strength
  if strength == 0.0:
-  result.outline = outline.duplicate()
+  result["outline"] = outline.duplicate()
   return {"placement": result, "error": ""}
  var rounded := PackedVector2Array()
  for index in outline.size():
@@ -100,13 +103,21 @@ static func smooth(placement: Dictionary, strength: float) -> Dictionary:
   var next := outline[(index + 1) % outline.size()]
   var incoming := point - previous
   var outgoing := next - point
+  # Preserve both convex 90-degree corners and concave right-angle notches.
+  # Dot magnitude is invariant under rotation, mirroring and polygon winding.
+  var direction_dot := incoming.normalized().dot(outgoing.normalized())
+  if preserve_right_angles and absf(direction_dot) <= sin(deg_to_rad(RIGHT_ANGLE_TOLERANCE_DEGREES)):
+   rounded.append(point)
+   continue
   # Leave existing gentle curve samples alone. Only meaningful corners round.
-  if incoming.normalized().dot(outgoing.normalized()) > 0.99875:
+  if direction_dot > 0.99875:
    rounded.append(point)
    continue
   # Local quadratic rounding stays in the adjacent corner triangle. Its maximum
-  # setback is 0.15 cells and 18.75% of either edge, protecting narrow features.
-  var setback := minf(strength * 0.2, minf(incoming.length(), outgoing.length()) * strength * 0.25)
+  # setback was 0.15 cells and 18.75% of either edge at the original 75% maximum.
+  # At 200%, allow 0.4 cells but keep each cut below half an edge so adjacent
+  # rounded corners never meet in a duplicate vertex or consume a narrow edge.
+  var setback := minf(strength * 0.2, minf(incoming.length(), outgoing.length()) * minf(strength * 0.25, 0.45))
   var start := point - incoming.normalized() * setback
   var end := point + outgoing.normalized() * setback
   for sample in range(5):
@@ -119,7 +130,7 @@ static func smooth(placement: Dictionary, strength: float) -> Dictionary:
  var rounded_area := absf(_signed_area(rounded))
  if absf(rounded_area - original_area) > original_area * 0.05:
   return _failure("Smoothing would change this small shape too much. Reduce strength.")
- result.outline = rounded
+ result["outline"] = rounded
  return {"placement": result, "error": ""}
 
 static func validation_error(polygon: PackedVector2Array) -> String:
