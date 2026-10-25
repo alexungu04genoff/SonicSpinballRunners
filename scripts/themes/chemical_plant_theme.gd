@@ -14,12 +14,7 @@ var _yellow: StandardMaterial3D
 func _init() -> void:
  theme_id = "chemical_plant"
  display_name = "Chemical Plant"
- floor_material = _shader(FLOOR)
- top_material = _shader(FLOOR)
- top_material.set_shader_parameter("raised_surface", true)
- side_material = _shader(WALL)
- cliff_material = _shader(WALL)
- cliff_material.set_shader_parameter("top_height", 0.0)
+ _apply_texture_set()
  _steel = _surface(Color("647487"))
  _dark = _surface(Color("1c233b"))
  _blue = _surface(Color("224f9c"))
@@ -180,6 +175,6 @@ func ramp_materials() -> Dictionary:
  var coupler := material(Color("6e7896"))
  coupler.roughness = 0.48
  coupler.metallic = 0.45
- return {"deck": _shader(preload("res://scripts/themes/chemical_ramp_panels.gdshader")),
+ return {"deck": _texture_ramp(),
   "edge": material(Color("e5b638")), "support": material(Color("26384b")), "accent": material(Color("68e1de"), 0.25),
   "pipe": blue, "pipe_clamp": coupler}

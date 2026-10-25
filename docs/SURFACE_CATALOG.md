@@ -1,6 +1,6 @@
 # Surface catalogue — all five zones
 
-**Editable-texture updates:** [Green Hill](GREEN_HILL_TEXTURES.md) and [Rooftop Run](ROOFTOP_TEXTURES.md) now use editable PNG assets with floor and raised-top contour borders. The original five-zone sheet below remains the procedural baseline; the other three themes retain the sources documented here.
+**Editable-texture update:** All eight themes now use editable PNG terrain and ramp artwork with floor, top and ramp borders. See [all-theme comparisons and coverage](ALL_THEME_TEXTURES.md). The original five-zone sheet below is the historical procedural baseline.
 
 These are the current procedural material patterns, not imported texture images. The previews use private unlit copies of the production shaders, with bloom and retro filtering disabled, so lighting does not obscure the patterns. Emission is added to the preview color and clamped so luminous inserts stay visible without halos. Game appearance also depends on zone lighting, shadows, bloom and the retro stack. No production material or geometry changes are made by this catalogue.
 

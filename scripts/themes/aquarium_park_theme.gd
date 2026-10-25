@@ -7,16 +7,7 @@ func _init() -> void:
  theme_id = "aquarium_park"
  display_name = "Aquarium Park"
  edge_trim_color = Color("a3bdb8")
- floor_material = _shader(preload("res://scripts/themes/aquarium_floor.gdshader"))
- top_material = _shader(preload("res://scripts/themes/aquarium_floor.gdshader"))
- top_material.set_shader_parameter("raised_surface",true)
- side_material = _shader(preload("res://scripts/themes/aquarium_wall.gdshader"))
- cliff_material = _shader(preload("res://scripts/themes/aquarium_wall.gdshader"))
- cliff_material.set_shader_parameter("top_height",0.0)
- floor_border_material = material(Color("829d9c"))
- top_border_material = material(Color("b69a69"))
- floor_border_width = 4.0
- top_border_width = 2.0
+ _apply_texture_set()
  _library = Decor.new(null)
 
 func _shader(source: Shader) -> ShaderMaterial:
@@ -179,7 +170,7 @@ func _batch(root: Node3D) -> void:
   root.add_child(instance)
 
 func ramp_materials() -> Dictionary:
- return {"deck":top_material,"edge":_library.materials.gold,"support":_library.materials.wood,"accent":_library.materials.cyan}
+ return {"deck":_texture_ramp(),"edge":_library.materials.gold,"support":_library.materials.wood,"accent":_library.materials.cyan}
 
 func build_study(_p: Node3D, parent: Node3D, origin: Vector3) -> void:
  parent.position = origin

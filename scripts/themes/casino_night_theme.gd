@@ -9,12 +9,7 @@ func _init() -> void:
  theme_id = "casino_night"
  display_name = "Casino Night"
  edge_trim_color = Color("c48b35")
- floor_material = _shader(FLOOR)
- top_material = _shader(FLOOR)
- top_material.set_shader_parameter("raised_surface", true)
- side_material = _shader(WALL)
- cliff_material = _shader(WALL)
- cliff_material.set_shader_parameter("top_height", 0.0)
+ _apply_texture_set()
  _library = Decor.new(null)
 
 func _shader(source: Shader) -> ShaderMaterial:
@@ -130,7 +125,7 @@ func build_edges(_p: Node3D) -> void:
  pass
 
 func ramp_materials() -> Dictionary:
- return {"deck": _shader(preload("res://scripts/themes/casino_ramp_cards.gdshader")),
+ return {"deck": _texture_ramp(),
   "edge": material(Color("e7bd62")), "support": material(Color("742641")),
   "accent": material(Color("b52349"))}
 

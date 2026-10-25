@@ -332,7 +332,9 @@ func _flower(base: Vector3, size: float, target: Node3D = null) -> void:
   theme_definition._flower(self, base, size, target)
 
 func ramp_materials() -> Dictionary:
- return theme_definition.ramp_materials()
+ var result: Dictionary = theme_definition.ramp_materials()
+ result["border"] = theme_definition.top_border_material
+ return result
 
 func _add_border(outline: PackedVector2Array, holes: Array[PackedVector2Array], width: float, height: float, mat: Material, parent: Node3D, label: String) -> void:
  var mesh := TerrainBorder.build(outline, holes, width, height + 0.001, mat)
@@ -347,3 +349,14 @@ func _paddle(length: float, radius: float, height: float, base: float, mat: Mate
  var path := PackedVector2Array([Vector2.ZERO, Vector2(length / SCALE, 0)])
  for outline: PackedVector2Array in Geometry2D.offset_polyline(path, radius / SCALE, Geometry2D.JOIN_ROUND, Geometry2D.END_ROUND):
   _add_border(outline, [], minf(theme_definition.top_border_width, radius / SCALE * 0.5), base + height, theme_definition.top_border_material, parent, "TopSurfaceBorder")
+
+func _prism(points: PackedVector2Array, height: float, side_mat: Material, top_mat: Material) -> ArrayMesh:
+ var mesh := super._prism(points, height, side_mat, top_mat)
+ # Authored terrain adds its own bands after unioning outlines. Generated wall
+ # flipper housings bypass that path and need a cap band on their existing mesh.
+ if not authored_mode and top_mat == theme_definition.top_material:
+  var band := TerrainBorder.build(points, [], theme_definition.top_border_width, height + 0.001, theme_definition.top_border_material)
+  if band != null:
+   mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, band.surface_get_arrays(0))
+   mesh.surface_set_material(mesh.get_surface_count() - 1, theme_definition.top_border_material)
+ return mesh

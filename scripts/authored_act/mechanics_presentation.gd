@@ -87,7 +87,8 @@ func _rail(item: Dictionary) -> void:
  # All vertices follow the same elevation samples used by the physical ball.
  _rail_strip(root, path, width, peak, Vector2(-0.5, 0.5), Vector2.ZERO, style.deck, "Deck")
  for side: float in [-1.0, 1.0]:
-  _rail_strip(root, path, width, peak, Vector2(side * 0.44, side * 0.54), Vector2(0.035, 0.035), style.edge, "EdgeCap")
+  var border: Material = style.get("border", style.edge)
+  _rail_strip(root, path, width, peak, Vector2(side * 0.44, side * 0.54), Vector2(0.035, 0.035), border if border != null else style.edge, "EdgeCap", border != null and style.has("border"))
   _rail_strip(root, path, width, peak, Vector2(side * 0.54, side * 0.54), Vector2(-thickness, 0.035), style.support, "Fascia")
   _rail_strip(root, path, width, peak, Vector2(side * 0.44, side * 0.44), Vector2(0.0, 0.035), style.edge, "InnerEdge")
  _rail_strip(root, path, width, peak, Vector2(0.54, -0.54), Vector2(-thickness, -thickness), style.support, "Underside")
@@ -119,7 +120,7 @@ func _rail(item: Dictionary) -> void:
  marker.generate_normals()
  table.mesh_node(marker.commit(), style.accent, Vector3.ZERO, root).name = "EntryArrow"
 
-func _rail_strip(parent: Node3D, path: Dictionary, width: float, peak: float, edges: Vector2, offsets: Vector2, material: Material, label: String) -> void:
+func _rail_strip(parent: Node3D, path: Dictionary, width: float, peak: float, edges: Vector2, offsets: Vector2, material: Material, label: String, contour_texture := false) -> void:
  var surface := SurfaceTool.new()
  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
  for i in path.points.size() - 1:
@@ -138,14 +139,18 @@ func _rail_strip(parent: Node3D, path: Dictionary, width: float, peak: float, ed
    uvs.append(Vector2(width * edges.x, distance * table.SCALE))
    uvs.append(Vector2(width * edges.y, distance * table.SCALE))
   for vertex: int in [0, 2, 1, 1, 2, 3]:
-   surface.set_uv(uvs[vertex])
+   # Edge artwork follows distance along the route and spans the complete trim.
+   # Geometry and the normalized full-deck UV2 used by panel/card decks stay intact.
+   surface.set_uv(Vector2(uvs[vertex].y / 0.48, float(vertex % 2)) if contour_texture else uvs[vertex])
    surface.set_uv2(Vector2((edges.x if vertex % 2 == 0 else edges.y) + 0.5, uvs[vertex].y))
    surface.add_vertex(corners[vertex])
  surface.generate_normals()
  # Edge winding reverses on the opposite side; both faces must remain visible.
  var double_sided: Material = material.duplicate()
  if double_sided is BaseMaterial3D: double_sided.cull_mode = BaseMaterial3D.CULL_DISABLED
- table.mesh_node(surface.commit(), double_sided, Vector3.ZERO, parent).name = label
+ var strip := table.mesh_node(surface.commit(), double_sided, Vector3.ZERO, parent)
+ strip.name = label
+ strip.set_meta("rail_surface", label)
 
 func _rail_pipes(parent: Node3D, path: Dictionary, width: float, peak: float, style: Dictionary) -> void:
  # Pipes remain inside the existing 54%-width trim envelope, including couplings.

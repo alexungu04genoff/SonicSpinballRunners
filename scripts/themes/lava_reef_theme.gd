@@ -9,12 +9,7 @@ func _init() -> void:
  theme_id = "lava_reef"
  display_name = "Lava Reef"
  edge_trim_color = Color("c79855")
- floor_material = _shader(preload("res://scripts/themes/lava_floor.gdshader"))
- top_material = _shader(preload("res://scripts/themes/lava_floor.gdshader"))
- top_material.set_shader_parameter("raised_surface", true)
- side_material = _shader(preload("res://scripts/themes/lava_wall.gdshader"))
- cliff_material = _shader(preload("res://scripts/themes/lava_wall.gdshader"))
- cliff_material.set_shader_parameter("top_height", 0.0)
+ _apply_texture_set()
  _library = Decor.new(null)
 
 func _shader(source: Shader) -> ShaderMaterial:
@@ -225,7 +220,7 @@ func _batch(root: Node3D) -> void:
   root.add_child(instance)
 
 func ramp_materials() -> Dictionary:
- return {"deck":top_material,"edge":_library.materials.iron,"support":_library.materials.rust,"accent":_library.materials.brass}
+ return {"deck":_texture_ramp(),"edge":_library.materials.iron,"support":_library.materials.rust,"accent":_library.materials.brass}
 
 func build_study(_p: Node3D, parent: Node3D, origin: Vector3) -> void:
  parent.position = origin

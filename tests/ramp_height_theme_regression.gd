@@ -61,8 +61,28 @@ func run() -> void:
   check(game.ball.get_instance_id() == identity and game.ball.mechanics == manager and manager.items[2].path == stored_path, "Theme switch preserves ball, mechanics and exact rail route: " + theme)
   check(visual.find_children("*", "CollisionObject3D", true, false).is_empty(), "Ramp theme remains collisionless: " + theme)
   check(visual.has_node("SidePipes") == (theme == "chemical_plant"), "Side pipes belong only to Chemical Plant: " + theme)
+  var counts := {}
+  var border_uvs := true
+  for child: Node in visual.get_children():
+   if not child.has_meta("rail_surface"): continue
+   var role: String = child.get_meta("rail_surface")
+   counts[role] = counts.get(role, 0) + 1
+   if role == "EdgeCap":
+    var uv: PackedVector2Array = child.mesh.surface_get_arrays(0)[Mesh.ARRAY_TEX_UV]
+    var low := INF
+    var high := -INF
+    for point: Vector2 in uv:
+     low = minf(low, point.x)
+     high = maxf(high, point.x)
+     border_uvs = border_uvs and point.is_finite() and point.y in [0.0, 1.0]
+    border_uvs = border_uvs and high - low > 1.0 and child.material_override is ShaderMaterial
+  check(counts.get("Deck", 0) == 1 and counts.get("EdgeCap", 0) == 2 and counts.get("Fascia", 0) == 2 and counts.get("InnerEdge", 0) == 2 and counts.get("Underside", 0) == 1, "Both ramp ledges, both fascia faces and underside exist: " + theme)
+  check(border_uvs, "Both textured ramp borders span width and follow route distance: " + theme)
+  var definition: RefCounted = game.presentation.theme_definition
+  check(definition.floor_border_material != null and definition.top_border_material != null and definition.floor_border_width > 0 and definition.top_border_width > 0, "Floor and wall ledge borders are enabled: " + theme)
+  check(not game.presentation.terrain_root.find_children("TopSurfaceBorder", "MeshInstance3D", true, false).is_empty() and not game.presentation.terrain_root.find_children("FloorPathBorder", "MeshInstance3D", true, false).is_empty(), "Authored walls and floor contain rendered border meshes: " + theme)
   if theme == "chemical_plant":
-   check(deck.material_override is ShaderMaterial and deck.material_override.shader == preload("res://scripts/themes/chemical_ramp_panels.gdshader"), "Chemical ramp uses the yellow, gray and pale inset panel pattern")
+   check(deck.material_override is ShaderMaterial and deck.material_override.get_shader_parameter("albedo_texture").resource_path == "res://assets/textures/chemical_plant/ramp.png", "Chemical ramp uses the editable yellow, gray and pale inset panel image")
    var pipes: Node = visual.get_node("SidePipes")
    check(pipes.get_child_count() == 8 and pipes.has_node("BluePipeLeft") and pipes.has_node("BluePipeRight") and pipes.has_node("CouplingsLeft"), "Both blue pipes, metal couplings and yellow/cyan details use eight batched meshes")
   if DisplayServer.get_name() != "headless":

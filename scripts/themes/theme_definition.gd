@@ -13,6 +13,21 @@ var top_border_material: Material
 var floor_border_width := 0.0
 var top_border_width := 0.0
 
+func _apply_texture_set() -> void:
+ var sets = preload("res://scripts/themes/terrain_texture_sets.gd")
+ floor_material = sets.material(theme_id, "floor")
+ top_material = sets.material(theme_id, "top")
+ side_material = sets.material(theme_id, "wall")
+ cliff_material = sets.material(theme_id, "facade")
+ floor_border_material = sets.material(theme_id, "floor-border")
+ top_border_material = sets.material(theme_id, "top-border")
+ var widths: Vector2 = sets.SETS[theme_id].width
+ floor_border_width = widths.x
+ top_border_width = widths.y
+
+func _texture_ramp() -> ShaderMaterial:
+ return preload("res://scripts/themes/terrain_texture_sets.gd").material(theme_id, "ramp")
+
 func material(color: Color, glow: float = 0.0) -> StandardMaterial3D:
  var result := StandardMaterial3D.new()
  result.albedo_color = color

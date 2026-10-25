@@ -7,12 +7,7 @@ func _init() -> void:
  theme_id = "ice_cap"
  display_name = "Ice Cap"
  edge_trim_color = Color("c6dce7")
- floor_material = _shader(preload("res://scripts/themes/ice_floor.gdshader"))
- top_material = _shader(preload("res://scripts/themes/ice_floor.gdshader"))
- top_material.set_shader_parameter("raised_surface", true)
- side_material = _shader(preload("res://scripts/themes/ice_wall.gdshader"))
- cliff_material = _shader(preload("res://scripts/themes/ice_wall.gdshader"))
- cliff_material.set_shader_parameter("top_height", 0.0)
+ _apply_texture_set()
  _library = Decor.new(null)
 
 func _shader(source: Shader) -> ShaderMaterial:
@@ -185,7 +180,7 @@ func _batch(root: Node3D) -> void:
   root.add_child(instance)
 
 func ramp_materials() -> Dictionary:
- return {"deck": floor_material, "edge": _library.materials.snow, "support": _library.materials.ice, "accent": _library.materials.glow}
+ return {"deck": _texture_ramp(), "edge": _library.materials.snow, "support": _library.materials.ice, "accent": _library.materials.glow}
 
 func build_study(_p: Node3D, parent: Node3D, origin: Vector3) -> void:
  parent.position = origin

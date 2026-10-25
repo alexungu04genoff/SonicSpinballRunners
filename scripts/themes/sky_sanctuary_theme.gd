@@ -10,12 +10,7 @@ func _init() -> void:
  theme_id = "sky_sanctuary"
  display_name = "Sky Sanctuary"
  edge_trim_color = Color("b7b68e")
- floor_material = _shader(FLOOR)
- top_material = _shader(FLOOR)
- top_material.set_shader_parameter("raised_surface", true)
- side_material = _shader(WALL)
- cliff_material = _shader(WALL)
- cliff_material.set_shader_parameter("top_height", 0.0)
+ _apply_texture_set()
  _library = Decor.new(null)
 
 func _shader(source: Shader) -> ShaderMaterial:
@@ -167,5 +162,5 @@ func build_study(_p: Node3D, parent: Node3D, origin: Vector3) -> void:
  for side: int in [-1, 1]: _library.column(parent, Vector3(side, 0.03, -0.9), 1.0, 0.15, true)
 
 func ramp_materials() -> Dictionary:
- return {"deck": _ramp_deck(Color("40646f"), Color("829d9e"), 2),
+ return {"deck": _texture_ramp(),
   "edge": material(Color("c8c4a2")), "support": material(Color("9da98f")), "accent": material(Color("72bfca"))}
