@@ -693,7 +693,7 @@ func _refresh_decor_controls() -> void:
 	decor_info.text = "Auto or fixed variant · theme-independent\nFree movement · exact Angle ° below\nR / Shift+R: ±15° · Ctrl+D: duplicate\nArrows: 1 px (snap: 1 cell)\n\nPlace anchors on raised terrain. Unsupported slots remain editable but do not spawn in play."
 	if active:
 		if slot.slot_type == "landmark":
-			decor_info.text = "Landmarks: about 3 cells long along the angle tick.\nVariant 1: upright; Variant 2: span.\nAuto keeps the same role across themes.\n\n" + decor_info.text
+			decor_info.text = "Landmark 1: upright; 2: span / gateway.\nBoth are about 3 cells along the angle tick.\nVariant 3: circular, about 1.6 cells across.\nAuto keeps the long roles across themes.\n\n" + decor_info.text
 		var choices: Array = _decor_preview_skin.variants_for(slot)
 		for index in choices.size():
 			decor_variant_field.add_item("Variant %d — %s" % [index + 1, str(choices[index]).capitalize()])

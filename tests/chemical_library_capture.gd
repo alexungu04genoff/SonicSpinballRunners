@@ -4,7 +4,7 @@ extends SceneTree
 const ChemicalDecor = preload("res://scripts/decor/chemical_plant_decor.gd")
 const ChemicalTheme = preload("res://scripts/themes/chemical_plant_theme.gd")
 const OUTPUT := "res://test-results/theme-review/chemical-library.png"
-const VARIANTS := ["beacon", "valve", "vent", "pump_elbow", "control_cabinet", "fluid_canister", "pipe_cluster", "tank_tower", "girder_machinery", "fluid_reactor", "pipe_arch"]
+const VARIANTS := ["beacon", "valve", "vent", "pump_elbow", "control_cabinet", "fluid_canister", "pipe_cluster", "tank_tower", "girder_machinery", "fluid_reactor", "pipe_arch", "reactor_island"]
 
 class DisplayStage extends Node3D:
  var _world_environment: WorldEnvironment
@@ -67,7 +67,7 @@ func run() -> void:
  for i in VARIANTS.size():
   var back_row := i < 6
   var index := i if back_row else i - 6
-  var anchor := Vector3((index - 2.5) * 2.35, 0, -2.75) if back_row else Vector3((index - 2.0) * 3.2, 0, 2.4)
+  var anchor := Vector3((index - 2.5) * 2.35, 0, -2.75) if back_row else Vector3((index - 2.5) * 3.2, 0, 2.4)
   var display_scale := 2.0 if i < 3 else (1.4 if i < 6 else 1.0)
   var category := "SMALL" if i < 3 else ("MEDIUM" if i < 6 else ("LARGE" if i < 9 else "LANDMARK"))
   var plinth_width := 3.1 if i >= 9 else (1.95 if back_row else 2.25)
@@ -81,7 +81,7 @@ func run() -> void:
  var camera := Camera3D.new()
  camera.projection = Camera3D.PROJECTION_ORTHOGONAL
  camera.keep_aspect = Camera3D.KEEP_WIDTH
- camera.size = 17.8
+ camera.size = 20.0
  camera.position = Vector3(0, 10, 17)
  stage.add_child(camera)
  camera.look_at(Vector3(0, 0.25, 0))
@@ -90,7 +90,7 @@ func run() -> void:
  root.add_child(canvas)
  _text(canvas, "CHEMICAL PLANT", Vector2(56, 36), 1300, 38, Color("e1f3ff"))
  _text(canvas, "Original low-poly prop library  /  Production theme lighting  /  Filter off", Vector2(58, 88), 1450, 21, Color("9db9d8"))
- _text(canvas, "11 collisionless props  •  Shared primitive meshes and materials  •  Static emissive liquid and transparent shells", Vector2(58, 906), 1450, 20, Color("adc1da"))
+ _text(canvas, "12 collisionless props  •  Shared primitive meshes and materials  •  Static emissive liquid and transparent shells", Vector2(58, 906), 1450, 20, Color("adc1da"))
  _text(canvas, "Small props shown at 2× and medium at 1.4× for inspection; large props and landmarks shown at 1×.", Vector2(58, 940), 1450, 18, Color("6f8ba9"))
  for i in 8: await process_frame
  for item: Dictionary in labels:

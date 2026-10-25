@@ -63,16 +63,16 @@ For two-monitor authoring, save in the editor, then click **Reload Act** beside 
 
 Every spawned child is a visual `Node3D`/`MeshInstance3D`. There are no collision objects, physics shapes, hit targets, ring records, scores or ball callbacks. The normal presentation rebuild disposes all old props before a source/replay reload. Existing distant scenery and exterior edge-island dressing remain unchanged.
 
-To add a decor skin, provide its stable ID, pools for all four sizes and three hints, and a factory returning a collisionless `Node3D` in cell units. Reserve landmark indices 0 and 1 for upright and span compositions within the shared envelope; additional landmarks are fixed-only choices. A full production theme supplies this skin through `ThemeDefinition.create_decor()` together with materials, environment and background builders. No Act schema or physics change is required. The original decor regression retains its minimal test factory; `theme_runtime_regression.gd` checks all three production themes with the same saved Acts.
+To add a decor skin, provide its stable ID, pools for all four sizes and three hints, and a factory returning a collisionless `Node3D` in cell units. Reserve landmark indices 0 and 1 for long upright and span/gateway compositions; index 2 is a circular composition selected explicitly. A full production theme supplies this skin through `ThemeDefinition.create_decor()` together with materials, environment and background builders. No Act schema or physics change is required. The original decor regression retains its minimal test factory; `theme_runtime_regression.gd` checks all three production themes with the same saved Acts.
 
 ### Green Hill library
 
 | Size | Available props |
 | --- | --- |
-| Small | Single sunflower, small faceted rock |
+| Small | Single sunflower, small faceted rock, seven-blade grass tuft |
 | Medium | Medium rock cluster, low shrub, sunflower patch |
 | Large | Left/right leaning palm family (`edge`), tall rock formation or checker pedestal (`surface`); `either` combines these families |
-| Landmark | Variant 1: Turf Loop, with a rounded rectangular checker cliff, continuous inner grass track and separate entry/exit aprons. Variant 2: Rope Bridge, with sagging wooden planks, rope rails and grassy checker-cliff ends. Both are visual ornaments. |
+| Landmark | Variant 1: Turf Loop, with a rounded rectangular checker cliff, continuous inner grass track and separate entry/exit aprons. Variant 2: Rope Bridge, with sagging wooden planks, rope rails and grassy checker-cliff ends. Variant 3: Palm Island, a circular grassy base with a palm and sunflower. All are visual ornaments. |
 
 The composition borrows the broad checker silhouettes, palms and sunflower accents visible in [Sonic Generations' Green Hill screenshots](https://www.digitallydownloaded.net/2011/10/sonic-generations-demo-now-available.html) and [Sonic Mania's Green Hill screenshots](https://www.trueachievements.com/n25476/taegx-2016-sonic-mania-showcases-green-hill-and-studiopolis). These were visual references only. No external models, textures or screenshot assets were downloaded into the project. New props are local primitive geometry matching the project's existing low-poly presentation. Sizes and density remain provisional art tuning.
 
@@ -84,18 +84,41 @@ Select a Landmark slot, preview **Green Hill**, and choose **Variant 1 — Turf 
 
 ### Consistent landmark footprints across themes
 
-Landmarks use a common envelope of approximately **3 cells along local X by 1 cell deep**, centered on the existing anchor. The editor's angle tick points along that long axis. Geometry is composed to fit this envelope; the renderer does not stretch a tower or rotate it independently of the slot.
+Landmark variants 1 and 2 use a common envelope of approximately **3 cells along local X by 1 cell deep**, centered on the existing anchor. The editor's angle tick points along that long axis. Variant 3 uses a **circular base about 1.6 cells across** in every theme. Geometry is composed to fit these envelopes; the renderer does not stretch a tower or rotate it independently of the slot.
 
 | Saved variant | Composition | Green Hill | Chemical Plant | Rooftop Run |
 | --- | --- | --- | --- | --- |
 | 1 (index 0) | Upright centerpiece with long base | Turf loop and approaches | Reactor with service skid and pumps | Clock tower with side terraces |
-| 2 (index 1) | Low span | Rope bridge | Pipe arches and catwalk | Twin-span aqueduct |
+| 2 (index 1) | Span / gateway | Rope bridge | Upright pipe gateway on a long service apron | Twin-span aqueduct |
+| 3 (index 2) | Circular | Palm island | Reactor island | Circular balloon court |
 
-Auto chooses the same row in every theme for a given Act and slot. Previously Chemical Plant and Rooftop independently chose a landmark, and several variants had a compact or round footprint. Existing Auto slots in those two themes may therefore change appearance once. Green Hill's Auto choices and every published fixed index remain unchanged. Rooftop's fixed Variant 3 remains a balloon terrace, widened to the same envelope; it is not in the shared Auto pool. An unavailable fixed variant still warns and falls back to Auto.
+Auto chooses between the first two rows, consistently across themes. Circular landmarks are explicit Variant 3 choices so adding them does not replace a long Auto prop with a round one. Existing landmark Auto choices and fixed indices remain stable. Rooftop's fixed Variant 3 retains its balloons but now uses a round court, replacing its long terrace. Chemical Plant's Variant 2 restores the original upright pipe-arch idea without a bridge deck. An unavailable fixed variant still warns and falls back to Auto.
+
+Green Hill's new Small Variant 3 appends the grass tuft after Flower and Small Rock. Those two fixed indices remain unchanged. Small Auto uses the expanded three-prop pool, so some existing Auto small slots may change appearance; use a fixed index to keep a specific prop.
+
+The palm island includes three original procedural Flickies, with blue feathers, cream bellies, large eyes and yellow beaks inspired by this [Flicky reference](https://en.sonicscanf.org/gallery/flickies-and-animals/blue-flicky-render/). They use staggered 4.8-second cycles of two small hops, wing flutters and head turns. Their local animation respects scene-tree pause, stays inside the island and is freed with the prop. They have no collisions or gameplay effects and do not consume gameplay randomness. Select Green Hill **Landmark Variant 3** to place them; existing Auto choices are unchanged.
+
+![Animated palm island with three Flickies](theme-captures/palm-island-flickies.gif)
+
+`tests/island_flicky_regression.gd` checks live animation, pause/resume, finite collisionless meshes, full-cycle bounds, ground clearance, phase offsets, looping and cleanup. A graphical run writes 96 frames at 20 fps under `test-results/flicky-frames/` plus a still image. Encode the loop with:
+
+```powershell
+ffmpeg -framerate 20 -i test-results/flicky-frames/%03d.png -filter_complex "split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 -y test-results/palm-island-flickies.gif
+```
+
+The Flicky revision passed 11 animation checks, 148 graphical landmark checks and 302 theme-runtime checks. The complete 37-prop catalogue was rendered again. Bird scale and movement readability at gameplay camera distances remain an art review judgment.
 
 ![Same landmark roles and footprint in all three production themes](theme-captures/landmark-themes.png)
 
 Background buildings keep their separate scenery proportions. This change affects authored landmark composition, with no Act schema change, source rewrite, terrain fitting, collision change, or anchor/rotation adjustment. Full-footprint support is still an authoring judgment; matching envelopes do not guarantee every narrow island supports an entire prop.
+
+### Complete decor catalogue
+
+The production libraries contain **37 distinct props**: 13 Green Hill, 12 Chemical Plant and 12 Rooftop Run. The sheet includes variants exclusive to a placement hint, such as Green Hill's left-leaning palm. Small props are shown at 2x, medium at 1.5x, and large/landmark props at 1x. This is the authored decor library; generated background scenery is composed separately.
+
+![All 37 production decor variants](theme-captures/all-decor.png)
+
+Render it with Godot's graphical renderer and `--script tests/all_decor_capture.gd`. The capture enumerates the live size/hint pools, rather than maintaining a separate asset list.
 
 ## Verification and manual review
 
@@ -113,7 +136,7 @@ Omit `--headless` and add `--rendering-method gl_compatibility --rendering-drive
 
 The landmark check covers stable pool ordering, fixed selection, finite nondegenerate meshes and collisionless descendants. Its graphical mode captures front and three-quarter views using production materials and lighting.
 
-The cross-theme landmark check covers all placement hints, fixed indices (including Rooftop's optional balloon terrace), common measured mesh bounds and centering, low span heights, unchanged Green Hill Auto choices, shared roles, missing-index fallback, immutable slot records and unchanged non-landmark variation. Its graphical mode captures the matched six-prop sheet above. The footprint revision passed 120 headless landmark checks, 302 theme runtime checks, 91 Rooftop decor checks, 46 decor-data checks and 28 editor checks. Normal and retro captures of the user's unchanged decorated Act were also inspected.
+The cross-theme landmark check covers all placement hints, fixed indices, long and circular measured mesh bounds and centering, span/gateway height envelopes, unchanged landmark Auto choices, shared roles, missing-index fallback, immutable slot records and the small grass tuft's dimensions. Its graphical mode captures the matched nine-prop sheet above. The circular revision passed 147 landmark checks, 302 theme runtime checks, 91 Rooftop decor checks, 46 decor-data checks, 29 editor checks and 16 original Green Hill landmark checks. The editor check now verifies the third small variant while retaining a genuine unavailable-index case through the medium/edge pools. The complete 37-prop gallery and normal/retro main-game captures were also reviewed.
 
 For the 2026-10-25 landmark revision, an isolated checkout passed 18 graphical landmark checks, 21 graphical main-game decor checks, 29 graphical editor checks and 46 headless decor-data checks, with zero failures or script/shader errors. Front/three-quarter contact sheets and the loop/bridge in main-game overview captures were visually inspected. Subjective composition and overhang on custom Acts remain manual art review.
 

@@ -54,7 +54,7 @@ func run() -> void:
  var source := slot.duplicate(true)
  for hint: String in Slots.HINTS:
   slot.placement_hint = hint
-  check(library.variants_for(slot) == ["turf_loop", "rope_bridge"], "Stable loop index and appended bridge: " + hint)
+  check(library.variants_for(slot) == ["turf_loop", "rope_bridge", "palm_island"], "Stable long landmarks and appended circular island: " + hint)
   for index in 2:
    slot.variant_index = index
    var prop: Node3D = library.instantiate_slot("landmark-regression", slot)

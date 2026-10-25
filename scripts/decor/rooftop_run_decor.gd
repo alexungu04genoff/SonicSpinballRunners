@@ -114,11 +114,14 @@ func build_variant(variant: String, landmark_layout := true) -> Node3D:
      flower_urn(urn)
   "aqueduct": aqueduct(root, 3.0 if landmark_layout else 1.8)
   "festival_balloons":
-   box(root, "cream", Vector3(0, 0.08, 0), Vector3(3.0, 0.16, 0.90))
+   piece(root, "cylinder", "stone", Vector3(0, 0.08, 0), Vector3(0.82, 0.16, 0.82))
+   piece(root, "cylinder", "cream", Vector3(0, 0.18, 0), Vector3(0.76, 0.04, 0.76))
    for i in 3:
-    var at := Vector3((i - 1) * 0.95, 1.0 + (0.3 if i == 1 else 0.0), (i % 2) * -0.2)
+    var angle := TAU * float(i) / 3.0 - PI * 0.5
+    var anchor := Vector3(cos(angle) * 0.40, 0.20, sin(angle) * 0.40)
+    var at := anchor + Vector3.UP * (0.90 + (0.22 if i == 1 else 0.0))
     balloon(root, at, 0.31, i)
-    bar(root, "dark", Vector3((i - 1) * 0.95, 0.16, 0), at + Vector3(0, -0.4, 0), 0.009)
+    bar(root, "dark", anchor, at + Vector3(0, -0.4, 0), 0.009)
  return root
 
 func flower_urn(root: Node3D) -> void:

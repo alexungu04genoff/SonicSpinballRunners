@@ -27,7 +27,7 @@ func collect_bounds(node: Node3D, boxes: Array[AABB], parent := Transform3D.IDEN
  return true
 
 func run() -> void:
- var expected := {"green_hill": ["turf_loop", "rope_bridge"], "chemical_plant": ["fluid_reactor", "pipe_arch"], "rooftop_run": ["clock_tower", "aqueduct", "festival_balloons"]}
+ var expected := {"green_hill": ["turf_loop", "rope_bridge", "palm_island"], "chemical_plant": ["fluid_reactor", "pipe_arch", "reactor_island"], "rooftop_run": ["clock_tower", "aqueduct", "festival_balloons"]}
  for id: String in Themes.IDS:
   var p := Presentation.new()
   p.set_theme_definition(Themes.create(id))
@@ -42,9 +42,12 @@ func run() -> void:
     check(collect_bounds(visual, boxes) and not boxes.is_empty(), id + " landmark is finite and collisionless")
     var bounds := boxes[0]
     for box: AABB in boxes: bounds = bounds.merge(box)
-    check(bounds.size.x >= 2.90 and bounds.size.x <= 3.10 and bounds.size.z >= 0.80 and bounds.size.z <= 1.10, id + " landmark keeps a roughly 3 by 1 cell footprint: " + str(bounds))
+    if index == 2:
+     check(bounds.size.x >= 1.55 and bounds.size.x <= 1.70 and bounds.size.z >= 1.55 and bounds.size.z <= 1.70, id + " circular landmark keeps the shared round footprint: " + str(bounds))
+    else:
+     check(bounds.size.x >= 2.90 and bounds.size.x <= 3.10 and bounds.size.z >= 0.80 and bounds.size.z <= 1.10, id + " long landmark keeps a roughly 3 by 1 cell footprint: " + str(bounds))
     check(absf(bounds.get_center().x) < 0.06 and absf(bounds.get_center().z) < 0.10, id + " landmark stays centered on the authored anchor")
-    if index == 1: check(bounds.size.y <= 1.5, id + " span retains a low bridge silhouette")
+    if index == 1: check(bounds.size.y <= (1.8 if id == "chemical_plant" else 1.5), id + " span or gateway stays within its height envelope")
     check(visual.get_meta("decor_variant") == expected[id][index], id + " fixed selection is unchanged")
     visual.free()
    slot.variant_mode = "auto"
@@ -67,6 +70,16 @@ func run() -> void:
    var pool: Array = skin.variants_for(slot)
    var digest := JSON.stringify(["layout", slot.slot_id, id]).sha256_text()
    check(skin.resolve("layout", slot) == pool[digest.left(8).hex_to_int() % pool.size()], id + " non-landmark variation is unchanged")
+  if id == "green_hill":
+   var small := {"slot_id": "tuft", "slot_type": "small", "placement_hint": "either", "variant_mode": "fixed", "variant_index": 2}
+   check(skin.variants_for(small) == ["flower", "small_rock", "grass_tuft"], "Grass tuft appends without reordering existing small variants")
+   var tuft: Node3D = skin.instantiate_slot("layout", small)
+   var tuft_boxes: Array[AABB] = []
+   check(collect_bounds(tuft, tuft_boxes) and tuft_boxes.size() == 7, "Grass tuft has seven finite collisionless leaf blades")
+   var tuft_bounds := tuft_boxes[0]
+   for box: AABB in tuft_boxes: tuft_bounds = tuft_bounds.merge(box)
+   check(tuft_bounds.size.x < 0.5 and tuft_bounds.size.z < 0.5 and tuft_bounds.size.y < 0.5, "Grass tuft remains a small prop")
+   tuft.free()
   p.free()
  if DisplayServer.get_name() != "headless": await capture()
  print("RESULT | Landmark themes | %d checks | %d failures" % [checks, failures])
@@ -81,18 +94,18 @@ func label(parent: Node, text: String, at: Vector2, size: int) -> void:
  parent.add_child(caption)
 
 func capture() -> void:
- root.size = Vector2i(1500, 950)
- root.content_scale_size = Vector2i(1500, 950)
+ root.size = Vector2i(1500, 1345)
+ root.content_scale_size = Vector2i(1500, 1345)
  var canvas := CanvasLayer.new()
  root.add_child(canvas)
  var background := ColorRect.new()
- background.size = Vector2(1500, 950)
+ background.size = Vector2(1500, 1345)
  background.color = Color("162c38")
  canvas.add_child(background)
  label(canvas, "SAME SLOT / MATCHED LANDMARK FOOTPRINTS", Vector2(35, 20), 30)
- label(canvas, "Local X: about 3 cells   /   Depth: about 1 cell   /   Same anchor, angle and scale", Vector2(35, 64), 21)
+ label(canvas, "Long: about 3 x 1 cells   /   Circular: about 1.6 cells across   /   Same anchor and scale", Vector2(35, 64), 21)
  for column in Themes.IDS.size():
-  for row in 2:
+  for row in 3:
    var at := Vector2(35 + column * 490, 125 + row * 395)
    var container := SubViewportContainer.new()
    container.position = at
@@ -125,7 +138,7 @@ func capture() -> void:
    p.add_child(camera)
    camera.look_at(Vector3(0, 0.9, 0))
    camera.current = true
-   label(canvas, p.theme_definition.display_name + " / " + ("Upright" if row == 0 else "Span"), at + Vector2(0, 317), 24)
+   label(canvas, p.theme_definition.display_name + " / " + ["Upright", "Span / Gateway", "Circular"][row], at + Vector2(0, 317), 22)
    label(canvas, str(prop.get_meta("decor_variant")).capitalize(), at + Vector2(0, 350), 20)
  for frame in 12: await process_frame
  await RenderingServer.frame_post_draw
