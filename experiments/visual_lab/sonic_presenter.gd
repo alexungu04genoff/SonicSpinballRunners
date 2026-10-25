@@ -228,6 +228,7 @@ func _apply_character_color() -> void:
  if character_id not in ["sonic", "tails"]:
   spin_material.albedo_color = CharacterSpecials.CHARACTERS[character_id].ball_color
  spin_surface.set_shader_parameter("fur_color", spin_material.albedo_color)
+ spin_surface.set_shader_parameter("character_style", ["sonic", "tails", "knuckles", "shadow"].find(character_id))
  var character_color: Color = CharacterSpecials.CHARACTERS[character_id].color
  trail.tint = Color.from_hsv(character_color.h, 0.92, 0.95)
  if character_id == "sonic":
