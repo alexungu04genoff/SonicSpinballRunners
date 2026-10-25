@@ -20,16 +20,24 @@ Our scene combines Sonic 2's graphic palette, Generations' architectural scale, 
 
 ## Materials, lighting and performance
 
-- **Playable surface:** quiet royal-blue panels with dark seams, subdued geometric borders, sparse embossed stars and short blue light inserts. Raised terrain has red table inserts and stronger gold borders. All patterns use world coordinates and derivative filtering, including authored curves and open rails.
-- **Walls:** gold frames around navy/red recesses, curved architectural trim, bulb rows and a narrow luminous red rim. Normal-weighted world projection wraps arbitrary authored outlines; no new collision or geometry repair occurs.
+- **Playable surface:** quiet royal-blue panels with dark seams, subdued geometric borders, sparse embossed stars and short blue light inserts. Raised terrain has dark navy panels, gold inset borders and broad pink strips. All patterns use world coordinates and derivative filtering, including authored curves and open rails.
+- **Walls:** large navy recesses, slim gold frames, broad vertical blue inserts and a luminous pink ledge rim. This user-selected finish replaces the original repeating gold circles and red bays. Normal-weighted world projection wraps arbitrary authored outlines; no new collision or geometry repair occurs.
 - **Night light:** warm directional key, cool ambient fill and a dark violet horizon. Shared gameplay materials retain familiar object colors. Rings and flippers sit against the darkest table surfaces.
-- **Emission:** pink, blue, green and amber trims use actual emission. Large silhouettes carry the light; there are no animated flashing bulbs or per-prop lights. Reel faces were darkened after review to reduce competition with gameplay highlights.
-- **Bloom:** enabled in the theme's Environment, before the existing world-only retro passes. Godot 4.7.2's Compatibility renderer supports this path; see [Godot's glow documentation](https://docs.godotengine.org/en/4.5/tutorials/3d/environment_and_post_processing.html). Only supported controls are set: intensity 0.45, bloom 0.06, HDR threshold 0.95 and HDR scale 1.2. No renderer or project-setting change is required. Earlier Godot 4 releases without Compatibility glow will still render emission, but that fallback was not tested.
-- **Local spill:** exactly two unshadowed OmniLights, amber and blue, each with range 4.0 and energy 0.7. Emission alone is not claimed to illuminate nearby geometry through GI. The local lights supply that spill. Theme rebuilds clear them; Green Hill explicitly disables glow when returning from Casino.
+- **Emission:** pink, blue, green and amber trims use actual emission at energy 2.8, increased from 1.15 after feedback that the emitters were hard to see. Large silhouettes carry the light; there are no animated flashing bulbs or per-prop lights. Reel faces were darkened after review to reduce competition with gameplay highlights.
+- **Bloom:** enabled in the theme's Environment, before the existing world-only retro passes. Godot 4.7.2's Compatibility renderer supports this path; see [Godot's glow documentation](https://docs.godotengine.org/en/4.5/tutorials/3d/environment_and_post_processing.html). Only supported controls are set: intensity 1.1, bloom 0.12, HDR threshold 0.75 and HDR scale 1.6. No renderer or project-setting change is required. Earlier Godot 4 releases without Compatibility glow will still render emission, but that fallback was not tested.
+- **Local spill:** exactly two unshadowed OmniLights, amber and blue, each with range 4.8 and energy 2.4 (previously 4.0 and 0.7). Visible crown fixtures now identify their positions along the table sides. Slightly reduced ambient/key light improves neon contrast. Emission alone is not claimed to illuminate nearby geometry through GI. The local lights supply that spill. Theme rebuilds clear them; Green Hill explicitly disables glow when returning from Casino.
 - **District:** thirteen quiet skyline buildings, one giant casino facade, six larger lantern/reel towers and six palms. Static background primitives share meshes/materials and are batched into MultiMeshes. A single original CASINO NIGHT sign remains separate. Immediate lane edges stay clear of scattered fake gameplay objects.
-- **Cost:** the checked-in terraced Act's overview measured 737 total draw calls for Casino, versus 1135 Green Hill, 821 Chemical Plant and 616 Rooftop Run. Curved Act Casino measured 557. These are whole-frame counters including HUD, shadows and gameplay, not GPU-time or FPS benchmarks. Android and low-end devices remain unmeasured.
+- **Cost:** the revised terraced Act's overview measured 793 total draw calls for Casino, versus 1135 Green Hill, 821 Chemical Plant and 616 Rooftop Run. Curved Act Casino measured 613. The two visible fixtures add 56 calls over the initial Casino version. These are whole-frame counters including HUD, shadows and gameplay, not GPU-time or FPS benchmarks. Android and low-end devices remain unmeasured.
 
 ![Casino district study, using a review-only camera](casino-captures/district.png)
+
+## Which objects emit light?
+
+The numbered guide is rendered from the real terraced Act. **1–2** identify the two crown lamps that illuminate nearby surfaces. **3–6** show examples of emissive decor: lantern bands and stars, palm branches, reel frames and stars, and gateway borders. **7–8** identify the new pink ledge rim and blue wall inserts. Other props reuse the same four emissive materials; these labels are representative, not an exhaustive list of every glowing mesh. There are no particle emitters.
+
+![Numbered light-source guide](casino-captures/emitter-guide.png)
+
+The review script also captures an identical paused frame with just the two local lights switched off. The sampled RGB mean absolute difference was **0.00367** on the tested renderer, confirming that these lights change nearby surface lighting independently of bloom. The guide overlay exists only in the capture script.
 
 ## Stable decor library
 
@@ -80,6 +88,8 @@ The following capture disables only Environment glow; compare it to the Casino o
 
 ## Verification
 
+The stronger-neon revision reran all **95 decor checks and 425 runtime checks**, with zero failures. Graphical runs refreshed 35 main-game captures, the thirteen-prop library and the numbered guide with local lights on/off. Filter OFF, the preferred retro stack, and bloom-disabled comparisons were inspected. The table below records the broader original skin validation; those additional suites were not all rerun for this material-only revision.
+
 Executed on Windows with Godot **4.7.2**, GL Compatibility / ANGLE / RTX 4060:
 
 | Check | Result |
@@ -104,6 +114,7 @@ Reproduce from the repository:
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script tests/authored_main_game_regression.gd -- --theme=casino_night
 & 'C:\Program Files\Godot\Godot.exe' --path . --rendering-method gl_compatibility --rendering-driver opengl3_angle --script tests/casino_capture.gd -- --city-study
 & 'C:\Program Files\Godot\Godot.exe' --path . --rendering-method gl_compatibility --rendering-driver opengl3_angle --script tests/casino_library_capture.gd
+& 'C:\Program Files\Godot\Godot.exe' --path . --rendering-method gl_compatibility --rendering-driver opengl3_angle --script tests/casino_emitter_capture.gd
 ```
 
 Full capture manifests live under ignored `test-results/casino-review/`; selected screenshots are checked in here. Manual review remains short: fast-ball visibility in all four character colors, tall authored props near tight lanes, and bloom/grain preference at the user's normal window size. No automated check establishes final feel or polish.

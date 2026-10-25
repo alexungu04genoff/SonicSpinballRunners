@@ -25,7 +25,7 @@ func _init(_presentation: Node3D) -> void:
   if key in ["pink", "aqua", "mint", "amber"]:
    mat.emission_enabled = true
    mat.emission = mat.albedo_color
-   mat.emission_energy_multiplier = 1.15
+   mat.emission_energy_multiplier = 2.8
   materials[key] = mat
 
 func primitive(kind: String) -> Mesh:

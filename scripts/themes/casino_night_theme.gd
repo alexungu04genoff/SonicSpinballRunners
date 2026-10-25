@@ -40,19 +40,19 @@ func configure_environment(p: Node3D) -> void:
  world.sky = sky
  world.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
  world.ambient_light_color = Color("c4c9ed")
- world.ambient_light_energy = 0.48
+ world.ambient_light_energy = 0.38
  world.tonemap_mode = Environment.TONE_MAPPER_LINEAR
  # Compatibility supports glow in recent Godot 4 versions. Use only its common
  # controls; no HDR viewport, renderer switch or global project changes needed.
  world.glow_enabled = true
- world.glow_intensity = 0.45
- world.glow_bloom = 0.06
- world.glow_hdr_threshold = 0.95
- world.glow_hdr_scale = 1.2
+ world.glow_intensity = 1.1
+ world.glow_bloom = 0.12
+ world.glow_hdr_threshold = 0.75
+ world.glow_hdr_scale = 1.6
  var light: DirectionalLight3D = p._key_light
  light.rotation_degrees = Vector3(-52, -32, 0)
  light.light_color = Color("ffe1b5")
- light.light_energy = 0.85
+ light.light_energy = 0.68
  light.shadow_normal_bias = 2.0
 
 func build_background(p: Node3D) -> void:
@@ -107,12 +107,23 @@ func build_background(p: Node3D) -> void:
   var fill := OmniLight3D.new()
   fill.name = "CasinoWarmSpill" if side < 0 else "CasinoBlueSpill"
   fill.light_color = Color("ffae55") if side < 0 else Color("557fff")
-  fill.light_energy = 0.7
-  fill.omni_range = 4.0
+  fill.light_energy = 2.4
+  fill.omni_range = 4.8
   fill.omni_attenuation = 1.5
   fill.shadow_enabled = false
-  fill.position = center + Vector3(side * (width * 0.5 + 0.6), 1.2, -length * 0.2)
+  fill.position = center + Vector3(side * (width * 0.5 + 0.6), 0.70, -length * 0.2)
   p.scenery_root.add_child(fill)
+  # Visible crown sconces identify the two real light sources. Reuse the decor
+  # geometry without adding a new variant or attaching lights to every prop.
+  var sconce: Node3D = _library.build_variant("crown_lamp")
+  sconce.name = "WarmSpillSconce" if side < 0 else "BlueSpillSconce"
+  sconce.position = fill.position - Vector3.UP * 1.024
+  sconce.scale = Vector3.ONE * 1.6
+  _library.box(p.scenery_root, "gold", sconce.position - Vector3(side * 0.3, 0.04, 0), Vector3(0.65, 0.08, 0.22))
+  for part: MeshInstance3D in sconce.get_children():
+   if part.material_override == _library.materials.amber and side > 0:
+    part.material_override = _library.materials.aqua
+  p.scenery_root.add_child(sconce)
 
 func build_edges(_p: Node3D) -> void:
  # The district already frames the table; keep the immediate lane edges quiet.

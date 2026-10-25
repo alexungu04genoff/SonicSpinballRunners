@@ -11,23 +11,24 @@ vec4 facade(vec2 p) {
  vec2 q = fract(p);
  float aa = max(length(fwidth(p)), 0.004);
  vec2 edge = min(q, 1.0 - q);
- float frame = 1.0 - smoothstep(0.055, 0.055 + aa, min(edge.x, edge.y));
- float arch = 1.0 - smoothstep(0.024, 0.024 + aa, abs(length((q - vec2(0.5, 0.43)) * vec2(1.0, 0.70)) - 0.28));
- vec3 recess = mix(vec3(0.045, 0.055, 0.13), vec3(0.22, 0.025, 0.045), mod(floor(p.x), 2.0));
- vec3 color = mix(recess, vec3(0.49, 0.29, 0.075), max(frame, arch * 0.75));
- vec2 bulb = vec2(fract(q.x * 4.0) - 0.5, (q.y - 0.86) * 4.0);
- float lamp = 1.0 - smoothstep(0.13, 0.13 + aa * 4.0, length(bulb));
+ // Broad navy bays and slim brass frames replace the busy circular gold grid.
+ float frame = 1.0 - smoothstep(0.022, 0.022 + aa, min(edge.x, edge.y));
+ float bevel = 1.0 - smoothstep(0.055, 0.055 + aa, min(edge.x, edge.y));
+ vec3 recess = mix(vec3(0.022, 0.035, 0.085), vec3(0.035, 0.055, 0.12), mod(floor(p.x), 2.0));
+ vec3 color = mix(recess, vec3(0.09, 0.11, 0.18), bevel);
+ color = mix(color, vec3(0.48, 0.29, 0.085), frame);
+ float lamp = (1.0 - smoothstep(0.045, 0.045 + aa, abs(q.x - 0.5))) * (1.0 - smoothstep(0.25, 0.25 + aa, abs(q.y - 0.5)));
  return vec4(color, lamp);
 }
 void fragment() {
  vec2 weights = pow(abs(world_normal.xz), vec2(8.0));
  weights /= max(weights.x + weights.y, 0.001);
- vec4 panel = facade(world_position.zy * vec2(1.8, 2.8)) * weights.x + facade(world_position.xy * vec2(1.8, 2.8)) * weights.y;
+ vec4 panel = facade(world_position.zy * vec2(1.4, 1.5)) * weights.x + facade(world_position.xy * vec2(1.4, 1.5)) * weights.y;
  float depth = top_height - world_position.y;
- float rim = 1.0 - smoothstep(0.012, 0.026, abs(depth - 0.045));
- float gold = 1.0 - smoothstep(0.015, 0.024, abs(depth - 0.095));
+ float rim = 1.0 - smoothstep(0.025, 0.040, abs(depth - 0.055));
+ float gold = 1.0 - smoothstep(0.012, 0.022, abs(depth - 0.115));
  ALBEDO = mix(panel.rgb, vec3(0.67, 0.40, 0.10), gold);
  ALBEDO = mix(ALBEDO, vec3(0.68, 0.10, 0.18), rim);
- EMISSION = vec3(0.9, 0.36, 0.08) * panel.a * 0.75 + vec3(0.7, 0.035, 0.12) * rim * 0.6;
+ EMISSION = vec3(0.025, 0.30, 1.0) * panel.a * 1.4 + vec3(1.0, 0.025, 0.16) * rim * 2.4;
  ROUGHNESS = 0.55;
 }
