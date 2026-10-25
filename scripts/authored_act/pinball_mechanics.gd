@@ -14,7 +14,6 @@ var age := 0.0
 var reentry_time := 0.0
 var _saved_layer := 2
 var _saved_mask := 1
-var _saved_integrator := false
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -51,7 +50,6 @@ func leave_ramp() -> void:
  if is_instance_valid(ball) and not ramp.is_empty():
   ball.collision_layer = _saved_layer
   ball.collision_mask = _saved_mask
-  ball.custom_integrator = _saved_integrator
   ball.gravity_scale = float(ball.tuning.effective.gravity_scale)
   ball.on_ramp = false
   ball.ramp_height = 0.0
@@ -132,10 +130,8 @@ func observe_motion(state: PhysicsDirectBodyState2D) -> bool:
    age = 0.0
    _saved_layer = ball.collision_layer
    _saved_mask = ball.collision_mask
-   _saved_integrator = ball.custom_integrator
    ball.collision_layer = 0
    ball.collision_mask = 0
-   ball.custom_integrator = true
    ball.gravity_scale = 0.0
    ball.on_ramp = true
    ball._reset_steering("Elevated rail")

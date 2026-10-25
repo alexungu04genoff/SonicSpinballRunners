@@ -10,7 +10,7 @@ The sandbox has a spinner, an attracting field, a raised curved route over a low
 
 ## Editor
 
-The Gameplay palette adds **Spinner**, **Magnetic Field**, and **Elevated Ramp / Rail**. Centers and pivots snap to the current cell grid; Alt places or drags freely. The inspector exposes exact X/Y positions, arbitrary rotation and per-object numeric properties. Duplication makes a new identity; moving, rotating, undoing and Save As preserve identity.
+The Gameplay palette adds **Spinner**, **Magnetic Field**, and **Elevated Ramp / Rail**. Centers and pivots snap to the current cell grid; Alt places or drags freely. The Gameplay list scrolls to keep the inspector and canvas inside the window. The inspector exposes exact X/Y positions, arbitrary rotation and per-object numeric properties. Duplication makes a new identity; moving, rotating, undoing and Save As preserve identity.
 
 For a rail, click its entry and successive control points, then press Enter to commit the path as one undo action. Escape cancels the unfinished gesture. The final point is the exit. After selecting a saved rail, enable **Edit path points**:
 
@@ -40,9 +40,9 @@ The sandbox uses a 60-pixel rail width, 50-pixel peak height and zero rail drag 
 
 **Magnetic field:** Attraction and repulsion apply additive impulses equivalent to continuous acceleration at 120 Hz. A linear outer falloff and softened center eliminate singularities; overlapping fields share a 600 px/s² total cap. The field never teleports the ball or replaces velocity. Purple inward-moving arcs indicate attraction; coral outward-moving arcs indicate repulsion. Strengths intentionally remain modest enough for steering and shots to escape.
 
-**Elevated rail:** The same `PlaygroundBall` enters an explicit `on_ramp` state only when crossing the entry aperture forwards with sufficient speed and alignment. Its original collision layer, mask and integration mode are saved. Lower-table collisions, flipper impulses, ring pickups and new specials are excluded while constrained to the route. There is no second ball, engine, 3D collider or gameplay mesh.
+**Elevated rail:** The same `PlaygroundBall` enters an explicit `on_ramp` state only when crossing the entry aperture forwards with sufficient speed and alignment. Its original collision layer and mask are saved; native gravity is suspended while the same force-integration callback constrains its transform. Lower-table collisions, flipper impulses, ring pickups and new specials are excluded while constrained to the route. There is no second ball, engine, 3D collider or gameplay mesh.
 
-Route progress uses signed longitudinal speed. Projected gravity, ascent/descent and drag affect that speed; weak uphill shots can roll backwards and leave at the entry. There is no steering while constrained. Exit restores the saved collision/integration state and releases tangent velocity. Entry speed is capped at 2400 px/s; the same limit applies on the path. A short exit cooldown prevents immediate re-capture. Long stalls roll back after 12 seconds; an obstructed route has a final 30-second reset-to-serve safeguard.
+Route progress uses signed longitudinal speed. Projected gravity, ascent/descent and drag affect that speed; weak uphill shots can roll backwards and leave at the entry. There is no steering while constrained. Exit restores the saved collision state and resolved gravity and releases tangent velocity. Entry speed is capped at 2400 px/s; the same limit applies on the path. A short exit cooldown prevents immediate re-capture. Long stalls roll back after 12 seconds; an obstructed route has a final 30-second reset-to-serve safeguard.
 
 Visual deck height rises smoothly over the first 22% of path length, holds over the center, and descends over the last 22%. The ball presenter reads that exact height; the existing follow camera already frames the ball's visual plane. Runtime loading rejects routes whose low portions intersect terrain, bumpers or a flipper's swept capsule, and requires rail width to exceed the ball diameter by two pixels. Crossings need at least 45 pixels of elevation. Drafts with unsafe mouths remain saveable; failed runtime reloads preserve the current run and ball scale. A final collision query at release handles an unexpectedly obstructed mouth by reversing along the rail.
 
@@ -55,6 +55,8 @@ Reset and drain clear spinner energy and rail ownership. Removing/reloading an A
 ## Verification and limits
 
 `tests/pinball_editor_regression.gd` exercises placement, properties, unique duplication, point gestures, undo/redo and exact persistence in a fresh Godot process. `tests/pinball_mechanics_regression.gd` uses the actual Green Hill application and real 120 Hz physics for scoring, field force, raised traversal, lower-ring exclusion, rollback, pause, reset, drain, invalid replacement, reload and source switching.
+
+The focused suite passes 42 main-game checks and 14 editor checks, including an input-only serve/flipper shot through the complete sandbox route. Run physics checks with `--fixed-fps 120`; editor persistence also launches a fresh Godot process.
 
 Graphical ANGLE runs capture the editor and raised traversal under `test-results/pinball-editor.png` and `test-results/pinball-crossover.png`. Existing authored gameplay, runtime, reload and Scorecraft regressions cover compatibility. No test framework dependency was added.
 

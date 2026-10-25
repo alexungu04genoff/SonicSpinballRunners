@@ -3,6 +3,7 @@ const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const Mechanics = preload("res://scripts/authored_act/pinball_mechanics.gd")
 const RailPath = preload("res://scripts/authored_act/rail_path.gd")
 const SANDBOX := "res://data/acts/pinball_mechanics_sandbox.tres"
+const RUN_ACT := "res://test-results/pinball-mechanics.tres"
 var ticks := 0
 
 func frames(count := 3) -> void:
@@ -44,8 +45,10 @@ func run() -> void:
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results"))
  var document := fixture()
  check(document.validation_errors().is_empty(), "Sandbox schema validates", str(document.validation_errors()))
- check(document.save_document(SANDBOX) == OK, "Sandbox saves through ordinary Act persistence")
- var restored: Dictionary = ActData.load_document(SANDBOX)
+ var shipped := ActData.load_document(SANDBOX)
+ check(shipped.document != null and shipped.document.fingerprint() == document.fingerprint(), "Shipped sandbox matches the tested composition")
+ check(document.save_document(RUN_ACT) == OK, "Sandbox saves through ordinary Act persistence")
+ var restored: Dictionary = ActData.load_document(RUN_ACT)
  check(restored.document != null and restored.document.fingerprint() == document.fingerprint(), "Exact IDs, properties and path survive disk reload", restored.error)
  if restored.document == null: quit(1); return
  var bad: Resource = document.copy_document()
@@ -61,7 +64,7 @@ func run() -> void:
  check(Mechanics.magnetic_acceleration(field, field.position + Vector2(30, 0)).is_equal_approx(-attract), "Attract and repel have opposite bounded force")
  field.properties.mode = "attract"
  game = ObservedGame.new()
- game.authored_act_path = SANDBOX
+ game.authored_act_path = RUN_ACT
  root.add_child(game)
  await frames(6)
  check(game.level_source == "authored", "Sandbox starts in the main game", game.last_source_error)
@@ -141,10 +144,13 @@ func run() -> void:
   await process_frame
   await RenderingServer.frame_post_draw
   root.get_texture().get_image().save_png("res://test-results/pinball-crossover.png")
+ # Pause transitions mirror UI processing, outside physics/render server callbacks.
+ await process_frame
  paused = true
  var frozen := [game.ball.position, manager.progress, manager.items[0].angle, game.ball.ramp_height]
  await frames(8)
  check(frozen == [game.ball.position, manager.progress, manager.items[0].angle, game.ball.ramp_height], "Pause freezes rail, spinner and physical ball")
+ await process_frame
  paused = false
  await process_frame
  game.reset_ball(false)
