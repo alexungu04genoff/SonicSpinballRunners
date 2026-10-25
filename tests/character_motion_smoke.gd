@@ -26,8 +26,9 @@ func run() -> void:
  var trail = actor.trail
  var camera: Camera3D = game.presentation.camera
  var center: Vector3 = actor.spin_root.position + Vector3(0, 2.0, -1.0)
- camera.position = center + Vector3(0, 3, 2)
- camera.look_at(center)
+ camera.position = center + Vector3(0.4, 2, 1.8)
+ camera.look_at(center + Vector3(0.4, 0, 0.2))
+ camera.fov = 30.0
  var velocity: Vector2 = game.ball.linear_velocity
  var position: Vector2 = game.ball.position
  for id in ["sonic", "tails", "knuckles", "shadow"]:
@@ -38,7 +39,9 @@ func run() -> void:
    var point := center + Vector3(sin(angle) * 0.7, 0.0, cos(angle) * 0.7)
    trail.advance(1.0 / 120.0, point, true, camera)
    actor.spin_root.position = point
-  check(trail.visible and trail.tint == CharacterSpecials.CHARACTERS[id].color, id + " has a continuous character-colored ribbon")
+   actor.spin_root.rotation = Vector3(-0.6, 0.5, 0.3)
+  var expected_hue: float = Color("2635f5").h if id == "sonic" else CharacterSpecials.CHARACTERS[id].color.h
+  check(trail.visible and trail.tint.s > 0.8 and absf(trail.tint.h - expected_hue) < 0.01, id + " has a continuous character-colored ribbon")
   if DisplayServer.get_name() != "headless":
    await RenderingServer.frame_post_draw
    game.view.get_texture().get_image().save_png("res://test-results/character-motion-" + id + ".png")

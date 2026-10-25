@@ -1,6 +1,6 @@
 extends MeshInstance3D
 ## A time-faded ribbon in presentation space. Never participates in collisions.
-const LIFETIME := 0.32
+const LIFETIME := 0.38
 const MAX_POINTS := 64
 var points: Array[Vector3] = []
 var ages: Array[float] = []
@@ -16,11 +16,14 @@ func _init() -> void:
  shader.code = """shader_type spatial;
 render_mode unshaded, cull_disabled, depth_draw_never;
 void fragment() {
- float edge = pow(max(0.0, 1.0 - abs(UV.y * 2.0 - 1.0)), 1.4);
- float core = pow(edge, 8.0);
- ALBEDO = mix(COLOR.rgb, vec3(1.0), core * 0.55);
+ float across = abs(UV.y * 2.0 - 1.0);
+ float edge = 1.0 - smoothstep(0.83, 1.0, across);
  float life = 1.0 - UV.x;
- ALPHA = life * edge * 0.9;
+ float fade = smoothstep(0.0, 0.45, life);
+ float streak = pow(max(0.0, cos(UV.y * 25.1327 + UV.x * 3.0)), 18.0);
+ ALBEDO = mix(COLOR.rgb, vec3(0.65, 0.8, 1.0), streak * 0.12);
+ ALPHA = fade * edge * 0.6;
+
 }
 """
  var material := ShaderMaterial.new()
@@ -64,11 +67,13 @@ func advance(delta: float, head: Vector3, emitting: bool, camera: Camera3D) -> v
    side = -side
   previous_side = side
   var life := clampf(1.0 - ages[i] / LIFETIME, 0.0, 1.0)
-  var width := radius * 1.05 * pow(life, 0.65)
+  var width := radius * (1.05 + (1.0 - life) * 0.4)
   var color := Color(tint, 1.0)
+  # Fade the oldest end even while a new trail is still filling its lifetime.
+  var tail_fade := pow(float(i) / float(points.size() - 1), 4.0)
   for edge in 2:
    ribbon.surface_set_color(color)
-   ribbon.surface_set_uv(Vector2(1.0 - life, float(edge)))
+   ribbon.surface_set_uv(Vector2(maxf(1.0 - life, tail_fade), float(edge)))
    ribbon.surface_add_vertex(points[i] + side * width * (-1.0 if edge == 0 else 1.0))
  ribbon.surface_end()
 
