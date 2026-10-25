@@ -3,7 +3,7 @@ extends SceneTree
 ## playfields. No alternate gameplay scene or replacement physics is used.
 const Game = preload("res://experiments/visual_lab/visual_lab.gd")
 const EXAMPLES := ["decor_terraces", "decor_curve_relay"]
-const THEMES := ["green_hill", "chemical_plant"]
+const THEMES := ["green_hill", "chemical_plant", "rooftop_run"]
 const MANIFEST := "res://test-results/theme-variants.json"
 var game: Node
 var checks := 0
@@ -124,7 +124,7 @@ func verify_restart() -> void:
    check(game.set_theme(theme_id), "Fresh process selects " + theme_id)
    actual[example + "/" + theme_id] = variants()
  var expected = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST))
- check(actual == expected, "Fresh process resolves identical variants and authored transforms for both themes and Acts")
+ check(actual == expected, "Fresh process resolves identical variants and authored transforms for all themes and Acts")
  finish()
 
 func run() -> void:
@@ -150,7 +150,7 @@ func run() -> void:
   seed_live_state()
   var before := snapshot()
   var green := variants()
-  for theme_id: String in ["chemical_plant", "green_hill", "chemical_plant"]:
+  for theme_id: String in ["chemical_plant", "rooftop_run", "green_hill", "rooftop_run", "chemical_plant"]:
    var label := example + "/" + theme_id
    check(game.set_theme(theme_id), "Main game switches theme while paused: " + label)
    compare(before, label)

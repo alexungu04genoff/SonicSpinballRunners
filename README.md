@@ -340,4 +340,4 @@ Before expanding the generator, manually evaluate controller feel, launch timing
 
 ## Selectable visual themes
 
-Open **Play Green Hill.cmd**, then choose **THEME → Green Hill / Chemical Plant**. Both skins use the same live authored or generated level, physics, score and camera. Chemical Plant adds original low-poly industrial materials, glowing fluid props and night scenery. [Theme pipeline, example scenes, research and comparisons](docs/CHEMICAL_PLANT.md).
+Open **Play Green Hill.cmd**, then choose **THEME → Green Hill / Chemical Plant / Rooftop Run**. All three skins use the same live authored or generated level, physics, score and camera. Chemical Plant adds original low-poly industrial materials, glowing fluid props and night scenery. Rooftop Run adds warm architectural paving, terracotta roofs, masonry facades, sunny city scenery and twelve original decor variants. See the [shared theme pipeline](docs/CHEMICAL_PLANT.md) and [Rooftop Run research, examples and matched captures](docs/ROOFTOP_RUN.md).
