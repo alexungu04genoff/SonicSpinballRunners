@@ -66,7 +66,7 @@ func run() -> void:
  check(test_ball.steering_contribution <= 120.01 and test_ball.linear_velocity.x > 1510, "Only steering contribution is capped", str(test_ball.linear_velocity))
  test_input.virtual_steering = 0
  await frames(180)
- check(absf(test_ball.linear_velocity.x - 1400.0) < 1.0, "Release removes assist without erasing launch momentum", str(test_ball.linear_velocity))
+ check(absf(test_ball.linear_velocity.x - 1520.0) < 1.0 and is_equal_approx(test_ball.steering_contribution, 120.0), "Release preserves steering contribution and launch momentum", str(test_ball.linear_velocity))
  test_ball.teleport_to(Vector2(2000, 0), Vector2(1400, 0))
  test_input.virtual_steering = -1
  await frames(120)

@@ -82,7 +82,37 @@ func run() -> void:
  check(absf(capped_velocity + 1220) < 0.1 and absf(ball.linear_velocity.x - capped_velocity) < 0.1 and ball.steering_at_limit and is_zero_approx(ball.steering_impulse_applied), "Contribution cap stops continuous braking; total speed is not capped")
  controls.virtual_steering = 0.0
  await frames(120)
- check(absf(ball.linear_velocity.x + 1400) < 0.1 and absf(ball.steering_contribution) < 0.01, "Release removes only assistance, restoring external momentum")
+ check(absf(ball.linear_velocity.x - capped_velocity) < 0.1 and absf(ball.steering_contribution - 180.0) < 0.01, "Release preserves capped assistance and the resulting trajectory")
+
+ # Exercise a short correction, neutral flight, and reversal through zero.
+ tuning.apply_steering_preset(1)
+ await measure(Vector2(0, -300), 1.0, 30)
+ controls.virtual_steering = 0.0
+ await frames(2) # Allow the routed input to reach body integration.
+ var stored: float = ball.steering_contribution
+ var released_velocity: Vector2 = ball.linear_velocity
+ check(stored > 40.0 and stored < float(tuning.effective.max_steering_speed), "Short right input builds a positive contribution below the cap")
+ var release_stable := true
+ for i in 120:
+  await frames(1)
+  release_stable = release_stable and is_equal_approx(ball.steering_contribution, stored) and ball.linear_velocity.distance_to(released_velocity) < 0.01 and is_zero_approx(ball.steering_impulse_applied) and is_zero_approx(ball.steering_acceleration_applied)
+ check(release_stable, "Every neutral tick preserves contribution and velocity without a cancelling impulse")
+ controls.virtual_steering = -1.0
+ await frames(3)
+ check(ball.steering_contribution > 0.0 and ball.steering_contribution < stored and ball.steering_impulse_applied < 0.0, "Left input immediately reduces the stored right contribution")
+ await frames(60)
+ check(ball.steering_contribution < 0.0 and ball.linear_velocity.x < 0.0 and absf(ball.linear_velocity.y + 300.0) < 0.01, "Continued left input crosses zero and builds left steering without changing vertical velocity")
+ await frames(120)
+ check(is_equal_approx(ball.steering_contribution, -float(tuning.effective.max_steering_speed)) and ball.steering_at_limit, "Persistent reversal still stops at the opposite contribution cap")
+ for waiting: bool in [false, true]:
+  await measure(Vector2.ZERO, 1.0, 15)
+  controls.virtual_steering = 0.0
+  await frames(2)
+  ball.teleport_to(Vector2(2000, 0), Vector2.ZERO, waiting)
+  check(is_zero_approx(ball.steering_contribution), "Teleport / serve clears stored contribution immediately (waiting=%s)" % waiting)
+  await frames(3)
+  check(is_zero_approx(ball.steering_contribution) and ball.linear_velocity.is_zero_approx(), "Teleport / serve has no stale steering after integration (waiting=%s)" % waiting)
+ tuning.apply_steering_preset(2)
  await measure(Vector2(-1400, 0), -1.0, 60)
  var before_reverse: float = ball.linear_velocity.x
  controls.virtual_steering = 1.0

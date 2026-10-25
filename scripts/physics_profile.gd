@@ -7,6 +7,7 @@ extends Resource
 @export var steering_acceleration: float = 1000.0
 @export var counter_steering_deceleration: float = 1000.0
 @export var max_steering_speed: float = 120.0
+## Retained for resource/preset compatibility; persistent steering ignores release decay.
 @export var steering_deceleration: float = 1400.0
 @export var steering_strength: float = 0.065
 @export_group("Movement")
@@ -32,7 +33,7 @@ const FIELDS: Dictionary = {
  "steering_acceleration": [0.0, 4000.0, 50.0, "Steering acceleration", "px/s²"],
  "counter_steering_deceleration": [0.0, 8000.0, 50.0, "Counter-steering deceleration", "px/s²"],
  "max_steering_speed": [0.0, 400.0, 5.0, "Steering contribution limit", "px/s"],
- "steering_deceleration": [0.0, 4000.0, 50.0, "Steering release deceleration", "px/s²"],
+ "steering_deceleration": [0.0, 4000.0, 50.0, "Release deceleration (inactive)", "px/s²"],
  "steering_strength": [0.0, 0.3, 0.005, "Steering strength (0.065 = 6.5%)", "ratio"],
  "gravity_scale": [0.1, 2.0, 0.05, "Gravity scale", "×"],
  "max_downward_speed": [300.0, 3000.0, 50.0, "Maximum downward speed", "px/s"],

@@ -2,6 +2,8 @@
 
 Phase 2A update: user playtesting selected **Quick / Tight** as the provisional startup tuning for both test profiles. Original remains a comparison preset. No steering integration, collision, contribution-cap, or release behavior changed in Phase 2A.
 
+Persistent steering update (2026-10-25): neutral input now preserves the contribution and applies zero steering impulse. Opposite input counter-steers through zero at the existing rates. Caps, collision response and explicit reset behavior are unchanged. Historical release rates below describe the original investigation; `steering_deceleration` is retained for compatibility and is inactive.
+
 ## Finding
 
 The original steering code did apply horizontal impulses against existing velocity. It did not disable steering while descending. Its weak counter-steering came from a slow response rate combined with a small, temporary contribution budget.
@@ -30,9 +32,9 @@ Raw action telemetry uses Godot's [get_action_raw_strength](https://docs.godoten
 | Flipper boost | The boost itself does not clear the ledger. A physical flipper contact or sweep can do so through the collision path. |
 | Serve, drain recovery, reset | Clears the ledger. Deliberate teleport/serve operations replace velocity as before. |
 | Profile, preset, modifier, or field change | Does not clear the ledger. New rates and targets apply on subsequent physics ticks. Reducing the target can gradually trim an existing contribution. Use reset/relaunch for a clean comparison. |
-| Release / neutral input | Moves the ledger toward zero and applies the opposite impulse. Before another collision, this also unwinds any temporary braking and restores the external horizontal momentum. It is not permanent friction. |
+| Release / neutral input | Preserves the ledger and applies no steering impulse. The changed trajectory persists until active input or physical forces redirect it. |
 | Paused | Gameplay physics stops. Telemetry reports zero current applied impulse while paused. |
-| Editing a numeric field | New steering input is blocked; raw input remains visible. The existing contribution can still unwind through release behavior. Press Enter to leave the field. |
+| Editing a numeric field | New steering input is blocked; raw input remains visible. The existing contribution persists. Press Enter to leave the field. |
 | Waiting for launch | Ball integration exits before steering. |
 | Zero strength or selected rate | No change in the ledger. The panel reports the reason when it prevents a change. |
 | Contribution target reached | No sustained steering force until the input/target changes or a contact clears the ledger. This can happen at a partial-stick target below the full configured cap. |
@@ -69,15 +71,17 @@ The three acceleration columns are pre-strength px/s². Their effective full-inp
 
 Start with the user-preferred **Quick / Tight**: a faster response with the original 120 px/s budget. **Air control** increases the maximum isolated change to 180 px/s. **Stronger brake** is an upper comparison. Against a −1400 px/s shot, Quick / Tight, Air control, and Stronger brake eventually reach −1280, −1220, and −1180 respectively, assuming zero initial contribution and no intervening contact. Reversing an existing contribution can span twice its magnitude.
 
-To tune independently: adjust normal acceleration for initial response, counter deceleration for opposing-motion response, contribution limit for maximum authority, and release deceleration for how quickly assistance unwinds. Increasing a rate cannot overcome a reached contribution limit.
+To tune independently: adjust normal acceleration for initial response, counter deceleration for opposing-motion response, and contribution limit for maximum authority. Release deceleration is inactive under persistent steering. Increasing a rate cannot overcome a reached contribution limit.
 
 ## Diagnostics
 
 The always-visible steering readout shows raw input, routed command, `velocity.x`, actual signed steering acceleration, the impulse applied in the latest physics tick, the contribution and current target, whether that target is reached, and any blocking condition. It also records the most recent ledger reset and its simulation-time age.
 
-Modes are Normal, Counter, Release, Idle, or Trim. Trim means the target moved inward, for example after reducing stick deflection or the limit. Active/no impulse reports the actual latest steering impulse, not merely whether a key is held. Acceleration is `steering_delta_velocity / physics_delta`; it excludes gravity, rolling forces, and collision impulses. The label is sampled at 10 Hz, so a brief event may appear only through the persistent reset reason. A single contribution value cannot reconstruct pre-collision momentum after the ledger is reset.
+Modes are Normal, Counter, Coast, Idle, or Trim. Coast means neutral input preserves a nonzero contribution; its displayed target is the stored contribution. Trim means the active-input target moved inward, for example after reducing stick deflection or the limit. Active/no impulse reports the actual latest steering impulse, not merely whether a key is held. Acceleration is `steering_delta_velocity / physics_delta`; it excludes gravity, rolling forces, and collision impulses. The label is sampled at 10 Hz, so a brief event may appear only through the persistent reset reason. A single contribution value cannot reconstruct pre-collision momentum after the ledger is reset.
 
 ## Verification and playtesting
+
+Persistent steering verification (2026-10-25): the new release assertions failed against the old implementation, then all 21 real-body steering checks passed with the fix. Coverage includes short right input, 120 neutral ticks with unchanged contribution/velocity and zero steering impulse, left reversal through zero, both contribution caps, native/swept contacts, and teleport/serve resets. The updated general physics suite passed all 38 checks, including flippers, bumpers, high-speed walls, respawn and 20 seconds of simulated play; profile regression and four steering UI checks also passed. Broader suites and graphical startup used an isolated committed snapshot plus this change because concurrent working-tree edits had a `game.gd` indentation error. Graphical startup reached `PLAYGROUND_READY` with existing script warnings; sandbox headless runs reported certificate-store/editor-settings access diagnostics. Subjective steering feel remains a manual check.
 
 Focused real-physics checks cover ascent/descent, aligned input in both directions, counter-steering in both directions, saturation, release, input reversal, actual native/swept wall rebounds, profile changes, external impulses, mapped keyboard/gamepad events, UI suppression, and 60/120-step rate consistency. A separate UI smoke check exercises preset selection, independent editing, profile reset, preservation of unrelated stats, and rendered layout.
 
@@ -87,7 +91,7 @@ Manual checklist:
 
 1. Reset/relaunch, then compare the Quick / Tight default with Original while ascending and descending.
 2. Hold against a fast lateral shot. Watch Counter, signed acceleration, and contribution target; note when braking stops at the cap.
-3. Release, then reverse input after a rebound. Watch Release and the last reset reason.
+3. Steer briefly, release and check that the trajectory persists. Reverse input to cross zero, then compare after a rebound. Watch Coast and the last reset reason.
 4. Compare Quick/tight and Stronger brake. Judge useful correction versus excessive control, using both keyboard and a physical gamepad.
 
 No continuous-braking redesign is included. If sustained braking beyond the contribution cap is desired after these comparisons, that is a separate gameplay choice with different momentum/release semantics.

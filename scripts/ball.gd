@@ -77,8 +77,12 @@ func launch() -> void:
   launch_started.emit()
 
 static func steering_step(previous: float, axis: float, stats: Dictionary, dt: float, horizontal_velocity: float = 0.0) -> float:
+ # Neutral input preserves momentum already added by steering. Only active input
+ # changes this ledger; contacts and explicit resets can clear it separately.
+ if absf(axis) <= 0.01:
+  return previous
  var target: float = axis * float(stats.max_steering_speed)
- var rate: float = stats.steering_acceleration if absf(axis) > 0.01 else stats.steering_deceleration
+ var rate: float = stats.steering_acceleration
  if is_counter_steering(previous, axis, stats, horizontal_velocity):
   var brake_rate: float = float(stats.counter_steering_deceleration) * float(stats.steering_strength)
   var next: float = move_toward(previous, target, brake_rate * dt)
@@ -109,7 +113,8 @@ func _apply_steering(state: PhysicsDirectBodyState2D, stats: Dictionary) -> void
  if axis * (steering_target - steering_contribution) < 0.0:
   steering_mode = "Trim"
  if absf(axis) <= 0.01:
-  steering_mode = "Release" if absf(steering_contribution) > 0.001 else "Idle"
+  steering_mode = "Coast" if absf(steering_contribution) > 0.001 else "Idle"
+  steering_target = steering_contribution
  var next: float = steering_step(steering_contribution, axis, stats, state.step, state.linear_velocity.x)
  steering_impulse_applied = (next - steering_contribution) * mass
  steering_acceleration_applied = (next - steering_contribution) / state.step
@@ -123,7 +128,7 @@ func _apply_steering(state: PhysicsDirectBodyState2D, stats: Dictionary) -> void
   elif steering_at_limit:
    steering_block_reason = "Contribution target reached"
   elif is_zero_approx(steering_impulse_applied):
-   steering_block_reason = "No command / deadzone" if steering_mode == "Idle" else "Selected acceleration rate is zero"
+   steering_block_reason = "No command / deadzone" if absf(axis) <= 0.01 else "Selected acceleration rate is zero"
 
 func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
  steering_reset_age += state.step
