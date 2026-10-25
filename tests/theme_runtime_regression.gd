@@ -3,7 +3,7 @@ extends SceneTree
 ## playfields. No alternate gameplay scene or replacement physics is used.
 const Game = preload("res://experiments/visual_lab/visual_lab.gd")
 const EXAMPLES := ["decor_terraces", "decor_curve_relay"]
-const THEMES := ["green_hill", "chemical_plant", "rooftop_run"]
+const THEMES := ["green_hill", "chemical_plant", "rooftop_run", "casino_night"]
 const MANIFEST := "res://test-results/theme-variants.json"
 var game: Node
 var checks := 0
@@ -88,6 +88,9 @@ func check_visuals(theme_id: String, label: String) -> void:
  check(p.theme_definition.theme_id == theme_id, "Requested theme is active: " + label)
  check(entirely_visual(p), "Entire presentation, decor and scenery remain collisionless: " + label)
  check(is_instance_valid(p.scenery_root) and p.scenery_root.get_child_count() > 0, "Theme supplies surrounding scenery: " + label)
+ check(p._world_environment.environment.glow_enabled == (theme_id == "casino_night"), "Glow follows the theme and resets on switching: " + label)
+ var lights: Array = p.scenery_root.find_children("*", "OmniLight3D", true, false)
+ check(lights.size() == (2 if theme_id == "casino_night" else 0), "Local lights stay bounded and clear on switching: " + label)
  if game.authored_document == null: return
  var slots: Array = game.authored_document.decor_slots
  check(p.decor_root.get_child_count() == slots.size() and p.skipped_decor_slots.is_empty(), "Every supported generic slot resolves: " + label)
@@ -150,7 +153,7 @@ func run() -> void:
   seed_live_state()
   var before := snapshot()
   var green := variants()
-  for theme_id: String in ["chemical_plant", "rooftop_run", "green_hill", "rooftop_run", "chemical_plant"]:
+  for theme_id: String in ["chemical_plant", "rooftop_run", "casino_night", "green_hill", "casino_night", "rooftop_run", "chemical_plant"]:
    var label := example + "/" + theme_id
    check(game.set_theme(theme_id), "Main game switches theme while paused: " + label)
    compare(before, label)
