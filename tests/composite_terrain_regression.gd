@@ -311,6 +311,48 @@ func check_fine_transforms() -> void:
 	check(migrated.document != null and not migrated.document.decor_slots.is_empty() and migrated.document.format_version == Document.FORMAT_VERSION and FileAccess.get_file_as_bytes(legacy_path) == legacy_bytes, "Format 7 decorated Act migrates without losing decor or rewriting its source")
 
 
+func check_contour_and_rotation() -> void:
+	var triangle := stamp("triangle_2x2", Vector2i(3, 3))
+	var local: Dictionary = Composite.smooth(triangle, 5.0, false, 90.0, null, PackedInt32Array(), true)
+	var broad: Dictionary = Composite.smooth(local.placement, 5.0, false, 90.0, null, PackedInt32Array(), true, true)
+	check(broad.error.is_empty(), "Whole contour rounds an already-smoothed triangle", broad.error)
+	if broad.error.is_empty():
+		check(polygon_area(broad.placement.outline) < polygon_area(local.placement.outline) * 0.9, "Whole contour meaningfully exceeds short-segment corner rounding")
+		check(polygon_area(broad.placement.outline) >= polygon_area(local.placement.outline) * 0.75, "Whole contour respects the 25% area budget")
+		check(var_to_bytes(broad) == var_to_bytes(Composite.smooth(local.placement, 5.0, false, 90.0, null, PackedInt32Array(), true, true)), "Whole contour preview is deterministic")
+	for strength in [0.25, 1.0, 2.0, 5.0]:
+		var rounded: Dictionary = Composite.smooth(triangle, strength, false, 90.0, null, PackedInt32Array([1]), true, true)
+		check(rounded.error.is_empty() and rounded.placement.outline.has(Shapes.get_definition("triangle_2x2").points[1]), "Whole contour preserves a pinned tip at every strength", rounded.error)
+	var square := stamp("rectangle_2x2", Vector2i(3, 3))
+	check(Composite.smooth(square, 5.0, true, 90.0, null, PackedInt32Array(), true, true).placement.outline == Shapes.get_definition("rectangle_2x2").points, "Whole contour honors all angle-protected square corners")
+	check(not Composite.smooth(square, 5.0, false, 90.0, PackedInt32Array([0]), PackedInt32Array(), true, true).error.is_empty(), "Whole contour rejects contradictory join-only settings")
+	for turns in 4:
+		for mirrors in 4:
+			var source := stamp("triangle_3x2", Vector2i(3, 3), turns, bool(mirrors & 1), bool(mirrors & 2))
+			source["terrain_scale"] = 0.5
+			var original := Shapes.transformed_points(source)
+			var center := Shapes.scaled_size(source) * 0.5
+			for angle in [-23.125, 17.1234567890123, 90.0, 361.5]:
+				var fine := source.duplicate(true)
+				fine["fine_rotation_degrees"] = angle
+				var actual := Shapes.transformed_points(fine)
+				var frame := Shapes.scaled_size(fine)
+				var matches := true
+				for index in original.size():
+					var expected := (original[index] - center).rotated(deg_to_rad(angle)) + frame * 0.5
+					matches = matches and actual[index].distance_to(expected) < 0.00001 and Rect2(-Vector2.ONE * 0.00001, frame + Vector2.ONE * 0.00002).has_point(actual[index])
+				check(matches, "Fine rotation preserves transformed silhouette and bounding frame")
+				var document := Document.new()
+				document.placements = [fine]
+				check(document.validation_errors().is_empty(), "Fine rotated terrain passes document validation")
+	for value in [NAN, INF, true, "45"]:
+		var invalid := triangle.duplicate(true)
+		invalid["fine_rotation_degrees"] = value
+		var document := Document.new()
+		document.placements = [invalid]
+		check(not document.validation_errors().is_empty(), "Malformed fine terrain angle rejects")
+
+
 func check_transforms() -> void:
 	if merged_examples.is_empty(): return
 	var source := merged_examples[0]
@@ -356,6 +398,7 @@ func check_storage() -> Resource:
 	for id in ["triangle_1x2", "wall_1x2"]:
 		var fine := stamp(id, Vector2i(2, 2), 1, true)
 		fine["terrain_scale"] = 0.5
+		fine["fine_rotation_degrees"] = 17.1234567890123
 		Shapes.set_placement_position(fine, Vector2(2.1234567, 3.9876543))
 		document.placements.append(fine)
 	var exact := exact_placement_bytes(document.placements)
@@ -403,6 +446,23 @@ func check_storage_rejections(document: Resource) -> void:
 	check(ResourceSaver.save(wrong_strength, invalid_path) == OK, "Malformed strength fixture reaches disk")
 	var rejected_strength: Dictionary = Document.load_document(invalid_path)
 	check(rejected_strength.document == null and rejected_strength.error.to_lower().contains("strength"), "Malformed composite strength payload rejects clearly")
+	var wrong_angle: Resource = document._storage_document()
+	wrong_angle.placements.back().fine_rotation_degrees = var_to_bytes("not an angle")
+	check(ResourceSaver.save(wrong_angle, invalid_path) == OK, "Malformed terrain angle fixture reaches disk")
+	var rejected_angle: Dictionary = Document.load_document(invalid_path)
+	check(rejected_angle.document == null and rejected_angle.error.to_lower().contains("angle"), "Malformed fine-angle payload rejects before decoding arbitrary data")
+	var version_eight := Document.new()
+	var old_fine := stamp("triangle_1x2", Vector2i(2, 2))
+	old_fine["terrain_scale"] = 0.5
+	Shapes.set_placement_position(old_fine, Vector2(2.137, 3.283))
+	version_eight.placements = [old_fine]
+	var v8_storage: Resource = version_eight._storage_document()
+	v8_storage.format_version = 8
+	check(ResourceSaver.save(v8_storage, invalid_path) == OK, "Format 8 fractional terrain fixture reaches disk")
+	var upgraded_v8: Dictionary = Document.load_document(invalid_path)
+	check(upgraded_v8.document != null and upgraded_v8.document.fingerprint() == version_eight.fingerprint(), "Format 8 migrates without changing free positions or half-size geometry")
+	v8_storage.placements[0]["fine_rotation_degrees"] = 13.5
+	check(ResourceSaver.save(v8_storage, invalid_path) == OK and Document.load_document(invalid_path).document == null, "Format 8 cannot smuggle the new fine-angle field")
 	var legacy := Document.new()
 	legacy.spawn_position = Vector2(100.25, 400.5)
 	legacy.placements = [stamp("circle_2x2", Vector2i(2, 2))]
@@ -430,6 +490,7 @@ func check_runtime(saved: Resource) -> void:
 	# One explicitly merged object must become exactly one collision body and prism.
 	document.placements = [saved.placements[1] if saved.placements.size() > 1 else saved.placements[0]]
 	document.placements[0]["terrain_scale"] = 0.5
+	document.placements[0]["fine_rotation_degrees"] = -13.125
 	Shapes.set_placement_position(document.placements[0], Vector2(2.237, 2.819))
 	document.grid_size = Vector2i(9, 8)
 	document.spawn_position = Vector2(225, 350)
@@ -583,6 +644,7 @@ func run() -> void:
 		check_join_smoothing()
 		check_pinned_corners()
 		check_fine_transforms()
+		check_contour_and_rotation()
 		check_transforms()
 		await check_runtime(check_storage())
 	print("RESULT | Composite terrain | %d checks | %d failures" % [checks, failures])

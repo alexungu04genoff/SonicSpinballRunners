@@ -57,6 +57,8 @@ var composite_preserve_corners: CheckBox
 var composite_angle: SpinBox
 var composite_only_joins: CheckBox
 var composite_allow_reshaping: CheckBox
+var composite_whole_contour: CheckBox
+var _composite_area_limited := false
 var terrain_snap_field: OptionButton
 var terrain_scale_field: OptionButton
 var _composite_error := ""
@@ -374,6 +376,15 @@ func _build_ui() -> void:
 	composite_allow_reshaping.toggled.connect(func(_pressed):
 		if composite_preview_active and _composite_operation != "merge": _rebuild_composite_preview())
 	sculpt_settings.add_child(composite_allow_reshaping)
+	composite_whole_contour = CheckBox.new()
+	composite_whole_contour.text = "Whole contour"
+	composite_whole_contour.tooltip_text = "Round across short outline segments, including previously smoothed corners. Pins remain fixed. Stops at the allowed area change."
+	composite_whole_contour.focus_mode = Control.FOCUS_NONE
+	composite_whole_contour.toggled.connect(func(pressed):
+		if pressed: composite_only_joins.button_pressed = false
+		if composite_preview_active: _rebuild_composite_preview()
+		else: _refresh())
+	sculpt_settings.add_child(composite_whole_contour)
 	composite_hint = Label.new()
 	composite_hint.add_theme_font_size_override("font_size", 12)
 	composite_hint.add_theme_color_override("font_color", Color("9cb3c6"))
@@ -414,10 +425,12 @@ func _build_ui() -> void:
 	object_properties.add_child(angle_label)
 	angle_field = LineEdit.new()
 	angle_field.custom_minimum_size.x = 120
-	angle_field.tooltip_text = "Exact gameplay or decor angle in degrees. Enter commits. R / Shift+R changes it by 15°."
+	angle_field.tooltip_text = "Exact terrain, gameplay or decor angle in degrees. Enter commits. Alt+R / Alt+Shift+R adjusts by 1°."
 	angle_field.text_submitted.connect(func(_text): _commit_gameplay_angle(); canvas.grab_focus())
 	angle_field.focus_exited.connect(_commit_gameplay_angle)
 	object_properties.add_child(angle_field)
+	_button(object_properties, "angle_minus", "−1°", func(): _nudge_active_angle(-1.0), "Rotate by −1° (Alt+Shift+R)")
+	_button(object_properties, "angle_plus", "+1°", func(): _nudge_active_angle(1.0), "Rotate by +1° (Alt+R)")
 	handedness_field = OptionButton.new()
 	handedness_field.add_item("Left flipper")
 	handedness_field.add_item("Right flipper")
@@ -458,7 +471,7 @@ func _button(parent: Node, id: String, label: String, action: Callable, hint: St
 		ring_spacing_field.apply()
 		_commit_gameplay_angle()
 		_commit_title()
-		if id in ["select", "rotate", "flip_h", "flip_v", "delete", "duplicate", "undo", "redo", "fit"]:
+		if id in ["select", "rotate", "angle_minus", "angle_plus", "flip_h", "flip_v", "delete", "duplicate", "undo", "redo", "fit"]:
 			canvas.grab_focus()
 		action.call())
 	parent.add_child(button)
@@ -776,7 +789,8 @@ func _rebuild_composite_preview() -> void:
 	var result: Dictionary = {"placement": _composite_base.duplicate(true), "error": ""}
 	if _composite_operation != "merge":
 		var joins: Variant = _composite_join_indices if composite_only_joins.button_pressed and _composite_operation == "merge_smooth" else null
-		result = Composite.smooth(_composite_base, composite_strength.value / 100.0, composite_preserve_corners.button_pressed, composite_angle.value, joins, _composite_protected_indices, composite_allow_reshaping.button_pressed)
+		result = Composite.smooth(_composite_base, composite_strength.value / 100.0, composite_preserve_corners.button_pressed, composite_angle.value, joins, _composite_protected_indices, composite_allow_reshaping.button_pressed, composite_whole_contour.button_pressed)
+	_composite_area_limited = result.get("area_limited", false)
 	_composite_error = result.error
 	composite_preview = result.placement
 	canvas.set_composite_preview(composite_preview, true)
@@ -986,7 +1000,42 @@ func _commit_gameplay_angle() -> void:
 		angle_field.text = _angle_display_text
 		return
 	if not _active_decor().is_empty(): _set_decor_property("rotation_degrees", text_value.to_float())
-	else: set_gameplay_angle(text_value.to_float())
+	elif not _active_gameplay().is_empty(): set_gameplay_angle(text_value.to_float())
+	else: set_terrain_angle(text_value.to_float())
+	_refresh()
+
+func _active_terrain() -> Dictionary:
+	if not canvas.brush.is_empty(): return canvas.brush
+	if _terrain_selection().size() == 1: return document.placements[canvas.selected_index]
+	return {}
+
+func _nudge_active_angle(degrees: float) -> void:
+	if composite_preview_active: return
+	if not _active_decor().is_empty():
+		_set_decor_property("rotation_degrees", float(_active_decor().rotation_degrees) + degrees)
+	elif not _active_gameplay().is_empty(): rotate_gameplay(degrees)
+	elif not _active_terrain().is_empty(): set_terrain_angle(Shapes.angle_degrees(_active_terrain()) + degrees)
+
+func set_terrain_angle(value: float) -> void:
+	if composite_preview_active or not is_finite(value): return
+	var active := _active_terrain()
+	if active.is_empty() or Shapes.angle_degrees(active) == value: return
+	var placement := active.duplicate(true)
+	var center := Shapes.placement_position(placement) + Shapes.scaled_size(placement) * 0.5
+	var residual := value - float(placement.quarter_turns) * 90.0
+	if residual == 0.0: placement.erase("fine_rotation_degrees")
+	else: placement["fine_rotation_degrees"] = residual
+	var frame := Shapes.scaled_size(placement)
+	if frame.x > document.grid_size.x or frame.y > document.grid_size.y:
+		_refresh()
+		_set_status("This rotated terrain footprint does not fit inside the Act.")
+		return
+	canvas.cancel_gesture()
+	Shapes.set_placement_position(placement, _clamp_anchor(placement, center - frame * 0.5))
+	if not canvas.brush.is_empty(): canvas.set_brush(placement)
+	else:
+		_record_edit()
+		document.placements[canvas.selected_index] = placement
 	_refresh()
 
 func _change_handedness(index: int) -> void:
@@ -1068,6 +1117,7 @@ func _transform_active(operation: String) -> void:
 		placement = document.placements[canvas.selected_index].duplicate(true)
 	else:
 		return
+	var original_center := Shapes.placement_position(placement) + Shapes.scaled_size(placement) * 0.5
 	if operation == "rotation":
 		placement.quarter_turns = (placement.quarter_turns + 1) % 4
 		# Keep the visible operation a clockwise turn after previous screen-axis flips.
@@ -1081,12 +1131,15 @@ func _transform_active(operation: String) -> void:
 		else: placement["terrain_scale"] = scale_value
 	else:
 		placement[operation] = not placement[operation]
+		if placement.has("fine_rotation_degrees"):
+			placement.fine_rotation_degrees = -float(placement.fine_rotation_degrees)
 	var frame := Shapes.scaled_size(placement)
 	if frame.x > document.grid_size.x or frame.y > document.grid_size.y:
 		_refresh()
 		_set_status("This terrain footprint does not fit inside the Act.")
 		return
-	Shapes.set_placement_position(placement, _clamp_anchor(placement, Shapes.placement_position(placement)))
+	var position := original_center - frame * 0.5 if placement.has("fine_rotation_degrees") else Shapes.placement_position(placement)
+	Shapes.set_placement_position(placement, _clamp_anchor(placement, position))
 	if not canvas.brush.is_empty():
 		canvas.set_brush(placement)
 	else:
@@ -1388,10 +1441,12 @@ func _refresh() -> void:
 		buttons[key].disabled = active.is_empty() or _terrain_selection().size() > 1
 	buttons.rotate.disabled = (active.is_empty() and angled.is_empty()) or _terrain_selection().size() > 1
 	buttons.rotate.text = "Rotate +15°" if not angled.is_empty() else "Rotate +90°"
-	angle_field.editable = not angled.is_empty()
-	_angle_display_text = var_to_str(angled.rotation_degrees) if not angled.is_empty() else ""
+	angle_field.editable = not angled.is_empty() or not _active_terrain().is_empty()
+	buttons.angle_minus.disabled = not angle_field.editable
+	buttons.angle_plus.disabled = not angle_field.editable
+	_angle_display_text = var_to_str(angled.rotation_degrees) if not angled.is_empty() else (var_to_str(Shapes.angle_degrees(active)) if angle_field.editable else "")
 	angle_field.text = _angle_display_text
-	angle_field.placeholder_text = "Object / decor"
+	angle_field.placeholder_text = "Select a shape"
 	handedness_field.disabled = gameplay.is_empty() or gameplay.type not in ["left_flipper", "right_flipper"]
 	handedness_field.select(1 if not gameplay.is_empty() and gameplay.type == "right_flipper" else 0)
 	if not decor.is_empty():
@@ -1428,7 +1483,7 @@ func _refresh() -> void:
 		var definition: Dictionary = Shapes.definition_for_placement(active)
 		var frame := Shapes.scaled_size(active)
 		mode_label.text = ("STAMP  ·  " if not canvas.brush.is_empty() else "SELECTED  ·  ") + definition.label
-		detail_label.text = "Frame %s × %s cells · %d° · H %s / V %s · Alt: free move%s" % [frame.x, frame.y, active.quarter_turns * 90, "on" if active.flip_h else "off", "on" if active.flip_v else "off", " · Position %s" % Shapes.placement_position(active) if canvas.brush.is_empty() else " · Click to place"]
+		detail_label.text = "Frame %s × %s cells · %s° · H %s / V %s · Alt: free move%s" % [frame.x, frame.y, Shapes.angle_degrees(active), "on" if active.flip_h else "off", "on" if active.flip_v else "off", " · Position %s" % Shapes.placement_position(active) if canvas.brush.is_empty() else " · Click to place"]
 	_refresh_composite_controls()
 	_refresh_decor_controls()
 	canvas.queue_redraw()
@@ -1453,8 +1508,9 @@ func _refresh_composite_controls() -> void:
 	composite_strength.editable = not composite_preview_active or _composite_operation != "merge"
 	composite_preserve_corners.disabled = composite_preview_active and _composite_operation == "merge"
 	composite_angle.editable = composite_preserve_corners.button_pressed and not composite_preserve_corners.disabled
-	composite_only_joins.disabled = composite_preview_active and _composite_operation != "merge_smooth"
+	composite_only_joins.disabled = composite_whole_contour.button_pressed or (composite_preview_active and _composite_operation != "merge_smooth")
 	composite_allow_reshaping.disabled = composite_preview_active and _composite_operation == "merge"
+	composite_whole_contour.disabled = composite_preview_active and _composite_operation == "merge"
 	composite_hint.text = merge_error if not merge_error.is_empty() else "%d filled pieces selected. Preview before applying; no source changes until Apply." % _terrain_selection().size()
 	if _terrain_selection().size() == 1 and smooth_error.is_empty():
 		composite_hint.text = "Smooth this piece, or Ctrl-click more filled terrain to merge."
@@ -1472,6 +1528,8 @@ func _refresh_composite_controls() -> void:
 			composite_hint.text = "Click corner dots to protect/release. Pink = do not smooth · %d pinned · Apply / Cancel" % _composite_protected_indices.size()
 		if not _composite_error.is_empty():
 			composite_hint.text = _composite_error
+		elif _composite_area_limited:
+			composite_hint.text = "Reached %d%% area-change limit · Pins stay fixed · %s" % [25 if composite_allow_reshaping.button_pressed else 5, "Apply / Cancel" if composite_allow_reshaping.button_pressed else "Enable Allow reshaping for more rounding"]
 		buttons.composite_apply.tooltip_text = _composite_error if not _composite_error.is_empty() else "Apply the displayed contour in one undo step"
 	composite_hint.tooltip_text = composite_hint.text
 	title_field.editable = not composite_preview_active
@@ -1538,7 +1596,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		match event.keycode:
 			KEY_ESCAPE: _select_mode()
 			KEY_R:
-				if event.shift_pressed and not _active_decor().is_empty(): _set_decor_property("rotation_degrees", float(_active_decor().rotation_degrees) - 15.0)
+				if event.alt_pressed: _nudge_active_angle(-1.0 if event.shift_pressed else 1.0)
+				elif event.shift_pressed and not _active_decor().is_empty(): _set_decor_property("rotation_degrees", float(_active_decor().rotation_degrees) - 15.0)
 				elif event.shift_pressed and not _active_gameplay().is_empty(): rotate_gameplay(-15.0)
 				else: rotate_active()
 			KEY_H: flip_active(true)

@@ -40,7 +40,12 @@ static func set_placement_position(placement: Dictionary, position: Vector2) -> 
   placement["offset"] = offset
 
 static func scaled_size(placement: Dictionary) -> Vector2:
- return Vector2(transformed_size(placement)) * float(placement.get("terrain_scale", 1.0))
+ var frame := Vector2(transformed_size(placement)) * float(placement.get("terrain_scale", 1.0))
+ var angle := deg_to_rad(fposmod(float(placement.get("fine_rotation_degrees", 0.0)), 360.0))
+ return Vector2(absf(cos(angle)) * frame.x + absf(sin(angle)) * frame.y, absf(sin(angle)) * frame.x + absf(cos(angle)) * frame.y) if angle != 0.0 else frame
+
+static func angle_degrees(placement: Dictionary) -> float:
+ return float(placement.get("quarter_turns", 0)) * 90.0 + float(placement.get("fine_rotation_degrees", 0.0))
 
 static func transformed_points(placement: Dictionary) -> PackedVector2Array:
  var definition := definition_for_placement(placement)
@@ -62,6 +67,11 @@ static func transformed_points(placement: Dictionary) -> PackedVector2Array:
   if placement.get("flip_v", false) == true:
    point.y = frame.y - point.y
   result.append(point * float(placement.get("terrain_scale", 1.0)))
+ var fine_angle := deg_to_rad(fposmod(float(placement.get("fine_rotation_degrees", 0.0)), 360.0))
+ if fine_angle != 0.0:
+  var center := Vector2(transformed_size(placement)) * float(placement.get("terrain_scale", 1.0)) * 0.5
+  var rotated_center := scaled_size(placement) * 0.5
+  for index in result.size(): result[index] = (result[index] - center).rotated(fine_angle) + rotated_center
  return result
 
 static func definition_for_placement(placement: Dictionary) -> Dictionary:

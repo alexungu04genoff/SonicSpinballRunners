@@ -5,6 +5,7 @@ extends SceneTree
 const EditorScene = preload("res://scenes/act_geometry_editor.tscn")
 const ActData = preload("res://scripts/act_editor/act_geometry.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
+const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 const SAVE_PATH := "res://test-results/act-gameplay-editor.tres"
 const REOPEN_PATH := "res://test-results/act-gameplay-editor-reopened.tres"
 var editor: Control
@@ -272,7 +273,7 @@ func check_angles_handedness_and_history() -> void:
 	await set_alt(true)
 	await press_key(KEY_R)
 	await set_alt(false)
-	check(editor.document.gameplay_objects[1].rotation_degrees == 27.3456789, "Alt changes position snapping only; angle increments remain 15 degrees")
+	check(editor.document.gameplay_objects[1].rotation_degrees == 13.3456789, "Alt R provides one-degree gameplay rotation")
 	await press_key(KEY_Z, true)
 	check(editor.document.gameplay_objects[1].rotation_degrees == 12.3456789, "Undo restores the exact fine angle")
 	await select_gameplay(2)
@@ -307,7 +308,7 @@ func check_overlaps_and_terrain() -> void:
 	await set_alt(true)
 	await click_at(grid_position(Vector2(0.24, 5.22)))
 	await set_alt(false)
-	check(editor.document.placements.size() == 1 and editor.document.placements[0].anchor == Vector2i(0, 5), "Alt never disables terrain placement snapping")
+	check(editor.document.placements.size() == 1 and close_to(Shapes.placement_position(editor.document.placements[0]), Vector2(0.24, 5.22)), "Alt places terrain at the exact fractional-cell position")
 	await choose_gameplay("round_bumper")
 	await click_at(local_position(Vector2(50, 300)))
 	var round_index: int = editor.document.gameplay_objects.size() - 1
@@ -331,12 +332,12 @@ func check_overlaps_and_terrain() -> void:
 	await drag(local_position(Vector2(50, 300)), local_position(Vector2(68.5, 326.25)))
 	await set_alt(false)
 	check(editor.canvas.selected_gameplay_index == round_index and close_to(editor.document.gameplay_objects[round_index].position, Vector2(68.5, 326.25)) and editor.document.gameplay_objects[triangle_index].position == Vector2(50, 300), "Alt-drag preserves the chosen overlapping object instead of cycling to another layer")
-	await click_at(local_position(Vector2(5, 255)))
+	await click_at(local_position(Vector2(17, 266)))
 	check(editor.canvas.selected_index == 0, "Terrain remains selectable beside gameplay objects")
 	await set_alt(true)
-	await drag(local_position(Vector2(5, 255)), local_position(Vector2(40.75, 316.25)))
+	await drag(local_position(Vector2(17, 266)), local_position(Vector2(52.75, 327.25)))
 	await set_alt(false)
-	check(editor.document.placements[0].anchor == Vector2i(1, 6), "Alt terrain drag still snaps its integer anchor")
+	check(close_to(Shapes.placement_position(editor.document.placements[0]) * float(editor.document.cell_size), Vector2(47.75, 322.25)), "Alt terrain drag preserves the exact free position")
 	await press_key(KEY_R)
 	check(editor.document.placements[0].quarter_turns == 1, "Terrain rotation stays at quarter-turn increments")
 	await click_control(editor.buttons.entry)
@@ -389,7 +390,7 @@ func check_palette_drag() -> void:
 	await move_pointer(grid_position(Vector2(8.24, 7.22)), true)
 	await mouse_button(grid_position(Vector2(8.24, 7.22)), false)
 	await set_alt(false)
-	check(editor.document.placements.size() == terrain_count + 1 and editor.document.placements[-1].anchor == Vector2i(8, 7), "Actual terrain palette drop stays grid snapped while Alt is held")
+	check(editor.document.placements.size() == terrain_count + 1 and close_to(Shapes.placement_position(editor.document.placements[-1]), Vector2(8.24, 7.22)), "Actual terrain palette drop preserves fractional coordinates while Alt is held")
 	check(editor.document.gameplay_objects[2].rotation_degrees == -20.875, "Terrain palette drop commits a pending gameplay angle before changing the editing tool")
 	await press_key(KEY_ESCAPE)
 

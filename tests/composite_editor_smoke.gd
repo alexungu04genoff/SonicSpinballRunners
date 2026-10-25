@@ -64,12 +64,13 @@ func click_control(control: Control) -> void:
 	await click_at(control.get_global_rect().get_center())
 
 
-func press_key(code: int, command: bool = false, shift: bool = false) -> void:
+func press_key(code: int, command: bool = false, shift: bool = false, alt: bool = false) -> void:
 	var event := InputEventKey.new()
 	event.keycode = code
 	event.pressed = true
 	event.ctrl_pressed = command
 	event.shift_pressed = shift
+	event.alt_pressed = alt
 	root.push_input(event, true)
 	await process_frame
 	event.pressed = false
@@ -443,6 +444,57 @@ func check_fine_terrain() -> void:
 	editor.terrain_snap_field.item_selected.emit(0)
 
 
+func check_contour_and_rotation() -> void:
+	editor.new_document()
+	editor.add_placement(stamp("triangle_2x2", Vector2i(4, 4)))
+	editor.canvas.select_piece(0)
+	editor._refresh()
+	var center := Vector2(5, 5)
+	editor.angle_field.text = "17.1234567890123"
+	editor.angle_field.text_submitted.emit(editor.angle_field.text)
+	var fine: Dictionary = editor.document.placements[0]
+	check(Shapes.angle_degrees(fine) == 17.1234567890123 and (Shapes.placement_position(fine) + Shapes.scaled_size(fine) * 0.5).distance_to(center) < 0.00001, "Exact terrain angle rotates about the existing center")
+	await click_control(editor.buttons.angle_plus)
+	check(Shapes.angle_degrees(editor.document.placements[0]) == 18.1234567890123, "Terrain +1 degree button changes its angle")
+	editor.canvas.grab_focus()
+	await press_key(KEY_R, false, true, true)
+	check(Shapes.angle_degrees(editor.document.placements[0]) == 17.1234567890123, "Alt Shift R rotates terrain back by one degree")
+	editor.undo()
+	check(Shapes.angle_degrees(editor.document.placements[0]) == 18.1234567890123, "Fine terrain rotation has one undo step")
+	editor.redo()
+	var exact: Dictionary = editor.document.placements[0].duplicate(true)
+	check(editor.save_to(SAVE_PATH) and editor.load_from(SAVE_PATH) and editor.document.placements[0] == exact, "Exact fine terrain angle and center survive save and reload")
+	editor.canvas.select_piece(0)
+	editor.composite_strength.value = 500
+	editor.composite_allow_reshaping.button_pressed = true
+	editor._refresh()
+	await click_control(editor.composite_whole_contour)
+	check(editor.composite_whole_contour.button_pressed and editor.composite_only_joins.disabled, "Whole contour disables incompatible join-only smoothing")
+	await click_control(editor.buttons.smooth)
+	check(not editor.buttons.composite_apply.disabled and editor.buttons.angle_plus.disabled, "Whole contour preview applies and pauses fine rotation")
+	var corner: Vector2 = editor.canvas._smoothing_corners[0]
+	await click_at(grid_position(corner))
+	check(editor._composite_protected_indices.size() == 1 and editor.composite_preview.outline.has(Shapes.get_definition("triangle_2x2").points[0]), "Clicking a rotated corner pins its exact local vertex during whole contour smoothing")
+	if DisplayServer.get_name() != "headless":
+		await RenderingServer.frame_post_draw
+		check(root.get_texture().get_image().save_png("res://test-results/whole-contour-rotation.png") == OK, "Whole contour and fine rotation preview captured")
+	await click_control(editor.buttons.composite_apply)
+	check(editor.document.placements[0].shape_id == "composite" and Shapes.angle_degrees(editor.document.placements[0]) == 17.1234567890123, "Whole contour applies without losing fine rotation")
+	editor.composite_whole_contour.button_pressed = false
+	editor.composite_allow_reshaping.button_pressed = false
+	editor.add_gameplay_placement({"type": "triangle_bumper", "position": Vector2(500, 500), "rotation_degrees": 12.25})
+	editor.canvas.select_gameplay(0)
+	editor._refresh()
+	await click_control(editor.buttons.angle_minus)
+	check(editor.document.gameplay_objects[0].rotation_degrees == 11.25, "Gameplay objects share the one-degree controls")
+	editor.canvas.grab_focus()
+	await press_key(KEY_R, false, false, true)
+	check(editor.document.gameplay_objects[0].rotation_degrees == 12.25, "Alt R rotates gameplay objects by one degree")
+	editor.angle_field.text = "12.375"
+	editor.angle_field.text_submitted.emit(editor.angle_field.text)
+	check(editor.document.gameplay_objects[0].rotation_degrees == 12.375, "Gameplay exact decimal angle remains editable")
+
+
 func capture_preview() -> void:
 	await reset_fixture()
 	var left := stamp("triangle_2x2", Vector2i(0, 4))
@@ -481,6 +533,7 @@ func run() -> void:
 	await check_join_controls()
 	await check_corner_pins()
 	await check_fine_terrain()
+	await check_contour_and_rotation()
 	await capture_preview()
 	print("RESULT | Composite editor UI | %d checks | %d failures" % [checks, failures])
 	editor.queue_free()

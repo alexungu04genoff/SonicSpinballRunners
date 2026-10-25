@@ -104,7 +104,7 @@ static func _boundary_follows(polygon: PackedVector2Array, point: Vector2, neigh
    return true
  return false
 
-static func smooth(placement: Dictionary, strength: float, preserve_corners: bool = false, preserve_angle_degrees: float = 90.0, join_indices: Variant = null, protected_indices: PackedInt32Array = PackedInt32Array(), allow_reshaping: bool = false) -> Dictionary:
+static func smooth(placement: Dictionary, strength: float, preserve_corners: bool = false, preserve_angle_degrees: float = 90.0, join_indices: Variant = null, protected_indices: PackedInt32Array = PackedInt32Array(), allow_reshaping: bool = false, whole_contour: bool = false) -> Dictionary:
  if not is_finite(strength) or strength < 0.0 or strength > MAX_STRENGTH:
   return _failure("Smoothing strength must be between 0% and 500%.")
  if not is_finite(preserve_angle_degrees) or preserve_angle_degrees < 1.0 or preserve_angle_degrees > 179.0:
@@ -132,6 +132,16 @@ static func smooth(placement: Dictionary, strength: float, preserve_corners: boo
   result["outline"] = outline.duplicate()
   return {"placement": result, "error": ""}
  var rounded := PackedVector2Array()
+ if whole_contour:
+  if join_indices != null: return _failure("Whole contour smoothing cannot be restricted to source joins. Turn off Only smooth joins.")
+  var fixed := protected_indices.duplicate()
+  if preserve_corners:
+   for index in outline.size():
+    var a := (outline[posmod(index - 1, outline.size())] - outline[index]).normalized()
+    var b := (outline[(index + 1) % outline.size()] - outline[index]).normalized()
+    if absf(rad_to_deg(acos(clampf(a.dot(b), -1.0, 1.0))) - preserve_angle_degrees) <= ANGLE_TOLERANCE_DEGREES and not fixed.has(index): fixed.append(index)
+  var relaxed := _relax_outline(outline, strength, fixed, 0.25 if allow_reshaping else 0.05)
+  return _finish_smoothing(result, outline, relaxed.outline, allow_reshaping, relaxed.limited)
  for index in outline.size():
   var point := outline[index]
   if protected_indices.has(index) or (join_indices != null and not join_indices.has(index)):
@@ -164,7 +174,10 @@ static func smooth(placement: Dictionary, strength: float, preserve_corners: boo
   for sample in range(steps + 1):
    var t := float(sample) / float(steps)
    rounded.append(start.lerp(point, t).lerp(point.lerp(end, t), t))
- error = validation_error(rounded)
+ return _finish_smoothing(result, outline, rounded, allow_reshaping)
+
+static func _finish_smoothing(result: Dictionary, outline: PackedVector2Array, rounded: PackedVector2Array, allow_reshaping: bool, limited: bool = false) -> Dictionary:
+ var error := validation_error(rounded)
  if not error.is_empty():
   return _failure("Smoothing would produce invalid terrain. Reduce strength. " + error)
  var original_area := absf(_signed_area(outline))
@@ -173,7 +186,56 @@ static func smooth(placement: Dictionary, strength: float, preserve_corners: boo
  if absf(rounded_area - original_area) > original_area * area_limit:
   return _failure("Smoothing changes more than %d%% of this shape's area. Reduce strength, pin corners%s." % [roundi(area_limit * 100.0), "" if allow_reshaping else " or enable Allow reshaping"])
  result["outline"] = rounded
- return {"placement": result, "error": ""}
+ return {"placement": result, "error": "", "area_limited": limited}
+
+static func _relax_outline(outline: PackedVector2Array, strength: float, fixed: PackedInt32Array, area_limit: float) -> Dictionary:
+ # Uniform arc-length samples let smoothing reach across old short curve segments.
+ # Pins are inserted exactly and remain immovable throughout the relaxation.
+ if fixed.size() == outline.size(): return {"outline": outline.duplicate(), "limited": false}
+ var lengths := PackedFloat64Array([0.0])
+ for index in outline.size(): lengths.append(lengths[-1] + outline[index].distance_to(outline[(index + 1) % outline.size()]))
+ var perimeter := lengths[-1]
+ var count := clampi(ceili(perimeter / 0.08), 24, 512)
+ var spacing := perimeter / float(count)
+ var samples: Array = []
+ var edge := 0
+ for index in count:
+  var distance := index * spacing
+  while edge < outline.size() - 1 and lengths[edge + 1] <= distance: edge += 1
+  var point := outline[edge].lerp(outline[(edge + 1) % outline.size()], (distance - lengths[edge]) / (lengths[edge + 1] - lengths[edge]))
+  samples.append({"distance": distance, "point": point, "fixed": false})
+ for index: int in fixed:
+  samples.append({"distance": lengths[index], "point": outline[index], "fixed": true})
+ samples.sort_custom(func(a, b): return a.distance < b.distance)
+ var points := PackedVector2Array()
+ var locks := PackedByteArray()
+ var last_distance := -INF
+ for sample: Dictionary in samples:
+  if sample.distance - last_distance <= EDGE_EPSILON:
+   if sample.fixed:
+    points[-1] = sample.point
+    locks[-1] = 1
+   continue
+  points.append(sample.point)
+  locks.append(1 if sample.fixed else 0)
+  last_distance = sample.distance
+ var original_area := absf(_signed_area(outline))
+ var passes := clampi(ceili(pow(strength * 0.2 / spacing, 2.0) * 2.0), 1, 512)
+ var limited := false
+ for iteration in passes:
+  var next := points.duplicate()
+  for index in points.size():
+   if locks[index] != 0: continue
+   var previous := points[posmod(index - 1, points.size())]
+   var following := points[(index + 1) % points.size()]
+   # Equal weights also redistribute samples along straight edges, preventing
+   # short segments from collapsing beside an immovable corner.
+   next[index] = points[index].lerp((previous + following) * 0.5, 0.5)
+  if absf(absf(_signed_area(next)) - original_area) > original_area * area_limit:
+   limited = true
+   break
+  points = next
+ return {"outline": points, "limited": limited}
 
 static func validation_error(polygon: PackedVector2Array) -> String:
  if polygon.size() < 3: return "A solid outline needs at least three vertices."
