@@ -50,9 +50,9 @@ All props use local GDScript primitives, simple materials and low-sided cylinder
 | SMALL | Warning beacon, valve wheel, vent |
 | MEDIUM | Pump elbow, control cabinet, fluid canister |
 | LARGE | Pipe cluster, tank tower, girder machinery |
-| LANDMARK | Fluid reactor on a service skid, twin pipe arches with a catwalk |
+| LANDMARK | Fluid reactor on a service skid, upright pipe gateway, circular reactor island |
 
-Landmarks share an approximately 3-by-1-cell footprint with Green Hill and Rooftop Run. Variant 1 is an upright reactor on a long service skid; Variant 2 is a low catwalk with pipe arches. Placement hints choose pools; they do not move anchors. Existing authored position, arbitrary rotation and optional scale remain authoritative. Unsupported anchors remain saveable drafts and are skipped visually, exactly as in Green Hill. See [matched landmark compositions](DECOR_SLOTS.md#consistent-landmark-footprints-across-themes).
+Landmark variants 1 and 2 share an approximately 3-by-1-cell footprint with Green Hill and Rooftop Run. Variant 1 is an upright reactor on a long service skid; Variant 2 restores the original upright pipe-arch idea on a service apron, without a catwalk. Variant 3 is a round reactor island about 1.6 cells across and is selected explicitly. Auto retains the two long choices. Placement hints choose pools; they do not move anchors. Existing authored position, arbitrary rotation and optional scale remain authoritative. Unsupported anchors remain saveable drafts and are skipped visually, exactly as in Green Hill. See [matched landmark compositions](DECOR_SLOTS.md#consistent-landmark-footprints-across-themes).
 
 ![Original Chemical Plant prop library](theme-captures/chemical-library.png)
 

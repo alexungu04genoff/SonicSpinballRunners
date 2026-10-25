@@ -1,6 +1,6 @@
 extends RefCounted
 ## A skin owns variant pools and a visual factory. Acts never reference these IDs.
-const LANDMARK_ROLES := ["Upright", "Span"]
+const LANDMARK_ROLES := ["Upright", "Span / Gateway"]
 var skin_id: String
 var pools: Dictionary
 var factory: Callable
@@ -34,7 +34,7 @@ func resolve(act_seed: String, slot: Dictionary) -> String:
  if slot.get("slot_type") == "landmark":
   # Shared upright/span roles keep the same long-axis composition in every
   # theme. Retain the original Green Hill hash so existing layouts stay stable.
-  # Additional theme-specific landmarks remain available by fixed index.
+  # Circular landmarks remain explicit fixed choices so long layouts stay long.
   namespace_id = "green_hill"
   auto_count = mini(LANDMARK_ROLES.size(), choices.size())
  var digest := JSON.stringify([act_seed, slot.slot_id, namespace_id]).sha256_text()

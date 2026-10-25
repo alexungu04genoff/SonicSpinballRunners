@@ -7,10 +7,10 @@ func _init(owner_presentation: Node3D) -> void:
  presentation = owner_presentation
  skin_id = "green_hill"
  pools = {
-  "small": {"surface": ["flower", "small_rock"], "edge": ["flower", "small_rock"], "either": ["flower", "small_rock"]},
+  "small": {"surface": ["flower", "small_rock", "grass_tuft"], "edge": ["flower", "small_rock", "grass_tuft"], "either": ["flower", "small_rock", "grass_tuft"]},
   "medium": {"surface": ["shrub", "medium_rock", "flower_patch"], "edge": ["medium_rock", "shrub"], "either": ["medium_rock", "shrub", "flower_patch"]},
   "large": {"surface": ["tall_rock", "checker_pedestal"], "edge": ["palm", "palm_left"], "either": ["palm", "tall_rock", "checker_pedestal"]},
-  "landmark": {"surface": ["turf_loop", "rope_bridge"], "edge": ["turf_loop", "rope_bridge"], "either": ["turf_loop", "rope_bridge"]},
+  "landmark": {"surface": ["turf_loop", "rope_bridge", "palm_island"], "edge": ["turf_loop", "rope_bridge", "palm_island"], "either": ["turf_loop", "rope_bridge", "palm_island"]},
  }
  factory = _build_prop
 
@@ -20,6 +20,7 @@ func _build_prop(variant: String) -> Node3D:
  match variant:
   "flower": presentation._flower(Vector3.ZERO, 0.72, root)
   "small_rock": _rock(root, Vector3.ZERO, Vector3(0.23, 0.18, 0.20))
+  "grass_tuft": _grass_tuft(root)
   "medium_rock":
    _rock(root, Vector3.ZERO, Vector3(0.48, 0.46, 0.38))
    _rock(root, Vector3(0.20, 0, 0.12), Vector3(0.22, 0.23, 0.20))
@@ -46,7 +47,44 @@ func _build_prop(variant: String) -> Node3D:
    presentation._flower(Vector3(0, 0.57, 0), 0.63, root)
   "turf_loop": _turf_loop(root)
   "rope_bridge": _rope_bridge(root)
+  "palm_island":
+   # Explicit side UVs keep checker squares readable around the shallow island.
+   var soil := SurfaceTool.new()
+   soil.begin(Mesh.PRIMITIVE_TRIANGLES)
+   for i in 16:
+    var a := Vector3(cos(TAU * i / 16.0), 0, sin(TAU * i / 16.0)) * 0.80
+    var b := Vector3(cos(TAU * (i + 1) / 16.0), 0, sin(TAU * (i + 1) / 16.0)) * 0.80
+    var up := Vector3.UP * 0.28
+    var vertices := [a, b, b + up, a, b + up, a + up]
+    var uvs := [Vector2(i * 0.32, 0), Vector2((i + 1) * 0.32, 0), Vector2((i + 1) * 0.32, 0.32), Vector2(i * 0.32, 0), Vector2((i + 1) * 0.32, 0.32), Vector2(i * 0.32, 0.32)]
+    for vertex in 6:
+     soil.set_uv(uvs[vertex])
+     soil.add_vertex(vertices[vertex])
+   soil.generate_normals()
+   presentation.mesh_node(soil.commit(), presentation._cliff, Vector3.ZERO, root)
+   var turf: CylinderMesh = presentation.cylinder(0.82, 0.06)
+   turf.radial_segments = 16
+   presentation.mesh_node(turf, presentation.terrain_top_material(), Vector3(0, 0.31, 0), root)
+   presentation._palm(Vector3(-0.16, 0.34, 0.05), 1, 0.50, root)
+   presentation._flower(Vector3(0.42, 0.34, 0.30), 0.48, root)
  return root
+
+func _grass_tuft(root: Node3D) -> void:
+ for i in 7:
+  var angle := TAU * float(i) / 7.0
+  var direction := Vector3(cos(angle), 0, sin(angle))
+  var across := Vector3(-sin(angle), 0, cos(angle)) * 0.045
+  var base := direction * 0.035
+  var middle := direction * 0.10 + Vector3.UP * 0.19
+  var tip := direction * 0.23 + Vector3.UP * (0.31 + (i % 3) * 0.045)
+  var surface := SurfaceTool.new()
+  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+  for vertex: Vector3 in [base, middle + across, middle + Vector3.UP * 0.035, base, middle + Vector3.UP * 0.035, middle - across, middle - across, middle + Vector3.UP * 0.035, tip, middle + Vector3.UP * 0.035, middle + across, tip]:
+   surface.add_vertex(vertex)
+  surface.generate_normals()
+  var leaf: Material = presentation.material(Color("286c39") if i % 2 == 0 else Color("69ae35"))
+  leaf.cull_mode = BaseMaterial3D.CULL_DISABLED
+  presentation.mesh_node(surface.commit(), leaf, Vector3.ZERO, root)
 
 func _turf_loop(root: Node3D) -> void:
  # A continuous inner running surface through a broad checker cliff, with
