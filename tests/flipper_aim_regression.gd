@@ -20,7 +20,7 @@ func check(condition: bool, label: String) -> void:
   failures += 1
   push_error("FAIL | " + label)
 
-func trial(side: float, fraction: float, trigger: float, mode: String = "timed", chao: String = "none") -> Dictionary:
+func trial(side: float, fraction: float, trigger: float, mode: String = "timed", chao: String = "none", physical_scale: float = 1.0) -> Dictionary:
  var world := Node2D.new()
  root.add_child(world)
  var tuning := PhysicsTuning.new()
@@ -30,10 +30,12 @@ func trial(side: float, fraction: float, trigger: float, mode: String = "timed",
  controls.virtual_enabled = true
  world.add_child(controls)
  var ball := PlaygroundBall.new()
+ ball.radius = PlaygroundBall.RADIUS * physical_scale
  ball.tuning = tuning
  ball.controls = controls
  var paddle := PlaygroundFlipper.new()
- paddle.length = 130.0
+ paddle.length = 130.0 * physical_scale
+ paddle.radius *= physical_scale
  paddle.side = side
  paddle.ball = ball
  paddle.controls = controls
@@ -48,6 +50,8 @@ func trial(side: float, fraction: float, trigger: float, mode: String = "timed",
   # Arrive during the original 110ms window, after a one-tick press is released.
   start = Vector2(side * 84.5, -20.0)
   velocity = Vector2(0.0, 250.0)
+ start *= physical_scale
+ trigger *= physical_scale
  ball.position = start
  world.add_child(ball)
  ball.teleport_to(start, velocity)
@@ -95,6 +99,9 @@ func run() -> void:
     # independent 160-pixel traversal requirement still verifies a useful shot.
     var minimum_upward_speed := 200.0 * sqrt(PhysicsTuning.BALANCED.gravity_scale)
     check(shot.shots == 1 and shot.velocity.y < -minimum_upward_speed and shot.rise > 160.0, "Timed falling catch produces one useful upward strike: side %d / contact %.2f / trigger %.0f" % [side, fraction, trigger])
+    var gravity := float(ProjectSettings.get_setting("physics/2d/default_gravity")) * PhysicsTuning.BALANCED.gravity_scale
+    var maximum_rise := pow(PhysicsTuning.BALANCED.flipper_upward_speed_limit, 2) / (2.0 * gravity) + 100.0
+    check(shot.rise < maximum_rise, "Moving-paddle collision and powered impulse cannot exceed bounded shot height")
     samples.append(shot)
  var mirrored := true
  for index in 6:
@@ -113,6 +120,11 @@ func run() -> void:
   check(miss.shots == 0 and miss.passed_below, "No powered recovery from %s; the ball remains free to fall" % mode)
  var spring := await trial(1.0, 0.65, 43.0, "timed", "spring")
  check(spring.shots == 1 and absf(spring.impulse.length() / samples[2].impulse.length() - 1.35) < 0.001, "Spring Chao scales the same resolved impulse once")
+ for side: float in [1.0, -1.0]:
+  var compact := await trial(side, 0.65, 43.0, "timed", "none", 0.5)
+  var gravity := float(ProjectSettings.get_setting("physics/2d/default_gravity")) * PhysicsTuning.BALANCED.gravity_scale
+  var compact_height := pow(PhysicsTuning.BALANCED.flipper_upward_speed_limit, 2) * 0.5 / (2.0 * gravity)
+  check(compact.shots == 1 and compact.rise > 80.0 and compact.rise < compact_height + 50.0, "Compact authored-scale flipper retains a useful shot without full-Act launch height")
  var output := FileAccess.open("res://test-results/flipper-aim-shots.json", FileAccess.WRITE)
  output.store_string(JSON.stringify(samples, " "))
  output.close()

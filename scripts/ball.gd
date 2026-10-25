@@ -34,6 +34,7 @@ var _contact_cooldowns: Dictionary = {}
 var bumper_hit_count: int = 0
 var sweep_rebounds: int = 0
 var _previous_step_velocity := Vector2.ZERO
+var flipper_launch_pending := false
 var _motion_query := PhysicsTestMotionParameters2D.new()
 var _motion_result := PhysicsTestMotionResult2D.new()
 
@@ -64,6 +65,7 @@ func teleport_to(where: Vector2, velocity: Vector2 = Vector2.ZERO, waiting: bool
  _teleport_pending = true
  serve_pending = waiting
  release_pending = false
+ flipper_launch_pending = false
  _reset_steering("Serve / reset")
  steering_acceleration_applied = 0.0
  steering_impulse_applied = 0.0
@@ -168,11 +170,14 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
  var excess: float = maxf(0.0, state.linear_velocity.y - float(stats.max_downward_speed))
  if excess > 0.0:
   state.apply_central_impulse(Vector2(0.0, -excess * mass))
+ var flipper_contact := flipper_launch_pending
+ flipper_launch_pending = false
  var rolling_applied: bool = false
  for index in state.get_contact_count():
   var collider: Object = state.get_contact_collider_object(index)
   if not is_instance_valid(collider):
    continue
+  flipper_contact = flipper_contact or collider is PlaygroundFlipper
   var normal: Vector2 = state.get_contact_local_normal(index).normalized()
   # Native contact resolution can already have stopped or bounced the body.
   # Use its previous physics-step approach speed, not the resolved remainder.
@@ -186,8 +191,10 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
    if not _contact_cooldowns.has(id):
     _contact_cooldowns[id] = 0.16
     var outward_speed: float = state.linear_velocity.dot(normal)
-    var desired: float = maxf(620.0, absf(outward_speed)) * float(stats.bumper_rebound_multiplier)
-    state.apply_central_impulse(normal * maxf(0.0, desired - outward_speed) * mass)
+    var desired := bumper_rebound_speed(approach, stats)
+    # Native restitution may already exceed the tuned rebound. Remove that
+    # excess as well as supplying lift, matching the swept collision response.
+    state.apply_central_impulse(normal * (desired - outward_speed) * mass)
     bumper_hit_count += 1
     bumper_hit.emit(collider)
   elif not rolling_applied and normal.y < -0.15:
@@ -199,7 +206,18 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
     state.apply_central_impulse(tangent * slope * float(stats.rolling_acceleration) * mass * dt)
    state.apply_central_impulse(-tangent * tangent_speed * (1.0 - exp(-float(stats.rolling_drag) * dt)) * mass)
  _guard_fast_motion(state)
+ if flipper_contact or flipper_launch_pending:
+  # Moving paddles contribute native collision velocity in addition to the
+  # powered impulse. Bound their combined upward result, not other free flight.
+  # Speed squared determines ballistic height: scale height with physical size.
+  var launch_limit := float(stats.flipper_upward_speed_limit) * sqrt(radius / RADIUS)
+  var excess_upward := maxf(0.0, -state.linear_velocity.y - launch_limit)
+  state.apply_central_impulse(Vector2(0.0, excess_upward * mass))
+ flipper_launch_pending = false
  _previous_step_velocity = state.linear_velocity
+
+static func bumper_rebound_speed(incoming_speed: float, stats: Dictionary) -> float:
+ return minf(maxf(float(stats.bumper_launch_speed), incoming_speed * 0.85), float(stats.bumper_speed_limit)) * float(stats.bumper_rebound_multiplier)
 
 func _guard_fast_motion(state: PhysicsDirectBodyState2D) -> void:
  # Native CCD remains enabled. A conservative shape sweep handles thin-rail misses
@@ -224,9 +242,10 @@ func _guard_fast_motion(state: PhysicsDirectBodyState2D) -> void:
  var restitution: float = tuning.effective.wall_restitution
  if collider is PlaygroundFlipper:
   restitution = 0.15
+  flipper_launch_pending = true
  var outgoing: float = -incoming * restitution
  if is_instance_valid(collider) and collider.has_meta("bumper"):
-  outgoing = maxf(620.0, -incoming * 0.85) * float(tuning.effective.bumper_rebound_multiplier)
+  outgoing = bumper_rebound_speed(-incoming, tuning.effective)
   var id: int = collider.get_instance_id()
   if not _contact_cooldowns.has(id):
    _contact_cooldowns[id] = 0.16

@@ -92,7 +92,8 @@ func check_bumper_contacts() -> void:
 		var center := Vector2(250.5, 200.25)
 		var round_bumper := [{"type": "round_bumper", "position": center, "rotation_degrees": 32.0}]
 		var round_hit := await trajectory([], center - Vector2(0, 2 * cell_size), Vector2(0, 12 * cell_size), 22, round_bumper, cell_size)
-		check(round_hit.bumper_hits == 1 and round_hit.velocity.y < -600 * PhysicsTuning.BALANCED.bumper_rebound_multiplier and round_hit.immutable, "Compact round bumper fires once at the exact fractional center with %.0f-pixel cells" % cell_size, str(round_hit))
+		var expected_rebound := PlaygroundBall.bumper_rebound_speed(12 * cell_size, PhysicsTuning.BALANCED.as_values())
+		check(round_hit.bumper_hits == 1 and absf(round_hit.velocity.y + expected_rebound) < 1.0 and round_hit.immutable, "Compact round bumper fires once with bounded rebound at the exact fractional center with %.0f-pixel cells" % cell_size, str(round_hit))
 		var triangle := [{"type": "triangle_bumper", "position": center, "rotation_degrees": 32.0}]
 		var axis := Vector2.DOWN.rotated(deg_to_rad(32))
 		var sling_hit := await trajectory([], center + Vector2(-0.10, -1.5).rotated(deg_to_rad(32)) * cell_size, axis * 12 * cell_size, 22, triangle, cell_size)

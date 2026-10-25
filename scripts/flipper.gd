@@ -104,6 +104,7 @@ func _physics_process(delta: float) -> void:
     var leverage := clampf(fraction, 0.35, 1.0)
     var impulse := strike_direction(fraction) * float(tuning.effective.flipper_launch_strength) * (0.65 + 0.35 * leverage) * ball.mass
     ball.apply_central_impulse(impulse)
+    ball.flipper_launch_pending = true
     struck_this_swing = true
     strikes += 1
     struck.emit()

@@ -3,4 +3,4 @@
 [resource]
 script = ExtResource("1")
 display_name = "Practice Chao"
-multipliers = {"steering_acceleration": 1.25, "flipper_launch_strength": 1.15}
+multipliers = {"steering_acceleration": 1.25, "flipper_launch_strength": 1.15, "flipper_upward_speed_limit": 1.15}

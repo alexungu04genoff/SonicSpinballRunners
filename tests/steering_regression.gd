@@ -100,6 +100,8 @@ func run() -> void:
   at120 = PlaygroundBall.steering_step(at120, 1.0, stats, 1.0 / 120.0, -100.0 + at120)
  check(absf(next - 2.0) < 0.001 and absf(at60 - at120) < 0.001, "Counter rate does not power through zero; 60/120 Hz results agree")
 
+ # Match the fixture's native material for the swept steering-reset probe.
+ tuning.effective.wall_restitution = wall.physics_material_override.bounce
  controls.virtual_steering = -1.0
  ball.teleport_to(Vector2(-9850, 0), Vector2(-1800, 0))
  var old_sweeps: int = ball.sweep_rebounds

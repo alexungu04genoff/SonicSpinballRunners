@@ -16,8 +16,11 @@ extends Resource
 @export var rolling_drag: float = 0.20
 @export var max_rolling_speed: float = 450.0
 @export_group("Collisions")
-@export var flipper_launch_strength: float = 525.0
+@export var flipper_launch_strength: float = 450.0
+@export var flipper_upward_speed_limit: float = 525.0
 @export var flipper_swing_speed: float = 8.5
+@export var bumper_launch_speed: float = 420.0
+@export var bumper_speed_limit: float = 500.0
 @export var bumper_rebound_multiplier: float = 0.5
 @export var wall_restitution: float = 0.60
 @export_group("Collectibles and abilities")
@@ -37,6 +40,9 @@ const FIELDS: Dictionary = {
  "rolling_drag": [0.0, 3.0, 0.05, "Contact rolling drag", "1/s"],
  "max_rolling_speed": [100.0, 2000.0, 50.0, "Rolling assistance cutoff", "px/s"],
  "flipper_launch_strength": [200.0, 2200.0, 25.0, "Flipper launch impulse / mass", "px/s"],
+ "flipper_upward_speed_limit": [100.0, 2200.0, 25.0, "Flipper upward speed limit", "px/s"],
+ "bumper_launch_speed": [100.0, 1200.0, 20.0, "Bumper base rebound speed", "px/s"],
+ "bumper_speed_limit": [100.0, 2200.0, 25.0, "Bumper rebound speed limit", "px/s"],
  "flipper_swing_speed": [4.0, 16.0, 0.5, "Flipper swing speed", "rad/s"],
  "bumper_rebound_multiplier": [0.25, 2.5, 0.05, "Bumper rebound multiplier", "×"],
  "wall_restitution": [0.0, 0.95, 0.05, "Wall restitution", "ratio"],
