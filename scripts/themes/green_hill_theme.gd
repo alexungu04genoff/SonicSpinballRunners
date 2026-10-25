@@ -115,6 +115,7 @@ func configure_environment(p: Node3D) -> void:
    world.ambient_light_color = Color("d3eeff")
    world.ambient_light_energy = 0.30
    world.tonemap_mode = Environment.TONE_MAPPER_LINEAR
+   world.glow_enabled = false
   elif child is DirectionalLight3D:
    child.rotation_degrees = Vector3(-55, -38, 0)
    child.light_color = Color("fff2cf")

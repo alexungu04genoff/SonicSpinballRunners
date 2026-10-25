@@ -1,7 +1,7 @@
 class_name ActGeometry
 extends Resource
 ## A single Act's terrain, connectors, gameplay objects and lifecycle authoring data.
-const FORMAT_VERSION := 11
+const FORMAT_VERSION := 12
 ## The system gutter is outside terrain bounds and is never a thirteenth terrain row.
 const RED_GUTTER_CELLS := 1
 const SHAPES = preload("res://scripts/act_editor/terrain_shapes.gd")
@@ -380,7 +380,11 @@ static func load_document(path: String) -> Dictionary:
   return {"document": null, "error": "The selected file is not an Act Geometry resource."}
  if not loaded._format_version_was_set or not loaded._library_version_was_set:
   return {"document": null, "error": "This Act file is missing its required format or terrain library version."}
- if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4, 5, 6, 7, 8, 9, 10] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
+ if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4, 5, 6, 7, 8, 9, 10, 11] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
+  if typeof(loaded.decor_slots) == TYPE_ARRAY:
+   for slot: Variant in loaded.decor_slots:
+    if slot is Dictionary and slot.has("placement_source"):
+     return {"document": null, "error": "Scattered decor ownership requires Act format 12."}
   if loaded.format_version < 10 and typeof(loaded.decor_slots) == TYPE_ARRAY:
    for slot: Variant in loaded.decor_slots:
     if slot is Dictionary and (slot.get("variant_mode", "auto") != "auto" or slot.has("variant_index")):

@@ -20,7 +20,7 @@ func run() -> void:
   push_error("The decor catalogue requires a graphical renderer.")
   quit(1)
   return
- root.size = Vector2i(2100, 2050)
+ root.size = Vector2i(2100, 120 + Themes.IDS.size() * 625 + 55)
  root.content_scale_size = root.size
  var canvas := CanvasLayer.new()
  root.add_child(canvas)
@@ -29,7 +29,7 @@ func run() -> void:
  background.color = Color("142b38")
  canvas.add_child(background)
  label(canvas, "SONIC SPINBALL RUNNERS / COMPLETE DECOR LIBRARY", Vector2(35, 20), 36)
- label(canvas, "Every authored prop in all three themes, including hint-specific variants. Production lighting / Filter off", Vector2(35, 70), 22)
+ label(canvas, "Every authored prop in all four themes, including hint-specific variants. Production lighting / Filter off", Vector2(35, 70), 22)
  var total := 0
  for theme_index in Themes.IDS.size():
   var theme: RefCounted = Themes.create(Themes.IDS[theme_index])
@@ -87,7 +87,7 @@ func run() -> void:
    label(canvas, str(item.size).to_upper() + (" / EDGE" if item.variant == "palm_left" else ""), at + Vector2(0, 250), 16)
    total += 1
   catalogue.free()
- label(canvas, "%d original collisionless props. Small: 2x / Medium: 1.5x / Large and landmarks: 1x." % total, Vector2(35, 2010), 21)
+ label(canvas, "%d original collisionless props. Small: 2x / Medium: 1.5x / Large and landmarks: 1x." % total, Vector2(35, root.size.y - 40), 21)
  for frame in 14: await process_frame
  await RenderingServer.frame_post_draw
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUTPUT.get_base_dir()))

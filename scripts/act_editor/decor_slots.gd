@@ -25,8 +25,9 @@ static func validation_error(slot: Variant) -> String:
   if typeof(slot.get("variant_index")) != TYPE_INT or slot.variant_index < 0: return "variant_index must be a nonnegative integer."
  var size: Variant = slot.get("scale", 1.0)
  if typeof(size) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(size) or size < 0.85 or size > 1.15: return "scale must be between 0.85 and 1.15."
+ if slot.has("placement_source") and (typeof(slot.placement_source) != TYPE_STRING or slot.placement_source != "scatter"): return "placement_source must be scatter or omitted for manual decor."
  for key: Variant in slot:
-  if key not in ["slot_id", "slot_type", "placement_hint", "position", "rotation_degrees", "variant_mode", "variant_index", "scale"]:
+  if key not in ["slot_id", "slot_type", "placement_hint", "position", "rotation_degrees", "variant_mode", "variant_index", "scale", "placement_source"]:
    return "unrecognized decor field; store generic slots, not theme assets."
  return ""
 
@@ -43,6 +44,7 @@ static func fingerprint_records(slots: Variant) -> Array:
   if typeof(size) in [TYPE_INT, TYPE_FLOAT]: size = float(size)
   records.append([slot.get("slot_id"), slot.get("slot_type"), slot.get("placement_hint"), slot.get("position"), angle, slot.get("variant_mode", "auto"), size])
   if slot.has("variant_index"): records.back().append(slot.variant_index)
+  if slot.has("placement_source"): records.back().append(slot.placement_source)
  return records
 
 static func supported_by_terrain(point: Vector2, terrain: Array, cell_size: float) -> bool:
