@@ -6,6 +6,8 @@ extends "res://tests/authored_act_runtime_regression.gd"
 func physical_environment(document: Resource) -> Dictionary:
 	var env := environment()
 	env.tuning.effective.gravity_scale = 0.0
+	# Geometry probes specify their incoming speed independently of profile fall limits.
+	env.tuning.effective.max_downward_speed = 3000.0
 	env.tuning.effective.rolling_acceleration = 0.0
 	env.tuning.effective.rolling_drag = 0.0
 	env.tuning.effective.wall_restitution = 0.7

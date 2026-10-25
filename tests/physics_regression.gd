@@ -131,12 +131,17 @@ func run() -> void:
   game.ball.teleport_to(Vector2(650, start_y), Vector2(4000, 0))
   await frames(8)
   check(game.ball.position.x < 732 and game.ball.linear_velocity.x < 0, "Chunk seam side wall is closed at y=%d" % start_y, str(game.ball.position))
+ # This connector probe measures unobstructed motion at a fixed incoming speed.
+ game.tuning.set_value("max_downward_speed", 1500.0)
+ game.tuning.effective.gravity_scale = 0.0
  game.ball.teleport_to(Vector2(300, 660), Vector2(0, 1000))
  await frames(12)
  check(game.ball.position.y > 745 and absf(game.ball.linear_velocity.y - 1000) < 2, "Open connector crosses downward without snagging", str(game.ball.position))
  game.ball.teleport_to(Vector2(300, 740), Vector2(0, -1000))
  await frames(12)
  check(game.ball.position.y < 650 and absf(game.ball.linear_velocity.y + 1000) < 2, "Open connector crosses upward without snagging", str(game.ball.position))
+ game.tuning.select_profile(0)
+ game.tuning.effective.gravity_scale = 0.0
  var hits_before: int = game.ball.bumper_hit_count
  var score_before: int = game.score
  game.ball.teleport_to(Vector2(260, 240), Vector2(0, 1400))

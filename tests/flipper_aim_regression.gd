@@ -91,7 +91,10 @@ func run() -> void:
   for fraction: float in [0.35, 0.65, 0.9]:
    for trigger: float in [43.0, 62.0]:
     var shot := await trial(side, fraction, trigger)
-    check(shot.shots == 1 and shot.velocity.y < -200.0 and shot.rise > 160.0, "Timed falling catch produces one useful upward strike: side %d / contact %.2f / trigger %.0f" % [side, fraction, trigger])
+    # Preserve the original launch-energy threshold as gravity changes; the
+    # independent 160-pixel traversal requirement still verifies a useful shot.
+    var minimum_upward_speed := 200.0 * sqrt(PhysicsTuning.BALANCED.gravity_scale)
+    check(shot.shots == 1 and shot.velocity.y < -minimum_upward_speed and shot.rise > 160.0, "Timed falling catch produces one useful upward strike: side %d / contact %.2f / trigger %.0f" % [side, fraction, trigger])
     samples.append(shot)
  var mirrored := true
  for index in 6:

@@ -10,15 +10,16 @@ extends Resource
 @export var steering_deceleration: float = 1400.0
 @export var steering_strength: float = 0.065
 @export_group("Movement")
-@export var gravity_scale: float = 0.5625
-@export var max_downward_speed: float = 1125.0
-@export var rolling_acceleration: float = 45.0
-@export var rolling_drag: float = 0.10
-@export var max_rolling_speed: float = 675.0
+@export var gravity_scale: float = 0.25
+@export var max_downward_speed: float = 750.0
+@export var rolling_acceleration: float = 20.0
+@export var rolling_drag: float = 0.20
+@export var max_rolling_speed: float = 450.0
 @export_group("Collisions")
-@export var flipper_launch_strength: float = 787.5
-@export var bumper_rebound_multiplier: float = 0.75
-@export var wall_restitution: float = 0.72
+@export var flipper_launch_strength: float = 525.0
+@export var flipper_swing_speed: float = 8.5
+@export var bumper_rebound_multiplier: float = 0.5
+@export var wall_restitution: float = 0.60
 @export_group("Collectibles and abilities")
 @export var ring_magnet_radius: float = 50.0
 @export var special_meter_charge_multiplier: float = 1.0
@@ -36,6 +37,7 @@ const FIELDS: Dictionary = {
  "rolling_drag": [0.0, 3.0, 0.05, "Contact rolling drag", "1/s"],
  "max_rolling_speed": [100.0, 2000.0, 50.0, "Rolling assistance cutoff", "px/s"],
  "flipper_launch_strength": [200.0, 2200.0, 25.0, "Flipper launch impulse / mass", "px/s"],
+ "flipper_swing_speed": [4.0, 16.0, 0.5, "Flipper swing speed", "rad/s"],
  "bumper_rebound_multiplier": [0.25, 2.5, 0.05, "Bumper rebound multiplier", "×"],
  "wall_restitution": [0.0, 0.95, 0.05, "Wall restitution", "ratio"],
  "ring_magnet_radius": [0.0, 220.0, 5.0, "Ring magnet radius", "px"],

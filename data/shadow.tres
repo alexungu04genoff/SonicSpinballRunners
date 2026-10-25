@@ -8,5 +8,5 @@ counter_steering_deceleration = 4800.0
 max_steering_speed = 125.0
 steering_deceleration = 3200.0
 steering_strength = 0.1
-gravity_scale = 0.5625
-wall_restitution = 0.66
+gravity_scale = 0.25
+wall_restitution = 0.54

@@ -76,14 +76,14 @@ func _physics_process(delta: float) -> void:
   return
  var pressed: bool = controls.left_held if side > 0.0 else controls.right_held
  if pressed and not held:
-  swing_remaining = 0.11
+  swing_remaining = absf(active_angle() - rest_angle()) / float(tuning.effective.flipper_swing_speed) + 0.04
   struck_this_swing = false
  if not pressed:
   swing_remaining = 0.0
  held = pressed
  var old_angle := rotation
  var old_tip: Vector2 = tip()
- rotation = move_toward(rotation, active_angle() if held else rest_angle(), (12.0 if held else 7.0) * delta)
+ rotation = move_toward(rotation, active_angle() if held else rest_angle(), (float(tuning.effective.flipper_swing_speed) if held else 7.0) * delta)
  if swing_remaining > 0.0:
   # A two-tick follow-through is forgiving without powering a stationary hold.
   if is_equal_approx(old_angle, rotation):
