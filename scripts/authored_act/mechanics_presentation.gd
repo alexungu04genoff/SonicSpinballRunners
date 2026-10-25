@@ -61,9 +61,23 @@ func _field(item: Dictionary) -> void:
  fields.append({"arcs": arcs, "radius": radius, "repel": repel})
 
 func _rail(item: Dictionary) -> void:
- var path: Dictionary = item.path
+ var path: Dictionary = item.path.duplicate()
  var width := float(item.properties.width) * table.SCALE
  var peak := float(item.properties.height)
+ # Bound the inside offset by local bend radius so wide strips cannot fold
+ # over themselves. This is visual edging only; the authoritative route is unchanged.
+ var inside := PackedFloat32Array()
+ for i in path.points.size():
+  var factor := 0.0
+  if i > 0 and i < path.points.size() - 1:
+   var incoming: Vector2 = path.points[i] - path.points[i - 1]
+   var outgoing: Vector2 = path.points[i + 1] - path.points[i]
+   var turn := incoming.angle_to(outgoing)
+   if absf(turn) > 0.0001:
+    var radius := (incoming.length() + outgoing.length()) * 0.5 / absf(turn)
+    factor = signf(turn) * minf(1.0, radius * 0.8 / (float(item.properties.width) * 0.54))
+  inside.append(factor)
+ path["inside_edge_scale"] = inside
  var style := table.ramp_materials()
  var thickness := preload("res://scripts/act_dimensions.gd").RAMP_DECK_THICKNESS_PIXELS * table.SCALE
  var root := Node3D.new()
@@ -84,10 +98,14 @@ func _rail(item: Dictionary) -> void:
   if height > 0.06:
    var tangent := RailPath.tangent(path, distance)
    var across := Vector2(-tangent.y, tangent.x)
+   var edge_index := clampi(path.lengths.bsearch(distance), 0, path.points.size() - 1)
+   var edge_scale: float = path.inside_edge_scale[edge_index]
    for side: float in [-1.0, 1.0]:
+    var post_offset := side * float(item.properties.width) * 0.46
+    if side * edge_scale > 0.0: post_offset *= absf(edge_scale)
     var post := BoxMesh.new()
     post.size = Vector3(0.045, height, 0.045)
-    table.mesh_node(post, style.support, table.map_point(RailPath.sample(path, distance) + across * side * float(item.properties.width) * 0.46, height / 2.0), root)
+    table.mesh_node(post, style.support, table.map_point(RailPath.sample(path, distance) + across * post_offset, height / 2.0), root)
   distance += 80.0
  # A small inlaid arrow replaces the oversized bright circular entry pad.
  var marker := SurfaceTool.new()
@@ -111,8 +129,11 @@ func _rail_strip(parent: Node3D, path: Dictionary, width: float, peak: float, ed
    var tangent := RailPath.tangent(path, distance)
    var side := Vector3(-tangent.y, 0, tangent.x)
    var center := table.map_point(path.points[index], RailPath.height(path, distance, peak) * table.SCALE + 0.012)
-   corners.append(center + side * width * edges.x + Vector3.UP * offsets.x)
-   corners.append(center + side * width * edges.y + Vector3.UP * offsets.y)
+   var edge_scale: float = path.inside_edge_scale[index]
+   var left := edges.x * absf(edge_scale) if edges.x * edge_scale > 0.0 else edges.x
+   var right := edges.y * absf(edge_scale) if edges.y * edge_scale > 0.0 else edges.y
+   corners.append(center + side * width * left + Vector3.UP * offsets.x)
+   corners.append(center + side * width * right + Vector3.UP * offsets.y)
    uvs.append(Vector2(width * edges.x, distance * table.SCALE))
    uvs.append(Vector2(width * edges.y, distance * table.SCALE))
   for vertex: int in [0, 2, 1, 1, 2, 3]:
