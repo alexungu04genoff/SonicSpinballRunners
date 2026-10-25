@@ -20,11 +20,13 @@ static func validation_error(slot: Variant) -> String:
  if slot.get("placement_hint") not in HINTS: return "unknown placement_hint."
  if typeof(slot.get("position")) != TYPE_VECTOR2 or not slot.position.is_finite(): return "position must be a finite local-pixel Vector2."
  if typeof(slot.get("rotation_degrees")) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(slot.rotation_degrees): return "rotation_degrees must be finite."
- if slot.get("variant_mode", "auto") != "auto": return "only auto variant_mode is supported."
+ if slot.get("variant_mode", "auto") not in ["auto", "fixed"]: return "variant_mode must be auto or fixed."
+ if slot.get("variant_mode", "auto") == "fixed" or slot.has("variant_index"):
+  if typeof(slot.get("variant_index")) != TYPE_INT or slot.variant_index < 0: return "variant_index must be a nonnegative integer."
  var size: Variant = slot.get("scale", 1.0)
  if typeof(size) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(size) or size < 0.85 or size > 1.15: return "scale must be between 0.85 and 1.15."
  for key: Variant in slot:
-  if key not in ["slot_id", "slot_type", "placement_hint", "position", "rotation_degrees", "variant_mode", "scale"]:
+  if key not in ["slot_id", "slot_type", "placement_hint", "position", "rotation_degrees", "variant_mode", "variant_index", "scale"]:
    return "unrecognized decor field; store generic slots, not theme assets."
  return ""
 
@@ -40,6 +42,7 @@ static func fingerprint_records(slots: Variant) -> Array:
   if typeof(angle) in [TYPE_INT, TYPE_FLOAT]: angle = float(angle)
   if typeof(size) in [TYPE_INT, TYPE_FLOAT]: size = float(size)
   records.append([slot.get("slot_id"), slot.get("slot_type"), slot.get("placement_hint"), slot.get("position"), angle, slot.get("variant_mode", "auto"), size])
+  if slot.has("variant_index"): records.back().append(slot.variant_index)
  return records
 
 static func supported_by_terrain(point: Vector2, terrain: Array, cell_size: float) -> bool:

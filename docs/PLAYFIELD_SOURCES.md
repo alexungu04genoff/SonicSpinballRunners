@@ -8,7 +8,9 @@ Normal human authored playtesting happens in **Play Green Hill.cmd**, the existi
 2. Choose **Authored Act** in the footer's **Level source** selector, or press **Load Act…**.
 3. Select a saved `.tres` containing a Spawn point. The picker pauses play; successful loading or cancellation restores the previous pause state.
 4. Press **Enter / gamepad X** to release the waiting ball. Q/E or LB/RB operate the paddles, arrows/stick steer, and Space/A activates the selected character's special.
-5. Save changes in the Act Editor, then use **Start / replay** to reload the current file. Choose **Generated / Existing** to return to the remembered seed, difficulty and construction mode.
+5. Save changes in the Act Editor, then click **Reload Act** beside **Load Act…**, or press **F5**. This reads the current file without a picker, even during live play. Choose **Generated / Existing** to return to the remembered seed, difficulty and construction mode.
+
+Reload rebuilds terrain/composites, gameplay objects, ring trails, lifecycle markers, decor resolution and the current theme's presentation, then resets the ball to serve. It preserves theme, retro-filter settings, camera tuning and follow/overview choice, fullscreen/Player View and development UI state. Camera position resets to the new Spawn or overview framing. The prior pause state returns after the load. F5 also works in fullscreen Player View; reload is unavailable during a modal picker, Chao draft or character study. **Start / replay** remains available through the normal paused/serve workflow. Missing or invalid saves preserve the playable Act and display the error; save a corrected file and retry.
 
 The same HUD supplies Rings / Score, character selection, special meter/instructions, Scorecraft, Chao Lab, Start / replay and F1 tuning. Escape pauses, R resets and relaunches, O toggles overview/follow, and C opens the existing character study. Source changes clear score, ring progress, meter, combo and temporary character state through the ordinary new-run path. Physics overrides, camera tuning and the selected character persist. Leaving a generated Zone restores the sandbox Chao as before.
 

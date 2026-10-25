@@ -9,9 +9,22 @@ func _init(id: String = "", variants: Dictionary = {}, visual_factory: Callable 
  pools = variants
  factory = visual_factory
 
+func variants_for(slot: Dictionary) -> Array:
+ return pools.get(slot.get("slot_type", ""), {}).get(slot.get("placement_hint", ""), []).duplicate()
+
+func variant_warning(slot: Dictionary) -> String:
+ var choices := variants_for(slot)
+ if choices.is_empty(): return "This theme has no variants for this slot; no prop will be shown."
+ if slot.get("variant_mode", "auto") == "fixed" and int(slot.get("variant_index", -1)) not in range(choices.size()):
+  return "Variant %d is unavailable in this theme's %s / %s pool; using Auto. The saved index is unchanged." % [int(slot.get("variant_index", -1)) + 1, slot.slot_type, slot.placement_hint]
+ return ""
+
 func resolve(act_seed: String, slot: Dictionary) -> String:
- var choices: Array = pools.get(slot.slot_type, {}).get(slot.placement_hint, [])
+ var choices := variants_for(slot)
  if choices.is_empty(): return ""
+ if slot.get("variant_mode", "auto") == "fixed":
+  var index: int = slot.get("variant_index", -1)
+  if index >= 0 and index < choices.size(): return str(choices[index])
  # Explicit SHA-256 and a bounded prefix avoid process RNG and engine hash changes.
  # Length-delimited JSON avoids ambiguous concatenated keys. Stable IDs also keep
  # deletion/reordering of other slots from changing this slot's chosen variant.

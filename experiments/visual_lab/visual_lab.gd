@@ -32,6 +32,7 @@ var _capture_sequence := false
 var _sequence_index := 0
 var source_selector: OptionButton
 var load_act_button: Button
+var reload_act_button: Button
 var act_picker: FileDialog
 var source_note: Label
 var _source_previous_pause := false
@@ -351,6 +352,9 @@ func _build_lab_ui() -> void:
  source_row.add_child(source_selector)
  load_act_button = _button("Load Act…", _open_act_picker)
  source_row.add_child(load_act_button)
+ reload_act_button = _button("Reload Act", reload_authored_act)
+ reload_act_button.tooltip_text = "F5: reload the current saved Act from disk and return to serve. Keeps development presentation settings."
+ source_row.add_child(reload_act_button)
  source_row.add_child(_label("THEME", 12, Color("a4e5e3")))
  theme_selector = OptionButton.new()
  theme_selector.name = "ThemeSelector"
@@ -451,6 +455,17 @@ func _load_selected_act(path: String) -> void:
    await get_tree().process_frame
  _finish_source_switch()
 
+func reload_authored_act() -> void:
+ if level_source != "authored" or authored_act_path.is_empty() or generation_pending or close_view or is_source_picker_open(): return
+ if zone.state == ZoneRun.State.DRAFT or debug_panel.challenge_panel.chao_lab.visible: return
+ # The shared source loader validates and compiles before replacing the live Act.
+ # Pause even during live play, then restore the caller's pause and view state.
+ _begin_source_switch()
+ if request_authored_act(authored_act_path):
+  while generation_pending:
+   await get_tree().process_frame
+ _finish_source_switch()
+
 func _select_source(index: int) -> void:
  if index == 1:
   _open_act_picker()
@@ -494,6 +509,9 @@ func _input(event: InputEvent) -> void:
  if event is InputEventKey and event.pressed and not event.echo and not event.alt_pressed and not event.ctrl_pressed and not event.meta_pressed:
   if event.physical_keycode == KEY_F11 or event.keycode == KEY_F11:
    toggle_fullscreen()
+   get_viewport().set_input_as_handled()
+  elif (event.physical_keycode == KEY_F5 or event.keycode == KEY_F5) and level_source == "authored" and is_instance_valid(ball):
+   reload_authored_act()
    get_viewport().set_input_as_handled()
   elif player_view and event.physical_keycode in [KEY_F1, KEY_F4, KEY_C, KEY_O, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6]:
    get_viewport().set_input_as_handled()
@@ -646,6 +664,7 @@ func _process(_delta: float) -> void:
   return
  if player_view:
   player_hint.text = "PAUSED · Esc / Menu to resume" if get_tree().paused else ("Enter / X to launch · Q / E flippers · ← / → steer · Space / A special" if ball.serve_pending else "")
+  if not last_source_error.is_empty(): player_hint.text = "Act reload failed: " + last_source_error
  var context := "CHARACTER STUDY" if close_view else ("PAUSED" if get_tree().paused else ("READY TO ROLL IN" if ball.serve_pending else "LIVE PLAY"))
  if score_attack.state == ScoreAttack.State.COMPLETE and not close_view:
   context = "SCORE ATTACK CLEAR"
@@ -676,9 +695,14 @@ func _process(_delta: float) -> void:
   source_selector.select(1 if level_source == "authored" else 0)
  source_selector.disabled = generation_pending or close_view or zone.state == ZoneRun.State.DRAFT
  load_act_button.disabled = source_selector.disabled or is_source_picker_open()
+ reload_act_button.visible = level_source == "authored"
+ reload_act_button.disabled = load_act_button.disabled or authored_act_path.is_empty() or debug_panel.challenge_panel.chao_lab.visible
  theme_selector.disabled = generation_pending or close_view or is_source_picker_open()
  source_note.text = last_source_error if not last_source_error.is_empty() else (authored_act_path.get_file() if level_source == "authored" else "Same game · choose a saved Act or a generated layout")
  source_note.tooltip_text = last_source_error if not last_source_error.is_empty() else (authored_act_path if level_source == "authored" else "Loading an Act pauses play and restores the previous pause state.")
+ if last_source_error.is_empty() and not presentation.decor_warnings.is_empty():
+  source_note.text += " · %d decor warning(s)" % presentation.decor_warnings.size()
+  source_note.tooltip_text += "\n" + "\n".join(presentation.decor_warnings)
  for button: Button in layout_buttons:
   button.disabled = not can_regenerate() or level_source == "authored"
   var preset: Array = button.get_meta("layout_preset")

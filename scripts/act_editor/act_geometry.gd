@@ -1,7 +1,7 @@
 class_name ActGeometry
 extends Resource
 ## A single Act's terrain, connectors, gameplay objects and lifecycle authoring data.
-const FORMAT_VERSION := 9
+const FORMAT_VERSION := 10
 ## The system gutter is outside terrain bounds and is never a thirteenth terrain row.
 const RED_GUTTER_CELLS := 1
 const SHAPES = preload("res://scripts/act_editor/terrain_shapes.gd")
@@ -364,7 +364,11 @@ static func load_document(path: String) -> Dictionary:
   return {"document": null, "error": "The selected file is not an Act Geometry resource."}
  if not loaded._format_version_was_set or not loaded._library_version_was_set:
   return {"document": null, "error": "This Act file is missing its required format or terrain library version."}
- if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4, 5, 6, 7, 8] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
+ if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4, 5, 6, 7, 8, 9] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
+  if typeof(loaded.decor_slots) == TYPE_ARRAY:
+   for slot: Variant in loaded.decor_slots:
+    if slot is Dictionary and (slot.get("variant_mode", "auto") != "auto" or slot.has("variant_index")):
+     return {"document": null, "error": "Fixed decor variants require Act format 10."}
   if loaded.format_version < 7 and (typeof(loaded.decor_slots) != TYPE_ARRAY or not loaded.decor_slots.is_empty() or loaded.decor_seed != ""):
    return {"document": null, "error": "Previous Act formats cannot contain decor slots or a decor seed."}
   if loaded.format_version == 2 and (typeof(loaded.gameplay_objects) != TYPE_ARRAY or not loaded.gameplay_objects.is_empty()):
@@ -381,9 +385,9 @@ static func load_document(path: String) -> Dictionary:
    for placement: Variant in loaded.placements:
     if placement is Dictionary and loaded.format_version < 8 and (placement.has("offset") or placement.has("terrain_scale")):
      return {"document": null, "error": "Fractional terrain transforms require Act format 8."}
-    if placement is Dictionary and placement.has("fine_rotation_degrees"):
+    if placement is Dictionary and loaded.format_version < 9 and placement.has("fine_rotation_degrees"):
      return {"document": null, "error": "Fine terrain rotation requires Act format 9."}
-  # Old Acts keep their exact authored data; only explicit saving writes v9.
+  # Old Acts keep their exact authored data; only explicit saving writes v10.
   loaded.format_version = FORMAT_VERSION
  var transform_decode_error := _decode_stored_terrain_transforms(loaded)
  if not transform_decode_error.is_empty():

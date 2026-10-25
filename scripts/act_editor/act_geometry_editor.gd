@@ -9,6 +9,7 @@ const GameplayPaletteItem = preload("res://scripts/act_editor/gameplay_palette_i
 const Rings = preload("res://scripts/act_editor/ring_trails.gd")
 const Composite = preload("res://scripts/act_editor/composite_terrain.gd")
 const Decor = preload("res://scripts/act_editor/decor_slots.gd")
+const Themes = preload("res://scripts/themes/theme_registry.gd")
 const EXAMPLE_PATH := "res://data/acts/curve_garden.tres"
 const HISTORY_LIMIT := 100
 
@@ -75,6 +76,9 @@ var decor_list: VBoxContainer
 var decor_scroll: ScrollContainer
 var decor_type_field: OptionButton
 var decor_hint_field: OptionButton
+var decor_theme_field: OptionButton
+var decor_variant_field: OptionButton
+var _decor_preview_skin: RefCounted
 var decor_scale_field: SpinBox
 var decor_position_fields: Array[LineEdit] = []
 var decor_visible_field: CheckBox
@@ -533,6 +537,19 @@ func _build_decor_palette(parent: Node) -> void:
 	decor_hint_field.item_selected.connect(func(index): _set_decor_property("placement_hint", Decor.HINTS[index]))
 	decor_hint_field.tooltip_text = "Theme variant hint only. Does not move or snap the slot."
 	decor_list.add_child(decor_hint_field)
+	decor_theme_field = OptionButton.new()
+	for name: String in Themes.NAMES: decor_theme_field.add_item("Preview: " + name)
+	decor_theme_field.tooltip_text = "Names and availability for this theme only. The preview theme is not saved in the Act."
+	_decor_preview_skin = Themes.create(Themes.IDS[0]).create_decor(null)
+	decor_theme_field.item_selected.connect(func(index):
+		_decor_preview_skin = Themes.create(Themes.IDS[index]).create_decor(null)
+		_refresh())
+	decor_list.add_child(decor_theme_field)
+	decor_variant_field = OptionButton.new()
+	decor_variant_field.fit_to_longest_item = false
+	decor_variant_field.tooltip_text = "Auto is deterministic. A numbered variant saves only its generic zero-based index, not a theme asset name."
+	decor_variant_field.item_selected.connect(_select_decor_variant)
+	decor_list.add_child(decor_variant_field)
 	var coordinates := HBoxContainer.new()
 	decor_list.add_child(coordinates)
 	for axis in 2:
@@ -619,6 +636,19 @@ func _set_decor_property(key: String, value: Variant) -> void:
 		canvas.decor_brush = slot
 		_refresh()
 
+func _select_decor_variant(index: int) -> void:
+	if _refreshing or composite_preview_active or _active_decor().is_empty(): return
+	var slot := _active_decor().duplicate(true)
+	var variant_index := int(decor_variant_field.get_item_metadata(index))
+	slot["variant_mode"] = "auto" if variant_index < 0 else "fixed"
+	if variant_index < 0: slot.erase("variant_index")
+	else: slot["variant_index"] = variant_index
+	canvas.cancel_gesture()
+	if canvas.decor_brush.is_empty(): set_decor_slot(canvas.selected_decor_index, slot)
+	else:
+		canvas.decor_brush = slot
+		_refresh()
+
 func _commit_decor_position() -> void:
 	if _refreshing or canvas.selected_decor_index < 0: return
 	var position: Vector2 = _active_decor().position
@@ -637,6 +667,11 @@ func _refresh_decor_controls() -> void:
 	var active := not slot.is_empty() and not composite_preview_active
 	decor_type_field.disabled = not active
 	decor_hint_field.disabled = not active
+	decor_variant_field.disabled = not active
+	decor_theme_field.disabled = composite_preview_active
+	decor_variant_field.clear()
+	decor_variant_field.add_item("Auto")
+	decor_variant_field.set_item_metadata(0, -1)
 	decor_scale_field.editable = active
 	decor_visible_field.set_pressed_no_signal(canvas.show_decor)
 	decor_snap_field.set_pressed_no_signal(canvas.decor_snap)
@@ -644,8 +679,21 @@ func _refresh_decor_controls() -> void:
 		_decor_position_text[axis] = var_to_str(slot.position[axis]) if active and canvas.selected_decor_index >= 0 else ""
 		decor_position_fields[axis].text = _decor_position_text[axis]
 		decor_position_fields[axis].editable = active and canvas.selected_decor_index >= 0
-	decor_info.text = "Auto variants · deterministic\nFree movement · exact Angle ° below\nR / Shift+R: ±15° · Ctrl+D: duplicate\nArrows: 1 px (snap: 1 cell)\n\nPlace anchors on raised terrain. Unsupported slots remain editable but do not spawn in play."
+	decor_info.text = "Auto or fixed variant · theme-independent\nFree movement · exact Angle ° below\nR / Shift+R: ±15° · Ctrl+D: duplicate\nArrows: 1 px (snap: 1 cell)\n\nPlace anchors on raised terrain. Unsupported slots remain editable but do not spawn in play."
 	if active:
+		var choices: Array = _decor_preview_skin.variants_for(slot)
+		for index in choices.size():
+			decor_variant_field.add_item("Variant %d — %s" % [index + 1, str(choices[index]).capitalize()])
+			decor_variant_field.set_item_metadata(index + 1, index)
+		if slot.get("variant_mode", "auto") == "fixed":
+			var selected: int = slot.variant_index
+			if selected >= choices.size():
+				decor_variant_field.add_item("Variant %d — unavailable (Auto)" % [selected + 1])
+				decor_variant_field.set_item_metadata(decor_variant_field.item_count - 1, selected)
+				decor_variant_field.select(decor_variant_field.item_count - 1)
+			else: decor_variant_field.select(selected + 1)
+		var warning: String = _decor_preview_skin.variant_warning(slot)
+		if not warning.is_empty(): decor_info.text = warning + "\n\n" + decor_info.text
 		decor_type_field.select(Decor.TYPES.find(slot.slot_type))
 		decor_hint_field.select(Decor.HINTS.find(slot.placement_hint))
 		decor_scale_field.set_value_no_signal(float(slot.get("scale", 1.0)))
@@ -1451,7 +1499,8 @@ func _refresh() -> void:
 	handedness_field.select(1 if not gameplay.is_empty() and gameplay.type == "right_flipper" else 0)
 	if not decor.is_empty():
 		mode_label.text = ("PLACE" if not canvas.decor_brush.is_empty() else "SELECTED") + " · " + decor.slot_type.capitalize() + " decor"
-		detail_label.text = "%s px · %s° · %s · Auto variant · Presentation only" % [decor.position, var_to_str(decor.rotation_degrees), decor.placement_hint]
+		var variant := "Variant %d" % (int(decor.get("variant_index", 0)) + 1) if decor.get("variant_mode", "auto") == "fixed" else "Auto variant"
+		detail_label.text = "%s px · %s° · %s · %s · Presentation only" % [decor.position, var_to_str(decor.rotation_degrees), decor.placement_hint, variant]
 	elif canvas.ring_tool or canvas.selected_ring_index >= 0:
 		mode_label.text = "DRAW RINGS" if canvas.ring_tool else "SELECTED  ·  Ring trail"
 		detail_label.text = "Click / drag · Alt frees endpoints · Generated rings never snap · Select trail to move or resize · Delete removes trail"

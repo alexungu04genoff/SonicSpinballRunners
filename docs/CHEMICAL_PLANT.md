@@ -76,7 +76,7 @@ ThemeDefinition
 
 `visual_lab.gd` owns the UI and calls only the presentation rebuild during a theme change. It restores camera pose/damping state, ring pickup transforms and bumper flash timers. The `game.gd` loop, physics profiles, flippers, bumpers, abilities, scoring, lifecycle, connector behavior and authored terrain are not changed by this milestone.
 
-Acts never reference theme names or asset filenames. Existing `DecorSkin.resolve()` hashes `[act_identity, slot_id, skin_id]` with SHA-256 to select Auto variants without touching gameplay RNG. Reloading or reordering other slots does not reshuffle a slot. Published pool order is part of visual continuity. Auto remains the supported mode; locked variants are deferred.
+Acts never reference theme names or asset filenames. `DecorSkin.resolve()` hashes `[act_identity, slot_id, skin_id]` with SHA-256 to select Auto variants without touching gameplay RNG. Auto remains the default. Authors can also store `variant_mode = "fixed"` and a generic zero-based `variant_index`; each theme maps that index into the selected type/hint pool. Missing indices warn and fall back to deterministic Auto without rewriting the Act. Reloading or reordering other slots does not reshuffle a slot. Published pool order is part of visual continuity. The editor's preview-theme selector shows the friendly names in either pool; see [decor workflow](DECOR_SLOTS.md).
 
 To add another theme, implement the contract, provide decor pools for the four sizes and three placement hints, then register its stable ID/name. No gameplay branch or Act schema change is needed. Optional post-processing remains the existing independently controlled OFF/retro stack; no theme forces a filter.
 

@@ -26,7 +26,9 @@ All examples include small, medium, large and landmark slots, Spawn, connectors,
 4. **Ctrl+D / Duplicate** copies the transform half a cell diagonally and gives the new slot its own ID. **Delete** removes it. Placement, movement, property changes, duplication and deletion share the existing undo/redo history. Arrow keys move one pixel in free mode, or one cell with snap; Alt+arrows always move one pixel.
 5. **Show decor slots** hides markers and their selection targets without deleting records. Snap and visibility are session view preferences, not Act data.
 
-The Decor inspector scrolls when the window is short. Exact angle editing uses the existing field below the canvas. Variant mode is currently **auto**; named/indexed overrides, copy/paste and themed 3D editor ghosts are deferred.
+The Decor inspector scrolls when the window is short. Exact angle editing uses the existing field below the canvas. **Auto** remains the default variant. Choose **Preview: Green Hill / Chemical Plant** to see the current type/hint pool's friendly names, then select a numbered variant. This preview selector changes labels and availability only; it is not saved in the Act and does not load 3D editor ghosts. Variant edits share undo/redo and persistence with other slot properties.
+
+For Green Hill **small / surface**, **Variant 1 — Flower**, **Variant 2 — Small Rock**, **Variant 1 — Flower** stores indices **0, 1, 0**. Chemical Plant interprets the same records as **Beacon, Valve, Beacon**. If an index is unavailable after changing the preview theme, slot type or hint, the inspector retains it and displays a warning. Runtime uses deterministic Auto for that slot and lists the warning in the main game's level-source tooltip. Neither fallback changes the authored record.
 
 ![Decor authoring palette and selected slot](decor-captures/editor.png)
 
@@ -41,13 +43,15 @@ Place the anchor on a filled terrain stamp/composite or a narrow raised wall rib
 Act format **7**, terrain library **2**, adds:
 
 - `decor_seed`: a persistent Act decoration identity, generated on its first decor edit. It survives saves, Save As, renaming and copies. An unseeded hand-authored file falls back to its Resource path.
-- `decor_slots`: an ordered array of dictionaries containing `slot_id`, `slot_type`, `placement_hint`, `position: Vector2`, `rotation_degrees`, optional `variant_mode = "auto"`, and optional `scale = 1.0`.
+- `decor_slots`: an ordered array of dictionaries containing `slot_id`, `slot_type`, `placement_hint`, `position: Vector2`, `rotation_degrees`, optional `variant_mode = "auto"`, and optional `scale = 1.0`. Format **10** adds `variant_mode = "fixed"` with a required nonnegative integer `variant_index`. Indices are zero-based; the editor displays one-based variant numbers. Auto selection removes the index.
 
 Act records contain no mesh paths, Green Hill prop names or skin IDs. Slot IDs are generated only during authoring and stay fixed through movement, rotation and undo. A duplicate gets a fresh ID. IDs must be nonempty and unique within the Act.
 
-`DecorSkin.resolve()` hashes the JSON array `[act_identity, slot_id, skin_id]` with SHA-256, converts its first eight hexadecimal digits to an integer, then takes modulo the selected pool length. It does not consume gameplay RNG. Reloading, reordering slots, deleting other slots, or editing unrelated geometry cannot reshuffle an existing slot. Changing the slot type/hint or active skin selects a different pool. Changing a skin's pool membership/order can change its choices; preserve published pool order when visual continuity matters.
+In Auto mode, `DecorSkin.resolve()` hashes the JSON array `[act_identity, slot_id, skin_id]` with SHA-256, converts its first eight hexadecimal digits to an integer, then takes modulo the selected pool length. Fixed mode directly indexes that same pool, independently of the seed and slot identity. Neither mode consumes gameplay RNG. Reloading, reordering slots, deleting other slots, or editing unrelated geometry cannot reshuffle an existing slot. Changing the slot type/hint or active skin selects a different pool. Preserve published pool order: fixed indices refer to those positions. An unavailable index falls back to Auto with a warning; an empty pool warns and skips the visual.
 
-The document fingerprint, deep-copy history, validation, and atomic save/reload comparison include the new fields. Angles and scale use the existing exact numeric byte storage convention. Formats 2–6 load in memory with no decor and no file rewrite. Format 7 introduced decor; current saves use format 8, which also supports fractional and half-size terrain. Existing format-7 decor remains unchanged on load. Formats below 7 cannot carry decor data. Format-6 composites retain their existing exact outlines.
+The document fingerprint, deep-copy history, validation, and atomic save/reload comparison include variant mode and index. Angles and scale use the existing exact numeric byte storage convention. Formats 2–6 load in memory with no decor and no file rewrite. Format 7 introduced decor; current saves use format 10. Formats 7–9 retain their Auto slots unchanged on load. Formats below 7 cannot carry decor, and below 10 cannot carry fixed-variant fields. Existing terrain transforms and composite outlines remain exact.
+
+For two-monitor authoring, save in the editor, then click **Reload Act** beside **Load Act…** in the main game, or press **F5**. Reload reads the current file without a picker, rebuilds the entire authored playfield and current theme, resolves decor again, and returns the ball to serve. It retains presentation preferences and the previous pause state. A missing file or invalid draft leaves the live Act intact; correct the file and press F5 again.
 
 ## Skin and runtime ownership
 

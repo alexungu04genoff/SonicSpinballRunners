@@ -26,6 +26,8 @@ func run() -> void:
   if loaded.document != null:
    check(loaded.document.fingerprint() == OS.get_cmdline_user_args()[-2], "Fresh process retains exact data")
    check(skin.resolve(loaded.document.decor_identity(), loaded.document.decor_slots[0]) == OS.get_cmdline_user_args()[-1], "Fresh process chooses the same variant")
+   var fixed_loaded := Act.load_document("res://test-results/decor-fixed.tres")
+   check(fixed_loaded.document != null and fixed_loaded.document.decor_slots[0].variant_mode == "fixed" and fixed_loaded.document.decor_slots[0].variant_index == 9, "Fresh process preserves the fixed generic index")
   finish()
   return
  var act := Act.new()
@@ -39,6 +41,43 @@ func run() -> void:
  act.decor_slots.append(slot)
  check(act.validation_errors().is_empty(), "Generic slot schema accepts exact transforms")
  var before := act.fingerprint()
+ var manual := Slots.make_slot("small")
+ manual.placement_hint = "surface"
+ manual.variant_mode = "fixed"
+ manual["variant_index"] = 0
+ var generic := DecorSkin.new("other", {"small": {"surface": ["beacon", "valve"]}})
+ var sequence := PackedStringArray()
+ for index in [0, 1, 0]:
+  manual.variant_index = index
+  sequence.append(skin.resolve("any seed", manual))
+  check(generic.resolve("any seed", manual) == ["beacon", "valve"][index], "Fixed index maps through the active skin's own pool")
+ check(sequence == PackedStringArray(["flower", "small_rock", "flower"]), "Fixed variants author flower-rock-flower independently of slot IDs")
+ manual.variant_index = 9
+ var unchanged := var_to_bytes(manual)
+ var fallback := manual.duplicate(true)
+ fallback.variant_mode = "auto"
+ check(skin.resolve("seed", manual) == skin.resolve("seed", fallback) and not skin.variant_warning(manual).is_empty() and var_to_bytes(manual) == unchanged, "Unavailable fixed index warns and falls back to deterministic Auto without changing the Act")
+ var fixed_act := Act.new()
+ fixed_act.decor_slots = [manual]
+ var fixed_path := "res://test-results/decor-fixed.tres"
+ check(fixed_act.save_document(fixed_path) == OK and Act.load_document(fixed_path).document.fingerprint() == fixed_act.fingerprint(), "Generic fixed index persists even when outside the current theme's pool")
+ var fixed_text := FileAccess.get_file_as_string(fixed_path)
+ check(not fixed_text.contains("flower") and not fixed_text.contains("small_rock") and fixed_text.contains("variant_index"), "Saved Act contains generic indices and no prop names")
+ for mutation: Dictionary in [{"variant_index": -1}, {"variant_index": 1.5}, {"variant_index": true}, {"variant_index": "flower"}]:
+  var malformed := manual.duplicate(true)
+  malformed.merge(mutation, true)
+  check(not Slots.validation_error(malformed).is_empty(), "Malformed fixed index rejects")
+ var missing := manual.duplicate(true)
+ missing.erase("variant_index")
+ check(not Slots.validation_error(missing).is_empty(), "Fixed mode requires an index")
+ var legacy_auto := act._storage_document()
+ legacy_auto.format_version = 9
+ ResourceSaver.save(legacy_auto, fixed_path)
+ check(Act.load_document(fixed_path).document.fingerprint() == before, "Format 9 Auto decor migrates unchanged")
+ legacy_auto.decor_slots = [manual]
+ ResourceSaver.save(legacy_auto, fixed_path)
+ check(Act.load_document(fixed_path).document == null, "Old schema cannot carry fixed-variant fields")
+ check(fixed_act.save_document(fixed_path) == OK, "Restore fixed fixture for fresh-process verification")
  check(act.save_document(SAVE) == OK, "Atomic decor save succeeds")
  var loaded := Act.load_document(SAVE)
  check(loaded.document != null and loaded.document.fingerprint() == before, "Save/load preserves numeric bits, stable seed and slot ID")
@@ -88,7 +127,7 @@ func run() -> void:
   check(types.size() == 4 and supported, "Example includes all four sizes on raised terrain: " + file)
  var output: Array = []
  var result := OS.execute(OS.get_executable_path(), ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--script", "res://tests/decor_regression.gd", "--", "--reload-decor", before, choice], output, true)
- check(result == 0 and str(output).contains("3 checks | 0 failures"), "Fresh-process serialization and variation verified")
+ check(result == 0 and str(output).contains("4 checks | 0 failures"), "Fresh-process serialization and variation verified")
  finish()
 
 func finish() -> void:

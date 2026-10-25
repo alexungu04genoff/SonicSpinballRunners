@@ -20,6 +20,7 @@ var _outlines: Array[PackedVector2Array] = []
 var authored_terrain_polygons: Array[PackedVector2Array] = []
 var authored_composite_polygons: Array[PackedVector2Array] = []
 var authored_open_paths: Array[PackedVector2Array] = []
+var decor_warnings := PackedStringArray()
 var authored_floor_outline := PackedVector2Array()
 const LAND_DEPTH := 1.45
 
@@ -29,6 +30,7 @@ func _clear_playfield_geometry() -> void:
  authored_terrain_polygons.clear()
  authored_composite_polygons.clear()
  authored_open_paths.clear()
+ decor_warnings.clear()
  authored_floor_outline.clear()
  decor_root = null
  skipped_decor_slots.clear()
@@ -103,6 +105,8 @@ func _build_authored_decor(runtime: Dictionary, cell_size: float) -> void:
  terrain_root.add_child(decor_root)
  skipped_decor_slots.clear()
  for slot: Dictionary in runtime.get("decor_slots", []):
+  var warning: String = decor_skin.variant_warning(slot)
+  if not warning.is_empty(): decor_warnings.append("Slot %s: %s" % [slot.slot_id, warning])
   if not DecorSlots.supported_by_terrain(slot.position, runtime.terrain, cell_size):
    skipped_decor_slots.append(slot.slot_id)
    continue
