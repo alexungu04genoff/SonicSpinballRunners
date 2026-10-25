@@ -318,6 +318,67 @@ func check_join_controls() -> void:
 	editor.composite_angle.value = 90
 
 
+func check_corner_pins() -> void:
+	editor.new_document()
+	var square := stamp("rectangle_3x3", Vector2i(4, 4))
+	square.quarter_turns = 1
+	square.flip_h = true
+	editor.add_placement(square)
+	editor.canvas.select_piece(0)
+	editor.composite_strength.value = 200
+	editor.composite_only_joins.button_pressed = false
+	editor.composite_preserve_corners.button_pressed = false
+	editor._refresh()
+	var before: String = editor.document.fingerprint()
+	var history_size: int = editor.undo_stack.size()
+	var canonical: PackedVector2Array = Shapes.get_definition(square.shape_id).points
+	var transformed: PackedVector2Array = Shapes.transformed_points(square)
+	await click_control(editor.buttons.smooth)
+	var unpinned: Dictionary = editor.composite_preview.duplicate(true)
+	await click_at(grid_position(transformed[0] + Vector2(square.anchor)))
+	check(editor._composite_protected_indices == PackedInt32Array([0]) and editor.composite_preview.outline.has(canonical[0]), "Pointer pins the correct transformed square corner in the smoothing preview")
+	check(not editor.composite_preview.outline.has(canonical[1]), "Pinning one square corner leaves other corners free to round")
+	await click_at(grid_position(transformed[0] + Vector2(square.anchor)))
+	check(editor._composite_protected_indices.is_empty() and editor.composite_preview == unpinned, "Clicking a pin again restores the identical unprotected preview")
+	editor.composite_strength.value = 500
+	await process_frame
+	check(editor.composite_preview.is_empty() and editor.canvas._smoothing_corners.size() == 4, "Rejected smoothing still exposes original corner handles for repair")
+	await click_at(grid_position(transformed[0] + Vector2(square.anchor)))
+	await click_at(grid_position(transformed[1] + Vector2(square.anchor)))
+	check(not editor.composite_preview.is_empty() and editor.composite_preview.outline.has(canonical[0]) and editor.composite_preview.outline.has(canonical[1]), "Pins can repair an excessive-area preview without lowering strength")
+	await click_at(grid_position(Vector2(5, 5)), false, false, MOUSE_BUTTON_WHEEL_UP)
+	check(editor.canvas.smoothing_corner_at(editor.canvas.grid_to_screen(transformed[0] + Vector2(square.anchor))) == 0, "Corner hit testing follows zoom without changing index identity")
+	await click_at(grid_position(Vector2(10, 10)))
+	check(editor._composite_protected_indices.size() == 2, "Empty-space clicks do not create arbitrary smoothing pins")
+	editor.composite_strength.value = 200
+	await process_frame
+	check(editor._composite_protected_indices.size() == 2 and editor.composite_preview.outline.has(canonical[0]), "Protected points survive strength changes")
+	check(editor.document.fingerprint() == before and editor.undo_stack.size() == history_size, "Pin edits leave document geometry and history untouched")
+	if DisplayServer.get_name() != "headless":
+		await RenderingServer.frame_post_draw
+		check(root.get_texture().get_image().save_png("res://test-results/pinned-smoothing-preview.png") == OK, "Pinned smoothing preview capture saved")
+	var expected: Dictionary = editor.composite_preview.duplicate(true)
+	await click_control(editor.buttons.composite_apply)
+	check(editor.document.placements[0] == expected and editor.undo_stack.size() == history_size + 1 and editor.canvas._smoothing_corners.is_empty(), "Apply saves exactly the pinned contour in one edit and clears handles")
+	editor.undo()
+	check(editor.document.fingerprint() == before, "Undo restores the exact source after applying manually pinned smoothing")
+	editor.redo()
+	check(editor.document.placements[0] == expected, "Redo restores the exact contour with its protected corners")
+	check(editor.save_to(SAVE_PATH) and editor.load_from(SAVE_PATH) and editor.document.placements[0] == expected, "The pinned contour survives exact save and reload")
+	# Loading resets history; start a fresh preview to test clear and cancel.
+	editor.canvas.select_piece(0)
+	editor._refresh()
+	await click_control(editor.buttons.smooth)
+	check(editor._composite_protected_indices.is_empty(), "New smoothing operations start with no stale source indices")
+	var corner: Vector2 = editor.canvas._smoothing_corners[0]
+	await click_at(grid_position(corner))
+	await click_control(editor.buttons.composite_clear_pins)
+	check(editor._composite_protected_indices.is_empty() and editor.buttons.composite_clear_pins.disabled, "Clear pins releases all manual protection")
+	await click_at(grid_position(corner))
+	await press_key(KEY_ESCAPE)
+	check(not editor.composite_preview_active and editor._composite_protected_indices.is_empty() and editor.canvas._smoothing_corners.is_empty(), "Cancel discards pins and removes corner handles")
+
+
 func capture_preview() -> void:
 	await reset_fixture()
 	var left := stamp("triangle_2x2", Vector2i(0, 4))
@@ -354,6 +415,7 @@ func run() -> void:
 	await check_unchanged_smoothing()
 	await check_protected_primitive()
 	await check_join_controls()
+	await check_corner_pins()
 	await capture_preview()
 	print("RESULT | Composite editor UI | %d checks | %d failures" % [checks, failures])
 	editor.queue_free()

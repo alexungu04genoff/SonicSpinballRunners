@@ -104,7 +104,7 @@ static func _boundary_follows(polygon: PackedVector2Array, point: Vector2, neigh
    return true
  return false
 
-static func smooth(placement: Dictionary, strength: float, preserve_corners: bool = false, preserve_angle_degrees: float = 90.0, join_indices: Variant = null) -> Dictionary:
+static func smooth(placement: Dictionary, strength: float, preserve_corners: bool = false, preserve_angle_degrees: float = 90.0, join_indices: Variant = null, protected_indices: PackedInt32Array = PackedInt32Array()) -> Dictionary:
  if not is_finite(strength) or strength < 0.0 or strength > MAX_STRENGTH:
   return _failure("Smoothing strength must be between 0% and 500%.")
  if not is_finite(preserve_angle_degrees) or preserve_angle_degrees < 1.0 or preserve_angle_degrees > 179.0:
@@ -120,6 +120,8 @@ static func smooth(placement: Dictionary, strength: float, preserve_corners: boo
    return _failure("Join-only smoothing requires the current merge's corner indices.")
   for index: int in join_indices:
    if index < 0 or index >= outline.size(): return _failure("Join corner index is outside the merged outline.")
+ for index: int in protected_indices:
+  if index < 0 or index >= outline.size(): return _failure("Protected corner index is outside the source outline.")
  var result := placement.duplicate(true)
  # Explicit String keys also satisfy the authoring schema when the input is a
  # primitive without these fields (dot insertion can create StringName keys).
@@ -132,7 +134,7 @@ static func smooth(placement: Dictionary, strength: float, preserve_corners: boo
  var rounded := PackedVector2Array()
  for index in outline.size():
   var point := outline[index]
-  if join_indices != null and not join_indices.has(index):
+  if protected_indices.has(index) or (join_indices != null and not join_indices.has(index)):
    rounded.append(point)
    continue
   var previous := outline[posmod(index - 1, outline.size())]

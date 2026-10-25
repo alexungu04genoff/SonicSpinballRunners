@@ -56,6 +56,7 @@ var composite_preserve_corners: CheckBox
 var composite_angle: SpinBox
 var composite_only_joins: CheckBox
 var _composite_join_indices := PackedInt32Array()
+var _composite_protected_indices := PackedInt32Array()
 var composite_hint: Label
 var composite_preview_active := false
 var composite_preview: Dictionary = {}
@@ -151,6 +152,8 @@ func _build_ui() -> void:
 	palette.add_theme_constant_override("separation", 8)
 	body.add_child(palette)
 	palette_tabs = TabBar.new()
+	palette_tabs.clip_tabs = false
+	palette_tabs.add_theme_font_size_override("font_size", 12)
 	palette_tabs.add_tab("Terrain")
 	palette_tabs.add_tab("Gameplay")
 	palette_tabs.add_tab("Act Markers")
@@ -286,6 +289,7 @@ func _build_ui() -> void:
 	_button(composite_bar, "merge_smooth", "Merge + Smooth", func(): preview_composite("merge_smooth"), "Union selected filled terrain, then smooth the resulting outline")
 	_button(composite_bar, "composite_apply", "Apply", apply_composite, "Replace the selected sources in one undo step")
 	_button(composite_bar, "composite_cancel", "Cancel", cancel_composite_preview, "Discard the preview; original terrain stays unchanged")
+	_button(composite_bar, "composite_clear_pins", "Clear pins", _clear_composite_pins, "Release all manually protected corners in this preview")
 	var sculpt_settings := HBoxContainer.new()
 	sculpt_settings.add_theme_constant_override("separation", 8)
 	workspace.add_child(sculpt_settings)
@@ -344,6 +348,7 @@ func _build_ui() -> void:
 	canvas.selection_changed.connect(func(_index): _refresh())
 	canvas.terrain_selection_changed.connect(func(_indices): _refresh())
 	canvas.composite_preview_cancel_requested.connect(cancel_composite_preview)
+	canvas.composite_corner_toggled.connect(_toggle_composite_corner)
 	canvas.connector_requested.connect(set_connector)
 	canvas.connector_selection_changed.connect(func(_kind): _refresh())
 	canvas.gameplay_placement_requested.connect(add_gameplay_placement)
@@ -398,7 +403,7 @@ func _button(parent: Node, id: String, label: String, action: Callable, hint: St
 	button.focus_mode = Control.FOCUS_NONE
 	button.pressed.connect(func():
 		if composite_preview_active:
-			if id in ["composite_apply", "composite_cancel", "fit"]:
+			if id in ["composite_apply", "composite_cancel", "composite_clear_pins", "fit"]:
 				composite_strength.apply()
 				composite_angle.apply()
 				action.call()
@@ -572,6 +577,7 @@ func preview_composite(operation: String) -> void:
 		_set_status(result.error)
 		return
 	_composite_base = result.placement
+	_composite_protected_indices.clear()
 	_composite_join_indices = result.get("join_indices", PackedInt32Array())
 	_composite_operation = operation
 	_composite_fingerprint = document.fingerprint()
@@ -583,14 +589,29 @@ func _rebuild_composite_preview() -> void:
 	var result: Dictionary = {"placement": _composite_base.duplicate(true), "error": ""}
 	if _composite_operation != "merge":
 		var joins: Variant = _composite_join_indices if composite_only_joins.button_pressed and _composite_operation == "merge_smooth" else null
-		result = Composite.smooth(_composite_base, composite_strength.value / 100.0, composite_preserve_corners.button_pressed, composite_angle.value, joins)
+		result = Composite.smooth(_composite_base, composite_strength.value / 100.0, composite_preserve_corners.button_pressed, composite_angle.value, joins, _composite_protected_indices)
 	composite_preview = result.placement
 	canvas.set_composite_preview(composite_preview, true)
+	canvas.set_smoothing_corners(_composite_base if _composite_operation != "merge" else {}, _composite_protected_indices)
 	_refresh()
 	if not result.error.is_empty():
 		_set_status(result.error + " Reduce strength or Cancel. Nothing has been changed.")
 	else:
 		_set_status("Preview: the bright contour is the final collision silhouette. Apply replaces %d source piece(s); Cancel keeps them." % _composite_sources.size())
+
+func _toggle_composite_corner(index: int) -> void:
+	if not composite_preview_active or _composite_operation == "merge": return
+	var offset := _composite_protected_indices.find(index)
+	if offset >= 0:
+		_composite_protected_indices.remove_at(offset)
+	else:
+		_composite_protected_indices.append(index)
+	_rebuild_composite_preview()
+
+func _clear_composite_pins() -> void:
+	if not composite_preview_active: return
+	_composite_protected_indices.clear()
+	_rebuild_composite_preview()
 
 func apply_composite() -> void:
 	if not composite_preview_active or composite_preview.is_empty():
@@ -626,6 +647,7 @@ func _clear_composite_preview() -> void:
 	_composite_sources.clear()
 	_composite_base = {}
 	_composite_join_indices.clear()
+	_composite_protected_indices.clear()
 	_composite_fingerprint = ""
 	_composite_operation = ""
 	canvas.set_composite_preview({}, false)
@@ -1197,6 +1219,7 @@ func _refresh_composite_controls() -> void:
 	buttons.smooth.tooltip_text = smooth_error if not smooth_error.is_empty() else "Preview conservative corner smoothing on the selected outline"
 	buttons.composite_apply.visible = composite_preview_active
 	buttons.composite_cancel.visible = composite_preview_active
+	buttons.composite_clear_pins.visible = composite_preview_active and _composite_operation != "merge"
 	composite_strength.editable = not composite_preview_active or _composite_operation != "merge"
 	composite_preserve_corners.disabled = composite_preview_active and _composite_operation == "merge"
 	composite_angle.editable = composite_preserve_corners.button_pressed and not composite_preserve_corners.disabled
@@ -1206,13 +1229,16 @@ func _refresh_composite_controls() -> void:
 		composite_hint.text = "Smooth this piece, or Ctrl-click more filled terrain to merge."
 	if composite_preview_active:
 		for id: String in buttons:
-			buttons[id].disabled = id not in ["fit", "composite_apply", "composite_cancel"]
+			buttons[id].disabled = id not in ["fit", "composite_apply", "composite_cancel", "composite_clear_pins"]
+		buttons.composite_clear_pins.disabled = _composite_protected_indices.is_empty()
 		buttons.composite_apply.disabled = composite_preview.is_empty()
 		angle_field.editable = false
 		handedness_field.disabled = true
 		mode_label.text = "COMPOSITE PREVIEW  ·  Apply / Cancel"
 		detail_label.text = "Gold outline = final collision boundary · Original pieces remain unchanged until Apply · Esc cancels"
 		composite_hint.text = "Preview only. Adjust strength, then Apply or Cancel. Other editing is paused."
+		if _composite_operation != "merge":
+			composite_hint.text = "Click corner dots to protect/release. Pink = do not smooth · %d pinned · Apply / Cancel" % _composite_protected_indices.size()
 	composite_hint.tooltip_text = composite_hint.text
 	title_field.editable = not composite_preview_active
 	cell_size_field.editable = not composite_preview_active

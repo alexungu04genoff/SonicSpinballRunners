@@ -246,6 +246,25 @@ func check_join_smoothing() -> void:
 	check(not Composite.smooth(union.placement, 1.0, false, 90.0, PackedInt32Array([9999])).error.is_empty(), "Invalid join indices cannot produce an applyable result")
 
 
+func check_pinned_corners() -> void:
+	var sources: Array = [stamp("triangle_2x2", Vector2i(1, 3), 0, true), stamp("rectangle_2x2", Vector2i(3, 3)), stamp("triangle_2x2", Vector2i(5, 3))]
+	var union: Dictionary = Composite.merge(sources)
+	var tip: int = union.placement.outline.find(Vector2(0, 2))
+	var pinned: Dictionary = Composite.smooth(union.placement, 2.0, false, 90.0, null, PackedInt32Array([tip]))
+	check(pinned.error.is_empty() and pinned.placement.outline.has(Vector2(0, 2)), "An individually pinned triangle tip stays exact")
+	check(not pinned.placement.outline.has(Vector2(6, 2)) and not pinned.placement.outline.has(Vector2(2, 0)), "Pinning one tip still rounds the other tip and connection")
+	merged_examples.append(pinned.placement)
+	var join: int = union.join_indices[0]
+	var joined: Dictionary = Composite.smooth(union.placement, 5.0, true, 45.0, union.join_indices, PackedInt32Array([join]))
+	check(joined.error.is_empty() and joined.placement.outline.has(union.placement.outline[join]) and not joined.placement.outline.has(union.placement.outline[union.join_indices[1]]), "Manual pins combine with join-only and angle protection without pinning other joins")
+	var square := stamp("rectangle_3x3", Vector2i(2, 2), 1, true)
+	var points: PackedVector2Array = Shapes.get_definition(square.shape_id).points
+	var protected: Dictionary = Composite.smooth(square, 2.0, false, 90.0, null, PackedInt32Array([0]))
+	check(protected.error.is_empty() and protected.placement.outline.has(points[0]) and not protected.placement.outline.has(points[1]), "A square corner can be pinned independently under rotation and mirroring")
+	for index in [-1, points.size()]:
+		check(not Composite.smooth(square, 1.0, false, 90.0, null, PackedInt32Array([index])).error.is_empty(), "Invalid protected corner indices reject safely")
+
+
 func check_transforms() -> void:
 	if merged_examples.is_empty(): return
 	var source := merged_examples[0]
@@ -509,6 +528,7 @@ func run() -> void:
 		check_smoothing()
 		check_extended_smoothing()
 		check_join_smoothing()
+		check_pinned_corners()
 		check_transforms()
 		await check_runtime(check_storage())
 	print("RESULT | Composite terrain | %d checks | %d failures" % [checks, failures])

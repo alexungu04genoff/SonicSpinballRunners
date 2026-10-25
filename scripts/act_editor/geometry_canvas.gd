@@ -5,6 +5,7 @@ signal placement_requested(placement: Dictionary)
 signal selection_changed(index: int)
 signal terrain_selection_changed(indices: Array[int])
 signal composite_preview_cancel_requested
+signal composite_corner_toggled(index: int)
 signal move_requested(index: int, anchor: Vector2i)
 signal connector_requested(kind: String, start_x: int, width: int)
 signal connector_selection_changed(kind: String)
@@ -40,6 +41,9 @@ var selected_index := -1
 var selected_indices: Array[int] = []
 var composite_preview: Dictionary = {}
 var preview_active := false
+var _smoothing_corners := PackedVector2Array()
+var _smoothing_corner_indices := PackedInt32Array()
+var _protected_corners := PackedInt32Array()
 var brush: Dictionary = {}
 var connector_tool := ""
 var selected_connector := ""
@@ -125,6 +129,7 @@ func set_document(value: Resource, reset_view: bool = true) -> void:
  selected_indices.clear()
  composite_preview = {}
  preview_active = false
+ set_smoothing_corners({}, PackedInt32Array())
  brush = {}
  connector_tool = ""
  selected_connector = ""
@@ -185,7 +190,36 @@ func set_composite_preview(placement: Dictionary, active: bool) -> void:
  cancel_gesture()
  composite_preview = placement.duplicate(true)
  preview_active = active
+ if not active: set_smoothing_corners({}, PackedInt32Array())
  queue_redraw()
+
+
+func set_smoothing_corners(source: Dictionary, protected_indices: PackedInt32Array) -> void:
+ _smoothing_corners.clear()
+ _smoothing_corner_indices.clear()
+ _protected_corners = protected_indices.duplicate()
+ if not source.is_empty():
+  var points := Shapes.transformed_points(source)
+  var anchor := Vector2(source.get("anchor", Vector2i.ZERO))
+  for index in points.size():
+   var incoming := points[index] - points[posmod(index - 1, points.size())]
+   var outgoing := points[(index + 1) % points.size()] - points[index]
+   # Gentle curve samples already bypass smoothing; expose meaningful corners.
+   if incoming.normalized().dot(outgoing.normalized()) > 0.99875: continue
+   _smoothing_corners.append(points[index] + anchor)
+   _smoothing_corner_indices.append(index)
+ queue_redraw()
+
+
+func smoothing_corner_at(pointer: Vector2) -> int:
+ var nearest := -1
+ var distance := 10.0
+ for index in _smoothing_corners.size():
+  var candidate := grid_to_screen(_smoothing_corners[index]).distance_to(pointer)
+  if candidate < distance:
+   nearest = _smoothing_corner_indices[index]
+   distance = candidate
+ return nearest
 
 
 func set_connector_tool(kind: String) -> void:
@@ -521,6 +555,19 @@ func _draw() -> void:
  _draw_markers()
  _draw_connectors()
  _draw_composite_preview()
+ _draw_smoothing_corners()
+
+
+func _draw_smoothing_corners() -> void:
+ if not preview_active: return
+ for index in _smoothing_corners.size():
+  var point := grid_to_screen(_smoothing_corners[index])
+  var pinned := _protected_corners.has(_smoothing_corner_indices[index])
+  var color := Color("ff93c9") if pinned else Color("c5f5ff")
+  draw_circle(point, 6.0, Color("131923"))
+  draw_circle(point, 4.5, color, pinned, -1.0 if pinned else 1.5, true)
+  if pinned:
+   draw_line(point + Vector2(-2, 0), point + Vector2(2, 0), Color("131923"), 1.5, true)
 
 
 func _draw_composite_preview() -> void:
@@ -992,13 +1039,16 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _composite_preview_input(event: InputEvent) -> void:
- # Preview is read-only, including when validation left no drawable polygon.
- # Panning and zooming remain available to inspect the proposed boundary.
+ # Only preview corner protection changes here; the document remains untouched.
+ # Handles stay usable even when smoothing validation rejects the current result.
  if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
   composite_preview_cancel_requested.emit()
  elif event is InputEventMouseButton:
   if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
    composite_preview_cancel_requested.emit()
+  elif event.button_index == MOUSE_BUTTON_LEFT and event.pressed and not _panning:
+   var corner := smoothing_corner_at(event.position)
+   if corner >= 0: composite_corner_toggled.emit(corner)
   elif event.button_index == MOUSE_BUTTON_MIDDLE:
    _panning = event.pressed
    if _panning:
