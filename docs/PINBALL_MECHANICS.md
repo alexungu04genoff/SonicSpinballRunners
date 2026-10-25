@@ -38,7 +38,7 @@ New rails default to 40 pixels instead of 80, halving the rise for the same path
 
 ## Ramp presentation
 
-Ramps inherit the active presentation theme without storing a theme in the Act or changing physics. Green Hill uses timber planks, grass trim and wooden posts; Chemical Plant uses panelled steel, yellow trim and metal posts; Rooftop Run uses terracotta paving and pale stone. Other themes inherit their existing surface and trim materials through the same optional theme hook.
+Ramps inherit the active presentation theme without storing a theme in the Act or changing physics. Green Hill uses timber planks, grass trim and wooden posts; Chemical Plant uses alternating yellow/gray inset panels with pale borders, blue side pipes with metal couplings, yellow retaining straps, small cyan indicators and metal posts; Rooftop Run uses terracotta paving and pale stone. Other themes inherit their existing surface and trim materials through the same optional theme hook.
 
 The deck now has a visible 3-pixel fascia/underside and narrow paired supports. A small inlaid directional arrow replaces the large circular entrance pad. Surface patterns follow distance along the route instead of stretching across curves. Inside edges narrow on tight bends to prevent folded strips; the centerline and its gameplay elevation remain unchanged. These remain collisionless visuals on the same raised path.
 

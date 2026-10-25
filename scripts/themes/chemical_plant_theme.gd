@@ -174,5 +174,12 @@ func _pipe(p: Node3D, parent: Node3D, a: Vector3, b: Vector3, radius: float, mat
  mesh.quaternion = Quaternion(Vector3.UP, (b - a).normalized())
 
 func ramp_materials() -> Dictionary:
- return {"deck": _ramp_deck(Color("43556a"), Color("72869a"), 1),
-  "edge": material(Color("dab548")), "support": material(Color("26384b")), "accent": material(Color("68e1de"), 0.15)}
+ var blue := material(Color("314acb"))
+ blue.roughness = 0.32
+ blue.metallic = 0.25
+ var coupler := material(Color("6e7896"))
+ coupler.roughness = 0.48
+ coupler.metallic = 0.45
+ return {"deck": _shader(preload("res://scripts/themes/chemical_ramp_panels.gdshader")),
+  "edge": material(Color("e5b638")), "support": material(Color("26384b")), "accent": material(Color("68e1de"), 0.25),
+  "pipe": blue, "pipe_clamp": coupler}

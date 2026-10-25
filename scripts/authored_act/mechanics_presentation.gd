@@ -91,6 +91,7 @@ func _rail(item: Dictionary) -> void:
   _rail_strip(root, path, width, peak, Vector2(side * 0.54, side * 0.54), Vector2(-thickness, 0.035), style.support, "Fascia")
   _rail_strip(root, path, width, peak, Vector2(side * 0.44, side * 0.44), Vector2(0.0, 0.035), style.edge, "InnerEdge")
  _rail_strip(root, path, width, peak, Vector2(0.54, -0.54), Vector2(-thickness, -thickness), style.support, "Underside")
+ if style.has("pipe"): _rail_pipes(root, path, width, peak, style)
  # Slim paired timber/metal/stone posts leave the lane center visually open.
  var distance := 50.0
  while distance < float(path.length) - 35.0:
@@ -138,12 +139,68 @@ func _rail_strip(parent: Node3D, path: Dictionary, width: float, peak: float, ed
    uvs.append(Vector2(width * edges.y, distance * table.SCALE))
   for vertex: int in [0, 2, 1, 1, 2, 3]:
    surface.set_uv(uvs[vertex])
+   surface.set_uv2(Vector2((edges.x if vertex % 2 == 0 else edges.y) + 0.5, uvs[vertex].y))
    surface.add_vertex(corners[vertex])
  surface.generate_normals()
  # Edge winding reverses on the opposite side; both faces must remain visible.
  var double_sided: Material = material.duplicate()
  if double_sided is BaseMaterial3D: double_sided.cull_mode = BaseMaterial3D.CULL_DISABLED
  table.mesh_node(surface.commit(), double_sided, Vector3.ZERO, parent).name = label
+
+func _rail_pipes(parent: Node3D, path: Dictionary, width: float, peak: float, style: Dictionary) -> void:
+ # Pipes remain inside the existing 54%-width trim envelope, including couplings.
+ # Aggregate each material into one mesh instead of adding a node per path segment.
+ var pipes := Node3D.new()
+ pipes.name = "SidePipes"
+ parent.add_child(pipes)
+ for side: float in [-1.0, 1.0]:
+  var shell := SurfaceTool.new()
+  var clamps := SurfaceTool.new()
+  var frame := SurfaceTool.new()
+  var lights := SurfaceTool.new()
+  for surface: SurfaceTool in [shell, clamps, frame, lights]: surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+  for i in path.points.size() - 1:
+   _pipe_section(shell, path, width, peak, side, path.lengths[i], path.lengths[i + 1], 1.0)
+  var distance := 0.0
+  while distance < float(path.length):
+   var start := maxf(0.0, distance - 2.5)
+   var finish := minf(float(path.length), distance + 2.5)
+   _pipe_section(clamps, path, width, peak, side, start, finish, 1.12)
+   # Gold retaining straps and a small cyan crown recall the reference's machinery.
+   _pipe_section(frame, path, width, peak, side, maxf(start, distance - 0.7), minf(finish, distance + 0.7), 1.14)
+   _pipe_section(lights, path, width, peak, side, maxf(start, distance - 0.8), minf(finish, distance + 0.8), 1.16, 2, 4)
+   if distance >= float(path.length) - 0.001: break
+   distance = minf(float(path.length), distance + 45.0)
+  for entry: Array in [[shell, style.pipe, "BluePipe"], [clamps, style.pipe_clamp, "Couplings"], [frame, style.edge, "YellowStraps"], [lights, style.accent, "CyanIndicators"]]:
+   var surface: SurfaceTool = entry[0]
+   surface.generate_normals()
+   var material: Material = entry[1].duplicate()
+   material.cull_mode = BaseMaterial3D.CULL_DISABLED
+   table.mesh_node(surface.commit(), material, Vector3.ZERO, pipes).name = str(entry[2]) + ("Left" if side < 0.0 else "Right")
+
+func _pipe_section(surface: SurfaceTool, path: Dictionary, width: float, peak: float, side: float, start: float, finish: float, radius_scale: float, first_facet := 0, last_facet := 12) -> void:
+ if finish <= start: return
+ var rings: Array[PackedVector3Array] = []
+ for distance: float in [start, finish]:
+  var tangent := RailPath.tangent(path, distance)
+  var across := Vector3(-tangent.y, 0, tangent.x)
+  var rise := RailPath.height(path, distance + 0.5, peak) - RailPath.height(path, distance - 0.5, peak)
+  var along := Vector3(tangent.x, rise, tangent.y).normalized()
+  var up := across.cross(along).normalized()
+  var index := clampi(path.lengths.bsearch(distance), 0, path.points.size() - 1)
+  var edge_scale: float = path.inside_edge_scale[index]
+  var inset := absf(edge_scale) if side * edge_scale > 0.0 else 1.0
+  var radius := minf(width * 0.085, 0.065) * inset
+  var center := table.map_point(RailPath.sample(path, distance), RailPath.height(path, distance, peak) * table.SCALE + 0.012)
+  center += across * side * width * 0.44 * inset + up * (radius + 0.018)
+  var ring := PackedVector3Array()
+  for facet in 13:
+   var angle := float(facet) * TAU / 12.0
+   ring.append(center + (across * cos(angle) + up * sin(angle)) * radius * radius_scale)
+  rings.append(ring)
+ for facet in range(first_facet, last_facet):
+  for vertex: Vector3 in [rings[0][facet], rings[1][facet], rings[0][facet + 1], rings[0][facet + 1], rings[1][facet], rings[1][facet + 1]]:
+   surface.add_vertex(vertex)
 
 func _process(delta: float) -> void:
  elapsed += delta

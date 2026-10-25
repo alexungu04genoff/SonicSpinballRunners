@@ -60,10 +60,23 @@ func run() -> void:
   check(deck.material_override != null and visual.has_node("Fascia") and visual.has_node("EntryArrow"), "Ramp has themed deck, edge thickness and restrained entry marker: " + theme)
   check(game.ball.get_instance_id() == identity and game.ball.mechanics == manager and manager.items[2].path == stored_path, "Theme switch preserves ball, mechanics and exact rail route: " + theme)
   check(visual.find_children("*", "CollisionObject3D", true, false).is_empty(), "Ramp theme remains collisionless: " + theme)
+  check(visual.has_node("SidePipes") == (theme == "chemical_plant"), "Side pipes belong only to Chemical Plant: " + theme)
+  if theme == "chemical_plant":
+   check(deck.material_override is ShaderMaterial and deck.material_override.shader == preload("res://scripts/themes/chemical_ramp_panels.gdshader"), "Chemical ramp uses the yellow, gray and pale inset panel pattern")
+   var pipes: Node = visual.get_node("SidePipes")
+   check(pipes.get_child_count() == 8 and pipes.has_node("BluePipeLeft") and pipes.has_node("BluePipeRight") and pipes.has_node("CouplingsLeft"), "Both blue pipes, metal couplings and yellow/cyan details use eight batched meshes")
   if DisplayServer.get_name() != "headless":
    await process_frame
    await RenderingServer.frame_post_draw
    root.get_texture().get_image().save_png("res://test-results/ramp-" + theme + ".png")
+ if DisplayServer.get_name() != "headless":
+  game.set_theme("chemical_plant")
+  game.presentation.overview_zoom = 2.2
+  game.presentation.overview_focus = Vector2(370, 385)
+  game.presentation.reset_camera()
+  await process_frame
+  await RenderingServer.frame_post_draw
+  game.view.get_texture().get_image().save_png("res://test-results/chemical-ramp-pipes.png")
  await process_frame
  paused = false
  game.queue_free()
