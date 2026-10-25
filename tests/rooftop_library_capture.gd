@@ -64,7 +64,7 @@ func run() -> void:
    theme.configure_environment(stage)
    stage._world_environment.environment.background_mode = Environment.BG_COLOR
    stage._world_environment.environment.background_color = Color("294957")
-   var plinth: MeshInstance3D = library.box(stage, "stone", Vector3(0, -0.08, 0), Vector3(2.25, 0.16, 1.6))
+   var plinth: MeshInstance3D = library.box(stage, "stone", Vector3(0, -0.08, 0), Vector3(3.2 if column == 3 else 2.25, 0.16, 1.6))
    plinth.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
    var prop: Node3D = library.build_variant(variant)
    stage.add_child(prop)

@@ -59,48 +59,36 @@ func build_background(p: Node3D) -> void:
  var city := Node3D.new()
  city.name = "SpagoniaCity"
  root.add_child(city)
- # A quiet street plane grounds the district beneath the elevated table.
- _library.box(city, "dark", center + Vector3(0, -5.85, -3.0), Vector3(width + 31.0, 0.10, length + 33.0))
- # Dense terraces sit well below the board, leaving a visible gap at its edge.
- # Arithmetic variation is deterministic and never consumes the gameplay RNG.
+ # A quiet continuous plaza gives the sparse architecture room to breathe.
+ _library.box(city, "dark", center + Vector3(0, -4.85, 0), Vector3(180.0, 0.10, 180.0))
+ # Two canals and one bridge each frame the table without a surrounding grid.
  for side: int in [-1, 1]:
-  for row in 4:
-   for i in 9:
-    var at := center + Vector3(side * (width * 0.5 + 2.7 + row * 2.15), -5.8 - row * 0.18, (i - 4) * maxf(1.75, length / 7.0) + (row % 2) * 0.7)
-    var height := 1.65 + float((i * 7 + row * 3) % 5) * 0.26
-    _house(city, at, Vector3(1.15 + (i % 3) * 0.19, height, 1.25 + (row % 2) * 0.28), i + row)
   var canal_x := side * (width * 0.5 + 1.30)
   var water := PlaneMesh.new()
-  water.size = Vector2(1.35, length + 14.0)
+  water.size = Vector2(1.35, length + 6.0)
   var water_mesh: MeshInstance3D = p.mesh_node(water, _shader(CANAL), center + Vector3(canal_x, -4.6, 0), root)
   water_mesh.name = "BackgroundCanal"
   for bank: int in [-1, 1]:
-   _library.box(city, "stone", center + Vector3(canal_x + bank * 0.76, -4.5, 0), Vector3(0.16, 0.25, length + 14.0))
-  for i in 3:
-   var bridge: Node3D = _library.build_variant("aqueduct")
-   city.add_child(bridge)
-   bridge.position = center + Vector3(canal_x, -4.5, (i - 1) * maxf(3.5, length * 0.42))
-   bridge.scale = Vector3(1.0, 0.7, 1.5)
- # The distant cross-city ridge stays behind the whole authored Act.
- var far_z: float = p.table_bounds.position.y * p.SCALE - 6.0
- for row in 3:
-  for i in 14:
-   _house(city, Vector3(center.x + (i - 6.5) * 1.75 + (row % 2) * 0.75, -5.0, far_z - row * 2.3), Vector3(1.3, 1.9 + float((i * 3 + row) % 4) * 0.35, 1.4), i + row, row > 0)
- # Repeated arcade and a single tall clock are the skyline's main anchors.
- for i in 6:
-  var span := _library.build_variant("aqueduct") as Node3D
-  city.add_child(span)
-  span.position = Vector3(center.x + (i - 2.5) * 3.3, -3.9, far_z - 1.5)
-  span.scale = Vector3(1.85, 3.4, 1.8)
- var tower := _library.build_variant("clock_tower") as Node3D
+   _library.box(city, "stone", center + Vector3(canal_x + bank * 0.76, -4.5, 0), Vector3(0.16, 0.25, length + 6.0))
+  var bridge: Node3D = _library.build_variant("aqueduct", false)
+  city.add_child(bridge)
+  bridge.position = center + Vector3(canal_x, -4.5, side * length * 0.22)
+  bridge.scale = Vector3(1.0, 0.7, 1.5)
+ # One short arcade and one clock retain the skyline's strongest silhouettes.
+ var far_z: float = p.table_bounds.position.y * p.SCALE - 3.5
+ var span := _library.build_variant("aqueduct", false) as Node3D
+ city.add_child(span)
+ span.position = Vector3(center.x - width * 0.30, -4.8, far_z)
+ span.scale = Vector3(2.0, 3.6, 1.8)
+ var tower: Node3D = _library.build_variant("clock_tower", false)
  city.add_child(tower)
- tower.position = Vector3(center.x + width * 0.5 + 6.0, -4.2, far_z - 1.0)
- tower.scale = Vector3.ONE * 3.2
- for i in 7:
-  var hill: MeshInstance3D = _library.piece(city, "sphere", "shutter", Vector3(center.x + (i - 3) * 7.0, -4.9, far_z - 17.0), Vector3(6.0, 3.2 + (i % 3), 4.0))
+ tower.position = Vector3(center.x + width * 0.5 + 2.5, -4.8, far_z - 1.0)
+ tower.scale = Vector3(2.2, 2.8, 2.2)
+ for i in 3:
+  var hill: MeshInstance3D = _library.piece(city, "sphere", "shutter", Vector3(center.x + (i - 1) * 11.0, -4.9, far_z - 17.0), Vector3(8.0, 3.2 + (i % 3), 4.0))
   hill.material_override = _haze_material(Color("4c7589"))
- for i in 5:
-  _library.balloon(city, Vector3(center.x + (i - 2) * 5.3, 1.4 + (i % 3) * 0.9, far_z - 3.0 - (i % 2) * 5.0), 0.60 + (i % 2) * 0.20, i)
+ for i in 3:
+  _library.balloon(city, Vector3(center.x + (i - 1) * 6.0, 1.4 + i * 0.7, far_z - 5.0 - (i % 2) * 4.0), 0.60, i)
  _batch_city(city)
 
 func _haze_material(color: Color) -> Material:
@@ -109,44 +97,42 @@ func _haze_material(color: Color) -> Material:
   _library.materials[key] = material(color)
  return _library.materials[key]
 
-func _house(root: Node3D, at: Vector3, size: Vector3, variation: int, distant := false) -> void:
+func _house(root: Node3D, at: Vector3, size: Vector3, variation: int) -> void:
  var group := Node3D.new()
+ group.name = "CourtyardHouse"
  group.position = at
  root.add_child(group)
- var body: MeshInstance3D = _library.box(group, "stone" if variation % 2 == 0 else "ochre", Vector3(0, size.y * 0.5, 0), size)
- if distant: body.material_override = _haze_material(Color("c2b29a"))
+ _library.box(group, "stone" if variation % 2 == 0 else "ochre", Vector3(0, size.y * 0.5, 0), size)
  _library.box(group, "cream", Vector3(0, size.y - 0.04, 0), Vector3(size.x * 1.06, 0.10, size.z * 1.06))
  _library.roof(group, Vector3(0, size.y, 0), Vector3(size.x * 1.12, 0.46, size.z * 1.12))
- if distant: return
+ # Fit rows inside the facade, including short buildings. Each visible layer
+ # sits fully in front of the preceding face rather than intersecting it.
+ var rows := 2 if size.y >= 1.2 else 1
+ var window_height := minf(0.40, size.y * 0.28)
+ var window_width := minf(0.26, size.x * 0.22)
  for x: float in [-0.28, 0.28]:
-  for row in 2:
-   var position := Vector3(x * size.x, 0.65 + row * 0.67, size.z * 0.5 + 0.012)
-   _library.box(group, "cream", position, Vector3(0.26, 0.40, 0.025))
-   _library.box(group, "shutter", position + Vector3(0, 0, 0.018), Vector3(0.17, 0.32, 0.025))
- if variation % 4 == 0:
-  var garden := _library.build_variant("cypress_terrace") as Node3D
-  group.add_child(garden)
-  garden.position = Vector3(size.x * 0.48, size.y * 0.70, 0)
- if variation % 5 == 0:
-  var canopy := _library.build_variant("cafe_awning") as Node3D
-  group.add_child(canopy)
-  canopy.position = Vector3(0, 0, size.z * 0.60)
+  for row in rows:
+   var position := Vector3(x * size.x, size.y * (row + 0.5) / rows, size.z * 0.5 + 0.026)
+   _library.box(group, "cream", position, Vector3(window_width, window_height, 0.04))
+   _library.box(group, "shutter", position + Vector3(0, 0, 0.032), Vector3(window_width * 0.66, window_height * 0.78, 0.018))
 
 func build_edges(p: Node3D) -> void:
  var terraces := Node3D.new()
  terraces.name = "ExteriorRoofGardens"
  p.scenery_root.add_child(terraces)
- var count := clampi(int(p.table_bounds.size.y / 280.0), 2, 7)
- for i in count:
-  var y: float = p.table_bounds.position.y + (i + 0.5) * p.table_bounds.size.y / count
+ # Four selected townhouses at most, even on long generated courses. Garden
+ # props sit beside the houses, never through a pitched roof or window row.
+ for i in 2:
+  var y: float = p.table_bounds.position.y + (0.24 + i * 0.52) * p.table_bounds.size.y
   var edge: Vector2 = p._boundary_at_y(y)
   if not is_finite(edge.x): continue
   for side: int in [-1, 1]:
-   var at: Vector3 = p.map_point(Vector2((edge.x if side < 0 else edge.y) + side * 135.0, y), -2.4)
-   _house(terraces, at, Vector3(1.0, 0.85, 1.15), i)
-   var prop := _library.build_variant("hedge_planter" if i % 2 == 0 else "festival_pennant") as Node3D
+   var at: Vector3 = p.map_point(Vector2((edge.x if side < 0 else edge.y) + side * 235.0, y), -4.56)
+   _library.box(terraces, "stone", at - Vector3.UP * 0.12, Vector3(2.1, 0.24, 2.1))
+   _house(terraces, at, Vector3(1.35, 3.21 + i * 0.20, 1.20), i)
+   var prop := _library.build_variant("hedge_planter") as Node3D
    terraces.add_child(prop)
-   prop.position = at + Vector3(0, 1.3, 0)
+   prop.position = at + Vector3(0, 0, 0.88)
  _batch_city(terraces)
 
 func _collect_meshes(node: Node3D, transform: Transform3D, batches: Dictionary) -> void:

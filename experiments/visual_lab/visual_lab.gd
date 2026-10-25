@@ -110,6 +110,7 @@ func _ready() -> void:
 
 func _build_view() -> void:
  view_container = SubViewportContainer.new()
+ camera_input_container = view_container
  var container := view_container
  container.name = "GreenHillFullWindowView"
  container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -390,6 +391,7 @@ func _build_lab_ui() -> void:
   play_buttons.add_child(button)
  play_buttons.add_child(_button("F1  Tuning / seeds", toggle_debug))
  overview_button = _button("O  Overview", _toggle_overview)
+ overview_button.tooltip_text = "Overview: scroll to zoom; hold the middle mouse button and drag to pan. Reload Act keeps the view; switching to follow and back resets it."
  play_buttons.add_child(overview_button)
  study_buttons = HBoxContainer.new()
  study_buttons.add_theme_constant_override("separation", 8)

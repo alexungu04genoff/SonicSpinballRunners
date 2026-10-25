@@ -224,6 +224,15 @@ func _girder_machinery(root: Node3D) -> void:
  _pipe(root, "yellow", Vector3(0.38, 0.18, -0.03), Vector3(0.38, 1.13, -0.03), 0.055)
 
 func _fluid_reactor(root: Node3D) -> void:
+ # The central vessel sits on a long service skid, matching the loop's footprint.
+ _box(root, "dark", Vector3(0, 0.06, 0), Vector3(3.0, 0.12, 0.98))
+ for side: int in [-1, 1]:
+  _box(root, "steel", Vector3(side * 1.08, 0.18, 0), Vector3(0.70, 0.12, 0.76))
+  _pipe(root, "blue", Vector3(side * 0.77, 0.40, 0), Vector3(side * 1.33, 0.40, 0), 0.18)
+  _pipe(root, "steel", Vector3(side * 1.27, 0.40, 0), Vector3(side * 1.36, 0.40, 0), 0.21)
+  _pipe(root, "yellow", Vector3(side * 0.35, 0.59, -0.20), Vector3(side * 1.10, 0.59, -0.20), 0.055)
+  _pipe(root, "yellow", Vector3(side * 1.10, 0.40, -0.20), Vector3(side * 1.10, 0.59, -0.20), 0.055)
+  _hazard_plate(root, Vector3(side * 1.08, 0.18, 0.39), 0.65)
  _cylinder(root, "dark", Vector3(0, 0.11, 0), 0.48, 0.22)
  _cylinder(root, "pink", Vector3(0, 0.62, 0), 0.29, 0.79)
  _cylinder(root, "glass", Vector3(0, 0.88, 0), 0.37, 1.30)
@@ -241,15 +250,19 @@ func _fluid_reactor(root: Node3D) -> void:
 
 func _pipe_arch(root: Node3D) -> void:
  # The open center keeps this landmark airy at the pinball camera angle.
- for x in [-0.72, 0.72]:
-  _box(root, "dark", Vector3(x, 0.075, 0), Vector3(0.35, 0.15, 0.52))
-  _pipe(root, "blue", Vector3(x, 0.15, 0), Vector3(x, 0.88, 0), 0.115)
-  for y in [0.24, 0.67]:
-   _cylinder(root, "steel", Vector3(x, y, 0), 0.145, 0.075)
-  _hazard_plate(root, Vector3(x, 0.16, 0.27), 0.29)
- _arc(root, "blue", Vector3(0, 0.88, 0), 0.72, 0.115, 0, PI, 10)
- _arc(root, "yellow", Vector3(0, 0.88, -0.18), 0.56, 0.045, 0, PI, 9)
- _pipe(root, "yellow", Vector3(-0.56, 0.18, -0.18), Vector3(-0.56, 0.88, -0.18), 0.045)
- _pipe(root, "yellow", Vector3(0.56, 0.18, -0.18), Vector3(0.56, 0.88, -0.18), 0.045)
- _box(root, "steel", Vector3(0, 1.61, 0), Vector3(0.23, 0.16, 0.29))
- _box(root, "green", Vector3(0, 1.62, 0.155), Vector3(0.13, 0.075, 0.025))
+ # Twin shallow pipe arches flank a catwalk along the rope bridge's local X axis.
+ for x: float in [-1.20, 1.20]:
+  _box(root, "dark", Vector3(x, 0.29, 0), Vector3(0.60, 0.58, 0.90))
+  _box(root, "steel", Vector3(x, 0.60, 0), Vector3(0.60, 0.08, 0.94))
+  _hazard_plate(root, Vector3(x, 0.45, 0.46), 0.48)
+ _box(root, "steel", Vector3(0, 0.58, 0), Vector3(2.45, 0.10, 0.68))
+ for i in 11:
+  _box(root, "dark", Vector3((i - 5) * 0.20, 0.636, 0), Vector3(0.12, 0.012, 0.56))
+ for z: float in [-0.36, 0.36]:
+  for i in 12:
+   var a := PI * float(i) / 12.0
+   var b := PI * float(i + 1) / 12.0
+   _pipe(root, "blue", Vector3(cos(a) * 1.2, 0.69 + sin(a) * 0.50, z), Vector3(cos(b) * 1.2, 0.69 + sin(b) * 0.50, z), 0.065)
+  _bar(root, "yellow", Vector3(-1.18, 0.82, z), Vector3(1.18, 0.82, z), 0.035)
+  for x: float in [-0.80, 0, 0.80]:
+   _bar(root, "steel", Vector3(x, 0.63, z), Vector3(x, 0.69 + sqrt(1.0 - pow(x / 1.2, 2)) * 0.50, z), 0.035)

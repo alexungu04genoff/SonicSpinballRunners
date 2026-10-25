@@ -26,7 +26,7 @@ All examples include small, medium, large and landmark slots, Spawn, connectors,
 4. **Ctrl+D / Duplicate** copies the transform half a cell diagonally and gives the new slot its own ID. **Delete** removes it. Placement, movement, property changes, duplication and deletion share the existing undo/redo history. Arrow keys move one pixel in free mode, or one cell with snap; Alt+arrows always move one pixel.
 5. **Show decor slots** hides markers and their selection targets without deleting records. Snap and visibility are session view preferences, not Act data.
 
-The Decor inspector scrolls when the window is short. Exact angle editing uses the existing field below the canvas. **Auto** remains the default variant. Choose **Preview: Green Hill / Chemical Plant** to see the current type/hint pool's friendly names, then select a numbered variant. This preview selector changes labels and availability only; it is not saved in the Act and does not load 3D editor ghosts. Variant edits share undo/redo and persistence with other slot properties.
+The Decor inspector scrolls when the window is short. Exact angle editing uses the existing field below the canvas. **Auto** remains the default variant. Choose **Preview: Green Hill / Chemical Plant / Rooftop Run** to see the current type/hint pool's friendly names, then select a numbered variant. This preview selector changes labels and availability only; it is not saved in the Act and does not load 3D editor ghosts. Variant edits share undo/redo and persistence with other slot properties.
 
 For Green Hill **small / surface**, **Variant 1 — Flower**, **Variant 2 — Small Rock**, **Variant 1 — Flower** stores indices **0, 1, 0**. Chemical Plant interprets the same records as **Beacon, Valve, Beacon**. If an index is unavailable after changing the preview theme, slot type or hint, the inspector retains it and displays a warning. Runtime uses deterministic Auto for that slot and lists the warning in the main game's level-source tooltip. Neither fallback changes the authored record.
 
@@ -47,7 +47,7 @@ Act format **7**, terrain library **2**, adds:
 
 Act records contain no mesh paths, Green Hill prop names or skin IDs. Slot IDs are generated only during authoring and stay fixed through movement, rotation and undo. A duplicate gets a fresh ID. IDs must be nonempty and unique within the Act.
 
-In Auto mode, `DecorSkin.resolve()` hashes the JSON array `[act_identity, slot_id, skin_id]` with SHA-256, converts its first eight hexadecimal digits to an integer, then takes modulo the selected pool length. Fixed mode directly indexes that same pool, independently of the seed and slot identity. Neither mode consumes gameplay RNG. Reloading, reordering slots, deleting other slots, or editing unrelated geometry cannot reshuffle an existing slot. Changing the slot type/hint or active skin selects a different pool. Preserve published pool order: fixed indices refer to those positions. An unavailable index falls back to Auto with a warning; an empty pool warns and skips the visual.
+For small, medium and large Auto slots, `DecorSkin.resolve()` hashes the JSON array `[act_identity, slot_id, skin_id]` with SHA-256, converts its first eight hexadecimal digits to an integer, then takes modulo the selected pool length. Landmarks instead share two composition roles across themes, using the original Green Hill hash namespace and modulo two. This preserves existing Green Hill choices while matching the other themes to them. Fixed mode directly indexes the selected pool, independently of the seed and slot identity. Neither mode consumes gameplay RNG. Reloading, reordering slots, deleting other slots, or editing unrelated geometry cannot reshuffle an existing slot. Preserve published pool order: fixed indices refer to those positions. An unavailable index falls back to Auto with a warning; an empty pool warns and skips the visual.
 
 The document fingerprint, deep-copy history, validation, and atomic save/reload comparison include variant mode and index. Angles and scale use the existing exact numeric byte storage convention. Formats 2–6 load in memory with no decor and no file rewrite. Format 7 introduced decor; current saves use format 10. Formats 7–9 retain their Auto slots unchanged on load. Formats below 7 cannot carry decor, and below 10 cannot carry fixed-variant fields. Existing terrain transforms and composite outlines remain exact.
 
@@ -63,7 +63,7 @@ For two-monitor authoring, save in the editor, then click **Reload Act** beside 
 
 Every spawned child is a visual `Node3D`/`MeshInstance3D`. There are no collision objects, physics shapes, hit targets, ring records, scores or ball callbacks. The normal presentation rebuild disposes all old props before a source/replay reload. Existing distant scenery and exterior edge-island dressing remain unchanged.
 
-To add a decor skin, provide its stable ID, pools for all four sizes and three hints, and a factory returning a collisionless `Node3D` in cell units. A full production theme supplies this skin through `ThemeDefinition.create_decor()` together with materials, environment and background builders. No Act schema or physics change is required. The original decor regression retains its minimal test factory; `theme_runtime_regression.gd` checks both real production themes with the same saved Acts.
+To add a decor skin, provide its stable ID, pools for all four sizes and three hints, and a factory returning a collisionless `Node3D` in cell units. Reserve landmark indices 0 and 1 for upright and span compositions within the shared envelope; additional landmarks are fixed-only choices. A full production theme supplies this skin through `ThemeDefinition.create_decor()` together with materials, environment and background builders. No Act schema or physics change is required. The original decor regression retains its minimal test factory; `theme_runtime_regression.gd` checks all three production themes with the same saved Acts.
 
 ### Green Hill library
 
@@ -78,9 +78,24 @@ The composition borrows the broad checker silhouettes, palms and sunflower accen
 
 **Landmark revision, 2026-10-25:** The loop's separate radial blocks have been replaced with two continuous meshes. The classic 3D turf-loop screenshot in the Generations gallery above informed its broad outer cliff, grassy inner opening and tangent approaches. The [Generations bridge screenshot](https://pics.alphacoders.com/pictures/view/596117) informed the second landmark's crosswise wooden deck, rope rails and grassy cliff supports. Both were inspected as visual references; the project geometry is original and procedural.
 
-Select a Landmark slot, preview **Green Hill**, and choose **Variant 1 — Turf Loop** or **Variant 2 — Rope Bridge**. All three placement pools share this order. Existing fixed loop slots retain index `0`; the bridge appends index `1`. Auto remains the default, and expanding its pool can change an existing Auto landmark's resolved appearance. Fix the index when a particular silhouette matters. Acts still save only generic mode/index values. At scale 1 the loop spans about 3.04 cells including approaches, and the bridge 2.95 cells; check overhang on narrow islands.
+Select a Landmark slot, preview **Green Hill**, and choose **Variant 1 — Turf Loop** or **Variant 2 — Rope Bridge**. All three placement pools share this order. Existing fixed loop slots retain index `0`; the bridge appends index `1`. Auto remains the default and now selects between those two shared composition roles. Fix the index when a particular silhouette matters. Acts still save only generic mode/index values. At scale 1 the loop spans about 3.04 cells including approaches, and the bridge 2.95 cells; check overhang on narrow islands.
 
 ![Green Hill landmarks with production materials and lighting](theme-captures/green-hill-landmarks.png)
+
+### Consistent landmark footprints across themes
+
+Landmarks use a common envelope of approximately **3 cells along local X by 1 cell deep**, centered on the existing anchor. The editor's angle tick points along that long axis. Geometry is composed to fit this envelope; the renderer does not stretch a tower or rotate it independently of the slot.
+
+| Saved variant | Composition | Green Hill | Chemical Plant | Rooftop Run |
+| --- | --- | --- | --- | --- |
+| 1 (index 0) | Upright centerpiece with long base | Turf loop and approaches | Reactor with service skid and pumps | Clock tower with side terraces |
+| 2 (index 1) | Low span | Rope bridge | Pipe arches and catwalk | Twin-span aqueduct |
+
+Auto chooses the same row in every theme for a given Act and slot. Previously Chemical Plant and Rooftop independently chose a landmark, and several variants had a compact or round footprint. Existing Auto slots in those two themes may therefore change appearance once. Green Hill's Auto choices and every published fixed index remain unchanged. Rooftop's fixed Variant 3 remains a balloon terrace, widened to the same envelope; it is not in the shared Auto pool. An unavailable fixed variant still warns and falls back to Auto.
+
+![Same landmark roles and footprint in all three production themes](theme-captures/landmark-themes.png)
+
+Background buildings keep their separate scenery proportions. This change affects authored landmark composition, with no Act schema change, source rewrite, terrain fitting, collision change, or anchor/rotation adjustment. Full-footprint support is still an authoring judgment; matching envelopes do not guarantee every narrow island supports an entire prop.
 
 ## Verification and manual review
 
@@ -91,11 +106,14 @@ Run from the repository with Godot 4:
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script tests/decor_editor_smoke.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script tests/decor_runtime_smoke.gd
 & 'C:\Program Files\Godot\Godot.exe' --headless --path . --script tests/green_hill_landmarks.gd
+& 'C:\Program Files\Godot\Godot.exe' --headless --path . --script tests/landmark_theme_regression.gd
 ```
 
 Omit `--headless` and add `--rendering-method gl_compatibility --rendering-driver opengl3_angle` for graphical captures. Tests save captures under ignored `test-results/`; this document includes selected captures from the actual editor/game.
 
 The landmark check covers stable pool ordering, fixed selection, finite nondegenerate meshes and collisionless descendants. Its graphical mode captures front and three-quarter views using production materials and lighting.
+
+The cross-theme landmark check covers all placement hints, fixed indices (including Rooftop's optional balloon terrace), common measured mesh bounds and centering, low span heights, unchanged Green Hill Auto choices, shared roles, missing-index fallback, immutable slot records and unchanged non-landmark variation. Its graphical mode captures the matched six-prop sheet above. The footprint revision passed 120 headless landmark checks, 302 theme runtime checks, 91 Rooftop decor checks, 46 decor-data checks and 28 editor checks. Normal and retro captures of the user's unchanged decorated Act were also inspected.
 
 For the 2026-10-25 landmark revision, an isolated checkout passed 18 graphical landmark checks, 21 graphical main-game decor checks, 29 graphical editor checks and 46 headless decor-data checks, with zero failures or script/shader errors. Front/three-quarter contact sheets and the loop/bridge in main-game overview captures were visually inspected. Subjective composition and overhang on custom Acts remain manual art review.
 
