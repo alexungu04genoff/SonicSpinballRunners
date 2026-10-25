@@ -11,7 +11,7 @@ extends Resource
 @export_range(0, 1, 0.05) var pixel_dither_strength := 0.65
 
 @export_group("N64-ish")
-@export_range(1, 4, 0.1) var n64_resolution_divisor := 2.0
+@export_range(1, 4, 0.1) var n64_resolution_divisor := 1.9
 @export_range(1, 256, 1) var n64_color_levels := 24.0
 @export_range(0, 1, 0.05) var n64_dither_strength := 0.9
 

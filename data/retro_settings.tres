@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 default_effects = Array[int]([2, 4, 3])
-n64_resolution_divisor = 1.4
+n64_resolution_divisor = 1.9
 n64_color_levels = 119.0
 n64_dither_strength = 0.75
 vhs_chroma_offset = 0.9

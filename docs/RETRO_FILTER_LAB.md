@@ -22,7 +22,7 @@ Persistent developer defaults remain in `data/retro_settings.tres` and `scripts/
 | --- | --- | --- |
 | OFF | Original viewport size, material, filter and MSAA | No identity shader; original rendering path |
 | PIXEL / DITHER | Half size, nearest upscale | 32 quantization intervals/channel, 4×4 dither at 0.65 strength |
-| N64-ish | Divisor 1.4, linear upscale | 119 intervals/channel, 0.75 dither |
+| N64-ish | Divisor 1.9, linear upscale | 119 intervals/channel, 0.75 dither |
 | CRT | Original size | 3.7 px cells, 0.03 scanlines, 0 RGB mask, 0.19 glow, 2.1 px spread, -0.085 brightness, 0.28 vignette; zero convergence |
 | VHS | Original size | 0.9 px chroma offset, 1.1 px bleed, 0.00015 wobble, 0.055 grain, 0.0045 tracking |
 

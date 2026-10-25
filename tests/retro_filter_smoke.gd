@@ -98,7 +98,7 @@ func run() -> void:
  if graphical:
   var startup := await image_now()
   startup.save_png(output + "/startup-defaults.png")
- check(defaults.n64_resolution_divisor == 1.4 and defaults.n64_color_levels == 119 and defaults.n64_dither_strength == 0.75 and defaults.vhs_wobble == 0.00015 and defaults.vhs_grain == 0.055 and defaults.vhs_tracking == 0.0045 and defaults.crt_cell_size == 3.7 and defaults.crt_mask == 0 and defaults.crt_brightness == -0.085, "Screenshot tuning loads from the project defaults resource")
+ check(defaults.n64_resolution_divisor == 1.9 and defaults.n64_color_levels == 119 and defaults.n64_dither_strength == 0.75 and defaults.vhs_wobble == 0.00015 and defaults.vhs_grain == 0.055 and defaults.vhs_tracking == 0.0045 and defaults.crt_cell_size == 3.7 and defaults.crt_mask == 0 and defaults.crt_brightness == -0.085, "User tuning loads from the project defaults resource")
  game.retro_filter.set_preset(Filter.Preset.OFF)
  await frames(4)
  paused = true
