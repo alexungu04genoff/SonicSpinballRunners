@@ -55,7 +55,13 @@ func run() -> void:
  for point: Vector2 in [Vector2(100.25, 400.75), Vector2(100.25, 300.5), Vector2(280.5, 210.125)]:
   pointer(point, true)
   pointer(point, false)
+  # Real clicks have rendered previews between them; drawing must not edit the draft.
+  await process_frame
+  await process_frame
+  check(canvas._rail_draft.properties.points[0] == Vector2.ZERO, "Rendered rail preview preserves its entry control point")
  check(editor.document.gameplay_objects.size() == 2 and canvas._rail_draft.properties.points.size() == 3, "Rail gesture stays a draft until Enter")
+ var draft_points: PackedVector2Array = canvas._rail_draft.properties.points
+ check(draft_points[1].distance_to(Vector2(0, -100.25)) < 0.001 and draft_points[2].distance_to(Vector2(180.25, -190.625)) < 0.001, "Second and third rail clicks remain at their authored positions")
  var enter := InputEventKey.new()
  enter.pressed = true
  enter.keycode = KEY_ENTER

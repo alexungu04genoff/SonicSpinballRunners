@@ -15,7 +15,9 @@ static func validation_error(value: Variant) -> String:
 static func build(control: PackedVector2Array) -> Dictionary:
  var points := PackedVector2Array()
  var lengths := PackedFloat32Array([0.0])
- if control.size() < 2: return {"points": control, "lengths": lengths, "length": 0.0}
+ # Preview callers transform these samples in place, including a one-point draft.
+ # Packed arrays are shared by reference, so never expose authored control storage.
+ if control.size() < 2: return {"points": control.duplicate(), "lengths": lengths, "length": 0.0}
  for i in control.size() - 1:
   var a := control[maxi(0, i - 1)]
   var b := control[i]
