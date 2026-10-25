@@ -1,0 +1,145 @@
+[
+  {
+    "act": "res://data/acts/First Try Smooth Decor.tres",
+    "ball": "(417.0427, 517.0353)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 6.359195, 8.585999)]",
+    "draw_calls": 1241.0,
+    "filter": "OFF",
+    "fingerprint": "0ae9ebb1c59a2858ff3102d67e9e05fd401f79e447d9cbe12c33751f7ab58323",
+    "framing": "overview",
+    "path": "res://test-results/sanctuary-review/first_try_smooth_decor-green_hill-overview-off.png",
+    "theme": "green_hill"
+  },
+  {
+    "act": "res://data/acts/First Try Smooth Decor.tres",
+    "ball": "(417.0427, 517.0353)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 6.359195, 8.585999)]",
+    "draw_calls": 1073.0,
+    "filter": "OFF",
+    "fingerprint": "0ae9ebb1c59a2858ff3102d67e9e05fd401f79e447d9cbe12c33751f7ab58323",
+    "framing": "overview",
+    "path": "res://test-results/sanctuary-review/first_try_smooth_decor-chemical_plant-overview-off.png",
+    "theme": "chemical_plant"
+  },
+  {
+    "act": "res://data/acts/First Try Smooth Decor.tres",
+    "ball": "(417.0427, 517.0353)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 6.359195, 8.585999)]",
+    "draw_calls": 1116.0,
+    "filter": "OFF",
+    "fingerprint": "0ae9ebb1c59a2858ff3102d67e9e05fd401f79e447d9cbe12c33751f7ab58323",
+    "framing": "overview",
+    "path": "res://test-results/sanctuary-review/first_try_smooth_decor-rooftop_run-overview-off.png",
+    "theme": "rooftop_run"
+  },
+  {
+    "act": "res://data/acts/First Try Smooth Decor.tres",
+    "ball": "(417.0427, 517.0353)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 6.359195, 8.585999)]",
+    "draw_calls": 1313.0,
+    "filter": "OFF",
+    "fingerprint": "0ae9ebb1c59a2858ff3102d67e9e05fd401f79e447d9cbe12c33751f7ab58323",
+    "framing": "overview",
+    "path": "res://test-results/sanctuary-review/first_try_smooth_decor-casino_night-overview-off.png",
+    "theme": "casino_night"
+  },
+  {
+    "act": "res://data/acts/First Try Smooth Decor.tres",
+    "ball": "(417.0427, 517.0353)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 6.359195, 8.585999)]",
+    "draw_calls": 1425.0,
+    "filter": "OFF",
+    "fingerprint": "0ae9ebb1c59a2858ff3102d67e9e05fd401f79e447d9cbe12c33751f7ab58323",
+    "framing": "overview",
+    "path": "res://test-results/sanctuary-review/first_try_smooth_decor-sky_sanctuary-overview-off.png",
+    "theme": "sky_sanctuary"
+  },
+  {
+    "act": "res://data/acts/First Try Smooth Decor.tres",
+    "ball": "(417.0427, 517.0353)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 6.359195, 8.585999)]",
+    "draw_calls": 1428.0,
+    "filter": "N64-ish + VHS + CRT",
+    "fingerprint": "0ae9ebb1c59a2858ff3102d67e9e05fd401f79e447d9cbe12c33751f7ab58323",
+    "framing": "overview",
+    "path": "res://test-results/sanctuary-review/first_try_smooth_decor-sky_sanctuary-overview-retro.png",
+    "theme": "sky_sanctuary"
+  },
+  {
+    "act": "res://data/acts/First Try Smooth Decor.tres",
+    "ball": "(417.0427, 517.0353)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (4.170427, 1.562566, 6.742316)]",
+    "draw_calls": 793.0,
+    "filter": "OFF",
+    "fingerprint": "0ae9ebb1c59a2858ff3102d67e9e05fd401f79e447d9cbe12c33751f7ab58323",
+    "framing": "follow",
+    "path": "res://test-results/sanctuary-review/first_try_smooth_decor-green_hill-follow-off.png",
+    "theme": "green_hill"
+  },
+  {
+    "act": "res://data/acts/First Try Smooth Decor.tres",
+    "ball": "(417.0427, 517.0353)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (4.170427, 1.562566, 6.742316)]",
+    "draw_calls": 564.0,
+    "filter": "OFF",
+    "fingerprint": "0ae9ebb1c59a2858ff3102d67e9e05fd401f79e447d9cbe12c33751f7ab58323",
+    "framing": "follow",
+    "path": "res://test-results/sanctuary-review/first_try_smooth_decor-chemical_plant-follow-off.png",
+    "theme": "chemical_plant"
+  },
+  {
+    "act": "res://data/acts/First Try Smooth Decor.tres",
+    "ball": "(417.0427, 517.0353)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (4.170427, 1.562566, 6.742316)]",
+    "draw_calls": 733.0,
+    "filter": "OFF",
+    "fingerprint": "0ae9ebb1c59a2858ff3102d67e9e05fd401f79e447d9cbe12c33751f7ab58323",
+    "framing": "follow",
+    "path": "res://test-results/sanctuary-review/first_try_smooth_decor-rooftop_run-follow-off.png",
+    "theme": "rooftop_run"
+  },
+  {
+    "act": "res://data/acts/First Try Smooth Decor.tres",
+    "ball": "(417.0427, 517.0353)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (4.170427, 1.562566, 6.742316)]",
+    "draw_calls": 822.0,
+    "filter": "OFF",
+    "fingerprint": "0ae9ebb1c59a2858ff3102d67e9e05fd401f79e447d9cbe12c33751f7ab58323",
+    "framing": "follow",
+    "path": "res://test-results/sanctuary-review/first_try_smooth_decor-casino_night-follow-off.png",
+    "theme": "casino_night"
+  },
+  {
+    "act": "res://data/acts/First Try Smooth Decor.tres",
+    "ball": "(417.0427, 517.0353)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (4.170427, 1.562566, 6.742316)]",
+    "draw_calls": 927.0,
+    "filter": "OFF",
+    "fingerprint": "0ae9ebb1c59a2858ff3102d67e9e05fd401f79e447d9cbe12c33751f7ab58323",
+    "framing": "follow",
+    "path": "res://test-results/sanctuary-review/first_try_smooth_decor-sky_sanctuary-follow-off.png",
+    "theme": "sky_sanctuary"
+  },
+  {
+    "act": "res://data/acts/First Try Smooth Decor.tres",
+    "ball": "(417.0427, 517.0353)",
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (4.170427, 1.562566, 6.742316)]",
+    "draw_calls": 930.0,
+    "filter": "N64-ish + VHS + CRT",
+    "fingerprint": "0ae9ebb1c59a2858ff3102d67e9e05fd401f79e447d9cbe12c33751f7ab58323",
+    "framing": "follow",
+    "path": "res://test-results/sanctuary-review/first_try_smooth_decor-sky_sanctuary-follow-retro.png",
+    "theme": "sky_sanctuary"
+  },
+  {
+    "act": "res://data/acts/First Try Smooth Decor.tres",
+    "ball": "(417.0427, 517.0353)",
+    "camera": "[X: (0.884918, 0.0, -0.465746), Y: (-0.149923, 0.946774, -0.284854), Z: (0.440957, 0.321898, 0.837818), O: (13.0, 6.5, 17.25)]",
+    "draw_calls": 1429.0,
+    "filter": "OFF",
+    "fingerprint": "0ae9ebb1c59a2858ff3102d67e9e05fd401f79e447d9cbe12c33751f7ab58323",
+    "framing": "city study; review camera only",
+    "path": "res://test-results/sanctuary-review/first_try_smooth_decor-sky_sanctuary-city-study.png",
+    "theme": "sky_sanctuary"
+  }
+]

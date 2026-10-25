@@ -29,7 +29,7 @@ func run() -> void:
  background.color = Color("142b38")
  canvas.add_child(background)
  label(canvas, "SONIC SPINBALL RUNNERS / COMPLETE DECOR LIBRARY", Vector2(35, 20), 36)
- label(canvas, "Every authored prop in all four themes, including hint-specific variants. Production lighting / Filter off", Vector2(35, 70), 22)
+ label(canvas, "Every authored prop in all themes, including hint-specific variants. Production lighting / Filter off", Vector2(35, 70), 22)
  var total := 0
  for theme_index in Themes.IDS.size():
   var theme: RefCounted = Themes.create(Themes.IDS[theme_index])

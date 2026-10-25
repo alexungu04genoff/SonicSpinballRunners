@@ -20,6 +20,8 @@ Launch **Play Green Hill.cmd**, choose **Authored Act** in the footer's **Level 
 
 ## Play Green Hill
 
+The existing **Theme** dropdown now includes **Sky Sanctuary** alongside Green Hill, Chemical Plant, Rooftop Run and Casino Night. It presents the same Act as pale floating ruins above clouds, with 13 original decor variants and stone/blue-tech ramp materials. See [research, identical-Act comparisons and checks](docs/SKY_SANCTUARY.md).
+
 Double-click **Play Green Hill.cmd** to play the themed version. **Physics Playground.cmd** opens the original debug presentation. Green Hill is integrated on `main` and includes the shared generator v10, 50 px kit with rounded Easy recipes, Normal-flow connections, five flippers, ring collection, unlimited drain recovery and optional Score Attack. Its mode/target strip remains available with the tuning panel hidden, and the shared upper goal and victory/replay controls use the same rules as the physics playground. Third-party Sonic assets remain local and ignored; a procedural spin-ball works without them.
 
 Use **Enter** to launch, **Q/E** to flip, **Escape** to pause, **O** for overview and **F1** for tuning/seeds. The footer supplies Normal seeds 18/23 and both grid variants. Grid shortcuts preserve the active seed and difficulty, which the footer displays. Build while paused or at serve. See [Green Hill launch, assets and verification](experiments/visual_lab/README.md).

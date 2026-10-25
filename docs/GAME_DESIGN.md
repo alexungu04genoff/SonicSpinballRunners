@@ -2,6 +2,8 @@
 
 ## Status and use
 
+**Implemented visual theme — 2026-10-25:** Sky Sanctuary is the fifth selectable presentation skin. It combines pale carved ruins, restrained moss and blue inlays, a cloud sea with low-poly cloud banks, distant floating architecture and an original orbital relic. Thirteen procedural decor variants retain generic fixed indices and deterministic Auto, including the shared landmark footprints/roles. Existing elevated rails receive theme-owned materials. Acts, physics, scoring, camera behavior and gameplay objects are unchanged; clouds and detached background rubble do not alter the Act schema. No one-way gate system or new Sanctuary mechanics were introduced. See [Sky Sanctuary research, captures and verification](SKY_SANCTUARY.md).
+
 This document records the project's intended direction, not a claim that its systems already exist. Consult it before major gameplay or architectural changes. Update it as decisions are agreed and playtesting provides evidence.
 
 - **Confirmed direction:** agreed design goals and constraints. These may belong to a later phase rather than the current prototype.

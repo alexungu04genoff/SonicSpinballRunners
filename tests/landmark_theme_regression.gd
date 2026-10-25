@@ -27,7 +27,7 @@ func collect_bounds(node: Node3D, boxes: Array[AABB], parent := Transform3D.IDEN
  return true
 
 func run() -> void:
- var expected := {"green_hill": ["turf_loop", "rope_bridge", "palm_island"], "chemical_plant": ["fluid_reactor", "pipe_arch", "reactor_island"], "rooftop_run": ["clock_tower", "aqueduct", "festival_balloons"], "casino_night": ["jackpot_palace", "star_gateway", "roulette_pavilion"]}
+ var expected := {"green_hill": ["turf_loop", "rope_bridge", "palm_island"], "chemical_plant": ["fluid_reactor", "pipe_arch", "reactor_island"], "rooftop_run": ["clock_tower", "aqueduct", "festival_balloons"], "casino_night": ["jackpot_palace", "star_gateway", "roulette_pavilion"], "sky_sanctuary": ["sanctuary_belfry", "sky_aqueduct", "astral_dais"]}
  for id: String in Themes.IDS:
   var p := Presentation.new()
   p.set_theme_definition(Themes.create(id))
@@ -94,12 +94,12 @@ func label(parent: Node, text: String, at: Vector2, size: int) -> void:
  parent.add_child(caption)
 
 func capture() -> void:
- root.size = Vector2i(1990, 1345)
- root.content_scale_size = Vector2i(1990, 1345)
+ root.size = Vector2i(30 + Themes.IDS.size() * 490, 1345)
+ root.content_scale_size = root.size
  var canvas := CanvasLayer.new()
  root.add_child(canvas)
  var background := ColorRect.new()
- background.size = Vector2(1990, 1345)
+ background.size = Vector2(root.size)
  background.color = Color("162c38")
  canvas.add_child(background)
  label(canvas, "SAME SLOT / MATCHED LANDMARK FOOTPRINTS", Vector2(35, 20), 30)

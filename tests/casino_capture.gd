@@ -55,6 +55,7 @@ func run() -> void:
    for theme_id: String in Themes.IDS:
     if not game.set_theme(theme_id): failures += 1
     await capture(stem + "-" + theme_id + "-" + framing + "-off", framing)
+   game.set_theme("casino_night")
    # Exactly the preferred production stack, including VHS.
    game.retro_filter.set_effects([Filter.Preset.N64, Filter.Preset.VHS, Filter.Preset.CRT])
    await capture(stem + "-casino_night-" + framing + "-retro", framing)
