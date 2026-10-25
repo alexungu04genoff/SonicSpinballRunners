@@ -1,5 +1,7 @@
 # Rooftop Run / Spagonia
 
+**Editable-texture update:** Terrain now uses PNG artwork, with rounded cobblestone paving and separate stone courses following floor and raised-top contours. See [Rooftop texture comparisons, artifact fixes and tuning](ROOFTOP_TEXTURES.md). The research and original implementation notes below remain historical context.
+
 Rooftop Run is the third visual skin in the existing main game. Open **Play Green Hill.cmd**, load an authored Act, and choose **THEME → Rooftop Run**. The same selector also works on generated playfields. For direct launch, add `-- --theme=rooftop_run` to the normal Godot command. Theme choice is session-only.
 
 The theme changes materials, decor, lighting and scenery through the existing presentation rebuild. It does not reload or regenerate the Act. Physics bodies, terrain outlines, flippers, bumpers, rings, character, steering, scoring, abilities, lifecycle and camera remain owned by the shared engine. No enemies, boost, moving platforms, balloon targets, barrels or new Act rules are introduced.
@@ -24,7 +26,7 @@ The bench, miniature garden pavilion, cypress terrace, twin-span aqueduct and te
 
 ## Materials, light and background
 
-- **Playable floor:** independent procedural staggered limestone slabs with restrained color variation and derivative-filtered mortar. Slightly cool stone under warm light helps gold rings remain distinct. This does not reuse or recolor the grass shader.
+- **Playable floor:** editable rounded cobblestone artwork with restrained color variation and mipmapped filtering. Slightly cool stone under warm light helps gold rings remain distinct. Independent border courses turn with the final floor contours.
 - **Raised terrain:** saturated terracotta slab caps and pale masonry sides distinguish obstacles from playable paving. Shared extrusion retains every original contour, including open paths and smoothed composites.
 - **Vertical facade:** world-projected staggered blocks, a pale cornice, dark trim and arched recesses below the deck. Normal-weighted projection works on arbitrary silhouettes without changing vertices or colliders. The recesses are surface shading, not physical openings.
 - **Afternoon light:** warm directional sun, blue ambient fill, directional shadows and a saturated blue procedural sky. Material values were reduced after visual review to avoid blown cream highlights. No bloom, imported environment map or theme-specific camera is required.

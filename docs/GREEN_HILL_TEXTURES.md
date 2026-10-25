@@ -1,5 +1,7 @@
 # Green Hill editable textures and contour borders
 
+**Artifact correction:** Vertical fringe filtering now clamps its top/bottom at every mip level while repeating horizontally. Closed-contour border coordinates now unwrap locally and subdivide long strips. See [the reproduced dotted line, fix and Rooftop comparison](ROOFTOP_TEXTURES.md).
+
 Green Hill now loads eight PNG assets from `assets/textures/green_hill/`. These are the production artwork, not screenshots: editing a PNG and allowing Godot to reimport it changes the material on the next game launch. Other themes keep their existing materials. Physics, collision outlines, saved Acts, scoring and character controls are unchanged.
 
 ![Original shaders and PNG materials](green-hill-textures/materials.png)

@@ -1,8 +1,7 @@
 extends "res://scripts/themes/theme_definition.gd"
 ## Sunny original city art, sharing only the existing presentation contract.
 const Decor = preload("res://scripts/decor/rooftop_run_decor.gd")
-const PAVING = preload("res://scripts/themes/rooftop_paving.gdshader")
-const MASONRY = preload("res://scripts/themes/rooftop_masonry.gdshader")
+const TEXTURES := "res://assets/textures/rooftop_run/"
 const CANAL = preload("res://scripts/themes/rooftop_canal.gdshader")
 var _library: RefCounted
 
@@ -10,18 +9,37 @@ func _init() -> void:
  theme_id = "rooftop_run"
  display_name = "Rooftop Run"
  edge_trim_color = Color("e6c48e")
- floor_material = _shader(PAVING)
- top_material = _shader(PAVING)
- top_material.set_shader_parameter("raised_surface", true)
- side_material = _shader(MASONRY)
- cliff_material = _shader(MASONRY)
+ floor_material = _texture_material("floor", Vector2(4, 4))
+ top_material = _texture_material("top", Vector2(5, 3.125))
+ side_material = _wall_material("wall")
+ cliff_material = _wall_material("facade")
  cliff_material.set_shader_parameter("top_height", 0.0)
- cliff_material.set_shader_parameter("facade", true)
+ floor_border_material = _border_material("floor-border")
+ top_border_material = _border_material("top-border")
+ floor_border_width = 12.0
+ top_border_width = 8.0
  _library = Decor.new(null)
 
 func _shader(source: Shader) -> ShaderMaterial:
  var result := ShaderMaterial.new()
  result.shader = source
+ return result
+
+func _texture_material(name: String, repeat_size: Vector2, world_mapping := true) -> ShaderMaterial:
+ var result := _shader(preload("res://scripts/themes/texture_surface.gdshader"))
+ result.set_shader_parameter("surface_texture", load(TEXTURES + name + ".png"))
+ result.set_shader_parameter("repeat_size", repeat_size)
+ result.set_shader_parameter("world_mapping", world_mapping)
+ return result
+
+func _wall_material(name: String) -> ShaderMaterial:
+ var result := _shader(preload("res://scripts/themes/texture_wall.gdshader"))
+ result.set_shader_parameter("wall_texture", load(TEXTURES + name + ".png"))
+ return result
+
+func _border_material(name: String) -> ShaderMaterial:
+ var result := _shader(preload("res://scripts/themes/terrain_border.gdshader"))
+ result.set_shader_parameter("border_texture", load(TEXTURES + name + ".png"))
  return result
 
 func create_decor(_presentation: Node3D) -> RefCounted:
@@ -177,5 +195,5 @@ func build_study(_p: Node3D, parent: Node3D, origin: Vector3) -> void:
   prop.scale = Vector3.ONE * 0.65
 
 func ramp_materials() -> Dictionary:
- return {"deck": _ramp_deck(Color("bf7954"), Color("dba27a"), 2),
+ return {"deck": _texture_material("ramp", Vector2(0.48, 0.44), false),
   "edge": material(Color("e8cba0")), "support": material(Color("b69b77")), "accent": material(Color("fff0c7"))}

@@ -39,5 +39,27 @@ func _initialize() -> void:
  check(square == before, "Source contour stays unchanged")
  check(Border.build(square, [], 0, 0, mat) == null, "Zero width disables border")
  check(Border.build(square, [], 5, 0, null) == null, "Other themes remain opt-in")
+ var circle := PackedVector2Array()
+ for i in 64: circle.append(Vector2.from_angle(float(i) * TAU / 64.0) * 100.0)
+ var circle_copy := circle.duplicate()
+ var ring := Border.build(circle, [], 8, 0.325, mat)
+ var uv: PackedVector2Array = ring.surface_get_arrays(0)[Mesh.ARRAY_TEX_UV]
+ var local_mapping := true
+ var finite_mapping := true
+ for i in range(0, uv.size(), 3):
+  var low := minf(uv[i].x, minf(uv[i + 1].x, uv[i + 2].x))
+  var high := maxf(uv[i].x, maxf(uv[i + 1].x, uv[i + 2].x))
+  if high - low > 0.75: local_mapping = false
+  for j in 3:
+   if not uv[i + j].is_finite() or uv[i + j].y < 0 or uv[i + j].y > 1: finite_mapping = false
+ check(local_mapping, "Closed curve seam never interpolates across the whole perimeter")
+ check(finite_mapping, "Curve coordinates stay finite and inside the border width")
+ check(circle == circle_copy, "Curve mapping leaves authored collision points untouched")
+ var sampled := PackedVector2Array()
+ for i in square.size():
+  for j in 100: sampled.append(square[i].lerp(square[(i + 1) % square.size()], float(j) / 100.0))
+ var sampled_copy := sampled.duplicate()
+ check(is_equal_approx(area(Border.build(sampled, [], 5, 0, mat)), 1900), "Redundant straight-line samples retain the exact border area")
+ check(sampled == sampled_copy, "Border simplification never changes input samples")
  print("RESULT | Terrain borders | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)
