@@ -12,6 +12,7 @@ const Decor = preload("res://scripts/act_editor/decor_slots.gd")
 const DecorScatter = preload("res://scripts/act_editor/decor_scatter.gd")
 const Themes = preload("res://scripts/themes/theme_registry.gd")
 const EXAMPLE_PATH := "res://data/acts/curve_garden.tres"
+const DEFAULT_ACT_DIRECTORY := "res://data/acts"
 const HISTORY_LIMIT := 100
 
 var document: Resource
@@ -497,7 +498,7 @@ func _button(parent: Node, id: String, label: String, action: Callable, hint: St
 	buttons[id] = button
 
 func _build_dialogs() -> void:
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("user://acts"))
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(DEFAULT_ACT_DIRECTORY))
 	save_dialog = FileDialog.new()
 	save_dialog.title = "Save Act geometry"
 	save_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
@@ -507,7 +508,7 @@ func _build_dialogs() -> void:
 	for dialog in [save_dialog, load_dialog]:
 		dialog.access = FileDialog.ACCESS_FILESYSTEM
 		dialog.filters = PackedStringArray(["*.tres ; Act geometry Resource"])
-		dialog.current_dir = ProjectSettings.globalize_path("user://acts")
+		dialog.current_dir = ProjectSettings.globalize_path(DEFAULT_ACT_DIRECTORY)
 		dialog.size = Vector2i(850, 560)
 		dialog.canceled.connect(func(): pending_action = "")
 		add_child(dialog)
@@ -1457,7 +1458,9 @@ func _continue_action() -> void:
 	pending_action = ""
 	match action:
 		"new": new_document()
-		"load": load_dialog.popup_centered()
+		"load":
+			load_dialog.current_dir = ProjectSettings.globalize_path(DEFAULT_ACT_DIRECTORY)
+			load_dialog.popup_centered()
 		"quit": get_tree().quit()
 		"example":
 			if load_from(EXAMPLE_PATH):
@@ -1483,6 +1486,7 @@ func _open_save_dialog() -> void:
 	if not current_path.is_empty():
 		save_dialog.current_path = ProjectSettings.globalize_path(current_path)
 	else:
+		save_dialog.current_dir = ProjectSettings.globalize_path(DEFAULT_ACT_DIRECTORY)
 		save_dialog.current_file = document.title.validate_filename() + ".tres"
 	save_dialog.popup_centered()
 
