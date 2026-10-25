@@ -2,6 +2,7 @@ extends "res://scripts/decor/decor_skin.gd"
 ## Lightweight, collisionless props in cell units. Reuses the presentation's
 ## existing palm and sunflower silhouettes; all assets are constructed locally.
 var presentation: Node3D
+const IslandFlicky = preload("res://scripts/decor/island_flicky.gd")
 
 func _init(owner_presentation: Node3D) -> void:
  presentation = owner_presentation
@@ -67,6 +68,12 @@ func _build_prop(variant: String) -> Node3D:
    presentation.mesh_node(turf, presentation.terrain_top_material(), Vector3(0, 0.31, 0), root)
    presentation._palm(Vector3(-0.16, 0.34, 0.05), 1, 0.50, root)
    presentation._flower(Vector3(0.42, 0.34, 0.30), 0.48, root)
+   var perches := [Vector3(-.42, .34, .31), Vector3(.02, .34, .48), Vector3(.35, .34, -.23)]
+   for i in perches.size():
+    var flicky := IslandFlicky.new(presentation, i)
+    flicky.position = perches[i]
+    flicky.rotation.y = [-.35, .3, .55][i]
+    root.add_child(flicky)
  return root
 
 func _grass_tuft(root: Node3D) -> void:

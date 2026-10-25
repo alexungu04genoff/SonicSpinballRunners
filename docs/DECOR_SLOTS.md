@@ -96,6 +96,18 @@ Auto chooses between the first two rows, consistently across themes. Circular la
 
 Green Hill's new Small Variant 3 appends the grass tuft after Flower and Small Rock. Those two fixed indices remain unchanged. Small Auto uses the expanded three-prop pool, so some existing Auto small slots may change appearance; use a fixed index to keep a specific prop.
 
+The palm island includes three original procedural Flickies, with blue feathers, cream bellies, large eyes and yellow beaks inspired by this [Flicky reference](https://en.sonicscanf.org/gallery/flickies-and-animals/blue-flicky-render/). They use staggered 4.8-second cycles of two small hops, wing flutters and head turns. Their local animation respects scene-tree pause, stays inside the island and is freed with the prop. They have no collisions or gameplay effects and do not consume gameplay randomness. Select Green Hill **Landmark Variant 3** to place them; existing Auto choices are unchanged.
+
+![Animated palm island with three Flickies](theme-captures/palm-island-flickies.gif)
+
+`tests/island_flicky_regression.gd` checks live animation, pause/resume, finite collisionless meshes, full-cycle bounds, ground clearance, phase offsets, looping and cleanup. A graphical run writes 96 frames at 20 fps under `test-results/flicky-frames/` plus a still image. Encode the loop with:
+
+```powershell
+ffmpeg -framerate 20 -i test-results/flicky-frames/%03d.png -filter_complex "split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 -y test-results/palm-island-flickies.gif
+```
+
+The Flicky revision passed 11 animation checks, 148 graphical landmark checks and 302 theme-runtime checks. The complete 37-prop catalogue was rendered again. Bird scale and movement readability at gameplay camera distances remain an art review judgment.
+
 ![Same landmark roles and footprint in all three production themes](theme-captures/landmark-themes.png)
 
 Background buildings keep their separate scenery proportions. This change affects authored landmark composition, with no Act schema change, source rewrite, terrain fitting, collision change, or anchor/rotation adjustment. Full-footprint support is still an authoring judgment; matching envelopes do not guarantee every narrow island supports an entire prop.
