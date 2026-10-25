@@ -186,7 +186,9 @@ func _build_shared(chunks: Array[TableChunk], junctions: Variant, bounds: Rect2)
   _key_light.rotation_degrees = Vector3(-50, -30, 0)
   _key_light.light_energy = 1.15
   _key_light.shadow_enabled = true
-  _key_light.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
+  # Reserve shadow detail near the camera, including close-up views of the ball.
+  _key_light.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+  _key_light.directional_shadow_blend_splits = true
   _key_light.shadow_bias = 0.1
   _key_light.shadow_normal_bias = 2.0
   add_child(_key_light)
