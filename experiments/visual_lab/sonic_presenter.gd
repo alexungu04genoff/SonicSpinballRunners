@@ -56,9 +56,9 @@ var capture_hold := false
 var _last_position := Vector2.INF
 var _pose_time := 0.0
 var _clips: Dictionary = {}
-var trail: Array[MeshInstance3D] = []
-var trail_points: Array[Vector3] = []
-var trail_clock := 0.0
+const MotionTrail = preload("res://experiments/visual_lab/motion_trail.gd")
+var trail: MeshInstance3D
+var quill_material: StandardMaterial3D
 var pulse: MeshInstance3D
 var pulse_material: StandardMaterial3D
 var pulse_time := 0.0
@@ -78,9 +78,7 @@ func refresh_playfield() -> void:
  for child: Node in get_children():
   remove_child(child)
   child.free()
- trail.clear()
  streak_materials.clear()
- trail_clock = 0.0
  _last_position = Vector2.INF
  model = null
  animation_player = null
@@ -102,16 +100,7 @@ func _build_visuals() -> void:
  spin_material.roughness = 0.38
  var spin_radius := ball.radius * TablePresentation.SCALE if table.authored_mode else 0.17
  table.mesh_node(table.sphere(spin_radius), spin_material, Vector3.ZERO, spin_root)
- var stripe := TorusMesh.new()
- stripe.inner_radius = spin_radius * 0.96 if table.authored_mode else 0.167
- stripe.outer_radius = spin_radius if table.authored_mode else 0.175
- stripe.rings = 24
- stripe.ring_segments = 8
- var streak := table.mesh_node(stripe, table.material(Color("68caff"), 0.28), Vector3.ZERO, spin_root)
- streak.rotation.z = 0.5
- var second := table.mesh_node(stripe, table.material(Color("c9ecff"), 0.12), Vector3.ZERO, spin_root)
- second.rotation.x = 1.1
- streak_materials.assign([streak.material_override, second.material_override])
+ _build_spin_shell(spin_radius)
  upright = Node3D.new()
  upright.name = "UncurledVisualAnchor"
  add_child(upright)
@@ -235,15 +224,56 @@ func _apply_character_color() -> void:
  spin_material.albedo_color = Color("f28b17") if tails else Color("075dd2")
  streak_materials[0].albedo_color = Color("ffd35c") if tails else Color("68caff")
  streak_materials[1].albedo_color = Color("fff0c7") if tails else Color("c9ecff")
- for bead: MeshInstance3D in trail:
-  (bead.material_override as StandardMaterial3D).albedo_color = Color("ffc367") if tails else Color("59c9ff")
  if character_id not in ["sonic", "tails"]:
   var color: Color = CharacterSpecials.CHARACTERS[character_id].color
   spin_material.albedo_color = CharacterSpecials.CHARACTERS[character_id].ball_color
   for material: StandardMaterial3D in streak_materials:
    material.albedo_color = color.lightened(0.3)
-  for bead: MeshInstance3D in trail:
-   bead.material_override.albedo_color = color
+ quill_material.albedo_color = spin_material.albedo_color.lightened(0.16)
+ trail.tint = CharacterSpecials.CHARACTERS[character_id].color
+ trail.reset()
+
+func _build_spin_shell(radius: float) -> void:
+ # Swept, faceted ridges suggest curled quills without hiding the ball center.
+ quill_material = table.material(Color("2785ed"), 0.04)
+ quill_material.roughness = 0.48
+ for band in 6:
+  var ridge := ImmediateMesh.new()
+  ridge.surface_begin(Mesh.PRIMITIVE_TRIANGLES)
+  for step in 10:
+   var vertices: Array[Vector3] = []
+   for end in 2:
+    var t := float(step + end) / 10.0
+    var angle := t * PI * 1.35
+    var width := sin(t * PI) * 0.22
+    for edge in 3:
+     var latitude := (edge - 1) * width
+     var height := 1.0 + (sin(t * PI) * 0.13 if edge == 1 else 0.005)
+     vertices.append(Vector3(cos(angle) * cos(latitude), sin(latitude), sin(angle) * cos(latitude)) * radius * height)
+   for index in [0, 3, 1, 1, 3, 4, 1, 4, 2, 2, 4, 5]:
+    ridge.surface_set_normal(vertices[index].normalized())
+    ridge.surface_add_vertex(vertices[index])
+  ridge.surface_end()
+  var quill := table.mesh_node(ridge, quill_material, Vector3.ZERO, spin_root)
+  quill.rotation = Vector3(band * TAU / 6.0, band * 0.71, 0.3)
+ # Two tapered, incomplete arcs read as spin highlights rather than wire hoops.
+ for band in 2:
+  var arc := ImmediateMesh.new()
+  arc.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
+  for step in 25:
+   var t := float(step) / 24.0
+   var angle := t * TAU * 0.72 + band * PI
+   var width := sin(t * PI) * 0.055
+   for edge in 2:
+    var vertex := Vector3(cos(angle), (edge * 2 - 1) * width, sin(angle)) * radius * 1.025
+    arc.surface_set_normal(vertex.normalized())
+    arc.surface_add_vertex(vertex)
+  arc.surface_end()
+  var material := table.material(Color("68caff") if band == 0 else Color("c9ecff"), 0.22)
+  material.cull_mode = BaseMaterial3D.CULL_DISABLED
+  streak_materials.append(material)
+  var highlight := table.mesh_node(arc, material, Vector3.ZERO, spin_root)
+  highlight.rotation = Vector3(0.5 + band * 1.0, 0.0, 0.4)
 
 func _on_character_changed(id: String) -> void:
  if character_id == id:
@@ -320,13 +350,9 @@ func _inspect_import(node: Node) -> void:
 
 func _build_effects() -> void:
  var effect_scale := ball.radius / PlaygroundBall.RADIUS if table.authored_mode else 1.0
- for i in 7:
-  var mat := table.material(Color("59c9ff"))
-  mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-  var dot := table.mesh_node(table.sphere(0.07 * effect_scale * (1.0 - float(i) / 9.0)), mat, Vector3.ZERO, self)
-  dot.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-  dot.visible = false
-  trail.append(dot)
+ trail = MotionTrail.new()
+ trail.radius = ball.radius * TablePresentation.SCALE if table.authored_mode else 0.17 * 1.12
+ add_child(trail)
  var hoop := TorusMesh.new()
  hoop.inner_radius = 0.23 * effect_scale
  hoop.outer_radius = 0.255 * effect_scale
@@ -386,24 +412,15 @@ func resume_gameplay() -> void:
  event_pose = ""
  event_time = 0.0
  capture_hold = false
- trail_points.clear()
+ trail.reset()
  pulse_time = 0.0
  _set_pose("roll", true)
 
 func _update_effects(delta: float) -> void:
  if close_view or ball.serve_pending or ball.position.distance_to(_last_position) > 100.0:
-  trail_points.clear()
- trail_clock += delta
- if not close_view and not ball.serve_pending and trail_clock >= 0.018:
-  trail_clock = 0.0
-  trail_points.push_front(spin_root.position)
-  if trail_points.size() > trail.size():
-   trail_points.pop_back()
- for i in trail.size():
-  trail[i].visible = not close_view and ball.linear_velocity.length() > 260.0 and i < trail_points.size()
-  if trail[i].visible:
-   trail[i].position = trail_points[i]
-   trail[i].visible = trail[i].position.distance_to(spin_root.position) < 0.9
+  trail.reset()
+ else:
+  trail.advance(delta, spin_root.position, ball.linear_velocity.length() > 260.0, table.camera)
  pulse_time = maxf(0.0, pulse_time - delta)
  pulse.visible = pulse_time > 0.0 and not close_view
  pulse.position = marker.position + Vector3.UP * 0.025
