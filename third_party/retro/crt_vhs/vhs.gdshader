@@ -1,5 +1,6 @@
-// MIT: Marcel Jovic. See LICENSE.md and ../README.md. Upstream shader unchanged.
+// MIT: Marcel Jovic. See LICENSE.md and ../README.md. Screen-texture adaptation for world-only stacking.
 shader_type canvas_item;
+uniform sampler2D source_texture : hint_screen_texture, filter_linear, repeat_disable;
 
 uniform float scanline_count : hint_range(0.0, 1080.0, 1.0) = 288.0;
 uniform float scanline_intensity : hint_range(0.0, 1.0, 0.01) = 0.25;
@@ -38,21 +39,21 @@ float smooth_noise(float x) {
 }
 
 void fragment() {
-    vec2 pixel_size = TEXTURE_PIXEL_SIZE;
+    vec2 pixel_size = SCREEN_PIXEL_SIZE;
     vec2 time_offset = vec2(random(vec2(TIME, 0.0)), random(vec2(TIME, 1.0)));
 
 	// tape wobble
-    float wow = smooth_noise(UV.y * wobble_frequency + TIME * 2.0) * 2.0 - 1.0;
-    float flutter = smooth_noise(UV.y * wobble_frequency * 3.0 - TIME * 4.0) * 2.0 - 1.0;
+    float wow = smooth_noise(SCREEN_UV.y * wobble_frequency + TIME * 2.0) * 2.0 - 1.0;
+    float flutter = smooth_noise(SCREEN_UV.y * wobble_frequency * 3.0 - TIME * 4.0) * 2.0 - 1.0;
     float total_wobble = (wow + flutter * 0.4) * wobble_intensity;
 
     // tracking distortion
-    float bottom_mask = smoothstep(1.0 - tracking_height, 1.0, UV.y);
-    float tear_noise = random(vec2(UV.y * 200.0, TIME * 10.0));
+    float bottom_mask = smoothstep(1.0 - tracking_height, 1.0, SCREEN_UV.y);
+    float tear_noise = random(vec2(SCREEN_UV.y * 200.0, TIME * 10.0));
     float skew = random(vec2(TIME * 2.0, 0.0)) - 0.5;
     float head_shift = ((tear_noise - 0.5) * 0.5 + skew * 0.5) * tracking_distortion * bottom_mask;
 
-    vec2 base_uv = UV + vec2(head_shift + total_wobble, 0.0);
+    vec2 base_uv = SCREEN_UV + vec2(head_shift + total_wobble, 0.0);
 
     // color bleed
     vec2 blur_step = vec2(luminance_blur * pixel_size.x, 0.0);
@@ -64,27 +65,27 @@ void fragment() {
 	float w1 = 0.2442;
 	float w2 = 0.0545;
 
-    color.r += texture(TEXTURE, base_uv + shift).r * w0;
-    color.g += texture(TEXTURE, base_uv).g * w0;
-    color.b += texture(TEXTURE, base_uv - shift).b * w0;
+    color.r += texture(source_texture, base_uv + shift).r * w0;
+    color.g += texture(source_texture, base_uv).g * w0;
+    color.b += texture(source_texture, base_uv - shift).b * w0;
 
-    color.r += texture(TEXTURE, base_uv + bleed_step + shift).r * w1;
-    color.g += texture(TEXTURE, base_uv + blur_step).g * w1;
-    color.b += texture(TEXTURE, base_uv + bleed_step - shift).b * w1;
+    color.r += texture(source_texture, base_uv + bleed_step + shift).r * w1;
+    color.g += texture(source_texture, base_uv + blur_step).g * w1;
+    color.b += texture(source_texture, base_uv + bleed_step - shift).b * w1;
 
-    color.r += texture(TEXTURE, base_uv - bleed_step + shift).r * w1;
-    color.g += texture(TEXTURE, base_uv - blur_step).g * w1;
-    color.b += texture(TEXTURE, base_uv - bleed_step - shift).b * w1;
+    color.r += texture(source_texture, base_uv - bleed_step + shift).r * w1;
+    color.g += texture(source_texture, base_uv - blur_step).g * w1;
+    color.b += texture(source_texture, base_uv - bleed_step - shift).b * w1;
 
-    color.r += texture(TEXTURE, base_uv + 2.0 * bleed_step + shift).r * w2;
-    color.g += texture(TEXTURE, base_uv + 2.0 * blur_step).g * w2;
-    color.b += texture(TEXTURE, base_uv + 2.0 * bleed_step - shift).b * w2;
+    color.r += texture(source_texture, base_uv + 2.0 * bleed_step + shift).r * w2;
+    color.g += texture(source_texture, base_uv + 2.0 * blur_step).g * w2;
+    color.b += texture(source_texture, base_uv + 2.0 * bleed_step - shift).b * w2;
 
-    color.r += texture(TEXTURE, base_uv - 2.0 * bleed_step + shift).r * w2;
-    color.g += texture(TEXTURE, base_uv - 2.0 * blur_step).g * w2;
-    color.b += texture(TEXTURE, base_uv - 2.0 * bleed_step - shift).b * w2;
+    color.r += texture(source_texture, base_uv - 2.0 * bleed_step + shift).r * w2;
+    color.g += texture(source_texture, base_uv - 2.0 * blur_step).g * w2;
+    color.b += texture(source_texture, base_uv - 2.0 * bleed_step - shift).b * w2;
 
-    float alpha = texture(TEXTURE, base_uv).a;
+    float alpha = texture(source_texture, base_uv).a;
 
     // tracking noise
     float head_static = random(base_uv + time_offset);
@@ -93,7 +94,7 @@ void fragment() {
     vec2 frame_offset = vec2(random(vec2(fps_time, 0.0)), random(vec2(fps_time, 1.0)));
 
     // chroma loss streaks
-    vec2 chroma_grid = vec2(floor(UV.x * 1.0), floor(UV.y / max(0.0001, chroma_streak_height)));
+    vec2 chroma_grid = vec2(floor(SCREEN_UV.x * 1.0), floor(SCREEN_UV.y / max(0.0001, chroma_streak_height)));
     float chroma_val = random(chroma_grid + frame_offset * 50.0);
     float is_chroma_streak = step(1.0 - chroma_streak_frequency, chroma_val);
     vec3 shifted_chroma = vec3(color.g, color.b, color.r);
@@ -102,10 +103,10 @@ void fragment() {
     color = mix(color, shifted_chroma, is_chroma_streak * chroma_streak_intensity);
 
     // dropouts
-    float dropout_grid = floor(UV.y / max(0.0001, dropout_height));
+    float dropout_grid = floor(SCREEN_UV.y / max(0.0001, dropout_height));
     float dropout_val = random(vec2(dropout_grid, frame_offset.x));
     float is_dropout = step(1.0 - dropout_frequency, dropout_val);
-    float dropout_static = random(UV + frame_offset * 100.0);
+    float dropout_static = random(SCREEN_UV + frame_offset * 100.0);
     color = mix(color, vec3(dropout_static), is_dropout * dropout_intensity);
 
     // noise/snow
@@ -123,7 +124,7 @@ void fragment() {
     color = clamp(color, 0.0, 1.0);
 
     // scanlines
-    float scanline_wave = sin(UV.y * scanline_count * PI * 2.0);
+    float scanline_wave = sin(SCREEN_UV.y * scanline_count * PI * 2.0);
     float scanline_normalized = scanline_wave * 0.5 + 0.5;
     float scanline_multiplier = mix(1.0 - scanline_intensity, 1.0, scanline_normalized);
 

@@ -13,10 +13,13 @@ extends Resource
 @export_range(0, 1, 0.05) var n64_dither_strength := 0.9
 
 @export_group("CRT")
-@export_range(0, 0.3, 0.01) var crt_scanlines := 0.10
-@export_range(0, 0.3, 0.01) var crt_mask := 0.035
+@export_range(3, 16, 1) var crt_cell_size := 6.0
+@export_range(0, 0.6, 0.01) var crt_scanlines := 0.22
+@export_range(0, 0.4, 0.01) var crt_mask := 0.13
 @export_range(0, 0.3, 0.01) var crt_vignette := 0.08
-@export_range(0, 0.2, 0.01) var crt_glow := 0.035
+@export_range(0, 0.8, 0.01) var crt_glow := 0.38
+@export_range(1, 8, 0.5) var crt_glow_radius := 4.0
+@export_range(-0.1, 0.2, 0.005) var crt_brightness := 0.025
 ## Curvature is deliberately absent: the imported CRT uses an undistorted image.
 
 @export_group("VHS")

@@ -15,7 +15,7 @@ func run() -> void:
    return
  var baseline: Array = []
  var failures := 0
- for index in 6:
+ for index in 8:
   var output: Array = []
   var result := OS.execute(OS.get_executable_path(), PackedStringArray([
    "--headless", "--path", ProjectSettings.globalize_path("res://"), "--fixed-fps", "120",
@@ -29,7 +29,7 @@ func run() -> void:
   var trace: Array = file.get_var()
   if index == 0:
    baseline = trace
-  var label: String = Filter.NAMES[index] if index < 5 else "live switching every 60 ticks"
+  var label: String = Filter.NAMES[index] if index < 5 else ["live switching every 60 ticks", "all four effects stacked", "live stacking and tuning"][index - 5]
   if trace != baseline or trace.size() != 600:
    failures += 1
    push_error("FAIL | Different 600-tick trajectory: " + label)
@@ -39,7 +39,7 @@ func run() -> void:
      break
   else:
    print("PASS | Identical trajectory, score, rings, drains and flipper angles: ", label)
- print("RESULT | Retro physics | 6 checks | %d failures" % failures)
+ print("RESULT | Retro physics | 8 checks | %d failures" % failures)
  quit(0 if failures == 0 else 1)
 
 func record(index: int) -> void:
@@ -51,6 +51,8 @@ func record(index: int) -> void:
  game.generation_seed = 18
  root.add_child(game)
  game.retro_filter.set_preset(index if index < 5 else 0)
+ if index == 6:
+  game.retro_filter.set_effects(Filter.ORDER)
  game.retro_controls.hide()
  game.controls.virtual_enabled = true
  for _i in 3:
@@ -60,6 +62,11 @@ func record(index: int) -> void:
  for tick in 600:
   if index == 5 and tick % 60 == 0:
    game.retro_filter.cycle()
+  if index == 7 and tick % 30 == 0:
+   game.retro_filter.toggle_effect(Filter.ORDER[(tick / 30) % 4])
+   game.retro_controls.fields.crt_cell_size.value = 6 + tick % 11
+   game.retro_controls.fields.crt_glow.value = (tick % 90) / 100.0
+   game.retro_controls.fields.pixel_resolution_divisor.value = 1 + (tick / 30) % 4
   game.controls.virtual_left = tick % 90 < 35
   game.controls.virtual_right = tick % 110 < 40
   game.controls.virtual_steering = 0.35 if tick % 180 < 90 else -0.35

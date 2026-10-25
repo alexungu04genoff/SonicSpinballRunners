@@ -66,7 +66,7 @@ func _ready() -> void:
  retro_controls = RetroControls.new()
  retro_controls.name = "RetroControls"
  add_child(retro_controls)
- retro_controls.install(retro_filter, debug_panel.camera_presets.get_parent())
+ retro_controls.install(retro_filter, debug_panel.camera_presets.get_parent(), play_buttons)
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--capture="):
    _capture_kind = argument.trim_prefix("--capture=")

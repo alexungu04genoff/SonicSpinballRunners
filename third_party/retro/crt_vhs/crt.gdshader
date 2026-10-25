@@ -1,6 +1,8 @@
 // MIT: Marcel Jovic. See LICENSE.md and ../README.md.
 // Adaptation: scanline block copied from this author's vhs.gdshader.
+// Screen-texture sampling allows world-only stacking; effect math is unchanged.
 shader_type canvas_item;
+uniform sampler2D source_texture : hint_screen_texture, filter_linear, repeat_disable;
 
 uniform float scanline_count = 345.0;
 uniform float scanline_intensity : hint_range(0.0, 1.0) = 0.1;
@@ -26,27 +28,27 @@ uniform float border_thickness_vertical : hint_range(0.0, 0.5, 0.001) = 0.008;
 uniform float border_smoothness : hint_range(0.0, 0.1, 0.001) = 0.002;
 
 void fragment() {
-    vec2 base_uv = UV;
-    vec2 pixel_size = TEXTURE_PIXEL_SIZE;
+    vec2 base_uv = SCREEN_UV;
+    vec2 pixel_size = SCREEN_PIXEL_SIZE;
 
     vec2 center_uv = base_uv - vec2(0.5);
     float dist_sq = dot(center_uv, center_uv);
 
     // edge convergence
     vec2 convergence_offset = center_uv * dist_sq * convergence_intensity;
-    float r = texture(TEXTURE, base_uv + convergence_offset).r;
-    float g = texture(TEXTURE, base_uv).g;
-    float b = texture(TEXTURE, base_uv - convergence_offset).b;
+    float r = texture(source_texture, base_uv + convergence_offset).r;
+    float g = texture(source_texture, base_uv).g;
+    float b = texture(source_texture, base_uv - convergence_offset).b;
     vec3 base_color = vec3(r, g, b);
-    float alpha = texture(TEXTURE, base_uv).a;
+    float alpha = texture(source_texture, base_uv).a;
 
     // halation
     vec2 blur_step = pixel_size * halation_radius;
     vec3 bloom = base_color * 0.382928;
-    bloom += texture(TEXTURE, base_uv + vec2(blur_step.x, 0.0)).rgb * 0.241732;
-    bloom += texture(TEXTURE, base_uv - vec2(blur_step.x, 0.0)).rgb * 0.241732;
-    bloom += texture(TEXTURE, base_uv + vec2(0.0, blur_step.y)).rgb * 0.060598;
-    bloom += texture(TEXTURE, base_uv - vec2(0.0, blur_step.y)).rgb * 0.060598;
+    bloom += texture(source_texture, base_uv + vec2(blur_step.x, 0.0)).rgb * 0.241732;
+    bloom += texture(source_texture, base_uv - vec2(blur_step.x, 0.0)).rgb * 0.241732;
+    bloom += texture(source_texture, base_uv + vec2(0.0, blur_step.y)).rgb * 0.060598;
+    bloom += texture(source_texture, base_uv - vec2(0.0, blur_step.y)).rgb * 0.060598;
 
     vec3 final_color = base_color + (bloom * halation_intensity);
 
@@ -83,7 +85,7 @@ void fragment() {
     final_color *= border_mask;
 
     // scanlines (from vhs.gdshader in the same pinned upstream revision)
-    float scanline_wave = sin(UV.y * scanline_count * PI * 2.0);
+    float scanline_wave = sin(SCREEN_UV.y * scanline_count * PI * 2.0);
     float scanline_normalized = scanline_wave * 0.5 + 0.5;
     float scanline_multiplier = mix(1.0 - scanline_intensity, 1.0, scanline_normalized);
     COLOR = vec4(final_color * scanline_multiplier, alpha);
