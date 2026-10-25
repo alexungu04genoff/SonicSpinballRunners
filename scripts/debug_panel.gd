@@ -166,7 +166,8 @@ func _ready() -> void:
  )
  stack.add_child(camera_presets)
  camera_follow = CheckButton.new()
- camera_follow.text = "Follow ball (off: fixed overview)"
+ camera_follow.text = "Follow ball (off: overview)"
+ camera_follow.tooltip_text = "Overview: scroll to zoom; hold the middle mouse button and drag to pan. Returning from follow resets the overview."
  camera_follow.button_pressed = game.presentation.camera_follow_enabled
  camera_follow.toggled.connect(func(enabled: bool):
   game.presentation.set_camera_follow(enabled)

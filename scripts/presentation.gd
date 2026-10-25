@@ -17,6 +17,8 @@ enum CameraPreset { TOP_DOWN, REAL_PINBALL, DRAMATIC_PINBALL }
 const CAMERA_NAMES: Array[String] = ["Top-down reference", "Real Pinball", "Dramatic Pinball"]
 var camera_preset: int = CameraPreset.REAL_PINBALL
 var camera_follow_enabled: bool = true
+var overview_zoom: float = 1.0
+var overview_focus := Vector2.INF
 ## Distances are physics pixels, speed is pixels/second, response is inverse seconds.
 ## Zoom is a dimensionless multiplier on each source's default follow framing.
 var camera_settings: Dictionary = {"zoom": 1.0, "dead_zone_y": 12.0, "dead_zone_x": 18.0, "look_ahead": 0.0, "screen_target_y": 0.38, "screen_margin_y": 0.22, "vertical_response": 28.0, "horizontal_response": 2.0, "max_speed": 4000.0}
@@ -448,8 +450,40 @@ func set_camera_preset(index: int) -> void:
  reset_camera()
 
 func set_camera_follow(enabled: bool) -> void:
+ if enabled != camera_follow_enabled:
+  overview_zoom = 1.0
+  overview_focus = Vector2.INF
  camera_follow_enabled = enabled
  reset_camera()
+
+func handle_overview_input(event: InputEvent) -> bool:
+ if camera_follow_enabled or not is_instance_valid(camera) or not camera.current:
+  return false
+ if event is InputEventMouseButton:
+  if event.button_index == MOUSE_BUTTON_MIDDLE:
+   return true
+  if not event.pressed or event.button_index not in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+   return false
+  var anchor := _overview_floor_point(event.position)
+  var direction := 1.0 if event.button_index == MOUSE_BUTTON_WHEEL_UP else -1.0
+  overview_zoom = clampf(overview_zoom * pow(1.15, direction * event.factor), 0.25, 20.0)
+  _configure_camera()
+  camera_focus += anchor - _overview_floor_point(event.position)
+ elif event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_MIDDLE:
+  camera_focus += _overview_floor_point(event.position - event.relative) - _overview_floor_point(event.position)
+ else:
+  return false
+ overview_focus = camera_focus
+ camera_target = camera_focus
+ camera.position = map_point(camera_focus) + _camera_offset
+ return true
+
+func _overview_floor_point(screen: Vector2) -> Vector2:
+ var origin := camera.project_ray_origin(screen)
+ var ray := camera.project_ray_normal(screen)
+ if absf(ray.y) < 0.001:
+  return camera_focus
+ return unmap_point(origin - ray * (origin.y / ray.y))
 
 func set_camera_value(key: String, value: float) -> void:
  if not CAMERA_LIMITS.has(key):
@@ -464,6 +498,8 @@ func reset_camera(at: Vector2 = Vector2.INF) -> void:
   return
  var point := ball.position if at == Vector2.INF else at
  camera_focus = _clamp_focus(Vector2(_horizontal_follow_target(point.x), point.y)) if camera_follow_enabled else table_bounds.get_center()
+ if not camera_follow_enabled and overview_focus != Vector2.INF:
+  camera_focus = overview_focus
  camera_target = camera_focus
  _configure_camera()
  if camera_follow_enabled:
@@ -509,6 +545,8 @@ func _configure_camera() -> void:
  if camera_preset == CameraPreset.TOP_DOWN:
   camera.projection = Camera3D.PROJECTION_ORTHOGONAL
   camera.size = maxf(size.y, size.x / aspect) * SCALE / 0.94
+  if not camera_follow_enabled:
+   camera.size /= overview_zoom
   _camera_offset = Vector3(0, maxf(20.0, table_bounds.size.y * SCALE), 0)
   camera.position = map_point(camera_focus) + _camera_offset
   camera.look_at(map_point(camera_focus), Vector3.FORWARD)
@@ -528,6 +566,8 @@ func _configure_camera() -> void:
      var point := Vector3(x, height, z)
      distance = maxf(distance, point.dot(normal) + maxf(absf(point.x) / tan_x, absf(point.dot(screen_up)) / tan_y))
   _camera_offset = normal * distance
+  if not camera_follow_enabled:
+   _camera_offset /= overview_zoom
   camera.position = map_point(camera_focus) + _camera_offset
   camera.look_at(map_point(camera_focus))
  camera.far = _camera_offset.length() + table_bounds.size.length() * SCALE + 10.0

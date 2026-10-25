@@ -54,6 +54,7 @@ const GRID_EASY_RECIPES: Array[GridChunkRecipe] = [
 var layout: Dictionary = {}
 var generation_pending: bool = false
 var view: SubViewport
+var camera_input_container: SubViewportContainer
 const Playfield = preload("res://scripts/playfield_data.gd")
 const ActDocument = preload("res://scripts/act_editor/act_geometry.gd")
 const ActCompiler = preload("res://scripts/authored_act/act_runtime_compiler.gd")
@@ -260,8 +261,24 @@ func _populate_rings() -> void:
   ring_field.add_ring(point)
  _ring_population_ms = (Time.get_ticks_usec() - started) / 1000.0
 
+func _unhandled_input(event: InputEvent) -> void:
+ if not event is InputEventMouse or not is_instance_valid(presentation) or controls.input_blocked or generation_pending:
+  return
+ var container := camera_input_container
+ var local: Vector2 = container.get_global_transform_with_canvas().affine_inverse() * event.position
+ if not Rect2(Vector2.ZERO, container.size).has_point(local):
+  return
+ var mapped := event.duplicate() as InputEventMouse
+ var scale := Vector2(view.size) / container.size
+ mapped.position = local * scale
+ if mapped is InputEventMouseMotion:
+  mapped.relative = (container.get_global_transform_with_canvas().basis_xform_inv(event.relative)) * scale
+ if presentation.handle_overview_input(mapped):
+  get_viewport().set_input_as_handled()
+
 func _build_view() -> void:
  var container := SubViewportContainer.new()
+ camera_input_container = container
  container.name = "TableView"
  # Reserve the generator's left margin so a perspective near edge cannot hide behind it.
  container.position = Vector2(225, 85)

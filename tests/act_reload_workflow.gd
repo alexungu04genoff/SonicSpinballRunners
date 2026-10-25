@@ -17,6 +17,41 @@ func run() -> void:
 	check(game.set_theme("chemical_plant"), "Choose Chemical Plant before reloading")
 	game.presentation.set_camera_follow(false)
 	game.presentation.set_camera_value("zoom", 1.7)
+	var p: TablePresentation = game.presentation
+	for preset in TablePresentation.CameraPreset.values():
+		p.set_camera_follow(true)
+		p.set_camera_follow(false)
+		p.set_camera_preset(preset)
+		var pointer := Vector2(game.view.size) * Vector2(0.6, 0.55)
+		var anchor := p._overview_floor_point(pointer)
+		var wheel := InputEventMouseButton.new()
+		wheel.position = pointer
+		wheel.button_index = MOUSE_BUTTON_WHEEL_UP
+		wheel.pressed = true
+		check(p.handle_overview_input(wheel) and p.overview_zoom > 1.0, "Wheel zooms overview preset %d" % preset)
+		check(p._overview_floor_point(pointer).distance_to(anchor) < 0.01, "Zoom keeps floor point under cursor")
+		var drag := InputEventMouseMotion.new()
+		drag.position = pointer + Vector2(70, 40)
+		drag.relative = Vector2(70, 40)
+		drag.button_mask = MOUSE_BUTTON_MASK_MIDDLE
+		check(p.handle_overview_input(drag) and p._overview_floor_point(drag.position).distance_to(anchor) < 0.01, "Middle drag keeps grabbed floor point under cursor")
+	var routed_wheel := InputEventMouseButton.new()
+	routed_wheel.position = game.view_container.get_global_rect().get_center()
+	routed_wheel.button_index = MOUSE_BUTTON_WHEEL_UP
+	routed_wheel.pressed = true
+	var previous_zoom := p.overview_zoom
+	Input.parse_input_event(routed_wheel)
+	await frames(2)
+	check(p.overview_zoom > previous_zoom, "Root viewport routes wheel input into the overview camera")
+	var routed_drag := InputEventMouseMotion.new()
+	routed_drag.position = routed_wheel.position + Vector2(25, 20)
+	routed_drag.relative = Vector2(25, 20)
+	routed_drag.button_mask = MOUSE_BUTTON_MASK_MIDDLE
+	var previous_focus := p.camera_focus
+	Input.parse_input_event(routed_drag)
+	await frames(2)
+	check(not p.camera_focus.is_equal_approx(previous_focus), "Root viewport routes middle drag into the overview camera")
+	var overview_state := [p.camera_focus, p.overview_zoom, p.camera.transform]
 	game.retro_filter.set_preset(2)
 	var preferences: Array = [game.theme_id, game.presentation.camera_follow_enabled, game.presentation.camera_preset, game.presentation.camera_settings.duplicate(true), game.retro_filter.preset, game.player_view, DisplayServer.window_get_mode()]
 	var mass: Dictionary = Composite.smooth({"shape_id": "rectangle_3x3", "base_size": Vector2i(3, 3), "anchor": Vector2i(1, 1), "quarter_turns": 0, "flip_h": false, "flip_v": false}, 1.0).placement
@@ -57,6 +92,15 @@ func run() -> void:
 	check(game.ball.serve_pending and game.ball.position == document.spawn_position and game.score == 0 and game.special_meter == 0, "Reload cleanly resets and serves the ball")
 	check(preferences == [game.theme_id, game.presentation.camera_follow_enabled, game.presentation.camera_preset, game.presentation.camera_settings, game.retro_filter.preset, game.player_view, DisplayServer.window_get_mode()], "Reload preserves theme, camera settings, overview, retro preset and window state")
 	check_identity("Reload retains the authoritative engine, camera and HUD")
+	check(p.camera_focus.is_equal_approx(overview_state[0]) and p.overview_zoom == overview_state[1] and p.camera.transform.is_equal_approx(overview_state[2]), "Reload preserves panned position and wheel zoom", str([overview_state, p.camera_focus, p.overview_zoom, p.camera.transform]))
+	p.set_camera_follow(true)
+	var follow_focus := p.camera_focus
+	var ignored_wheel := InputEventMouseButton.new()
+	ignored_wheel.button_index = MOUSE_BUTTON_WHEEL_UP
+	ignored_wheel.pressed = true
+	check(not p.handle_overview_input(ignored_wheel) and p.camera_focus == follow_focus, "Follow camera ignores overview mouse controls")
+	p.set_camera_follow(false)
+	check(p.overview_zoom == 1.0 and p.camera_focus == p.table_bounds.get_center(), "Follow then overview restores default framing")
 	check(FileAccess.get_file_as_bytes(RELOAD_PATH) == saved_bytes, "Reload never writes back to the Act")
 	game.set_theme("green_hill")
 	document.decor_slots[0].variant_index = 2
