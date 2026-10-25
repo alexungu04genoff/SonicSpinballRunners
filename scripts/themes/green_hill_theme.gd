@@ -2,83 +2,38 @@ extends "res://scripts/themes/theme_definition.gd"
 ## Original Green Hill art, separated from the shared geometry and gameplay renderer.
 const GreenHillDecor = preload("res://scripts/decor/green_hill_decor.gd")
 
-const GRASS_SHADER := """
-shader_type spatial;
-render_mode cull_disabled, specular_disabled;
-uniform bool raised_turf = false;
-varying vec3 terrain_position;
-void vertex() { terrain_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
-float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-void fragment() {
- vec2 ground = terrain_position.xz;
- vec2 p = ground * 3.0;
- vec2 cell = floor(p);
- vec2 blend = fract(p);
- blend = blend * blend * (3.0 - 2.0 * blend);
- float noise = mix(mix(hash(cell), hash(cell + vec2(1.0, 0.0)), blend.x), mix(hash(cell + vec2(0.0, 1.0)), hash(cell + vec2(1.0, 1.0)), blend.x), blend.y);
- // Staggered little grass tufts, with broad patches underneath. World-space
- // coordinates keep the same texture density on curved stamps and rail caps.
- vec2 blades = ground * 28.0;
- blades.x += mod(floor(blades.y), 2.0) * 0.5;
- vec2 blade = fract(blades) - 0.5;
- float tuft = (1.0 - smoothstep(0.055, 0.14, abs(abs(blade.x) - (blade.y + 0.35) * 0.32))) * step(-0.3, blade.y) * step(blade.y, 0.28);
- vec3 dark = raised_turf ? vec3(0.14, 0.49, 0.025) : vec3(0.16, 0.40, 0.045);
- vec3 light = raised_turf ? vec3(0.40, 0.78, 0.035) : vec3(0.28, 0.55, 0.065);
- ALBEDO = mix(dark, light, 0.35 + noise * 0.40 + tuft * 0.22);
- ROUGHNESS = 1.0;
-}
-"""
-const CLIFF_SHADER := """
-shader_type spatial;
-render_mode cull_disabled, specular_disabled;
-void fragment() {
- vec2 tile = floor(UV * 6.25);
- float checker = mod(tile.x + tile.y, 2.0);
- vec2 edge = min(fract(UV * 6.25), 1.0 - fract(UV * 6.25));
- float seam = smoothstep(0.0, 0.035, min(edge.x, edge.y));
- vec3 dark = vec3(0.30, 0.095, 0.025);
- vec3 light = vec3(0.72, 0.32, 0.075);
- ALBEDO = mix(dark, light, checker) * mix(0.88, 1.0, seam);
- ROUGHNESS = 1.0;
-}
-"""
-const WALL_SHADER := """
-shader_type spatial;
-render_mode cull_disabled, specular_disabled;
-uniform float turf_height = 0.30;
-varying vec3 terrain_position;
-varying vec3 terrain_normal;
-void vertex() {
- terrain_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
- terrain_normal = normalize(MODEL_NORMAL_MATRIX * NORMAL);
-}
-void fragment() {
- // Triplanar checker soil wraps both straight and curved walls without stretching.
- vec3 tile = terrain_position * 6.25;
- float checker_x = mod(floor(tile.z) + floor(tile.y), 2.0);
- float checker_z = mod(floor(tile.x) + floor(tile.y), 2.0);
- vec2 weights = pow(abs(terrain_normal.xz), vec2(8.0));
- weights /= max(weights.x + weights.y, 0.001);
- float checker = dot(vec2(checker_x, checker_z), weights);
- vec3 soil = mix(vec3(0.30, 0.095, 0.025), vec3(0.72, 0.32, 0.075), checker);
- float fringe = abs(fract((terrain_position.x + terrain_position.z) * 24.0) - 0.5) * 0.045;
- float depth = turf_height - terrain_position.y;
- vec3 grass = mix(vec3(0.13, 0.39, 0.025), vec3(0.49, 0.79, 0.035), 1.0 - smoothstep(0.0, 0.08, depth));
- ALBEDO = mix(soil, grass, step(depth, 0.065 + fringe));
- ROUGHNESS = 1.0;
-}
-"""
+const TEXTURES := "res://assets/textures/green_hill/"
 
 func _init() -> void:
  theme_id = "green_hill"
  display_name = "Green Hill"
  edge_trim_color = Color("549c24")
- floor_material = _shader_material(GRASS_SHADER)
- cliff_material = _shader_material(CLIFF_SHADER)
- top_material = _shader_material(GRASS_SHADER)
- top_material.set_shader_parameter("raised_turf", true)
- side_material = _shader_material(WALL_SHADER)
+ floor_material = _texture_material("floor", Vector2(4, 4))
+ top_material = _texture_material("top", Vector2(4, 4))
+ cliff_material = _texture_material("cliff", Vector2(0.32, 0.32), false)
+ side_material = ShaderMaterial.new()
+ side_material.shader = preload("res://scripts/themes/green_hill_wall.gdshader")
+ side_material.set_shader_parameter("soil_texture", load(TEXTURES + "soil.png"))
+ side_material.set_shader_parameter("fringe_texture", load(TEXTURES + "wall-fringe.png"))
  side_material.set_shader_parameter("turf_height", TablePresentation.RAIL_HEIGHT)
+ floor_border_material = _border_material("floor-border")
+ top_border_material = _border_material("top-border")
+ floor_border_width = 5.0
+ top_border_width = 3.0
+
+func _texture_material(name: String, repeat_size: Vector2, world_mapping := true) -> ShaderMaterial:
+ var result := ShaderMaterial.new()
+ result.shader = preload("res://scripts/themes/texture_surface.gdshader")
+ result.set_shader_parameter("surface_texture", load(TEXTURES + name + ".png"))
+ result.set_shader_parameter("repeat_size", repeat_size)
+ result.set_shader_parameter("world_mapping", world_mapping)
+ return result
+
+func _border_material(name: String) -> ShaderMaterial:
+ var result := ShaderMaterial.new()
+ result.shader = preload("res://scripts/themes/terrain_border.gdshader")
+ result.set_shader_parameter("border_texture", load(TEXTURES + name + ".png"))
+ return result
 
 func create_decor(presentation: Node3D) -> RefCounted:
  return GreenHillDecor.new(presentation)
@@ -284,5 +239,5 @@ func build_study(p: Node3D, parent: Node3D, origin: Vector3) -> void:
  _flower(p, Vector3(0.88, 0, 0.67), 0.56, parent)
 
 func ramp_materials() -> Dictionary:
- return {"deck": _ramp_deck(Color("b97d3f"), Color("d2a15d"), 0),
+ return {"deck": _texture_material("ramp", Vector2(0.64, 1.04), false),
   "edge": top_material, "support": material(Color("704322")), "accent": material(Color("ffe6a1"))}

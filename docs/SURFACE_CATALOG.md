@@ -1,5 +1,7 @@
 # Surface catalogue — all five zones
 
+**Green Hill update:** its static patterns now use editable PNG assets, with horizontal floor and raised-top contour borders. See [Green Hill textures, comparisons and tuning](GREEN_HILL_TEXTURES.md). The original five-zone sheet below remains the procedural baseline; the other four themes retain the sources documented here.
+
 These are the current procedural material patterns, not imported texture images. The previews use private unlit copies of the production shaders, with bloom and retro filtering disabled, so lighting does not obscure the patterns. Emission is added to the preview color and clamped so luminous inserts stay visible without halos. Game appearance also depends on zone lighting, shadows, bloom and the retro stack. No production material or geometry changes are made by this catalogue.
 
 ![All current surface patterns](surface-catalog/all-surfaces.png)

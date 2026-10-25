@@ -7,6 +7,11 @@ var top_material: Material
 var side_material: Material
 var cliff_material: Material
 var edge_trim_color := Color("638697")
+## Optional collisionless horizontal contour bands; widths are physics pixels.
+var floor_border_material: Material
+var top_border_material: Material
+var floor_border_width := 0.0
+var top_border_width := 0.0
 
 func material(color: Color, glow: float = 0.0) -> StandardMaterial3D:
  var result := StandardMaterial3D.new()

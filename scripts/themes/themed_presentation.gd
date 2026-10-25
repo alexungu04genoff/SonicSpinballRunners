@@ -3,6 +3,7 @@ extends TablePresentation
 ## All gameplay shapes, cameras, and animated anchors remain owned by TablePresentation.
 const DecorSlots = preload("res://scripts/act_editor/decor_slots.gd")
 const GreenHillTheme = preload("res://scripts/themes/green_hill_theme.gd")
+const TerrainBorder = preload("res://scripts/themes/terrain_border.gd")
 var theme_definition: RefCounted = GreenHillTheme.new()
 ## Replace this skin with another DecorSkin to reuse an Act's generic slots.
 var decor_skin: RefCounted
@@ -82,11 +83,13 @@ func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> voi
  floor_root.name = "AuthoredPlayfieldFloor"
  terrain_root.add_child(floor_root)
  _make_land(authored_floor_outline, LAND_DEPTH, floor_root, 0.0, 0.0)
+ var floor_obstacles: Array[PackedVector2Array] = authored_terrain_polygons.duplicate()
  var wall_side := terrain_side_material()
  var wall_top := terrain_top_material()
  for outline: PackedVector2Array in authored_terrain_polygons:
   var obstacle := mesh_node(_prism(outline, RAIL_HEIGHT + RAIL_CAP_HEIGHT, wall_side, wall_top), null, Vector3.ZERO, terrain_root)
   obstacle.name = "SolidTerrainObstacle"
+  _add_border(outline, [], theme_definition.top_border_width, RAIL_HEIGHT + RAIL_CAP_HEIGHT, theme_definition.top_border_material, obstacle, "TopSurfaceBorder")
  for path: PackedVector2Array in authored_open_paths:
   # A narrow ribbon follows consecutive segments only. There is no final-to-first
   # segment and no filled interior, including for U-shaped or curved open walls.
@@ -95,6 +98,10 @@ func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> voi
   terrain_root.add_child(rail)
   for ribbon: PackedVector2Array in Geometry2D.offset_polyline(path, cell_size * 0.02, Geometry2D.JOIN_ROUND, Geometry2D.END_ROUND):
    mesh_node(_prism(ribbon, RAIL_HEIGHT + RAIL_CAP_HEIGHT, wall_side, wall_top), null, Vector3.ZERO, rail)
+   floor_obstacles.append(ribbon)
+   # Thin open rails keep a center strip: cap width is at most a quarter of rail width.
+   _add_border(ribbon, [], minf(theme_definition.top_border_width, cell_size * 0.01), RAIL_HEIGHT + RAIL_CAP_HEIGHT, theme_definition.top_border_material, rail, "TopSurfaceBorder")
+ _add_border(authored_floor_outline, floor_obstacles, theme_definition.floor_border_width, 0.0, theme_definition.floor_border_material, floor_root, "FloorPathBorder")
  _finish_terrain_skin()
  _build_authored_decor(runtime, cell_size)
 
@@ -264,6 +271,8 @@ func _make_land(outline: PackedVector2Array, depth: float, parent: Node3D, top_h
   distance += segment
  var cliff_mesh := mesh_node(surface.commit(), null, Vector3.ZERO, parent)
  cliff_mesh.name = "CheckerCliff"
+ if not authored_mode:
+  _add_border(points, [], theme_definition.floor_border_width, top_height, theme_definition.floor_border_material, parent, "FloorPathBorder")
  if turf_width <= 0.0:
   return # Authored silhouettes stop exactly at the physical polygon boundary.
  # A narrow, irregular turf lip makes the edge readable without covering any collider.
@@ -324,3 +333,17 @@ func _flower(base: Vector3, size: float, target: Node3D = null) -> void:
 
 func ramp_materials() -> Dictionary:
  return theme_definition.ramp_materials()
+
+func _add_border(outline: PackedVector2Array, holes: Array[PackedVector2Array], width: float, height: float, mat: Material, parent: Node3D, label: String) -> void:
+ var mesh := TerrainBorder.build(outline, holes, width, height + 0.001, mat)
+ if mesh == null: return
+ var visual := mesh_node(mesh, null, Vector3.ZERO, parent)
+ visual.name = label
+ visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+func _paddle(length: float, radius: float, height: float, base: float, mat: Material, parent: Node3D) -> void:
+ super._paddle(length, radius, height, base, mat, parent)
+ if mat != theme_definition.top_material or theme_definition.top_border_material == null: return
+ var path := PackedVector2Array([Vector2.ZERO, Vector2(length / SCALE, 0)])
+ for outline: PackedVector2Array in Geometry2D.offset_polyline(path, radius / SCALE, Geometry2D.JOIN_ROUND, Geometry2D.END_ROUND):
+  _add_border(outline, [], minf(theme_definition.top_border_width, radius / SCALE * 0.5), base + height, theme_definition.top_border_material, parent, "TopSurfaceBorder")
