@@ -1,0 +1,200 @@
+{
+  "adapter": "ANGLE (NVIDIA, NVIDIA GeForce RTX 4060 (0x00002882) Direct3D11 vs_5_0 ps_5_0, D3D11-32.0.16.1664)",
+  "driver": "opengl3_angle",
+  "godot": "4.7.2-stable (official)",
+  "root_size": "(1280, 900)",
+  "runs": [
+    {
+      "frame": {
+        "mean_ms": 20.1861458333333,
+        "median_ms": 20.557,
+        "p95_ms": 25.006
+      },
+      "gpu": {
+        "mean_ms": 0.0,
+        "median_ms": 0.0,
+        "p95_ms": 0.0
+      },
+      "preset": "OFF",
+      "render_cpu": {
+        "mean_ms": 19.1837458582362,
+        "median_ms": 19.3859997711182,
+        "p95_ms": 23.7329994888306
+      },
+      "world_size": "(1280, 690)"
+    },
+    {
+      "frame": {
+        "mean_ms": 15.3939916666667,
+        "median_ms": 14.536,
+        "p95_ms": 22.874
+      },
+      "gpu": {
+        "mean_ms": 0.0,
+        "median_ms": 0.0,
+        "p95_ms": 0.0
+      },
+      "preset": "PIXEL / DITHER",
+      "render_cpu": {
+        "mean_ms": 14.6959166604082,
+        "median_ms": 14.011999584198,
+        "p95_ms": 21.8839991493225
+      },
+      "world_size": "(640, 345)"
+    },
+    {
+      "frame": {
+        "mean_ms": 15.209575,
+        "median_ms": 14.492,
+        "p95_ms": 20.804
+      },
+      "gpu": {
+        "mean_ms": 0.0,
+        "median_ms": 0.0,
+        "p95_ms": 0.0
+      },
+      "preset": "N64-ish",
+      "render_cpu": {
+        "mean_ms": 14.2941749715845,
+        "median_ms": 13.5769998703003,
+        "p95_ms": 19.5519994430542
+      },
+      "world_size": "(640, 345)"
+    },
+    {
+      "frame": {
+        "mean_ms": 14.4418916666667,
+        "median_ms": 13.571,
+        "p95_ms": 19.878
+      },
+      "gpu": {
+        "mean_ms": 0.0,
+        "median_ms": 0.0,
+        "p95_ms": 0.0
+      },
+      "preset": "CRT",
+      "render_cpu": {
+        "mean_ms": 13.7037041806221,
+        "median_ms": 12.8340003890991,
+        "p95_ms": 18.9129999599457
+      },
+      "world_size": "(1280, 690)"
+    },
+    {
+      "frame": {
+        "mean_ms": 13.4000625,
+        "median_ms": 12.79,
+        "p95_ms": 17.511
+      },
+      "gpu": {
+        "mean_ms": 0.0,
+        "median_ms": 0.0,
+        "p95_ms": 0.0
+      },
+      "preset": "VHS",
+      "render_cpu": {
+        "mean_ms": 12.5201083646854,
+        "median_ms": 11.9409999990463,
+        "p95_ms": 16.2300001316071
+      },
+      "world_size": "(1280, 690)"
+    },
+    {
+      "frame": {
+        "mean_ms": 13.2629,
+        "median_ms": 12.592,
+        "p95_ms": 19.384
+      },
+      "gpu": {
+        "mean_ms": 0.0,
+        "median_ms": 0.0,
+        "p95_ms": 0.0
+      },
+      "preset": "VHS",
+      "render_cpu": {
+        "mean_ms": 12.3453791615804,
+        "median_ms": 11.876000418663,
+        "p95_ms": 16.0069995746613
+      },
+      "world_size": "(1280, 690)"
+    },
+    {
+      "frame": {
+        "mean_ms": 13.7445,
+        "median_ms": 13.042,
+        "p95_ms": 19.372
+      },
+      "gpu": {
+        "mean_ms": 0.0,
+        "median_ms": 0.0,
+        "p95_ms": 0.0
+      },
+      "preset": "CRT",
+      "render_cpu": {
+        "mean_ms": 12.9123958488345,
+        "median_ms": 12.2790000324249,
+        "p95_ms": 18.2329999351501
+      },
+      "world_size": "(1280, 690)"
+    },
+    {
+      "frame": {
+        "mean_ms": 17.767875,
+        "median_ms": 17.473,
+        "p95_ms": 23.593
+      },
+      "gpu": {
+        "mean_ms": 0.0,
+        "median_ms": 0.0,
+        "p95_ms": 0.0
+      },
+      "preset": "N64-ish",
+      "render_cpu": {
+        "mean_ms": 16.7188708016197,
+        "median_ms": 16.3590002765656,
+        "p95_ms": 22.0480001888275
+      },
+      "world_size": "(640, 345)"
+    },
+    {
+      "frame": {
+        "mean_ms": 14.3717166666667,
+        "median_ms": 13.881,
+        "p95_ms": 18.124
+      },
+      "gpu": {
+        "mean_ms": 0.0,
+        "median_ms": 0.0,
+        "p95_ms": 0.0
+      },
+      "preset": "PIXEL / DITHER",
+      "render_cpu": {
+        "mean_ms": 13.4568958061695,
+        "median_ms": 12.9029996747971,
+        "p95_ms": 17.2940000228882
+      },
+      "world_size": "(640, 345)"
+    },
+    {
+      "frame": {
+        "mean_ms": 14.805825,
+        "median_ms": 14.246,
+        "p95_ms": 19.615
+      },
+      "gpu": {
+        "mean_ms": 0.0,
+        "median_ms": 0.0,
+        "p95_ms": 0.0
+      },
+      "preset": "OFF",
+      "render_cpu": {
+        "mean_ms": 13.9631291855693,
+        "median_ms": 13.3200003051758,
+        "p95_ms": 18.6890003871918
+      },
+      "world_size": "(1280, 690)"
+    }
+  ],
+  "samples": 240,
+  "warmup": 90
+}

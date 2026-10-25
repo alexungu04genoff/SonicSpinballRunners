@@ -45,6 +45,7 @@ Discovered tools: **Godot 4.7.2 stable**, **Blender 5.2.3 LTS**. The launcher al
 | Escape / Menu | Pause or resume; leave character study |
 | R / Back | Reset and relaunch |
 | F1 / Tuning button | Open the complete existing physics, camera, seed and construction-grid controls |
+| F4 / Retro selector in F1 | Cycle OFF, PIXEL / DITHER, N64-ish, CRT and VHS; native-resolution HUD stays crisp |
 | O / Overview button | Toggle full-course overview and ball-follow camera |
 | Normal 18 / Normal 23 | Build the requested catalogue layout while paused or at serve |
 | Grid base / Grid variant | Switch middle type, preserving current seed and difficulty, while paused or at serve |

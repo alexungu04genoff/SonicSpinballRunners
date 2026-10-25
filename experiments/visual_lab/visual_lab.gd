@@ -2,6 +2,10 @@ extends "res://scripts/game.gd"
 ## Green Hill presentation of the shared playable sandbox, including its debug tools.
 const GreenHill := preload("res://experiments/visual_lab/green_hill_presentation.gd")
 const SonicPresenter := preload("res://experiments/visual_lab/sonic_presenter.gd")
+const RetroFilter := preload("res://scripts/retro/retro_filter.gd")
+const RetroControls := preload("res://scripts/retro/retro_controls.gd")
+var retro_filter: RetroFilter
+var retro_controls: CanvasLayer
 var view_container: SubViewportContainer
 var debug_open := false
 var layout_buttons: Array[Button] = []
@@ -55,6 +59,14 @@ func _ready() -> void:
  debug_panel.visible = false
  _build_lab_ui()
  _attach_challenge_ui()
+ retro_filter = RetroFilter.new()
+ retro_filter.name = "RetroFilter"
+ add_child(retro_filter)
+ retro_filter.attach(view_container, view)
+ retro_controls = RetroControls.new()
+ retro_controls.name = "RetroControls"
+ add_child(retro_controls)
+ retro_controls.install(retro_filter, debug_panel.camera_presets.get_parent())
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--capture="):
    _capture_kind = argument.trim_prefix("--capture=")
@@ -73,7 +85,7 @@ func _ready() -> void:
    _select_pose(_capture_kind if _capture_kind in ["roll", "idle", "jump", "trick", "homing", "impact", "fly"] else "idle")
   if not _capture_sequence:
    character.seek_pose(0.55)
- print("GREEN_HILL_READY | Enter roll in | Q/E flippers | arrows steer | F1 tuning/seeds | O overview | C study")
+ print("GREEN_HILL_READY | Enter roll in | Q/E flippers | arrows steer | F1 tuning/seeds | F4 retro filter | O overview | C study")
 
 func _build_view() -> void:
  view_container = SubViewportContainer.new()
@@ -285,7 +297,7 @@ func _build_lab_ui() -> void:
  buttons.add_child(space)
  view_button = _button("C  Character close-up", func(): _set_close_view(not close_view))
  top_row.add_child(view_button)
- stack.add_child(_label("Q / E  Flippers    SPACE  Special    ← / →  Steer    ESC  Pause    R  Reset    O  Overview    F1  Tuning / seeds    •    Pause or wait at serve to build", 13, Color("cce5e0")))
+ stack.add_child(_label("Q / E  Flippers    SPACE  Special    ← / →  Steer    ESC  Pause    R  Reset    O  Overview    F1  Tuning    F4  Retro filter    •    Pause or wait at serve to build", 13, Color("cce5e0")))
  act_picker = FileDialog.new()
  act_picker.title = "Load an authored Act into Green Hill"
  act_picker.access = FileDialog.ACCESS_FILESYSTEM
