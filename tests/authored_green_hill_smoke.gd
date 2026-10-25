@@ -314,6 +314,31 @@ func check_inset_floor() -> void:
 	for index in range(0, vertices.size(), 3):
 		area += polygon_area(PackedVector2Array([TablePresentation.unmap_point(vertices[index]), TablePresentation.unmap_point(vertices[index + 1]), TablePresentation.unmap_point(vertices[index + 2])]))
 	check(absf(area - polygon_area(outline)) < 1.0 and game.document.fingerprint() == document.fingerprint(), "Rendered deck triangulates the inferred contour without changing any authored records")
+	# A sculpted lower wall can share its upper edge with ordinary stamps, as in
+	# First Try Smooth. The floor must recognize the complete connected boundary.
+	var composite = preload("res://scripts/act_editor/composite_terrain.gd")
+	var mixed: Array = [document.placements[0], document.placements[1]]
+	for column in [3, 9]:
+		mixed.append(composite.merge([
+			stamp("rectangle_1x3", Vector2i(column, 3)),
+			stamp("rectangle_1x3", Vector2i(column, 6)),
+			stamp("rectangle_1x3", Vector2i(column, 9)),
+		]).placement)
+	mixed.append_array(document.placements.slice(8))
+	document.placements = mixed
+	check(document.save_document(path) == OK and game.load_act(path), "Mixed composite and stamped side walls load through the authored compiler")
+	await frames(3)
+	var mixed_outline: PackedVector2Array = game.green_hill.authored_floor_outline
+	var coverage_matches := true
+	for x in range(5, 600, 10):
+		for y in range(5, 600, 10):
+			var point := Vector2(x, y)
+			coverage_matches = coverage_matches and Geometry2D.is_point_in_polygon(point, outline) == Geometry2D.is_point_in_polygon(point, mixed_outline)
+	check(coverage_matches, "Sculpting connected side walls does not restore rectangular exterior ground")
+	var exact_composites: Array[PackedVector2Array] = []
+	for record: Dictionary in game.runtime.terrain:
+		if record.shape_id == "composite": exact_composites.append(record.points)
+	check(game.green_hill.authored_composite_polygons == exact_composites and game.document.fingerprint() == document.fingerprint(), "Floor inference leaves authoritative composite contours and saved geometry unchanged")
 
 
 func check_ring_pickup() -> void:

@@ -228,9 +228,10 @@ func _authored_floor_boundary(bounds: Rect2) -> PackedVector2Array:
  var boundaries: Array[PackedVector2Array] = _outlines.duplicate()
  for path: PackedVector2Array in authored_open_paths:
   boundaries.append_array(Geometry2D.offset_polyline(path, authored_cell_size * 0.02, Geometry2D.JOIN_ROUND, Geometry2D.END_ROUND))
- boundaries = _merge_authored_land(boundaries)
- # The deck-envelope scan also reads composites directly, without a second union.
+ # Join copies of every wall type for floor inference: a composite may continue
+ # into ordinary stamps. Keep the authoritative obstacle contours untouched.
  boundaries.append_array(authored_composite_polygons)
+ boundaries = _merge_authored_land(boundaries)
  var left: Array[PackedVector2Array] = []
  var right: Array[PackedVector2Array] = []
  var rows: Array[float] = [bounds.position.y, bounds.end.y]
