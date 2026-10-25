@@ -17,6 +17,8 @@ var checks := 0
 var failures := 0
 var identities: Dictionary
 var areas: Array[Dictionary] = []
+var generated_ball_width := 0.0
+var generated_camera_basis := Basis.IDENTITY
 
 
 func _initialize() -> void:
@@ -202,6 +204,10 @@ func check_switches() -> void:
 	check_identity("Authored to generated retains ball, tuning, input, rings, scoring, specials, HUD, presenter, camera and environment identities")
 	check(game.score == 0 and game.rings_collected == 0 and game.special_meter == 0 and game.scorecraft.chain == 0 and game.tuning._temporary.is_empty() and game.specials.flight_remaining == 0 and game.ball.serve_pending, "Source switching uses the normal complete run reset")
 	check(game.character_id == "tails" and game.specials.definition.profile == game.tuning.base and game.presentation.camera_settings == camera_settings and not game.presentation.camera_follow_enabled, "Source switching retains selected character and explicit camera preferences")
+	game.presentation.set_camera_follow(true)
+	generated_ball_width = projected_ball_width()
+	generated_camera_basis = game.presentation.camera.basis
+	game.presentation.set_camera_follow(false)
 	if DisplayServer.get_name() != "headless":
 		game.presentation.set_camera_follow(true)
 		await frames(3)
@@ -250,13 +256,50 @@ func check_lifecycle() -> void:
 	check(game.ball.position == game.playfield.spawn and game.ball.serve_pending, "The normal retry path returns to exact authored Spawn")
 
 
-func capture_main_hud() -> void:
-	if DisplayServer.get_name() == "headless": return
+func projected_ball_width() -> float:
+	var presentation: TablePresentation = game.presentation
+	var center := TablePresentation.map_point(presentation.camera_focus, presentation.ball_height())
+	var radius := Vector3(game.ball.radius * TablePresentation.SCALE, 0, 0)
+	return presentation.camera.unproject_position(center + radius).distance_to(presentation.camera.unproject_position(center - radius))
+
+
+func check_compact_follow_camera() -> void:
 	paused = true
 	game.request_authored_act(COMPARISON)
 	await await_rebuild()
+	var p: TablePresentation = game.presentation
+	p.set_camera_follow(true)
+	var follow_width := projected_ball_width()
+	check(absf(follow_width / generated_ball_width - 1.0) < 0.12 and p.camera.basis.is_equal_approx(generated_camera_basis), "Compact authored ball has comparable screen size and identical perspective angle to generated follow view", str([follow_width, generated_ball_width]))
+	var screen := Rect2(Vector2.ZERO, Vector2(game.view.size))
+	var visible := true
+	for point in [Vector2(40, 40), Vector2(560, 40), Vector2(40, 600), Vector2(560, 600)]:
+		p.reset_camera(point)
+		visible = visible and screen.has_point(p.camera.unproject_position(TablePresentation.map_point(point, p.ball_height())))
+	check(visible, "Close authored framing can follow every corner and both side lanes without clipping the ball")
+	var ball_position: Vector2 = game.ball.position
+	var motion_visible := true
+	for route in [[Vector2(40, 500), Vector2(560, 500)], [Vector2(560, 500), Vector2(40, 500)], [Vector2(300, 40), Vector2(300, 610)], [Vector2(300, 610), Vector2(300, 40)]]:
+		p.reset_camera(route[0])
+		var ticks := ceili(route[0].distance_to(route[1]) / 1200.0 * 120.0)
+		for tick in ticks:
+			game.ball.position = route[0].lerp(route[1], float(tick + 1) / ticks)
+			p._update_camera(1.0 / 120.0)
+			motion_visible = motion_visible and screen.has_point(p.camera.unproject_position(TablePresentation.map_point(game.ball.position, p.ball_height())))
+	game.ball.position = ball_position
+	check(motion_visible, "Closer authored camera keeps 1200px/s lateral and vertical traversals visible")
+	p.set_camera_follow(false)
+	var overview_width := projected_ball_width()
+	var framed := true
+	var bounds: Rect2 = game.playfield.bounds
+	for point in [bounds.position, Vector2(bounds.end.x, bounds.position.y), bounds.end, Vector2(bounds.position.x, bounds.end.y)]:
+		framed = framed and screen.has_point(p.camera.unproject_position(TablePresentation.map_point(point)))
+	check(follow_width > overview_width * 1.15 and framed, "Overview still fits the complete Act and gutter while follow provides a closer gameplay view", str([follow_width, overview_width]))
+	p.set_camera_follow(true)
+	p.reset_camera(game.ball.serve_position)
 	paused = false
 	await frames(6)
+	if DisplayServer.get_name() == "headless": return
 	await RenderingServer.frame_post_draw
 	check(root.get_texture().get_image().save_png("res://test-results/authored-main-green-hill.png") == OK, "Normal Green Hill HUD and authored world captured in the same application")
 
@@ -356,7 +399,7 @@ func run() -> void:
 	await check_lifecycle()
 	await check_main_controls()
 	check(FileAccess.get_file_as_bytes(FIXTURE) == bytes, "Main-game loading, abilities, source switching and retries never rewrite the authored file")
-	await capture_main_hud()
+	await check_compact_follow_camera()
 	game.free()
 	await frames(3)
 	print("RESULT | Authored main game | %d checks | %d failures" % [checks, failures])

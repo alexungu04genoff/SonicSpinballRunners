@@ -1,5 +1,5 @@
 extends TablePresentation
-## An isolated, collisionless Green Hill skin of the existing generated playground.
+## Collisionless Green Hill skin shared by generated and authored playfields.
 ## All gameplay shapes, cameras, and animated anchors remain owned by TablePresentation.
 
 const GRASS_SHADER := """
@@ -40,6 +40,7 @@ var _outlines: Array[PackedVector2Array] = []
 ## Presentation-only union; the compiler's collision polygons remain untouched.
 var authored_terrain_polygons: Array[PackedVector2Array] = []
 var authored_open_paths: Array[PackedVector2Array] = []
+const LAND_DEPTH := 1.45
 
 func _clear_playfield_geometry() -> void:
  super._clear_playfield_geometry()
@@ -81,12 +82,20 @@ func build(chunks: Array[TableChunk], junctions: Variant = [], bounds: Rect2 = R
   remaining.append(candidate)
   terrain_polygons = remaining
  for outline: PackedVector2Array in terrain_polygons:
-  _make_land(outline, 1.45, terrain_root)
+  _make_land(outline, LAND_DEPTH, terrain_root)
  _finish_terrain_skin()
 
 func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
  super.build_authored(runtime, bounds, cell_size)
  _initialize_terrain_skin()
+ # Grass means playable floor in both sources. Authored stamps describe blocked
+ # terrain, not the footprint of that floor. Keep the drain gutter uncovered.
+ var floor_bounds := Rect2(bounds.position, bounds.size - Vector2(0, cell_size * AuthoredActData.RED_GUTTER_CELLS))
+ var floor_outline := PackedVector2Array([floor_bounds.position, Vector2(floor_bounds.end.x, floor_bounds.position.y), floor_bounds.end, Vector2(floor_bounds.position.x, floor_bounds.end.y)])
+ var floor_root := Node3D.new()
+ floor_root.name = "AuthoredPlayfieldFloor"
+ terrain_root.add_child(floor_root)
+ _make_land(floor_outline, LAND_DEPTH, floor_root)
  for terrain: Dictionary in runtime.terrain:
   var points: PackedVector2Array = terrain.points.duplicate()
   if terrain.closed:
@@ -94,9 +103,11 @@ func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> voi
   else:
    authored_open_paths.append(points)
  authored_terrain_polygons = _merge_authored_land(_outlines)
- var unit := cell_size * SCALE
+ var wall_side := material(RAIL_SIDE_COLOR)
+ var wall_top := material(RAIL_TOP_COLOR)
  for outline: PackedVector2Array in authored_terrain_polygons:
-  _make_land(outline, unit * 1.45, terrain_root, 0.0, 0.0)
+  var obstacle := mesh_node(_prism(outline, RAIL_HEIGHT + RAIL_CAP_HEIGHT, wall_side, wall_top), null, Vector3.ZERO, terrain_root)
+  obstacle.name = "SolidTerrainObstacle"
  for path: PackedVector2Array in authored_open_paths:
   # A narrow ribbon follows consecutive segments only. There is no final-to-first
   # segment and no filled interior, including for U-shaped or curved open walls.
@@ -104,7 +115,7 @@ func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> voi
   rail.name = "OpenTerrainRail"
   terrain_root.add_child(rail)
   for ribbon: PackedVector2Array in Geometry2D.offset_polyline(path, cell_size * 0.02, Geometry2D.JOIN_ROUND, Geometry2D.END_ROUND):
-   _make_land(ribbon, unit * 0.35, rail, unit * 0.08, 0.0)
+   mesh_node(_prism(ribbon, RAIL_HEIGHT + RAIL_CAP_HEIGHT, wall_side, wall_top), null, Vector3.ZERO, rail)
  _finish_terrain_skin()
 
 func _merge_authored_land(outlines: Array[PackedVector2Array]) -> Array[PackedVector2Array]:

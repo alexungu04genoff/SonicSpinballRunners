@@ -60,7 +60,7 @@ The ball deliberately retains its former 14 px radius at 100 px cells and scales
 
 ## Green Hill and rings
 
-The shared `TablePresentation` accepts generic terrain/object descriptors from the authored compiler. `GreenHillPresentation` reuses its grass, checker cliffs, sky, ocean, lighting and scenery. The authored path creates no `TableChunk` and never calls a generator. Filled stamps use their canonical polygon silhouettes; open stamps use narrow rails following only consecutive vertices. Visual geometry may merge overlapping filled surfaces, while each saved placement retains its independent collider. All 3D nodes are collisionless.
+The shared `TablePresentation` accepts generic terrain/object descriptors from the authored compiler. `GreenHillPresentation` reuses its grass, checker cliffs, sky, ocean, lighting and scenery. A continuous visual grass floor covers the terrain rectangle, stopping before the gutter. Filled stamps become raised obstacles with the generated rails' brown sides and cream caps; open stamps use matching narrow rails along consecutive vertices. The authored path creates no `TableChunk` and never calls a generator. Visual geometry may merge overlapping solid surfaces, while each saved placement retains its independent collider. The floor adds no collision; all 3D nodes are collisionless.
 
 This diagnostic defaults to a complete Act/gutter overview using the Real Pinball perspective. The main app instead retains the normal follow/overview camera controls. X and Y use the same 2D-to-3D mapping scale; camera projection never stretches the underlying geometry. F2 reveals the underlying 2D geometry. F3 adds compact grid, Spawn, Entry, Exit, Activation and drain guides without changing collision or lifecycle behavior.
 

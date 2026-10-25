@@ -102,6 +102,14 @@ func check_shared_dimensions(cell_size: float) -> void:
 	check(game.green_hill.global_transform.basis.get_scale().is_equal_approx(Vector3.ONE) and is_equal_approx(TablePresentation.map_point(Vector2(cell_size, 0)).length(), TablePresentation.map_point(Vector2(0, cell_size)).length()), "World geometry uses one uniform X/Y map rather than viewport stretching")
 	check(is_equal_approx(game.ball.radius, Dimensions.BALL_RADIUS_CELLS * cell_size) and is_equal_approx(game.ball.get_child(0).shape.radius, game.ball.radius) and game.ball.radius < Dimensions.ROUND_RADIUS_CELLS * cell_size, "The real ball scales with authored cells and remains smaller than a bumper")
 	check(game.find_children("*", "TableChunk", true, false).is_empty(), "Authored rendering instantiates no generated or fake TableChunk nodes")
+	var floor_cap: MeshInstance3D = game.green_hill.terrain_root.get_node("AuthoredPlayfieldFloor/GrassCap")
+	var floor_aabb := floor_cap.get_aabb()
+	var floor_bounds := Rect2(TablePresentation.unmap_point(floor_aabb.position), TablePresentation.unmap_point(floor_aabb.size))
+	check(floor_bounds.is_equal_approx(document.terrain_bounds()) and is_equal_approx(floor_aabb.position.y, -0.003), "Continuous grass floor covers the exact Act at gameplay height and stops before the drain gutter")
+	var floor_probe := PhysicsPointQueryParameters2D.new()
+	floor_probe.position = Vector2(document.terrain_bounds().get_center().x, document.terrain_bounds().end.y - cell_size * 0.3)
+	floor_probe.collision_mask = 1
+	check(game.ball.get_world_2d().direct_space_state.intersect_point(floor_probe).is_empty(), "Empty grass floor remains traversable without an added terrain collider")
 	var framed := true
 	var screen := Rect2(Vector2.ZERO, Vector2(game.view.size))
 	var extent: Vector2 = document.red_gutter_bounds().end
@@ -207,11 +215,21 @@ func check_catalogue_meshes() -> void:
 	check(document.save_document(path) == OK and game.load_act(path), "All 77 catalogue shapes compile into one direct authored presentation")
 	await frames(3)
 	var triangles: Array[PackedVector2Array] = []
+	var raised := true
+	var wall_style := true
 	for node: Node in game.green_hill.terrain_root.get_children():
-		if not node is MeshInstance3D or not str(node.name).begins_with("GrassCap"): continue
-		for surface in node.mesh.get_surface_count():
+		if not node is MeshInstance3D or not str(node.name).begins_with("SolidTerrainObstacle"): continue
+		var top: Material = node.mesh.surface_get_material(0)
+		var side: Material = node.mesh.surface_get_material(1)
+		wall_style = wall_style and top is StandardMaterial3D and side is StandardMaterial3D
+		if top is StandardMaterial3D and side is StandardMaterial3D:
+			wall_style = wall_style and top.albedo_color == game.green_hill.material(TablePresentation.RAIL_TOP_COLOR).albedo_color and side.albedo_color == game.green_hill.material(TablePresentation.RAIL_SIDE_COLOR).albedo_color
+		# Surface zero is the blocking silhouette's cap; exclude its vertical sides
+		# and the separate traversable floor from projected coverage measurements.
+		for surface in 1:
 			var arrays: Array = node.mesh.surface_get_arrays(surface)
 			var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+			for vertex in vertices: raised = raised and vertex.y > game.green_hill.ball_height()
 			var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX] if arrays[Mesh.ARRAY_INDEX] != null else PackedInt32Array()
 			if indices.is_empty():
 				for index in vertices.size(): indices.append(index)
@@ -224,7 +242,9 @@ func check_catalogue_meshes() -> void:
 	for record: Dictionary in game.runtime.terrain:
 		if record.closed: expected_area += polygon_area(record.points)
 	for triangle in triangles: rendered_area += polygon_area(triangle)
-	check(absf(expected_area - rendered_area) < 2.0, "Actual grass-cap triangles cover the complete solid catalogue with no missing band caps")
+	check(absf(expected_area - rendered_area) < 2.0, "Actual raised-wall cap triangles cover the complete solid catalogue with no missing band caps")
+	check(raised, "Solid blockers render above the ball center instead of impersonating flat playable grass")
+	check(wall_style, "Authored solid caps and sides use the same wall palette as generated rails")
 	var correct_coverage := true
 	var solid_bands := 0
 	for record: Dictionary in game.runtime.terrain:

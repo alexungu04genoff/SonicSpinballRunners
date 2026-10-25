@@ -4,6 +4,11 @@ extends Node3D
 const SCALE: float = 0.01
 const BALL_HEIGHT: float = 0.16
 const RING_HEIGHT: float = 0.23
+## Shared wall styling for generated rails and authored solid/path obstacles.
+const RAIL_HEIGHT: float = 0.30
+const RAIL_CAP_HEIGHT: float = 0.025
+const RAIL_SIDE_COLOR := Color("267f81")
+const RAIL_TOP_COLOR := Color("64d6bd")
 ## Cosmetic timing only; character profiles control pickup radius, never flight speed.
 const RING_PICKUP_DURATION: float = 0.20
 const OVERLAY_HEIGHT: float = 0.015
@@ -16,6 +21,7 @@ var camera_follow_enabled: bool = true
 var camera_settings: Dictionary = {"dead_zone_y": 100.0, "look_ahead": 100.0, "vertical_response": 5.0, "horizontal_response": 2.0, "max_speed": 1800.0}
 const CAMERA_LIMITS: Dictionary = {"dead_zone_y": Vector2(0, 250), "look_ahead": Vector2(0, 250), "vertical_response": Vector2(0.5, 12), "horizontal_response": Vector2(0.25, 6), "max_speed": Vector2(400, 4000)}
 const FOLLOW_HEIGHT: float = 1100.0
+const FOLLOW_REFERENCE_WIDTH: float = 800.0
 const HORIZONTAL_TRAVEL: float = 55.0
 var table_bounds: Rect2
 var camera_target: Vector2
@@ -189,8 +195,8 @@ func _build_shared(chunks: Array[TableChunk], junctions: Variant, bounds: Rect2)
  floor_visual.name = "TableFloor"
  # Receive object shadows without self-shadow artifacts on the large, flat slab.
  floor_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
- var rail_mat := material(Color("267f81"))
- var rail_top := material(Color("64d6bd"))
+ var rail_mat := material(RAIL_SIDE_COLOR)
+ var rail_top := material(RAIL_TOP_COLOR)
  var bumper_mat := material(Color("b34039"))
  var bumper_top := material(Color("ff8962"))
  var gold := material(Color("ffd568"), 0.08)
@@ -234,8 +240,8 @@ func _build_shared(chunks: Array[TableChunk], junctions: Variant, bounds: Rect2)
      rail.rotation.y = -(item.b - item.a).angle()
      add_child(rail)
      var length: float = item.a.distance_to(item.b) * SCALE
-     _paddle(length, item.radius * SCALE, 0.30, 0.0, rail_mat, rail)
-     _paddle(length, item.radius * SCALE * 0.68, 0.025, 0.30, rail_top, rail)
+     _paddle(length, item.radius * SCALE, RAIL_HEIGHT, 0.0, rail_mat, rail)
+     _paddle(length, item.radius * SCALE * 0.68, RAIL_CAP_HEIGHT, RAIL_HEIGHT, rail_top, rail)
      if item.get("checkpoint_only", false):
       var guide := line(item.a, item.b, 0.025, 0.025, material(Color("82978d")))
       checkpoint_visuals.append({"visual": rail, "guide": guide, "body": item.body, "a": item.a, "b": item.b, "radius": item.radius})
@@ -453,24 +459,41 @@ func reset_camera(at: Vector2 = Vector2.INF) -> void:
  if not is_instance_valid(camera):
   return
  var point := ball.position if at == Vector2.INF else at
- point.x = table_bounds.get_center().x + (point.x - table_bounds.get_center().x) * 0.18
+ point.x = _horizontal_follow_target(point.x)
  camera_focus = _clamp_focus(point + Vector2(0, -float(camera_settings.look_ahead))) if camera_follow_enabled else table_bounds.get_center()
  camera_target = camera_focus
  _configure_camera()
 
+func _follow_window_size() -> Vector2:
+ # Compact authored balls should occupy the same screen space as the normal
+ # generated ball. Fit a local play window, not the complete short Act. This
+ # changes camera framing only; the physical world keeps its uniform mapping.
+ var scale := ball.radius / PlaygroundBall.RADIUS
+ var width := minf(table_bounds.size.x, FOLLOW_REFERENCE_WIDTH * scale) if authored_mode else table_bounds.size.x
+ return Vector2(width, minf(FOLLOW_HEIGHT * scale, table_bounds.size.y))
+
+func _horizontal_follow_target(x: float) -> float:
+ var center := table_bounds.get_center().x
+ if _follow_window_size().x < table_bounds.size.x:
+  return x # A cropped play window must track side lanes as well as vertical play.
+ return center + clampf((x - center) * 0.18, -HORIZONTAL_TRAVEL, HORIZONTAL_TRAVEL)
+
 func _clamp_focus(point: Vector2) -> Vector2:
  var center := table_bounds.get_center()
- var half_window := minf(FOLLOW_HEIGHT, table_bounds.size.y) * 0.5
- return Vector2(clampf(point.x, center.x - HORIZONTAL_TRAVEL, center.x + HORIZONTAL_TRAVEL), clampf(point.y, table_bounds.position.y + half_window, table_bounds.end.y - half_window))
+ var half_window := _follow_window_size() * 0.5
+ var x := clampf(point.x, center.x - HORIZONTAL_TRAVEL, center.x + HORIZONTAL_TRAVEL)
+ if half_window.x * 2.0 < table_bounds.size.x:
+  x = clampf(point.x, table_bounds.position.x + half_window.x, table_bounds.end.x - half_window.x)
+ return Vector2(x, clampf(point.y, table_bounds.position.y + half_window.y, table_bounds.end.y - half_window.y))
 
 func _configure_camera() -> void:
  # Fit the floor and raised-object envelope mathematically at the current aspect.
- # Follow mode fits a local window; overview fits the complete generated bounds.
+ # Follow mode fits a local window; overview fits the complete playfield bounds.
  _camera_viewport_size = Vector2(camera.get_viewport().size)
  var aspect := _camera_viewport_size.x / maxf(1.0, _camera_viewport_size.y)
  var size := table_bounds.size + Vector2(15, 50)
  if camera_follow_enabled:
-  size = Vector2(size.x + HORIZONTAL_TRAVEL * 2.0, minf(FOLLOW_HEIGHT, table_bounds.size.y) + 50.0)
+  size = _follow_window_size() + Vector2(15.0 + HORIZONTAL_TRAVEL * 2.0, 50.0) * (ball.radius / PlaygroundBall.RADIUS)
  camera.near = 0.1
  camera.keep_aspect = Camera3D.KEEP_HEIGHT
  if camera_preset == CameraPreset.TOP_DOWN:
@@ -505,8 +528,7 @@ func _update_camera(delta: float) -> void:
  if not camera_follow_enabled or delta <= 0.0:
   return
  # The ball only supplies observations. No transform or impulse is written to physics.
- var center := table_bounds.get_center()
- var desired := Vector2(center.x + clampf((ball.position.x - center.x) * 0.18, -HORIZONTAL_TRAVEL, HORIZONTAL_TRAVEL), ball.position.y - float(camera_settings.look_ahead))
+ var desired := Vector2(_horizontal_follow_target(ball.position.x), ball.position.y - float(camera_settings.look_ahead))
  camera_target = Vector2(desired.x, camera_focus.y)
  var vertical_error := desired.y - camera_focus.y
  if absf(vertical_error) > float(camera_settings.dead_zone_y):

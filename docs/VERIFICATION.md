@@ -2,6 +2,18 @@
 
 Latest checks: 2026-10-25. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
+## Authored floor, obstacle readability and closer camera — 2026-10-25
+
+The authored renderer previously treated solid collision stamps as flat grass islands and removed the shared floor. Authored Acts now have a continuous grass/checker platform over the terrain rectangle, ending before the red gutter. Solid stamps render as raised brown-and-cream obstacles using the generated rail palette; open paths keep their unclosed topology and use the same styling. The visual floor adds no collision or perimeter. Existing canonical colliders, authored positions and object dimensions are unchanged.
+
+Follow framing now uses the ball radius to choose a local play window, keeping compact authored Sonic comparable in screen size to generated Sonic while retaining the same perspective angle and tuning. The closer view can track both side lanes; O still switches to a full Act/gutter overview. Generated framing remains unchanged.
+
+- Main-game regression: **67 headless / 69 ANGLE checks passed**, including comparable projected ball width, identical camera angle, visible corner/side-lane targets, 1200 px/s lateral/vertical traces, overview bounds, source switching and shared engine ownership.
+- Authored presentation regression: **72 checks passed**. Exact floor bounds and empty-floor collision probes pass at 50/100 px cells. All 77 terrain silhouettes retain their actual cap area and filled/empty coverage; solid caps are raised and use the generated wall palette. Existing exact object transforms, shared dimensions, rings and open-path checks remain intact.
+- Generated regressions: vertical camera **22**, Green Hill integration **14**, and presentation **18** checks passed. All reported zero failures and empty stderr.
+
+Inspected actual ANGLE captures from the main app with both the simple comparison and the user's `First Try.tres`, alongside generated play. `test-results/authored-floor-camera.png` shows the user's level with continuous grass, visibly raised walls and closer follow framing. Isolated editor import and whitespace checks passed. Source Acts were only read; the existing `project.godot` edit remains preserved. Captures/logs are ignored. Human review still owns camera comfort and layout feel.
+
 ## One engine, multiple level sources — 2026-10-25
 
 Saved Acts now load inside the normal Green Hill application. The footer supplies source selection and a paused file picker; Start/replay reloads the active source. `PlayfieldData` removes generated-chunk assumptions from shared character/terrain queries. Source changes retain the actual gameplay, HUD, presentation, camera, environment and character-presenter instances. Authored loading bypasses generation; generated modes retain their previous geometry path. See [architecture and normal launch instructions](PLAYFIELD_SOURCES.md).
