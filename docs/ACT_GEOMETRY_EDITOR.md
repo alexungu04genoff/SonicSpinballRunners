@@ -93,6 +93,12 @@ Saved object records still contain only type, exact local position and angle. Pr
 
 The Act's top-left is local `(0, 0)`, with X right and Y down. Gameplay placements store exact `Vector2` local pixels independently of cells. Existing objects can move beyond the grid boundary; their values are preserved, with no collision, occupancy or reachability restriction. Palette placement starts inside the visible Act. For example, `(438.5, 271.25)` remains fractional after save/restart/load.
 
+## Decor slots
+
+The **Decor** palette adds small, medium, large and landmark markers. Place them manually on raised terrain; the active runtime skin supplies the prop. Free placement is the default, with optional grid snapping and Alt override. Select to drag, edit type/hint, exact X/Y and any **Angle °**, or adjust scale within 0.85–1.15. **R / Shift+R**, **Ctrl+D**, **Delete**, undo/redo and overlap cycling work with decor. **Show decor slots** hides only the markers and their hit targets.
+
+Slots store generic types, surface/edge/either hints and stable IDs, never Green Hill mesh names. The inspector reports unsupported anchors; those remain saveable but do not spawn over the playable floor. Green Hill currently supplies palms, flowers, rock clusters, shrubs, checker pedestals and a decorative loop. See [Decor Slots](DECOR_SLOTS.md) for three example Acts, captures, deterministic resolution and the future-skin contract.
+
 ## Ring trails
 
 Choose **Gameplay → Rings**, then click once for one ring, or drag in any direction for an evenly spaced trail. Release to commit the whole trail as **one undo step**. The tool stays active for repeated trails. Esc or right-click cancels an unfinished gesture and returns to selection mode.
@@ -182,7 +188,7 @@ Filled U uses the exact half-ellipse wall as its upper surface and closes throug
 - Separate lifecycle fields: `activation_y` (a local-pixel number or `null`) and `spawn_position` (a local-pixel `Vector2` or `null`). `null` means unset. Neither field changes terrain grid dimensions or connector metadata.
 - A separate ordered `ring_trails` array. Each dictionary contains `start: Vector2`, `end: Vector2` and `spacing` in local pixels. Individual centers are reproduced deterministically from this record without snapping.
 
-The current schema uses **format version 6 / terrain library version 2**. Existing format-2/3/4/5 Acts retain their authored data. Formats 2–4 gain an empty ring-trail collection; formats 2–3 gain unset lifecycle markers; format 2 gains an empty gameplay-object array. Loading does not rewrite the source file; the next explicit save writes version 6. Older formats cannot contain composite fields. The earlier fresh-start terrain library still has no legacy shape aliases or version-1 migration path.
+The current schema uses **format version 7 / terrain library version 2**. Existing format-2/3/4/5/6 Acts retain their authored data and gain empty decor. Format 7 adds `decor_seed` and an ordered `decor_slots` array; each slot has a stable `slot_id`, generic `slot_type`, `placement_hint`, exact `position`, `rotation_degrees`, optional `variant_mode = "auto"` and optional `scale = 1.0`. Formats 2–4 gain an empty ring-trail collection; formats 2–3 gain unset lifecycle markers; format 2 gains an empty gameplay-object array. Loading does not rewrite the source file; the next explicit save writes version 7. Formats below 6 cannot contain composite fields, and formats below 7 cannot contain decor. The earlier fresh-start terrain library still has no legacy shape aliases or version-1 migration path.
 
 Use `ActGeometry.load_document()` and `save_document()` for persistence. In memory, `rotation_degrees`, a set `activation_y` and ring `spacing` are numbers. In the saved `.tres`, each uses one native `PackedByteArray` numeric payload, decoded on load. Godot 4.7.2's decimal text parser can change some float64 numbers by one binary unit; this narrow encoding preserves every bit without a second competing value. Local object/Spawn positions and ring endpoints remain native `Vector2` values. Plain numeric scalar fields are also accepted on input. No transform is rounded or snapped while saving or loading.
 

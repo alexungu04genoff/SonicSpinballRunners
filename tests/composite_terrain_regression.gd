@@ -363,7 +363,7 @@ func check_storage_rejections(document: Resource) -> void:
 	check(ResourceSaver.save(old_storage, legacy_path) == OK, "Legacy format 5 fixture retains a nonempty exact ring trail")
 	var legacy_bytes := FileAccess.get_file_as_bytes(legacy_path)
 	var upgraded: Dictionary = Document.load_document(legacy_path)
-	check(upgraded.document != null and upgraded.document.format_version == 6 and upgraded.document.fingerprint() == expected,
+	check(upgraded.document != null and upgraded.document.format_version == Document.FORMAT_VERSION and upgraded.document.fingerprint() == expected,
 		"Format 5 migrates in memory without discarding rings, terrain or Spawn", upgraded.error)
 	check(FileAccess.get_file_as_bytes(legacy_path) == legacy_bytes, "Loading old Acts never rewrites their source file")
 	var fake_legacy: Resource = document._storage_document()

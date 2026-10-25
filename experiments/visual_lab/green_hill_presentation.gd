@@ -1,6 +1,12 @@
 extends TablePresentation
 ## Collisionless Green Hill skin shared by generated and authored playfields.
 ## All gameplay shapes, cameras, and animated anchors remain owned by TablePresentation.
+const DecorSlots = preload("res://scripts/act_editor/decor_slots.gd")
+const GreenHillDecor = preload("res://scripts/decor/green_hill_decor.gd")
+## Replace this skin with another DecorSkin to reuse an Act's generic slots.
+var decor_skin: RefCounted
+var decor_root: Node3D
+var skipped_decor_slots := PackedStringArray()
 
 const GRASS_SHADER := """
 shader_type spatial;
@@ -90,6 +96,8 @@ func _clear_playfield_geometry() -> void:
  authored_composite_polygons.clear()
  authored_open_paths.clear()
  authored_floor_outline.clear()
+ decor_root = null
+ skipped_decor_slots.clear()
 
 func terrain_top_material() -> Material:
  if _wall_grass == null:
@@ -177,6 +185,25 @@ func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> voi
   for ribbon: PackedVector2Array in Geometry2D.offset_polyline(path, cell_size * 0.02, Geometry2D.JOIN_ROUND, Geometry2D.END_ROUND):
    mesh_node(_prism(ribbon, RAIL_HEIGHT + RAIL_CAP_HEIGHT, wall_side, wall_top), null, Vector3.ZERO, rail)
  _finish_terrain_skin()
+ _build_authored_decor(runtime, cell_size)
+
+func _build_authored_decor(runtime: Dictionary, cell_size: float) -> void:
+ if decor_skin == null: decor_skin = GreenHillDecor.new(self)
+ decor_root = Node3D.new()
+ decor_root.name = "AuthoredDecor"
+ terrain_root.add_child(decor_root)
+ skipped_decor_slots.clear()
+ for slot: Dictionary in runtime.get("decor_slots", []):
+  if not DecorSlots.supported_by_terrain(slot.position, runtime.terrain, cell_size):
+   skipped_decor_slots.append(slot.slot_id)
+   continue
+  var prop: Node3D = decor_skin.instantiate_slot(runtime.get("decor_seed", ""), slot)
+  if prop == null: continue
+  decor_root.add_child(prop)
+  prop.position = map_point(slot.position, RAIL_HEIGHT + RAIL_CAP_HEIGHT)
+  # Canvas +Y maps to +Z. Clockwise canvas angles require negative world yaw.
+  prop.rotation.y = -deg_to_rad(float(slot.rotation_degrees))
+  prop.scale = Vector3.ONE * cell_size * SCALE * float(slot.get("scale", 1.0))
 
 func _merge_authored_land(outlines: Array[PackedVector2Array]) -> Array[PackedVector2Array]:
  var result: Array[PackedVector2Array] = []

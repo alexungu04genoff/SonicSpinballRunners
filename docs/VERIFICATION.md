@@ -2,6 +2,19 @@
 
 Latest checks: 2026-10-25. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
+## Theme-aware decor slots — 2026-10-25
+
+Format 7 adds generic slots and a persistent decoration seed without putting theme asset names into Acts. The editor supports exact free placement/rotation, property edits, duplication, deletion, history, optional snap and marker visibility. Green Hill resolves deterministic variants onto raised surfaces through a small skin/factory boundary. Three explicit example layouts contain 16, 17 and 17 slots, covering every size.
+
+- `decor_regression.gd`: **31 checks passed**, including **3 additional checks in a fresh process**. Covers exact numeric storage, stable IDs/seed, reordering/deletion stability, variation pools, alternate skin resolution, malformed records, migration from formats 2–6, and all example anchors.
+- `decor_editor_smoke.gd`: **21 headless / 22 graphical checks passed** using real pointer/keyboard events. Covers the four palette tools, free dragging, exact 37.125° rotation, hints/type/scale/position, undo/redo, fresh duplication IDs, deletion, visibility/hit targets, optional snap/Alt, canceled drag, save/reload and the final editor capture. Render review caught an initially clipped fourth tab and a tall inspector; all four tabs now fit and Decor has vertical scrolling.
+- `decor_runtime_smoke.gd`: **17 headless / 21 graphical checks passed** in the production Green Hill application. All three Acts spawn every supported slot at the expected raised height, position, yaw and scale. Reload keeps exact variants and source bytes. An injected test-only industrial skin changes props for the same Act while preserving all physics descriptors. Unsupported anchors skip only their visual; removing all decor preserves collision geometry. No decor child is a physics node.
+- Existing checks passed: Act geometry **3,461**, gameplay **493**, lifecycle **170**, rings **46**, ring editor **29**, authored runtime **151**, composite terrain **583**, composite editor **96**, and authored main game **70**, with their reported child-process reload checks passing. The composite migration assertion now compares against the current format constant rather than a hardcoded 6.
+
+The editor and all three normal Green Hill example views were rendered and inspected; selected images are in [Decor Slots](DECOR_SLOTS.md). The broad `act_pinball_regression.gd` generated-Zone suite reported **38 checks / 2 failures**: weak upward entries at the Act 1/2 transition completed instead of returning. The identical failures reproduced in an exported, unmodified `7f5a560` baseline with none of the decor changes. They remain a separate existing Zone issue; no physics tuning or test expectation was changed for this feature.
+
+Restricted runs emitted the existing Windows root-certificate diagnostic. An initial editor import also hit unavailable user-cache paths and a transient concurrent indentation error in `game.gd`; the indentation was restored and subsequent production runtime tests parsed and passed. Final gameplay and decor appearance still need human review, especially palm overhang, landmark scale and follow-camera ball readability. The sample Acts are demonstrations rather than balance claims.
+
 ## Composite terrain authoring — 2026-10-25
 
 **Individual corner pins:** Smooth and Merge + Smooth now display source-corner handles. Clicking toggles an exact protected vertex; pink filled dots mark pins and Clear pins releases them. Pins survive preview controls, respect transforms and zoom, combine with angle/join protection, and remain usable when a rejected result has no gold contour. Apply saves only the final outline; Apply/Cancel clears ephemeral pins.

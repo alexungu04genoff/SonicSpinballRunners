@@ -39,6 +39,12 @@ Green Hill now defaults to Dramatic Pinball at follow zoom 2.0. Real Pinball and
 
 See [Act Geometry Editor](ACT_GEOMETRY_EDITOR.md) for launch, controls, the editable example and format/verification details. Human review still owns palette comfort, curve silhouettes and editing feel.
 
+### Theme-aware authored decoration — 2026-10-25
+
+**Confirmed and implemented first version:** The Act Editor's Decor palette places generic small, medium, large and landmark slots with surface/edge/either hints, exact local positions, free numeric angles and safe optional scale (0.85–1.15). Composition is manual; the active skin selects a deterministic auto variant using a persistent Act seed, stable slot ID and skin ID. Acts contain no theme-specific mesh names. Format 7 preserves formats 2–6 without source rewrites and includes decor in save/load, validation and shared history.
+
+Green Hill resolves supported anchors onto raised terrain as collisionless palms, sunflowers, rocks, shrubs, checker pedestals and decorative loops. Unsupported anchors remain editable drafts and are skipped visually; no automatic relocation or map-wide scattering occurs. Gameplay collision, physics, scoring and character behavior remain independent. Three decorated authored examples exercise all four sizes. Prop tuning and composition need human review; other themes, named variants and themed editor ghosts remain future work. See [Decor Slots](DECOR_SLOTS.md) for the workflow, skin contract, examples and captures.
+
 ### Composite terrain authoring — 2026-10-25
 
 **Confirmed explicit sculpting workflow:** Terrain multi-selection uses Ctrl-click, with Ctrl+Alt-click reaching covered pieces. Merge unions actual transformed filled silhouettes; Smooth rounds one filled piece or composite; Merge + Smooth combines both. A gold collision-outline preview offers 0–500% strength in 25% steps, an optional editable preserved angle (1–179°, default 90°), Only smooth joins, and Apply/Cancel. Angle protection uses the smaller angle between edges with a 1° tolerance and never reconstructs previously rounded corners. Join-only mode rounds exposed transitions between the current merge's source pieces while preserving their original corners and tips. It requires Merge + Smooth because composites do not retain earlier source seams. Only Apply replaces sources with one persistent CompositeTerrain and adds one undo step. Undo restores all source records and selection exactly; previews never mutate them.

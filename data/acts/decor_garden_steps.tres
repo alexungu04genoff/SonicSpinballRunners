@@ -1,0 +1,65 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=3]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+format_version = 7
+library_version = 2
+title = "Decor Demo · Garden Steps"
+decor_seed = "decor-garden-steps-v1"
+placements = [
+{"shape_id": "wall_1x3", "base_size": Vector2i(1, 3), "anchor": Vector2i(0, 0), "quarter_turns": 0, "flip_h": false, "flip_v": false},
+{"shape_id": "wall_1x3", "base_size": Vector2i(1, 3), "anchor": Vector2i(11, 0), "quarter_turns": 0, "flip_h": true, "flip_v": false},
+{"shape_id": "wall_1x3", "base_size": Vector2i(1, 3), "anchor": Vector2i(0, 3), "quarter_turns": 0, "flip_h": false, "flip_v": false},
+{"shape_id": "wall_1x3", "base_size": Vector2i(1, 3), "anchor": Vector2i(11, 3), "quarter_turns": 0, "flip_h": true, "flip_v": false},
+{"shape_id": "wall_1x3", "base_size": Vector2i(1, 3), "anchor": Vector2i(0, 6), "quarter_turns": 0, "flip_h": false, "flip_v": false},
+{"shape_id": "wall_1x3", "base_size": Vector2i(1, 3), "anchor": Vector2i(11, 6), "quarter_turns": 0, "flip_h": true, "flip_v": false},
+{"shape_id": "wall_1x3", "base_size": Vector2i(1, 3), "anchor": Vector2i(0, 9), "quarter_turns": 0, "flip_h": false, "flip_v": false},
+{"shape_id": "wall_1x3", "base_size": Vector2i(1, 3), "anchor": Vector2i(11, 9), "quarter_turns": 0, "flip_h": true, "flip_v": false},
+{"shape_id": "wall_1x3", "base_size": Vector2i(1, 3), "anchor": Vector2i(0, 0), "quarter_turns": 1, "flip_h": false, "flip_v": false},
+{"shape_id": "wall_1x2", "base_size": Vector2i(1, 2), "anchor": Vector2i(3, 0), "quarter_turns": 1, "flip_h": false, "flip_v": false},
+{"shape_id": "wall_1x2", "base_size": Vector2i(1, 2), "anchor": Vector2i(7, 0), "quarter_turns": 1, "flip_h": false, "flip_v": false},
+{"shape_id": "wall_1x3", "base_size": Vector2i(1, 3), "anchor": Vector2i(9, 0), "quarter_turns": 1, "flip_h": false, "flip_v": false},
+{"shape_id": "rectangle_2x2", "base_size": Vector2i(2, 2), "anchor": Vector2i(0, 2), "quarter_turns": 0, "flip_h": false, "flip_v": false},
+{"shape_id": "rectangle_2x2", "base_size": Vector2i(2, 2), "anchor": Vector2i(1, 4), "quarter_turns": 0, "flip_h": false, "flip_v": false},
+{"shape_id": "rectangle_2x2", "base_size": Vector2i(2, 2), "anchor": Vector2i(0, 7), "quarter_turns": 0, "flip_h": false, "flip_v": false},
+{"shape_id": "rectangle_3x3", "base_size": Vector2i(3, 3), "anchor": Vector2i(9, 1), "quarter_turns": 0, "flip_h": false, "flip_v": false},
+{"shape_id": "circle_2x2", "base_size": Vector2i(2, 2), "anchor": Vector2i(9, 6), "quarter_turns": 0, "flip_h": false, "flip_v": false}
+]
+gameplay_objects = [
+{"type": "left_flipper", "position": Vector2(240, 550), "rotation_degrees": 18.33},
+{"type": "right_flipper", "position": Vector2(360, 550), "rotation_degrees": 161.67},
+{"type": "round_bumper", "position": Vector2(300, 245), "rotation_degrees": 0.0},
+{"type": "round_bumper", "position": Vector2(350, 360), "rotation_degrees": 0.0},
+{"type": "triangle_bumper", "position": Vector2(210, 420), "rotation_degrees": -20.0}
+]
+ring_trails = [
+{"start": Vector2(280, 450), "end": Vector2(260, 315), "spacing": 20.0},
+{"start": Vector2(365, 280), "end": Vector2(390, 170), "spacing": 20.0}
+]
+entry_start_x = 5
+entry_width = 2
+exit_start_x = 5
+exit_width = 2
+activation_y = 475.0
+spawn_position = Vector2(300, 520)
+decor_slots = [
+{"slot_id": "slot_01", "slot_type": "landmark", "placement_hint": "surface", "position": Vector2(525, 112), "rotation_degrees": -8.0, "variant_mode": "auto", "scale": 1},
+{"slot_id": "slot_02", "slot_type": "large", "placement_hint": "edge", "position": Vector2(580, 178), "rotation_degrees": 18.0, "variant_mode": "auto", "scale": 0.9},
+{"slot_id": "slot_03", "slot_type": "small", "placement_hint": "surface", "position": Vector2(470, 170), "rotation_degrees": 31.0, "variant_mode": "auto", "scale": 1.1},
+{"slot_id": "slot_04", "slot_type": "medium", "placement_hint": "surface", "position": Vector2(472, 75), "rotation_degrees": 40.0, "variant_mode": "auto", "scale": 1},
+{"slot_id": "slot_05", "slot_type": "small", "placement_hint": "surface", "position": Vector2(570, 64), "rotation_degrees": -20.0, "variant_mode": "auto", "scale": 0.9},
+{"slot_id": "slot_06", "slot_type": "large", "placement_hint": "edge", "position": Vector2(25, 140), "rotation_degrees": -25.0, "variant_mode": "auto", "scale": 1.1},
+{"slot_id": "slot_07", "slot_type": "medium", "placement_hint": "surface", "position": Vector2(65, 175), "rotation_degrees": 20.0, "variant_mode": "auto", "scale": 1},
+{"slot_id": "slot_08", "slot_type": "small", "placement_hint": "surface", "position": Vector2(78, 118), "rotation_degrees": 33.0, "variant_mode": "auto", "scale": 0.9},
+{"slot_id": "slot_09", "slot_type": "large", "placement_hint": "surface", "position": Vector2(83, 235), "rotation_degrees": 15.0, "variant_mode": "auto", "scale": 1.1},
+{"slot_id": "slot_10", "slot_type": "small", "placement_hint": "surface", "position": Vector2(130, 270), "rotation_degrees": -18.0, "variant_mode": "auto", "scale": 1},
+{"slot_id": "slot_11", "slot_type": "medium", "placement_hint": "surface", "position": Vector2(66, 285), "rotation_degrees": 35.0, "variant_mode": "auto", "scale": 0.9},
+{"slot_id": "slot_12", "slot_type": "medium", "placement_hint": "surface", "position": Vector2(35, 390), "rotation_degrees": 16.0, "variant_mode": "auto", "scale": 1.1},
+{"slot_id": "slot_13", "slot_type": "small", "placement_hint": "surface", "position": Vector2(72, 425), "rotation_degrees": -4.0, "variant_mode": "auto", "scale": 1},
+{"slot_id": "slot_14", "slot_type": "large", "placement_hint": "edge", "position": Vector2(20, 440), "rotation_degrees": 28.0, "variant_mode": "auto", "scale": 0.9},
+{"slot_id": "slot_15", "slot_type": "large", "placement_hint": "surface", "position": Vector2(500, 350), "rotation_degrees": 40.0, "variant_mode": "auto", "scale": 1.1},
+{"slot_id": "slot_16", "slot_type": "small", "placement_hint": "surface", "position": Vector2(525, 372), "rotation_degrees": 9.0, "variant_mode": "auto", "scale": 1},
+{"slot_id": "slot_17", "slot_type": "medium", "placement_hint": "surface", "position": Vector2(479, 330), "rotation_degrees": 35.0, "variant_mode": "auto", "scale": 0.9}
+]

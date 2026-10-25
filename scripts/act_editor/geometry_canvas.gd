@@ -16,6 +16,8 @@ signal marker_requested(kind: String, value: Variant)
 signal marker_selection_changed(kind: String)
 signal ring_requested(index: int, trail: Dictionary)
 signal ring_selection_changed(index: int)
+signal decor_requested(index: int, slot: Dictionary)
+signal decor_selection_changed(index: int)
 signal status_changed(message: String)
 
 const ActData = preload("res://scripts/act_editor/act_geometry.gd")
@@ -24,6 +26,7 @@ const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const ObjectPreview = preload("res://scripts/act_editor/gameplay_preview.gd")
 const PreviewDimensions = preload("res://scripts/act_editor/preview_dimensions.gd")
 const Rings = preload("res://scripts/act_editor/ring_trails.gd")
+const Decor = preload("res://scripts/act_editor/decor_slots.gd")
 const GRID_MARGIN := 48.0
 const MIN_CELL_PIXELS := 12.0
 const MAX_CELL_PIXELS := 240.0
@@ -53,6 +56,15 @@ var marker_tool := ""
 var selected_marker := ""
 var ring_tool := false
 var selected_ring_index := -1
+var decor_brush: Dictionary = {}
+var selected_decor_index := -1
+var show_decor := true
+var decor_snap := false
+var _decor_drag_index := -1
+var _decor_drag_start := Vector2.ZERO
+var _decor_drag_original := Vector2.ZERO
+var _decor_drag_position := Vector2.ZERO
+var _decor_drag_moved := false
 var ring_spacing_cells := Rings.DEFAULT_SPACING_CELLS
 var _ring_mode := ""
 var _ring_index := -1
@@ -122,6 +134,7 @@ func _ready() -> void:
 
 
 func set_document(value: Resource, reset_view: bool = true) -> void:
+ _clear_decor_selection()
  ring_tool = false
  selected_ring_index = -1
  document = value
@@ -145,6 +158,7 @@ func set_document(value: Resource, reset_view: bool = true) -> void:
 
 
 func set_brush(value: Dictionary) -> void:
+ _clear_decor_selection()
  ring_tool = false
  selected_ring_index = -1
  cancel_gesture()
@@ -168,6 +182,7 @@ func select_piece(index: int) -> void:
 
 
 func set_terrain_selection(indices: Array[int]) -> void:
+ _clear_decor_selection()
  ring_tool = false
  selected_ring_index = -1
  cancel_gesture()
@@ -223,6 +238,7 @@ func smoothing_corner_at(pointer: Vector2) -> int:
 
 
 func set_connector_tool(kind: String) -> void:
+ _clear_decor_selection()
  ring_tool = false
  selected_ring_index = -1
  cancel_gesture()
@@ -239,6 +255,7 @@ func set_connector_tool(kind: String) -> void:
 
 
 func select_connector(kind: String) -> void:
+ _clear_decor_selection()
  ring_tool = false
  selected_ring_index = -1
  cancel_gesture()
@@ -255,6 +272,7 @@ func select_connector(kind: String) -> void:
 
 
 func set_gameplay_brush(value: Dictionary) -> void:
+ _clear_decor_selection()
  ring_tool = false
  selected_ring_index = -1
  cancel_gesture()
@@ -271,6 +289,7 @@ func set_gameplay_brush(value: Dictionary) -> void:
 
 
 func select_gameplay(index: int) -> void:
+ _clear_decor_selection()
  ring_tool = false
  selected_ring_index = -1
  cancel_gesture()
@@ -317,6 +336,68 @@ func marker_value(kind: String) -> Variant:
   return document.get("spawn_position")
  return null
 
+func _clear_decor_selection() -> void:
+ decor_brush = {}
+ selected_decor_index = -1
+
+func set_decor_brush(slot: Dictionary) -> void:
+ select_piece(-1)
+ decor_brush = slot.duplicate(true)
+ show_decor = true
+ queue_redraw()
+
+func select_decor(index: int) -> void:
+ select_piece(-1)
+ selected_decor_index = index if index >= 0 and index < document.decor_slots.size() else -1
+ queue_redraw()
+
+func decor_position(point: Vector2, alt: bool) -> Vector2:
+ return legal_gameplay_position(point, not decor_snap or alt)
+
+func _decor_radius(slot: Dictionary) -> float:
+ return maxf(5.0, Decor.RADII[Decor.TYPES.find(slot.slot_type)] * _cell_pixels * float(slot.get("scale", 1.0)))
+
+func _draw_decor() -> void:
+ if not show_decor: return
+ for index in document.decor_slots.size():
+  var slot: Dictionary = document.decor_slots[index].duplicate(true)
+  if index == _decor_drag_index: slot.position = _decor_drag_position
+  _draw_decor_slot(slot, index == selected_decor_index, false)
+ if not decor_brush.is_empty() and _hovering and _inside_grid(_cursor_position):
+  var slot := decor_brush.duplicate(true)
+  slot.position = decor_position(screen_to_local_pixels(_cursor_position), _alt_held)
+  _draw_decor_slot(slot, false, true)
+
+func _draw_decor_slot(slot: Dictionary, selected: bool, ghost: bool) -> void:
+ var center := local_pixels_to_screen(slot.position)
+ var radius := _decor_radius(slot)
+ var color: Color = Decor.COLORS[Decor.TYPES.find(slot.slot_type)]
+ draw_circle(center, radius, Color(color, 0.20 if ghost else 0.65))
+ draw_arc(center, radius, 0, TAU, 24, SELECTION_COLOR if selected else color, 2.0, true)
+ var direction := Vector2.RIGHT.rotated(deg_to_rad(float(slot.rotation_degrees)))
+ draw_line(center, center + direction * (radius + 7), color, 2.0, true)
+ var label: String = "◆" if slot.slot_type == "landmark" else slot.slot_type.left(1).to_upper()
+ draw_string(ThemeDB.fallback_font, center + Vector2(-3, 3), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("101a25"))
+
+func _update_decor_drag(pointer: Vector2, alt: bool) -> void:
+ var delta := screen_to_local_pixels(pointer) - _decor_drag_start
+ if not _decor_drag_moved and delta.length() * _cell_pixels / _local_cell_size() < 3: return
+ _decor_drag_moved = true
+ _pending_cycle_target = {}
+ _decor_drag_position = decor_position(_decor_drag_original + delta, alt)
+
+func _end_decor_drag() -> void:
+ var index := _decor_drag_index
+ var moved := _decor_drag_moved and _decor_drag_position != _decor_drag_original
+ _decor_drag_index = -1
+ _decor_drag_moved = false
+ if moved:
+  var slot: Dictionary = document.decor_slots[index].duplicate(true)
+  slot.position = _decor_drag_position
+  decor_requested.emit(index, slot)
+ _finish_cycle_click()
+ queue_redraw()
+
 
 func fit_view() -> void:
  var dimensions := Vector2(_grid_size())
@@ -330,6 +411,8 @@ func fit_view() -> void:
 
 
 func cancel_gesture() -> void:
+ _decor_drag_index = -1
+ _decor_drag_moved = false
  _ring_mode = ""
  _ring_index = -1
  _ring_preview = {}
@@ -399,6 +482,11 @@ func gameplay_hit_indices_at(local_position: Vector2) -> Array[int]:
 
 func mixed_hit_indices_at(local_position: Vector2) -> Array[Dictionary]:
  var hits: Array[Dictionary] = []
+ if show_decor:
+  for index in range(document.decor_slots.size() - 1, -1, -1):
+   var slot: Dictionary = document.decor_slots[index]
+   if local_position.distance_to(local_pixels_to_screen(slot.position)) <= _decor_radius(slot) + 3:
+    hits.append({"kind": "decor", "index": index})
  for kind: String in marker_hits_at(local_position):
   hits.append({"kind": "marker", "marker": kind})
  for index in range(document.ring_trails.size() - 1, -1, -1):
@@ -552,6 +640,7 @@ func _draw() -> void:
   _draw_footprint(ghost, Color(0.75, 0.91, 1.0, 0.5))
  _draw_gameplay_objects()
  _draw_rings()
+ _draw_decor()
  _draw_markers()
  _draw_connectors()
  _draw_composite_preview()
@@ -934,7 +1023,13 @@ func _gui_input(event: InputEvent) -> void:
  elif event is InputEventKey and event.pressed and not event.ctrl_pressed and not event.meta_pressed and event.keycode in [KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN]:
   # Consume arrows before Control's built-in focus navigation. The owner still
   # applies the edit through the same move signal as pointer dragging.
-  if not event.echo and selected_ring_index >= 0:
+  if not event.echo and selected_decor_index >= 0:
+   cancel_gesture()
+   var direction: Vector2 = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP, KEY_DOWN: Vector2.DOWN}[event.keycode]
+   var slot: Dictionary = document.decor_slots[selected_decor_index].duplicate(true)
+   slot.position += direction * (1.0 if event.alt_pressed or not decor_snap else _local_cell_size())
+   decor_requested.emit(selected_decor_index, slot)
+  elif not event.echo and selected_ring_index >= 0:
    cancel_gesture()
    var direction: Vector2 = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP, KEY_DOWN: Vector2.DOWN}[event.keycode]
    var offset := direction * (1.0 if event.alt_pressed else _local_cell_size())
@@ -1011,6 +1106,8 @@ func _gui_input(event: InputEvent) -> void:
   if _panning:
    _view_origin += event.relative
    _view_adjusted = true
+  elif _decor_drag_index >= 0:
+   _update_decor_drag(event.position, event.alt_pressed)
   elif not _ring_mode.is_empty():
    _update_ring_drag(event.position, event.alt_pressed)
   elif not _marker_drag_kind.is_empty():
@@ -1065,6 +1162,12 @@ func _composite_preview_input(event: InputEvent) -> void:
 func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool = false) -> void:
  if preview_active:
   return
+ if not decor_brush.is_empty():
+  if _inside_grid(pointer):
+   var slot := decor_brush.duplicate(true)
+   slot.position = decor_position(screen_to_local_pixels(pointer), cycle_overlaps)
+   decor_requested.emit(-1, slot)
+  return
  if ring_tool:
   if _inside_grid(pointer): _begin_ring_drag(-1, pointer, "create")
   return
@@ -1105,7 +1208,7 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
  var current_slot := -1
  for slot in hits.size():
   var hit: Dictionary = hits[slot]
-  if (hit.kind == "ring" and hit.index == selected_ring_index) or (hit.kind == "marker" and hit.marker == selected_marker) or (hit.kind == "gameplay" and hit.index == selected_gameplay_index) or (hit.kind == "terrain" and hit.index == selected_index):
+  if (hit.kind == "decor" and hit.index == selected_decor_index) or (hit.kind == "ring" and hit.index == selected_ring_index) or (hit.kind == "marker" and hit.marker == selected_marker) or (hit.kind == "gameplay" and hit.index == selected_gameplay_index) or (hit.kind == "terrain" and hit.index == selected_index):
    current_slot = slot
    break
  var target: Dictionary = {}
@@ -1143,7 +1246,13 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
  _select_hit_target(target)
  _pending_cycle_target = click_target
  if not target.is_empty():
-  if target.kind == "ring":
+  if target.kind == "decor":
+   _decor_drag_index = target.index
+   _decor_drag_start = screen_to_local_pixels(pointer)
+   _decor_drag_original = document.decor_slots[target.index].position
+   _decor_drag_position = _decor_drag_original
+   _decor_drag_moved = false
+  elif target.kind == "ring":
    _begin_ring_drag(target.index, pointer, ring_mode)
   elif target.kind == "marker":
    _begin_marker_drag(target.marker, pointer)
@@ -1170,6 +1279,8 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
 func _select_hit_target(target: Dictionary) -> void:
  if target.is_empty():
   select_piece(-1)
+ elif target.kind == "decor":
+  select_decor(target.index)
  elif target.kind == "ring":
   select_ring(target.index)
  elif target.kind == "marker":
@@ -1182,6 +1293,7 @@ func _select_hit_target(target: Dictionary) -> void:
 
 
 func _emit_selection_changed() -> void:
+ decor_selection_changed.emit(selected_decor_index)
  selection_changed.emit(selected_index)
  terrain_selection_changed.emit(selected_indices.duplicate())
  gameplay_selection_changed.emit(selected_gameplay_index)
@@ -1374,6 +1486,9 @@ func _end_connector_drag() -> void:
 
 
 func _end_primary() -> void:
+ if _decor_drag_index >= 0:
+  _end_decor_drag()
+  return
  if not _ring_mode.is_empty():
   _end_ring_drag()
   return
@@ -1398,6 +1513,7 @@ func _end_primary() -> void:
 
 
 func _leave_tool() -> void:
+ _clear_decor_selection()
  ring_tool = false
  selected_ring_index = -1
  cancel_gesture()

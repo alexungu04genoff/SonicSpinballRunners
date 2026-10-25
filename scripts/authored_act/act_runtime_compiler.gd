@@ -29,6 +29,9 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
   result.error = "Act compilation needs the shared physics tuning, input adapter and gameplay ball."
   return result
  var cell_size := float(document.cell_size)
+ # Pass immutable generic visual data through; decor never creates physics bodies.
+ result.decor_slots = document.decor_slots.duplicate(true)
+ result.decor_seed = document.decor_identity()
  ball.radius = Dimensions.BALL_RADIUS_CELLS * cell_size
  var act_root := Node2D.new()
  act_root.name = "AuthoredAct"

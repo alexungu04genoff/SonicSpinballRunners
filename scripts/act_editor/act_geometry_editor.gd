@@ -8,6 +8,7 @@ const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const GameplayPaletteItem = preload("res://scripts/act_editor/gameplay_palette_item.gd")
 const Rings = preload("res://scripts/act_editor/ring_trails.gd")
 const Composite = preload("res://scripts/act_editor/composite_terrain.gd")
+const Decor = preload("res://scripts/act_editor/decor_slots.gd")
 const EXAMPLE_PATH := "res://data/acts/curve_garden.tres"
 const HISTORY_LIMIT := 100
 
@@ -64,6 +65,16 @@ var _composite_sources: Array[int] = []
 var _composite_base: Dictionary = {}
 var _composite_fingerprint := ""
 var _composite_operation := ""
+var decor_list: VBoxContainer
+var decor_scroll: ScrollContainer
+var decor_type_field: OptionButton
+var decor_hint_field: OptionButton
+var decor_scale_field: SpinBox
+var decor_position_fields: Array[LineEdit] = []
+var decor_visible_field: CheckBox
+var decor_snap_field: CheckBox
+var decor_info: Label
+var _decor_position_text: Array[String] = ["", ""]
 
 func _ready() -> void:
 	_previous_auto_quit = get_tree().auto_accept_quit
@@ -157,6 +168,7 @@ func _build_ui() -> void:
 	palette_tabs.add_tab("Terrain")
 	palette_tabs.add_tab("Gameplay")
 	palette_tabs.add_tab("Act Markers")
+	palette_tabs.add_tab("Decor")
 	palette_tabs.tab_changed.connect(_change_palette_tab)
 	palette.add_child(palette_tabs)
 	palette_heading = Label.new()
@@ -242,6 +254,7 @@ func _build_ui() -> void:
 	marker_hint.add_theme_color_override("font_color", Color("9cb3c6"))
 	marker_hint.add_theme_font_size_override("font_size", 13)
 	marker_list.add_child(marker_hint)
+	_build_decor_palette(palette)
 	var workspace := VBoxContainer.new()
 	workspace.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	workspace.add_theme_constant_override("separation", 8)
@@ -358,6 +371,8 @@ func _build_ui() -> void:
 	canvas.marker_selection_changed.connect(func(_kind): _refresh())
 	canvas.ring_requested.connect(set_ring_trail)
 	canvas.ring_selection_changed.connect(func(_index): _refresh())
+	canvas.decor_requested.connect(set_decor_slot)
+	canvas.decor_selection_changed.connect(func(_index): _refresh())
 	canvas.status_changed.connect(_set_status)
 	var object_properties := HBoxContainer.new()
 	object_properties.add_theme_constant_override("separation", 8)
@@ -372,7 +387,7 @@ func _build_ui() -> void:
 	object_properties.add_child(angle_label)
 	angle_field = LineEdit.new()
 	angle_field.custom_minimum_size.x = 120
-	angle_field.tooltip_text = "Gameplay resting orientation in degrees. Enter commits the exact number. R / Shift+R changes it by 15°."
+	angle_field.tooltip_text = "Exact gameplay or decor angle in degrees. Enter commits. R / Shift+R changes it by 15°."
 	angle_field.text_submitted.connect(func(_text): _commit_gameplay_angle(); canvas.grab_focus())
 	angle_field.focus_exited.connect(_commit_gameplay_angle)
 	object_properties.add_child(angle_field)
@@ -455,6 +470,148 @@ func _build_dialogs() -> void:
 	error_dialog.title = "Act geometry"
 	add_child(error_dialog)
 
+func _build_decor_palette(parent: Node) -> void:
+	decor_scroll = ScrollContainer.new()
+	decor_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	decor_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	decor_scroll.follow_focus = true
+	decor_scroll.visible = false
+	parent.add_child(decor_scroll)
+	decor_list = VBoxContainer.new()
+	decor_list.add_theme_constant_override("separation", 8)
+	decor_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	decor_list.visible = false
+	decor_scroll.add_child(decor_list)
+	for type: String in Decor.TYPES:
+		_button(decor_list, "decor_" + type, type.capitalize() + " slot", choose_decor.bind(type), "Place a generic visual slot on raised terrain. Free placement by default.")
+	decor_type_field = OptionButton.new()
+	for type: String in Decor.TYPES: decor_type_field.add_item(type.capitalize())
+	decor_type_field.item_selected.connect(func(index): _set_decor_property("slot_type", Decor.TYPES[index]))
+	decor_list.add_child(decor_type_field)
+	decor_hint_field = OptionButton.new()
+	for hint: String in Decor.HINTS: decor_hint_field.add_item("Placement: " + hint)
+	decor_hint_field.item_selected.connect(func(index): _set_decor_property("placement_hint", Decor.HINTS[index]))
+	decor_hint_field.tooltip_text = "Theme variant hint only. Does not move or snap the slot."
+	decor_list.add_child(decor_hint_field)
+	var coordinates := HBoxContainer.new()
+	decor_list.add_child(coordinates)
+	for axis in 2:
+		var axis_label := Label.new()
+		axis_label.text = "X" if axis == 0 else "Y"
+		coordinates.add_child(axis_label)
+		var field := LineEdit.new()
+		field.custom_minimum_size.x = 90
+		field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		field.placeholder_text = "X px" if axis == 0 else "Y px"
+		field.tooltip_text = "Exact local " + ("X" if axis == 0 else "Y") + " coordinate in pixels"
+		field.text_submitted.connect(func(_text): _commit_decor_position(); canvas.grab_focus())
+		field.focus_exited.connect(_commit_decor_position)
+		coordinates.add_child(field)
+		decor_position_fields.append(field)
+	decor_scale_field = SpinBox.new()
+	decor_scale_field.min_value = 0.85
+	decor_scale_field.max_value = 1.15
+	decor_scale_field.step = 0.01
+	decor_scale_field.value = 1.0
+	decor_scale_field.prefix = "Scale"
+	decor_scale_field.value_changed.connect(func(value): _set_decor_property("scale", value))
+	decor_list.add_child(decor_scale_field)
+	decor_visible_field = CheckBox.new()
+	decor_visible_field.text = "Show decor slots"
+	decor_visible_field.button_pressed = true
+	decor_visible_field.toggled.connect(func(value):
+		canvas.show_decor = value
+		if not value and (canvas.selected_decor_index >= 0 or not canvas.decor_brush.is_empty()): canvas.select_piece(-1)
+		_refresh())
+	decor_list.add_child(decor_visible_field)
+	decor_snap_field = CheckBox.new()
+	decor_snap_field.text = "Snap decor to grid"
+	decor_snap_field.toggled.connect(func(value): canvas.decor_snap = value; canvas.queue_redraw())
+	decor_list.add_child(decor_snap_field)
+	decor_info = Label.new()
+	decor_info.custom_minimum_size.x = 250
+	decor_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	decor_info.add_theme_font_size_override("font_size", 13)
+	decor_info.add_theme_color_override("font_color", Color("d6a8ff"))
+	decor_list.add_child(decor_info)
+
+func choose_decor(type: String) -> void:
+	canvas.set_decor_brush(Decor.make_slot(type))
+	canvas.grab_focus()
+	_set_status("Place decor on raised terrain. Free position; any numeric angle. Esc selects; Ctrl+D duplicates.")
+	_refresh()
+
+func _active_decor() -> Dictionary:
+	if not canvas.decor_brush.is_empty(): return canvas.decor_brush
+	if canvas.selected_decor_index >= 0: return document.decor_slots[canvas.selected_decor_index]
+	return {}
+
+func set_decor_slot(index: int, slot: Dictionary) -> void:
+	if composite_preview_active or index < -1 or index >= document.decor_slots.size(): return
+	var value := slot.duplicate(true)
+	if index == -1: value.slot_id = Decor.new_id()
+	var error: String = Decor.validation_error(value)
+	if not error.is_empty():
+		_set_status(error)
+		return
+	if index >= 0 and document.decor_slots[index] == value: return
+	_record_edit()
+	if document.decor_seed.is_empty(): document.decor_seed = Decor.new_id()
+	if index == -1: document.decor_slots.append(value)
+	else: document.decor_slots[index] = value
+	_set_status("Decor slot saved in the draft. Theme chooses its visual; no gameplay collision.")
+	_refresh()
+
+func _set_decor_property(key: String, value: Variant) -> void:
+	if _refreshing or composite_preview_active: return
+	var active := _active_decor()
+	if active.is_empty(): return
+	var slot := active.duplicate(true)
+	slot[key] = value
+	var error: String = Decor.validation_error(slot)
+	if not error.is_empty():
+		_set_status(error)
+		_refresh()
+		return
+	canvas.cancel_gesture()
+	if canvas.decor_brush.is_empty(): set_decor_slot(canvas.selected_decor_index, slot)
+	else:
+		canvas.decor_brush = slot
+		_refresh()
+
+func _commit_decor_position() -> void:
+	if _refreshing or canvas.selected_decor_index < 0: return
+	var position: Vector2 = _active_decor().position
+	for axis in 2:
+		var value := decor_position_fields[axis].text.strip_edges()
+		if value == _decor_position_text[axis]: continue
+		if not value.is_valid_float() or not is_finite(value.to_float()):
+			_set_status("Decor position must be finite local pixels.")
+			_refresh()
+			return
+		position[axis] = value.to_float()
+	_set_decor_property("position", position)
+
+func _refresh_decor_controls() -> void:
+	var slot := _active_decor()
+	var active := not slot.is_empty() and not composite_preview_active
+	decor_type_field.disabled = not active
+	decor_hint_field.disabled = not active
+	decor_scale_field.editable = active
+	decor_visible_field.set_pressed_no_signal(canvas.show_decor)
+	decor_snap_field.set_pressed_no_signal(canvas.decor_snap)
+	for axis in 2:
+		_decor_position_text[axis] = var_to_str(slot.position[axis]) if active and canvas.selected_decor_index >= 0 else ""
+		decor_position_fields[axis].text = _decor_position_text[axis]
+		decor_position_fields[axis].editable = active and canvas.selected_decor_index >= 0
+	decor_info.text = "Auto variants · deterministic\nFree movement · exact Angle ° below\nR / Shift+R: ±15° · Ctrl+D: duplicate\nArrows: 1 px (snap: 1 cell)\n\nPlace anchors on raised terrain. Unsupported slots remain editable but do not spawn in play."
+	if active:
+		decor_type_field.select(Decor.TYPES.find(slot.slot_type))
+		decor_hint_field.select(Decor.HINTS.find(slot.placement_hint))
+		decor_scale_field.set_value_no_signal(float(slot.get("scale", 1.0)))
+		if canvas.selected_decor_index >= 0:
+			decor_info.text += "\n\n" + ("On raised terrain." if Decor.supported_in_document(slot.position, document) else "No raised terrain under anchor: move onto an island or wall to spawn.")
+
 func _filter_palette() -> void:
 	var query := search_field.text.strip_edges().to_lower().replace("×", "x")
 	var family := family_filter.get_item_text(family_filter.selected)
@@ -480,8 +637,11 @@ func _change_palette_tab(index: int) -> void:
 	terrain_scroll.visible = terrain
 	gameplay_list.visible = index == 1
 	marker_list.visible = index == 2
-	palette_heading.text = ["TERRAIN LIBRARY  /  %d stamps" % Shapes.definitions().size(), "GAMEPLAY  /  4 objects + Rings", "ACT MARKERS  /  4 tools"][index]
-	_select_mode()
+	decor_list.visible = index == 3
+	decor_scroll.visible = index == 3
+	palette_heading.text = ["TERRAIN LIBRARY  /  %d stamps" % Shapes.definitions().size(), "GAMEPLAY  /  4 objects + Rings", "ACT MARKERS  /  4 tools", "DECOR  /  4 generic slots"][index]
+	if index == 3 and canvas.selected_decor_index >= 0: _refresh()
+	else: _select_mode()
 
 func choose_rings() -> void:
 	canvas.grab_focus()
@@ -797,7 +957,8 @@ func _commit_gameplay_angle() -> void:
 		_set_status("Enter a finite angle in degrees.")
 		angle_field.text = _angle_display_text
 		return
-	set_gameplay_angle(text_value.to_float())
+	if not _active_decor().is_empty(): _set_decor_property("rotation_degrees", text_value.to_float())
+	else: set_gameplay_angle(text_value.to_float())
 	_refresh()
 
 func _change_handedness(index: int) -> void:
@@ -817,6 +978,13 @@ func _change_handedness(index: int) -> void:
 
 func duplicate_selected() -> void:
 	if composite_preview_active:
+		return
+	if canvas.selected_decor_index >= 0:
+		var slot: Dictionary = document.decor_slots[canvas.selected_decor_index].duplicate(true)
+		slot.position += Vector2.ONE * float(document.cell_size) * 0.5
+		set_decor_slot(-1, slot)
+		canvas.select_decor(document.decor_slots.size() - 1)
+		_refresh()
 		return
 	if _terrain_selection().size() == 1:
 		var terrain: Dictionary = document.placements[canvas.selected_index].duplicate(true)
@@ -845,7 +1013,9 @@ func duplicate_selected() -> void:
 	_refresh()
 
 func rotate_active() -> void:
-	if not _active_gameplay().is_empty():
+	if not _active_decor().is_empty():
+		_set_decor_property("rotation_degrees", float(_active_decor().rotation_degrees) + 15.0)
+	elif not _active_gameplay().is_empty():
 		rotate_gameplay(15.0)
 	else:
 		_transform_active("rotation")
@@ -893,6 +1063,13 @@ func _transform_active(operation: String) -> void:
 func delete_selected() -> void:
 	if composite_preview_active:
 		return
+	if canvas.selected_decor_index >= 0:
+		canvas.cancel_gesture()
+		_record_edit()
+		document.decor_slots.remove_at(canvas.selected_decor_index)
+		canvas.select_decor(-1)
+		_refresh()
+		return
 	if canvas.selected_ring_index >= 0:
 		canvas.cancel_gesture()
 		_record_edit()
@@ -929,7 +1106,7 @@ func _snapshot() -> Dictionary:
 	return {"document": document.copy_document(), "selected": canvas.selected_index,
 		"terrain_selection": _terrain_selection(),
 		"connector": canvas.selected_connector, "gameplay": canvas.selected_gameplay_index,
-		"marker": canvas.selected_marker, "ring": canvas.selected_ring_index}
+		"marker": canvas.selected_marker, "ring": canvas.selected_ring_index, "decor": canvas.selected_decor_index}
 
 func _record_edit() -> void:
 	undo_stack.append(_snapshot())
@@ -960,13 +1137,18 @@ func redo() -> void:
 	_set_status("Redid one edit.")
 
 func _restore_snapshot(snapshot: Dictionary) -> void:
+	var active_decor_brush: Dictionary = canvas.decor_brush.duplicate(true)
 	var active_brush: Dictionary = canvas.brush.duplicate(true)
 	var active_gameplay_brush: Dictionary = canvas.gameplay_brush.duplicate(true)
 	var active_ring_tool: bool = canvas.ring_tool
 	document = snapshot.document
 	_title_edit_recorded = false
 	canvas.set_document(document, false)
-	if active_ring_tool:
+	if not active_decor_brush.is_empty():
+		canvas.set_decor_brush(active_decor_brush)
+	elif snapshot.get("decor", -1) >= 0:
+		canvas.select_decor(snapshot.decor)
+	elif active_ring_tool:
 		canvas.set_ring_tool()
 	elif not active_brush.is_empty():
 		canvas.set_brush(active_brush)
@@ -1003,6 +1185,8 @@ func new_document() -> void:
 	_set_status("New Act: 12 columns × 12 rows. Choose a terrain stamp to begin.")
 
 func save_to(path: String) -> bool:
+	_commit_decor_position()
+	decor_scale_field.apply()
 	ring_spacing_field.apply()
 	_commit_gameplay_angle()
 	cell_size_field.apply()
@@ -1015,7 +1199,7 @@ func save_to(path: String) -> bool:
 		return false
 	current_path = path
 	saved_fingerprint = document.fingerprint()
-	_set_status("Saved %d terrain pieces, %d gameplay objects and %d ring trails to %s" % [document.placements.size(), document.gameplay_objects.size(), document.ring_trails.size(), path])
+	_set_status("Saved %d terrain pieces, %d gameplay objects, %d ring trails and %d decor slots to %s" % [document.placements.size(), document.gameplay_objects.size(), document.ring_trails.size(), document.decor_slots.size(), path])
 	_refresh()
 	return true
 
@@ -1034,7 +1218,7 @@ func load_from(path: String) -> bool:
 	canvas.set_document(document)
 	_refresh()
 	canvas.call_deferred("fit_view")
-	_set_status("Loaded %d terrain pieces, %d gameplay objects and %d ring trails. Continue editing or choose a palette item." % [document.placements.size(), document.gameplay_objects.size(), document.ring_trails.size()])
+	_set_status("Loaded %d terrain pieces, %d gameplay objects, %d ring trails and %d decor slots." % [document.placements.size(), document.gameplay_objects.size(), document.ring_trails.size(), document.decor_slots.size()])
 	return true
 
 func request_action(action: String) -> void:
@@ -1043,6 +1227,8 @@ func request_action(action: String) -> void:
 		return
 	if _modal_open():
 		return
+	_commit_decor_position()
+	decor_scale_field.apply()
 	ring_spacing_field.apply()
 	_commit_gameplay_angle()
 	cell_size_field.apply()
@@ -1152,8 +1338,8 @@ func _refresh() -> void:
 	_refresh_file_state()
 	buttons.undo.disabled = undo_stack.is_empty()
 	buttons.redo.disabled = redo_stack.is_empty()
-	buttons.delete.disabled = canvas.selected_index < 0 and canvas.selected_gameplay_index < 0 and canvas.selected_ring_index < 0 and canvas.selected_connector.is_empty() and canvas.selected_marker.is_empty()
-	buttons.duplicate.disabled = canvas.selected_gameplay_index < 0 and canvas.selected_ring_index < 0 and _terrain_selection().size() != 1
+	buttons.delete.disabled = canvas.selected_decor_index < 0 and canvas.selected_index < 0 and canvas.selected_gameplay_index < 0 and canvas.selected_ring_index < 0 and canvas.selected_connector.is_empty() and canvas.selected_marker.is_empty()
+	buttons.duplicate.disabled = canvas.selected_decor_index < 0 and canvas.selected_gameplay_index < 0 and canvas.selected_ring_index < 0 and _terrain_selection().size() != 1
 	var ring_spacing: float = document.ring_trails[canvas.selected_ring_index].spacing / float(document.cell_size) if canvas.selected_ring_index >= 0 else canvas.ring_spacing_cells
 	ring_spacing_field.set_value_no_signal(ring_spacing)
 	connector_summary.text = _connector_description("entry") + "   |   " + _connector_description("exit")
@@ -1162,17 +1348,22 @@ func _refresh() -> void:
 	marker_summary.text += "\nSpawn: " + ("unset" if document.spawn_position == null else "%s px" % document.spawn_position)
 	var active: Dictionary = canvas.brush if not canvas.brush.is_empty() else (document.placements[canvas.selected_index] if canvas.selected_index >= 0 else {})
 	var gameplay := _active_gameplay()
+	var decor := _active_decor()
+	var angled := decor if not decor.is_empty() else gameplay
 	for key in ["rotate", "flip_h", "flip_v"]:
 		buttons[key].disabled = active.is_empty() or _terrain_selection().size() > 1
-	buttons.rotate.disabled = (active.is_empty() and gameplay.is_empty()) or _terrain_selection().size() > 1
-	buttons.rotate.text = "Rotate +15°" if not gameplay.is_empty() else "Rotate +90°"
-	angle_field.editable = not gameplay.is_empty()
-	_angle_display_text = var_to_str(gameplay.rotation_degrees) if not gameplay.is_empty() else ""
+	buttons.rotate.disabled = (active.is_empty() and angled.is_empty()) or _terrain_selection().size() > 1
+	buttons.rotate.text = "Rotate +15°" if not angled.is_empty() else "Rotate +90°"
+	angle_field.editable = not angled.is_empty()
+	_angle_display_text = var_to_str(angled.rotation_degrees) if not angled.is_empty() else ""
 	angle_field.text = _angle_display_text
-	angle_field.placeholder_text = "Gameplay only"
+	angle_field.placeholder_text = "Object / decor"
 	handedness_field.disabled = gameplay.is_empty() or gameplay.type not in ["left_flipper", "right_flipper"]
 	handedness_field.select(1 if not gameplay.is_empty() and gameplay.type == "right_flipper" else 0)
-	if canvas.ring_tool or canvas.selected_ring_index >= 0:
+	if not decor.is_empty():
+		mode_label.text = ("PLACE" if not canvas.decor_brush.is_empty() else "SELECTED") + " · " + decor.slot_type.capitalize() + " decor"
+		detail_label.text = "%s px · %s° · %s · Auto variant · Presentation only" % [decor.position, var_to_str(decor.rotation_degrees), decor.placement_hint]
+	elif canvas.ring_tool or canvas.selected_ring_index >= 0:
 		mode_label.text = "DRAW RINGS" if canvas.ring_tool else "SELECTED  ·  Ring trail"
 		detail_label.text = "Click / drag · Alt frees endpoints · Generated rings never snap · Select trail to move or resize · Delete removes trail"
 	elif not canvas.marker_tool.is_empty():
@@ -1205,6 +1396,7 @@ func _refresh() -> void:
 		mode_label.text = ("STAMP  ·  " if not canvas.brush.is_empty() else "SELECTED  ·  ") + definition.label
 		detail_label.text = "Frame %d × %d cells  ·  %d°  ·  H %s / V %s%s" % [frame.x, frame.y, active.quarter_turns * 90, "on" if active.flip_h else "off", "on" if active.flip_v else "off", "  ·  Anchor (%d, %d)" % [active.anchor.x, active.anchor.y] if canvas.brush.is_empty() else "  ·  Click to place; Esc to select"]
 	_refresh_composite_controls()
+	_refresh_decor_controls()
 	canvas.queue_redraw()
 	_refreshing = false
 
@@ -1304,7 +1496,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		match event.keycode:
 			KEY_ESCAPE: _select_mode()
 			KEY_R:
-				if event.shift_pressed and not _active_gameplay().is_empty(): rotate_gameplay(-15.0)
+				if event.shift_pressed and not _active_decor().is_empty(): _set_decor_property("rotation_degrees", float(_active_decor().rotation_degrees) - 15.0)
+				elif event.shift_pressed and not _active_gameplay().is_empty(): rotate_gameplay(-15.0)
 				else: rotate_active()
 			KEY_H: flip_active(true)
 			KEY_V: flip_active(false)
