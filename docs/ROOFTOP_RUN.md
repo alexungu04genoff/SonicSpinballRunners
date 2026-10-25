@@ -47,9 +47,9 @@ All `surface`, `edge` and `either` hints have these three ordered variants. Numb
 
 ![Original Rooftop Run prop library](rooftop-captures/library.png)
 
-The existing editor preview selector gains Rooftop Run from the registry. Auto remains deterministic per Act seed, slot and skin. Fixed variants use the existing override implementation; unavailable indices warn and fall back to Auto without rewriting the Act. Published pool order must remain stable.
+The existing editor preview selector gains Rooftop Run from the registry. Small, medium and large Auto choices remain deterministic per Act seed, slot and skin. Landmark Auto shares upright/span choices with Green Hill and Chemical Plant. Fixed variants use the existing override implementation; unavailable indices warn and fall back to Auto without rewriting the Act. Published pool order remains stable; the balloon terrace is available as fixed Landmark Variant 3.
 
-The common placement path applies the exact authored anchor, arbitrary yaw and scale. No 90-degree snapping or terrain-dependent reorientation is introduced. A bench's long axis and an arch's opening follow the slot rotation. Unsupported anchors retain the existing skip behavior. The widest landmark is approximately 1.8 cells; the clock tower is approximately 2.36 cells tall, so overhang and occlusion remain authoring considerations.
+The common placement path applies the exact authored anchor, arbitrary yaw and scale. No 90-degree snapping or terrain-dependent reorientation is introduced. A bench's long axis and an arch's opening follow the slot rotation. Unsupported anchors retain the existing skip behavior. Authored landmarks now share an approximately 3-by-1-cell footprint with the other themes: a clock tower with side terraces, a wider aqueduct, or a long balloon terrace. The tower remains approximately 2.36 cells tall. Background towers and aqueducts retain their compact scenery proportions. See [matched landmark compositions](DECOR_SLOTS.md#consistent-landmark-footprints-across-themes); overhang and occlusion remain authoring considerations.
 
 ## Same Act, three identities
 

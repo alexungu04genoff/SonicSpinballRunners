@@ -67,11 +67,12 @@ func run() -> void:
  for i in VARIANTS.size():
   var back_row := i < 6
   var index := i if back_row else i - 6
-  var anchor := Vector3((index - 2.5) * 2.35, 0, -2.75) if back_row else Vector3((index - 2.0) * 2.65, 0, 2.4)
+  var anchor := Vector3((index - 2.5) * 2.35, 0, -2.75) if back_row else Vector3((index - 2.0) * 3.2, 0, 2.4)
   var display_scale := 2.0 if i < 3 else (1.4 if i < 6 else 1.0)
   var category := "SMALL" if i < 3 else ("MEDIUM" if i < 6 else ("LARGE" if i < 9 else "LANDMARK"))
-  _box(stage, anchor + Vector3(0, -0.10, 0), Vector3(1.95 if back_row else 2.25, 0.20, 1.6), plinth_material)
-  _box(stage, anchor + Vector3(0, -0.02, 0.80), Vector3(1.95 if back_row else 2.25, 0.035, 0.025), trim_material)
+  var plinth_width := 3.1 if i >= 9 else (1.95 if back_row else 2.25)
+  _box(stage, anchor + Vector3(0, -0.10, 0), Vector3(plinth_width, 0.20, 1.6), plinth_material)
+  _box(stage, anchor + Vector3(0, -0.02, 0.80), Vector3(plinth_width, 0.035, 0.025), trim_material)
   var prop: Node3D = library.build_variant(VARIANTS[i])
   prop.position = anchor
   prop.scale = Vector3.ONE * display_scale
@@ -80,7 +81,7 @@ func run() -> void:
  var camera := Camera3D.new()
  camera.projection = Camera3D.PROJECTION_ORTHOGONAL
  camera.keep_aspect = Camera3D.KEEP_WIDTH
- camera.size = 16.3
+ camera.size = 17.8
  camera.position = Vector3(0, 10, 17)
  stage.add_child(camera)
  camera.look_at(Vector3(0, 0.25, 0))

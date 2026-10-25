@@ -1,5 +1,6 @@
 extends RefCounted
 ## A skin owns variant pools and a visual factory. Acts never reference these IDs.
+const LANDMARK_ROLES := ["Upright", "Span"]
 var skin_id: String
 var pools: Dictionary
 var factory: Callable
@@ -28,8 +29,16 @@ func resolve(act_seed: String, slot: Dictionary) -> String:
  # Explicit SHA-256 and a bounded prefix avoid process RNG and engine hash changes.
  # Length-delimited JSON avoids ambiguous concatenated keys. Stable IDs also keep
  # deletion/reordering of other slots from changing this slot's chosen variant.
- var digest := JSON.stringify([act_seed, slot.slot_id, skin_id]).sha256_text()
- return str(choices[digest.left(8).hex_to_int() % choices.size()])
+ var namespace_id := skin_id
+ var auto_count := choices.size()
+ if slot.get("slot_type") == "landmark":
+  # Shared upright/span roles keep the same long-axis composition in every
+  # theme. Retain the original Green Hill hash so existing layouts stay stable.
+  # Additional theme-specific landmarks remain available by fixed index.
+  namespace_id = "green_hill"
+  auto_count = mini(LANDMARK_ROLES.size(), choices.size())
+ var digest := JSON.stringify([act_seed, slot.slot_id, namespace_id]).sha256_text()
+ return str(choices[digest.left(8).hex_to_int() % auto_count])
 
 func instantiate_slot(act_seed: String, slot: Dictionary) -> Node3D:
  var variant := resolve(act_seed, slot)

@@ -70,17 +70,17 @@ func build_background(p: Node3D) -> void:
   water_mesh.name = "BackgroundCanal"
   for bank: int in [-1, 1]:
    _library.box(city, "stone", center + Vector3(canal_x + bank * 0.76, -4.5, 0), Vector3(0.16, 0.25, length + 6.0))
-  var bridge: Node3D = _library.build_variant("aqueduct")
+  var bridge: Node3D = _library.build_variant("aqueduct", false)
   city.add_child(bridge)
   bridge.position = center + Vector3(canal_x, -4.5, side * length * 0.22)
   bridge.scale = Vector3(1.0, 0.7, 1.5)
  # One short arcade and one clock retain the skyline's strongest silhouettes.
  var far_z: float = p.table_bounds.position.y * p.SCALE - 3.5
- var span := _library.build_variant("aqueduct") as Node3D
+ var span := _library.build_variant("aqueduct", false) as Node3D
  city.add_child(span)
  span.position = Vector3(center.x - width * 0.30, -4.8, far_z)
  span.scale = Vector3(2.0, 3.6, 1.8)
- var tower := _library.build_variant("clock_tower") as Node3D
+ var tower: Node3D = _library.build_variant("clock_tower", false)
  city.add_child(tower)
  tower.position = Vector3(center.x + width * 0.5 + 2.5, -4.8, far_z - 1.0)
  tower.scale = Vector3(2.2, 2.8, 2.2)

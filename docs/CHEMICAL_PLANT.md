@@ -50,9 +50,9 @@ All props use local GDScript primitives, simple materials and low-sided cylinder
 | SMALL | Warning beacon, valve wheel, vent |
 | MEDIUM | Pump elbow, control cabinet, fluid canister |
 | LARGE | Pipe cluster, tank tower, girder machinery |
-| LANDMARK | Fluid reactor, sweeping pipe arch |
+| LANDMARK | Fluid reactor on a service skid, twin pipe arches with a catwalk |
 
-Landmark footprints are at most about 1.8 cells wide/high. Placement hints choose pools; they do not move anchors. Existing authored position, arbitrary rotation and optional scale remain authoritative. Unsupported anchors remain saveable drafts and are skipped visually, exactly as in Green Hill.
+Landmarks share an approximately 3-by-1-cell footprint with Green Hill and Rooftop Run. Variant 1 is an upright reactor on a long service skid; Variant 2 is a low catwalk with pipe arches. Placement hints choose pools; they do not move anchors. Existing authored position, arbitrary rotation and optional scale remain authoritative. Unsupported anchors remain saveable drafts and are skipped visually, exactly as in Green Hill. See [matched landmark compositions](DECOR_SLOTS.md#consistent-landmark-footprints-across-themes).
 
 ![Original Chemical Plant prop library](theme-captures/chemical-library.png)
 
@@ -76,7 +76,7 @@ ThemeDefinition
 
 `visual_lab.gd` owns the UI and calls only the presentation rebuild during a theme change. It restores camera pose/damping state, ring pickup transforms and bumper flash timers. The `game.gd` loop, physics profiles, flippers, bumpers, abilities, scoring, lifecycle, connector behavior and authored terrain are not changed by this milestone.
 
-Acts never reference theme names or asset filenames. `DecorSkin.resolve()` hashes `[act_identity, slot_id, skin_id]` with SHA-256 to select Auto variants without touching gameplay RNG. Auto remains the default. Authors can also store `variant_mode = "fixed"` and a generic zero-based `variant_index`; each theme maps that index into the selected type/hint pool. Missing indices warn and fall back to deterministic Auto without rewriting the Act. Reloading or reordering other slots does not reshuffle a slot. Published pool order is part of visual continuity. The editor's preview-theme selector shows the friendly names in either pool; see [decor workflow](DECOR_SLOTS.md).
+Acts never reference theme names or asset filenames. `DecorSkin.resolve()` hashes `[act_identity, slot_id, skin_id]` with SHA-256 for small, medium and large Auto variants without touching gameplay RNG. Landmark Auto uses the shared upright/span role hash, preserving Green Hill's choices across every theme. Auto remains the default. Authors can also store `variant_mode = "fixed"` and a generic zero-based `variant_index`; each theme maps that index into the selected type/hint pool. Missing indices warn and fall back to deterministic Auto without rewriting the Act. Reloading or reordering other slots does not reshuffle a slot. Published pool order is part of visual continuity. The editor's preview-theme selector shows the friendly names in each pool; see [decor workflow](DECOR_SLOTS.md).
 
 To add another theme, implement the contract, provide decor pools for the four sizes and three placement hints, then register its stable ID/name. No gameplay branch or Act schema change is needed. Optional post-processing remains the existing independently controlled OFF/retro stack; no theme forces a filter.
 

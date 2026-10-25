@@ -84,7 +84,7 @@ func roof(root: Node3D, at: Vector3, size: Vector3) -> void:
  for side: int in [-1, 1]:
   box(root, "cream", at + Vector3(side * size.x * 0.49, -0.025, 0), Vector3(0.045, 0.055, size.z))
 
-func build_variant(variant: String) -> Node3D:
+func build_variant(variant: String, landmark_layout := true) -> Node3D:
  var root := Node3D.new()
  root.name = variant.to_pascal_case()
  match variant:
@@ -100,14 +100,25 @@ func build_variant(variant: String) -> Node3D:
    for side: int in [-1, 1]:
     piece(root, "sphere", "leaf", Vector3(side * 0.51, 0.83, 0), Vector3(0.18, 0.22, 0.20))
   "cypress_terrace": cypress(root)
-  "clock_tower": clock_tower(root)
-  "aqueduct": aqueduct(root)
+  "clock_tower":
+   clock_tower(root)
+   if landmark_layout:
+    box(root, "stone", Vector3(0, 0.06, 0), Vector3(3.0, 0.12, 0.98))
+    for side: int in [-1, 1]:
+     box(root, "stone", Vector3(side * 0.95, 0.34, -0.12), Vector3(1.0, 0.44, 0.60))
+     box(root, "cream", Vector3(side * 0.95, 0.59, -0.12), Vector3(1.04, 0.08, 0.64))
+     railing(root, 0.94, Vector3(side * 0.95, 0.63, 0.12))
+     var urn := Node3D.new()
+     root.add_child(urn)
+     urn.position = Vector3(side * 1.17, 0.12, 0.30)
+     flower_urn(urn)
+  "aqueduct": aqueduct(root, 3.0 if landmark_layout else 1.8)
   "festival_balloons":
-   box(root, "cream", Vector3(0, 0.08, 0), Vector3(0.8, 0.16, 0.65))
+   box(root, "cream", Vector3(0, 0.08, 0), Vector3(3.0, 0.16, 0.90))
    for i in 3:
-    var at := Vector3((i - 1) * 0.47, 1.0 + (0.3 if i == 1 else 0.0), (i % 2) * -0.2)
+    var at := Vector3((i - 1) * 0.95, 1.0 + (0.3 if i == 1 else 0.0), (i % 2) * -0.2)
     balloon(root, at, 0.31, i)
-    bar(root, "dark", Vector3((i - 1) * 0.2, 0.16, 0), at + Vector3(0, -0.4, 0), 0.009)
+    bar(root, "dark", Vector3((i - 1) * 0.95, 0.16, 0), at + Vector3(0, -0.4, 0), 0.009)
  return root
 
 func flower_urn(root: Node3D) -> void:
@@ -163,7 +174,8 @@ func arch(root: Node3D, width := 1.12, height := 0.85, depth := 0.28) -> void:
   box(root, "cream", Vector3(side * (radius + 0.065), 0.05, 0), Vector3(0.23, 0.10, depth * 1.2))
  for i in 9:
   var angle := PI * (i + 0.5) / 9.0
-  var block := box(root, "cream" if i == 4 else "stone", Vector3(cos(angle) * (radius + 0.06), spring + sin(angle) * (radius + 0.06), 0), Vector3(0.18, 0.18, depth))
+  var block_length := maxf(0.18, 2.0 * (radius + 0.15) * tan(PI / 18.0))
+  var block := box(root, "cream" if i == 4 else "stone", Vector3(cos(angle) * (radius + 0.06), spring + sin(angle) * (radius + 0.06), 0), Vector3(block_length, 0.18, depth))
   block.rotation.z = angle - PI * 0.5
 
 func railing(root: Node3D, width: float, at: Vector3) -> void:
@@ -204,14 +216,14 @@ func clock_tower(root: Node3D) -> void:
  roof(root, Vector3(0, 1.82, 0), Vector3(0.82, 0.32, 0.78))
  piece(root, "cone", "dark", Vector3(0, 2.24, 0), Vector3(0.10, 0.24, 0.10))
 
-func aqueduct(root: Node3D) -> void:
+func aqueduct(root: Node3D, width := 1.8) -> void:
  for side: int in [-1, 1]:
   var span := Node3D.new()
-  span.position.x = side * 0.43
+  span.position.x = side * (width - 0.08) * 0.25
   root.add_child(span)
-  arch(span, 0.86, 0.92, 0.34)
- box(root, "cream", Vector3(0, 0.95, 0), Vector3(1.80, 0.12, 0.44))
- railing(root, 1.72, Vector3(0, 1.01, 0.17))
+  arch(span, (width - 0.08) * 0.5, 0.92, 0.64 if width > 2.0 else 0.34)
+ box(root, "cream", Vector3(0, 0.95, 0), Vector3(width, 0.12, 0.84 if width > 2.0 else 0.44))
+ railing(root, width - 0.08, Vector3(0, 1.01, 0.36 if width > 2.0 else 0.17))
 
 func balloon(root: Node3D, at: Vector3, radius: float, variant: int) -> void:
  # Eight colored gores form a faceted envelope; basket and ropes are visual only.
