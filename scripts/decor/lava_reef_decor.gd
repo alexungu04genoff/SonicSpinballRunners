@@ -15,14 +15,14 @@ func _init(_presentation: Node3D) -> void:
   pools[size] = {}
   for hint: String in ["surface", "edge", "either"]: pools[size][hint] = sizes[size].duplicate()
  factory = build_variant
- var colors := {"basalt": "393346", "facet": "5d5067", "deep": "211d2e", "mineral": "527c78", "iron": "4c4656", "rust": "98624e", "brass": "b49b63", "warning": "c9ab6b", "ancient": "7c837b", "inset": "28655e", "heat": "ea5424"}
+ var colors := {"basalt": "b77b40", "facet": "f3cf78", "deep": "45235f", "mineral": "438d78", "iron": "8277bb", "rust": "514173", "brass": "dfad43", "warning": "e6bc59", "ancient": "65a18b", "inset": "315565", "heat": "ea5424"}
  for key: String in colors:
   var mat := StandardMaterial3D.new()
   mat.albedo_color = Color(colors[key])
   mat.roughness = 0.92
   if key in ["iron", "brass", "rust"]:
    mat.metallic = 0.45
-   mat.roughness = 0.67
+   mat.roughness = 0.38
   if key == "heat":
    mat.emission_enabled = true
    mat.emission = Color(colors[key])
@@ -42,6 +42,7 @@ func primitive(kind: String) -> Mesh:
  var result: Mesh
  if kind == "box": result = BoxMesh.new()
  elif kind == "gem": result = _gem_mesh()
+ elif kind == "boulder": result = _boulder_mesh()
  else:
   var cylinder := CylinderMesh.new()
   cylinder.top_radius = 0.0 if kind == "cone" else (0.72 if kind == "rock" else 1.0)
@@ -52,6 +53,36 @@ func primitive(kind: String) -> Mesh:
   result = cylinder
  meshes[kind] = result
  return result
+
+func _boulder_mesh() -> ArrayMesh:
+ var surface := SurfaceTool.new()
+ surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+ # Beveled, irregular octagonal rock: broad facets, no smooth sphere normals.
+ var levels := [-0.5,-0.28,0.22,0.5]
+ var radii := [0.48,1.0,0.92,0.40]
+ for ring in 3:
+  for i in 8:
+   var points: Array[Vector3] = []
+   for corner: Vector2i in [Vector2i(i,ring),Vector2i(i,ring+1),Vector2i(i+1,ring+1),Vector2i(i+1,ring)]:
+    var angle := TAU*corner.x/8.0
+    var radius: float = radii[corner.y]*(0.92+0.08*sin(corner.x*2.7))
+    points.append(Vector3(cos(angle)*radius,levels[corner.y],sin(angle)*radius))
+   for indices: Array in [[0,2,1],[0,3,2]]:
+    var normal := (points[indices[2]]-points[indices[0]]).cross(points[indices[1]]-points[indices[0]]).normalized()
+    for index: int in indices:
+     surface.set_normal(normal)
+     surface.add_vertex(points[index])
+ for sign_y: float in [-1.0,1.0]:
+  for i in 8:
+   var a := TAU*i/8.0
+   var b := TAU*(i+1)/8.0
+   var radius := 0.40 if sign_y > 0.0 else 0.48
+   var triangle := [Vector3(0,sign_y*0.5,0),Vector3(cos(a)*radius,sign_y*0.5,sin(a)*radius),Vector3(cos(b)*radius,sign_y*0.5,sin(b)*radius)]
+   if sign_y < 0.0: triangle.reverse()
+   for vertex: Vector3 in triangle:
+    surface.set_normal(Vector3.UP*sign_y)
+    surface.add_vertex(vertex)
+ return surface.commit()
 
 func _gem_mesh() -> ArrayMesh:
  var surface := SurfaceTool.new()
@@ -91,17 +122,18 @@ func crystal(root: Node3D, at: Vector3, height: float, radius: float, lean := 0.
  gem.rotation.z = lean
 
 func column(root: Node3D, at: Vector3, height: float, radius: float) -> void:
- piece(root, "rock", "basalt", at + Vector3.UP * height * 0.45, Vector3(radius, height * 0.9, radius))
- piece(root, "rock", "facet", at + Vector3.UP * height * 0.92, Vector3(radius * 0.75, height * 0.16, radius * 0.75))
- for i in 3:
-  piece(root, "rock", "deep", at + Vector3.UP * height * (0.15 + i * 0.23), Vector3(radius * (0.99 - i * 0.07), height * 0.025, radius * (0.99 - i * 0.07)))
+ for i in 4:
+  var taper := 1.0-float(i)*0.16
+  var stone := piece(root,"boulder","facet" if i%2 == 0 else "basalt",at+Vector3.UP*height*(0.125+i*0.24),Vector3(radius*taper,height*0.30,radius*taper))
+  stone.rotation.y = i*0.85
 
 func pipe(root: Node3D, a: Vector3, b: Vector3, radius: float) -> void:
  bar(root, "iron", a, b, radius, true)
  var direction := (b - a).normalized()
  for t: float in [0.12, 0.88]:
   var at := a.lerp(b, t)
-  bar(root, "rust", at - direction * radius * 0.30, at + direction * radius * 0.30, radius * 1.30, true)
+  bar(root, "rust", at - direction * radius * 0.45, at + direction * radius * 0.45, radius * 1.38, true)
+  bar(root, "brass", at - direction * radius * 0.23, at + direction * radius * 0.23, radius * 1.42, true)
 
 func warning_panel(root: Node3D, at: Vector3, width: float, height: float) -> void:
  box(root, "warning", at, Vector3(width, height, 0.035))

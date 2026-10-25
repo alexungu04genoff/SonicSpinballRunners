@@ -8,7 +8,7 @@ var heat_haze_enabled := OS.get_cmdline_user_args().has("--lava-heat-haze")
 func _init() -> void:
  theme_id = "lava_reef"
  display_name = "Lava Reef"
- edge_trim_color = Color("728d83")
+ edge_trim_color = Color("c79855")
  floor_material = _shader(preload("res://scripts/themes/lava_floor.gdshader"))
  top_material = _shader(preload("res://scripts/themes/lava_floor.gdshader"))
  top_material.set_shader_parameter("raised_surface", true)
@@ -59,7 +59,7 @@ func build_background(p: Node3D) -> void:
  var cavern_materials := {}
  for key: String in ["basalt","facet","deep"]:
   var rock := _shader(preload("res://scripts/themes/lava_cavern.gdshader"))
-  rock.set_shader_parameter("rock_color",_library.materials[key].albedo_color)
+  rock.set_shader_parameter("rock_color",Color("386d58") if key == "facet" else (Color("245447") if key == "basalt" else Color("193a3b")))
   cavern_materials[key] = rock
  # Camera-facing rocks form a cutaway. Never put an opaque roof over the deck:
  # the generic top-down/long-Zone overview can sit above any fixed roof height.
@@ -73,8 +73,13 @@ func build_background(p: Node3D) -> void:
    var at := center + Vector3(cos(angle)*radius_x,-7.4,sin(angle)*radius_z)
    var height := 13.0 + (i*7%6) * 1.1 + layer*4.0
    if sin(angle) > 0.35: height = 7.0 + layer * 2.0
-   var rock: MeshInstance3D = _library.piece(geology,"rock","deep",at+Vector3.UP*height*0.5,Vector3(6.0+layer*2.0,height,5.8+layer*2.0))
-   rock.rotation.y = angle*0.7
+   # Bulbous mineral towers with pointed crowns, as in the original green cave.
+   for segment in 5:
+    var taper := 1.0-float(segment)*0.13
+    var rock: MeshInstance3D = _library.piece(geology,"boulder","deep" if layer == 1 else "basalt",at+Vector3.UP*height*(0.10+segment*0.19),Vector3((5.0+layer*2.0)*taper,height*0.28,(4.8+layer*2.0)*taper))
+    rock.rotation.y = angle*0.7+segment*0.5
+   for tooth in 3:
+    _library.piece(geology,"cone","facet",at+Vector3((tooth-1)*1.3,height,0),Vector3(0.75,2.2-abs(tooth-1)*0.6,0.8))
    if layer == 0:
     _library.column(geology,at+Vector3(-1.6,0,2.0),height*0.83,1.55)
     var hanging: MeshInstance3D = _library.piece(geology,"cone","facet",at+Vector3(2.5,height-2.0,0),Vector3(1.6,5.0,1.6))
@@ -106,7 +111,14 @@ func build_background(p: Node3D) -> void:
  relic.position = Vector3(center.x+3.5,-5.3,back+2.0)
  relic.scale = Vector3.ONE*3.0
  _library.box(geology,"basalt",Vector3(center.x,-5.8,back+1.8),Vector3(14,1.2,4))
- _library.pipe(geology,Vector3(center.x-7,-4.3,back+3.1),Vector3(center.x+7,-4.3,back+3.1),0.24)
+ _library.pipe(geology,Vector3(center.x-7,-4.3,back+3.1),Vector3(center.x+7,-4.3,back+3.1),0.48)
+ # Oversized purple plumbing and gold junctions are a recurring Act 1 landmark.
+ for side: int in [-1,1]:
+  var pipe_x := center.x+side*(width*0.5+3.5)
+  _library.pipe(geology,Vector3(pipe_x,-4.8,back+2),Vector3(pipe_x,2.6,back+2),0.72)
+  _library.pipe(geology,Vector3(pipe_x,2.6,back+2),Vector3(pipe_x+side*5.5,2.6,back+2),0.72)
+  _library.box(geology,"brass",Vector3(pipe_x,2.6,back+2),Vector3(1.7,1.7,1.7))
+  _library.box(geology,"rust",Vector3(pipe_x,2.6,back+2.88),Vector3(1.25,1.25,0.12))
  # Broad crust rafts break the lake into channels, rather than an orange horizon.
  for i in 17:
   var side := -1.0 if i%2 == 0 else 1.0

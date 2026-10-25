@@ -42,6 +42,16 @@ func _initialize() -> void:
    check(not skin.variant_warning(slot).is_empty() and skin.resolve("act", slot) == automatic, "Missing fixed index warns and retains deterministic fallback")
  check(built.size() == 13, "Thirteen distinct original props")
  check(skin.primitive("gem") == skin.primitive("gem"), "Repeated crystals share one mesh")
+ var rock: ArrayMesh = skin.primitive("boulder")
+ var arrays := rock.surface_get_arrays(0)
+ var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+ var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+ var outward := true
+ for i in range(0,vertices.size(),3):
+  var center := (vertices[i]+vertices[i+1]+vertices[i+2])/3.0
+  var face := (vertices[i+2]-vertices[i]).cross(vertices[i+1]-vertices[i]).normalized()
+  outward = outward and center.dot(face) > 0.0 and face.dot(normals[i]) > 0.99
+ check(outward, "Opaque boulder faces point outward without backface holes")
  # Exercise the actual placement path at a non-round authored angle.
  var p := Presentation.new()
  p.set_theme_definition(theme)

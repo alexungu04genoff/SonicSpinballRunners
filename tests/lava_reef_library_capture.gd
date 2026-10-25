@@ -81,7 +81,7 @@ func run() -> void:
    camera.current = true
    label(canvas, variant.capitalize(), at + Vector2(0, 219), 360, 21, true)
    label(canvas, type.to_upper() + " / " + str(row + 1), at + Vector2(0, 247), 360, 14, true)
- label(canvas, "LAVA REEF  /  THE MINERAL CALDERA", Vector2(50, 30), 1500, 38)
+ label(canvas, "LAVA REEF  /  THE GOLDEN CAVERN", Vector2(50, 30), 1500, 38)
  label(canvas, "13 original procedural props  /  Production cavern light  /  Filter off", Vector2(52, 82), 1500, 22)
  label(canvas, "Small shown at 2.1x, medium at 1.6x; large and landmark at 1x. All props honor exact authored yaw.", Vector2(52, 1330), 1500, 20)
  for i in 10: await process_frame

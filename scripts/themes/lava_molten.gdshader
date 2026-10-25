@@ -18,12 +18,12 @@ void fragment() {
  vec2 warp = vec2(noise(p * 0.67 + time * 0.012), noise(p * 0.67 + 8.7));
  float field = noise(p + warp * 1.8) * 0.70 + noise(p * 2.1 - time * flow * 0.3) * 0.23 + noise(p * 5.0 + warp) * 0.07;
  float ridge = abs(field - 0.49);
- float hot = 1.0 - smoothstep(0.012, 0.105 + fwidth(field), ridge);
+ float hot = 1.0 - smoothstep(0.025, 0.18 + fwidth(field), ridge);
  float core = 1.0 - smoothstep(0.008, 0.028 + fwidth(field), ridge);
  float crust = smoothstep(0.55, 0.64, field);
- vec3 melt = mix(vec3(0.42, 0.034, 0.016), vec3(1.0, 0.43, 0.025), hot);
+ vec3 melt = mix(vec3(0.62, 0.055, 0.016), vec3(1.0, 0.43, 0.025), hot);
  melt = mix(melt, vec3(1.0, 0.85, 0.26), core * 0.8);
- melt = mix(melt, vec3(0.10, 0.032, 0.035), crust * 0.94);
+ melt = mix(melt, vec3(0.16, 0.032, 0.035), crust * 0.68);
  melt *= 0.88 + 0.12 * noise(p * 9.0 + time * flow);
  // Long-Zone overviews reduce subpixel glow contrast instead of showing a
  // dense orange wire pattern. Close lava retains the complete flowing surface.

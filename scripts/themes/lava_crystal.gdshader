@@ -6,8 +6,8 @@ void vertex() { local_position = VERTEX; }
 void fragment() {
  float facet = clamp(dot(normalize(NORMAL), normalize(vec3(-0.5,0.7,0.6))) * 0.5 + 0.5, 0.0, 1.0);
  float vein = smoothstep(0.89, 0.97, sin(local_position.y * 15.0 + local_position.x * 7.0));
- ALBEDO = mix(vec3(0.015,0.19,0.22), vec3(0.13,0.68,0.65), facet);
- EMISSION = ALBEDO * 0.25 + vec3(0.12,0.5,0.48) * vein * 0.18;
+ ALBEDO = mix(vec3(0.12,0.25,0.55), vec3(0.63,0.89,0.95), step(0.62,facet)*0.7+facet*0.3);
+ EMISSION = ALBEDO * 0.18 + vec3(0.25,0.55,0.72) * vein * 0.12;
  ROUGHNESS = 0.28;
  SPECULAR = 0.65;
  METALLIC = 0.2;

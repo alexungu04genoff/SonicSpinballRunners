@@ -1,8 +1,18 @@
-# Lava Reef — the mineral caldera
+# Lava Reef — the golden cavern
 
-Implemented 2026-10-25 as the seventh selectable presentation theme. Choose **Lava Reef** in the existing Theme dropdown in **Play Green Hill**. The same authored or generated table becomes a cool mineral shelf above an active magma chamber. This is an original low-poly interpretation, not extracted Sega artwork.
+Implemented 2026-10-25 as the seventh selectable presentation theme. Choose **Lava Reef** in the existing Theme dropdown in **Play Green Hill**. The same authored or generated table becomes an Act 1-inspired golden rock shelf above an active magma chamber. This is an original low-poly interpretation, not extracted Sega artwork.
 
 ![Lava Reef cavern study](lava-captures/cavern.png)
+
+## Screenshot-led revision — 2026-10-25
+
+User review found the first version too much like a custom volcanic level. A second direct screenshot comparison changed the dominant visual vocabulary, not merely the lighting:
+
+- **Classic Act 1:** the [original screenshot](https://cdn.staticneo.com/w/sonic/LavaReefZone.png) shows yellow-gold boulders, brown bevels, deep violet gaps, and green knobbly cavern formations. Uniform plum paving and tall striped basalt prisms did not represent those shapes.
+- **Mania Act 1:** [SonicJGB gameplay around 0:52](https://www.youtube.com/watch?v=JVJW-ADgjgI&t=52s) shows the same boulders framed by substantial lavender pipes, bright gold collars and square junction plates. Those motifs now frame the background terrace and recur throughout the prop library.
+- **Both Act 2 versions:** the [classic screenshot](https://cdn.staticneo.com/w/sonic/thumb/LavaReefZone2.png/600px-LavaReefZone2.png) and [Mania gameplay around 0:58](https://www.youtube.com/watch?v=3BvQkG7KqQQ&t=58s) show blue rock, white-blue crystal facets and green manufactured edging. The crystal accent palette now follows these references. The main terrain deliberately follows Act 1; this is not an equal blend or a literal Act 2 reconstruction.
+
+Original beveled rock meshes replace the regular stacked columns. One shared procedural boulder pattern keeps the floor, walls and green cavern masses related, with quieter floor contrast. Broader orange lava channels replace the thin yellow network. All thirteen generic decor identities, footprints, physics and authored layouts remain unchanged. Reference images and video frames are viewed remotely only; none are imported into the game or committed.
 
 ## Research: both Acts, both interpretations
 
@@ -20,34 +30,34 @@ Mania includes views through openings to the outside. Our deliberately enclosed 
 
 ### What required a new 3D interpretation
 
-- **Cliffs:** broad fractured strata and mineral seams replace tiny repeated tile details. World-space projection blends by wall normal, so curved, diagonal and arbitrary authored outlines use one material. No shape is changed to fit a texture.
-- **Depth:** the lake sits 7.2 presentation units below the deck; the ordinary deck extrusion stays 1.45 units deep. Nested chambers, lower shelves and remote pillars imply a much larger cavity. These distances are invented for parallax and readability, not canonical measurements.
+- **Cliffs:** irregular beveled golden boulders, ochre side facets and purple interstices replace tiny repeated tile details. World-space projection blends by wall normal, so curved, diagonal and arbitrary authored outlines use one material. No shape is changed to fit a texture.
+- **Depth:** the lake sits 7.2 presentation units below the deck; the ordinary deck extrusion stays 1.45 units deep. Nested green mineral towers, lower shelves and remote pillars imply a much larger cavity. These distances are invented for parallax and readability, not canonical measurements.
 - **Camera access:** tall back/side rocks and stalactites imply enclosure against a near-black background. Camera-facing rocks form a lower cutaway. An opaque roof over the table was rejected because top-down and long-Zone overviews could sit above it. Production camera logic is unchanged.
-- **Machinery:** heavy collars, oxide-colored iron, sparse brass, a buried drill and braced hoist suggest heat-damaged excavation. They use original primitive construction, not recolored Chemical Plant props.
-- **Act contrast:** plum-gray cooled floor, mineral-green raised surfaces, teal crystals and warm lava coexist. Fixed generic decor choices can lean volcanic/industrial or crystal/ancient; Act number never selects a palette or changes geometry.
+- **Machinery:** lavender-purple pipes, broad gold collars and square brass junctions, a buried drill and braced hoist suggest heat-damaged excavation. They use original primitive construction, not recolored Chemical Plant props.
+- **Act contrast:** Act 1 golden boulders and green cavern towers dominate, with Act 2 blue-white crystal deposits as accents. Fixed generic decor choices can lean volcanic/industrial or crystal/ancient; Act number never selects a palette or changes geometry.
 - **Scale and landmarks:** a fractured rift crown, low mine viaduct and circular caldera seal translate the geological/industrial/ancient balance into the established shared footprints. They are inventions, not claimed reconstructions of original landmarks.
 
 ## Materials, light and atmosphere
 
 | Element | Implementation and reason |
 | --- | --- |
-| Playable floor | Matte, irregular cooled-stone slabs in plum-gray; lower-contrast seams and broad faces preserve ball/ring tracking. No orange flowing material on the normal playable floor. |
-| Raised terrain | Cooler mineral-green cap; narrow pale edge separates the top from fractured sides without changing the polygon. |
-| Vertical sides | Layered basalt, oblique mineral veins, restrained deep fissures and warm lower-face emission. Top-height variants serve raised obstacles and the main deck. |
+| Playable floor | Matte warm boulders with subdued face contrast on the rolling plane; purple seams and broad bevels preserve the source palette. No orange flowing material on the normal playable floor. |
+| Raised terrain | A brighter golden cap separates raised terrain from the quieter floor without changing the polygon. |
+| Vertical sides | Gold boulder centers, orange-brown bevel facets, broad purple crevices and warm lower-face emission. Top-height variants serve raised obstacles and the main deck. |
 | Lava | Original procedural value noise, slow domain warping, red crust islands, orange flow and narrow yellow cores. Different flow vectors and spatial frequencies serve the lake and falling sheets. Screen derivatives reduce distant glow contrast in long-Zone overviews, and the lake fades into darkness at its outer rim. No external textures or displaced collision. |
 | Lighting | Cool ambient fill retains cave detail; a restrained warm key preserves gameplay silhouettes. Exactly three shadowless warm OmniLights accompany low-cost procedural bounce on lower rock faces. Emission does not pretend to provide real GI. |
 | Glow | Intensity 0.55, bloom 0.025, threshold 1.05. Broad lava patterns remain legible, while ordinary ring highlights stay separate from the distant molten background. |
-| Crystals | Original six-sided pointed meshes with opaque glass-like material, face-dependent cyan/teal color, subtle mineral veins and restrained emission. Opaque facets avoid transparent sorting and keep N64 silhouettes stable. |
+| Crystals | Original six-sided pointed meshes with opaque glass-like material, face-dependent blue/white color, subtle mineral veins and restrained emission. Opaque facets avoid transparent sorting and keep N64 silhouettes stable. |
 | Scenery | Two distant lava falls framed by fissure lips, nested rock chambers, mineral shelves, crust rafts, industrial terrace and small ancient fragment. Static background primitives share meshes/materials and are batched into MultiMeshes. |
 | Atmosphere | 32 tiny rising ember flecks, all below/outside the deck, in one MultiMesh. No ring-shaped particles, smoke veil or whole-screen wobble. |
 
-The ceiling, strata, lake depth and geological light are stylized. They prioritize readable pinball play over physically accurate volcanology. The brighter crystal accents are mineral growth, not Ice Cap snow or ice. Industry carries no neon lighting system.
+The cavern shapes, lake depth and geological light are stylized. They prioritize readable pinball play over physically accurate volcanology. The brighter crystal accents are mineral growth, not Ice Cap snow or ice. Industry carries no neon lighting system.
 
 ### Heat-haze experiment
 
 Two local transparent refraction planes can cover the distant falls, with a maximum UV offset of 0.0007 before edge attenuation and 0.33 opacity. Opaque foreground depth remains in front of these planes. **Default: disabled.** Launch with `-- --theme=lava_reef --lava-heat-haze` to opt in; this is a presentation review option, not an Act property or saved setting.
 
-OFF/N64 captures with haze enabled and disabled were visually inspected. The effect is restrained but contributes little at the retro resolution. Short 60-frame desktop samples ranged roughly 17.5–20.9 ms with inconsistent ordering between enabled/disabled cases. They include frame pacing and concurrent desktop work, so they do **not** isolate GPU cost or establish a performance advantage. Haze adds a screen read and up to two geometry draws; leaving it off avoids that cost. [Raw timing samples](lava-captures/effects.json).
+The original haze experiment (before the screenshot-led art revision) compared OFF/N64 captures with haze enabled and disabled. The effect is restrained but contributes little at the retro resolution. Short 60-frame desktop samples ranged roughly 17.5–20.9 ms with inconsistent ordering between enabled/disabled cases. They include frame pacing and concurrent desktop work, so they do **not** isolate GPU cost or establish a performance advantage. Haze adds a screen read and up to two geometry draws; leaving it off avoids that cost. [Raw timing samples](lava-captures/effects.json).
 
 ## Original decor library and stable generic indices
 
@@ -55,7 +65,7 @@ Indices below are zero-based; the editor displays them as variants 1 onward. Eve
 
 | Size | Index | Variant | Visual role |
 | --- | --- | --- | --- |
-| Small | 0 | Mineral sprout | Three pointed teal crystals on cooled rock |
+| Small | 0 | Mineral sprout | Three pointed blue-white crystals on cooled rock |
 | Small | 1 | Basalt vent | Broken column ring around a weak hot center |
 | Small | 2 | Survey stake | Rugged striped mining marker |
 | Medium | 0 | Crystal fan | Broad cool mineral growth |
@@ -95,14 +105,14 @@ The molten animation probe freezes only the presentation shaders at times 0 and 
 
 Godot 4.7.2, Windows, GL Compatibility with ANGLE/D3D11 on NVIDIA RTX 4060:
 
-- Lava Reef decor regression: **95 checks, 0 failures**. Covers thirteen props, every hint, stable fixed/Auto fallback, collision isolation, mesh sharing and exact non-round authored transforms.
+- Lava Reef decor regression: **96 checks, 0 failures**. Covers thirteen props, every hint, stable fixed/Auto fallback, collision isolation, mesh sharing, outward-facing boulder triangles and exact non-round authored transforms.
 - Shared landmark regression: **339 checks, 0 failures** across seven skins, including long/round footprint limits and shared Auto roles.
 - Theme runtime regression: **716 checks, 0 failures**, including a fresh Godot process, authored/generated tables, live-state preservation and clearing local lights on theme switches.
 - Ramp height/theme regression: **53 checks, 0 failures**; all seven themes preserve the exact rail route and physics manager.
 - Authored main-game regression with `--theme=lava_reef`: **70 checks, 0 failures**.
 - Graphical library, 44 matched/camera captures and the separate effects probe complete without shader or script errors. Visual inspection covers OFF, N64 and the preferred stacked preset. Dedicated generated and nine-chunk Zone captures exercise all three camera presets.
 
-An editor import initially exposed four mixed-tab indentation lines in unrelated `game.gd` lifecycle logging. Restoring those lines to the file's existing spaces resolved startup; the final game/runtime checks run against that corrected workspace. No gameplay logic change was required.
+The screenshot revision was verified in an isolated checkout of `9050ade` plus the Lava Reef changes, including a clean editor import, all five suites above and refreshed captures. Concurrent edits to the shared checkout temporarily introduced mixed indentation in unrelated `game.gd`; those edits are excluded from this change. A visual pass caught inward-facing boulder triangles; their winding is corrected and covered by the decor regression. Final gameplay verification totals 1,274 checks with no failures.
 
 Example commands, using the installed Godot executable:
 
