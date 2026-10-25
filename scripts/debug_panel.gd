@@ -334,6 +334,11 @@ func refresh_generation() -> void:
  for index in grid_selector.item_count:
   grid_selector.set_item_text(index, ZONE_LAYOUT_NAMES[index] if game.zone_enabled else game.GRID_MODE_NAMES[index])
  grid_selector.tooltip_text = "All three shuffles use the full authored Zone library. Choose a different deterministic arrangement of rooms for this seed; this does not select a single grid recipe." if game.zone_enabled else "Existing catalogue selects an authored middle chunk. Grid base and Grid variant select their respective construction recipes; Easy uses the wider versions."
+ if game.level_source == "authored":
+  var document: Resource = game.authored_document
+  generation_summary.text = "AUTHORED ACT\n%s\n\nGrid: %d × %d\nCell: %.1f px\nTerrain: %d\nObjects: %d\nRing trails: %d\n\n%s" % [document.title, document.grid_size.x, document.grid_size.y, document.cell_size, document.placements.size(), document.gameplay_objects.size(), document.ring_trails.size(), game.authored_act_path]
+  generation_summary.tooltip_text = "Exact saved geometry supplies this playfield. Seeded layout controls are available after choosing Generated / Existing. Physics, characters and scoring use the same game."
+  return
  var estimate: Dictionary = game.layout.difficulty_estimate
  generation_summary.text = "CURRENT SEED  %d\nPreference: %s\nEstimate: %s %.1f / 100\n" % [game.generation_seed, TableGenerator.DIFFICULTY_NAMES[game.generation_difficulty], TableGenerator.DIFFICULTY_NAMES[estimate.band], estimate.score]
  if game.zone_enabled:
@@ -414,24 +419,36 @@ func refresh_effective() -> void:
 func _process(delta: float) -> void:
  practice_toggle.disabled = not game.can_regenerate() or game.zone_enabled
  var focus: Control = get_viewport().gui_get_focus_owner()
- game.controls.input_blocked = focus is LineEdit
+ var source_modal: bool = game.has_method("is_source_picker_open") and game.is_source_picker_open()
+ game.controls.input_blocked = focus is LineEdit or source_modal
  pause_label.visible = get_tree().paused and game.score_attack.state != ScoreAttack.State.COMPLETE and game.zone.state not in [ZoneRun.State.DRAFT, ZoneRun.State.COMPLETE]
  _telemetry_elapsed += delta
  if _telemetry_elapsed < 0.10:
   return
  _telemetry_elapsed = 0.0
  var safe: bool = game.can_regenerate()
- difficulty_selector.disabled = game.zone_enabled
+ var authored: bool = game.level_source == "authored"
+ difficulty_selector.disabled = game.zone_enabled or authored
+ grid_selector.disabled = authored
+ zone_difficulty_selector.disabled = authored
+ seed_field.editable = not authored
  for button: Button in generation_buttons:
-  button.disabled = not safe
+  button.disabled = not safe or authored
  generation_hint.text = "Ready to build. Resets score, rings and ball; keeps tuning." if safe else "Pause (Escape / Menu) to generate safely."
  if safe and game.zone_enabled:
   var zone_preference: String = "Official Easy" if zone_difficulty_selector.selected == 0 else "DEV " + TableGenerator.DIFFICULTY_NAMES[zone_difficulty_selector.selected]
   generation_hint.text = "Fresh Zone: %s. Resets scores, Chao and checkpoints." % zone_preference
+ if authored:
+  generation_hint.text = "Choose Generated / Existing for seeded layouts. Start / replay reloads this saved Act."
  var chunk_index: int = game.current_chunk_index()
- var chunk_name: String = game.chunks[chunk_index].data.chunk_id if chunk_index >= 0 else "Outside course"
+ var in_chunk: bool = chunk_index >= 0 and chunk_index < game.chunks.size()
+ var chunk_name: String = game.chunks[chunk_index].data.chunk_id if in_chunk else "Outside course"
+ if authored:
+  chunk_name = "Authored Act"
  traversal_telemetry.text = "Ball: %s\nCamera: %s\nTarget: %.0f, %.0f px" % [chunk_name, "Follow" if game.presentation.camera_follow_enabled else "Overview", game.presentation.camera_target.x, game.presentation.camera_target.y]
- if chunk_index >= 0 and not game.chunks[chunk_index].data.construction_grid.is_empty():
+ if authored:
+  traversal_telemetry.text += "\nActivation crossings: %d\nExit crossings: %d" % [game.authored_activation_count, game.authored_exit_count]
+ elif in_chunk and not game.chunks[chunk_index].data.construction_grid.is_empty():
   var data: ChunkData = game.chunks[chunk_index].data
   var local: Vector2 = game.ball.position - Vector2(data.grid_position + Vector2i(data.horizontal_shift_cells, 0)) * ChunkData.GRID_SIZE
   if data.mirrored:

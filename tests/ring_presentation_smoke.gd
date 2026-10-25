@@ -140,7 +140,7 @@ func run() -> void:
  var requested: bool = game.request_generation(10, TableGenerator.Difficulty.EASY)
  await process_frame
  await process_frame
- check(requested and not is_instance_valid(old_visual) and not is_instance_valid(presentation) and game.presentation.ring_pickups.is_empty() and game.rings_collected == 0 and field.pickup_claimed.get_connections().size() == 1, "Paused table regeneration frees old visuals and leaves one live pickup listener")
+ check(requested and not is_instance_valid(old_visual) and is_instance_valid(presentation) and game.presentation == presentation and game.presentation.ring_pickups.is_empty() and game.rings_collected == 0 and field.pickup_claimed.get_connections().size() == 1, "Paused table regeneration replaces old ring meshes on the retained presenter and leaves one live pickup listener")
  paused = false
  game.presentation.set_process(false)
  game.ball.freeze = true

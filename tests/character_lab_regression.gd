@@ -45,6 +45,7 @@ func run() -> void:
  game.presentation.add_child(target_visual)
  game.presentation.bumper_visuals[target_body.get_instance_id()] = target_visual
  game.chunks[0].descriptors.append({"kind": "bumper", "body": target_body})
+ game.playfield = PlayfieldData.from_generated(game.chunks, game.layout)
  var box := RectangleShape2D.new()
  box.size = Vector2(25, 500)
  wall = collider(Vector2(2100, 2000), box, false)

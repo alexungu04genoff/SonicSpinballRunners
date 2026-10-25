@@ -42,6 +42,8 @@ var animation_player: AnimationPlayer
 var close_camera: Camera3D
 var study_root: Node3D
 var study_origin: Vector3
+## Diagnostics can omit this optional island; the main game keeps the same study UI.
+var study_enabled := true
 var model_available := false
 var model_status := "Local Sonic asset not prepared"
 var pose := "roll"
@@ -60,8 +62,36 @@ var trail_clock := 0.0
 var pulse: MeshInstance3D
 var pulse_material: StandardMaterial3D
 var pulse_time := 0.0
+var _bound_flippers: Array[PlaygroundFlipper] = []
 
 func _ready() -> void:
+ _build_visuals()
+
+func refresh_playfield() -> void:
+ # Keep this presenter and its shared gameplay observers; only the cosmetic
+ # children and listeners on replaceable paddle bodies depend on the playfield.
+ resume_gameplay()
+ for flipper: PlaygroundFlipper in _bound_flippers:
+  if is_instance_valid(flipper) and flipper.struck.is_connected(_on_flipper_struck):
+   flipper.struck.disconnect(_on_flipper_struck)
+ _bound_flippers.clear()
+ for child: Node in get_children():
+  remove_child(child)
+  child.free()
+ trail.clear()
+ streak_materials.clear()
+ trail_clock = 0.0
+ _last_position = Vector2.INF
+ model = null
+ animation_player = null
+ close_view = false
+ _build_visuals()
+
+func _connect_once(signal_value: Signal, callback: Callable) -> void:
+ if not signal_value.is_connected(callback):
+  signal_value.connect(callback)
+
+func _build_visuals() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
  if is_instance_valid(specials):
   character_id = specials.character_id
@@ -114,15 +144,14 @@ func _ready() -> void:
  study_root = Node3D.new()
  study_root.name = "PausedCharacterStudy"
  add_child(study_root)
- if table.authored_mode and BALL_FORM_ONLY:
-  # Standalone authored play has no character study UI. Avoid building its
-  # decorative island while preserving the legacy visual-lab inspection path.
+ if not study_enabled:
+  # Low-level diagnostics have no character study UI.
   study_root.position = study_origin
  elif table.has_method("build_study"):
   table.call("build_study", study_root, study_origin)
  else:
   study_root.position = study_origin
- if not (table.authored_mode and BALL_FORM_ONLY):
+ if study_enabled:
   var study_shadow := table.mesh_node(disk, shadow, Vector3(0, 0.014, 0), study_root)
   study_shadow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  study_root.visible = false
@@ -136,18 +165,19 @@ func _ready() -> void:
  _build_effects()
  _apply_character_color()
  if is_instance_valid(specials):
-  specials.character_changed.connect(_on_character_changed)
-  specials.homing_started.connect(_on_homing_started)
-  specials.homing_ended.connect(_on_homing_ended)
-  specials.special_hit.connect(_on_special_hit)
-  specials.flight_started.connect(_on_flight_started)
-  specials.flight_ended.connect(_on_flight_ended)
- # Bind to this adapter, so freeing a regenerated presentation disconnects every
- # old listener, including listeners on the bottom paddles that survive the swap.
- ball.bumper_hit.connect(_on_bumper_hit)
+  _connect_once(specials.character_changed, _on_character_changed)
+  _connect_once(specials.homing_started, _on_homing_started)
+  _connect_once(specials.homing_ended, _on_homing_ended)
+  _connect_once(specials.special_hit, _on_special_hit)
+  _connect_once(specials.flight_started, _on_flight_started)
+  _connect_once(specials.flight_ended, _on_flight_ended)
+ # Persistent gameplay signals connect once. Refresh disconnects old paddle
+ # listeners before binding the current set, including retained bottom paddles.
+ _connect_once(ball.bumper_hit, _on_bumper_hit)
  for flipper: PlaygroundFlipper in table.flippers:
-  flipper.struck.connect(_on_flipper_struck)
- table.ring_field.pickup_claimed.connect(_on_ring_claimed)
+  _connect_once(flipper.struck, _on_flipper_struck)
+  _bound_flippers.append(flipper)
+ _connect_once(table.ring_field.pickup_claimed, _on_ring_claimed)
  _set_pose("roll", true)
  _process(0.0)
 

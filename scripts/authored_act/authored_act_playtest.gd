@@ -241,6 +241,7 @@ func load_act(path: String) -> bool:
  green_hill.build_authored(runtime, Rect2(Vector2.ZERO, document.red_gutter_bounds().end), float(document.cell_size))
  character = SonicPresenter.new()
  character.name = "AuthoredSonicVisual"
+ character.study_enabled = false
  character.ball = ball
  character.table = green_hill
  green_hill.add_child(character)

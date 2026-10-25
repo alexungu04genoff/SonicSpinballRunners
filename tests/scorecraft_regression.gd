@@ -12,6 +12,7 @@ func bumper(at: Vector2) -> StaticBody2D:
  body.add_child(collision)
  game.world.add_child(body)
  game.chunks[0].descriptors.append({"kind": "bumper", "body": body})
+ game.playfield = PlayfieldData.from_generated(game.chunks, game.layout)
  var visual := Node3D.new()
  game.presentation.add_child(visual)
  game.presentation.bumper_visuals[body.get_instance_id()] = visual

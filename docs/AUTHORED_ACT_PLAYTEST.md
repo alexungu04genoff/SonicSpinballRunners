@@ -1,8 +1,10 @@
-# Authored Act Playtest
+# Authored Act diagnostics
 
-This standalone development scene plays one saved Act through the existing Green Hill 3D presentation. The invisible 2D ball, flippers, bumper response and shared physics profile remain authoritative. It compiles the editor's canonical terrain silhouettes directly, without procedural generation or changes to the normal F5/main-game flow.
+**Normal human authored playtesting happens through the main Green Hill application.** Launch **Play Green Hill.cmd** and use **Level source → Authored Act / Load Act…**. That path retains the normal game's ball, tuning, input, rings, scoring, characters, specials, HUD and camera. See [one engine, multiple level sources](PLAYFIELD_SOURCES.md) for the current gameplay workflow and architecture.
 
-## Launch
+The standalone scene below remains a low-level geometry, scale and lifecycle diagnostic. Its simplified loop, toolbar, counters and reset rules are test fixtures, not a second production gameplay engine. It compiles the same canonical terrain silhouettes and reuses the same primitive physics implementations. Keep reusable loading/compiler/lifecycle helpers shared; add normal gameplay features to `game.gd`.
+
+## Diagnostic launch
 
 On Windows, double-click **Authored Act Playtest.cmd**. Choose **Example** for the curve showcase, **Compare** for a simple scale-reference Act, or **Load Act** for a saved `.tres` file. Loading leaves the ball waiting at its authored Spawn; press **Enter** or **Serve** to release it into normal gravity.
 
@@ -60,7 +62,7 @@ The ball deliberately retains its former 14 px radius at 100 px cells and scales
 
 The shared `TablePresentation` accepts generic terrain/object descriptors from the authored compiler. `GreenHillPresentation` reuses its grass, checker cliffs, sky, ocean, lighting and scenery. The authored path creates no `TableChunk` and never calls a generator. Filled stamps use their canonical polygon silhouettes; open stamps use narrow rails following only consecutive vertices. Visual geometry may merge overlapping filled surfaces, while each saved placement retains its independent collider. All 3D nodes are collisionless.
 
-The normal view uses the existing Real Pinball perspective with the complete single Act and gutter framed. X and Y use the same 2D-to-3D mapping scale; camera projection never stretches the underlying geometry. F2 reveals the underlying 2D geometry. F3 adds compact grid, Spawn, Entry, Exit, Activation and drain guides without changing collision or lifecycle behavior.
+This diagnostic defaults to a complete Act/gutter overview using the Real Pinball perspective. The main app instead retains the normal follow/overview camera controls. X and Y use the same 2D-to-3D mapping scale; camera projection never stretches the underlying geometry. F2 reveals the underlying 2D geometry. F3 adds compact grid, Spawn, Entry, Exit, Activation and drain guides without changing collision or lifecycle behavior.
 
 Saved ring trails expand through the same endpoint/spacing function as the editor. The existing `RingField` handles swept contact and profile magnet collection; the shared presentation supplies the existing cosmetic pickup flight toward the rolling ball. Collection cannot move the ball or award twice for the same active ring. Direct contact uses the actual ball and ring radii; the shared profile's magnet radius stays in physics pixels. Reset/drain restores the rack, and Reload resets the displayed pickup count. No score gate, rack bonus, special ability or progression is added to this standalone scene.
 

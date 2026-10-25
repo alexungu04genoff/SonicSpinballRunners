@@ -31,6 +31,7 @@ func run() -> void:
   game.chunks[0].descriptors.append({"kind": "circle", "body": body})
  # Duplicate descriptor must not multiply a target award.
  game.chunks[0].descriptors.append({"kind": "circle", "body": target_body})
+ game.playfield = PlayfieldData.from_generated(game.chunks, game.layout)
  game.specials.select_character("shadow")
  await place(Vector2(2000, 2000))
  game.ring_field.rings.clear()
@@ -94,6 +95,7 @@ func run() -> void:
  box.size = Vector2(25, 1600)
  wall = collider(Vector2(2250, 2200), box, false)
  game.chunks[0].descriptors.append({"kind": "rail", "body": wall})
+ game.playfield = PlayfieldData.from_generated(game.chunks, game.layout)
  target_body.position = Vector2(2210, 1750)
  second.position = Vector2(2500, 2100)
  far.position = Vector2(2800, 2000)

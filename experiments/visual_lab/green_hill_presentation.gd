@@ -41,6 +41,12 @@ var _outlines: Array[PackedVector2Array] = []
 var authored_terrain_polygons: Array[PackedVector2Array] = []
 var authored_open_paths: Array[PackedVector2Array] = []
 
+func _clear_playfield_geometry() -> void:
+ super._clear_playfield_geometry()
+ _outlines.clear()
+ authored_terrain_polygons.clear()
+ authored_open_paths.clear()
+
 func material(color: Color, glow: float = 0.0) -> StandardMaterial3D:
  # Reuse the original collision-matched mesh silhouettes with a cohesive toy palette.
  var palette := {

@@ -180,7 +180,7 @@ func run() -> void:
   check(game.generation_pending, "Quick-build button requests layout " + specification[2])
   await frames(4)
   game.presentation._process(0.0)
-  check(game.generation_seed == specification[0] and game.generation_grid_mode == specification[1] and not is_instance_valid(old_actor) and not is_instance_valid(old_terrain) and geometry_matches() and paused and game.ball.serve_pending and game.tuning.effective == saved_tuning and game.presentation.physics_overlay.visible and game.presentation.construction_grid_overlay.visible and game.presentation.camera_settings.look_ahead == 120.0, "Regeneration replaces scenery from transformed geometry and preserves settings: " + specification[2])
+  check(game.generation_seed == specification[0] and game.generation_grid_mode == specification[1] and is_instance_valid(old_actor) and game.character == old_actor and not is_instance_valid(old_terrain) and geometry_matches() and paused and game.ball.serve_pending and game.tuning.effective == saved_tuning and game.presentation.physics_overlay.visible and game.presentation.construction_grid_overlay.visible and game.presentation.camera_settings.look_ahead == 120.0, "Regeneration replaces scenery while retaining the character presenter and settings: " + specification[2])
   var listeners_ok: bool = game.ball.bumper_hit.get_connections().size() == 2 and game.ring_field.pickup_claimed.get_connections().size() == 2
   for flipper: PlaygroundFlipper in game.flippers:
    listeners_ok = listeners_ok and flipper.struck.get_connections().size() == 1

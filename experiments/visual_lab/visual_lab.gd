@@ -25,6 +25,12 @@ var _frame_count := 0
 var _capture_started := false
 var _capture_sequence := false
 var _sequence_index := 0
+var source_selector: OptionButton
+var load_act_button: Button
+var act_picker: FileDialog
+var source_note: Label
+var _source_previous_pause := false
+var _source_switch_pending := false
 
 func _ready() -> void:
  DisplayServer.window_set_title("Sonic Spinball Runners — Green Hill Visual Lab")
@@ -76,7 +82,7 @@ func _build_view() -> void:
  container.mouse_filter = Control.MOUSE_FILTER_IGNORE
  add_child(container)
  container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
- container.offset_bottom = -170.0
+ container.offset_bottom = -210.0
  view = SubViewport.new()
  view.name = "CollisionlessVisualLabViewport"
  view.size = Vector2i(1280, 900)
@@ -93,17 +99,22 @@ func _build_presentation() -> void:
  presentation.flippers = flippers
  presentation.ring_field = ring_field
  view.add_child(presentation)
- presentation.build(chunks, layout.junctions, layout.bounds)
+ presentation.rebuild_playfield(playfield, chunks, layout)
  var goal := ScoreAttackGoal.new()
  goal.challenge = score_attack
  presentation.add_child(goal)
  _add_zone_presentation()
  character = SonicPresenter.new()
  character.name = "SonicVisualAdapter"
+ character.set_meta("keep_on_playfield_rebuild", true)
  character.ball = ball
  character.table = presentation
  character.specials = specials
  presentation.add_child(character)
+
+func _rebuild_presentation() -> void:
+ super._rebuild_presentation()
+ character.refresh_playfield()
 
 func _add_zone_presentation() -> void:
  _add_area_feedback()
@@ -205,7 +216,7 @@ func _build_lab_ui() -> void:
  footer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
  footer.offset_left = 24
  footer.offset_right = -24
- footer.offset_top = -156
+ footer.offset_top = -196
  footer.offset_bottom = -14
  footer.add_theme_stylebox_override("panel", _panel_style(Color(0.025, 0.13, 0.16, 0.94)))
  root.add_child(footer)
@@ -220,6 +231,23 @@ func _build_lab_ui() -> void:
  top_row.add_child(pose_label)
  status_label = _label("", 12, Color("a4e5e3"))
  top_row.add_child(status_label)
+ var source_row := HBoxContainer.new()
+ source_row.add_theme_constant_override("separation", 8)
+ stack.add_child(source_row)
+ source_row.add_child(_label("LEVEL SOURCE", 12, Color("a4e5e3")))
+ source_selector = OptionButton.new()
+ source_selector.add_item("Generated / Existing")
+ source_selector.add_item("Authored Act")
+ source_selector.focus_mode = Control.FOCUS_NONE
+ source_selector.custom_minimum_size.x = 185
+ source_selector.item_selected.connect(_select_source)
+ source_row.add_child(source_selector)
+ load_act_button = _button("Load Act…", _open_act_picker)
+ source_row.add_child(load_act_button)
+ source_note = _label("", 12, Color("a4e5e3"))
+ source_note.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ source_note.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+ source_row.add_child(source_note)
  play_buttons = HBoxContainer.new()
  play_buttons.add_theme_constant_override("separation", 8)
  stack.add_child(play_buttons)
@@ -256,6 +284,55 @@ func _build_lab_ui() -> void:
  view_button = _button("C  Character close-up", func(): _set_close_view(not close_view))
  top_row.add_child(view_button)
  stack.add_child(_label("Q / E  Flippers    SPACE  Special    ← / →  Steer    ESC  Pause    R  Reset    O  Overview    F1  Tuning / seeds    •    Pause or wait at serve to build", 13, Color("cce5e0")))
+ act_picker = FileDialog.new()
+ act_picker.title = "Load an authored Act into Green Hill"
+ act_picker.access = FileDialog.ACCESS_FILESYSTEM
+ act_picker.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+ act_picker.filters = PackedStringArray(["*.tres ; Authored Act Resource"])
+ act_picker.current_dir = ProjectSettings.globalize_path("res://data/acts")
+ act_picker.file_selected.connect(_load_selected_act)
+ act_picker.canceled.connect(_finish_source_switch)
+ add_child(act_picker)
+
+func is_source_picker_open() -> bool:
+ return _source_switch_pending or (is_instance_valid(act_picker) and act_picker.visible)
+
+func _begin_source_switch() -> void:
+ _source_previous_pause = get_tree().paused
+ _source_switch_pending = true
+ get_tree().paused = true
+ controls.input_blocked = true
+
+func _finish_source_switch() -> void:
+ _source_switch_pending = false
+ get_tree().paused = _source_previous_pause
+ controls.input_blocked = false
+ source_selector.select(1 if level_source == "authored" else 0)
+ get_viewport().gui_release_focus()
+
+func _open_act_picker() -> void:
+ if generation_pending or close_view or is_source_picker_open() or zone.state == ZoneRun.State.DRAFT:
+  return
+ _begin_source_switch()
+ if not authored_act_path.is_empty():
+  act_picker.current_dir = ProjectSettings.globalize_path(authored_act_path).get_base_dir()
+ act_picker.popup_centered(Vector2i(900, 620))
+
+func _load_selected_act(path: String) -> void:
+ if request_authored_act(path):
+  while generation_pending:
+   await get_tree().process_frame
+ _finish_source_switch()
+
+func _select_source(index: int) -> void:
+ if index == 1:
+  _open_act_picker()
+ elif level_source == "authored":
+  _begin_source_switch()
+  if request_generated_source():
+   while generation_pending:
+    await get_tree().process_frame
+  _finish_source_switch()
 
 func _select_pose(value: String) -> void:
  if not close_view:
@@ -287,7 +364,7 @@ func _set_close_view(enabled: bool) -> void:
  get_viewport().gui_release_focus()
 
 func _unhandled_key_input(event: InputEvent) -> void:
- if not event is InputEventKey or not event.pressed or event.echo:
+ if is_source_picker_open() or not event is InputEventKey or not event.pressed or event.echo:
   return
  match event.physical_keycode:
   KEY_1: _select_pose("roll")
@@ -309,7 +386,7 @@ func _toggle_overview() -> void:
  get_viewport().gui_release_focus()
 
 func toggle_debug() -> void:
- if zone.state == ZoneRun.State.DRAFT:
+ if is_source_picker_open() or zone.state == ZoneRun.State.DRAFT:
   return
  if close_view:
   _set_close_view(false)
@@ -325,7 +402,7 @@ func toggle_debug() -> void:
   view_container.offset_right = -410
   view_container.offset_bottom = -65
  else:
-  view_container.offset_bottom = -170
+  view_container.offset_bottom = -210
  _position_challenge_ui()
  get_viewport().gui_release_focus()
 
@@ -338,6 +415,8 @@ func reset_ball(relaunch: bool = false) -> void:
   character.resume_gameplay()
 
 func toggle_pause() -> void:
+ if is_source_picker_open():
+  return
  if close_view:
   _set_close_view(false)
  else:
@@ -367,14 +446,23 @@ func _process(_delta: float) -> void:
   score_label_lab.add_theme_font_size_override("font_size", 25)
  var section := current_chunk_index()
  var construction_name: String = PlaygroundDebugPanel.ZONE_LAYOUT_NAMES[generation_grid_mode] if zone_enabled else GRID_MODE_NAMES[generation_grid_mode]
- status_label.text = "Seed %d · %s · %s · Section %d/%d" % [generation_seed, TableGenerator.DIFFICULTY_NAMES[generation_difficulty], construction_name, maxi(1, section + 1), chunks.size()]
+ if level_source == "authored":
+  status_label.text = "Authored Act · %s" % authored_document.title
+ else:
+  status_label.text = "Seed %d · %s · %s · Section %d/%d" % [generation_seed, TableGenerator.DIFFICULTY_NAMES[generation_difficulty], construction_name, maxi(1, section + 1), chunks.size()]
  status_label.tooltip_text = character.model_status
  if character.BALL_FORM_ONLY:
   status_label.text += " · Ball form"
  elif not character.model_available:
   status_label.text += " · Spin-ball fallback"
+ if not is_source_picker_open() and not generation_pending:
+  source_selector.select(1 if level_source == "authored" else 0)
+ source_selector.disabled = generation_pending or close_view or zone.state == ZoneRun.State.DRAFT
+ load_act_button.disabled = source_selector.disabled or is_source_picker_open()
+ source_note.text = last_source_error if not last_source_error.is_empty() else (authored_act_path.get_file() if level_source == "authored" else "Same game · choose a saved Act or a generated layout")
+ source_note.tooltip_text = last_source_error if not last_source_error.is_empty() else (authored_act_path if level_source == "authored" else "Loading an Act pauses play and restores the previous pause state.")
  for button: Button in layout_buttons:
-  button.disabled = not can_regenerate()
+  button.disabled = not can_regenerate() or level_source == "authored"
   var preset: Array = button.get_meta("layout_preset")
   if zone_enabled:
    button.text = PlaygroundDebugPanel.ZONE_LAYOUT_NAMES[preset[2]] if preset[2] > 0 else "Zone seed %d" % preset[1]
@@ -382,6 +470,8 @@ func _process(_delta: float) -> void:
   else:
    button.text = preset[0]
    button.tooltip_text = "Switch middle type; keep current seed and difficulty. Build at serve or while paused." if preset[2] > 0 else "Build this Normal preset at serve or while paused. Resets ball, rings and score."
+  if level_source == "authored":
+   button.tooltip_text = "Choose Generated / Existing to use seeded layout tools."
  overview_button.text = "O  Overview" if presentation.camera_follow_enabled else "O  Follow character"
  if respawn_time >= 0.0:
   pose_label.text = "DRAIN / RETURNING TO SERVE"

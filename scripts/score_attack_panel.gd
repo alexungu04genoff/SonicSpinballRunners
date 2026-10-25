@@ -139,14 +139,21 @@ func start_run(chao_id: String = "") -> bool:
  return game.request_generation(game.generation_seed, -1, -1, settings)
 
 func _process(_delta: float) -> void:
+ var authored: bool = game.level_source == "authored"
+ mode_selector.set_item_disabled(1, authored)
+ mode_selector.set_item_disabled(2, authored)
+ mode_selector.tooltip_text = "Single authored Acts use Free Play. Score goals and multi-Act Zones are not part of this source yet." if authored else "Choose a mode for the next run."
+ if authored and mode_selector.selected != 0:
+  mode_selector.select(0)
+ start_button.tooltip_text = "Reload this saved Act with the selected character and Chao. Score and rings reset; physics tuning stays." if authored else "Apply mode and target to a fresh run on this seed. Score and rings reset; physics tuning stays."
  chao_button.text = "Act rewards" if game.zone_enabled else "Chao: %s · Lab" % PhysicsTuning.CHAO[game.tuning.chao_id].name.trim_suffix(" Chao")
  chao_button.modulate = PhysicsTuning.CHAO[game.tuning.chao_id].color
  chao_button.disabled = not game.can_regenerate() or game.zone_enabled or mode_selector.selected == 2
  start_button.disabled = not game.can_regenerate()
  character_selector.disabled = not game.can_regenerate()
  target_field.editable = mode_selector.selected == 1
- target_field.visible = mode_selector.selected != 2
- target_caption.visible = mode_selector.selected != 2
+ target_field.visible = not authored and mode_selector.selected != 2
+ target_caption.visible = not authored and mode_selector.selected != 2
  hint.text = "Pause to edit" if start_button.disabled else "Resets the run"
  var completed: bool = game.score_attack.state == ScoreAttack.State.COMPLETE
  victory.visible = completed

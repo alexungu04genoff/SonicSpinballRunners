@@ -75,9 +75,9 @@ The compact **Spacing** field defaults to **0.4 cells between centers**. Both en
 
 In **Select / Move**, click any ring to select the whole trail. Drag its body to move both endpoints together; once selected, drag either small endpoint handle to reshape the trail. A single ring moves as one point. Normal group movement snaps the start while preserving the trail's relative shape. Alt enables free movement; arrows move one cell and Alt+arrows move one pixel. Delete removes the whole trail, and Ctrl+D duplicates it one cell diagonally. Creation, movement, endpoint edits, spacing changes, duplication and deletion use the shared undo/redo history. Alt-click includes ring trails when cycling overlapping items.
 
-Rings have a **0.18-cell diameter**, centralized as `RING_RADIUS_CELLS` in `scripts/act_dimensions.gd`. Selection adds only a faint endpoint line and small handles. `ring_trails.gd` owns deterministic generation and default spacing; it has no runtime dependencies. The authored playtest uses this same generation function, existing swept ring collection and Green Hill pickup presentation. A trail is limited to 4,096 rings to reject unbounded resource input without freezing the editor.
+Rings have a **0.18-cell diameter**, centralized as `RING_RADIUS_CELLS` in `scripts/act_dimensions.gd`. Selection adds only a faint endpoint line and small handles. `ring_trails.gd` owns deterministic generation and default spacing; it has no runtime dependencies. The main Green Hill app uses this function to populate its existing `RingField`, scoring, special meter, Scorecraft and pickup presentation. A trail is limited to 4,096 rings to reject unbounded resource input without freezing the editor.
 
-This feature is **authoring and persistence only**. The existing authored-Act playtest does not instantiate these trails yet; no ring collection, scoring, magnetism, collision, character interaction or procedural ring routes are added.
+The editor remains **authoring and persistence only**. Load its saved file through the main Green Hill app's **Level source / Load Act…** controls to play the exact trails using normal ring collection and character systems. See [playfield sources](PLAYFIELD_SOURCES.md).
 
 ## Entry and Exit
 
@@ -106,7 +106,7 @@ Activation Y must be finite and satisfy `0 <= Y < Act height`. Spawn coordinates
 
 The translucent **red gutter** begins at the true bottom terrain boundary and spans one cell-height below it, using shared `ActGeometry.RED_GUTTER_CELLS`. It has no grid lines, terrain row index, editable marker or placement tool. Terrain clicks and palette drops cannot place anything there. Its height is derived from cell size and is not copied into each Act file; `terrain_bounds()` and `red_gutter_bounds()` expose the two distinct local rectangles.
 
-The concepts remain separate: Entry is the physical connection, Activation is the upward checkpoint crossing, the red gutter provides recovery space below the active Act, and Spawn is its restart location. **No gameplay physics run in this editor.** The separate [Authored Act Playtest](AUTHORED_ACT_PLAYTEST.md) now detects upward Activation/Exit crossings and drains at the gutter's bottom, resetting to Spawn. Checkpoint transfers between multiple Acts remain future work.
+The concepts remain separate: Entry is the physical connection, Activation is the upward checkpoint crossing, the red gutter provides recovery space below the active Act, and Spawn is its restart location. **No gameplay physics run in this editor.** The [main Green Hill app](PLAYFIELD_SOURCES.md) detects upward Activation/Exit crossings as debug events and uses the gutter's bottom for normal drain/reset to Spawn. Checkpoint transfers between multiple Acts remain future work.
 
 ## File workflow
 
@@ -160,7 +160,7 @@ Use `ActGeometry.load_document()` and `save_document()` for persistence. In memo
 
 Transforms apply clockwise quarter-turns, then mirrors along the final screen axes. Rotate composes another clockwise turn with existing mirrors. Saves reference shape IDs instead of duplicating points. Normal field/shape validation and the existing unsaved-change workflow remain in place.
 
-The canvas emits edit requests; the editor owns mutations and history. No grid-occupancy masks, boolean union, collision compilation or procedural-chunk assumptions enter the authoring model. Save a file with Spawn, then load it in the standalone [Authored Act Playtest](AUTHORED_ACT_PLAYTEST.md) to play its exact geometry with existing gameplay physics and Green Hill presentation. Runtime compilation remains separate from authoring. Boost pads, hazards, difficulty/reachability checks, horizontal Act alignment and Zone assembly remain deferred.
+The canvas emits edit requests; the editor owns mutations and history. No grid-occupancy masks, boolean union, collision compilation or procedural-chunk assumptions enter the authoring model. Save a file with Spawn, then load it through **Play Green Hill.cmd → Level source / Load Act…** to play its exact geometry in the existing game. See [the shared engine contract](PLAYFIELD_SOURCES.md). Runtime compilation remains separate from authoring. Boost pads, hazards, difficulty/reachability checks, horizontal Act alignment and Zone assembly remain deferred.
 
 ## Verification
 
@@ -181,4 +181,4 @@ Use the existing isolated import helper to prevent editor indentation conversion
 
 The geometry regression checks all shapes against independent transform calculations, curved fill coverage and triangulation, overlap persistence and a fresh-process reload/edit/re-save. Connector regression checks width-only compatibility, spans, drafts and restart persistence. Gameplay and lifecycle regressions check independent records, validation, exact fractional persistence and previous-format loading. Scene smoke scripts exercise actual pointer/keyboard gestures, both snapping modes, numeric angles, overlap selection, history, marker bounds, gutter rejection and file workflow. Run them graphically with the launcher's ANGLE backend for rendered captures.
 
-Human review remains useful for palette comfort, drag precision, curve silhouettes and editing feel. Gameplay is tested in the separate authored-Act scene; the editor remains focused on authoring.
+Human review remains useful for palette comfort, drag precision, curve silhouettes and editing feel. Normal gameplay testing uses the main Green Hill application. The [standalone authored scene](AUTHORED_ACT_PLAYTEST.md) remains a low-level diagnostic; the editor remains focused on authoring.

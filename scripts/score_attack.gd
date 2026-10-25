@@ -11,6 +11,9 @@ var target: int = DEFAULT_TARGET
 var goal_position := Vector2.INF
 
 static func find_goal(layout: Dictionary) -> Vector2:
+ # Authored Free Play has no challenge goal. Its Exit remains lifecycle metadata.
+ if not layout.has("chunks") or layout.chunks.is_empty():
+  return Vector2.INF
  # Existing route markers have already passed the generator's connectivity check.
  # Prefer authored targets; otherwise use a clear upper route or collectible anchor.
  var upper: ChunkData = layout.chunks[0]

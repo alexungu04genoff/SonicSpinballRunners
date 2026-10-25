@@ -43,7 +43,21 @@ See [Act Geometry Editor](ACT_GEOMETRY_EDITOR.md) for launch, controls, the edit
 
 Format 5 adds `ring_trails` records containing exact local-pixel start/end and spacing. Existing format-2/3/4 Acts load with empty trails without rewriting their files. Changes to cell size or preview size do not reposition saved rings. The subsequent Green Hill authored milestone instantiates these exact centers through the existing swept `RingField` collection and cosmetic pickup presentation. Scoring progression and procedural routes remain separate.
 
-### One authored Act in real gameplay — 2026-10-25
+### One engine, multiple level sources — 2026-10-25
+
+**Confirmed and implemented architecture:** An authored Act is a playfield source for the existing `game.gd` / Green Hill application. The main app now offers **Generated / Existing**, **Authored Act** and **Load Act…**. Switching source retains the exact ball, `PhysicsTuning`, `PlaygroundInput`, `RingField`, Scorecraft, CharacterSpecials, HUD, presentation, camera, environment and character-presenter instances. Only level geometry and related visual children are replaced. There is one production game loop and one set of physics/profile defaults.
+
+`PlayfieldData` supplies common bounds, Spawn, ring positions, bumper targets and eligible static terrain. Generated data comes from installed chunks; authored data comes directly from the saved Resource and existing compiler. Authored startup/reload never calls `TableGenerator` or `ZoneGenerator`, and never manufactures chunks. The compiler preserves canonical silhouettes, independent overlaps, exact transforms and shared editor/runtime dimensions. The existing normal camera follows the smaller physical world with uniform mapping and retains its tuning and overview state.
+
+All four characters use their existing shared specials on either source. Authored rings use the same collection, scoring, special-meter and Scorecraft paths. Source changes and Start/replay perform the normal new-run reset; ordinary drains and R retain normal Free Play scoring/rack rules. Spawn is the serve/reset point. The red gutter's bottom triggers the normal 0.65-second drain delay and 0.25-second release delay. Activation and Exit only produce debug events inside the existing physics loop.
+
+Authored play currently uses **Free Play**. Existing mode controls remain visible, with authored Score Attack/Zone disabled pending an agreed objective/assembly design. No multi-Act alignment, pools, score gates, checkpoint transfers or draft transitions are added. Generated Free Play, Score Attack and Green Hill Zone remain supported. Invalid Act replacements preserve the current run; loading never changes the source file.
+
+Normal human authored playtesting uses **Play Green Hill.cmd**. The standalone authored scene is retained only for focused geometry/lifecycle diagnostics, with its older simplified controls and reset behavior. Do not grow it into a second production engine. See [playfield source ownership, workflow and tests](PLAYFIELD_SOURCES.md) and [executed verification](VERIFICATION.md).
+
+### Earlier standalone authored diagnostic milestones — 2026-10-25
+
+The following records the initial bridge and renderer work. Its standalone workflow and lifecycle defaults are diagnostic history; the unified main-game path above supersedes them for human gameplay.
 
 **Confirmed and implemented Milestone 5:** New authoring features are temporarily frozen to prove **one saved file → one playable Act**. [Authored Act Playtest.cmd](../Authored%20Act%20Playtest.cmd) and [scenes/authored_act_playtest.tscn](../scenes/authored_act_playtest.tscn), launched with F6, provide file selection, Example, Reload, Serve and Reset. F5 and all existing procedural modes retain their normal flow.
 

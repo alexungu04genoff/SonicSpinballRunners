@@ -54,6 +54,21 @@ const GRID_EASY_RECIPES: Array[GridChunkRecipe] = [
 var layout: Dictionary = {}
 var generation_pending: bool = false
 var view: SubViewport
+const Playfield = preload("res://scripts/playfield_data.gd")
+const ActDocument = preload("res://scripts/act_editor/act_geometry.gd")
+const ActCompiler = preload("res://scripts/authored_act/act_runtime_compiler.gd")
+const ActLifecycle = preload("res://scripts/authored_act/act_lifecycle.gd")
+var playfield: PlayfieldData
+var level_source := "generated"
+var authored_act_path := ""
+var authored_document: Resource
+var authored_runtime: Dictionary = {}
+var authored_timings: Dictionary = {}
+var authored_activation_count := 0
+var authored_exit_count := 0
+var last_source_error := ""
+var _authored_root: Node2D
+var _ring_population_ms := 0.0
 
 func _ready() -> void:
  tuning = PhysicsTuning.new()
@@ -70,24 +85,47 @@ func _ready() -> void:
  world = Node2D.new()
  world.name = "PhysicsWorld"
  add_child(world)
- layout = _generate_layout(generation_seed, generation_difficulty, -1, zone_enabled)
- generation_difficulty = int(layout.get("difficulty_preference", generation_difficulty))
- if not layout.valid:
-  push_error("No safe table layout: " + str(layout.errors))
-  set_physics_process(false)
-  return
- for index in layout.chunks.size():
-  chunks.append(_build_chunk(index))
  ball = PlaygroundBall.new()
  ball.name = "PlayerPhysics"
- ball.serve_position = chunks.back().get_node("serve").global_position
- ball.position = ball.serve_position
  ball.tuning = tuning
  ball.controls = controls
+ var args := OS.get_cmdline_user_args()
+ var act_argument := args.find("--act")
+ if act_argument >= 0 and act_argument + 1 < args.size():
+  authored_act_path = args[act_argument + 1]
+ var initial_authored: Dictionary = {}
+ if not authored_act_path.is_empty():
+  initial_authored = _prepare_authored(authored_act_path)
+  if not initial_authored.error.is_empty():
+   _fail_startup(initial_authored.error)
+   return
+  zone_enabled = false
+  score_attack_enabled = false
+  level_source = "authored"
+  authored_document = initial_authored.document
+  authored_runtime = initial_authored.runtime
+  layout = _authored_layout(authored_document)
+  playfield = Playfield.from_authored(authored_document, authored_runtime)
+ else:
+  layout = _generate_layout(generation_seed, generation_difficulty, -1, zone_enabled)
+  generation_difficulty = int(layout.get("difficulty_preference", generation_difficulty))
+  if not layout.valid:
+   _fail_startup("No safe table layout: " + str(layout.errors))
+   return
+  for index in layout.chunks.size():
+   chunks.append(_build_chunk(index))
+  playfield = Playfield.from_generated(chunks, layout)
+ ball.serve_position = playfield.spawn
+ ball.position = ball.serve_position
  world.add_child(ball)
  ball.teleport_to(ball.position, Vector2.ZERO, true)
- for index in range(chunks.size() - 1, -1, -1):
-  _add_chunk_flippers(chunks[index])
+ if level_source == "authored":
+  _authored_root = authored_runtime.root
+  world.add_child(_authored_root)
+  flippers.assign(authored_runtime.flippers)
+ else:
+  for index in range(chunks.size() - 1, -1, -1):
+   _add_chunk_flippers(chunks[index])
  ring_field = RingField.new()
  ring_field.name = "Rings"
  ring_field.ball = ball
@@ -104,7 +142,9 @@ func _ready() -> void:
  score_attack_enabled = score_attack_enabled and not zone_enabled
  score_attack.reset(score_attack_enabled, score_attack_target, ScoreAttack.find_goal(layout))
  previous_goal_position = ball.serve_position
+ var presentation_started := Time.get_ticks_usec()
  _build_view()
+ var presentation_ms := (Time.get_ticks_usec() - presentation_started) / 1000.0
  debug_panel = PlaygroundDebugPanel.new()
  debug_panel.name = "DebugAndHUD"
  debug_panel.game = self
@@ -122,7 +162,27 @@ func _ready() -> void:
  ring_field.scoring_pickup.connect(_on_ring_collected)
  tuning.changed.connect(_apply_tuning)
  _apply_tuning()
+ if level_source == "authored":
+  # Include the derived app's HUD setup in ready time, without charging it to
+  # presentation geometry construction or waiting for the first rendered frame.
+  call_deferred("_record_authored_timing", initial_authored, presentation_ms)
  print("PLAYGROUND_READY | Godot %s | 120 Hz | 2D collisions / 3D presentation | %s" % [Engine.get_version_info().string, layout.signature])
+
+func _fail_startup(message: String) -> void:
+ last_source_error = message
+ push_error(message)
+ ball.free()
+ ball = null
+ set_physics_process(false)
+ set_process(false)
+ set_process_unhandled_input(false)
+ set_process_unhandled_key_input(false)
+ var error_label := Label.new()
+ error_label.position = Vector2(32, 32)
+ error_label.size = Vector2(900, 200)
+ error_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ error_label.text = "Unable to load the playfield.\n\n%s\n\nClose this window and check the launch path and Act Spawn, then try again." % message
+ add_child(error_label)
 
 func _generate_layout(seed_value: int, preference: int, grid_mode: int = -1, for_zone: bool = false, difficulty_override: int = -2) -> Dictionary:
  if for_zone:
@@ -192,12 +252,13 @@ func current_chunk_index() -> int:
  return -1
 
 func _populate_rings() -> void:
+ var started := Time.get_ticks_usec()
  ring_field.rings.clear()
  ring_field.previous_ball_position = ball.serve_position
- for chunk: TableChunk in chunks:
-  for descriptor: Dictionary in chunk.descriptors:
-   if descriptor.kind == "ring":
-    ring_field.add_ring(descriptor.position)
+ ring_field.ring_radius = float(authored_document.cell_size) * preload("res://scripts/act_dimensions.gd").RING_RADIUS_CELLS if level_source == "authored" else 12.0
+ for point: Vector2 in playfield.ring_positions:
+  ring_field.add_ring(point)
+ _ring_population_ms = (Time.get_ticks_usec() - started) / 1000.0
 
 func _build_view() -> void:
  var container := SubViewportContainer.new()
@@ -224,7 +285,19 @@ func _build_presentation() -> void:
  presentation.flippers = flippers
  presentation.ring_field = ring_field
  view.add_child(presentation)
- presentation.build(chunks, layout.junctions, layout.bounds)
+ if level_source == "authored":
+  presentation.build_authored(authored_runtime, playfield.bounds, float(authored_document.cell_size))
+  presentation.set_camera_follow(true)
+ else:
+  presentation.build(chunks, layout.junctions, layout.bounds)
+ var goal := ScoreAttackGoal.new()
+ goal.challenge = score_attack
+ presentation.add_child(goal)
+ _add_zone_presentation()
+
+func _rebuild_presentation() -> void:
+ presentation.flippers = flippers
+ presentation.rebuild_playfield(playfield, chunks, layout)
  var goal := ScoreAttackGoal.new()
  goal.challenge = score_attack
  presentation.add_child(goal)
@@ -247,7 +320,81 @@ func _add_area_feedback() -> void:
 func can_regenerate() -> bool:
  return not generation_pending and zone.state != ZoneRun.State.DRAFT and (get_tree().paused or (ball.serve_pending and not ball.release_pending))
 
+func _source_settings_valid(settings: Dictionary) -> bool:
+ if not CharacterSpecials.CHARACTERS.has(settings.get("character", character_id)):
+  status_message = "Unknown character; current run preserved."
+  return false
+ if settings.has("chao") and not PhysicsTuning.CHAO.has(settings.chao):
+  status_message = "Unknown Chao; current run preserved."
+  return false
+ return true
+
+func request_authored_act(path: String, challenge_settings: Dictionary = {}) -> bool:
+ if not _source_settings_valid(challenge_settings):
+  return false
+ if challenge_settings.get("zone", false) or challenge_settings.get("enabled", false):
+  status_message = "Single authored Acts use Free Play. Score goals and multi-Act Zones remain separate."
+  return false
+ if not can_regenerate():
+  status_message = "Pause before changing the level source, or wait at serve."
+  return false
+ generation_pending = true
+ call_deferred("_load_authored_act", path, challenge_settings.duplicate())
+ return true
+
+func request_generated_source() -> bool:
+ if not can_regenerate():
+  status_message = "Pause before changing the level source, or wait at serve."
+  return false
+ generation_pending = true
+ call_deferred("_regenerate", generation_seed, generation_difficulty, generation_grid_mode, {"zone": false, "enabled": false})
+ return true
+
+func _prepare_authored(path: String) -> Dictionary:
+ var started := Time.get_ticks_usec()
+ var loaded: Dictionary = ActDocument.load_document(path)
+ var result := {"document": loaded.document, "runtime": {}, "error": loaded.error,
+  "started": started, "load_ms": (Time.get_ticks_usec() - started) / 1000.0}
+ if loaded.document == null:
+  return result
+ result.runtime = ActCompiler.compile(loaded.document, tuning, controls, ball)
+ result.error = result.runtime.error
+ return result
+
+func _authored_layout(document: Resource) -> Dictionary:
+ # Keep the legacy generated-layout metadata at the source boundary. Downstream
+ # gameplay reads PlayfieldData and never requires fabricated TableChunks.
+ return {"valid": true, "chunks": [], "junctions": [], "bounds": Rect2(Vector2.ZERO, document.red_gutter_bounds().end),
+  "signature": "Authored Act / " + str(document.title), "used_fallback": false}
+
+func _load_authored_act(path: String, challenge_settings: Dictionary) -> void:
+ if not (get_tree().paused or (ball.serve_pending and not ball.release_pending)):
+  generation_pending = false
+  status_message = "Level load cancelled because play resumed."
+  return
+ var prepared := _prepare_authored(path)
+ if not prepared.error.is_empty():
+  last_source_error = prepared.error
+  status_message = "Cannot load Act: " + last_source_error
+  generation_pending = false
+  return
+ authored_act_path = path
+ last_source_error = ""
+ var settings := challenge_settings.duplicate()
+ settings.zone = false
+ settings.enabled = false
+ await _replace_playfield(_authored_layout(prepared.document), generation_seed, generation_difficulty, generation_grid_mode, settings, prepared)
+
+func _record_authored_timing(prepared: Dictionary, presentation_ms: float) -> void:
+ authored_timings = {"load_ms": prepared.load_ms, "terrain_ms": prepared.runtime.timings.terrain_ms,
+  "objects_ms": prepared.runtime.timings.objects_ms, "rings_ms": _ring_population_ms, "presentation_ms": presentation_ms,
+  "total_ms": (Time.get_ticks_usec() - int(prepared.started)) / 1000.0}
+ print("AUTHORED_MAIN_READY | Load %.2f ms | Terrain %.2f ms | Objects %.2f ms | Rings %.2f ms | Green Hill %.2f ms | Ready %.2f ms" % [authored_timings.load_ms, authored_timings.terrain_ms, authored_timings.objects_ms, authored_timings.rings_ms, authored_timings.presentation_ms, authored_timings.total_ms])
+
 func request_generation(seed_value: int, preference: int = -1, grid_mode: int = -1, challenge_settings: Dictionary = {}) -> bool:
+ # Existing Start/replay, character and Chao controls replay the active source.
+ if level_source == "authored":
+  return request_authored_act(authored_act_path, challenge_settings)
  if not CharacterSpecials.CHARACTERS.has(challenge_settings.get("character", character_id)):
   status_message = "Unknown character; current run preserved."
   return false
@@ -286,6 +433,14 @@ func _regenerate(seed_value: int, preference: int, grid_mode: int = -1, challeng
   status_message = "No clear upper goal anchor; current table preserved."
   generation_pending = false
   return
+ await _replace_playfield(candidate, seed_value, preference, grid_mode, challenge_settings)
+
+func _replace_playfield(candidate: Dictionary, seed_value: int, preference: int, _grid_mode: int, challenge_settings: Dictionary, prepared: Dictionary = {}) -> void:
+ last_source_error = ""
+ var requested_zone: bool = challenge_settings.get("zone", zone_enabled)
+ var requested_override: int = challenge_settings.get("zone_difficulty", zone_difficulty_override)
+ var challenge_enabled: bool = not requested_zone and challenge_settings.get("enabled", score_attack_enabled)
+ var goal_position := ScoreAttack.find_goal(candidate)
  var resume_after_victory := score_attack.state == ScoreAttack.State.COMPLETE or zone.state == ZoneRun.State.COMPLETE
  scorecraft.reset("New run", true)
  scorecraft_enabled = bool(challenge_settings.get("combos", scorecraft_enabled))
@@ -295,46 +450,26 @@ func _regenerate(seed_value: int, preference: int, grid_mode: int = -1, challeng
   specials.select_character(requested_character)
  else:
   specials.reset(true, "New run")
- var overlays: Array[bool] = [presentation.physics_overlay.visible, presentation.chunk_overlay.visible, presentation.connector_overlay.visible, presentation.construction_grid_overlay.visible]
- var camera_preset: int = presentation.camera_preset
- var camera_follow: bool = presentation.camera_follow_enabled
- var camera_settings: Dictionary = presentation.camera_settings.duplicate()
  ball.freeze = true
  ball.linear_velocity = Vector2.ZERO
- presentation.free()
  for gate: ZoneGate in zone_gates:
   gate.free()
  zone_gates.clear()
- # Paddles stay put. A shaped lower junction can change the deck's top wall collar.
- var lower: TableChunk = chunks.back()
- var keep_lower_geometry: bool = lower.data.gameplay_descriptors() == candidate.chunks.back().gameplay_descriptors()
- var keep_lower_paddles: bool = lower.data.world_flippers() == candidate.chunks.back().world_flippers()
- for i in range(chunks.size() - 1):
-  chunks[i].free()
- chunks.clear()
- for i in range(flippers.size() - 1, 1, -1):
-  flippers[i].free()
-  flippers.remove_at(i)
- if not keep_lower_paddles:
-  for flipper: PlaygroundFlipper in flippers:
-   flipper.free()
-  flippers.clear()
- layout = candidate
- generation_seed = seed_value
- generation_difficulty = int(candidate.get("difficulty_preference", preference))
- generation_grid_mode = int(candidate.get("construction_mode", 0))
- for i in range(layout.chunks.size() - 1):
-  chunks.append(_build_chunk(i))
- if keep_lower_geometry:
-  lower.data = layout.chunks.back()
+ if not prepared.is_empty():
+  _clear_playfield_geometry()
+  level_source = "authored"
+  authored_document = prepared.document
+  authored_runtime = prepared.runtime
+  _authored_root = authored_runtime.root
+  world.add_child(_authored_root)
+  flippers.assign(authored_runtime.flippers)
+  layout = candidate
+  playfield = Playfield.from_authored(authored_document, authored_runtime)
  else:
-  lower.free()
-  lower = _build_chunk(layout.chunks.size() - 1)
- chunks.append(lower)
- if not keep_lower_paddles:
-  _add_chunk_flippers(lower)
- for i in range(chunks.size() - 2, -1, -1):
-  _add_chunk_flippers(chunks[i])
+  _install_generated_geometry(candidate)
+  generation_seed = seed_value
+  generation_difficulty = int(candidate.get("difficulty_preference", preference))
+  generation_grid_mode = int(candidate.get("construction_mode", 0))
  # Commit the loadout only after the replacement layout has passed validation.
  # Ordinary replay/regeneration retains the slot; no modifier list accumulates.
  if requested_zone:
@@ -347,7 +482,7 @@ func _regenerate(seed_value: int, preference: int, grid_mode: int = -1, challeng
   tuning.equip_chao(challenge_settings.chao)
  zone_enabled = requested_zone
  zone_difficulty_override = requested_override
- ball.serve_position = chunks.back().get_node("serve").global_position
+ ball.serve_position = playfield.spawn
  ball.teleport_to(ball.serve_position, Vector2.ZERO, true)
  _apply_tuning()
  _populate_rings()
@@ -367,21 +502,18 @@ func _regenerate(seed_value: int, preference: int, grid_mode: int = -1, challeng
  ring_reset_time = -1.0
  ball.bumper_hit_count = 0
  ball.sweep_rebounds = 0
+ _target_awards.clear()
+ authored_activation_count = 0
+ authored_exit_count = 0
  score_attack_enabled = challenge_enabled
  score_attack_target = clampi(int(challenge_settings.get("target", score_attack_target)), 25, 1000000)
  score_attack.reset(score_attack_enabled, score_attack_target, goal_position)
  previous_goal_position = ball.serve_position
  _goal_motion_ready = false
- _build_presentation()
- presentation.physics_overlay.visible = overlays[0]
- presentation.chunk_overlay.visible = overlays[1]
- presentation.connector_overlay.visible = overlays[2]
- presentation.construction_grid_overlay.visible = overlays[3]
- presentation.set_camera_preset(camera_preset)
- for key: String in camera_settings:
-  presentation.set_camera_value(key, camera_settings[key])
- presentation.set_camera_follow(camera_follow)
+ var presentation_started := Time.get_ticks_usec()
+ _rebuild_presentation()
  presentation.reset_camera(ball.serve_position)
+ var presentation_ms := (Time.get_ticks_usec() - presentation_started) / 1000.0
  ball.freeze = false
  if resume_after_victory:
   # Resume outside this deferred callback: Godot 2D can otherwise step twice
@@ -393,11 +525,71 @@ func _regenerate(seed_value: int, preference: int, grid_mode: int = -1, challeng
  status_message = "Table ready. Resume if paused, then Enter / X to launch."
  if resume_after_victory:
   status_message = "Fresh challenge. Enter / X to launch."
- print("TABLE_GENERATED | " + layout.signature + " | fallback=" + str(layout.used_fallback))
+ if not prepared.is_empty():
+  _record_authored_timing(prepared, presentation_ms)
+ else:
+  print("TABLE_GENERATED | " + layout.signature + " | fallback=" + str(layout.used_fallback))
+
+func _clear_playfield_geometry() -> void:
+ for flipper: PlaygroundFlipper in flippers:
+  flipper.free()
+ flippers.clear()
+ for chunk: TableChunk in chunks:
+  chunk.free()
+ chunks.clear()
+ if is_instance_valid(_authored_root):
+  _authored_root.free()
+ _authored_root = null
+
+func _install_generated_geometry(candidate: Dictionary) -> void:
+ if chunks.is_empty():
+  _clear_playfield_geometry()
+  layout = candidate
+  for index in layout.chunks.size():
+   chunks.append(_build_chunk(index))
+  for index in range(chunks.size() - 1, -1, -1):
+   _add_chunk_flippers(chunks[index])
+ else:
+  _replace_generated_chunks(candidate)
+ level_source = "generated"
+ authored_document = null
+ authored_runtime = {}
+ ball.radius = PlaygroundBall.RADIUS
+ playfield = Playfield.from_generated(chunks, layout)
+
+func _replace_generated_chunks(candidate: Dictionary) -> void:
+ # Preserve the existing generated lower deck and paddles when identical.
+ var lower: TableChunk = chunks.back()
+ var keep_lower_geometry: bool = lower.data.gameplay_descriptors() == candidate.chunks.back().gameplay_descriptors()
+ var keep_lower_paddles: bool = lower.data.world_flippers() == candidate.chunks.back().world_flippers()
+ for i in range(chunks.size() - 1):
+  chunks[i].free()
+ chunks.clear()
+ for i in range(flippers.size() - 1, 1, -1):
+  flippers[i].free()
+  flippers.remove_at(i)
+ if not keep_lower_paddles:
+  for flipper: PlaygroundFlipper in flippers:
+   flipper.free()
+  flippers.clear()
+ layout = candidate
+ for i in range(layout.chunks.size() - 1):
+  chunks.append(_build_chunk(i))
+ if keep_lower_geometry:
+  lower.data = layout.chunks.back()
+ else:
+  lower.free()
+  lower = _build_chunk(layout.chunks.size() - 1)
+ chunks.append(lower)
+ if not keep_lower_paddles:
+  _add_chunk_flippers(lower)
+ for i in range(chunks.size() - 2, -1, -1):
+  _add_chunk_flippers(chunks[i])
 
 func _apply_tuning() -> void:
- for chunk: TableChunk in chunks:
-  chunk.wall_material.bounce = tuning.effective.wall_restitution
+ for body: StaticBody2D in playfield.terrain_bodies:
+  if is_instance_valid(body) and body.physics_material_override != null:
+   body.physics_material_override.bounce = tuning.effective.wall_restitution
 
 func launch_ball() -> void:
  if respawn_time > 0 or generation_pending or score_attack.state == ScoreAttack.State.COMPLETE or zone.state in [ZoneRun.State.DRAFT, ZoneRun.State.COMPLETE]:
@@ -509,13 +701,15 @@ func _observe_challenge_score() -> void:
   status_message = "GOAL OPEN — climb to the green ring in the upper section!"
 
 func _physics_process(delta: float) -> void:
+ if not is_instance_valid(ball) or generation_pending:
+  return
  if score_attack.state == ScoreAttack.State.COMPLETE or zone.state in [ZoneRun.State.DRAFT, ZoneRun.State.COMPLETE]:
   return
  if respawn_time >= 0.0:
   respawn_time -= delta
   if respawn_time <= 0:
    reset_ball(true)
- elif not ball.serve_pending and (_at_checkpoint_drain() or ball.position.y > layout.bounds.end.y + 50.0 or ball.position.x < layout.bounds.position.x - 250.0 or ball.position.x > layout.bounds.end.x + 250.0 or ball.position.y < layout.bounds.position.y - 200.0):
+ elif not ball.serve_pending and not ball._teleport_pending and _at_playfield_drain():
   ball_number += 1
   respawn_time = 0.65
   specials.reset(false, "Drain")
@@ -532,6 +726,14 @@ func _physics_process(delta: float) -> void:
    ring_field.reset_rings()
  if not ball.serve_pending and not ball._teleport_pending and respawn_time < 0.0:
   var start := previous_goal_position if _goal_motion_ready else ball.position
+  if level_source == "authored":
+   var events: Dictionary = ActLifecycle.crossings(authored_document, start, ball.position)
+   if events.activation:
+    authored_activation_count += 1
+    print("ACT ACTIVATED | upward crossing ", authored_activation_count)
+   if events.exit:
+    authored_exit_count += 1
+    print("ACT EXIT REACHED | upward crossing ", authored_exit_count)
   if score_attack.observe_motion(start, ball.position):
    specials.reset(false, "Challenge complete")
    scorecraft.reset("Challenge complete")
@@ -546,6 +748,14 @@ func _physics_process(delta: float) -> void:
  else:
   _goal_motion_ready = false
  previous_goal_position = ball.position
+ if level_source == "authored" and (ball.serve_pending or ball._teleport_pending):
+  previous_goal_position = ball.serve_position
+  _goal_motion_ready = true
+
+func _at_playfield_drain() -> bool:
+ if level_source == "authored":
+  return ball.position.y >= authored_document.red_gutter_bounds().end.y
+ return _at_checkpoint_drain() or ball.position.y > layout.bounds.end.y + 50.0 or ball.position.x < layout.bounds.position.x - 250.0 or ball.position.x > layout.bounds.end.x + 250.0 or ball.position.y < layout.bounds.position.y - 200.0
 
 func _setup_zone() -> void:
  for drain: PlayfieldDrain in drains:

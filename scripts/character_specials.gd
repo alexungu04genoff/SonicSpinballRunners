@@ -76,26 +76,22 @@ func find_target() -> Node2D:
  var best_distance := definition.target_range
  var query := PhysicsTestMotionParameters2D.new()
  query.from = game.ball.transform
- query.margin = 0.1
+ query.margin = 0.1 * game.ball.radius / PlaygroundBall.RADIUS
  var hit := PhysicsTestMotionResult2D.new()
- for chunk: TableChunk in game.chunks:
-  for item: Dictionary in chunk.descriptors:
-   if not item.has("body"):
-    continue
-   var candidate := item.body as Node2D
-   if not is_instance_valid(candidate) or not candidate.has_meta("bumper"):
-    continue
-   if game.zone_enabled and not game.zone.acts[game.zone.active_act].bounds.has_point(candidate.global_position):
-    continue
-   var distance: float = game.ball.position.distance_to(candidate.global_position)
-   if distance < 55.0 or distance > best_distance:
-    continue
-   # Sweep the full authoritative ball shape. Rails, paddles and closed gates
-   # reject a target if they are the first obstruction, including narrow corners.
-   query.motion = candidate.global_position - game.ball.position
-   if PhysicsServer2D.body_test_motion(game.ball.get_rid(), query, hit) and hit.get_collider() == candidate:
-    best_distance = distance
-    nearest = candidate
+ for candidate: Node2D in game.playfield.bumpers:
+  if not is_instance_valid(candidate) or not candidate.has_meta("bumper"):
+   continue
+  if game.zone_enabled and not game.zone.acts[game.zone.active_act].bounds.has_point(candidate.global_position):
+   continue
+  var distance: float = game.ball.position.distance_to(candidate.global_position)
+  if distance < 55.0 * game.ball.radius / PlaygroundBall.RADIUS or distance > best_distance:
+   continue
+  # Sweep the full authoritative ball shape. Terrain, paddles and closed gates
+  # reject a target if they are the first obstruction, including narrow corners.
+  query.motion = candidate.global_position - game.ball.position
+  if PhysicsServer2D.body_test_motion(game.ball.get_rid(), query, hit) and hit.get_collider() == candidate:
+   best_distance = distance
+   nearest = candidate
  return nearest
 
 func _set_target(value: Node2D) -> void:
@@ -169,14 +165,11 @@ func _on_impact(body: Node2D, normal: Vector2, speed: float) -> void:
   return
  var eligible: bool = game.scoring_target_eligible(body)
  if not eligible:
-  # Only an authored side rail qualifies. Gates, paddles, housings and generic
+  # Only a real terrain side qualifies. Gates, paddles, housings and generic
   # collision bodies are never ability triggers; a floor is not a side impact.
   if absf(normal.x) < 0.55:
    return
-  for chunk: TableChunk in game.chunks:
-   for item: Dictionary in chunk.descriptors:
-    if item.get("body") == body and item.kind == "rail" and not item.get("checkpoint_only", false):
-     eligible = true
+  eligible = game.playfield.is_glide_surface(body)
  if not eligible:
   return
  var origin: Vector2 = game.ball.position
@@ -210,7 +203,7 @@ func _area_contains(source: String, origin: Vector2, point: Vector2) -> bool:
  var offset := point - origin
  if source == "chaos_blast":
   return offset.length_squared() <= pow(clampf(definition.blast_radius, 0.0, 600.0), 2)
- return absf(offset.x) <= clampf(definition.shockwave_width, 0.0, 400.0) * 0.5 and offset.y <= PlaygroundBall.RADIUS and offset.y >= -clampf(definition.shockwave_range, 0.0, 800.0)
+ return absf(offset.x) <= clampf(definition.shockwave_width, 0.0, 400.0) * 0.5 and offset.y <= game.ball.radius and offset.y >= -clampf(definition.shockwave_range, 0.0, 800.0)
 
 func _wave_visible(origin: Vector2, point: Vector2, target_body: Node2D = null) -> bool:
  var query := PhysicsRayQueryParameters2D.create(origin, point, 1, [game.ball.get_rid()])
@@ -224,25 +217,22 @@ func _release_area(source: String, origin: Vector2) -> void:
  var seen: Dictionary = {}
  var count := 0
  var pickups := 0
- for chunk: TableChunk in game.chunks:
-  for item: Dictionary in chunk.descriptors:
-   var body := item.get("body") as Node2D
-   if not game.scoring_target_eligible(body) or seen.has(body.get_instance_id()):
+ for body: Node2D in game.playfield.bumpers:
+  if not game.scoring_target_eligible(body) or seen.has(body.get_instance_id()):
+   continue
+  seen[body.get_instance_id()] = true
+  if not _area_contains(source, origin, body.global_position):
+   continue
+  if source == "shockwave":
+   var exposed: Vector2 = body.global_position
+   # Wall-mounted centers can lie behind their rail. Test the exposed inward
+   # face, while still requiring a real unobstructed ray to that same body.
+   exposed.x += signf(origin.x - exposed.x) * game.playfield.bumper_radius(body) * 0.85
+   if not _wave_visible(origin, exposed, body):
     continue
-   seen[body.get_instance_id()] = true
-   if not _area_contains(source, origin, body.global_position):
-    continue
-   if source == "shockwave":
-    var exposed: Vector2 = body.global_position
-    if item.get("kind") == "circle" and item.has("radius"):
-     # Wall-mounted centers can lie behind their rail. Test the exposed inward
-     # face, while still requiring a real unobstructed ray to that same body.
-     exposed.x += signf(origin.x - exposed.x) * float(item.radius) * 0.85
-    if not _wave_visible(origin, exposed, body):
-     continue
-   if game.activate_area_target(body, source, multiplier):
-    count += 1
-    area_target_activated.emit(source, body, multiplier)
+  if game.activate_area_target(body, source, multiplier):
+   count += 1
+   area_target_activated.emit(source, body, multiplier)
  for index in game.ring_field.rings.size():
   var ring: Dictionary = game.ring_field.rings[index]
   if not ring.active or not game.ring_field.ring_eligible(ring) or not _area_contains(source, origin, ring.home):

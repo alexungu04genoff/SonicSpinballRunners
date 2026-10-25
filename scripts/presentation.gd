@@ -43,6 +43,8 @@ var _last_ball_position: Vector2
 var dynamic_geometry: ImmediateMesh
 var authored_mode := false
 var authored_cell_size := 50.0
+var _world_environment: WorldEnvironment
+var _key_light: DirectionalLight3D
 
 static func map_point(point: Vector2, height: float = 0.0) -> Vector3:
  return Vector3(point.x * SCALE, height, point.y * SCALE)
@@ -114,6 +116,40 @@ func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> voi
  _build_authored_objects(runtime)
  _build_authored_grid(bounds, cell_size)
 
+func rebuild_playfield(playfield: RefCounted, chunks: Array[TableChunk], layout: Dictionary) -> void:
+ # The game owns one presentation/camera for every level source. Only disposable
+ # terrain, moving-object meshes and per-layout feedback are replaced here.
+ var overlays: Array[bool] = []
+ for overlay: Node3D in [physics_overlay, chunk_overlay, connector_overlay, construction_grid_overlay]:
+  overlays.append(is_instance_valid(overlay) and overlay.visible)
+ var follow := camera_follow_enabled
+ _clear_playfield_geometry()
+ if playfield.document != null:
+  build_authored(playfield.authored_runtime, playfield.bounds, float(playfield.document.cell_size))
+ else:
+  build(chunks, layout.get("junctions", []), playfield.bounds)
+ camera_follow_enabled = follow
+ reset_camera(ball.serve_position)
+ var rebuilt: Array[Node3D] = [physics_overlay, chunk_overlay, connector_overlay, construction_grid_overlay]
+ for i in rebuilt.size():
+  rebuilt[i].visible = overlays[i]
+
+func _clear_playfield_geometry() -> void:
+ for child: Node in get_children():
+  if child == camera or child is WorldEnvironment or child is Light3D or child.get_meta("keep_on_playfield_rebuild", false):
+   continue
+  remove_child(child)
+  child.free()
+ flipper_visuals.clear()
+ flipper_retracted_visuals.clear()
+ checkpoint_visuals.clear()
+ serve_visuals.clear()
+ ring_visuals.clear()
+ ring_pickups.clear()
+ bumper_visuals.clear()
+ flash_times.clear()
+ _last_ball_position = ball.position
+
 func _build_shared(chunks: Array[TableChunk], junctions: Variant, bounds: Rect2) -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
  table_bounds = bounds
@@ -121,27 +157,30 @@ func _build_shared(chunks: Array[TableChunk], junctions: Variant, bounds: Rect2)
   for chunk: TableChunk in chunks:
    var chunk_bounds := chunk.data.world_rect(Rect2(Vector2.ZERO, Vector2(chunk.data.grid_dimensions) * ChunkData.GRID_SIZE))
    table_bounds = table_bounds.merge(chunk_bounds) if table_bounds.has_area() else chunk_bounds
- var environment := WorldEnvironment.new()
- environment.environment = Environment.new()
- environment.environment.background_mode = Environment.BG_COLOR
- environment.environment.background_color = Color("08121e")
- environment.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
- environment.environment.ambient_light_color = Color("a6d1ed")
- environment.environment.ambient_light_energy = 0.45
- add_child(environment)
- var light := DirectionalLight3D.new()
- light.name = "TableKeyLight"
- light.rotation_degrees = Vector3(-50, -30, 0)
- light.light_energy = 1.15
- light.shadow_enabled = true
- light.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
- light.directional_shadow_max_distance = maxf(40.0, table_bounds.size.length() * SCALE * 2.5)
- light.shadow_bias = 0.1
- light.shadow_normal_bias = 2.0
- add_child(light)
- camera = Camera3D.new()
- camera.name = "TableCamera"
- add_child(camera)
+ if not is_instance_valid(_world_environment):
+  _world_environment = WorldEnvironment.new()
+  _world_environment.environment = Environment.new()
+  _world_environment.environment.background_mode = Environment.BG_COLOR
+  _world_environment.environment.background_color = Color("08121e")
+  _world_environment.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+  _world_environment.environment.ambient_light_color = Color("a6d1ed")
+  _world_environment.environment.ambient_light_energy = 0.45
+  add_child(_world_environment)
+ if not is_instance_valid(_key_light):
+  _key_light = DirectionalLight3D.new()
+  _key_light.name = "TableKeyLight"
+  _key_light.rotation_degrees = Vector3(-50, -30, 0)
+  _key_light.light_energy = 1.15
+  _key_light.shadow_enabled = true
+  _key_light.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
+  _key_light.shadow_bias = 0.1
+  _key_light.shadow_normal_bias = 2.0
+  add_child(_key_light)
+ _key_light.directional_shadow_max_distance = maxf(40.0, table_bounds.size.length() * SCALE * 2.5)
+ if not is_instance_valid(camera):
+  camera = Camera3D.new()
+  camera.name = "TableCamera"
+  add_child(camera)
  set_camera_preset(camera_preset)
  camera.current = true
  var floor_mesh := BoxMesh.new()
@@ -251,8 +290,10 @@ func _build_shared(chunks: Array[TableChunk], junctions: Variant, bounds: Rect2)
   torus.rings = 16
   torus.ring_segments = 8
   ring_visuals.append(mesh_node(torus, gold, map_point(ring.position, ring_height())))
- ring_field.pickup_claimed.connect(_on_ring_claimed)
- ring_field.rack_reset.connect(clear_ring_pickups)
+ if not ring_field.pickup_claimed.is_connected(_on_ring_claimed):
+  ring_field.pickup_claimed.connect(_on_ring_claimed)
+ if not ring_field.rack_reset.is_connected(clear_ring_pickups):
+  ring_field.rack_reset.connect(clear_ring_pickups)
  clear_ring_pickups()
  for flipper: PlaygroundFlipper in flippers:
   var pivot := Node3D.new()

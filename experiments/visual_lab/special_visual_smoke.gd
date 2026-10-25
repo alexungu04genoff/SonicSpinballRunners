@@ -67,6 +67,7 @@ func run() -> void:
  target.add_child(collision)
  game.world.add_child(target)
  game.chunks[0].descriptors.append({"kind": "bumper", "body": target})
+ game.playfield = PlayfieldData.from_generated(game.chunks, game.layout)
  var target_visual := Node3D.new()
  game.presentation.add_child(target_visual)
  game.presentation.bumper_visuals[target.get_instance_id()] = target_visual
@@ -163,7 +164,7 @@ func run() -> void:
  var listeners_ok := true
  for signal_name: String in ["character_changed", "homing_started", "homing_ended", "special_hit", "flight_started", "flight_ended"]:
   listeners_ok = listeners_ok and listener_count(signal_name) == 1
- check(regenerated and previous_actor.get_ref() == null and actor.character_id == "sonic" and actor.state == actor.State.SPIN and listeners_ok, "Regeneration frees the old character and binds exactly one listener per special event to the replacement")
+ check(regenerated and previous_actor.get_ref() == actor and actor.character_id == "sonic" and actor.state == actor.State.SPIN and listeners_ok, "Regeneration retains the character presenter with reset visual state and exactly one listener per special event")
  # Ball form is a presentation policy, independent of the current state or assets.
  for id: String in CharacterSpecials.CHARACTERS:
   game.specials.select_character(id)
