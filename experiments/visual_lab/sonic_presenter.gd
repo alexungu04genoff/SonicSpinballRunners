@@ -12,7 +12,7 @@ enum State { SPIN, JUMP, TRICK, SHOWCASE, HOMING, IMPACT, FLIGHT }
 var specials: CharacterSpecials
 var character_id := "sonic"
 var spin_material: StandardMaterial3D
-var streak_materials: Array[StandardMaterial3D] = []
+var spin_surface: ShaderMaterial
 var target_marker: Node3D
 var flight_wind: MeshInstance3D
 var homing_direction := Vector2.UP
@@ -58,7 +58,6 @@ var _pose_time := 0.0
 var _clips: Dictionary = {}
 const MotionTrail = preload("res://experiments/visual_lab/motion_trail.gd")
 var trail: MeshInstance3D
-var quill_material: StandardMaterial3D
 var _spin_axis := Vector3.RIGHT
 var pulse: MeshInstance3D
 var pulse_material: StandardMaterial3D
@@ -79,7 +78,6 @@ func refresh_playfield() -> void:
  for child: Node in get_children():
   remove_child(child)
   child.free()
- streak_materials.clear()
  _last_position = Vector2.INF
  model = null
  animation_player = null
@@ -100,9 +98,12 @@ func _build_visuals() -> void:
  spin_material = table.material(Color("075dd2"), 0.05)
  spin_material.roughness = 0.38
  var spin_radius := ball.radius * TablePresentation.SCALE if table.authored_mode else 0.17
- var core := table.mesh_node(table.sphere(spin_radius), spin_material, Vector3.ZERO, spin_root)
- core.scale = Vector3(0.94, 0.94, 0.90)
- _build_spin_shell(spin_radius)
+ spin_surface = ShaderMaterial.new()
+ spin_surface.shader = preload("res://experiments/visual_lab/spin_ball.gdshader")
+ var sphere := table.sphere(spin_radius)
+ sphere.radial_segments = 32
+ sphere.rings = 16
+ table.mesh_node(sphere, spin_surface, Vector3.ZERO, spin_root)
  upright = Node3D.new()
  upright.name = "UncurledVisualAnchor"
  add_child(upright)
@@ -224,79 +225,14 @@ func _load_model() -> void:
 func _apply_character_color() -> void:
  var tails := character_id == "tails"
  spin_material.albedo_color = Color("f28b17") if tails else Color("075dd2")
- streak_materials[0].albedo_color = Color("ffd35c") if tails else Color("68caff")
- streak_materials[1].albedo_color = Color("fff0c7") if tails else Color("c9ecff")
  if character_id not in ["sonic", "tails"]:
-  var color: Color = CharacterSpecials.CHARACTERS[character_id].color
   spin_material.albedo_color = CharacterSpecials.CHARACTERS[character_id].ball_color
-  for material: StandardMaterial3D in streak_materials:
-   material.albedo_color = color.lightened(0.3)
- quill_material.albedo_color = spin_material.albedo_color.lightened(0.16)
+ spin_surface.set_shader_parameter("fur_color", spin_material.albedo_color)
  var character_color: Color = CharacterSpecials.CHARACTERS[character_id].color
  trail.tint = Color.from_hsv(character_color.h, 0.92, 0.95)
  if character_id == "sonic":
   trail.tint = Color("2635f5")
  trail.reset()
-
-func _build_spin_shell(radius: float) -> void:
- # A compact curled silhouette: broad swept quills behind tucked hands and shoes.
- quill_material = table.material(Color("2785ed"), 0.04)
- quill_material.roughness = 0.48
- quill_material.cull_mode = BaseMaterial3D.CULL_DISABLED
- for band in 6:
-  var side := -1.0 if band % 2 == 0 else 1.0
-  var row := float(band / 2)
-  var base := Vector3(side * (0.36 + row * 0.06), 0.43 - row * 0.35, -0.28)
-  var tip := Vector3(side * (0.60 + row * 0.06), -0.20 - row * 0.26, -0.59 + row * 0.10)
-  var surface := SurfaceTool.new()
-  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
-  for step in 5:
-   for sector in 8:
-    var vertices: Array[Vector3] = []
-    for end in 2:
-     var t := float(step + end) / 5.0
-     var center := base.lerp(tip, t) + Vector3(0, 0.12, -0.20) * sin(t * PI)
-     var width := 0.37 * pow(1.0 - t, 0.7)
-     for edge in 2:
-      var angle := float(sector + edge) / 8.0 * TAU
-      vertices.append((center + Vector3(cos(angle), sin(angle), 0) * width) * radius)
-    for index in [0, 2, 1, 1, 2, 3]:
-     surface.add_vertex(vertices[index])
-  surface.generate_normals()
-  table.mesh_node(surface.commit(), quill_material, Vector3.ZERO, spin_root)
- var glove := table.material(Color("f3f0df"))
- var shoe := table.material(Color("d92932"))
- var sole := table.material(Color("fff3d7"))
- for side in [-1.0, 1.0]:
-  var fist := BoxMesh.new()
-  fist.size = Vector3(0.30, 0.32, 0.27) * radius
-  var hand := table.mesh_node(fist, glove, Vector3(side * 0.20, 0.04, 0.88) * radius, spin_root)
-  hand.rotation.z = side * 0.35
-  var cuff := table.mesh_node(table.sphere(radius * 0.14), sole, Vector3(side * 0.40, 0.14, 0.76) * radius, spin_root)
-  cuff.scale = Vector3(0.7, 1.0, 1.0)
-  var foot := table.mesh_node(table.sphere(radius * 0.32), shoe, Vector3(side * 0.34, -0.40, 0.62) * radius, spin_root)
-  foot.scale = Vector3(0.8, 0.65, 1.25)
-  var strap := BoxMesh.new()
-  strap.size = Vector3(0.43, 0.10, 0.18) * radius
-  table.mesh_node(strap, sole, Vector3(side * 0.34, -0.25, 0.74) * radius, spin_root)
- # Thin broken arcs trace the spin outside the curled silhouette.
- for band in 2:
-  var arc := ImmediateMesh.new()
-  arc.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
-  for step in 25:
-   var t := float(step) / 24.0
-   var angle := t * TAU * 0.72 + band * PI
-   var width := sin(t * PI) * 0.025
-   for edge in 2:
-    var vertex := Vector3(cos(angle), (edge * 2 - 1) * width, sin(angle)) * radius * 1.025
-    arc.surface_set_normal(vertex.normalized())
-    arc.surface_add_vertex(vertex)
-  arc.surface_end()
-  var material := table.material(Color("68caff") if band == 0 else Color("c9ecff"), 0.22)
-  material.cull_mode = BaseMaterial3D.CULL_DISABLED
-  streak_materials.append(material)
-  var highlight := table.mesh_node(arc, material, Vector3.ZERO, spin_root)
-  highlight.rotation = Vector3(0.5 + band * 1.0, 0.0, 0.4)
 
 func _on_character_changed(id: String) -> void:
  if character_id == id:
