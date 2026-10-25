@@ -92,7 +92,15 @@ func run() -> void:
  game.generation_seed = 18
  root.add_child(game)
  await frames(45)
- check(game.retro_filter.preset == Filter.Preset.OFF and game.view_container.material == null and game.view_container.stretch_shrink == 1, "Normal application starts with original rendering")
+ check(game.retro_filter.selected_effects == [Filter.Preset.N64, Filter.Preset.VHS, Filter.Preset.CRT], "Normal application starts with the selected N64/VHS/CRT stack")
+ check(game.presentation.camera_preset == TablePresentation.CameraPreset.DRAMATIC_PINBALL and game.presentation.camera_settings.zoom == 2.0 and game.debug_panel.camera_fields.zoom.value == 2.0, "Dramatic Pinball and zoom 2 are synchronized startup defaults")
+ var defaults = game.retro_filter.settings
+ if graphical:
+  var startup := await image_now()
+  startup.save_png(output + "/startup-defaults.png")
+ check(defaults.n64_resolution_divisor == 1.4 and defaults.n64_color_levels == 119 and defaults.n64_dither_strength == 0.75 and defaults.vhs_wobble == 0.00015 and defaults.vhs_grain == 0.055 and defaults.vhs_tracking == 0.0045 and defaults.crt_cell_size == 3.7 and defaults.crt_mask == 0 and defaults.crt_brightness == -0.085, "Screenshot tuning loads from the project defaults resource")
+ game.retro_filter.set_preset(Filter.Preset.OFF)
+ await frames(4)
  paused = true
  # Freeze the entire same scene, including cosmetic animations and HUD counters.
  # Only preset shaders change; camera, actors, rings, lights and geometry stay fixed.
@@ -133,6 +141,19 @@ func run() -> void:
  await frames(4)
  await check_stacking(original)
  await check_ranges(original)
+ if graphical:
+  var window_size := DisplayServer.window_get_size()
+  var window_mode := DisplayServer.window_get_mode()
+  game.fullscreen_button.pressed.emit()
+  await frames(12)
+  check(DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN and game.fullscreen_button.text == "F11  Windowed", "Fullscreen button enters fullscreen and offers Windowed")
+  check(game.view.size == Vector2i(game.view_container.size), "World viewport follows fullscreen sizing")
+  var fullscreen_key := InputEventKey.new()
+  fullscreen_key.physical_keycode = KEY_F11
+  fullscreen_key.pressed = true
+  root.push_input(fullscreen_key, true)
+  await frames(12)
+  check(DisplayServer.window_get_mode() == window_mode and DisplayServer.window_get_size() == window_size and game.fullscreen_button.text == "F11  Fullscreen", "F11 restores the previous window mode and dimensions")
  if graphical and OS.get_cmdline_user_args().has("--benchmark"):
   DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
   Engine.max_fps = 0

@@ -45,6 +45,7 @@ Discovered tools: **Godot 4.7.2 stable**, **Blender 5.2.3 LTS**. The launcher al
 | Escape / Menu | Pause or resume; leave character study |
 | R / Back | Reset and relaunch |
 | F1 / Tuning button | Open the complete existing physics, camera, seed and construction-grid controls |
+| F11 / Fullscreen button | Toggle fullscreen and restore the previous window size |
 | F4 | Cycle OFF, PIXEL / DITHER, N64-ish, CRT and VHS; custom stacks return to OFF |
 | Retro... / Shift+F4 | Open live effect checkboxes and tuning sliders; F1 also has a multiselect menu. HUD stays crisp |
 | O / Overview button | Toggle full-course overview and ball-follow camera |
@@ -286,3 +287,5 @@ The existing Score Attack regression can exercise either presentation. Its next-
 godot --headless --fixed-fps 120 --path . --script res://tests/score_attack_regression.gd
 godot --fixed-fps 120 --path . --script res://tests/score_attack_regression.gd -- --green-hill
 ```
+
+Green Hill startup preferences: Dramatic Pinball, follow zoom 2.0, and N64-ish + VHS + CRT using the screenshot-matched defaults in data/retro_settings.tres. Pixel starts disabled; live changes remain session-only.

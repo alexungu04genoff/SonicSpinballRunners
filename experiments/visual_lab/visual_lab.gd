@@ -35,6 +35,10 @@ var act_picker: FileDialog
 var source_note: Label
 var _source_previous_pause := false
 var _source_switch_pending := false
+var fullscreen_button: Button
+var _windowed_mode := DisplayServer.WINDOW_MODE_WINDOWED
+var _windowed_size := Vector2i.ZERO
+var _windowed_position := Vector2i.ZERO
 
 func _ready() -> void:
  DisplayServer.window_set_title("Sonic Spinball Runners — Green Hill Visual Lab")
@@ -109,6 +113,8 @@ func _build_view() -> void:
 func _build_presentation() -> void:
  presentation = GreenHill.new()
  presentation.name = "GreenHillPresentation"
+ presentation.camera_preset = TablePresentation.CameraPreset.DRAMATIC_PINBALL
+ presentation.camera_settings.zoom = 2.0
  presentation.ball = ball
  presentation.flippers = flippers
  presentation.ring_field = ring_field
@@ -262,6 +268,9 @@ func _build_lab_ui() -> void:
  source_note.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  source_note.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
  source_row.add_child(source_note)
+ fullscreen_button = _button("F11  Fullscreen", toggle_fullscreen)
+ fullscreen_button.tooltip_text = "Toggle fullscreen; F11 returns to your previous window size."
+ source_row.add_child(fullscreen_button)
  play_buttons = HBoxContainer.new()
  play_buttons.add_theme_constant_override("separation", 8)
  stack.add_child(play_buttons)
@@ -375,6 +384,30 @@ func _set_close_view(enabled: bool) -> void:
   study_buttons.visible = enabled
  if is_instance_valid(view_button):
   view_button.text = "C  Back to playfield" if enabled else "C  Character close-up"
+ get_viewport().gui_release_focus()
+
+func _input(event: InputEvent) -> void:
+ if event is InputEventKey and event.pressed and not event.echo and not event.alt_pressed and not event.ctrl_pressed and not event.meta_pressed:
+  if event.physical_keycode == KEY_F11 or event.keycode == KEY_F11:
+   toggle_fullscreen()
+   get_viewport().set_input_as_handled()
+
+func toggle_fullscreen() -> void:
+ if DisplayServer.get_name() == "headless":
+  return
+ var mode := DisplayServer.window_get_mode()
+ if mode in [DisplayServer.WINDOW_MODE_FULLSCREEN, DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN]:
+  DisplayServer.window_set_mode(_windowed_mode)
+  if _windowed_mode == DisplayServer.WINDOW_MODE_WINDOWED and _windowed_size != Vector2i.ZERO:
+   DisplayServer.window_set_size(_windowed_size)
+   DisplayServer.window_set_position(_windowed_position)
+  fullscreen_button.text = "F11  Fullscreen"
+ else:
+  _windowed_mode = mode
+  _windowed_size = DisplayServer.window_get_size()
+  _windowed_position = DisplayServer.window_get_position()
+  DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+  fullscreen_button.text = "F11  Windowed"
  get_viewport().gui_release_focus()
 
 func _unhandled_key_input(event: InputEvent) -> void:

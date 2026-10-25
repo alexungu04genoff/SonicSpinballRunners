@@ -2,6 +2,9 @@ extends Resource
 ## Session-only presentation tuning. Divisors keep the current world aspect ratio.
 ## At the normal 1280x690 world area, divisor 2 renders 640x345 (HUD is separate).
 
+## Effect IDs from RetroFilter.Preset; stored in the project tuning resource.
+@export var default_effects: Array[int] = []
+
 @export_group("Pixel / Dither")
 @export_range(1, 4, 0.1) var pixel_resolution_divisor := 2.0
 @export_range(1, 256, 1) var pixel_color_levels := 32.0

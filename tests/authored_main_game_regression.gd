@@ -98,7 +98,7 @@ func check_authored_start() -> void:
 	check(game.generator_calls == 0 and game.level_source == "authored" and game.chunks.is_empty(), "Direct authored startup invokes neither table nor Zone generation and creates no fake chunks")
 	check(game.playfield.source == "authored" and game.playfield.spawn == fixture().spawn_position and game.playfield.bumpers.size() == 2 and game.playfield.terrain_bodies.size() == 1, "The common playfield exposes exact authored spawn, targets and terrain")
 	check(game.ball.serve_pending and game.ball.position == game.authored_document.spawn_position and is_equal_approx(game.ball.radius, 14.0), "The normal ball waits at exact authored Spawn with the shared 100px-cell size")
-	check(game.presentation.camera_follow_enabled and game.presentation.camera_preset == TablePresentation.CameraPreset.REAL_PINBALL, "Authored startup uses the normal Green Hill follow camera and perspective")
+	check(game.presentation.camera_follow_enabled and game.presentation.camera_preset == TablePresentation.CameraPreset.DRAMATIC_PINBALL and game.presentation.camera_settings.zoom == 2.0, "Authored startup uses the normal Green Hill follow camera and perspective")
 	check(game.debug_panel.challenge_panel != null and game.lab_ui != null and game.character.specials == game.specials, "Normal modes, character HUD and rolling presenter remain the human gameplay shell")
 	check(game.presentation.find_children("*", "CollisionObject3D", true, false).is_empty(), "Shared Green Hill remains collisionless")
 	check(game.authored_timings.has("total_ms") and float(game.authored_timings.total_ms) > 0, "Main-engine authored loading retains ready-time instrumentation")
@@ -294,9 +294,12 @@ func check_compact_follow_camera() -> void:
 					motion_visible = motion_visible and screen.has_point(p.camera.unproject_position(TablePresentation.map_point(game.ball.position, p.ball_height())))
 					bounded = bounded and previous.distance_to(p.camera_focus) <= float(p.camera_settings.max_speed) / rate + 0.001 and p.camera.basis.is_equal_approx(angle)
 	game.ball.position = ball_position
-	p.set_camera_preset(TablePresentation.CameraPreset.REAL_PINBALL)
+	p.set_camera_preset(TablePresentation.CameraPreset.DRAMATIC_PINBALL)
 	check(motion_visible, "Close authored camera keeps 1200px/s traversals visible at 60/120Hz in all three presets")
 	check(bounded, "Close camera tracking preserves the movement speed cap and fixed angle in every preset")
+	# Exercise zoom responsiveness away from the close-view object-height limit.
+	game.debug_panel.camera_fields.zoom.value = 1.0
+	follow_width = projected_ball_width()
 	p.set_camera_follow(false)
 	var overview_width := projected_ball_width()
 	var framed := true
@@ -308,7 +311,7 @@ func check_compact_follow_camera() -> void:
 	check(is_equal_approx(projected_ball_width(), overview_width), "Follow zoom control leaves the complete-table overview unchanged")
 	p.set_camera_follow(true)
 	check(projected_ball_width() > follow_width * 1.15 and game.ball.position == ball_position, "F1 follow zoom immediately enlarges the view without moving the physical ball")
-	game.debug_panel.camera_fields.zoom.value = 1.0
+	game.debug_panel.camera_fields.zoom.value = 2.0
 	p.set_camera_follow(true)
 	p.reset_camera(game.ball.serve_position)
 	paused = false

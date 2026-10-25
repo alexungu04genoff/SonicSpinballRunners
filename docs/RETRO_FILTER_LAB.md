@@ -1,6 +1,6 @@
 # Green Hill retro post-processing lab
 
-Optional presentation experiment in the **normal Green Hill application**. Start `Play Green Hill.cmd`. Every launch starts OFF. Selection and tuning remain session-only; no aesthetic is selected as the game's identity.
+Optional presentation experiment in the **normal Green Hill application**. Start `Play Green Hill.cmd`. Every launch starts with the user's **N64-ish + VHS + CRT** stack; Pixel is disabled. These project defaults match the supplied tuning screenshots. Further live edits remain session-only, and OFF is still available as a comparison.
 
 ## Controls and live tuning
 
@@ -8,6 +8,9 @@ Optional presentation experiment in the **normal Green Hill application**. Start
 - Click **Retro...** in the normal toolbar or press **Shift+F4** to open the live panel. Check any combination of effects and adjust sliders immediately, including while paused.
 - **F1** also provides a multiselect menu that stays open while checking effects.
 - **All OFF** clears the selection. **Reset tuning** restores parameter defaults while retaining selected effects. Closing the panel retains the current settings.
+- **F11 / Fullscreen** in the footer switches to fullscreen; press F11 again or click Windowed to restore the previous window mode and dimensions. Launch stays windowed.
+
+Green Hill starts with **Dramatic Pinball** and **follow zoom 2.0**, including authored Acts. F1 still exposes all camera choices; overview retains its complete-table framing. Shared Physics Playground camera defaults are unchanged.
 
 Sliders appear for enabled effects in the scrollable panel. Pixel/N64 expose resolution divisor, color levels and dither. CRT exposes phosphor cell size, scanlines, RGB mask, glow intensity/spread, brightness and vignette. VHS exposes chroma offset/bleed, wobble, grain and tracking. The normal HUD has one launcher button.
 
@@ -19,9 +22,9 @@ Persistent developer defaults remain in `data/retro_settings.tres` and `scripts/
 | --- | --- | --- |
 | OFF | Original viewport size, material, filter and MSAA | No identity shader; original rendering path |
 | PIXEL / DITHER | Half size, nearest upscale | 32 quantization intervals/channel, 4×4 dither at 0.65 strength |
-| N64-ish | Half size, linear upscale | 24 intervals/channel, 0.9 dither, gentle output softness |
-| CRT | Original size | 6 px phosphor cells, 22% scanlines, 13% RGB mask, 8% vignette, 38% glow with 4 px spread, +0.025 brightness; zero convergence |
-| VHS | Original size | 0.45 px chroma shift, 1.1 px bleed, tiny wobble, 1.2% grain, restrained bottom tracking |
+| N64-ish | Divisor 1.4, linear upscale | 119 intervals/channel, 0.75 dither |
+| CRT | Original size | 3.7 px cells, 0.03 scanlines, 0 RGB mask, 0.19 glow, 2.1 px spread, -0.085 brightness, 0.28 vignette; zero convergence |
+| VHS | Original size | 0.9 px chroma offset, 1.1 px bleed, 0.00015 wobble, 0.055 grain, 0.0045 tracking |
 
 ## Stacking and world-only rendering
 
@@ -39,7 +42,9 @@ HUD, menus, character selector, Scorecraft, debug controls, live panel and toast
 
 ## Same-scene comparison
 
-The current images in [retro-captures/stacking](retro-captures/stacking/) use generated seed 18, the same served Sonic ball, camera transform, geometry, rings, paddles, lighting and HUD. Scene and cosmetic animation processing are frozen; only VHS signal noise varies with shader time. No screenshot rescaling or reframing is applied.
+[Current startup preview](retro-captures/startup-defaults.png) shows the screenshot-matched N64/VHS/CRT stack, Dramatic Pinball at zoom 2, and the fullscreen button.
+
+The historical images in [retro-captures/stacking](retro-captures/stacking/) predate the chosen startup stack and Dramatic zoom. They use generated seed 18, the same served Sonic ball, camera transform, geometry, rings, paddles, lighting and HUD. Scene and cosmetic animation processing are frozen; only VHS signal noise varies with shader time. No screenshot rescaling or reframing is applied.
 
 - [OFF](retro-captures/stacking/off.png), [Pixel](retro-captures/stacking/pixel.png), [N64-ish](retro-captures/stacking/n64.png), [CRT](retro-captures/stacking/crt.png), [VHS](retro-captures/stacking/vhs.png)
 - [Pixel + CRT](retro-captures/stacking/stack-5.png), [VHS + CRT](retro-captures/stacking/stack-12.png), [all four](retro-captures/stacking/stack-15.png)
@@ -63,6 +68,10 @@ The graphical smoke saves images under `test-results/retro-stack`. It checks all
 The physics regression compares all 600 ticks of identical launch, steering and flipper input across eight fresh application processes: five single presets, live cycling, all effects stacked, and live stacking with resolution/CRT tuning. Position, velocity, score, rings, drain count and flipper angles must match exactly. Reusing one process for successive games produced collision differences even in an OFF-versus-OFF control; fresh processes avoid that fixture issue without relaxing equality.
 
 The optional `--benchmark` uses the static scene, VSync disabled, no FPS cap, 90 warmup frames and 240 samples per effect or stack, then reverses the order. It includes Pixel+CRT and all four effects. Shader startup and screenshot readback are excluded. Reports distinguish wall-frame duration, CPU rendering time and GPU query results. These are local static-scene measurements, not a hardware-independent FPS claim or moving-game benchmark. For native GPU timestamps, use `--rendering-driver opengl3` and append `--native-report` after `--`.
+
+## Startup defaults and fullscreen verification — 2026-10-25
+
+Headless retro smoke: **68 checks, zero failures**. ANGLE rendered smoke: **103 checks, zero failures**, including the actual fullscreen button and F11 round-trip with window-size restoration. Authored main-game regression: **70 checks, zero failures**, including startup perspective, zoom controls, overview and fast-ball camera tracking. Exact 120 Hz physics replay: **8 checks, zero failures**. The startup preview was visually inspected. Sandbox runs emit the same certificate-store read warning documented below; no script or shader errors occurred. Fullscreen remains opt-in and runtime slider edits remain session-only.
 
 ## Expanded-range verification — 2026-10-25
 

@@ -70,7 +70,7 @@ func attach(target: SubViewportContainer, viewport: SubViewport) -> void:
   rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
   passes[effect] = {"copy": copy, "rect": rect, "material": material}
  container.resized.connect(_refresh_output)
- set_preset(Preset.OFF)
+ set_effects(settings.default_effects)
 
 func cycle() -> void:
  set_preset((preset + 1) % NAMES.size())

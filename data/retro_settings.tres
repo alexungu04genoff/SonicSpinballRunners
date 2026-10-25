@@ -4,3 +4,19 @@
 
 [resource]
 script = ExtResource("1")
+default_effects = Array[int]([2, 4, 3])
+n64_resolution_divisor = 1.4
+n64_color_levels = 119.0
+n64_dither_strength = 0.75
+vhs_chroma_offset = 0.9
+vhs_chroma_bleed = 1.1
+vhs_wobble = 0.00015
+vhs_grain = 0.055
+vhs_tracking = 0.0045
+crt_cell_size = 3.7
+crt_scanlines = 0.03
+crt_mask = 0.0
+crt_glow = 0.19
+crt_glow_radius = 2.1
+crt_brightness = -0.085
+crt_vignette = 0.28
