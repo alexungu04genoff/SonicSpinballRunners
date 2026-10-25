@@ -9,6 +9,7 @@ const GameplayPaletteItem = preload("res://scripts/act_editor/gameplay_palette_i
 const Rings = preload("res://scripts/act_editor/ring_trails.gd")
 const Composite = preload("res://scripts/act_editor/composite_terrain.gd")
 const Decor = preload("res://scripts/act_editor/decor_slots.gd")
+const DecorScatter = preload("res://scripts/act_editor/decor_scatter.gd")
 const Themes = preload("res://scripts/themes/theme_registry.gd")
 const EXAMPLE_PATH := "res://data/acts/curve_garden.tres"
 const HISTORY_LIMIT := 100
@@ -82,6 +83,7 @@ var decor_theme_field: OptionButton
 var decor_variant_field: OptionButton
 var _decor_preview_skin: RefCounted
 var decor_scale_field: SpinBox
+var decor_frequency_field: SpinBox
 var decor_position_fields: Array[LineEdit] = []
 var decor_visible_field: CheckBox
 var decor_snap_field: CheckBox
@@ -537,6 +539,17 @@ func _build_decor_palette(parent: Node) -> void:
 	decor_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	decor_list.visible = false
 	decor_scroll.add_child(decor_list)
+	decor_frequency_field = SpinBox.new()
+	decor_frequency_field.min_value = 0
+	decor_frequency_field.max_value = 100
+	decor_frequency_field.step = 5
+	decor_frequency_field.value = 40
+	decor_frequency_field.prefix = "Frequency"
+	decor_frequency_field.suffix = "%"
+	decor_frequency_field.tooltip_text = "Scatter density on raised terrain. 0% clears scattered props. Applied when you click Randomize."
+	decor_list.add_child(decor_frequency_field)
+	_button(decor_list, "decor_randomize", "Randomize small / medium", randomize_decor, "Replace scattered decor with a new 75% small / 25% medium mix where space permits. Varies scale and rotation; preserves manual props. One Undo step.")
+	decor_list.add_child(HSeparator.new())
 	for type: String in Decor.TYPES:
 		_button(decor_list, "decor_" + type, type.capitalize() + " slot", choose_decor.bind(type), "Place a generic visual slot on raised terrain. Free placement by default.")
 	decor_type_field = OptionButton.new()
@@ -618,6 +631,8 @@ func set_decor_slot(index: int, slot: Dictionary) -> void:
 	if composite_preview_active or index < -1 or index >= document.decor_slots.size(): return
 	var value := slot.duplicate(true)
 	if index == -1: value.slot_id = Decor.new_id()
+	# A hand edit or duplicate claims a scattered slot as manual decoration.
+	value.erase("placement_source")
 	var error: String = Decor.validation_error(value)
 	if not error.is_empty():
 		_set_status(error)
@@ -628,6 +643,29 @@ func set_decor_slot(index: int, slot: Dictionary) -> void:
 	if index == -1: document.decor_slots.append(value)
 	else: document.decor_slots[index] = value
 	_set_status("Decor slot saved in the draft. Theme chooses its visual; no gameplay collision.")
+	_refresh()
+
+func randomize_decor() -> void:
+	if composite_preview_active: return
+	canvas.cancel_gesture()
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	var generated := DecorScatter.generate(document, decor_frequency_field.value, rng.randi())
+	var kept: Array = []
+	for slot: Dictionary in document.decor_slots:
+		if not DecorScatter.is_scattered(slot): kept.append(slot)
+	if generated.is_empty() and kept.size() == document.decor_slots.size():
+		_set_status("No free raised terrain for this frequency. Manual decor stays unchanged.")
+		return
+	_record_edit()
+	if document.decor_seed.is_empty() and not generated.is_empty(): document.decor_seed = Decor.new_id()
+	document.decor_slots = kept + generated
+	canvas.select_piece(-1)
+	canvas.show_decor = true
+	var small_count := 0
+	for slot: Dictionary in generated:
+		if slot.slot_type == "small": small_count += 1
+	_set_status("Scattered %d small + %d medium props. Manual decor kept. Randomize rerolls; Undo restores. Edit a scattered prop to keep it." % [small_count, generated.size() - small_count])
 	_refresh()
 
 func _set_decor_property(key: String, value: Variant) -> void:
@@ -674,6 +712,8 @@ func _commit_decor_position() -> void:
 	_set_decor_property("position", position)
 
 func _refresh_decor_controls() -> void:
+	decor_frequency_field.editable = not composite_preview_active
+	buttons.decor_randomize.disabled = composite_preview_active
 	var slot := _active_decor()
 	var active := not slot.is_empty() and not composite_preview_active
 	decor_type_field.disabled = not active
@@ -692,6 +732,8 @@ func _refresh_decor_controls() -> void:
 		decor_position_fields[axis].editable = active and canvas.selected_decor_index >= 0
 	decor_info.text = "Auto or fixed variant · theme-independent\nFree movement · exact Angle ° below\nR / Shift+R: ±15° · Ctrl+D: duplicate\nArrows: 1 px (snap: 1 cell)\n\nPlace anchors on raised terrain. Unsupported slots remain editable but do not spawn in play."
 	if active:
+		if DecorScatter.is_scattered(slot):
+			decor_info.text = "Scattered prop: Randomize replaces it.\nEdit or duplicate it to keep it manually.\n\n" + decor_info.text
 		if slot.slot_type == "landmark":
 			decor_info.text = "Landmark 1: upright; 2: span / gateway.\nBoth are about 3 cells along the angle tick.\nVariant 3: circular, about 1.6 cells across.\nAuto keeps the long roles across themes.\n\n" + decor_info.text
 		var choices: Array = _decor_preview_skin.variants_for(slot)

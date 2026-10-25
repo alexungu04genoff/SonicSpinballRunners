@@ -32,7 +32,19 @@ For Green Hill **small / surface**, **Variant 1 — Flower**, **Variant 2 — Sm
 
 ![Decor authoring palette and selected slot](decor-captures/editor.png)
 
-### Placement rules
+### Random small and medium decor
+
+At the top of the **Decor** palette, set **Frequency** (0–100%, default 40%), then click **Randomize small / medium**. Each click replaces the previous scatter with new positions, Auto variants, rotations from 0–360° and scales from 0.85–1.15. The target mix is 75% small and 25% medium, rounded to whole props; tight or occupied terrain can prevent filling either quota. Large props and landmarks remain manual.
+
+Scatter checks raised terrain support around each footprint and leaves clearance from other props. It does not place decor on the playable floor or narrow unsupported wall ribbons. Density increases with frequency, up to 400 scattered props per Act; insufficient space can reduce the count. Frequency is an editor session preference and applies only when clicked. The resulting slots persist normally, with no automatic scattering on load.
+
+Manual slots of every size are preserved. Moving, rotating, editing or duplicating a scattered slot makes the edited/copy slot manual so future rerolls keep it. The inspector identifies scattered slots. **0% + Randomize** clears only the scatter. Reroll and clear each use one Undo step; Redo restores the exact result, including ownership. Scatter ownership survives Save, Save As and reload.
+
+![Frequency and randomization in the Decor palette](decor-captures/scatter-editor.png)
+
+`tests/decor_scatter_regression.gd` covers reproducible sampling, density and size quotas, transforms, terrain and prop clearance, migration, actual button clicks, reroll replacement, manual protection, Undo/Redo, save/reload and zero-frequency clearing. A graphical run captures the editor above.
+
+### Manual placement rules
 
 Place the anchor on a filled terrain stamp/composite or a narrow raised wall ribbon. The inspector reports when a selected slot has no supporting raised terrain. Such slots remain valid, saveable drafts but do not spawn in Green Hill. The runtime records their IDs in `skipped_decor_slots`. It never relocates a slot onto nearby geometry or puts a floating prop over the playable floor.
 
@@ -40,16 +52,17 @@ Place the anchor on a filled terrain stamp/composite or a narrow raised wall rib
 
 ## Data and deterministic resolution
 
-Act format **7**, terrain library **2**, adds:
+Act format **7**, terrain library **2**, introduced:
 
 - `decor_seed`: a persistent Act decoration identity, generated on its first decor edit. It survives saves, Save As, renaming and copies. An unseeded hand-authored file falls back to its Resource path.
 - `decor_slots`: an ordered array of dictionaries containing `slot_id`, `slot_type`, `placement_hint`, `position: Vector2`, `rotation_degrees`, optional `variant_mode = "auto"`, and optional `scale = 1.0`. Format **10** adds `variant_mode = "fixed"` with a required nonnegative integer `variant_index`. Indices are zero-based; the editor displays one-based variant numbers. Auto selection removes the index.
+- Format **12** adds optional `placement_source = "scatter"` to identify replaceable editor-generated slots. Omission means manual. This generic authoring metadata is included in validation and fingerprints; it has no gameplay behavior.
 
 Act records contain no mesh paths, Green Hill prop names or skin IDs. Slot IDs are generated only during authoring and stay fixed through movement, rotation and undo. A duplicate gets a fresh ID. IDs must be nonempty and unique within the Act.
 
 For small, medium and large Auto slots, `DecorSkin.resolve()` hashes the JSON array `[act_identity, slot_id, skin_id]` with SHA-256, converts its first eight hexadecimal digits to an integer, then takes modulo the selected pool length. Landmarks instead share two composition roles across themes, using the original Green Hill hash namespace and modulo two. This preserves existing Green Hill choices while matching the other themes to them. Fixed mode directly indexes the selected pool, independently of the seed and slot identity. Neither mode consumes gameplay RNG. Reloading, reordering slots, deleting other slots, or editing unrelated geometry cannot reshuffle an existing slot. Preserve published pool order: fixed indices refer to those positions. An unavailable index falls back to Auto with a warning; an empty pool warns and skips the visual.
 
-The document fingerprint, deep-copy history, validation, and atomic save/reload comparison include variant mode and index. Angles and scale use the existing exact numeric byte storage convention. Formats 2–6 load in memory with no decor and no file rewrite. Format 7 introduced decor; current saves use format 10. Formats 7–9 retain their Auto slots unchanged on load. Formats below 7 cannot carry decor, and below 10 cannot carry fixed-variant fields. Existing terrain transforms and composite outlines remain exact.
+The document fingerprint, deep-copy history, validation, and atomic save/reload comparison include variant mode, index and scatter ownership. Angles and scale use the existing exact numeric byte storage convention. Formats 2–11 load in memory without rewriting source files; current saves use format 12. Old decor remains manual. Formats below 7 cannot carry decor, below 10 cannot carry fixed-variant fields, and below 12 cannot carry scatter ownership. Existing terrain transforms and composite outlines remain exact.
 
 For two-monitor authoring, save in the editor, then click **Reload Act** beside **Load Act…** in the main game, or press **F5**. Reload reads the current file without a picker, rebuilds the entire authored playfield and current theme, resolves decor again, and returns the ball to serve. It retains presentation preferences and the previous pause state. A missing file or invalid draft leaves the live Act intact; correct the file and press F5 again.
 
