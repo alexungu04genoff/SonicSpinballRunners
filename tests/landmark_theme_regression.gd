@@ -29,6 +29,7 @@ func collect_bounds(node: Node3D, boxes: Array[AABB], parent := Transform3D.IDEN
 func run() -> void:
  var expected := {"green_hill": ["turf_loop", "rope_bridge", "palm_island"], "chemical_plant": ["fluid_reactor", "pipe_arch", "reactor_island"], "rooftop_run": ["clock_tower", "aqueduct", "festival_balloons"], "casino_night": ["jackpot_palace", "star_gateway", "roulette_pavilion"], "sky_sanctuary": ["sanctuary_belfry", "sky_aqueduct", "astral_dais"]}
  expected["ice_cap"] = ["glacier_crown", "frozen_bridge", "aurora_basin"]
+ expected["lava_reef"] = ["rift_crown", "mine_viaduct", "caldera_seal"]
  for id: String in Themes.IDS:
   var p := Presentation.new()
   p.set_theme_definition(Themes.create(id))

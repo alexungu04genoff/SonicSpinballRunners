@@ -20,6 +20,8 @@ Launch **Play Green Hill.cmd**, choose **Authored Act** in the footer's **Level 
 
 ## Play Green Hill
 
+**Lava Reef** is selectable through the existing Theme dropdown: animated molten lava, fractured volcanic terrain, teal crystals, a deep mining cavern and thirteen original props. Lava is presentation-only. See [Lava Reef research, seven-theme comparisons and checks](docs/LAVA_REEF.md).
+
 **Ice Cap** is also selectable through the existing Theme dropdown: matte snow, reflective ice, glacier walls, thirteen original winter props and an animated twilight aurora. Ice remains presentation-only, with identical physics. See [Ice Cap research, comparisons and checks](docs/ICE_CAP.md).
 
 The existing **Theme** dropdown now includes **Sky Sanctuary** alongside Green Hill, Chemical Plant, Rooftop Run and Casino Night. It presents the same Act as pale floating ruins above clouds, with 13 original decor variants and stone/blue-tech ramp materials. See [research, identical-Act comparisons and checks](docs/SKY_SANCTUARY.md).

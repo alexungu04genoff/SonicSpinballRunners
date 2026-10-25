@@ -9,6 +9,7 @@ const PALETTES := {
  "casino_night": ["ed377e", "382b9e", "ffe05e", "f5ecff", "88ee47", "25203f"],
  "sky_sanctuary": ["48a9b2", "487bb6", "e5c27b", "fff9e5", "7ce5d0", "35475b"],
  "ice_cap": ["6c9ee8", "35568c", "9ef5ff", "f2fbff", "8bdded", "233a59"],
+ "lava_reef": ["a34d42", "226f76", "c1a36a", "fff1cf", "59b7ad", "332a3b"],
 }
 const SLOTS := ["rubber", "face", "trim", "mark", "paddle", "base"]
 

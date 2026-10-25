@@ -1,0 +1,30 @@
+[
+  {
+    "draw_calls": 820.0,
+    "filter": "OFF",
+    "heat": false,
+    "mean_frame_ms": 20.8614,
+    "note": "60 presented frames after 20 warmup frames; desktop workload and frame pacing included"
+  },
+  {
+    "draw_calls": 821.0,
+    "filter": "N64-ish",
+    "heat": false,
+    "mean_frame_ms": 19.7488166666667,
+    "note": "60 presented frames after 20 warmup frames; desktop workload and frame pacing included"
+  },
+  {
+    "draw_calls": 821.0,
+    "filter": "OFF",
+    "heat": true,
+    "mean_frame_ms": 17.5095833333333,
+    "note": "60 presented frames after 20 warmup frames; desktop workload and frame pacing included"
+  },
+  {
+    "draw_calls": 822.0,
+    "filter": "N64-ish",
+    "heat": true,
+    "mean_frame_ms": 18.2842166666667,
+    "note": "60 presented frames after 20 warmup frames; desktop workload and frame pacing included"
+  }
+]

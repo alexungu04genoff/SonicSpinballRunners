@@ -1,10 +1,12 @@
 extends RefCounted
 ## The only list of available production themes; Acts never store these IDs.
-const IDS := ["green_hill", "chemical_plant", "rooftop_run", "casino_night", "sky_sanctuary", "ice_cap"]
-const NAMES := ["Green Hill", "Chemical Plant", "Rooftop Run", "Casino Night", "Sky Sanctuary", "Ice Cap"]
+const IDS := ["green_hill", "chemical_plant", "rooftop_run", "casino_night", "sky_sanctuary", "ice_cap", "lava_reef"]
+const NAMES := ["Green Hill", "Chemical Plant", "Rooftop Run", "Casino Night", "Sky Sanctuary", "Ice Cap", "Lava Reef"]
 const GreenHill = preload("res://scripts/themes/green_hill_theme.gd")
 
 static func create(theme_id: String) -> RefCounted:
+ if theme_id == "lava_reef":
+  return load("res://scripts/themes/lava_reef_theme.gd").new()
  if theme_id == "ice_cap":
   return load("res://scripts/themes/ice_cap_theme.gd").new()
  if theme_id == "sky_sanctuary":
