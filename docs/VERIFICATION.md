@@ -2,6 +2,19 @@
 
 Latest checks: 2026-10-25. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 
+## Green Hill walls, inset deck and close follow — 2026-10-25
+
+The plain wall caps/sides now use procedural grass tufts, a leafy turf edge and orange/brown checker soil, informed by [SEGA's Sonic Mania screenshots](https://www.sega.jp/game/detail/sonicmania/). Generated rails and authored solids/open walls share these materials. The darker playable floor remains at gameplay height; raised caps, side faces and shadows distinguish obstacles. On enclosed authored tables the deck follows connected outer side walls, with no rectangular exterior grass shelf. Incomplete side boundaries retain a rectangular fallback; this is presentation inference, not a new authored field or collider.
+
+Authored follow now has a 2× baseline zoom relative to the preceding ball-relative window. F1's Camera follow tuning exposes an additional 0.6–2.5× Follow zoom multiplier; O's complete-table overview ignores it. Screen-margin tracking keeps fast balls visible while retaining the camera speed limit and fixed angle. Generated default framing and all physical dimensions remain unchanged.
+
+- Main-game regression: **72 ANGLE checks passed**, including a substantially larger projected ball, unchanged perspective angle, corner/side-lane targets, 1200 px/s horizontal/vertical traversals at 60/120 Hz in all three camera presets, bounded camera speed, overview bounds, the actual F1 zoom control, source switching and retained engine ownership.
+- Authored presentation: **77 headless / 82 ANGLE checks passed**. Added a connected inset-wall fixture with a curved outer edge, exterior/interior/gutter probes and actual floor mesh-area verification. The 50/100 px fallback floors, all 77 terrain silhouettes, nine filled U/S variants, exact physical/visual anchors, rings, open paths, source immutability and collisionless presentation still pass.
+- Generated regressions: vertical camera **22**, presentation **18**, and Green Hill integration **14** checks passed. Real paddle/bumper events still feed presentation normally.
+- Isolated editor import and `git diff --check` passed. Successful test and capture runs had empty stderr. No physics, authored resources or project settings were edited by this change.
+
+Rendered and inspected the user's `First Try.tres` in close gameplay and full overview, plus generated play in the main app. Captures are `test-results/green-hill-first-try-close.png`, `test-results/green-hill-first-try-overview.png` and `test-results/generated-main-green-hill.png`; logs/captures remain ignored. The existing capture path also accepts `--capture=overview` (launcher: `-Capture overview`). Human review still owns camera comfort and visual polish, especially at extreme zoom settings or on layouts without enclosing walls.
+
 ## Authored floor, obstacle readability and closer camera — 2026-10-25
 
 The authored renderer previously treated solid collision stamps as flat grass islands and removed the shared floor. Authored Acts now have a continuous grass/checker platform over the terrain rectangle, ending before the red gutter. Solid stamps render as raised brown-and-cream obstacles using the generated rail palette; open paths keep their unclosed topology and use the same styling. The visual floor adds no collision or perimeter. Existing canonical colliders, authored positions and object dimensions are unchanged.

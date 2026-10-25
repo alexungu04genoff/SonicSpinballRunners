@@ -64,8 +64,10 @@ func _ready() -> void:
    _capture_sequence = true
  if not _capture_kind.is_empty():
   get_tree().paused = true
-  if _capture_kind == "gameplay":
+  if _capture_kind in ["gameplay", "overview"]:
    character.resume_gameplay()
+   if _capture_kind == "overview":
+    presentation.set_camera_follow(false)
   else:
    _set_close_view(true)
    _select_pose(_capture_kind if _capture_kind in ["roll", "idle", "jump", "trick", "homing", "impact", "fly"] else "idle")

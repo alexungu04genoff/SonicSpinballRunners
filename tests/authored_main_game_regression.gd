@@ -270,7 +270,7 @@ func check_compact_follow_camera() -> void:
 	var p: TablePresentation = game.presentation
 	p.set_camera_follow(true)
 	var follow_width := projected_ball_width()
-	check(absf(follow_width / generated_ball_width - 1.0) < 0.12 and p.camera.basis.is_equal_approx(generated_camera_basis), "Compact authored ball has comparable screen size and identical perspective angle to generated follow view", str([follow_width, generated_ball_width]))
+	check(follow_width > generated_ball_width * 1.6 and p.camera.basis.is_equal_approx(generated_camera_basis), "Authored close follow makes the ball substantially larger while retaining the generated perspective angle", str([follow_width, generated_ball_width]))
 	var screen := Rect2(Vector2.ZERO, Vector2(game.view.size))
 	var visible := true
 	for point in [Vector2(40, 40), Vector2(560, 40), Vector2(40, 600), Vector2(560, 600)]:
@@ -279,22 +279,36 @@ func check_compact_follow_camera() -> void:
 	check(visible, "Close authored framing can follow every corner and both side lanes without clipping the ball")
 	var ball_position: Vector2 = game.ball.position
 	var motion_visible := true
-	for route in [[Vector2(40, 500), Vector2(560, 500)], [Vector2(560, 500), Vector2(40, 500)], [Vector2(300, 40), Vector2(300, 610)], [Vector2(300, 610), Vector2(300, 40)]]:
-		p.reset_camera(route[0])
-		var ticks := ceili(route[0].distance_to(route[1]) / 1200.0 * 120.0)
-		for tick in ticks:
-			game.ball.position = route[0].lerp(route[1], float(tick + 1) / ticks)
-			p._update_camera(1.0 / 120.0)
-			motion_visible = motion_visible and screen.has_point(p.camera.unproject_position(TablePresentation.map_point(game.ball.position, p.ball_height())))
+	var bounded := true
+	for preset in 3:
+		p.set_camera_preset(preset)
+		var angle := p.camera.basis
+		for rate: float in [60.0, 120.0]:
+			for route in [[Vector2(40, 500), Vector2(560, 500)], [Vector2(560, 500), Vector2(40, 500)], [Vector2(300, 40), Vector2(300, 610)], [Vector2(300, 610), Vector2(300, 40)]]:
+				p.reset_camera(route[0])
+				var ticks := ceili(route[0].distance_to(route[1]) / 1200.0 * rate)
+				for tick in ticks:
+					game.ball.position = route[0].lerp(route[1], float(tick + 1) / ticks)
+					var previous := p.camera_focus
+					p._update_camera(1.0 / rate)
+					motion_visible = motion_visible and screen.has_point(p.camera.unproject_position(TablePresentation.map_point(game.ball.position, p.ball_height())))
+					bounded = bounded and previous.distance_to(p.camera_focus) <= float(p.camera_settings.max_speed) / rate + 0.001 and p.camera.basis.is_equal_approx(angle)
 	game.ball.position = ball_position
-	check(motion_visible, "Closer authored camera keeps 1200px/s lateral and vertical traversals visible")
+	p.set_camera_preset(TablePresentation.CameraPreset.REAL_PINBALL)
+	check(motion_visible, "Close authored camera keeps 1200px/s traversals visible at 60/120Hz in all three presets")
+	check(bounded, "Close camera tracking preserves the movement speed cap and fixed angle in every preset")
 	p.set_camera_follow(false)
 	var overview_width := projected_ball_width()
 	var framed := true
 	var bounds: Rect2 = game.playfield.bounds
 	for point in [bounds.position, Vector2(bounds.end.x, bounds.position.y), bounds.end, Vector2(bounds.position.x, bounds.end.y)]:
 		framed = framed and screen.has_point(p.camera.unproject_position(TablePresentation.map_point(point)))
-	check(follow_width > overview_width * 1.15 and framed, "Overview still fits the complete Act and gutter while follow provides a closer gameplay view", str([follow_width, overview_width]))
+	check(follow_width > overview_width * 1.8 and framed, "Overview still fits the complete Act and gutter while follow provides a much closer gameplay view", str([follow_width, overview_width]))
+	game.debug_panel.camera_fields.zoom.value = 1.3
+	check(is_equal_approx(projected_ball_width(), overview_width), "Follow zoom control leaves the complete-table overview unchanged")
+	p.set_camera_follow(true)
+	check(projected_ball_width() > follow_width * 1.15 and game.ball.position == ball_position, "F1 follow zoom immediately enlarges the view without moving the physical ball")
+	game.debug_panel.camera_fields.zoom.value = 1.0
 	p.set_camera_follow(true)
 	p.reset_camera(game.ball.serve_position)
 	paused = false

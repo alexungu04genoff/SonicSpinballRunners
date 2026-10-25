@@ -11,7 +11,7 @@ param(
     [string]$Character = 'Sonic',
     [switch]$Playground,
     [switch]$NoModel,
-    [ValidateSet('gameplay', 'idle', 'jump', 'trick', 'roll', 'reel', 'homing', 'impact', 'fly')]
+    [ValidateSet('gameplay', 'overview', 'idle', 'jump', 'trick', 'roll', 'reel', 'homing', 'impact', 'fly')]
     [string]$Capture,
     [switch]$Sequence,
     [ValidateRange(10, 10000)]

@@ -18,10 +18,12 @@ const CAMERA_NAMES: Array[String] = ["Top-down reference", "Real Pinball", "Dram
 var camera_preset: int = CameraPreset.REAL_PINBALL
 var camera_follow_enabled: bool = true
 ## Distances are physics pixels, speed is pixels/second, response is inverse seconds.
-var camera_settings: Dictionary = {"dead_zone_y": 100.0, "look_ahead": 100.0, "vertical_response": 5.0, "horizontal_response": 2.0, "max_speed": 1800.0}
-const CAMERA_LIMITS: Dictionary = {"dead_zone_y": Vector2(0, 250), "look_ahead": Vector2(0, 250), "vertical_response": Vector2(0.5, 12), "horizontal_response": Vector2(0.25, 6), "max_speed": Vector2(400, 4000)}
+## Zoom is a dimensionless multiplier on each source's default follow framing.
+var camera_settings: Dictionary = {"zoom": 1.0, "dead_zone_y": 100.0, "look_ahead": 100.0, "vertical_response": 5.0, "horizontal_response": 2.0, "max_speed": 1800.0}
+const CAMERA_LIMITS: Dictionary = {"zoom": Vector2(0.6, 2.5), "dead_zone_y": Vector2(0, 250), "look_ahead": Vector2(0, 250), "vertical_response": Vector2(0.5, 12), "horizontal_response": Vector2(0.25, 6), "max_speed": Vector2(400, 4000)}
 const FOLLOW_HEIGHT: float = 1100.0
 const FOLLOW_REFERENCE_WIDTH: float = 800.0
+const AUTHORED_FOLLOW_ZOOM: float = 2.0
 const HORIZONTAL_TRAVEL: float = 55.0
 var table_bounds: Rect2
 var camera_target: Vector2
@@ -195,8 +197,8 @@ func _build_shared(chunks: Array[TableChunk], junctions: Variant, bounds: Rect2)
  floor_visual.name = "TableFloor"
  # Receive object shadows without self-shadow artifacts on the large, flat slab.
  floor_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
- var rail_mat := material(RAIL_SIDE_COLOR)
- var rail_top := material(RAIL_TOP_COLOR)
+ var rail_mat := terrain_side_material()
+ var rail_top := terrain_top_material()
  var bumper_mat := material(Color("b34039"))
  var bumper_top := material(Color("ff8962"))
  var gold := material(Color("ffd568"), 0.08)
@@ -454,23 +456,27 @@ func set_camera_value(key: String, value: float) -> void:
   return
  var limits: Vector2 = CAMERA_LIMITS[key]
  camera_settings[key] = clampf(value, limits.x, limits.y)
+ if key == "zoom":
+  reset_camera()
 
 func reset_camera(at: Vector2 = Vector2.INF) -> void:
  if not is_instance_valid(camera):
   return
  var point := ball.position if at == Vector2.INF else at
  point.x = _horizontal_follow_target(point.x)
- camera_focus = _clamp_focus(point + Vector2(0, -float(camera_settings.look_ahead))) if camera_follow_enabled else table_bounds.get_center()
+ camera_focus = _clamp_focus(point + Vector2(0, -float(camera_settings.look_ahead) / _follow_zoom())) if camera_follow_enabled else table_bounds.get_center()
  camera_target = camera_focus
  _configure_camera()
 
+func _follow_zoom() -> float:
+ return float(camera_settings.zoom) * (AUTHORED_FOLLOW_ZOOM if authored_mode else 1.0)
+
 func _follow_window_size() -> Vector2:
- # Compact authored balls should occupy the same screen space as the normal
- # generated ball. Fit a local play window, not the complete short Act. This
- # changes camera framing only; the physical world keeps its uniform mapping.
+ # Authored gameplay uses a close local window. Overview still fits the full Act.
+ # Zoom changes only framing, never the uniformly mapped physical world.
  var scale := ball.radius / PlaygroundBall.RADIUS
  var width := minf(table_bounds.size.x, FOLLOW_REFERENCE_WIDTH * scale) if authored_mode else table_bounds.size.x
- return Vector2(width, minf(FOLLOW_HEIGHT * scale, table_bounds.size.y))
+ return (Vector2(width, minf(FOLLOW_HEIGHT * scale, table_bounds.size.y)) / _follow_zoom()).min(table_bounds.size)
 
 func _horizontal_follow_target(x: float) -> float:
  var center := table_bounds.get_center().x
@@ -493,7 +499,7 @@ func _configure_camera() -> void:
  var aspect := _camera_viewport_size.x / maxf(1.0, _camera_viewport_size.y)
  var size := table_bounds.size + Vector2(15, 50)
  if camera_follow_enabled:
-  size = _follow_window_size() + Vector2(15.0 + HORIZONTAL_TRAVEL * 2.0, 50.0) * (ball.radius / PlaygroundBall.RADIUS)
+  size = _follow_window_size() + Vector2(15.0 + HORIZONTAL_TRAVEL * 2.0, 50.0) * (ball.radius / PlaygroundBall.RADIUS) / _follow_zoom()
  camera.near = 0.1
  camera.keep_aspect = Camera3D.KEEP_HEIGHT
  if camera_preset == CameraPreset.TOP_DOWN:
@@ -528,18 +534,44 @@ func _update_camera(delta: float) -> void:
  if not camera_follow_enabled or delta <= 0.0:
   return
  # The ball only supplies observations. No transform or impulse is written to physics.
- var desired := Vector2(_horizontal_follow_target(ball.position.x), ball.position.y - float(camera_settings.look_ahead))
+ var desired := Vector2(_horizontal_follow_target(ball.position.x), ball.position.y - float(camera_settings.look_ahead) / _follow_zoom())
  camera_target = Vector2(desired.x, camera_focus.y)
  var vertical_error := desired.y - camera_focus.y
- if absf(vertical_error) > float(camera_settings.dead_zone_y):
-  camera_target.y = desired.y - signf(vertical_error) * float(camera_settings.dead_zone_y)
+ var dead_zone := float(camera_settings.dead_zone_y) / _follow_zoom()
+ if absf(vertical_error) > dead_zone:
+  camera_target.y = desired.y - signf(vertical_error) * dead_zone
  camera_target = _clamp_focus(camera_target)
  # Exponential response is frame-rate independent; the speed limit bounds impact jumps.
  var step := minf(delta, 0.05)
  var next := Vector2(lerpf(camera_focus.x, camera_target.x, 1.0 - exp(-float(camera_settings.horizontal_response) * step)), lerpf(camera_focus.y, camera_target.y, 1.0 - exp(-float(camera_settings.vertical_response) * step)))
+ if _follow_zoom() > 1.0:
+  next = _keep_ball_in_view(next)
  camera_focus += (next - camera_focus).limit_length(float(camera_settings.max_speed) * step)
  camera_focus = _clamp_focus(camera_focus)
  camera.position = map_point(camera_focus) + _camera_offset
+
+func _keep_ball_in_view(focus: Vector2) -> Vector2:
+ # At close zoom, damped tracking must catch a fast ball before it reaches the
+ # screen edge. Project on the ball's visual plane; retain the common speed cap.
+ camera.position = map_point(focus) + _camera_offset
+ var world := map_point(ball.position, ball_height())
+ var screen := camera.unproject_position(world)
+ var safe := Rect2(_camera_viewport_size * 0.18, _camera_viewport_size * Vector2(0.58, 0.64))
+ var inside := screen.clamp(safe.position, safe.end)
+ if inside.is_equal_approx(screen):
+  return focus
+ var origin := camera.project_ray_origin(inside)
+ var ray := camera.project_ray_normal(inside)
+ if absf(ray.y) < 0.001:
+  return focus
+ var on_plane := origin + ray * ((world.y - origin.y) / ray.y)
+ return _clamp_focus(focus + unmap_point(world - on_plane))
+
+func terrain_side_material() -> Material:
+ return material(RAIL_SIDE_COLOR)
+
+func terrain_top_material() -> Material:
+ return material(RAIL_TOP_COLOR)
 
 func _paddle(length: float, radius: float, height: float, base: float, mat: Material, parent: Node3D) -> void:
  # Extrude the exact 2D capsule footprint; only the inset top trim is smaller.

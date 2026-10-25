@@ -5,15 +5,26 @@ extends TablePresentation
 const GRASS_SHADER := """
 shader_type spatial;
 render_mode cull_disabled, specular_disabled;
+uniform bool raised_turf = false;
+varying vec3 terrain_position;
+void vertex() { terrain_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 void fragment() {
- vec2 p = UV * 2.2;
+ vec2 ground = terrain_position.xz;
+ vec2 p = ground * 3.0;
  vec2 cell = floor(p);
  vec2 blend = fract(p);
  blend = blend * blend * (3.0 - 2.0 * blend);
  float noise = mix(mix(hash(cell), hash(cell + vec2(1.0, 0.0)), blend.x), mix(hash(cell + vec2(0.0, 1.0)), hash(cell + vec2(1.0, 1.0)), blend.x), blend.y);
- float stripe = step(0.55, fract((UV.x + UV.y * 0.35) * 0.42));
- ALBEDO = mix(vec3(0.22, 0.56, 0.045), vec3(0.27, 0.63, 0.065), noise * 0.45 + stripe * 0.11);
+ // Staggered little grass tufts, with broad patches underneath. World-space
+ // coordinates keep the same texture density on curved stamps and rail caps.
+ vec2 blades = ground * 28.0;
+ blades.x += mod(floor(blades.y), 2.0) * 0.5;
+ vec2 blade = fract(blades) - 0.5;
+ float tuft = (1.0 - smoothstep(0.055, 0.14, abs(abs(blade.x) - (blade.y + 0.35) * 0.32))) * step(-0.3, blade.y) * step(blade.y, 0.28);
+ vec3 dark = raised_turf ? vec3(0.14, 0.49, 0.025) : vec3(0.16, 0.40, 0.045);
+ vec3 light = raised_turf ? vec3(0.40, 0.78, 0.035) : vec3(0.28, 0.55, 0.065);
+ ALBEDO = mix(dark, light, 0.35 + noise * 0.40 + tuft * 0.22);
  ROUGHNESS = 1.0;
 }
 """
@@ -21,13 +32,39 @@ const CLIFF_SHADER := """
 shader_type spatial;
 render_mode cull_disabled, specular_disabled;
 void fragment() {
- vec2 tile = floor(UV * 2.0);
+ vec2 tile = floor(UV * 6.25);
  float checker = mod(tile.x + tile.y, 2.0);
- vec2 edge = min(fract(UV * 2.0), 1.0 - fract(UV * 2.0));
+ vec2 edge = min(fract(UV * 6.25), 1.0 - fract(UV * 6.25));
  float seam = smoothstep(0.0, 0.035, min(edge.x, edge.y));
- vec3 dark = vec3(0.30, 0.105, 0.035);
- vec3 light = vec3(0.62, 0.30, 0.09);
+ vec3 dark = vec3(0.30, 0.095, 0.025);
+ vec3 light = vec3(0.72, 0.32, 0.075);
  ALBEDO = mix(dark, light, checker) * mix(0.88, 1.0, seam);
+ ROUGHNESS = 1.0;
+}
+"""
+const WALL_SHADER := """
+shader_type spatial;
+render_mode cull_disabled, specular_disabled;
+uniform float turf_height = 0.30;
+varying vec3 terrain_position;
+varying vec3 terrain_normal;
+void vertex() {
+ terrain_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+ terrain_normal = normalize(MODEL_NORMAL_MATRIX * NORMAL);
+}
+void fragment() {
+ // Triplanar checker soil wraps both straight and curved walls without stretching.
+ vec3 tile = terrain_position * 6.25;
+ float checker_x = mod(floor(tile.z) + floor(tile.y), 2.0);
+ float checker_z = mod(floor(tile.x) + floor(tile.y), 2.0);
+ vec2 weights = pow(abs(terrain_normal.xz), vec2(8.0));
+ weights /= max(weights.x + weights.y, 0.001);
+ float checker = dot(vec2(checker_x, checker_z), weights);
+ vec3 soil = mix(vec3(0.30, 0.095, 0.025), vec3(0.72, 0.32, 0.075), checker);
+ float fringe = abs(fract((terrain_position.x + terrain_position.z) * 24.0) - 0.5) * 0.045;
+ float depth = turf_height - terrain_position.y;
+ vec3 grass = mix(vec3(0.13, 0.39, 0.025), vec3(0.49, 0.79, 0.035), 1.0 - smoothstep(0.0, 0.08, depth));
+ ALBEDO = mix(soil, grass, step(depth, 0.065 + fringe));
  ROUGHNESS = 1.0;
 }
 """
@@ -36,10 +73,13 @@ var terrain_root: Node3D
 var scenery_root: Node3D
 var _grass: ShaderMaterial
 var _cliff: ShaderMaterial
+var _wall_grass: ShaderMaterial
+var _wall_soil: ShaderMaterial
 var _outlines: Array[PackedVector2Array] = []
 ## Presentation-only union; the compiler's collision polygons remain untouched.
 var authored_terrain_polygons: Array[PackedVector2Array] = []
 var authored_open_paths: Array[PackedVector2Array] = []
+var authored_floor_outline := PackedVector2Array()
 const LAND_DEPTH := 1.45
 
 func _clear_playfield_geometry() -> void:
@@ -47,6 +87,19 @@ func _clear_playfield_geometry() -> void:
  _outlines.clear()
  authored_terrain_polygons.clear()
  authored_open_paths.clear()
+ authored_floor_outline.clear()
+
+func terrain_top_material() -> Material:
+ if _wall_grass == null:
+  _wall_grass = _shader_material(GRASS_SHADER)
+  _wall_grass.set_shader_parameter("raised_turf", true)
+ return _wall_grass
+
+func terrain_side_material() -> Material:
+ if _wall_soil == null:
+  _wall_soil = _shader_material(WALL_SHADER)
+  _wall_soil.set_shader_parameter("turf_height", RAIL_HEIGHT)
+ return _wall_soil
 
 func material(color: Color, glow: float = 0.0) -> StandardMaterial3D:
  # Reuse the original collision-matched mesh silhouettes with a cohesive toy palette.
@@ -88,14 +141,6 @@ func build(chunks: Array[TableChunk], junctions: Variant = [], bounds: Rect2 = R
 func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
  super.build_authored(runtime, bounds, cell_size)
  _initialize_terrain_skin()
- # Grass means playable floor in both sources. Authored stamps describe blocked
- # terrain, not the footprint of that floor. Keep the drain gutter uncovered.
- var floor_bounds := Rect2(bounds.position, bounds.size - Vector2(0, cell_size * AuthoredActData.RED_GUTTER_CELLS))
- var floor_outline := PackedVector2Array([floor_bounds.position, Vector2(floor_bounds.end.x, floor_bounds.position.y), floor_bounds.end, Vector2(floor_bounds.position.x, floor_bounds.end.y)])
- var floor_root := Node3D.new()
- floor_root.name = "AuthoredPlayfieldFloor"
- terrain_root.add_child(floor_root)
- _make_land(floor_outline, LAND_DEPTH, floor_root)
  for terrain: Dictionary in runtime.terrain:
   var points: PackedVector2Array = terrain.points.duplicate()
   if terrain.closed:
@@ -103,8 +148,16 @@ func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> voi
   else:
    authored_open_paths.append(points)
  authored_terrain_polygons = _merge_authored_land(_outlines)
- var wall_side := material(RAIL_SIDE_COLOR)
- var wall_top := material(RAIL_TOP_COLOR)
+ # The deck runs beneath the outer walls, with no exterior rectangular shelf.
+ # This is a visual footprint only; it never fills or alters physical geometry.
+ var floor_bounds := Rect2(bounds.position, bounds.size - Vector2(0, cell_size * AuthoredActData.RED_GUTTER_CELLS))
+ authored_floor_outline = _authored_floor_boundary(floor_bounds)
+ var floor_root := Node3D.new()
+ floor_root.name = "AuthoredPlayfieldFloor"
+ terrain_root.add_child(floor_root)
+ _make_land(authored_floor_outline, LAND_DEPTH, floor_root, 0.0, 0.0)
+ var wall_side := terrain_side_material()
+ var wall_top := terrain_top_material()
  for outline: PackedVector2Array in authored_terrain_polygons:
   var obstacle := mesh_node(_prism(outline, RAIL_HEIGHT + RAIL_CAP_HEIGHT, wall_side, wall_top), null, Vector3.ZERO, terrain_root)
   obstacle.name = "SolidTerrainObstacle"
@@ -134,6 +187,65 @@ func _merge_authored_land(outlines: Array[PackedVector2Array]) -> Array[PackedVe
    else:
     index += 1
   result.append(candidate)
+ return result
+
+func _authored_floor_boundary(bounds: Rect2) -> PackedVector2Array:
+ var rectangle := PackedVector2Array([bounds.position, Vector2(bounds.end.x, bounds.position.y), bounds.end, Vector2(bounds.position.x, bounds.end.y)])
+ var boundaries: Array[PackedVector2Array] = authored_terrain_polygons.duplicate()
+ for path: PackedVector2Array in authored_open_paths:
+  boundaries.append_array(Geometry2D.offset_polyline(path, authored_cell_size * 0.02, Geometry2D.JOIN_ROUND, Geometry2D.END_ROUND))
+ boundaries = _merge_authored_land(boundaries)
+ var left: Array[PackedVector2Array] = []
+ var right: Array[PackedVector2Array] = []
+ var rows: Array[float] = [bounds.position.y, bounds.end.y]
+ for polygon: PackedVector2Array in boundaries:
+  var extent := Rect2(polygon[0], Vector2.ZERO)
+  for point: Vector2 in polygon:
+   extent = extent.expand(point)
+  # Long connected side walls define a table envelope. Small interior obstacles
+  # never pinch the floor, and loose/unbounded authoring drafts retain a full deck.
+  if extent.size.y < bounds.size.y * 0.5:
+   continue
+  var on_left := extent.position.x < bounds.position.x + bounds.size.x * 0.3
+  var on_right := extent.end.x > bounds.end.x - bounds.size.x * 0.3
+  if on_left:
+   left.append(polygon)
+  if on_right:
+   right.append(polygon)
+  if on_left or on_right:
+   for point: Vector2 in polygon:
+    # Samples on both sides preserve horizontal steps without bridging notches.
+    for offset: float in [-0.001, 0.0, 0.001]:
+     var y := clampf(point.y + offset, bounds.position.y, bounds.end.y)
+     if not rows.has(y): rows.append(y)
+ if left.is_empty() or right.is_empty():
+  return rectangle
+ rows.sort()
+ var left_edge := PackedVector2Array()
+ var right_edge := PackedVector2Array()
+ for y: float in rows:
+  var low := _outer_wall_x(left, y, true)
+  var high := _outer_wall_x(right, y, false)
+  if not is_finite(low) or not is_finite(high) or low >= high:
+   return rectangle # Incomplete side boundaries cannot define a reliable envelope.
+  left_edge.append(Vector2(clampf(low, bounds.position.x, bounds.end.x), y))
+  right_edge.append(Vector2(clampf(high, bounds.position.x, bounds.end.x), y))
+ right_edge.reverse()
+ left_edge.append_array(right_edge)
+ if Geometry2D.triangulate_polygon(left_edge).is_empty():
+  return rectangle
+ return left_edge
+
+func _outer_wall_x(polygons: Array[PackedVector2Array], y: float, left: bool) -> float:
+ var result := INF if left else -INF
+ for polygon: PackedVector2Array in polygons:
+  for index: int in polygon.size():
+   var a := polygon[index]
+   var b := polygon[(index + 1) % polygon.size()]
+   if y < minf(a.y, b.y) or y > maxf(a.y, b.y):
+    continue
+   var x := (minf(a.x, b.x) if left else maxf(a.x, b.x)) if is_equal_approx(a.y, b.y) else lerpf(a.x, b.x, (y - a.y) / (b.y - a.y))
+   result = minf(result, x) if left else maxf(result, x)
  return result
 
 func _initialize_terrain_skin() -> void:
@@ -244,12 +356,13 @@ func _make_land(outline: PackedVector2Array, depth: float, parent: Node3D, top_h
   line(a, b, turf_width, top_height - turf_width, turf, parent)
 
 func _boundary_at_y(y: float) -> Vector2:
- if authored_mode:
-  # Decoration stays outside the Act, including empty spaces between authored solids.
-  return Vector2(table_bounds.position.x, table_bounds.end.x)
  var low := INF
  var high := -INF
- for outline: PackedVector2Array in _outlines:
+ var outlines: Array[PackedVector2Array] = _outlines
+ if authored_mode:
+  outlines = []
+  outlines.append(authored_floor_outline)
+ for outline: PackedVector2Array in outlines:
   for i: int in outline.size():
    var a: Vector2 = outline[i]
    var b: Vector2 = outline[(i + 1) % outline.size()]

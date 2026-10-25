@@ -200,6 +200,7 @@ func _ready() -> void:
  fields.add_child(camera_controls)
  camera_controls.visible = false
  var camera_specs := {
+  "zoom": [0.6, 2.5, 0.1, "Follow zoom [multiplier]"],
   "dead_zone_y": [0.0, 250.0, 5.0, "Vertical dead zone [px]"],
   "look_ahead": [0.0, 250.0, 5.0, "Upward look-ahead [px]"],
   "vertical_response": [1.0, 12.0, 0.25, "Vertical response [1/s]"],

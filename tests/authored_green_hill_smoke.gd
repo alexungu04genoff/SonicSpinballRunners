@@ -221,9 +221,9 @@ func check_catalogue_meshes() -> void:
 		if not node is MeshInstance3D or not str(node.name).begins_with("SolidTerrainObstacle"): continue
 		var top: Material = node.mesh.surface_get_material(0)
 		var side: Material = node.mesh.surface_get_material(1)
-		wall_style = wall_style and top is StandardMaterial3D and side is StandardMaterial3D
-		if top is StandardMaterial3D and side is StandardMaterial3D:
-			wall_style = wall_style and top.albedo_color == game.green_hill.material(TablePresentation.RAIL_TOP_COLOR).albedo_color and side.albedo_color == game.green_hill.material(TablePresentation.RAIL_SIDE_COLOR).albedo_color
+		wall_style = wall_style and top is ShaderMaterial and side is ShaderMaterial
+		if top is ShaderMaterial and side is ShaderMaterial:
+			wall_style = wall_style and top == game.green_hill.terrain_top_material() and side == game.green_hill.terrain_side_material() and top.get_shader_parameter("raised_turf") == true
 		# Surface zero is the blocking silhouette's cap; exclude its vertical sides
 		# and the separate traversable floor from projected coverage measurements.
 		for surface in 1:
@@ -244,7 +244,7 @@ func check_catalogue_meshes() -> void:
 	for triangle in triangles: rendered_area += polygon_area(triangle)
 	check(absf(expected_area - rendered_area) < 2.0, "Actual raised-wall cap triangles cover the complete solid catalogue with no missing band caps")
 	check(raised, "Solid blockers render above the ball center instead of impersonating flat playable grass")
-	check(wall_style, "Authored solid caps and sides use the same wall palette as generated rails")
+	check(wall_style, "Authored solid caps and sides share textured grass and checker-soil materials with generated rails")
 	var correct_coverage := true
 	var solid_bands := 0
 	for record: Dictionary in game.runtime.terrain:
@@ -291,6 +291,29 @@ func check_topology_and_toggle() -> void:
 	await key(KEY_F2)
 	check(not game.debug_2d and game.green_hill.visible and not game.view.disable_3d, "F2 restores Green Hill on the same live Act")
 	check(FileAccess.get_file_as_bytes(SHOWCASE) == source_bytes, "Presentation and mode changes never rewrite the source Act")
+
+
+func check_inset_floor() -> void:
+	var document := new_document()
+	document.spawn_position = Vector2(300, 550)
+	for row in [0, 3, 6, 9]:
+		document.placements.append(stamp("rectangle_1x3", Vector2i(3, row)))
+		document.placements.append(stamp("rectangle_1x3", Vector2i(9, row)))
+	document.placements.append(stamp("s_band_3x3", Vector2i(0, 3), 0, true))
+	document.placements.append(stamp("circle_1x1", Vector2i(6, 5)))
+	var path := "res://test-results/authored-inset-floor.tres"
+	check(document.save_document(path) == OK and game.load_act(path), "Connected side-wall fixture loads through the normal authored compiler")
+	await frames(3)
+	var outline: PackedVector2Array = game.green_hill.authored_floor_outline
+	check(not Geometry2D.is_point_in_polygon(Vector2(130, 25), outline) and not Geometry2D.is_point_in_polygon(Vector2(510, 300), outline), "Deck excludes the exterior shelf beyond both inset side walls")
+	check(not Geometry2D.is_point_in_polygon(Vector2(10, 175), outline) and Geometry2D.is_point_in_polygon(Vector2(100, 275), outline), "Deck follows the curved outside wall instead of flattening it to a rectangle")
+	check(Geometry2D.is_point_in_polygon(Vector2(300, 300), outline) and not Geometry2D.is_point_in_polygon(Vector2(300, 625), outline), "Interior floor stays continuous around small obstacles and stops before the gutter")
+	var floor: MeshInstance3D = game.green_hill.terrain_root.get_node("AuthoredPlayfieldFloor/GrassCap")
+	var area := 0.0
+	var vertices: PackedVector3Array = floor.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+	for index in range(0, vertices.size(), 3):
+		area += polygon_area(PackedVector2Array([TablePresentation.unmap_point(vertices[index]), TablePresentation.unmap_point(vertices[index + 1]), TablePresentation.unmap_point(vertices[index + 2])]))
+	check(absf(area - polygon_area(outline)) < 1.0 and game.document.fingerprint() == document.fingerprint(), "Rendered deck triangulates the inferred contour without changing any authored records")
 
 
 func check_ring_pickup() -> void:
@@ -346,6 +369,7 @@ func run() -> void:
 	await check_shared_dimensions(100.0)
 	await check_topology_and_toggle()
 	await check_catalogue_meshes()
+	await check_inset_floor()
 	await check_ring_pickup()
 	await capture_comparison()
 	game.queue_free()
