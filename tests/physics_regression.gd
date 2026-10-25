@@ -80,10 +80,11 @@ func run() -> void:
  test_tuning.select_profile(1)
  test_ball.teleport_to(Vector2(2000, 0), Vector2(0, -500))
  await frames(121)
- check(test_ball.position.y < balanced_y - 120.0 and test_ball.linear_velocity.y < balanced_vy - 250, "Floaty produces a longer upward trajectory", "Balanced y=%.1f vy=%.1f; Floaty y=%.1f vy=%.1f" % [balanced_y, balanced_vy, test_ball.position.y, test_ball.linear_velocity.y])
+ var gravity_difference := float(ProjectSettings.get_setting("physics/2d/default_gravity")) * (test_tuning.BALANCED.gravity_scale - test_tuning.FLOATY.gravity_scale)
+ check(absf((balanced_y - test_ball.position.y) - 0.5 * gravity_difference) < 5.0 and absf((balanced_vy - test_ball.linear_velocity.y) - gravity_difference) < 5.0, "Floaty trajectory follows the profile gravity difference over one second", "Balanced y=%.1f vy=%.1f; Floaty y=%.1f vy=%.1f" % [balanced_y, balanced_vy, test_ball.position.y, test_ball.linear_velocity.y])
  test_ball.teleport_to(Vector2(2000, 0), Vector2(900, 4000))
  await frames(4)
- check(test_ball.linear_velocity.y <= 1010 and test_ball.linear_velocity.x > 890, "Floaty terminal fall limit preserves lateral velocity", str(test_ball.linear_velocity))
+ check(test_ball.linear_velocity.y <= test_tuning.FLOATY.max_downward_speed + 10.0 and test_ball.linear_velocity.x > 890, "Floaty terminal fall limit preserves lateral velocity", str(test_ball.linear_velocity))
  fixture.queue_free()
  await frames(3)
 
@@ -165,7 +166,7 @@ func run() -> void:
  check(is_equal_approx(game.chunks[0].wall_material.bounce, 0.5) and is_equal_approx(game.chunks[1].wall_material.bounce, 0.5), "Live tuning updates both chunks")
  game.tuning.modifier_enabled = true
  game.tuning.rebuild()
- check(is_equal_approx(game.tuning.effective.steering_acceleration, 2750.0) and is_equal_approx(game.tuning.effective.flipper_launch_strength, 1207.5), "Example Chao boosts Quick / Tight effective stats")
+ check(is_equal_approx(game.tuning.effective.steering_acceleration, 2750.0) and is_equal_approx(game.tuning.effective.flipper_launch_strength, game.tuning.BALANCED.flipper_launch_strength * 1.15), "Example Chao boosts Quick / Tight effective stats")
  game.tuning.modifier_enabled = false
  game.tuning.select_profile(0)
  game.toggle_pause()

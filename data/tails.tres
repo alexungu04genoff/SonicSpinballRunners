@@ -8,5 +8,5 @@ counter_steering_deceleration = 4400.0
 max_steering_speed = 135.0
 steering_deceleration = 3000.0
 steering_strength = 0.1
-gravity_scale = 0.82
-max_downward_speed = 1250.0
+gravity_scale = 0.46125
+max_downward_speed = 937.5

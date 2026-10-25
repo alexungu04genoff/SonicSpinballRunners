@@ -90,7 +90,7 @@ func check_bumper_contacts() -> void:
 		var center := Vector2(250.5, 200.25)
 		var round_bumper := [{"type": "round_bumper", "position": center, "rotation_degrees": 32.0}]
 		var round_hit := await trajectory([], center - Vector2(0, 2 * cell_size), Vector2(0, 12 * cell_size), 22, round_bumper, cell_size)
-		check(round_hit.bumper_hits == 1 and round_hit.velocity.y < -600 and round_hit.immutable, "Compact round bumper fires once at the exact fractional center with %.0f-pixel cells" % cell_size, str(round_hit))
+		check(round_hit.bumper_hits == 1 and round_hit.velocity.y < -600 * PhysicsTuning.BALANCED.bumper_rebound_multiplier and round_hit.immutable, "Compact round bumper fires once at the exact fractional center with %.0f-pixel cells" % cell_size, str(round_hit))
 		var triangle := [{"type": "triangle_bumper", "position": center, "rotation_degrees": 32.0}]
 		var axis := Vector2.DOWN.rotated(deg_to_rad(32))
 		var sling_hit := await trajectory([], center + Vector2(-0.10, -1.5).rotated(deg_to_rad(32)) * cell_size, axis * 12 * cell_size, 22, triangle, cell_size)
@@ -132,7 +132,7 @@ func check_flipper_contacts_at_scale(cell_size: float) -> void:
 			env.controls.virtual_left = side > 0
 			env.controls.virtual_right = side < 0
 			await frames(16)
-			check(shot.count == 1 and shot.impulse.dot(Vector2.UP.rotated(offset)) > 600 and paddle.position == origin, "Compact %s flipper strikes once at its exact pivot with %.0f-pixel cells and %.0f° offset" % ["left" if side > 0 else "right", cell_size, rad_to_deg(offset)], str(shot))
+			check(shot.count == 1 and shot.impulse.dot(Vector2.UP.rotated(offset)) > env.tuning.effective.flipper_launch_strength * (600.0 / 1050.0) and paddle.position == origin, "Compact %s flipper strikes once at its exact pivot with %.0f-pixel cells and %.0f° offset" % ["left" if side > 0 else "right", cell_size, rad_to_deg(offset)], str(shot))
 			await frames(20)
 			check(shot.count == 1, "Holding an authored flipper cannot repeat its powered strike")
 			env.world.free()

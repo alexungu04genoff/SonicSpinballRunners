@@ -10,14 +10,14 @@ extends Resource
 @export var steering_deceleration: float = 1400.0
 @export var steering_strength: float = 0.065
 @export_group("Movement")
-@export var gravity_scale: float = 1.0
-@export var max_downward_speed: float = 1500.0
-@export var rolling_acceleration: float = 80.0
+@export var gravity_scale: float = 0.5625
+@export var max_downward_speed: float = 1125.0
+@export var rolling_acceleration: float = 45.0
 @export var rolling_drag: float = 0.10
-@export var max_rolling_speed: float = 900.0
+@export var max_rolling_speed: float = 675.0
 @export_group("Collisions")
-@export var flipper_launch_strength: float = 1050.0
-@export var bumper_rebound_multiplier: float = 1.0
+@export var flipper_launch_strength: float = 787.5
+@export var bumper_rebound_multiplier: float = 0.75
 @export var wall_restitution: float = 0.72
 @export_group("Collectibles and abilities")
 @export var ring_magnet_radius: float = 50.0

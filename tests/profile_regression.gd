@@ -23,7 +23,7 @@ func _initialize() -> void:
 	tuning.modifier_enabled = true
 	tuning.set_value("gravity_scale", 1.8)
 	tuning.select_profile(1)
-	check(tuning.overrides.is_empty() and is_equal_approx(tuning.effective.gravity_scale, 0.58), "Profile switching clears overrides and selects Floaty")
+	check(tuning.overrides.is_empty() and is_equal_approx(tuning.effective.gravity_scale, tuning.FLOATY.gravity_scale), "Profile switching clears overrides and selects Floaty")
 	check(tuning.modifier_enabled, "Profile switching preserves the enabled practice modifier")
 	tuning.modifier_enabled = false
 	tuning.select_profile(0)

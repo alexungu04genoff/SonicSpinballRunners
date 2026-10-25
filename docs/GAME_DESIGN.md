@@ -197,6 +197,8 @@ The visual-lab adapter implements these states plus a paused upright showcase. R
 
 ## Characters and physics
 
+**Implemented slower defaults — 2026-10-25 (provisional tuning):** Reduce shared flipper impulse, terminal fall speed, rolling assistance cutoff and bumper rebound multiplier to 75% of their previous values. Scale gravity and rolling acceleration to 56.25% so isolated flipper shots retain their theoretical height while taking longer. Balanced now uses gravity scale 0.5625, a 1125 px/s fall limit and 787.5 px/s flipper impulse. Floaty, Tails, Knuckles and Shadow retain their relative gravity differences. Steering, flipper swing timing, wall restitution and special abilities remain unchanged. These defaults supersede earlier numerical profile descriptions below; human playtesting must judge pace, recovery and traversal with the longer flight times.
+
 **Confirmed direction:** Playable characters have different starting physics profiles. Each may also have a passive ability and a rarer player-activated special. Character Lab v1 uses Balanced for Sonic and a controlled Tails profile; Floaty remains an optional debug profile. No passive ability system is implemented.
 
 **Tentative character examples:** Sonic is relatively fast and balanced; Cream is floatier with slower descent; Knuckles is heavier and more forceful. These are intended feels, not fixed numerical specifications.
