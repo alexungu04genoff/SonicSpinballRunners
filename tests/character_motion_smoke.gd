@@ -54,6 +54,28 @@ func run() -> void:
  trail.advance(0.01, center + Vector3.RIGHT, true, camera)
  actor.resume_gameplay()
  check(not trail.visible and trail.points.is_empty(), "Resume/reset clears the ribbon immediately")
+ var start_basis: Basis = actor.spin_root.basis
+ actor._advance_spin(0.1, Vector2.ZERO)
+ check(not actor.spin_root.basis.is_equal_approx(start_basis), "Curled spin continues at zero velocity near a jump apex")
+ var paused_basis: Basis = actor.spin_root.basis
+ actor._advance_spin(0.0, Vector2(800, 0))
+ check(actor.spin_root.basis == paused_basis, "Zero simulation delta freezes spin")
+ actor.spin_root.basis = Basis.IDENTITY
+ actor._spin_axis = Vector3.RIGHT
+ for tick in 60:
+  actor._advance_spin(1.0 / 60.0, Vector2.ZERO)
+ var at_60: Basis = actor.spin_root.basis
+ actor.spin_root.basis = Basis.IDENTITY
+ for tick in 120:
+  actor._advance_spin(1.0 / 120.0, Vector2.ZERO)
+ check(actor.spin_root.basis.is_equal_approx(at_60), "Spin rate remains consistent at 60 and 120 FPS")
+ if DisplayServer.get_name() != "headless":
+  actor.character_id = "sonic"
+  actor._apply_character_color()
+  for frame in 18:
+   actor._advance_spin(1.0 / 30.0, Vector2.ZERO)
+   await RenderingServer.frame_post_draw
+   game.view.get_texture().get_image().save_png("res://test-results/character-spin-%02d.png" % frame)
  check(game.ball.position == position and game.ball.linear_velocity == velocity, "Visual updates leave authoritative position and velocity untouched")
  print("CHARACTER_MOTION_SMOKE | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)

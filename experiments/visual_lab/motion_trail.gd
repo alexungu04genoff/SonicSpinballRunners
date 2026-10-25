@@ -14,15 +14,15 @@ func _init() -> void:
  cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  var shader := Shader.new()
  shader.code = """shader_type spatial;
-render_mode unshaded, cull_disabled, depth_draw_never;
+render_mode unshaded, blend_add, cull_disabled, depth_draw_never;
 void fragment() {
  float across = abs(UV.y * 2.0 - 1.0);
  float edge = 1.0 - smoothstep(0.83, 1.0, across);
  float life = 1.0 - UV.x;
- float fade = smoothstep(0.0, 0.45, life);
+ float fade = clamp(life, 0.0, 1.0);
  float streak = pow(max(0.0, cos(UV.y * 25.1327 + UV.x * 3.0)), 18.0);
- ALBEDO = mix(COLOR.rgb, vec3(0.65, 0.8, 1.0), streak * 0.12);
- ALPHA = fade * edge * 0.6;
+ ALBEDO = mix(COLOR.rgb, vec3(1.0), 0.24 + streak * 0.12);
+ ALPHA = fade * edge * 0.7;
 
 }
 """

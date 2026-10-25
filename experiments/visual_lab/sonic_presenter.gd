@@ -59,6 +59,7 @@ var _clips: Dictionary = {}
 const MotionTrail = preload("res://experiments/visual_lab/motion_trail.gd")
 var trail: MeshInstance3D
 var quill_material: StandardMaterial3D
+var _spin_axis := Vector3.RIGHT
 var pulse: MeshInstance3D
 var pulse_material: StandardMaterial3D
 var pulse_time := 0.0
@@ -100,7 +101,7 @@ func _build_visuals() -> void:
  spin_material.roughness = 0.38
  var spin_radius := ball.radius * TablePresentation.SCALE if table.authored_mode else 0.17
  var core := table.mesh_node(table.sphere(spin_radius), spin_material, Vector3.ZERO, spin_root)
- core.scale = Vector3(0.82, 0.82, 0.78)
+ core.scale = Vector3(0.94, 0.94, 0.90)
  _build_spin_shell(spin_radius)
  upright = Node3D.new()
  upright.name = "UncurledVisualAnchor"
@@ -246,7 +247,7 @@ func _build_spin_shell(radius: float) -> void:
   var side := -1.0 if band % 2 == 0 else 1.0
   var row := float(band / 2)
   var base := Vector3(side * (0.36 + row * 0.06), 0.43 - row * 0.35, -0.28)
-  var tip := Vector3(side * (0.65 + row * 0.08), -0.22 - row * 0.30, -0.60 + row * 0.12)
+  var tip := Vector3(side * (0.60 + row * 0.06), -0.20 - row * 0.26, -0.59 + row * 0.10)
   var surface := SurfaceTool.new()
   surface.begin(Mesh.PRIMITIVE_TRIANGLES)
   for step in 5:
@@ -269,15 +270,15 @@ func _build_spin_shell(radius: float) -> void:
  for side in [-1.0, 1.0]:
   var fist := BoxMesh.new()
   fist.size = Vector3(0.30, 0.32, 0.27) * radius
-  var hand := table.mesh_node(fist, glove, Vector3(side * 0.20, 0.04, 0.69) * radius, spin_root)
+  var hand := table.mesh_node(fist, glove, Vector3(side * 0.20, 0.04, 0.88) * radius, spin_root)
   hand.rotation.z = side * 0.35
-  var cuff := table.mesh_node(table.sphere(radius * 0.14), sole, Vector3(side * 0.40, 0.14, 0.56) * radius, spin_root)
+  var cuff := table.mesh_node(table.sphere(radius * 0.14), sole, Vector3(side * 0.40, 0.14, 0.76) * radius, spin_root)
   cuff.scale = Vector3(0.7, 1.0, 1.0)
-  var foot := table.mesh_node(table.sphere(radius * 0.32), shoe, Vector3(side * 0.34, -0.40, 0.48) * radius, spin_root)
+  var foot := table.mesh_node(table.sphere(radius * 0.32), shoe, Vector3(side * 0.34, -0.40, 0.62) * radius, spin_root)
   foot.scale = Vector3(0.8, 0.65, 1.25)
   var strap := BoxMesh.new()
   strap.size = Vector3(0.43, 0.10, 0.18) * radius
-  table.mesh_node(strap, sole, Vector3(side * 0.34, -0.25, 0.60) * radius, spin_root)
+  table.mesh_node(strap, sole, Vector3(side * 0.34, -0.25, 0.74) * radius, spin_root)
  # Thin broken arcs trace the spin outside the curled silhouette.
  for band in 2:
   var arc := ImmediateMesh.new()
@@ -576,13 +577,26 @@ func _process(delta: float) -> void:
  if animation_player != null and _clips.has(pose) and animation_delta > 0.0:
   animation_player.advance(animation_delta)
  _update_pose_transform(physics_delta)
- var travel := ball.position - _last_position
- if _last_position != Vector2.INF and travel.length() > 0.001 and travel.length() < 100.0:
-  spin_root.rotate(Vector3(travel.y, 0, -travel.x).normalized(), travel.length() / ball.radius)
+ # Keep the curled animation spinning at the apex as well as during travel.
+ # The smoothed board-plane axis avoids sudden tumbles when velocity reverses.
+ if not close_view and not ball.serve_pending and not capture_hold:
+  _advance_spin(physics_delta, ball.linear_velocity)
  if close_view and (BALL_FORM_ONLY or pose == "roll") and not capture_hold:
-  spin_root.rotate(Vector3(1, 0, 0.5).normalized(), delta * 4.5)
+  spin_root.rotate(Vector3(1, 0, 0.5).normalized(), delta * 22.0)
  _update_effects(physics_delta)
  _last_position = ball.position
  var focus := spin_root.position if BALL_FORM_ONLY else upright.position + Vector3(0.0, 0.52, 0.0)
  close_camera.position = focus + Vector3(0.65, 0.65, 2.4)
  close_camera.look_at(focus)
+
+func _advance_spin(delta: float, velocity: Vector2) -> void:
+ if delta <= 0.0:
+  return
+ if velocity.length() > 45.0:
+  var axis := Vector3(velocity.y, 0, -velocity.x).normalized()
+  # A roll axis is unsigned; preserve its hemisphere across the jump apex.
+  if axis.dot(_spin_axis) < 0.0:
+   axis = -axis
+  _spin_axis = _spin_axis.slerp(axis, 1.0 - exp(-8.0 * delta)).normalized()
+ var angular_speed := clampf(velocity.length() / ball.radius, 22.0, 36.0)
+ spin_root.rotate(_spin_axis, angular_speed * delta)
