@@ -182,7 +182,7 @@ func close_to(actual: Vector2, expected: Vector2) -> bool:
 
 func check_initial_placement() -> void:
 	check(editor.document.gameplay_objects.is_empty() and editor.document.placements.is_empty(), "New Act keeps separate empty terrain and gameplay arrays")
-	check(editor.gameplay_buttons.size() == 7 and editor.palette_tabs.get_tab_title(0) == "Terrain" and editor.palette_tabs.get_tab_title(1) == "Gameplay", "Seven gameplay types have a separate discoverable palette tab")
+	check(editor.gameplay_buttons.size() == 10 and editor.palette_tabs.get_tab_title(0) == "Terrain" and editor.palette_tabs.get_tab_title(1) == "Gameplay", "Ten gameplay types have a separate discoverable palette tab")
 	var probes := [
 		{"id": "round_bumper", "cursor": Vector2(119.3, 129.9), "position": Vector2(100, 150)},
 		{"id": "triangle_bumper", "cursor": Vector2(217.4, 123.6), "position": Vector2(200, 100)},
@@ -495,6 +495,7 @@ func check_bumper_grid_scale() -> void:
 func run() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results"))
 	root.gui_embed_subwindows = true
+	root.size = Vector2i(1280, 900)
 	editor = EditorScene.instantiate()
 	root.add_child(editor)
 	await process_frame

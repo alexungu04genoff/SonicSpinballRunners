@@ -7,7 +7,7 @@ func configure(value: Dictionary) -> void:
 	definition = value
 	text = definition.label
 	alignment = HORIZONTAL_ALIGNMENT_LEFT
-	custom_minimum_size = Vector2(242, 52)
+	custom_minimum_size = Vector2(220, 36)
 	focus_mode = Control.FOCUS_NONE
 	tooltip_text = "%s\n%s terrain. Click to stamp repeatedly, or drag onto the grid." % [definition.label, "Closed solid" if definition.closed else "Open wall"]
 	set_meta("shape_id", definition.id)
@@ -15,10 +15,10 @@ func configure(value: Dictionary) -> void:
 		var style := StyleBoxFlat.new()
 		style.bg_color = Color("17283a") if state == "normal" else Color("29465b")
 		style.set_corner_radius_all(6)
-		style.content_margin_left = 66
+		style.content_margin_left = 44
 		style.content_margin_right = 8
 		style.content_margin_top = 0
-		style.content_margin_bottom = 18
+		style.content_margin_bottom = 0
 		add_theme_stylebox_override(state, style)
 	queue_redraw()
 
@@ -26,8 +26,8 @@ func _draw() -> void:
 	if definition.is_empty():
 		return
 	var frame := Vector2(definition.size)
-	var scale_factor: float = 34.0 / maxf(frame.x, frame.y)
-	var origin := Vector2(30, size.y * 0.5) - frame * scale_factor * 0.5
+	var scale_factor: float = 26.0 / maxf(frame.x, frame.y)
+	var origin := Vector2(21, size.y * 0.5) - frame * scale_factor * 0.5
 	var points := PackedVector2Array()
 	for point: Vector2 in definition.points:
 		points.append(origin + point * scale_factor)
@@ -36,7 +36,6 @@ func _draw() -> void:
 		draw_colored_polygon(points, Color(color, 0.3))
 		points.append(points[0])
 	draw_polyline(points, color, 2.0, true)
-	draw_string(get_theme_default_font(), Vector2(66, size.y - 8), "SOLID TERRAIN" if definition.closed else "WALL ONLY", HORIZONTAL_ALIGNMENT_LEFT, size.x - 74, 10, Color(color, 0.9))
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	if definition.is_empty():

@@ -10,17 +10,17 @@ func configure(value: Dictionary) -> void:
 	definition = value
 	text = definition.label
 	alignment = HORIZONTAL_ALIGNMENT_LEFT
-	custom_minimum_size = Vector2(242, 64)
+	custom_minimum_size = Vector2(220, 36)
 	focus_mode = Control.FOCUS_NONE
 	tooltip_text = "%s\nGameplay object. Click to place repeatedly, or drag onto the canvas. Hold Alt for free position." % definition.label
 	for state in ["normal", "hover", "pressed", "disabled", "focus"]:
 		var style := StyleBoxFlat.new()
 		style.bg_color = Color("17283a") if state == "normal" else Color("29465b")
 		style.set_corner_radius_all(6)
-		style.content_margin_left = 66
+		style.content_margin_left = 44
 		style.content_margin_right = 6
 		style.content_margin_top = 0
-		style.content_margin_bottom = 18
+		style.content_margin_bottom = 0
 		add_theme_stylebox_override(state, style)
 	queue_redraw()
 
@@ -34,10 +34,9 @@ func _draw() -> void:
 	var bounds := Rect2(points[0], Vector2.ZERO)
 	for point: Vector2 in points:
 		bounds = bounds.expand(point)
-	var scale_factor := 42.0 / maxf(bounds.size.x, bounds.size.y)
-	var anchor := Vector2(31, size.y * 0.5) - bounds.get_center() * scale_factor
+	var scale_factor := 28.0 / maxf(bounds.size.x, bounds.size.y)
+	var anchor := Vector2(21, size.y * 0.5) - bounds.get_center() * scale_factor
 	Preview.draw_object(self, placement, anchor, scale_factor, ICON_CELL_SIZE, false, false, false)
-	draw_string(get_theme_default_font(), Vector2(66, size.y - 10), "GAMEPLAY OBJECT", HORIZONTAL_ALIGNMENT_LEFT, size.x - 74, 10, definition.color)
 
 func _get_drag_data(_at_position: Vector2) -> Variant:
 	if definition.is_empty():

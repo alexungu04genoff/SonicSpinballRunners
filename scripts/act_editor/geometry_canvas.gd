@@ -1,4 +1,5 @@
 extends Control
+const LaunchPreview = preload("res://scripts/act_editor/launch_preview.gd")
 ## Authoring drawing and pointer gestures only. The editor owns changes and undo.
 
 signal placement_requested(placement: Dictionary)
@@ -874,6 +875,8 @@ func _draw_gameplay_objects() -> void:
   var placement: Dictionary = objects[selected_gameplay_index]
   var point: Vector2 = _gameplay_drag_position if selected_gameplay_index == _gameplay_drag_index and _gameplay_drag_moved else placement.position
   var shown := placement.duplicate(true)
+  shown.position = point
+  _draw_launch_range(shown)
   if _rail_drag >= 0: shown.properties.points = _rail_preview
   ObjectPreview.draw_object(self, shown, local_pixels_to_screen(point), scale_factor, _local_cell_size(), true)
  if not _rail_draft.is_empty():
@@ -1814,3 +1817,31 @@ func _rail_input(event: InputEvent) -> bool:
   queue_redraw()
   return true
  return false
+
+func _draw_launch_range(item: Dictionary) -> void:
+ var shots := LaunchPreview.shots(item, _local_cell_size())
+ if shots.is_empty(): return
+ var low := 0
+ var high := 0
+ for i in shots.size():
+  if shots[i].velocity.y > shots[low].velocity.y: low = i
+  if shots[i].velocity.y < shots[high].velocity.y: high = i
+ for i in shots.size():
+  var points := LaunchPreview.trajectory(shots[i])
+  for j in points.size(): points[j] = local_pixels_to_screen(points[j])
+  var color := Color(0.4, 0.8, 0.95, 0.13)
+  if i == low: color = Color("ffd76b")
+  if i == high: color = Color("70e5d5")
+  if item.type in ["round_bumper", "triangle_bumper"]:
+   color = Color(1.0, 0.84, 0.42, 0.55) if i % 2 == 0 else Color(0.44, 0.9, 0.84, 0.55)
+  draw_polyline(points, color, 1.5 if i in [low, high] else 1.0, true)
+ # Screen-space legend stays readable even when the estimated apex is outside the map.
+ draw_style_box(_launch_legend_style(), Rect2(8, 8, 540, 42))
+ draw_string(get_theme_default_font(), Vector2(16, 24), "BASE SONIC · gold: min rebound / teal: max rebound" if item.type in ["round_bumper", "triangle_bumper"] else "BASE SONIC · gold: min rise / teal: max rise (sampled)", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("dcebf2"))
+ draw_string(get_theme_default_font(), Vector2(16, 42), "Free flight · no tangential momentum, steering or collisions", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("9cb3c6"))
+
+func _launch_legend_style() -> StyleBoxFlat:
+ var style := StyleBoxFlat.new()
+ style.bg_color = Color(0.04, 0.08, 0.12, 0.92)
+ style.set_corner_radius_all(4)
+ return style

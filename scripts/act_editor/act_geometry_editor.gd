@@ -105,6 +105,7 @@ var _decor_position_text: Array[String] = ["", ""]
 func _ready() -> void:
 	_previous_auto_quit = get_tree().auto_accept_quit
 	get_tree().auto_accept_quit = false
+	get_window().content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
 	_build_ui()
 	_build_dialogs()
 	new_document()
@@ -119,7 +120,7 @@ func _notification(what: int) -> void:
 
 func _build_ui() -> void:
 	var ui_theme := Theme.new()
-	ui_theme.default_font_size = 14
+	ui_theme.default_font_size = 12
 	ui_theme.set_color("font_color", "Label", Color("dcebf2"))
 	ui_theme.set_color("font_color", "Button", Color("e6f3fa"))
 	for state in ["normal", "hover", "pressed", "disabled"]:
@@ -128,10 +129,10 @@ func _build_ui() -> void:
 		if state == "disabled":
 			style.bg_color = Color("172633")
 		style.set_corner_radius_all(5)
-		style.content_margin_left = 12
-		style.content_margin_right = 12
-		style.content_margin_top = 9
-		style.content_margin_bottom = 9
+		style.content_margin_left = 8
+		style.content_margin_right = 8
+		style.content_margin_top = 4
+		style.content_margin_bottom = 4
 		ui_theme.set_stylebox(state, "Button", style)
 	theme = ui_theme
 	var background := ColorRect.new()
@@ -142,59 +143,69 @@ func _build_ui() -> void:
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	for side in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_" + side, 16)
+		margin.add_theme_constant_override("margin_" + side, 8)
 	add_child(margin)
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 10)
+	column.add_theme_constant_override("separation", 5)
 	margin.add_child(column)
 	var header := HBoxContainer.new()
-	header.add_theme_constant_override("separation", 8)
+	header.add_theme_constant_override("separation", 4)
 	column.add_child(header)
 	var brand := Label.new()
 	brand.text = "ACT / EDITOR"
-	brand.add_theme_font_size_override("font_size", 23)
+	brand.add_theme_font_size_override("font_size", 16)
 	brand.add_theme_color_override("font_color", Color("70e5d5"))
-	brand.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	brand.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	header.add_child(brand)
 	_button(header, "new", "New Act", func(): request_action("new"), "Ctrl+N")
 	_button(header, "load", "Load", func(): request_action("load"), "Ctrl+O")
 	_button(header, "save", "Save", _save_current, "Ctrl+S")
 	_button(header, "save_as", "Save As", _open_save_dialog, "Ctrl+Shift+S")
-	_button(header, "example", "Example", func(): request_action("example"), "Open the example as a new editable copy")
-	_button(header, "gimmicks", "Pinball Example", func(): request_action("gimmicks"), "Open Switch Court: switches, linked gate, spring, ring pool and scaled bumpers")
-	_button(header, "quit", "Close", func(): request_action("quit"), "Close with an unsaved-changes check")
 	file_label = Label.new()
 	file_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	file_label.add_theme_color_override("font_color", Color("9cb3c6"))
-	column.add_child(file_label)
+	file_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(file_label)
+	header.move_child(file_label, 1)
 	var tools := HBoxContainer.new()
 	tools.add_theme_constant_override("separation", 6)
 	column.add_child(tools)
 	_button(tools, "select", "Select / Move", _select_mode, "Esc • click terrain or an object, then drag • Alt-click cycles overlaps")
 	_button(tools, "rotate", "Rotate +90°", rotate_active, "R • terrain +90°; gameplay +15° (Shift+R −15°)")
-	_button(tools, "flip_h", "Flip Horizontal", func(): flip_active(true), "H • mirror across the current screen frame")
-	_button(tools, "flip_v", "Flip Vertical", func(): flip_active(false), "V • mirror across the current screen frame")
+	_button(tools, "flip_h", "Flip H", func(): flip_active(true), "H • mirror across the current screen frame")
+	_button(tools, "flip_v", "Flip V", func(): flip_active(false), "V • mirror across the current screen frame")
 	_button(tools, "delete", "Delete", delete_selected, "Delete / Backspace")
+	tools.add_child(VSeparator.new())
 	_button(tools, "undo", "Undo", undo, "Ctrl+Z • up to 100 edits")
 	_button(tools, "redo", "Redo", redo, "Ctrl+Y / Ctrl+Shift+Z")
+	tools.add_child(VSeparator.new())
+	_button(tools, "fullscreen", "Fullscreen", _toggle_fullscreen, "F11 • toggle fullscreen")
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	tools.add_child(spacer)
 	_button(tools, "fit", "Fit Grid", func(): canvas.fit_view(), "Mouse wheel zooms • middle-drag pans")
 	var body := HBoxContainer.new()
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.add_theme_constant_override("separation", 14)
+	body.add_theme_constant_override("separation", 4)
 	column.add_child(body)
 	var palette := VBoxContainer.new()
-	palette.custom_minimum_size.x = 264
-	palette.add_theme_constant_override("separation", 8)
+	palette.custom_minimum_size.x = 240
+	palette.add_theme_constant_override("separation", 4)
 	body.add_child(palette)
 	palette_tabs = TabBar.new()
 	palette_tabs.clip_tabs = false
-	palette_tabs.add_theme_font_size_override("font_size", 12)
+	palette_tabs.add_theme_font_size_override("font_size", 11)
+	for state in ["tab_selected", "tab_unselected", "tab_hovered", "tab_disabled"]:
+		var tab_style := StyleBoxFlat.new()
+		tab_style.bg_color = Color("22374a") if state == "tab_selected" else Color("101c29")
+		tab_style.content_margin_left = 5
+		tab_style.content_margin_right = 5
+		tab_style.content_margin_top = 4
+		tab_style.content_margin_bottom = 4
+		palette_tabs.add_theme_stylebox_override(state, tab_style)
 	palette_tabs.add_tab("Terrain")
 	palette_tabs.add_tab("Gameplay")
-	palette_tabs.add_tab("Act Markers")
+	palette_tabs.add_tab("Markers")
 	palette_tabs.add_tab("Decor")
 	palette_tabs.add_tab("Rings")
 	palette_tabs.tab_changed.connect(_change_palette_tab)
@@ -236,7 +247,7 @@ func _build_ui() -> void:
 	gameplay_scroll.visible = false
 	palette.add_child(gameplay_scroll)
 	gameplay_list = VBoxContainer.new()
-	gameplay_list.add_theme_constant_override("separation", 8)
+	gameplay_list.add_theme_constant_override("separation", 4)
 	gameplay_list.visible = false
 	gameplay_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	gameplay_scroll.add_child(gameplay_list)
@@ -315,7 +326,7 @@ func _build_ui() -> void:
 	object_hint.add_theme_font_size_override("font_size", 13)
 	gameplay_list.add_child(object_hint)
 	marker_list = VBoxContainer.new()
-	marker_list.add_theme_constant_override("separation", 8)
+	marker_list.add_theme_constant_override("separation", 4)
 	marker_list.visible = false
 	palette.add_child(marker_list)
 	_button(marker_list, "marker_entry", "Entry Connector", func(): choose_connector("entry"), "Physical connection on the bottom border; width determines compatibility")
@@ -336,7 +347,7 @@ func _build_ui() -> void:
 	_build_decor_palette(palette)
 	var workspace := VBoxContainer.new()
 	workspace.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	workspace.add_theme_constant_override("separation", 8)
+	workspace.add_theme_constant_override("separation", 4)
 	body.add_child(workspace)
 	var settings := HBoxContainer.new()
 	workspace.add_child(settings)
@@ -363,7 +374,7 @@ func _build_ui() -> void:
 	cell_size_field.value_changed.connect(_change_cell_size)
 	settings.add_child(cell_size_field)
 	var connectors := HBoxContainer.new()
-	connectors.add_theme_constant_override("separation", 8)
+	connectors.add_theme_constant_override("separation", 4)
 	workspace.add_child(connectors)
 	_button(connectors, "entry", "Entry (bottom)", func(): choose_connector("entry"), "Drag contiguous cells along the bottom border to create or replace Entry")
 	_button(connectors, "exit", "Exit (top)", func(): choose_connector("exit"), "Drag contiguous cells along the top border to create or replace Exit")
@@ -399,7 +410,7 @@ func _build_ui() -> void:
 	_button(composite_bar, "composite_cancel", "Cancel", cancel_composite_preview, "Discard the preview; original terrain stays unchanged")
 	_button(composite_bar, "composite_clear_pins", "Clear pins", _clear_composite_pins, "Release all manually protected corners in this preview")
 	var sculpt_settings := HBoxContainer.new()
-	sculpt_settings.add_theme_constant_override("separation", 8)
+	sculpt_settings.add_theme_constant_override("separation", 4)
 	workspace.add_child(sculpt_settings)
 	var strength_label := Label.new()
 	strength_label.text = "Strength"
@@ -486,7 +497,7 @@ func _build_ui() -> void:
 	canvas.decor_selection_changed.connect(func(_index): _refresh())
 	canvas.status_changed.connect(_set_status)
 	var object_properties := HBoxContainer.new()
-	object_properties.add_theme_constant_override("separation", 8)
+	object_properties.add_theme_constant_override("separation", 4)
 	workspace.add_child(object_properties)
 	mode_label = Label.new()
 	mode_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -497,7 +508,7 @@ func _build_ui() -> void:
 	angle_label.text = "Angle °"
 	object_properties.add_child(angle_label)
 	angle_field = LineEdit.new()
-	angle_field.custom_minimum_size.x = 120
+	angle_field.custom_minimum_size.x = 80
 	angle_field.tooltip_text = "Exact terrain, gameplay or decor angle in degrees. Enter commits. Alt+R / Alt+Shift+R adjusts by 1°."
 	angle_field.text_submitted.connect(func(_text): _commit_gameplay_angle(); canvas.grab_focus())
 	angle_field.focus_exited.connect(_commit_gameplay_angle)
@@ -518,6 +529,7 @@ func _build_ui() -> void:
 	detail_label = Label.new()
 	detail_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	detail_label.add_theme_color_override("font_color", Color("b5c8d6"))
+	detail_label.visible = false
 	workspace.add_child(detail_label)
 	status_label = Label.new()
 	status_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -526,6 +538,8 @@ func _build_ui() -> void:
 	help.text = "Ctrl-click terrain multi-select   R rotate   H / V terrain flip   Ctrl+D duplicate   Alt free move / cycle overlaps   Wheel zoom   Middle-drag pan"
 	help.add_theme_font_size_override("font_size", 12)
 	help.add_theme_color_override("font_color", Color("8aa5ba"))
+	help.visible = false
+	status_label.tooltip_text = help.text
 	column.add_child(help)
 
 func _button(parent: Node, id: String, label: String, action: Callable, hint: String) -> void:
@@ -595,7 +609,7 @@ func _build_decor_palette(parent: Node) -> void:
 	decor_scroll.visible = false
 	parent.add_child(decor_scroll)
 	decor_list = VBoxContainer.new()
-	decor_list.add_theme_constant_override("separation", 8)
+	decor_list.add_theme_constant_override("separation", 4)
 	decor_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	decor_list.visible = false
 	decor_scroll.add_child(decor_list)
@@ -1728,6 +1742,7 @@ func _refresh() -> void:
 		var frame := Shapes.scaled_size(active)
 		mode_label.text = ("STAMP  ·  " if not canvas.brush.is_empty() else "SELECTED  ·  ") + definition.label
 		detail_label.text = "Frame %s × %s cells · %s° · H %s / V %s · Alt: free move%s" % [frame.x, frame.y, Shapes.angle_degrees(active), "on" if active.flip_h else "off", "on" if active.flip_v else "off", " · Position %s" % Shapes.placement_position(active) if canvas.brush.is_empty() else " · Click to place"]
+	mode_label.tooltip_text = detail_label.text
 	_refresh_composite_controls()
 	_refresh_decor_controls()
 	_refresh_mechanics_properties()
@@ -1814,6 +1829,10 @@ func _modal_open() -> bool:
 	return save_dialog.visible or load_dialog.visible or unsaved_dialog.visible or error_dialog.visible
 
 func _unhandled_key_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and event.keycode == KEY_F11:
+		_toggle_fullscreen()
+		get_viewport().set_input_as_handled()
+		return
 	if not event is InputEventKey or not event.pressed or event.echo or _modal_open():
 		return
 	if composite_preview_active:
@@ -1899,8 +1918,8 @@ func _refresh_mechanics_properties() -> void:
 				_refresh())
 	var properties := Objects.properties(item)
 	var identity := Label.new()
-	identity.text = item.get("object_id", "Unsaved brush")
-	identity.tooltip_text = "Stable object ID used by switch banks. Duplicating creates a new identity."
+	identity.text = "ID"
+	identity.tooltip_text = str(item.get("object_id", "Unsaved brush")) + "\nStable object ID used by switch banks. Duplicating creates a new identity."
 	identity.add_theme_font_size_override("font_size", 11)
 	mechanics_properties.add_child(identity)
 	for key: String in Objects.property_limits(item.type):
@@ -2072,3 +2091,6 @@ func _refresh_banks() -> void:
 		selected_bank_id = ""
 		_refresh())
 	bank_controls.add_child(remove)
+
+func _toggle_fullscreen() -> void:
+	get_window().mode = Window.MODE_WINDOWED if get_window().mode == Window.MODE_FULLSCREEN else Window.MODE_FULLSCREEN

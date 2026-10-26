@@ -267,7 +267,8 @@ func check_file_workflow() -> void:
 	check(editor.unsaved_dialog.visible and not editor.load_dialog.visible, "Load protects unsaved edits before opening the file picker")
 	await click_control(editor.unsaved_dialog.get_cancel_button())
 	check(editor.document.fingerprint() == before, "Cancel Load leaves geometry intact")
-	await click_control(editor.buttons.quit)
+	editor._notification(Control.NOTIFICATION_WM_CLOSE_REQUEST)
+	await process_frame
 	check(editor.unsaved_dialog.visible and editor.pending_action == "quit", "Close also protects unsaved changes")
 	await click_control(editor.unsaved_dialog.get_cancel_button())
 	editor.notification(Node.NOTIFICATION_WM_CLOSE_REQUEST)
@@ -476,7 +477,8 @@ func check_filled_curves() -> void:
 
 func capture_example() -> void:
 	if FileAccess.file_exists("res://data/acts/curve_garden.tres"):
-		await click_control(editor.buttons.example)
+		editor.request_action("example")
+		await process_frame
 		await process_frame
 		check(editor.document.placements.size() > 0 and editor.current_path.is_empty() and editor.is_dirty(), "Example opens as an editable copy")
 	else:
@@ -498,6 +500,7 @@ func capture_example() -> void:
 func run() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results"))
 	root.gui_embed_subwindows = true
+	root.size = Vector2i(1280, 900)
 	editor = EditorScene.instantiate()
 	root.add_child(editor)
 	await process_frame
