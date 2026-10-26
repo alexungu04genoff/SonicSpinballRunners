@@ -2,8 +2,10 @@ extends RefCounted
 ## Offline-only deduplication. Procedural ImageTextures otherwise get embedded
 ## again in every Act/theme file; imported textures already share external paths.
 const DIRECTORY := "res://data/endless/assets.bake"
+const VisualDetail = preload("res://scripts/endless/visual_detail.gd")
 var visited := {}
 var error := ""
+var materials: Dictionary = {}
 
 func share(value: Variant) -> Variant:
  if value is Array:
@@ -13,6 +15,7 @@ func share(value: Variant) -> Variant:
  elif value is Resource:
   var resource: Resource = value
   var id := resource.get_instance_id()
+  if resource is Material: materials[id] = resource
   if visited.has(id): return visited[id]
   visited[id] = resource
   if not resource.resource_path.is_empty() and not resource.resource_path.contains("::"): return resource
@@ -45,7 +48,7 @@ func share(value: Variant) -> Variant:
    visited[id] = canonical
    return canonical
   elif resource is PrimitiveMesh:
-   var arrays: Array = resource.get_mesh_arrays()
+   var arrays: Array = VisualDetail.primitive(resource).get_mesh_arrays()
    var mesh := ArrayMesh.new()
    mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
    mesh.custom_aabb = resource.custom_aabb

@@ -19,6 +19,7 @@ func run() -> void:
  var started_at := Time.get_ticks_msec()
  while not game.started and Time.get_ticks_msec() - started_at < 240000:
   await process_frame
+ var opening_seconds := (Time.get_ticks_msec() - started_at) / 1000.0
  check(game.started, "Opening buffer finishes without preparing every combination")
  if not game.started:
   quit(1)
@@ -26,12 +27,25 @@ func run() -> void:
  var identities := [game.ball.get_instance_id(), game.tuning.get_instance_id(), game.controls.get_instance_id(), game.presentation.camera.get_instance_id()]
  check(game.library.visuals.size() == 2, "Only the opening two variants are cached at startup")
  check(game.resident.size() == 2, "Two Acts resident at startup")
+ check(game.retro_filter.selected_effects == [2, 4, 3], "Endless starts with the gameplay N64/VHS/CRT shader stack")
+ check(game._foreground_container.get_parent() == game._composite_view and game.retro_filter.world_view == game._composite_view, "World shaders filter the combined foreground and background")
+ check(game.hud.get_parent() == game, "HUD stays outside the world shader stack")
  check(game.ball.mechanics == game.hub, "A single mechanics adapter owns the shared ball")
  check(game.resident[0].runtime.terrain[0].body.get_shape_owners().size() > 0, "Streamed terrain contains collision shapes")
  check(game.resident[0].nodes.all(func(node: Node): return node.process_mode != Node.PROCESS_MODE_DISABLED), "Ready Act visuals restore native processing for particles")
  if "--require-bakes" in OS.get_cmdline_user_args():
   check(game.library.visual_bake_hits == 2 and game.library.fallback_builds == 0, "Opening Acts load complete disk recipes without procedural rebuilding")
- print("ENDLESS_STARTUP_SECONDS | ", (Time.get_ticks_msec() - started_at) / 1000.0)
+  game.set_process(false)
+  var before: Array = [game.library.visuals.size(), game.library.runtimes.size(), game.library.shapes.size(), game.library.requested_count, game.resident.size()]
+  var next_theme: String = game.pending.filter(func(entry: Dictionary): return entry.zone == 1)[0].theme
+  check(game.library.request_theme(next_theme), "The next theme can be requested without an Act")
+  var theme_started := Time.get_ticks_msec()
+  while game.library.busy and Time.get_ticks_msec() - theme_started < 90000: await process_frame
+  check(not game.library.busy and game.library.backgrounds.has(next_theme), "Theme-only disk preload completes")
+  check(not game.library.theme_materials.get(next_theme, []).is_empty(), "Theme preload includes foreground shader materials")
+  check(before == [game.library.visuals.size(), game.library.runtimes.size(), game.library.shapes.size(), game.library.requested_count, game.resident.size()], "Theme preload loads no Act recipes, physics templates or resident Acts")
+  game.set_process(true)
+ print("ENDLESS_STARTUP_SECONDS | ", opening_seconds)
  await capture("start")
  # An unavailable entrance must park physics until the prepared neighbor returns.
  var neighbor: RefCounted = game.resident[1]

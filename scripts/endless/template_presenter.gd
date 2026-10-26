@@ -11,6 +11,7 @@ var max_slice_ms := 0.0
 var _border_jobs: Array[Dictionary] = []
 var _worker: Thread
 var _land_jobs: Array[Dictionary] = []
+const VisualDetail = preload("res://scripts/endless/visual_detail.gd")
 
 func stream_checkpoint(force := false) -> void:
  var elapsed := Time.get_ticks_usec() - _slice_start
@@ -44,11 +45,14 @@ func prepare_act(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
    authored_open_paths.append(points)
  authored_terrain_polygons = _merge_authored_land(_outlines)
  authored_terrain_polygons.append_array(authored_composite_polygons)
+ for i in authored_terrain_polygons.size():
+  authored_terrain_polygons[i] = VisualDetail.contour(authored_terrain_polygons[i])
  # The deck runs beneath the outer walls, with no exterior rectangular shelf.
  # This is a visual footprint only; it never fills or alters physical geometry.
  var floor_bounds := Rect2(bounds.position, bounds.size - Vector2(0, cell_size * AuthoredActData.RED_GUTTER_CELLS))
  stage = "floor outline"
  authored_floor_outline = await _cached_job("footprint", _authored_floor_boundary.bind(floor_bounds))
+ authored_floor_outline = VisualDetail.contour(authored_floor_outline)
  await stream_checkpoint()
  stage = "floor mesh"
  var floor_root := Node3D.new()
@@ -76,6 +80,7 @@ func prepare_act(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
   rail.name = "OpenTerrainRail"
   terrain_root.add_child(rail)
   for ribbon: PackedVector2Array in Geometry2D.offset_polyline(path, cell_size * 0.02, Geometry2D.JOIN_ROUND, Geometry2D.END_ROUND):
+   ribbon = VisualDetail.contour(ribbon)
    await stream_checkpoint()
    var mesh: ArrayMesh = await _cached_job("wall", _prism.bind(ribbon, RAIL_HEIGHT + RAIL_CAP_HEIGHT, wall_side, wall_top))
    _bind_materials(mesh, [wall_top, wall_side])

@@ -36,9 +36,15 @@ var theme_bake_hits := 0
 var fallback_builds := 0
 var last_prepare_ms := 0.0
 var last_warm_frames := 0
+var theme_prefetches := 0
+var last_theme_prepare_ms := 0.0
+var preparing_theme := ""
+var theme_attempts := {}
+var theme_materials := {}
 var bake_status := "Not requested"
 var _fingerprints := {}
 var _assets := BakeAssets.new()
+var _asset_theme := ""
 var _lru: Array[String] = []
 var _theme_lru: Array[String] = []
 var _game: Node
@@ -68,6 +74,90 @@ func prepare(game: Node, act_paths: Array = Plan.PATHS, validate_pool := true) -
 func has_variant(theme_id: String, id: int) -> bool:
  return visuals.has(key(theme_id, id)) and backgrounds.has(theme_id)
 
+func request_theme(theme_id: String) -> bool:
+ # No Act file, physics template or gameplay node is needed for this request.
+ if busy or not error.is_empty() or bake_only or not use_disk_bakes: return false
+ if backgrounds.has(theme_id) or theme_attempts.has(theme_id): return false
+ theme_attempts[theme_id] = true
+ preparing_theme = theme_id
+ busy = true
+ _prefetch_theme.call_deferred(theme_id)
+ return true
+
+func _fingerprint(theme_id: String) -> String:
+ if not _fingerprints.has(theme_id):
+  _worker = Thread.new()
+  _worker.start(Bake.pipeline_hash.bind(theme_id), Thread.PRIORITY_LOW)
+  while _worker.is_alive(): await get_tree().process_frame
+  _fingerprints[theme_id] = _worker.wait_to_finish()
+  _worker = null
+ return _fingerprints[theme_id]
+
+func _prefetch_theme(theme_id: String) -> void:
+ var started_at := Time.get_ticks_usec()
+ last_warm_frames = 0
+ var fingerprint := await _fingerprint(theme_id)
+ var ready := await _load_theme(theme_id, fingerprint)
+ last_theme_prepare_ms = (Time.get_ticks_usec() - started_at) / 1000.0
+ if ready: theme_prefetches += 1
+ print("ENDLESS_THEME_PREFETCH | ", theme_id, " | ready=", ready, " | ms=", last_theme_prepare_ms,
+  " | Act recipes=", visuals.size(), " | physics templates=", runtimes.size())
+ preparing_theme = ""
+ busy = false
+
+func _load_theme(theme_id: String, fingerprint: String) -> bool:
+ if backgrounds.has(theme_id): return true
+ var background: Resource = await _load_bake(Bake.theme_path(theme_id))
+ if not background is Bake or background.kind != "theme" or not background.matches_pipeline(theme_id, fingerprint) or background.visual_recipe == null: return false
+ environments[theme_id] = background.environment
+ lights[theme_id] = background.light
+ backgrounds[theme_id] = background.visual_recipe
+ theme_materials[theme_id] = background.preload_materials
+ themes[theme_id] = {"display_name": Registry.NAMES[Registry.IDS.find(theme_id)]}
+ _theme_lru.erase(theme_id)
+ _theme_lru.append(theme_id)
+ # Tiny probes upload foreground textures and warm material/shadow features.
+ # They contain no terrain, props, Act layout or collision data.
+ var probes := Recipe.new()
+ var box := BoxMesh.new()
+ var mesh := ArrayMesh.new()
+ mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, box.get_mesh_arrays())
+ var seen := {}
+ var deadline := Time.get_ticks_usec() + 1000
+ for material: Material in background.preload_materials:
+  if Time.get_ticks_usec() >= deadline:
+   await get_tree().process_frame
+   deadline = Time.get_ticks_usec() + 1000
+  var signature := _material_probe_key(material)
+  if seen.has(signature): continue
+  seen[signature] = true
+  var probe := MeshInstance3D.new()
+  probe.mesh = mesh
+  probe.material_override = material
+  probes.capture(probe)
+  probe.free()
+ if not probes.records.is_empty(): await _warm_recipe(probes, theme_id)
+ await _warm_recipe(background.visual_recipe, theme_id)
+ theme_bake_hits += 1
+ return true
+
+static func _material_probe_key(material: Material) -> String:
+ # Uniform colors/numbers do not need another probe. Keep texture bindings,
+ # shader code and feature flags distinct, including any next material pass.
+ var features: Array = [material.get_class()]
+ for property: Dictionary in material.get_property_list():
+  if int(property.usage) & PROPERTY_USAGE_STORAGE == 0: continue
+  var value: Variant = material.get(property.name)
+  if value is Shader:
+   features.append([property.name, value.code])
+  elif value is Texture:
+   features.append([property.name, value.resource_path if not value.resource_path.is_empty() else str(value.get_instance_id())])
+  elif value is Material:
+   features.append([property.name, _material_probe_key(value)])
+  elif value is bool or value is int:
+   features.append([property.name, value])
+ return var_to_str(features).sha256_text()
+
 func request(theme_id: String, id: int) -> void:
  var variant := key(theme_id, id)
  if has_variant(theme_id, id):
@@ -83,15 +173,9 @@ func request(theme_id: String, id: int) -> void:
 func _build(theme_id: String, id: int) -> void:
  var started_at := Time.get_ticks_usec()
  last_warm_frames = 0
- progress.emit("Preparing %s · %s…" % [Registry.NAMES[Registry.IDS.find(theme_id)], str(paths[id]).get_file().get_basename()])
+ progress.emit(("Baking %s · %s…" if bake_only else "Loading %s · %s and warming graphics…") % [Registry.NAMES[Registry.IDS.find(theme_id)], str(paths[id]).get_file().get_basename()])
  await get_tree().process_frame
- if not _fingerprints.has(theme_id):
-  _worker = Thread.new()
-  _worker.start(Bake.pipeline_hash.bind(theme_id), Thread.PRIORITY_LOW)
-  while _worker.is_alive(): await get_tree().process_frame
-  _fingerprints[theme_id] = _worker.wait_to_finish()
-  _worker = null
- var fingerprint: String = _fingerprints[theme_id]
+ var fingerprint := await _fingerprint(theme_id)
  var bake_path := Bake.path_for(paths[id], theme_id)
  var saved: Resource
  if not bake_only and use_disk_bakes:
@@ -101,17 +185,13 @@ func _build(theme_id: String, id: int) -> void:
    bake_hits += 1
   bake_status = "disk" if saved != null else ("missing" if candidate == null else "stale")
   if not backgrounds.has(theme_id):
-   var background: Resource = await _load_bake(Bake.theme_path(theme_id))
-   if background is Bake and background.kind == "theme" and background.matches_pipeline(theme_id, fingerprint) and background.visual_recipe != null:
-    backgrounds[theme_id] = background.visual_recipe
-    environments[theme_id] = background.environment
-    lights[theme_id] = background.light
-    await _warm_recipe(background.visual_recipe, theme_id)
-    theme_bake_hits += 1
-   elif saved != null:
-    bake_status = "theme missing" if background == null else "theme stale"
+   if not await _load_theme(theme_id, fingerprint) and saved != null: bake_status = "theme missing or stale"
  elif not use_disk_bakes:
   bake_status = "disabled by --no-bakes"
+ if not bake_only and use_disk_bakes and (saved == null or saved.visual_recipe == null or not backgrounds.has(theme_id)):
+  error = "The %s bake is %s. Run Bake Endless.cmd, then restart Endless mode." % [key(theme_id, id), bake_status]
+  busy = false
+  return
  if not runtimes.has(id):
   # Physics is theme-independent and compiled once for a requested Act.
   var runtime := Compiler.compile(documents[id], _game.tuning, _game.controls, _game.ball, saved.collisions if saved != null else [])
@@ -212,6 +292,13 @@ func _build(theme_id: String, id: int) -> void:
  # Render the actual new meshes in a private viewport. A hidden scene does not
  # compile Compatibility shaders. Warm a small number of renderables per frame.
  if bake_only:
+  if _asset_theme != theme_id:
+   _asset_theme = theme_id
+   _assets.materials.clear()
+   # A single-Act bake keeps the other verified Acts' material preload entries.
+   var previous: Resource = await _load_bake(Bake.theme_path(theme_id))
+   if previous is Bake and previous.matches_pipeline(theme_id, fingerprint):
+    for material: Material in previous.preload_materials: _assets.materials[material.get_instance_id()] = material
   var baked := Bake.new()
   baked.source_fingerprint = documents[id].fingerprint()
   baked.pipeline_fingerprint = fingerprint
@@ -232,6 +319,9 @@ func _build(theme_id: String, id: int) -> void:
   theme_bake.visual_recipe = backgrounds[theme_id]
   theme_bake.environment = environments[theme_id]
   theme_bake.light = lights[theme_id]
+  var unique_materials := {}
+  for material: Material in _assets.materials.values(): unique_materials[_material_probe_key(material)] = material
+  theme_bake.preload_materials.assign(unique_materials.values())
   DirAccess.make_dir_recursive_absolute(Bake.theme_path(theme_id).get_base_dir())
   result = ResourceSaver.save(theme_bake, Bake.theme_path(theme_id), ResourceSaver.FLAG_COMPRESS)
   if result != OK: error = "Could not save shared theme bake: " + error_string(result)
@@ -252,7 +342,7 @@ func _build(theme_id: String, id: int) -> void:
 func _finish_request(theme_id: String, id: int, started_at: int, source: String) -> void:
  last_prepare_ms = (Time.get_ticks_usec() - started_at) / 1000.0
  busy = false
- print("ENDLESS_PREPARED | ", key(theme_id, id), " | source=", source, " | ms=", last_prepare_ms, " | warm frames=", last_warm_frames, " | cached=", visuals.size(), " | baked jobs=", last_reused_jobs, " | computed jobs=", last_computed_jobs)
+ print("ENDLESS_PREPARED | ", key(theme_id, id), " | source=", source, " | ms=", last_prepare_ms, " | GPU warm frames=", last_warm_frames, " | cached=", visuals.size(), " | geometry loaded=", last_reused_jobs, " | geometry generated=", last_computed_jobs)
 
 func _load_bake(path: String) -> Resource:
  if not ResourceLoader.exists(path): return null
@@ -345,6 +435,7 @@ func _warm_pass(renderables: Array[Node], overlay: Node) -> void:
  var warmed := {}
  var batch: Array[GeometryInstance3D] = []
  var cold_features := 0
+ var batch_limit := 8 if _game.get("started") == true else 64
  for node: GeometryInstance3D in renderables:
   if overlay != null and overlay.is_ancestor_of(node): continue
   node.show()
@@ -359,7 +450,7 @@ func _warm_pass(renderables: Array[Node], overlay: Node) -> void:
   batch.append(node)
   # Colors and uniform values do not require a different shader. The previous
   # per-material-instance wait spent hundreds of frames on equivalent programs.
-  if cold_features >= 1 or batch.size() >= 64:
+  if cold_features >= 1 or batch.size() >= batch_limit:
    await _draw_frames(1)
    for shown: GeometryInstance3D in batch: shown.hide()
    batch.clear()
@@ -434,6 +525,8 @@ func trim(protected: Array, reserve_variant := 0, reserve_theme := 0) -> void:
   backgrounds.erase(theme_id)
   environments.erase(theme_id)
   lights.erase(theme_id)
+  theme_materials.erase(theme_id)
+  theme_attempts.erase(theme_id)
   _theme_lru.erase(theme_id)
  # Physics templates are independent of skins and have their own bounded cache.
  for id: int in runtimes.keys():

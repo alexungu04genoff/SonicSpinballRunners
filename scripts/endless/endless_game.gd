@@ -7,6 +7,11 @@ const Act = preload("res://scripts/endless/streamed_act.gd")
 const StreamPresentation = preload("res://scripts/endless/endless_presentation.gd")
 const Hub = preload("res://scripts/endless/mechanics_hub.gd")
 const Character = preload("res://experiments/visual_lab/sonic_presenter.gd")
+const RetroFilter = preload("res://scripts/retro/retro_filter.gd")
+const RetroControls = preload("res://scripts/retro/retro_controls.gd")
+var retro_filter: RetroFilter
+var retro_controls: CanvasLayer
+var _composite_view: SubViewport
 var planner: RefCounted
 var library: Node
 var hub: Node
@@ -41,7 +46,7 @@ var diagnostics: Label
 var loading_panel: ColorRect
 var loading_label: Label
 var tour_button: Button
-var _startup_message := "Preparing endless mode…"
+var _startup_message := "Loading baked endless mode…"
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
@@ -90,7 +95,7 @@ func _ready() -> void:
  library_ready = true
  pending.append_array(planner.next_zone(library.documents))
  next_zone_to_plan = 2
- _startup_message = "Preparing the opening Acts…"
+ _startup_message = "Loading the opening Acts and warming graphics…"
  while resident.size() < 2 or not _zone_ready(0):
   if not library.error.is_empty():
    _startup_error(library.error)
@@ -108,13 +113,24 @@ func _ready() -> void:
  if "--tour" in OS.get_cmdline_user_args(): toggle_tour()
 
 func _build_view() -> void:
+ # Compose both scenery layers and the transparent foreground before applying
+ # the same world-only shader stack as normal gameplay. HUD stays outside.
+ var output := SubViewportContainer.new()
+ output.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+ output.stretch = true
+ output.mouse_filter = Control.MOUSE_FILTER_IGNORE
+ add_child(output)
+ _composite_view = SubViewport.new()
+ _composite_view.disable_3d = true
+ _composite_view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+ output.add_child(_composite_view)
  var container := SubViewportContainer.new()
  _foreground_container = container
  container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  container.stretch = true
  container.mouse_filter = Control.MOUSE_FILTER_IGNORE
- camera_input_container = container
- add_child(container)
+ camera_input_container = output
+ _composite_view.add_child(container)
  view = SubViewport.new()
  view.size = get_viewport().get_visible_rect().size
  view.own_world_3d = true
@@ -123,6 +139,9 @@ func _build_view() -> void:
  view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
  container.add_child(view)
  _build_presentation()
+ retro_filter = RetroFilter.new()
+ add_child(retro_filter)
+ retro_filter.attach(output, _composite_view)
 
 func _build_presentation() -> void:
  presentation = StreamPresentation.new()
@@ -149,6 +168,7 @@ func _process(delta: float) -> void:
  while not retire_nodes.is_empty() and Time.get_ticks_usec() < retire_deadline:
   var node: Node = retire_nodes.pop_back()
   if is_instance_valid(node): node.free()
+ _prefetch_next_theme()
  var steps := 0
  while Time.get_ticks_usec() < deadline and steps < 128:
   steps += 1
@@ -203,7 +223,7 @@ func _process(delta: float) -> void:
    var elapsed_ms := float(tick - _last_frame_usec) / 1000.0
    max_frame_ms = maxf(max_frame_ms, elapsed_ms)
    if elapsed_ms > 100.0:
-    print("ENDLESS_SLOW_FRAME | zone=", active.plan.zone + 1, " ms=", elapsed_ms, " build_ms=", last_build_ms)
+    print("ENDLESS_SLOW_FRAME | zone=", active.plan.zone + 1, " ms=", elapsed_ms, " build_ms=", last_build_ms, " | theme prefetch=", library.preparing_theme)
   _last_frame_usec = tick
   _frame_sample_count += 1
   if not library.error.is_empty() and not loading_boundary: _wait_for_next()
@@ -220,6 +240,24 @@ func _process(delta: float) -> void:
   else:
    detail.text = "%s · %s" % [Plan.TITLES[active.plan.id], "Camera tour — ball parked" if touring else "No score target · unlimited checkpoint retries"]
   diagnostics.text = "Seed %d | Resident %d | Queued %d | Build %.2f ms (max %.2f) | Frame max %.1f ms\nDisk Acts %d · Disk themes %d · Runtime rebuilds %d · Last prepare %.2f s" % [generation_seed, resident.size(), pending.size() + int(building != null), last_build_ms, max_build_ms, max_frame_ms, library.visual_bake_hits, library.theme_bake_hits, library.fallback_builds, library.last_prepare_ms / 1000.0]
+  diagnostics.text += "\nTheme preloads %d · Last %.2f s%s" % [library.theme_prefetches, library.last_theme_prepare_ms / 1000.0, " · Preparing " + library.preparing_theme if not library.preparing_theme.is_empty() else ""]
+
+func _prefetch_next_theme() -> void:
+ if not started or active == null or library.busy: return
+ for entry: Dictionary in pending:
+  if entry.zone != active.plan.zone + 1: continue
+  if library.backgrounds.has(entry.theme):
+   _ensure_background(entry)
+  elif _next_ready():
+   # Keep the immediate playable neighbor ready before doing optional theme work.
+   var protected: Array = [entry]
+   for act: RefCounted in resident: protected.append(act.plan)
+   for index: int in backgrounds:
+    if index >= _background_zone:
+     protected.append({"theme": backgrounds[index].theme, "id": entry.id})
+   library.trim(protected, 0, 1)
+   library.request_theme(entry.theme)
+  return
 
 func _physics_process(delta: float) -> void:
  if not started or touring or get_tree().paused: return
@@ -297,8 +335,8 @@ func _ensure_background(entry: Dictionary) -> void:
  if backgrounds.has(entry.zone): return
  var backdrop := Backdrop.new()
  backdrop.name = "Zone%dBackdrop" % entry.zone
- add_child(backdrop)
- move_child(backdrop, _foreground_container.get_index())
+ _composite_view.add_child(backdrop)
+ _composite_view.move_child(backdrop, _foreground_container.get_index())
  backdrop.configure(self, entry, library)
  backgrounds[entry.zone] = {"root": backdrop.scenery, "layer": backdrop, "theme": entry.theme,
   "entrance_y": float(entry.offset.y) + library.documents[entry.id].terrain_bounds().size.y,
@@ -505,8 +543,12 @@ func _build_hud() -> void:
  _button("Pause [Esc]", toggle_pause, buttons)
  _button("Checkpoint [R]", func():
   if started and not touring: reset_ball(false), buttons)
+ if retro_filter != null:
+  retro_controls = RetroControls.new()
+  add_child(retro_controls)
+  retro_controls.install(retro_filter, buttons, buttons)
  var hint := Label.new()
- hint.text = "Enter: roll in · Q/E: flippers · Arrows: steer · Space: special · F3: streaming stats · F11: fullscreen"
+ hint.text = "Enter: roll in · Q/E: flippers · Arrows: steer · Space: special · F3: stats · F4: filters · F11: fullscreen"
  panel.add_child(hint)
  diagnostics = Label.new()
  diagnostics.visible = "--frame-timing" in OS.get_cmdline_user_args()

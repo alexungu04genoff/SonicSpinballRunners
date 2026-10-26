@@ -7,6 +7,12 @@ const Flicky = preload("res://scripts/decor/island_flicky.gd")
 var checks := 0
 var failures := 0
 
+class MissingBakeLibrary extends Library:
+ func _fingerprint(_theme_id: String) -> String:
+  return "missing-fixture"
+ func _load_bake(_path: String) -> Resource:
+  return null
+
 func _initialize() -> void:
  call_deferred("run")
 
@@ -75,6 +81,10 @@ func run() -> void:
  blue.albedo_color = Color.BLUE
  mesh.material_override = blue
  check(library._shader_signatures(mesh) == red_signature, "Different uniform colors share a warm-up shader signature")
+ check(Library._material_probe_key(red) == Library._material_probe_key(blue), "Repeated uniform colors need one theme probe")
+ blue.albedo_texture = first
+ check(Library._material_probe_key(red) != Library._material_probe_key(blue), "Distinct texture bindings keep separate theme probes")
+ blue.albedo_texture = null
  blue.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
  check(library._shader_signatures(mesh) != red_signature, "Different shader features keep distinct warm-up signatures")
  blue.albedo_texture = first
@@ -101,6 +111,14 @@ func run() -> void:
  check(shared_meshes[0] is ArrayMesh, "Primitive mesh geometry is calculated offline")
  check(shared_meshes[0] == shared_meshes[1], "Identical primitive meshes share one disk resource")
  check(shared_meshes[0].surface_get_arrays(0) == cube.get_mesh_arrays(), "Baked primitive keeps vertices, normals, UVs and indices")
+ var missing := MissingBakeLibrary.new()
+ root.add_child(missing)
+ missing.paths = ["res://missing-act.tres"]
+ missing.request("green_hill", 0)
+ while missing.busy: await process_frame
+ check(missing.error.contains("Bake Endless.cmd"), "Missing bakes explain the offline authoring action")
+ check(missing.fallback_builds == 0 and missing.runtimes.is_empty() and missing.visuals.is_empty(), "Normal startup never silently rebuilds missing bakes")
+ missing.free()
  mesh.free()
  library.free()
  root_node.free()

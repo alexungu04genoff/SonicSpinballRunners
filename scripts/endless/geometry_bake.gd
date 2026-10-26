@@ -1,6 +1,6 @@
 extends Resource
 ## Derived data only. Never owns or edits the authored document.
-const VERSION := 2
+const VERSION := 3
 const DEPENDENCIES := ["res://scripts/presentation.gd", "res://scripts/themes/themed_presentation.gd",
  "res://scripts/themes/terrain_border.gd", "res://scripts/endless/template_presenter.gd",
  "res://scripts/authored_act/act_runtime_compiler.gd", "res://scripts/act_dimensions.gd"]
@@ -14,6 +14,7 @@ const DEPENDENCIES := ["res://scripts/presentation.gd", "res://scripts/themes/th
 @export var environment: Environment
 @export var light: Dictionary = {}
 @export var kind := "act"
+@export var preload_materials: Array[Material] = []
 
 static func path_for(act_path: String, theme: String) -> String:
  return act_path.get_basename() + ".bake/" + theme + ".res"
