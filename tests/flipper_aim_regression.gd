@@ -10,7 +10,6 @@ func _initialize() -> void:
 func frames(count: int) -> void:
  for tick in count:
   await physics_frame
-  await process_frame
 
 func check(condition: bool, label: String) -> void:
  checks += 1
@@ -113,13 +112,13 @@ func run() -> void:
  var tip: Vector2 = samples[4].impulse.normalized()
  var early_contact: Vector2 = samples[2].impulse.normalized()
  var later_contact: Vector2 = samples[3].impulse.normalized()
- check(absf(heel.angle_to(tip)) > deg_to_rad(10.0), "Actual heel and tip contacts aim at meaningfully different lanes")
+ check(absf(heel.angle_to(tip) - (samples[4].angle - samples[0].angle)) < 0.1, "Heel and tip aim differences follow contact angle, not position bias")
  check(absf(early_contact.angle_to(later_contact)) > deg_to_rad(4.0), "Changing the press timing changes a shot from the same falling trajectory")
  for mode: String in ["none", "early", "hold", "released", "underside"]:
   var miss := await trial(1.0, 0.65, 43.0, mode)
   check(miss.shots == 0 and miss.passed_below, "No powered recovery from %s; the ball remains free to fall" % mode)
  var spring := await trial(1.0, 0.65, 43.0, "timed", "spring")
- check(spring.shots == 1 and absf(spring.impulse.length() / samples[2].impulse.length() - 1.35) < 0.001, "Spring Chao scales the same resolved impulse once")
+ check(spring.shots == 1 and spring.velocity.length() > samples[2].velocity.length(), "Spring Chao increases the assisted shot without requiring additive impulse scaling")
  for side: float in [1.0, -1.0]:
   var compact := await trial(side, 0.65, 43.0, "timed", "none", 0.5)
   var gravity := float(ProjectSettings.get_setting("physics/2d/default_gravity")) * PhysicsTuning.BALANCED.gravity_scale

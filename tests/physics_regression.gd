@@ -20,9 +20,9 @@ func check(condition: bool, label: String, detail: String = "") -> void:
   push_error("FAIL | " + label + " | " + detail)
 
 func frames(count: int) -> void:
+ # Count physics ticks exactly; rendered frames can span several fixed ticks.
  for i in count:
   await physics_frame
-  await process_frame
 
 func run() -> void:
  var profile := PhysicsProfile.new()

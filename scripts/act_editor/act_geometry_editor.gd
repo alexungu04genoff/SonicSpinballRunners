@@ -1952,7 +1952,7 @@ func _refresh_mechanics_properties() -> void:
 	if item.type in ["left_flipper", "right_flipper", "round_bumper", "triangle_bumper"]:
 		var baseline := Label.new()
 		var profile: Resource = preload("res://data/balanced.tres")
-		baseline.text = "Sonic: launch %.0f · upward cap %.0f px/s*" % [profile.flipper_launch_strength, profile.flipper_upward_speed_limit] if item.type in ["left_flipper", "right_flipper"] else "Sonic rebound: %.0f–%.0f px/s" % [profile.bumper_launch_speed * profile.bumper_rebound_multiplier, profile.bumper_speed_limit * profile.bumper_rebound_multiplier]
+		baseline.text = "Sonic: tip assist %.0f · upward cap %.0f*" % [profile.flipper_launch_strength, profile.flipper_upward_speed_limit] if item.type in ["left_flipper", "right_flipper"] else "Sonic rebound: %.0f–%.0f px/s" % [profile.bumper_launch_speed * profile.bumper_rebound_multiplier, profile.bumper_speed_limit * profile.bumper_rebound_multiplier]
 		baseline.tooltip_text = "Base Sonic, no modifiers. Flipper upward cap additionally scales with the square root of ball size. Runtime retains the selected character and session tuning."
 		baseline.add_theme_font_size_override("font_size", 11)
 		mechanics_properties.add_child(baseline)

@@ -40,7 +40,7 @@ const FIELDS: Dictionary = {
  "rolling_acceleration": [0.0, 500.0, 10.0, "Contact rolling acceleration", "px/s²"],
  "rolling_drag": [0.0, 3.0, 0.05, "Contact rolling drag", "1/s"],
  "max_rolling_speed": [100.0, 2000.0, 50.0, "Rolling assistance cutoff", "px/s"],
- "flipper_launch_strength": [200.0, 2200.0, 25.0, "Flipper launch impulse / mass", "px/s"],
+ "flipper_launch_strength": [200.0, 2200.0, 25.0, "Flipper tip assist speed", "px/s"],
  "flipper_upward_speed_limit": [100.0, 2200.0, 25.0, "Flipper upward speed limit", "px/s"],
  "bumper_launch_speed": [100.0, 1200.0, 20.0, "Bumper base rebound speed", "px/s"],
  "bumper_speed_limit": [100.0, 2200.0, 25.0, "Bumper rebound speed limit", "px/s"],

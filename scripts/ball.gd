@@ -39,6 +39,7 @@ var bumper_hit_count: int = 0
 var sweep_rebounds: int = 0
 var _previous_step_velocity := Vector2.ZERO
 var flipper_launch_pending := false
+var _flipper_strike: Dictionary = {}
 var _motion_query := PhysicsTestMotionParameters2D.new()
 var _motion_result := PhysicsTestMotionResult2D.new()
 
@@ -71,6 +72,7 @@ func teleport_to(where: Vector2, velocity: Vector2 = Vector2.ZERO, waiting: bool
  serve_pending = waiting
  release_pending = false
  flipper_launch_pending = false
+ _flipper_strike.clear()
  _reset_steering("Serve / reset")
  steering_acceleration_applied = 0.0
  steering_impulse_applied = 0.0
@@ -148,9 +150,11 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
  if is_instance_valid(mechanics):
   mechanics.tick(state.step)
   if on_ramp:
+   _flipper_strike.clear()
    mechanics.advance_ramp(state, state.step)
    return
  if serve_pending:
+  _flipper_strike.clear()
   # Waiting at serve is an explicit reset state, not an active physics trajectory.
   # Clear residual contact recovery after a long teleport until launch releases it.
   state.transform = Transform2D(0.0, _teleport_position)
@@ -220,6 +224,7 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
    if absf(tangent_speed) < float(stats.max_rolling_speed):
     state.apply_central_impulse(tangent * slope * float(stats.rolling_acceleration) * mass * dt)
    state.apply_central_impulse(-tangent * tangent_speed * (1.0 - exp(-float(stats.rolling_drag) * dt)) * mass)
+ _apply_flipper_strike(state, stats)
  if is_instance_valid(mechanics):
   mechanics.apply_fields(state)
   if mechanics.observe_motion(state): return
@@ -272,3 +277,21 @@ func _guard_fast_motion(state: PhysicsDirectBodyState2D) -> void:
  _reset_steering("Sweep rebound")
  state.apply_central_impulse(normal * (outgoing - incoming) * mass)
  sweep_rebounds += 1
+
+func request_flipper_strike(paddle: PlaygroundFlipper, contact: Vector2, normal: Vector2, fraction: float) -> bool:
+ if not _flipper_strike.is_empty() or serve_pending or on_ramp or _teleport_pending:
+  return false
+ _flipper_strike = {"paddle": paddle, "contact": contact, "normal": normal, "fraction": fraction}
+ return true
+
+func _apply_flipper_strike(state: PhysicsDirectBodyState2D, stats: Dictionary) -> void:
+ if _flipper_strike.is_empty(): return
+ var shot := _flipper_strike
+ _flipper_strike = {}
+ if not is_instance_valid(shot.paddle) or not shot.paddle.enabled or not shot.paddle.held: return
+ var velocity := PlaygroundFlipper.assisted_velocity(state.linear_velocity, shot.normal, shot.fraction, stats)
+ var impulse := (velocity - state.linear_velocity) * mass
+ state.apply_central_impulse(impulse)
+ flipper_launch_pending = true
+ _reset_steering("Flipper contact")
+ shot.paddle.complete_strike(shot.contact, impulse, shot.fraction)

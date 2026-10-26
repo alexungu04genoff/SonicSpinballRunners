@@ -97,7 +97,7 @@ func check_bumper_contacts() -> void:
 		var triangle := [{"type": "triangle_bumper", "position": center, "rotation_degrees": 32.0}]
 		var axis := Vector2.DOWN.rotated(deg_to_rad(32))
 		var sling_hit := await trajectory([], center + Vector2(-0.10, -1.5).rotated(deg_to_rad(32)) * cell_size, axis * 12 * cell_size, 22, triangle, cell_size)
-		check(sling_hit.bumper_hits == 1 and sling_hit.velocity.dot(axis) < -200 and sling_hit.immutable, "Compact rotated sling fires from its exact anchor with %.0f-pixel cells" % cell_size, str(sling_hit))
+		check(sling_hit.bumper_hits == 1 and sling_hit.velocity.dot(axis) < -PhysicsTuning.BALANCED.bumper_speed_limit * PhysicsTuning.BALANCED.bumper_rebound_multiplier + 5.0 and sling_hit.immutable, "Compact rotated sling fires from its exact anchor with %.0f-pixel cells" % cell_size, str(sling_hit))
 		var wall := await trajectory([stamp("wall_1x3")], Vector2(1, 3) * cell_size, Vector2(8000, 0), 5, [], cell_size)
 		check(wall.velocity.x < 0 and wall.position.x < 2 * cell_size and wall.sweeps > 0, "Actual authored ball radius protects fast open-rail collision with %.0f-pixel cells" % cell_size, str(wall))
 
@@ -113,7 +113,7 @@ func check_flipper_contacts() -> void:
 		rotated.authored_rest_angle = baseline.rest_angle() + PI * 0.5
 		baseline.rotation = baseline.rest_angle() - side * 0.35
 		rotated.rotation = baseline.rotation + PI * 0.5
-		check(baseline.strike_direction(0.65).rotated(PI * 0.5).distance_to(rotated.strike_direction(0.65)) < 0.000001, "Authored orientation rotates the complete existing biased strike direction for both hands")
+		check(baseline.strike_direction(0.65).rotated(PI * 0.5).distance_to(rotated.strike_direction(0.65)) < 0.000001, "Authored orientation rotates the physical face normal for both hands")
 	baseline.free()
 	rotated.free()
 
@@ -128,14 +128,21 @@ func check_flipper_contacts_at_scale(cell_size: float) -> void:
 			var env := await physical_environment(document)
 			var paddle: PlaygroundFlipper = env.runtime.flippers[0]
 			var origin: Vector2 = paddle.position
-			var shot := {"count": 0, "impulse": Vector2.ZERO}
-			paddle.shot_fired.connect(func(_point: Vector2, impulse: Vector2, _fraction: float): shot.count += 1; shot.impulse = impulse)
+			var shot := {"count": 0, "impulse": Vector2.ZERO, "fraction": 0.0}
+			paddle.shot_fired.connect(func(_point: Vector2, impulse: Vector2, _fraction: float): shot.count += 1; shot.impulse = impulse; shot.fraction = _fraction)
 			env.ball.teleport_to(origin + Vector2(side * 0.4225, -0.10).rotated(offset) * cell_size, Vector2(0, 2 * cell_size).rotated(offset))
 			await frames(2)
 			env.controls.virtual_left = side > 0
 			env.controls.virtual_right = side < 0
 			await frames(16)
-			check(shot.count == 1 and shot.impulse.dot(Vector2.UP.rotated(offset)) > env.tuning.effective.flipper_launch_strength * (600.0 / 1050.0) and paddle.position == origin, "Compact %s flipper strikes once at its exact pivot with %.0f-pixel cells and %.0f° offset" % ["left" if side > 0 else "right", cell_size, rad_to_deg(offset)], str(shot))
+			shot["final_velocity"] = env.ball.linear_velocity
+			# Face-normal assistance retains the incoming tangent. Bound its upward
+			# component over the full swing, using the actual heel/tip contact.
+			# Both hands have the same 0.32 to -0.48 radian swing in their local frame.
+			var swing_angle := maxf(0.32, absf(paddle.active_angle() - paddle.rest_angle()) - 0.32)
+			var target := PlaygroundFlipper.launch_normal_speed(shot.fraction, env.tuning.effective)
+			var minimum_upward := target * cos(swing_angle) - 2.0 * cell_size * pow(sin(swing_angle), 2)
+			check(shot.count == 1 and env.ball.linear_velocity.dot(Vector2.UP.rotated(offset)) > maxf(0.0, minimum_upward) and paddle.position == origin, "Compact %s flipper produces one useful launch at its exact pivot with %.0f-pixel cells and %.0f° offset" % ["left" if side > 0 else "right", cell_size, rad_to_deg(offset)], str(shot))
 			await frames(20)
 			check(shot.count == 1, "Holding an authored flipper cannot repeat its powered strike")
 			env.world.free()

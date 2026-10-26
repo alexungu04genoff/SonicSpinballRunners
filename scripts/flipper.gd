@@ -60,16 +60,25 @@ func active_angle() -> float:
 func tip() -> Vector2:
  return global_position + Vector2.RIGHT.rotated(rotation) * length
 
-func strike_direction(contact_fraction: float) -> Vector2:
- # Keep an upward arcade bias while letting heel/tip contact and swing timing aim.
- # The mirrored surface normal supplies orientation; strength stays in the resolver.
- # An authored paddle rotates that same aiming frame, including its arcade bias.
- var rest_offset := authored_rest_angle - (0.32 if side > 0.0 else PI - 0.32) if is_finite(authored_rest_angle) else 0.0
- var axis := Vector2.RIGHT.rotated(rotation - rest_offset)
- var normal := Vector2(axis.y, -axis.x) * side
- var normal_angle := atan2(normal.x * side, -normal.y)
- var inward_angle := clampf(0.12 + 0.45 * normal_angle + 0.5 * (0.65 - clampf(contact_fraction, 0.0, 1.0)), -0.18, 0.55)
- return Vector2.UP.rotated(side * inward_angle + rest_offset)
+func strike_direction(_contact_fraction: float) -> Vector2:
+ # The straight face normal depends on paddle angle, never heel/tip position.
+ var axis := Vector2.RIGHT.rotated(rotation)
+ return Vector2(axis.y, -axis.x) * side
+
+static func launch_normal_speed(contact_fraction: float, stats: Dictionary) -> float:
+ # A small arcade floor helps hinge recoveries without making the entire heel
+ # nearly as powerful as the tip. Timing still comes from the moving surface.
+ return float(stats.flipper_launch_strength) * lerpf(0.2, 1.0, clampf(contact_fraction, 0.0, 1.0))
+
+static func assisted_velocity(incoming: Vector2, normal: Vector2, contact_fraction: float, stats: Dictionary) -> Vector2:
+ # Top up only the outward component after native contact resolution. Preserve
+ # tangential momentum and never add another full kick to an existing rebound.
+ return incoming + normal * maxf(0.0, launch_normal_speed(contact_fraction, stats) - incoming.dot(normal))
+
+func complete_strike(contact: Vector2, impulse: Vector2, fraction: float) -> void:
+ strikes += 1
+ struck.emit()
+ shot_fired.emit(contact, impulse, fraction)
 
 func _physics_process(delta: float) -> void:
  if not enabled:
@@ -85,11 +94,11 @@ func _physics_process(delta: float) -> void:
  var old_tip: Vector2 = tip()
  rotation = move_toward(rotation, active_angle() if held else rest_angle(), (float(tuning.effective.flipper_swing_speed) if held else 7.0) * delta)
  if swing_remaining > 0.0:
-  # A two-tick follow-through is forgiving without powering a stationary hold.
+  # Expire the contact window at the stop; assistance requires angular motion.
   if is_equal_approx(old_angle, rotation):
    swing_remaining = minf(swing_remaining, 2.0 * delta)
   swing_remaining -= delta
-  if not struck_this_swing and not ball.serve_pending and not ball.on_ramp:
+  if not struck_this_swing and not is_equal_approx(old_angle, rotation) and not ball.serve_pending and not ball.on_ramp and not ball._teleport_pending:
    var nearest: Vector2 = Geometry2D.get_closest_point_to_segment(ball.global_position, global_position, tip())
    var old_nearest: Vector2 = Geometry2D.get_closest_point_to_segment(ball.global_position, global_position, old_tip)
    var old_is_closer := ball.global_position.distance_squared_to(old_nearest) < ball.global_position.distance_squared_to(nearest)
@@ -101,11 +110,12 @@ func _physics_process(delta: float) -> void:
    var contact_allowance := 9.0 * ball.radius / PlaygroundBall.RADIUS
    if distance < radius + ball.radius + contact_allowance and (ball.global_position - contact).dot(upward_normal) > 0.0:
     var fraction := clampf(contact.distance_to(global_position) / length, 0.0, 1.0)
-    var leverage := clampf(fraction, 0.35, 1.0)
-    var impulse := strike_direction(fraction) * float(tuning.effective.flipper_launch_strength) * (0.65 + 0.35 * leverage) * ball.mass
-    ball.apply_central_impulse(impulse)
-    ball.flipper_launch_pending = true
-    struck_this_swing = true
-    strikes += 1
-    struck.emit()
-    shot_fired.emit(contact, impulse, fraction)
+    var normal := (ball.global_position - contact).normalized()
+    var angular_speed := (rotation - old_angle) / delta
+    var offset := contact - global_position
+    var surface_velocity := Vector2(-offset.y, offset.x) * angular_speed
+    # A ball already escaping the paddle must not receive a proximity boost.
+    if (ball.linear_velocity - surface_velocity).dot(normal) >= 0.0:
+     return
+    if ball.request_flipper_strike(self, contact, normal, fraction):
+     struck_this_swing = true

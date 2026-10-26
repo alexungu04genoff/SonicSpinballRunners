@@ -1845,8 +1845,8 @@ func _draw_launch_range(item: Dictionary) -> void:
   draw_polyline(points, color, 1.5 if i in [low, high] else 1.0, true)
  # Screen-space legend stays readable even when the estimated apex is outside the map.
  draw_style_box(_launch_legend_style(), Rect2(8, size.y - 50, 500, 42))
- draw_string(get_theme_default_font(), Vector2(16, size.y - 34), "BASE SONIC · gold: min rebound / teal: max rebound" if item.type in ["round_bumper", "triangle_bumper"] else "BASE SONIC · gold: min rise / teal: max rise (sampled)", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("dcebf2"))
- draw_string(get_theme_default_font(), Vector2(16, size.y - 16), "Free flight · no tangential momentum, steering or collisions", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("9cb3c6"))
+ draw_string(get_theme_default_font(), Vector2(16, size.y - 34), "BASE SONIC · gold: min rebound / teal: max rebound" if item.type in ["round_bumper", "triangle_bumper"] else "BASE SONIC · gold: min assist / teal: max assist (sampled)", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("dcebf2"))
+ draw_string(get_theme_default_font(), Vector2(16, size.y - 16), "Incoming speed sets rebound · no tangent momentum or obstacles" if item.type in ["round_bumper", "triangle_bumper"] else "Stationary ball · collision momentum may add range · no obstacles", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("9cb3c6"))
 
 func _launch_legend_style() -> StyleBoxFlat:
  var style := StyleBoxFlat.new()
