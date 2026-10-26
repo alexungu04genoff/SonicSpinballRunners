@@ -164,7 +164,7 @@ func _build_ui() -> void:
 	_button(header, "load", "Load", func(): request_action("load"), "Ctrl+O")
 	_button(header, "save", "Save", _save_current, "Ctrl+S")
 	_button(header, "save_as", "Save As", _open_save_dialog, "Ctrl+Shift+S")
-	_button(header, "bake", "Bake", _bake_current, "Prepare saved geometry for endless streaming")
+	_button(header, "bake", "Bake", _bake_current, "Bake saved collision and complete visuals for endless streaming")
 	file_label = Label.new()
 	file_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	file_label.add_theme_color_override("font_color", Color("9cb3c6"))

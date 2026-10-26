@@ -12,17 +12,17 @@ var progress: ProgressBar
 var library: Node
 
 func _ready() -> void:
- DisplayServer.window_set_title("Bake Act Geometry")
+ DisplayServer.window_set_title("Bake Act Presentation")
  var panel := VBoxContainer.new()
  panel.position = Vector2(32, 32)
  panel.custom_minimum_size = Vector2(780, 0)
  add_child(panel)
  var heading := Label.new()
- heading.text = "Bake verified Act geometry"
+ heading.text = "Bake verified Acts for streaming"
  heading.add_theme_font_size_override("font_size", 28)
  panel.add_child(heading)
  var description := Label.new()
- description.text = "Builds collision pieces, floor outlines and theme-specific terrain meshes.\nYour saved Act stays unchanged. Textures and materials remain separate."
+ description.text = "Builds collision, terrain, props and reusable visual recipes offline.\nBackgrounds are shared per theme; textures are shared on disk. Your saved Act stays unchanged."
  panel.add_child(description)
  status = Label.new()
  status.text = "Choose a saved Act to bake."
@@ -65,16 +65,22 @@ func bake(paths: Array) -> void:
  add_child(library)
  library.progress.connect(func(message: String): status.text = message)
  library.prepare(self, paths, false)
- progress.max_value = paths.size() * Registry.IDS.size()
- for id in paths.size():
-  for theme_id: String in Registry.IDS:
+ var themes: Array = Registry.IDS.duplicate()
+ for argument: String in OS.get_cmdline_user_args():
+  if argument.begins_with("--theme="): themes = [argument.trim_prefix("--theme=")]
+ progress.max_value = paths.size() * themes.size()
+ for theme_id: String in themes:
+  if theme_id not in Registry.IDS:
+   library.error = "Unknown theme: " + theme_id
+   break
+  for id in paths.size():
    if not library.error.is_empty(): break
    library.trim([{"theme": theme_id, "id": id}], 1, 0 if library.themes.has(theme_id) else 1)
    library.request(theme_id, id)
    while library.busy: await get_tree().process_frame
    progress.value += 1
  if library.error.is_empty():
-  status.text = "Bake complete. Sidecar folders are beside your saved Acts.\nEndless mode loads only the requested Act/theme geometry."
+  status.text = "Bake complete. Act sidecars and shared theme assets are ready.\nEndless mode loads visual recipes directly and prepares graphics ahead."
   print("ACT_BAKE_COMPLETE | Acts=", paths.size(), " variants=", int(progress.value))
  else:
   status.text = library.error

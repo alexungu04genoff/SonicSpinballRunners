@@ -1,15 +1,15 @@
-extends RefCounted
+extends Resource
 ## Small one-node scenes share meshes/materials. Live construction never instantiates
 ## an entire Act or recursively duplicates a large scene in a single frame.
 const MechanicsVisual = preload("res://scripts/authored_act/mechanics_presentation.gd")
 const Flicky = preload("res://scripts/decor/island_flicky.gd")
-var records: Array[Dictionary] = []
+@export var records: Array[Dictionary] = []
 var indices := {}
-var animations: Array[Dictionary] = []
-var flippers: Array[int] = []
-var retracted: Array[int] = []
-var rings: Array[int] = []
-var bumpers := {}
+@export var animations: Array[Dictionary] = []
+@export var flippers: Array[int] = []
+@export var retracted: Array[int] = []
+@export var rings: Array[int] = []
+@export var bumpers := {}
 
 func capture(node: Node, parent := -1, recursive := true) -> void:
  var index := records.size()

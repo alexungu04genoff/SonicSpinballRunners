@@ -219,7 +219,7 @@ func _process(delta: float) -> void:
    detail.text = "Waiting for the next Act to finish loading…" if library.error.is_empty() else library.error
   else:
    detail.text = "%s · %s" % [Plan.TITLES[active.plan.id], "Camera tour — ball parked" if touring else "No score target · unlimited checkpoint retries"]
-  diagnostics.text = "Seed %d | Resident %d | Queued %d | Build %.2f ms (max %.2f) | Frame max %.1f ms" % [generation_seed, resident.size(), pending.size() + int(building != null), last_build_ms, max_build_ms, max_frame_ms]
+  diagnostics.text = "Seed %d | Resident %d | Queued %d | Build %.2f ms (max %.2f) | Frame max %.1f ms\nDisk Acts %d · Disk themes %d · Runtime rebuilds %d · Last prepare %.2f s" % [generation_seed, resident.size(), pending.size() + int(building != null), last_build_ms, max_build_ms, max_frame_ms, library.visual_bake_hits, library.theme_bake_hits, library.fallback_builds, library.last_prepare_ms / 1000.0]
 
 func _physics_process(delta: float) -> void:
  if not started or touring or get_tree().paused: return
@@ -314,6 +314,9 @@ func _step_background() -> bool:
    background.nodes = nodes
    background.index += 1
   elif background.warm_until < 0:
+   background.recipe.bind_animations(background.nodes, presentation)
+   for animation: Dictionary in background.recipe.animations:
+    background.nodes[animation.index].process_mode = Node.PROCESS_MODE_INHERIT
    background.layer.follow(presentation.camera, view.size, 0.0, true)
    background.warm_until = Engine.get_process_frames() + 3
   elif Engine.get_process_frames() >= background.warm_until:
