@@ -607,7 +607,7 @@ func _replace_generated_chunks(candidate: Dictionary) -> void:
 
 func _apply_tuning() -> void:
  for body: StaticBody2D in playfield.terrain_bodies:
-  if is_instance_valid(body) and body.physics_material_override != null:
+  if is_instance_valid(body) and body.physics_material_override != null and not is_equal_approx(body.physics_material_override.bounce, tuning.effective.wall_restitution):
    body.physics_material_override.bounce = tuning.effective.wall_restitution
 
 func launch_ball() -> void:
@@ -753,13 +753,7 @@ func _physics_process(delta: float) -> void:
  if not ball.on_ramp and not ball.serve_pending and not ball._teleport_pending and respawn_time < 0.0:
   var start := previous_goal_position if _goal_motion_ready else ball.position
   if level_source == "authored":
-   var events: Dictionary = ActLifecycle.crossings(authored_document, start, ball.position)
-   if events.activation:
-    authored_activation_count += 1
-    print("ACT ACTIVATED | upward crossing ", authored_activation_count)
-   if events.exit:
-    authored_exit_count += 1
-    print("ACT EXIT REACHED | upward crossing ", authored_exit_count)
+   _observe_authored_motion(start, ball.position)
   if score_attack.observe_motion(start, ball.position):
    specials.reset(false, "Challenge complete")
    scorecraft.reset("Challenge complete")
@@ -777,6 +771,15 @@ func _physics_process(delta: float) -> void:
  if level_source == "authored" and (ball.serve_pending or ball._teleport_pending):
   previous_goal_position = ball.serve_position
   _goal_motion_ready = true
+
+func _observe_authored_motion(start: Vector2, finish: Vector2) -> void:
+ var events: Dictionary = ActLifecycle.crossings(authored_document, start, finish)
+ if events.activation:
+  authored_activation_count += 1
+  print("ACT ACTIVATED | upward crossing ", authored_activation_count)
+ if events.exit:
+  authored_exit_count += 1
+  print("ACT EXIT REACHED | upward crossing ", authored_exit_count)
 
 func _at_playfield_drain() -> bool:
  if level_source == "authored":

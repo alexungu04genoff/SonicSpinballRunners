@@ -3,11 +3,15 @@ extends Node3D
 const CYCLE := 4.8
 var animation_time := 0.0
 var phase := 0.0
-var pose := Node3D.new()
-var head := Node3D.new()
+var pose: Node3D
+var head: Node3D
 var wings: Array[Node3D] = []
 
-func _init(p: Node3D, index: int) -> void:
+func _init(p: Node3D = null, index: int = 0) -> void:
+ # Cached streaming visuals bind their existing nodes after staged instantiation.
+ if p == null: return
+ pose = Node3D.new()
+ head = Node3D.new()
  name = "Flicky%d" % (index + 1)
  # The main game's UI ancestor processes while paused; decor must not inherit it.
  process_mode = Node.PROCESS_MODE_PAUSABLE

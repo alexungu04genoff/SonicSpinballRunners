@@ -61,12 +61,15 @@ func build_background(p: Node3D) -> void:
  # Skyline sits below and outside the table. Large dark gaps separate buildings.
  _library.box(city, "dark", center + Vector3(0, -5.9, 0), Vector3(180, 0.15, 180))
  for i in 13:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var height := 2.3 + float((i * 7) % 6) * 0.5
   var at := Vector3(center.x + (i - 6) * 2.5, -5.8, far_z - 7.0 - (i % 3) * 1.5)
   _library.box(city, "navy", at + Vector3.UP * height * 0.5, Vector3(1.5, height, 1.4))
   _library.box(city, "purple", at + Vector3.UP * height, Vector3(1.60, 0.14, 1.50))
   for row in 3:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    for column in 2:
+    if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
     # Warm broad windows, deliberately weaker than foreground neon.
     _library.box(city, "gold_light", at + Vector3((column - 0.5) * 0.65, height * (0.25 + row * 0.24), 0.72), Vector3(0.26, 0.18, 0.03))
  # Monumental casino facade and lanterns establish the pinball-machine scale.
@@ -75,7 +78,9 @@ func build_background(p: Node3D) -> void:
  palace.position = Vector3(center.x, -4.8, far_z)
  palace.scale = Vector3(2.7, 2.6, 2.2)
  for side: int in [-1, 1]:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   for i in 3:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    var at := center + Vector3(side * (width * 0.5 + 3.0 + (i % 2) * 1.1), -4.7, (i - 1) * maxf(3.2, length * 0.42))
    var tower: Node3D = _library.build_variant("star_lantern" if i != 1 else "reel_tower")
    city.add_child(tower)
@@ -85,7 +90,7 @@ func build_background(p: Node3D) -> void:
    city.add_child(palm)
    palm.position = at + Vector3(side * 1.5, 0, 0.9)
    palm.scale = Vector3.ONE * 1.8
- _batch_background(city)
+ await _batch_background(city, p)
  # Text is a single original sign, separate from the static primitive batches.
  var sign := Label3D.new()
  sign.name = "CasinoMarquee"
@@ -99,6 +104,7 @@ func build_background(p: Node3D) -> void:
  p.scenery_root.add_child(sign)
  # Exactly two unshadowed fill lights: local spill, not a light per bulb.
  for side: int in [-1, 1]:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var fill := OmniLight3D.new()
   fill.name = "CasinoWarmSpill" if side < 0 else "CasinoBlueSpill"
   fill.light_color = Color("ffae55") if side < 0 else Color("557fff")
@@ -116,6 +122,7 @@ func build_background(p: Node3D) -> void:
   sconce.scale = Vector3.ONE * 1.6
   _library.box(p.scenery_root, "gold", sconce.position - Vector3(side * 0.3, 0.04, 0), Vector3(0.65, 0.08, 0.22))
   for part: MeshInstance3D in sconce.get_children():
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    if part.material_override == _library.materials.amber and side > 0:
     part.material_override = _library.materials.aqua
   p.scenery_root.add_child(sconce)
@@ -137,19 +144,25 @@ func _collect(node: Node3D, transform: Transform3D, batches: Dictionary) -> void
   batches[key].transforms.append(local)
  for child: Node in node.get_children(): _collect(child, local, batches)
 
-func _batch_background(root: Node3D) -> void:
+func _batch_background(root: Node3D, scheduler: Node = null) -> void:
  var batches := {}
- for child: Node in root.get_children(): _collect(child, Transform3D.IDENTITY, batches)
  for child: Node in root.get_children():
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
+  _collect(child, Transform3D.IDENTITY, batches)
+ for child: Node in root.get_children():
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
   root.remove_child(child)
   child.free()
  for key: String in batches:
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
   var data: Dictionary = batches[key]
   var multimesh := MultiMesh.new()
   multimesh.transform_format = MultiMesh.TRANSFORM_3D
   multimesh.mesh = data.mesh
   multimesh.instance_count = data.transforms.size()
-  for i in data.transforms.size(): multimesh.set_instance_transform(i, data.transforms[i])
+  for i in data.transforms.size():
+   if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
+   multimesh.set_instance_transform(i, data.transforms[i])
   var instance := MultiMeshInstance3D.new()
   instance.multimesh = multimesh
   instance.material_override = data.material

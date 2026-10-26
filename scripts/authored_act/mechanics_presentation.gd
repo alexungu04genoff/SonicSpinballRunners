@@ -18,7 +18,7 @@ func build(presenter: TablePresentation, runtime: Dictionary) -> void:
   match item.type:
    "spinner": _spinner(item)
    "magnetic_field": _field(item)
-   "elevated_rail": _rail(item)
+   "elevated_rail": await _rail(item)
    "one_way_gate", "switch_target", "spring":
     var entry := Gimmicks.build(table, self, item)
     gimmicks.append(entry)
@@ -74,6 +74,7 @@ func _rail(item: Dictionary) -> void:
  # over themselves. This is visual edging only; the authoritative route is unchanged.
  var inside := PackedFloat32Array()
  for i in path.points.size():
+  if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
   var factor := 0.0
   if i > 0 and i < path.points.size() - 1:
    var incoming: Vector2 = path.points[i] - path.points[i - 1]
@@ -91,17 +92,19 @@ func _rail(item: Dictionary) -> void:
  add_child(root)
  # Three meshes keep a readable deck, edge trim and real fascia/underside.
  # All vertices follow the same elevation samples used by the physical ball.
- _rail_strip(root, path, width, peak, Vector2(-0.5, 0.5), Vector2.ZERO, style.deck, "Deck")
+ await _rail_strip(root, path, width, peak, Vector2(-0.5, 0.5), Vector2.ZERO, style.deck, "Deck")
  for side: float in [-1.0, 1.0]:
+  if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
   var border: Material = style.get("border", style.edge)
-  _rail_strip(root, path, width, peak, Vector2(side * 0.44, side * 0.54), Vector2(0.035, 0.035), border if border != null else style.edge, "EdgeCap", border != null and style.has("border"))
-  _rail_strip(root, path, width, peak, Vector2(side * 0.54, side * 0.54), Vector2(-thickness, 0.035), style.support, "Fascia")
-  _rail_strip(root, path, width, peak, Vector2(side * 0.44, side * 0.44), Vector2(0.0, 0.035), style.edge, "InnerEdge")
- _rail_strip(root, path, width, peak, Vector2(0.54, -0.54), Vector2(-thickness, -thickness), style.support, "Underside")
- if style.has("pipe"): _rail_pipes(root, path, width, peak, style)
+  await _rail_strip(root, path, width, peak, Vector2(side * 0.44, side * 0.54), Vector2(0.035, 0.035), border if border != null else style.edge, "EdgeCap", border != null and style.has("border"))
+  await _rail_strip(root, path, width, peak, Vector2(side * 0.54, side * 0.54), Vector2(-thickness, 0.035), style.support, "Fascia")
+  await _rail_strip(root, path, width, peak, Vector2(side * 0.44, side * 0.44), Vector2(0.0, 0.035), style.edge, "InnerEdge")
+ await _rail_strip(root, path, width, peak, Vector2(0.54, -0.54), Vector2(-thickness, -thickness), style.support, "Underside")
+ if style.has("pipe"): await _rail_pipes(root, path, width, peak, style)
  # Slim paired timber/metal/stone posts leave the lane center visually open.
  var distance := 50.0
  while distance < float(path.length) - 35.0:
+  if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
   var height := maxf(0.0, RailPath.height(path, distance, peak) * table.SCALE + 0.012 - thickness)
   if height > 0.06:
    var tangent := RailPath.tangent(path, distance)
@@ -109,6 +112,7 @@ func _rail(item: Dictionary) -> void:
    var edge_index := clampi(path.lengths.bsearch(distance), 0, path.points.size() - 1)
    var edge_scale: float = path.inside_edge_scale[edge_index]
    for side: float in [-1.0, 1.0]:
+    if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
     var post_offset := side * float(item.properties.width) * 0.46
     if side * edge_scale > 0.0: post_offset *= absf(edge_scale)
     var post := BoxMesh.new()
@@ -119,6 +123,7 @@ func _rail(item: Dictionary) -> void:
  var marker := SurfaceTool.new()
  marker.begin(Mesh.PRIMITIVE_TRIANGLES)
  for vertex: Vector2 in [Vector2(-0.18, 6.0), Vector2(0.18, 6.0), Vector2(0.0, 16.0)]:
+  if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
   var d := minf(vertex.y, float(path.length) * 0.15)
   var tangent := RailPath.tangent(path, d)
   var point := RailPath.sample(path, d) + Vector2(-tangent.y, tangent.x) * vertex.x * float(item.properties.width)
@@ -130,9 +135,11 @@ func _rail_strip(parent: Node3D, path: Dictionary, width: float, peak: float, ed
  var surface := SurfaceTool.new()
  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
  for i in path.points.size() - 1:
+  if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
   var corners: Array[Vector3] = []
   var uvs: Array[Vector2] = []
   for index: int in [i, i + 1]:
+   if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
    var distance: float = path.lengths[index]
    var tangent := RailPath.tangent(path, distance)
    var side := Vector3(-tangent.y, 0, tangent.x)
@@ -145,6 +152,7 @@ func _rail_strip(parent: Node3D, path: Dictionary, width: float, peak: float, ed
    uvs.append(Vector2(width * edges.x, distance * table.SCALE))
    uvs.append(Vector2(width * edges.y, distance * table.SCALE))
   for vertex: int in [0, 2, 1, 1, 2, 3]:
+   if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
    # Edge artwork follows distance along the route and spans the complete trim.
    # Geometry and the normalized full-deck UV2 used by panel/card decks stay intact.
    surface.set_uv(Vector2(uvs[vertex].y / 0.48, float(vertex % 2)) if contour_texture else uvs[vertex])
@@ -165,15 +173,18 @@ func _rail_pipes(parent: Node3D, path: Dictionary, width: float, peak: float, st
  pipes.name = "SidePipes"
  parent.add_child(pipes)
  for side: float in [-1.0, 1.0]:
+  if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
   var shell := SurfaceTool.new()
   var clamps := SurfaceTool.new()
   var frame := SurfaceTool.new()
   var lights := SurfaceTool.new()
   for surface: SurfaceTool in [shell, clamps, frame, lights]: surface.begin(Mesh.PRIMITIVE_TRIANGLES)
   for i in path.points.size() - 1:
+   if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
    _pipe_section(shell, path, width, peak, side, path.lengths[i], path.lengths[i + 1], 1.0)
   var distance := 0.0
   while distance < float(path.length):
+   if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
    var start := maxf(0.0, distance - 2.5)
    var finish := minf(float(path.length), distance + 2.5)
    _pipe_section(clamps, path, width, peak, side, start, finish, 1.12)
@@ -183,6 +194,7 @@ func _rail_pipes(parent: Node3D, path: Dictionary, width: float, peak: float, st
    if distance >= float(path.length) - 0.001: break
    distance = minf(float(path.length), distance + 45.0)
   for entry: Array in [[shell, style.pipe, "BluePipe"], [clamps, style.pipe_clamp, "Couplings"], [frame, style.edge, "YellowStraps"], [lights, style.accent, "CyanIndicators"]]:
+   if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
    var surface: SurfaceTool = entry[0]
    surface.generate_normals()
    var material: Material = entry[1].duplicate()

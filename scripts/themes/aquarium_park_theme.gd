@@ -57,13 +57,17 @@ func build_background(p: Node3D) -> void:
  buildings.name = "TerracesAndPavilions"
  root.add_child(buildings)
  for x: int in [-1,1]:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   for z: int in [-1,1]:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    var foot := center+Vector3(x*width*0.32,-3.60,z*length*0.32)
    _library.box(buildings,"stone",foot,Vector3(0.7,4.3,0.7))
    _library.box(buildings,"wood",foot+Vector3.UP*1.95,Vector3(1.1,0.25,1.1))
  # Three heights, set outside the table footprint, give the overview a park below it.
  for side: int in [-1,1]:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   for i in 3:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    var at := center+Vector3(side*(width*0.5+3.8),-4.6,(i-1)*maxf(5.5,length*0.38))
    _library.box(buildings,"stone",at,Vector3(4.8,0.48,4.4))
    _library.box(buildings,"wood",at+Vector3.UP*0.26,Vector3(4.55,0.04,4.15))
@@ -92,19 +96,23 @@ func build_background(p: Node3D) -> void:
  var back := center+Vector3(0,-5.2,-length*0.5-13.0)
  _library.box(buildings,"stone",back,Vector3(width+14.0,0.7,4.2))
  for i in 5:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var at := back+Vector3((i-2)*(width+10.0)/5.0,0.38,0)
   _library.tank(buildings,at,1.3,3.7)
   _library.roof(buildings,at+Vector3.UP*3.9,3.0,3.0)
  # Sparse perimeter markers help the eye judge scale without cluttering the table.
  for side: int in [-1,1]:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   for i in 9:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    var at := center+Vector3(side*(width*0.5+1.6),-4.8,(float(i)/8.0-0.5)*(length+6.0))
    _library.box(buildings,"stone",at,Vector3(0.42,0.32,0.42))
    _library.bar(buildings,"wood",at,at+Vector3.UP*1.2,0.09)
    _library.lantern(buildings,at+Vector3.UP*1.20,0.17)
- _batch(buildings)
+ await _batch(buildings, p)
  # Two real spill lights with visible fixtures. Other lanterns use emissive paper.
  for side: int in [-1,1]:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var at := center+Vector3(side*(width*0.5+1.1),0.3,-length*0.20)
   var lamp := OmniLight3D.new()
   lamp.name = "LanternSpillLeft" if side < 0 else "LanternSpillRight"
@@ -141,26 +149,33 @@ func _collect(node: Node3D, transform: Transform3D, batches: Dictionary, glass: 
    batches[key].transforms.append(local)
  for child: Node in node.get_children(): _collect(child,local,batches,glass)
 
-func _batch(root: Node3D) -> void:
+func _batch(root: Node3D, scheduler: Node = null) -> void:
  var batches := {}
  var glass := []
- for child: Node in root.get_children(): _collect(child,Transform3D.IDENTITY,batches,glass)
  for child: Node in root.get_children():
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
+  _collect(child,Transform3D.IDENTITY,batches,glass)
+ for child: Node in root.get_children():
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
   root.remove_child(child)
   child.free()
  for key: String in batches:
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
   var data: Dictionary = batches[key]
   var multi := MultiMesh.new()
   multi.transform_format = MultiMesh.TRANSFORM_3D
   multi.mesh = data.mesh
   multi.instance_count = data.transforms.size()
-  for i in data.transforms.size(): multi.set_instance_transform(i,data.transforms[i])
+  for i in data.transforms.size():
+   if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
+   multi.set_instance_transform(i,data.transforms[i])
   var instance := MultiMeshInstance3D.new()
   instance.multimesh = multi
   instance.material_override = data.material
   instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
   root.add_child(instance)
  for data: Dictionary in glass:
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
   var instance := MeshInstance3D.new()
   instance.name = "AquariumGlass"
   instance.mesh = data.mesh

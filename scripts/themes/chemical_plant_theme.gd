@@ -85,7 +85,9 @@ func build_background(p: Node3D) -> void:
  # Towers sit beyond the table's lateral silhouette, with a lower reservoir gap.
  # Layers use deterministic dimensions and never consume the gameplay RNG.
  for side: int in [-1, 1]:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   for i in 5:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    var base := center + Vector3(side * (width * 0.5 + 4.7 + float(i % 2) * 1.6), -2.0, -length * 0.55 + i * maxf(2.6, length * 0.27))
    _silo(p, root, base, 1.1 + float(i % 2) * 0.2, 3.4 + float(i % 3) * 0.65, i)
    if i < 4:
@@ -93,10 +95,12 @@ func build_background(p: Node3D) -> void:
     _pipe(p, root, base + Vector3(0, 0.8, 0), finish + Vector3(0, 0.8, 0), 0.19, _blue)
  # Far processing district: broad silhouettes, sparse strips, no noisy windows.
  for i in 9:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var height := 3.5 + float((i * 7) % 5) * 0.65
   var at := Vector3(center.x + (i - 4) * 3.0, -2.0, p.table_bounds.position.y * p.SCALE - 10.0 - (i % 2) * 3.0)
   _box(p, root, at + Vector3(0, height * 0.5, 0), Vector3(1.6, height, 1.7), _dark)
   for row in 3:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    _box(p, root, at + Vector3(0, 0.7 + row * 0.8, 0.865), Vector3(1.35, 0.04, 0.025), _signal if i % 3 == 0 else _cyan)
   var stack := at + Vector3(0.3, height, 0)
   _pipe(p, root, stack, stack + Vector3(0, 1.3, 0), 0.20, _steel)
@@ -107,10 +111,12 @@ func build_edges(p: Node3D) -> void:
  # gameplay surfaces. Their anchors remain entirely outside the terrain bounds.
  var count := clampi(int(p.table_bounds.size.y / 260.0), 2, 8)
  for i in count:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var y: float = p.table_bounds.position.y + (i + 0.5) * p.table_bounds.size.y / count
   var edge: Vector2 = p._boundary_at_y(y)
   if not is_finite(edge.x): continue
   for side: int in [-1, 1]:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    var x: float = (edge.x if side < 0 else edge.y) + side * 165.0
    var base: Vector3 = p.map_point(Vector2(x, y), -1.5)
    _box(p, p.scenery_root, base, Vector3(1.1, 0.24, 1.05), _steel)

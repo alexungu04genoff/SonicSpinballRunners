@@ -7,6 +7,8 @@ const Contact = preload("res://scripts/authored_act/gimmick_geometry.gd")
 const MAX_FIELD_ACCELERATION := 600.0
 const MAX_TICKS_PER_STEP := 2
 var ball: PlaygroundBall
+## Streaming coordinates several independent Act runtimes through one ball adapter.
+var bind_ball_on_ready := true
 var items: Array[Dictionary] = []
 var banks: Array = []
 var by_id: Dictionary = {}
@@ -20,7 +22,7 @@ var _saved_mask := 1
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_PAUSABLE
- ball.mechanics = self
+ if bind_ball_on_ready: ball.mechanics = self
 
 func _exit_tree() -> void:
  reset()

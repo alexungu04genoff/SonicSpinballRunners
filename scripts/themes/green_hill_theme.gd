@@ -80,6 +80,7 @@ func configure_environment(p: Node3D) -> void:
 func build_edges(p: Node3D) -> void:
  var rows = maxi(3, int(p.table_bounds.size.y / 285.0))
  for row: int in rows:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var y = p.table_bounds.position.y + 120.0 + row * 280.0
   if y > p.table_bounds.end.y - 190.0:
    continue
@@ -87,6 +88,7 @@ func build_edges(p: Node3D) -> void:
   if not is_finite(edge.x):
    continue
   for side: int in [-1, 1]:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    var base_x = edge.x if side < 0 else edge.y
    var palm_here = (row + (1 if side > 0 else 0)) % 3 == 0
    var x = base_x + side * (100.0 if palm_here else 70.0)
@@ -198,7 +200,9 @@ func build_background(p: Node3D) -> void:
  var distant_stone = material(Color("66949b"))
  var center = p.table_bounds.get_center() * TablePresentation.SCALE
  for side: int in [-1, 1]:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   for i: int in 6:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    var position = Vector3(center.x + side * (12.0 + float(i % 2) * 4.0), -1.7, center.y - 23.0 + float(i) * 8.0)
    var shore = p.cylinder(2.6 + float(i % 3) * 0.4, 0.5)
    shore.radial_segments = 9
@@ -217,10 +221,12 @@ func build_background(p: Node3D) -> void:
  var cloud_material = material(Color("f5ffff"))
  cloud_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
  for i: int in 7:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var cloud = Node3D.new()
   cloud.position = Vector3(center.x - 25.0 + float(i) * 8.0, 6.5 + float(i % 2) * 1.3, p.table_bounds.position.y * TablePresentation.SCALE - 17.0 - float(i % 3) * 4.0)
   p.scenery_root.add_child(cloud)
   for j: int in 4:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    var puff = p.mesh_node(p.sphere(1.2 + float(j % 2) * 0.3), cloud_material, Vector3(float(j) * 1.1, float(j % 2) * 0.2, 0), cloud)
    puff.scale = Vector3(1.2, 0.58, 0.8)
 

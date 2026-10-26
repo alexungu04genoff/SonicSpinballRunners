@@ -55,6 +55,7 @@ func build_background(p: Node3D) -> void:
  root.add_child(landscape)
  # Remote faceted mountains frame open water. White caps occupy only the peaks.
  for i in 17:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var angle := TAU * float(i) / 17.0
   var radius := 28.0 + (i % 3) * 5.0
   var height := 6.0 + (i * 7 % 9) * 0.6
@@ -63,6 +64,7 @@ func build_background(p: Node3D) -> void:
   _mountain(landscape, at + Vector3(4.0, -0.2, 1.5), height * 0.62, 4.5)
  # Nearby floating ice shelves, small conifer groups, and one distant cavern.
  for i in 14:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var side := -1.0 if i % 2 == 0 else 1.0
   var at := center + Vector3(side * (width * 0.5 + 4.0 + (i % 3) * 1.8), -5.9, (float(i / 2) - 3.0) * maxf(3.4, length * 0.22))
   var floe: MeshInstance3D = _library.piece(landscape, "facet", "ice", at, Vector3(1.6 + (i % 2), 0.8, 1.1))
@@ -73,11 +75,12 @@ func build_background(p: Node3D) -> void:
   elif i % 3 == 1:
    _library.crystal(landscape, at + Vector3.UP * 0.5, 2.4, 0.45, -0.20, false)
  _library.arch(landscape, center + Vector3(-width * 0.5 - 7.0, -5.4, -length * 0.5 - 8.0), 6.8, 4.8, 2.3)
- _batch(landscape)
+ await _batch(landscape, p)
  var aurora := Node3D.new()
  aurora.name = "AuroraCurtains"
  root.add_child(aurora)
  for i in 3:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var ribbon := make_aurora(i)
   ribbon.position = center + Vector3(0, 11.0 + i * 3.0, -length * 0.5 - 30.0 - i * 5.0)
   aurora.add_child(ribbon)
@@ -160,19 +163,25 @@ func _collect(node: Node3D, transform: Transform3D, batches: Dictionary) -> void
   batches[key].transforms.append(local)
  for child: Node in node.get_children(): _collect(child, local, batches)
 
-func _batch(root: Node3D) -> void:
+func _batch(root: Node3D, scheduler: Node = null) -> void:
  var batches := {}
- for child: Node in root.get_children(): _collect(child, Transform3D.IDENTITY, batches)
  for child: Node in root.get_children():
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
+  _collect(child, Transform3D.IDENTITY, batches)
+ for child: Node in root.get_children():
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
   root.remove_child(child)
   child.free()
  for key: String in batches:
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
   var data: Dictionary = batches[key]
   var multi := MultiMesh.new()
   multi.transform_format = MultiMesh.TRANSFORM_3D
   multi.mesh = data.mesh
   multi.instance_count = data.transforms.size()
-  for i in data.transforms.size(): multi.set_instance_transform(i, data.transforms[i])
+  for i in data.transforms.size():
+   if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
+   multi.set_instance_transform(i, data.transforms[i])
   var instance := MultiMeshInstance3D.new()
   instance.multimesh = multi
   instance.material_override = data.material

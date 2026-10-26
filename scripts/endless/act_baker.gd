@@ -1,0 +1,83 @@
+extends Control
+## Offline authoring step. This screen never starts an endless session.
+const Library = preload("res://scripts/endless/template_library.gd")
+const Plan = preload("res://scripts/endless/endless_plan.gd")
+const Registry = preload("res://scripts/themes/theme_registry.gd")
+var ball: PlaygroundBall
+var tuning: PhysicsTuning
+var controls: PlaygroundInput
+var view: SubViewport
+var status: Label
+var progress: ProgressBar
+var library: Node
+
+func _ready() -> void:
+ DisplayServer.window_set_title("Bake Act Geometry")
+ var panel := VBoxContainer.new()
+ panel.position = Vector2(32, 32)
+ panel.custom_minimum_size = Vector2(780, 0)
+ add_child(panel)
+ var heading := Label.new()
+ heading.text = "Bake verified Act geometry"
+ heading.add_theme_font_size_override("font_size", 28)
+ panel.add_child(heading)
+ var description := Label.new()
+ description.text = "Builds collision pieces, floor outlines and theme-specific terrain meshes.\nYour saved Act stays unchanged. Textures and materials remain separate."
+ panel.add_child(description)
+ status = Label.new()
+ status.text = "Choose a saved Act to bake."
+ panel.add_child(status)
+ progress = ProgressBar.new()
+ panel.add_child(progress)
+ var paths: Array = []
+ for argument: String in OS.get_cmdline_user_args():
+  if argument.begins_with("--act="): paths.append(argument.trim_prefix("--act="))
+ if "--pool" in OS.get_cmdline_user_args(): paths = Plan.PATHS.duplicate()
+ if paths.is_empty():
+  var dialog := FileDialog.new()
+  dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+  dialog.access = FileDialog.ACCESS_FILESYSTEM
+  dialog.filters = PackedStringArray(["*.tres ; Authored Act"])
+  dialog.current_dir = ProjectSettings.globalize_path("res://data/acts")
+  add_child(dialog)
+  dialog.file_selected.connect(func(path: String): bake([path]))
+  dialog.popup_centered_ratio(0.8)
+ else:
+  bake(paths)
+
+func bake(paths: Array) -> void:
+ var world := Node2D.new()
+ world.process_mode = Node.PROCESS_MODE_DISABLED
+ add_child(world)
+ tuning = PhysicsTuning.new()
+ world.add_child(tuning)
+ controls = PlaygroundInput.new()
+ world.add_child(controls)
+ ball = PlaygroundBall.new()
+ ball.tuning = tuning
+ ball.controls = controls
+ world.add_child(ball)
+ view = SubViewport.new()
+ view.msaa_3d = Viewport.MSAA_4X
+ add_child(view)
+ library = Library.new()
+ library.bake_only = true
+ add_child(library)
+ library.progress.connect(func(message: String): status.text = message)
+ library.prepare(self, paths, false)
+ progress.max_value = paths.size() * Registry.IDS.size()
+ for id in paths.size():
+  for theme_id: String in Registry.IDS:
+   if not library.error.is_empty(): break
+   library.trim([{"theme": theme_id, "id": id}], 1, 0 if library.themes.has(theme_id) else 1)
+   library.request(theme_id, id)
+   while library.busy: await get_tree().process_frame
+   progress.value += 1
+ if library.error.is_empty():
+  status.text = "Bake complete. Sidecar folders are beside your saved Acts.\nEndless mode loads only the requested Act/theme geometry."
+  print("ACT_BAKE_COMPLETE | Acts=", paths.size(), " variants=", int(progress.value))
+ else:
+  status.text = library.error
+  push_error(library.error)
+ if DisplayServer.get_name() == "headless" or "--quit-after-bake" in OS.get_cmdline_user_args():
+  get_tree().quit(0 if library.error.is_empty() else 1)

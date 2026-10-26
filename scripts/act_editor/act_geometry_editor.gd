@@ -164,6 +164,7 @@ func _build_ui() -> void:
 	_button(header, "load", "Load", func(): request_action("load"), "Ctrl+O")
 	_button(header, "save", "Save", _save_current, "Ctrl+S")
 	_button(header, "save_as", "Save As", _open_save_dialog, "Ctrl+Shift+S")
+	_button(header, "bake", "Bake", _bake_current, "Prepare saved geometry for endless streaming")
 	file_label = Label.new()
 	file_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	file_label.add_theme_color_override("font_color", Color("9cb3c6"))
@@ -2213,3 +2214,13 @@ func _scale_preview(direction: float) -> void:
 	var value := clampf(float(Objects.properties(item)[key]) + step * direction, limits[0], limits[1])
 	set_gameplay_property(key, value)
 	_set_status("Preview %s: %s %.2f · Shift + wheel resizes; click to place" % [Objects.get_definition(item.type).label, key, value])
+
+
+func _bake_current() -> void:
+	if current_path.is_empty() or is_dirty():
+		_set_status("Save your verified Act before baking. Baking never changes the source document.")
+		return
+	var arguments := PackedStringArray(["--path", ProjectSettings.globalize_path("res://"),
+		"res://scenes/act_baker.tscn", "--", "--act=" + ProjectSettings.globalize_path(current_path)])
+	var process := OS.create_process(OS.get_executable_path(), arguments)
+	_set_status("Baking opened in a separate progress window." if process >= 0 else "Could not open the Act baker.")

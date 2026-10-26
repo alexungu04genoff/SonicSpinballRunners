@@ -64,19 +64,22 @@ func build_background(p: Node3D) -> void:
  # Repeated rounded low-poly lobes give the sea volume and shaded blue troughs.
  var cloud_mat := _shader(preload("res://scripts/themes/sanctuary_cloud_volume.gdshader"))
  for i in 60:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var x := float((i * 17) % 29 - 14) * 3.4
   var z := float((i * 11) % 31 - 15) * maxf(2.8, length / 18.0)
   var at := center + Vector3(x, -10.6 + sin(i * 2.3) * 1.15, z)
   for lobe in 3:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    var cloud: MeshInstance3D = _library.piece(clouds, "sphere", "pale", at + Vector3((lobe - 1) * 1.9, sin(lobe * 2.0 + i) * 0.4, lobe * 0.6), Vector3(3.8, 1.3 + (i % 3) * 0.2, 2.7))
    cloud.material_override = cloud_mat
    cloud.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
- _batch(clouds)
+ await _batch(clouds, p)
  var ruins := Node3D.new()
  ruins.name = "FloatingRuins"
  root.add_child(ruins)
  # Open sky between asymmetrical islands is as important as the stone silhouette.
  for i in 10:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var side := -1.0 if i % 2 == 0 else 1.0
   var at := center + Vector3(side * (width * 0.5 + 4.5 + (i % 3) * 3.4), -4.8 - (i % 3) * 1.1, (float(i / 2) - 2.0) * maxf(5.2, length * 0.28))
   var island := Node3D.new()
@@ -93,10 +96,11 @@ func build_background(p: Node3D) -> void:
   underside.rotation.z = PI
   _library.box(island, "stone", Vector3(0, -0.17, 0), Vector3(3.7, 0.34, 1.8))
   for j in 3:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    var fragment: MeshInstance3D = _library.box(island, "warm", Vector3(1.9 + j * 0.48, -0.8 - j * 0.62, 0.35), Vector3.ONE * (0.38 - j * 0.06))
    fragment.rotation = Vector3(j * 0.3, j * 0.7, 0.25)
   _atmosphere(island, 0.22 + (i % 3) * 0.10)
- _batch(ruins)
+ await _batch(ruins, p)
  _orbital_silhouette(root, center + Vector3(-width * 0.5 - 11.0, 1.0, -length * 0.5 - 24.0))
 
 func _atmosphere(node: Node3D, amount: float) -> void:
@@ -134,19 +138,25 @@ func _collect(node: Node3D, transform: Transform3D, batches: Dictionary) -> void
   batches[key].transforms.append(local)
  for child: Node in node.get_children(): _collect(child, local, batches)
 
-func _batch(root: Node3D) -> void:
+func _batch(root: Node3D, scheduler: Node = null) -> void:
  var batches := {}
- for child: Node in root.get_children(): _collect(child, Transform3D.IDENTITY, batches)
  for child: Node in root.get_children():
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
+  _collect(child, Transform3D.IDENTITY, batches)
+ for child: Node in root.get_children():
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
   root.remove_child(child)
   child.free()
  for key: String in batches:
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
   var data: Dictionary = batches[key]
   var multimesh := MultiMesh.new()
   multimesh.transform_format = MultiMesh.TRANSFORM_3D
   multimesh.mesh = data.mesh
   multimesh.instance_count = data.transforms.size()
-  for i in data.transforms.size(): multimesh.set_instance_transform(i, data.transforms[i])
+  for i in data.transforms.size():
+   if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
+   multimesh.set_instance_transform(i, data.transforms[i])
   var instance := MultiMeshInstance3D.new()
   instance.multimesh = multimesh
   instance.material_override = data.material

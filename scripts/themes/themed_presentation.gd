@@ -4,7 +4,7 @@ extends TablePresentation
 const DecorSlots = preload("res://scripts/act_editor/decor_slots.gd")
 const GreenHillTheme = preload("res://scripts/themes/green_hill_theme.gd")
 const TerrainBorder = preload("res://scripts/themes/terrain_border.gd")
-var theme_definition: RefCounted = GreenHillTheme.new()
+var theme_definition: RefCounted
 ## Replace this skin with another DecorSkin to reuse an Act's generic slots.
 var decor_skin: RefCounted
 var decor_root: Node3D
@@ -24,6 +24,10 @@ var authored_open_paths: Array[PackedVector2Array] = []
 var decor_warnings := PackedStringArray()
 var authored_floor_outline := PackedVector2Array()
 const LAND_DEPTH := 1.45
+
+func _init() -> void:
+ # Streaming injects an already cached theme before building any visual nodes.
+ if not has_method("stream_checkpoint"): theme_definition = GreenHillTheme.new()
 
 func _clear_playfield_geometry() -> void:
  super._clear_playfield_geometry()

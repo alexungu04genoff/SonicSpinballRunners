@@ -11,7 +11,7 @@ const Mechanics = preload("res://scripts/authored_act/pinball_mechanics.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const Dimensions = preload("res://scripts/act_dimensions.gd")
 
-static func compile(document: Resource, tuning: PhysicsTuning, controls: PlaygroundInput, ball: PlaygroundBall) -> Dictionary:
+static func compile(document: Resource, tuning: PhysicsTuning, controls: PlaygroundInput, ball: PlaygroundBall, baked_shapes: Array = []) -> Dictionary:
  var started := Time.get_ticks_usec()
  var terrain: Array[Dictionary] = []
  var objects: Array[Dictionary] = []
@@ -65,7 +65,14 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
   body.collision_mask = 2
   body.physics_material_override = wall_material
   var collision: Node2D
-  if definition.closed:
+  if index < baked_shapes.size():
+   collision = Node2D.new()
+   for record: Dictionary in baked_shapes[index]:
+    var piece := CollisionShape2D.new()
+    piece.shape = record.shape
+    piece.transform = record.transform
+    body.add_child(piece)
+  elif definition.closed:
    var polygon := CollisionPolygon2D.new()
    polygon.build_mode = CollisionPolygon2D.BUILD_SOLIDS
    polygon.polygon = points

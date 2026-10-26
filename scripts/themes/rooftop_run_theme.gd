@@ -81,12 +81,14 @@ func build_background(p: Node3D) -> void:
  _library.box(city, "dark", center + Vector3(0, -4.85, 0), Vector3(180.0, 0.10, 180.0))
  # Two canals and one bridge each frame the table without a surrounding grid.
  for side: int in [-1, 1]:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var canal_x := side * (width * 0.5 + 1.30)
   var water := PlaneMesh.new()
   water.size = Vector2(1.35, length + 6.0)
   var water_mesh: MeshInstance3D = p.mesh_node(water, _shader(CANAL), center + Vector3(canal_x, -4.6, 0), root)
   water_mesh.name = "BackgroundCanal"
   for bank: int in [-1, 1]:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    _library.box(city, "stone", center + Vector3(canal_x + bank * 0.76, -4.5, 0), Vector3(0.16, 0.25, length + 6.0))
   var bridge: Node3D = _library.build_variant("aqueduct", false)
   city.add_child(bridge)
@@ -103,11 +105,13 @@ func build_background(p: Node3D) -> void:
  tower.position = Vector3(center.x + width * 0.5 + 2.5, -4.8, far_z - 1.0)
  tower.scale = Vector3(2.2, 2.8, 2.2)
  for i in 3:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var hill: MeshInstance3D = _library.piece(city, "sphere", "shutter", Vector3(center.x + (i - 1) * 11.0, -4.9, far_z - 17.0), Vector3(8.0, 3.2 + (i % 3), 4.0))
   hill.material_override = _haze_material(Color("4c7589"))
  for i in 3:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   _library.balloon(city, Vector3(center.x + (i - 1) * 6.0, 1.4 + i * 0.7, far_z - 5.0 - (i % 2) * 4.0), 0.60, i)
- _batch_city(city)
+ await _batch_city(city, p)
 
 func _haze_material(color: Color) -> Material:
  var key := "haze_" + color.to_html()
@@ -141,17 +145,19 @@ func build_edges(p: Node3D) -> void:
  # Four selected townhouses at most, even on long generated courses. Garden
  # props sit beside the houses, never through a pitched roof or window row.
  for i in 2:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var y: float = p.table_bounds.position.y + (0.24 + i * 0.52) * p.table_bounds.size.y
   var edge: Vector2 = p._boundary_at_y(y)
   if not is_finite(edge.x): continue
   for side: int in [-1, 1]:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    var at: Vector3 = p.map_point(Vector2((edge.x if side < 0 else edge.y) + side * 235.0, y), -4.56)
    _library.box(terraces, "stone", at - Vector3.UP * 0.12, Vector3(2.1, 0.24, 2.1))
    _house(terraces, at, Vector3(1.35, 3.21 + i * 0.20, 1.20), i)
    var prop := _library.build_variant("hedge_planter") as Node3D
    terraces.add_child(prop)
    prop.position = at + Vector3(0, 0, 0.88)
- _batch_city(terraces)
+ await _batch_city(terraces, p)
 
 func _collect_meshes(node: Node3D, transform: Transform3D, batches: Dictionary) -> void:
  var local := transform * node.transform
@@ -162,21 +168,27 @@ func _collect_meshes(node: Node3D, transform: Transform3D, batches: Dictionary) 
  for child: Node in node.get_children():
   _collect_meshes(child, local, batches)
 
-func _batch_city(root: Node3D) -> void:
+func _batch_city(root: Node3D, scheduler: Node = null) -> void:
  # Concrete draw-call reduction for the repeated district. Authored props retain
  # their own roots/metadata; only static background geometry is instanced here.
  var batches := {}
- for child: Node in root.get_children(): _collect_meshes(child, Transform3D.IDENTITY, batches)
  for child: Node in root.get_children():
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
+  _collect_meshes(child, Transform3D.IDENTITY, batches)
+ for child: Node in root.get_children():
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
   root.remove_child(child)
   child.free()
  for key: String in batches:
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
   var data: Dictionary = batches[key]
   var multimesh := MultiMesh.new()
   multimesh.transform_format = MultiMesh.TRANSFORM_3D
   multimesh.mesh = data.mesh
   multimesh.instance_count = data.transforms.size()
-  for i in data.transforms.size(): multimesh.set_instance_transform(i, data.transforms[i])
+  for i in data.transforms.size():
+   if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
+   multimesh.set_instance_transform(i, data.transforms[i])
   var instance := MultiMeshInstance3D.new()
   instance.multimesh = multimesh
   instance.material_override = data.material

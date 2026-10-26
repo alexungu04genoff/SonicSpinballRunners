@@ -53,6 +53,7 @@ func build_background(p: Node3D) -> void:
  root.add_child(geology)
  var cavern_materials := {}
  for key: String in ["basalt","facet","deep"]:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var rock := _shader(preload("res://scripts/themes/lava_cavern.gdshader"))
   rock.set_shader_parameter("rock_color",Color("386d58") if key == "facet" else (Color("245447") if key == "basalt" else Color("193a3b")))
   cavern_materials[key] = rock
@@ -61,7 +62,9 @@ func build_background(p: Node3D) -> void:
  # Nested walls and pillars enclose the lake without placing a roof over cameras.
  # Heights are all scenery coordinates, independent of authored Act geometry.
  for layer in 2:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   for i in 19:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    var angle := TAU * (float(i)+0.2) / 19.0
    var radius_x := width * 0.5 + 14.0 + layer * 13.0
    var radius_z := length * 0.5 + 15.0 + layer * 14.0
@@ -70,10 +73,12 @@ func build_background(p: Node3D) -> void:
    if sin(angle) > 0.35: height = 7.0 + layer * 2.0
    # Bulbous mineral towers with pointed crowns, as in the original green cave.
    for segment in 5:
+    if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
     var taper := 1.0-float(segment)*0.13
     var rock: MeshInstance3D = _library.piece(geology,"boulder","deep" if layer == 1 else "basalt",at+Vector3.UP*height*(0.10+segment*0.19),Vector3((5.0+layer*2.0)*taper,height*0.28,(4.8+layer*2.0)*taper))
     rock.rotation.y = angle*0.7+segment*0.5
    for tooth in 3:
+    if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
     _library.piece(geology,"cone","facet",at+Vector3((tooth-1)*1.3,height,0),Vector3(0.75,2.2-abs(tooth-1)*0.6,0.8))
    if layer == 0:
     _library.column(geology,at+Vector3(-1.6,0,2.0),height*0.83,1.55)
@@ -81,16 +86,20 @@ func build_background(p: Node3D) -> void:
     hanging.rotation.z = PI
  # Lower side shelves create parallax and show crystals lit from the lake.
  for i in 12:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var side := -1.0 if i%2 == 0 else 1.0
   var at := center + Vector3(side*(width*0.5+4.3+(i%3)*1.6),-6.8,(float(i/2)-2.5)*maxf(3.0,length*0.22))
   _library.column(geology,at,2.3+(i%3)*0.75,1.15)
   if i%3 != 0:
-   for j in 3: _library.crystal(geology,at+Vector3((j-1)*0.50,2.7+(i%3)*0.55,0),1.8-abs(j-1)*0.6,0.26,(1-j)*0.20)
+   for j in 3:
+    if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
+    _library.crystal(geology,at+Vector3((j-1)*0.50,2.7+(i%3)*0.55,0),1.8-abs(j-1)*0.6,0.26,(1-j)*0.20)
   else:
    _library.pipe(geology,at+Vector3(-1.0,2.8,0.3),at+Vector3(1.0,2.8,0.3),0.21)
  # Two monumental falls frame a remote mining terrace. No objects cover the deck.
  var back: float = center.z-length*0.5-7.5
  for side: int in [-1,1]:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var at := Vector3(center.x+side*(width*0.5+2.6),-1.8,back+1.0)
   _library.column(geology,at+Vector3(-2.0,-5.4,-0.4),12.0,1.3)
   _library.column(geology,at+Vector3(2.0,-5.4,-0.4),10.6,1.15)
@@ -109,6 +118,7 @@ func build_background(p: Node3D) -> void:
  _library.pipe(geology,Vector3(center.x-7,-4.3,back+3.1),Vector3(center.x+7,-4.3,back+3.1),0.48)
  # Oversized purple plumbing and gold junctions are a recurring Act 1 landmark.
  for side: int in [-1,1]:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var pipe_x := center.x+side*(width*0.5+3.5)
   _library.pipe(geology,Vector3(pipe_x,-4.8,back+2),Vector3(pipe_x,2.6,back+2),0.72)
   _library.pipe(geology,Vector3(pipe_x,2.6,back+2),Vector3(pipe_x+side*5.5,2.6,back+2),0.72)
@@ -116,14 +126,16 @@ func build_background(p: Node3D) -> void:
   _library.box(geology,"rust",Vector3(pipe_x,2.6,back+2.88),Vector3(1.25,1.25,0.12))
  # Broad crust rafts break the lake into channels, rather than an orange horizon.
  for i in 17:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var side := -1.0 if i%2 == 0 else 1.0
   var at := center+Vector3(side*(width*0.5+6.0+(i%4)*3.0),-7.10,(float(i*7%17)/17.0-0.5)*(length+38))
   var raft: MeshInstance3D = _library.piece(geology,"rock","deep",at,Vector3(2.6+(i%3),0.35,1.7+(i%2)))
   raft.rotation.y = i*1.8
  _cavern_materials(geology,cavern_materials)
- _batch(geology)
+ await _batch(geology, p)
  # Three shadowless pools plus procedural wall bounce; never one light per prop.
  for i in 3:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var lamp := OmniLight3D.new()
   lamp.name = "MagmaBounce%d" % i
   lamp.position = center+Vector3((-1.0 if i%2 == 0 else 1.0)*(width*0.5+1.5),-0.8,(i-1)*length*0.35)
@@ -200,19 +212,25 @@ func _cavern_materials(node: Node3D, replacements: Dictionary) -> void:
     break
  for child: Node in node.get_children(): _cavern_materials(child,replacements)
 
-func _batch(root: Node3D) -> void:
+func _batch(root: Node3D, scheduler: Node = null) -> void:
  var batches := {}
- for child: Node in root.get_children(): _collect(child,Transform3D.IDENTITY,batches)
  for child: Node in root.get_children():
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
+  _collect(child,Transform3D.IDENTITY,batches)
+ for child: Node in root.get_children():
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
   root.remove_child(child)
   child.free()
  for key: String in batches:
+  if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
   var data: Dictionary = batches[key]
   var multi := MultiMesh.new()
   multi.transform_format = MultiMesh.TRANSFORM_3D
   multi.mesh = data.mesh
   multi.instance_count = data.transforms.size()
-  for i in data.transforms.size(): multi.set_instance_transform(i,data.transforms[i])
+  for i in data.transforms.size():
+   if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
+   multi.set_instance_transform(i,data.transforms[i])
   var instance := MultiMeshInstance3D.new()
   instance.multimesh = multi
   instance.material_override = data.material
