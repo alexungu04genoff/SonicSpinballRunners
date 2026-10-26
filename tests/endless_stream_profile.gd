@@ -14,9 +14,11 @@ func _initialize() -> void:
 func run() -> void:
  var output := "res://test-results/endless-stream-profile.json"
  var target := 6
+ var speed := 100.0
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--profile-output="): output = argument.trim_prefix("--profile-output=")
   if argument.begins_with("--profile-target="): target = int(argument.trim_prefix("--profile-target="))
+  if argument.begins_with("--profile-speed="): speed = float(argument.trim_prefix("--profile-speed="))
  game = Game.new()
  var initialize_at := Time.get_ticks_msec()
  root.add_child(game)
@@ -28,9 +30,15 @@ func run() -> void:
   quit(1)
   return
  var startup_ms := Time.get_ticks_msec() - started_at
+ var startup_cpu: Dictionary = game.library.profile_cpu.duplicate(true)
+ game.library.profile_cpu.clear()
+ game.library.profile_max_cpu_ms.clear()
+ game.library.profile_resource_wait_ms = 0.0
+ var gameplay_started_us := Time.get_ticks_usec()
  RenderingServer.frame_pre_draw.connect(_pre_draw)
  RenderingServer.frame_post_draw.connect(_post_draw)
  game.toggle_tour()
+ game.tour_speed = speed
  previous = Time.get_ticks_usec()
  var waiting_ms := 0.0
  while game.active_sequence < target and Time.get_ticks_msec() - started_at < 300000:
@@ -51,9 +59,11 @@ func run() -> void:
    if view is SubViewport and view.render_target_update_mode == SubViewport.UPDATE_DISABLED: continue
    cpu += RenderingServer.viewport_get_measured_render_time_cpu(view.get_viewport_rid())
    gpu += RenderingServer.viewport_get_measured_render_time_gpu(view.get_viewport_rid())
-  rows.append({"frame_ms": frame_ms, "stage": game.library.profile_stage,
+  rows.append({"at_us": now, "frame_ms": frame_ms, "stage": game.library.profile_stage,
    "render_wall_ms": render_wall_ms, "render_cpu_ms": cpu, "render_gpu_ms": gpu,
-   "build_ms": game.last_build_ms, "blend": game.background_blend, "sequence": game.active_sequence,
+   "engine_process_ms": Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0,
+   "engine_physics_ms": Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0,
+   "build_ms": game.last_build_ms, "blend": game.background_blend, "sequence": game.active_sequence, "waiting": game.loading_boundary,
    "draw_calls": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
    "memory_mb": Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0,
    "video_mb": Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0,
@@ -62,7 +72,9 @@ func run() -> void:
  frames.sort()
  var worst: Array = rows.duplicate()
  worst.sort_custom(func(a: Dictionary, b: Dictionary): return a.frame_ms > b.frame_ms)
- var summary := {"startup_ms": startup_ms, "initialize_ms": initialize_ms, "sequence": game.active_sequence, "waiting_ms": waiting_ms,
+ var summary := {"startup_ms": startup_ms, "initialize_ms": initialize_ms, "sequence": game.active_sequence, "tour_speed": speed, "waiting_ms": waiting_ms,
+  "gameplay_started_us": gameplay_started_us, "duration_ms": (Time.get_ticks_usec() - gameplay_started_us) / 1000.0,
+  "device": RenderingServer.get_video_adapter_name(), "startup_cpu": startup_cpu, "gameplay_cpu": game.library.profile_cpu,
   "rebuilds": game.library.fallback_builds, "shaders": game.retro_filter.display_name(),
   "frame_max_ms": frames[-1], "frame_p99_ms": frames[int(frames.size() * 0.99)],
   "cpu_max_ms": game.library.profile_max_cpu_ms, "threaded_resource_wall_ms": game.library.profile_resource_wait_ms,
@@ -70,7 +82,7 @@ func run() -> void:
  print("ENDLESS_PROFILE | ", JSON.stringify(summary))
  DirAccess.make_dir_recursive_absolute(output.get_base_dir())
  var file := FileAccess.open(output, FileAccess.WRITE)
- file.store_string(JSON.stringify({"summary": summary, "frames": rows}))
+ file.store_string(JSON.stringify({"summary": summary, "frames": rows, "events": game.library.profile_events}))
  file.close()
  RenderingServer.frame_pre_draw.disconnect(_pre_draw)
  RenderingServer.frame_post_draw.disconnect(_post_draw)

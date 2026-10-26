@@ -176,7 +176,9 @@ func _process(delta: float) -> void:
  var retire_deadline := tick + build_budget_usec / 3
  while not retire_nodes.is_empty() and Time.get_ticks_usec() < retire_deadline:
   var node: Node = retire_nodes.pop_back()
+  var retire_started := Time.get_ticks_usec()
   if is_instance_valid(node): node.free()
+  if library.profile_enabled: library._record_cpu("live.retire", retire_started)
  _prefetch_next_theme()
  var steps := 0
  while Time.get_ticks_usec() < deadline and steps < 128:
@@ -184,7 +186,9 @@ func _process(delta: float) -> void:
   if building != null:
    var operation_started := Time.get_ticks_usec()
    var operation := "%d:%d" % [building.phase, building.index]
+   var phase_label: String = ["colliders", "objects", "visuals", "activate", "ready"][building.phase]
    building.step()
+   if library.profile_enabled: library._record_cpu("live." + phase_label, operation_started)
    var operation_ms := float(Time.get_ticks_usec() - operation_started) / 1000.0
    if started and operation_ms > 6.0: print("ENDLESS_SLOW_JOB | step=", operation, " ms=", operation_ms)
    if building.ready:
@@ -194,6 +198,7 @@ func _process(delta: float) -> void:
     building = null
     operation_started = Time.get_ticks_usec()
     _sync_resident()
+    if library.profile_enabled: library._record_cpu("live.register", operation_started)
     operation_ms = float(Time.get_ticks_usec() - operation_started) / 1000.0
     if started and operation_ms > 6.0: print("ENDLESS_SLOW_JOB | register ms=", operation_ms)
   elif _step_background():
@@ -252,7 +257,16 @@ func _process(delta: float) -> void:
   diagnostics.text += "\nTheme preloads %d · Last %.2f s%s" % [library.theme_prefetches, library.last_theme_prepare_ms / 1000.0, " · Preparing " + library.preparing_theme if not library.preparing_theme.is_empty() else ""]
 
 func _prefetch_next_theme() -> void:
- if not started or active == null or library.busy: return
+ if not started or active == null: return
+ for entry: Dictionary in pending:
+  if entry.zone == active.plan.zone + 1:
+   library.prime_theme(entry.theme)
+   break
+ if library.busy: return
+ # The single preparation worker must finish this Zone's Acts before optional
+ # next-theme work. Fast travel otherwise reaches Act 3 while a distant theme
+ # monopolizes the worker, despite the immediate neighbor already being ready.
+ if not pending.is_empty() and pending[0].zone <= active.plan.zone: return
  for entry: Dictionary in pending:
   if entry.zone != active.plan.zone + 1: continue
   if library.backgrounds.has(entry.theme):
@@ -351,6 +365,7 @@ func _ensure_background(entry: Dictionary) -> void:
   "recipe": library.backgrounds[entry.theme], "nodes": [], "index": 0, "warm_until": -1, "ready": false}
 
 func _step_background() -> bool:
+ var started_at := Time.get_ticks_usec()
  for background: Dictionary in backgrounds.values():
   if background.ready: continue
   if background.index < background.recipe.records.size():
@@ -368,6 +383,7 @@ func _step_background() -> bool:
   elif Engine.get_process_frames() >= background.warm_until:
    background.ready = true
    background.layer.view.render_target_update_mode = SubViewport.UPDATE_DISABLED
+  if library.profile_enabled: library._record_cpu("live.background", started_at)
   return true
  return false
 

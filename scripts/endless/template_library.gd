@@ -45,7 +45,14 @@ var bake_status := "Not requested"
 var profile_stage := "idle"
 var profile_max_cpu_ms := {}
 var profile_resource_wait_ms := 0.0
+var profile_enabled := "--profile-stages" in OS.get_cmdline_user_args()
+var profile_events: Array[Dictionary] = []
+var profile_cpu := {}
 var _fingerprints := {}
+var _fingerprint_jobs := {}
+var _primed_themes := {}
+var _primed_paths := {}
+var _warmed_features := {}
 var _assets := BakeAssets.new()
 var _asset_theme := ""
 var _lru: Array[String] = []
@@ -87,14 +94,34 @@ func request_theme(theme_id: String) -> bool:
  _prefetch_theme.call_deferred(theme_id)
  return true
 
+func prime_theme(theme_id: String) -> void:
+ # Disk reads and validation can overlap the current Act's staged graphics
+ # work. This bounded hint loads only the next theme, never an Act variant.
+ if bake_only or not use_disk_bakes or _primed_themes.has(theme_id) or not error.is_empty(): return
+ _primed_themes[theme_id] = true
+ _start_fingerprint(theme_id)
+ var path := Bake.theme_path(theme_id)
+ if backgrounds.has(theme_id) or not ResourceLoader.exists(path): return
+ var started_at := Time.get_ticks_usec()
+ if ResourceLoader.load_threaded_request(path, "", true) == OK: _primed_paths[path] = true
+ _record_cpu("theme.prime_request", started_at)
+
+func _start_fingerprint(theme_id: String) -> void:
+ if _fingerprints.has(theme_id) or _fingerprint_jobs.has(theme_id): return
+ var worker := Thread.new()
+ worker.start(Bake.pipeline_hash.bind(theme_id), Thread.PRIORITY_LOW)
+ _fingerprint_jobs[theme_id] = worker
+
 func _fingerprint(theme_id: String) -> String:
  profile_stage = "fingerprint.wait"
+ var started_at := Time.get_ticks_usec()
  if not _fingerprints.has(theme_id):
-  _worker = Thread.new()
-  _worker.start(Bake.pipeline_hash.bind(theme_id), Thread.PRIORITY_LOW)
-  while _worker.is_alive(): await get_tree().process_frame
-  _fingerprints[theme_id] = _worker.wait_to_finish()
-  _worker = null
+  _start_fingerprint(theme_id)
+  var worker: Thread = _fingerprint_jobs[theme_id]
+  while worker.is_alive(): await get_tree().process_frame
+  _fingerprints[theme_id] = worker.wait_to_finish()
+  _fingerprint_jobs.erase(theme_id)
+ _record_event("validation.wait", started_at, {"theme": theme_id})
  return _fingerprints[theme_id]
 
 func _prefetch_theme(theme_id: String) -> void:
@@ -152,8 +179,8 @@ func _load_theme(theme_id: String, fingerprint: String) -> bool:
   record.instance_buffer = preload("res://scripts/endless/static_batches.gd")._transform_buffer(Transform3D.IDENTITY)
   record.instance_bounds = mesh.get_aabb()
   instanced.free()
- if not probes.records.is_empty(): await _warm_recipe(probes, theme_id)
- await _warm_recipe(background.visual_recipe, theme_id)
+ if not probes.records.is_empty(): await _warm_recipe(probes, theme_id, "probes")
+ await _warm_recipe(background.visual_recipe, theme_id, "background")
  theme_bake_hits += 1
  return true
 
@@ -383,18 +410,38 @@ func _finish_request(theme_id: String, id: int, started_at: int, source: String)
  print("ENDLESS_PREPARED | ", key(theme_id, id), " | source=", source, " | ms=", last_prepare_ms, " | GPU warm frames=", last_warm_frames, " | cached=", visuals.size(), " | geometry loaded=", last_reused_jobs, " | geometry generated=", last_computed_jobs)
 
 func _record_cpu(label: String, started_at: int) -> void:
- profile_max_cpu_ms[label] = maxf(profile_max_cpu_ms.get(label, 0.0), (Time.get_ticks_usec() - started_at) / 1000.0)
+ var elapsed := (Time.get_ticks_usec() - started_at) / 1000.0
+ profile_max_cpu_ms[label] = maxf(profile_max_cpu_ms.get(label, 0.0), elapsed)
+ if not profile_enabled: return
+ if not profile_cpu.has(label): profile_cpu[label] = {"count": 0, "total_ms": 0.0, "max_ms": 0.0}
+ var sample: Dictionary = profile_cpu[label]
+ sample.count += 1
+ sample.total_ms += elapsed
+ sample.max_ms = maxf(sample.max_ms, elapsed)
+ if elapsed >= 2.0: _record_event("cpu." + label, started_at)
+
+func _record_event(label: String, started_at: int, details: Dictionary = {}, finished_at := -1) -> void:
+ if not profile_enabled: return
+ var event := details.duplicate()
+ event.merge({"name": label, "start_us": started_at, "end_us": Time.get_ticks_usec() if finished_at < 0 else finished_at,
+  "sequence": _game.get("active_sequence") if is_instance_valid(_game) else -1})
+ event.elapsed_ms = (event.end_us - event.start_us) / 1000.0
+ profile_events.append(event)
 
 func _load_bake(path: String) -> Resource:
  profile_stage = "resource.request"
  if not ResourceLoader.exists(path): return null
  if bake_only: return ResourceLoader.load(path)
  var started_at := Time.get_ticks_usec()
- if ResourceLoader.load_threaded_request(path, "", true) != OK: return null
+ if _primed_paths.has(path):
+  _primed_paths.erase(path)
+ elif ResourceLoader.load_threaded_request(path, "", true) != OK:
+  return null
  _record_cpu("resource.request", started_at)
  profile_stage = "resource.wait"
  while ResourceLoader.load_threaded_get_status(path) == ResourceLoader.THREAD_LOAD_IN_PROGRESS: await get_tree().process_frame
  profile_resource_wait_ms += (Time.get_ticks_usec() - started_at) / 1000.0
+ _record_event("resource.wait", started_at, {"path": path})
  if ResourceLoader.load_threaded_get_status(path) != ResourceLoader.THREAD_LOAD_LOADED: return null
  profile_stage = "resource.collect"
  started_at = Time.get_ticks_usec()
@@ -402,7 +449,7 @@ func _load_bake(path: String) -> Resource:
  _record_cpu("resource.collect", started_at)
  return result
 
-func _warm_recipe(recipe: Resource, theme_id: String) -> void:
+func _warm_recipe(recipe: Resource, theme_id: String, kind := "act") -> void:
  profile_stage = "scene.instantiate"
  var started_at := Time.get_ticks_usec()
  var root := Node3D.new()
@@ -443,9 +490,15 @@ func _warm_recipe(recipe: Resource, theme_id: String) -> void:
    deadline = Time.get_ticks_usec() + 1000
  root.process_mode = Node.PROCESS_MODE_ALWAYS
  var instantiated_at := Time.get_ticks_usec()
- await _warm(root, environment, false)
+ var details := {"theme": theme_id, "kind": kind, "nodes": nodes.size()}
+ _record_event("warm.instantiate", started_at, details, instantiated_at)
+ var feature_key := theme_id + (":background" if is_background else ":foreground")
+ if not _warmed_features.has(feature_key): _warmed_features[feature_key] = {}
+ await _warm(root, environment, false, _warmed_features[feature_key])
  var warmed_at := Time.get_ticks_usec()
+ _record_event("warm.graphics", instantiated_at, details, warmed_at)
  await _dispose(root)
+ _record_event("warm.retire", warmed_at, details)
  print("ENDLESS_DISK_WARM | ", theme_id, " | nodes=", nodes.size(), " | instantiate_ms=", (instantiated_at - started_at) / 1000.0, " | graphics_ms=", (warmed_at - instantiated_at) / 1000.0, " | retire_ms=", (Time.get_ticks_usec() - warmed_at) / 1000.0)
  _view.render_target_update_mode = SubViewport.UPDATE_DISABLED
 
@@ -461,7 +514,7 @@ func _capture(recipe: RefCounted, root: Node, p: Node) -> void:
   for child: Node in children: stack.append([child, index])
   await p.stream_checkpoint()
 
-func _warm(p: Node3D, world_environment: WorldEnvironment = null, warm_foreground := true) -> void:
+func _warm(p: Node3D, world_environment: WorldEnvironment = null, warm_foreground := true, known_features: Dictionary = {}) -> void:
  var overlay: Node
  if p is Presenter:
   p.set_camera_follow(false)
@@ -472,8 +525,11 @@ func _warm(p: Node3D, world_environment: WorldEnvironment = null, warm_foregroun
  for node: GeometryInstance3D in renderables: node.hide()
  _view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
  # Render the sky on its own before introducing geometry/shader permutations.
- await _draw_frames()
- await _warm_pass(renderables, overlay)
+ # Foreground recipes use a clear-color environment; waiting for an absent sky
+ # added two idle frames to every probe and Act preparation.
+ if world_environment.environment.background_mode == Environment.BG_SKY:
+  await _draw_frames()
+ await _warm_pass(renderables, overlay, known_features)
  if not warm_foreground: return
  # The procedural fallback presenter mixes Act and background geometry. Disk
  # recipes instead warm only the environment in which they will actually draw.
@@ -485,12 +541,13 @@ func _warm(p: Node3D, world_environment: WorldEnvironment = null, warm_foregroun
  world_environment.environment = foreground
  await _warm_pass(renderables, overlay)
 
-func _warm_pass(renderables: Array[Node], overlay: Node) -> void:
+func _warm_pass(renderables: Array[Node], overlay: Node, warmed: Dictionary = {}) -> void:
  profile_stage = "graphics.queue"
- var warmed := {}
  var batch: Array[GeometryInstance3D] = []
  var cold_features := 0
- var batch_limit := 8 if _game.get("started") == true else 64
+ # Cold shader features still get their own frame. Known features can upload
+ # more meshes together; eight per frame made the 400 px/s tour outrun loading.
+ var batch_limit := 32 if _game.get("started") == true else 64
  for node: GeometryInstance3D in renderables:
   var queue_started := Time.get_ticks_usec()
   if overlay != null and overlay.is_ancestor_of(node): continue
@@ -498,7 +555,9 @@ func _warm_pass(renderables: Array[Node], overlay: Node) -> void:
   # Keep every material inside the frustum at least once, including off-camera
   # props. Use a generous AABB without altering any visible gameplay instance.
   node.extra_cull_margin = 16384.0
+  var signature_started := Time.get_ticks_usec()
   var signatures := _shader_signatures(node)
+  if profile_enabled: _record_cpu("graphics.signatures", signature_started)
   for signature: int in signatures:
    if not warmed.has(signature):
     warmed[signature] = true
@@ -591,6 +650,9 @@ func trim(protected: Array, reserve_variant := 0, reserve_theme := 0) -> void:
   lights.erase(theme_id)
   theme_materials.erase(theme_id)
   theme_attempts.erase(theme_id)
+  _primed_themes.erase(theme_id)
+  _warmed_features.erase(theme_id + ":background")
+  _warmed_features.erase(theme_id + ":foreground")
   _theme_lru.erase(theme_id)
  # Physics templates are independent of skins and have their own bounded cache.
  for id: int in runtimes.keys():
@@ -606,5 +668,7 @@ static func key(theme: String, id: int) -> String:
 
 func _exit_tree() -> void:
  if _worker != null: _worker.wait_to_finish()
+ for worker: Thread in _fingerprint_jobs.values(): worker.wait_to_finish()
+ for path: String in _primed_paths: ResourceLoader.load_threaded_get(path)
  for runtime: Dictionary in runtimes.values():
   if is_instance_valid(runtime.root): runtime.root.free()

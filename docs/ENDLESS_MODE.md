@@ -93,3 +93,55 @@ Across those 24 variants, 4,094 repeated mesh instances became 609 spatial batch
 A rendered nine-Zone smoke passed 224 checks; its largest frame was 572.81 ms. A continuous three-Zone tour recorded zero entrance waits/rebuilds and a 435.96 ms worst frame during graphics warming. These are first-use observations after changing shader variants, not a controlled cold-driver comparison. The existing two-instance exit warning remains.
 
 The final warm-cache repeat used seed 18, a 100 px/s camera tour, and N64-ish + VHS + CRT. Synchronous initialization took 1.413 s and subsequent opening preparation 5.047 s. It reached the third Zone with zero entrance waits/rebuilds, an 86.19 ms maximum frame and 33.39 ms p99. Median sampled draw calls fell from 4,662 in the cleanup-only repeat to 3,517; p95 fell from 6,204 to 4,521. However, frame timings did not improve in that pair of runs (the earlier repeat measured 57.92 ms maximum and 28.08 ms p99). Correcting native background instance transforms also changes rendered content, so this is not an isolated batching benchmark. Graphics warm-up stalls remain unresolved; lower scene-node and draw-call counts are verified, consistently smooth frame delivery is not.
+
+## Fast-tour diagnostics — 2026-10-26
+
+The player's recording used the 400 px/s tour. Its repeated "Waiting for the next Act" messages were readiness pauses, distinct from individual frame spikes. The previous 100 px/s profiling did not reproduce that workload. A reproduction at 400 px/s reached sequence 12 (Zone 5) with 16.389 s of readiness pauses, a 122.35 ms maximum frame, and zero runtime rebakes.
+
+The investigated changes prioritize the current Zone's remaining Acts before optional next-theme graphics preparation. Next-theme disk reads and validation now overlap current-Act preparation, without loading another Act. Warm-up retains shader-feature knowledge separately for each theme's foreground/background paths, submits up to 32 meshes with known features per frame, and skips empty sky waits for clear-color foreground environments. Cold shader features still receive separate submissions. The opening buffer remains two Acts; there is no whole-library startup load. Theme eviction also clears its warm-up knowledge.
+
+### Measurement conditions and variability
+
+Godot 4.7.2, Compatibility/ANGLE D3D11 on an NVIDIA RTX 4060, seed 18, 400 px/s, N64-ish + VHS + CRT enabled. Each diagnostic run traversed all eight themes and ended at sequence 24, entering Zone 9. The physics ball was parked; this measures streaming and rendering, not active pinball physics. OS/driver caches were not reset. These are local observations, not a controlled cold-start benchmark.
+
+| Run | Tour duration | Readiness pauses | Worst frame | p99 frame |
+| --- | ---: | ---: | ---: | ---: |
+| Initial instrumented run | 36.33 s | 0 ms | 161.82 ms | 48.04 ms |
+| Repeat with live-stage counters | 36.61 s | 382 ms | 96.70 ms | 49.51 ms |
+| Detailed material-inspection run | 41.10 s | 4,829 ms | 169.42 ms | 55.23 ms |
+
+All three used disk bakes with zero runtime rebuilds. The detailed run adds timing around each material-signature inspection and engine timing samples; instrumentation and run-to-run variation prevent treating these as identical benchmarks. A zero-pause run is insufficient evidence of a fix. The detailed run paused near the Zone 3–6 boundaries; preparation still has insufficient headroom at four-times speed.
+
+### Where preparation time goes
+
+The detailed run separates elapsed asynchronous preparation from measured synchronous CPU calls. Totals below include completed stages that began after gameplay started; work still pending at the end is excluded. They are not percentages of total frame time, and nested values must not be added together.
+
+| Work | Total elapsed preparation | Longest stage | Interpretation |
+| --- | ---: | ---: | --- |
+| Graphics warm-up | 18.625 s | 1.021 s | Includes CPU submission and waits across rendered frames; not pure GPU time |
+| Temporary warm-up scene creation | 7.035 s | 694 ms | Spread over frames under the staging budget |
+| Temporary warm-up scene retirement | 2.397 s | 338 ms | Spread over frames |
+| Resource readiness wait | 1.917 s | 123 ms | Remaining wait for threaded loading; includes scheduling/deserialization, not pure disk I/O |
+| Validation readiness wait | 0.47 ms | 0.06 ms | Validation had already run ahead; this does not mean hashing cost disappeared |
+
+The strongest actionable CPU finding is the warm-up submission loop: **4.191 s across 12,125 mesh submissions**, of which **4.079 s (97.3%)** was `_shader_signatures()` inspecting material properties. This is repeated CPU reflection, not measured shader compilation. Feature knowledge avoids repeated cold-program waits, but the code still recomputes each mesh's signature to look it up.
+
+Other measured gameplay CPU totals were much smaller: temporary node instantiation 362 ms, live visual instantiation 317 ms, live node retirement 307 ms, live collider construction 186 ms, and cache eviction 190 ms. The first two still consume substantial *elapsed* preparation because of per-frame budgets and because the same Act is instantiated for warm-up and again for play.
+
+Cache eviction is a separate frame-spike issue: one `trim()` call blocked for **78.25 ms inside a 106.94 ms frame**. Releasing references can synchronously destroy resources even though node retirement is incremental. Live node retirement also recorded a 23.86 ms individual call.
+
+The detailed run's median frame was 18.56 ms and p95 was 38.81 ms; 199 of 1,874 frames exceeded 33.33 ms and 29 exceeded 50 ms. Median draw calls were 2,450, p95 4,193, maximum 5,274. Rendering therefore has a meaningful steady workload as well as loading overhead. One 126.10 ms frame had a 122.70 ms measured render interval. However, the worst 169.42 ms frame had only a 21.02 ms render interval: current probes do not explain every spike. Stage labels identify concurrent work and are not causal proof. Compatibility returned zero GPU timestamps, so GPU execution, driver compilation/uploads and synchronization cannot yet be separated reliably.
+
+### Ranked next experiments
+
+1. **Cache or bake material feature signatures.** Inspect each immutable material/render-path combination once, or store a compact warm-up manifest in the offline bake. Preserve separate instanced/ordinary, foreground/background and shadow variants, plus texture uploads. This targets the measured 4.08 s CPU cost directly. Re-measure before changing mesh detail further.
+2. **Budget resource eviction.** Keep retiring recipe/material/mesh references in a bounded retirement queue and release them gradually. Measure resource destruction separately from node frees; a single resource or driver release may still exceed the budget. This targets the confirmed 78 ms block.
+3. **Reuse staged visuals instead of creating them twice.** Warm the nodes that will become the live Act, then transfer/activate them incrementally. Audit transforms, animation bindings, hidden-state restoration and render-world changes. This targets temporary scene creation/retirement and reduces time until the next Act is ready; it is not justified by node CPU cost alone.
+4. **Use measured preparation time and travel distance for priority.** Keep the rolling buffer bounded, but prioritize the nearest entrance when its time-to-arrival is shorter than expected preparation. The current four-times-speed run is near its preparation throughput limit. Do not hide this by loading every Act/theme combination at startup.
+5. **Profile the graphics backend separately.** A controlled capture or backend comparison with the same effects, resolution and scene is needed to attribute the remaining driver/render stalls. Lower triangle counts alone do not address material reflection or synchronous resource release.
+
+### Reproducing and reading the trace
+
+Run `Godot --path . --rendering-method gl_compatibility --rendering-driver opengl3_angle --script res://tests/endless_stream_profile.gd -- --profile-stages --profile-speed=400 --profile-target=24 --profile-output=res://test-results/endless-fast-diagnostics.json` using the local Godot console executable. The JSON contains frame samples, timestamped stage events, synchronous CPU count/total/max counters, and separate startup/gameplay measurements. `graphics.signatures` is nested inside `graphics.queue`. The profiler exits nonzero if any readiness wait occurs; that is a performance criterion failure, not necessarily a script error. Local detailed traces are `test-results/endless-fast-diagnostics.json`, `endless-fast-diagnostics-repeat.json`, and `endless-fast-diagnostics-final.json`.
+
+Verification: cache/warm-up checks passed 28 assertions, including separate cold-feature submissions and reuse across subsequent recipes. A rendered nine-Act transition smoke passed 94 checks, including bounded caches, readiness protection and early theme-I/O ordering. A headless three-transition disk-required smoke passed 56 checks, including theme-only loading without Act loading. All measured runs retained the gameplay shader stack. The previously documented two-instance ObjectDB exit warning remains. Smooth delivery at 400 px/s is not claimed solved.

@@ -7,6 +7,15 @@ const Flicky = preload("res://scripts/decor/island_flicky.gd")
 var checks := 0
 var failures := 0
 
+class StreamingHost extends Node:
+ var started := true
+
+class WarmLibrary extends Library:
+ var submissions := 0
+ func _draw_frames(_count := 2) -> void:
+  submissions += 1
+  await get_tree().process_frame
+
 class MissingBakeLibrary extends Library:
  func _fingerprint(_theme_id: String) -> String:
   return "missing-fixture"
@@ -123,6 +132,29 @@ func run() -> void:
  check(missing.error.contains("Bake Endless.cmd"), "Missing bakes explain the offline authoring action")
  check(missing.fallback_builds == 0 and missing.runtimes.is_empty() and missing.visuals.is_empty(), "Normal startup never silently rebuilds missing bakes")
  missing.free()
+ var host := StreamingHost.new()
+ var warmer := WarmLibrary.new()
+ root.add_child(warmer)
+ warmer._game = host
+ var renderables: Array[Node] = []
+ for i in 3:
+  var probe := MeshInstance3D.new()
+  probe.mesh = BoxMesh.new()
+  var material := StandardMaterial3D.new()
+  if i == 1: material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+  if i == 2: material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+  probe.material_override = material
+  warmer.add_child(probe)
+  renderables.append(probe)
+ var warmed := {}
+ await warmer._warm_pass(renderables, null, warmed)
+ check(warmer.submissions == 3, "Each cold shader feature gets a separate warm-up submission")
+ warmer.submissions = 0
+ await warmer._warm_pass(renderables, null, warmed)
+ check(warmer.submissions == 1 and warmed.size() == 3, "Subsequent recipes reuse warmed features while still drawing every mesh")
+ check(renderables.all(func(node: Node3D): return not node.visible), "Warm-up meshes are hidden after submission")
+ warmer.free()
+ host.free()
  mesh.free()
  library.free()
  root_node.free()

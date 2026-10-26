@@ -27,6 +27,17 @@ func run() -> void:
  var identities := [game.ball.get_instance_id(), game.tuning.get_instance_id(), game.controls.get_instance_id(), game.presentation.camera.get_instance_id()]
  check(game.library.visuals.size() == 2, "Only the opening two variants are cached at startup")
  check(game.resident.size() == 2, "Two Acts resident at startup")
+ # The require-bakes branch below deliberately issues a manual theme request
+ # before the rolling scheduler runs. Exercise automatic ordering separately.
+ if "--require-bakes" not in OS.get_cmdline_user_args():
+  var third_request_started := Time.get_ticks_msec()
+  while game.library.requested_count < 3 and Time.get_ticks_msec() - third_request_started < 10000:
+   await process_frame
+  check(game.library.requested_count >= 3 and game.library.theme_attempts.is_empty(), "Current Zone's third Act is requested before optional next-theme preparation")
+  if "--no-bakes" not in OS.get_cmdline_user_args():
+   var hinted_theme: String = game.pending.back().theme
+   check(game.library._primed_themes.size() == 1 and game.library._primed_themes.has(hinted_theme), "Only the next theme's disk reads and validation overlap Act preparation")
+   check(not game.library.backgrounds.has(hinted_theme), "Early disk prefetch creates no next-theme scene or Act")
  check(game._authored_root == null and game.authored_timings.is_empty(), "Endless never builds and discards a standalone Act")
  check(game.debug_panel == null and game.find_children("DebugAndHUD", "", true, false).is_empty(), "Endless creates no hidden standalone Act tools")
  check(not game.has_method("_generate_layout") and not game.has_method("request_generation"), "Endless has no legacy random-table entry point")
