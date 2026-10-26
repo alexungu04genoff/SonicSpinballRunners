@@ -1,6 +1,6 @@
 extends Resource
 ## Derived data only. Never owns or edits the authored document.
-const VERSION := 3
+const VERSION := 4
 const DEPENDENCIES := ["res://scripts/presentation.gd", "res://scripts/themes/themed_presentation.gd",
  "res://scripts/themes/terrain_border.gd", "res://scripts/endless/template_presenter.gd",
  "res://scripts/authored_act/act_runtime_compiler.gd", "res://scripts/act_dimensions.gd"]
@@ -23,7 +23,7 @@ static func pipeline_hash(theme: String) -> String:
  var content := str(VERSION) + str(Engine.get_version_info().hex)
  var pending: Array = DEPENDENCIES + ["res://scripts/themes/" + theme + "_theme.gd",
   "res://scripts/endless/visual_recipe.gd", "res://scripts/endless/geometry_bake.gd",
-  "res://scripts/endless/bake_assets.gd",
+  "res://scripts/endless/bake_assets.gd", "res://scripts/endless/static_batches.gd",
   "res://scripts/pinball_models.gd", "res://scripts/authored_act/mechanics_presentation.gd"]
  var visited := {}
  var references := RegEx.create_from_string("res://[^\"'\\s]+")

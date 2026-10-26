@@ -13,6 +13,18 @@ var top_border_material: Material
 var floor_border_width := 0.0
 var top_border_width := 0.0
 
+func _set_instance_transform(multimesh: MultiMesh, index: int, transform: Transform3D) -> void:
+ multimesh.set_instance_transform(index, transform)
+ if DisplayServer.get_name() != "headless": return
+ # The dummy renderer discards instance buffers. Keep authoring transforms on
+ # the resource until the offline recipe captures them into its own CPU buffer.
+ var transforms: Array = multimesh.get_meta("offline_transforms", [])
+ if transforms.size() != multimesh.instance_count:
+  transforms.resize(multimesh.instance_count)
+  transforms.fill(Transform3D.IDENTITY)
+ transforms[index] = transform
+ multimesh.set_meta("offline_transforms", transforms)
+
 func _apply_texture_set() -> void:
  var sets = preload("res://scripts/themes/terrain_texture_sets.gd")
  floor_material = sets.material(theme_id, "floor")

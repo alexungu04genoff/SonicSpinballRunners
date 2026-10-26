@@ -35,6 +35,7 @@ Run lightweight checks with `godot --headless --path . --script res://tests/<tes
 - `authored_main_game_regression.gd`, `act_reload_workflow.gd`: Act replacement, four character abilities, scoring, camera and failed reload preservation.
 - `authored_source_physics_regression.gd`, `geometry_bake_regression.gd`: baked versus freshly compiled collisions and serialization.
 - `endless_regression.gd`, `endless_cache_regression.gd`, `endless_detail_regression.gd`: ordering/seams, cache sharing and visual detail limits.
+- `endless_batch_regression.gd`, `endless_border_regression.gd`: spatial instance buffers, animation bindings and low-triangle trim.
 - `endless_scene_smoke.gd -- --require-bakes`: rendered startup and transitions; use Compatibility / ANGLE without `--headless` to exercise shaders.
 - `endless_stream_profile.gd`: continuous camera tour with frame, resource, render, memory and draw-call diagnostics.
 

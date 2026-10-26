@@ -77,6 +77,10 @@ func run() -> void:
  red.albedo_color = Color.RED
  mesh.material_override = red
  var red_signature: Array = library._shader_signatures(mesh)
+ var instanced := MultiMeshInstance3D.new()
+ instanced.material_override = red
+ check(library._shader_signatures(instanced) != red_signature, "Instanced draws warm a distinct graphics path")
+ instanced.free()
  var blue := StandardMaterial3D.new()
  blue.albedo_color = Color.BLUE
  mesh.material_override = blue

@@ -142,6 +142,16 @@ func _load_theme(theme_id: String, fingerprint: String) -> bool:
   probe.material_override = material
   probes.capture(probe)
   probe.free()
+  # Instancing uses a different graphics path. Warm that path with the same
+  # one-cube probe; this still loads no Act layout, physics or scenery chunks.
+  var instanced := MultiMeshInstance3D.new()
+  instanced.material_override = material
+  probes.capture(instanced)
+  var record: Dictionary = probes.records[-1]
+  record.instance_mesh = mesh
+  record.instance_buffer = preload("res://scripts/endless/static_batches.gd")._transform_buffer(Transform3D.IDENTITY)
+  record.instance_bounds = mesh.get_aabb()
+  instanced.free()
  if not probes.records.is_empty(): await _warm_recipe(probes, theme_id)
  await _warm_recipe(background.visual_recipe, theme_id)
  theme_bake_hits += 1
@@ -301,6 +311,12 @@ func _build(theme_id: String, id: int) -> void:
    "energy": p._key_light.light_energy, "bias": p._key_light.shadow_normal_bias}
  else:
   p._world_environment.environment = environments[theme_id]
+ if not recipe.error.is_empty() or not backgrounds[theme_id].error.is_empty():
+  error = recipe.error if not recipe.error.is_empty() else backgrounds[theme_id].error
+  await _dispose(p)
+  rings.free()
+  busy = false
+  return
  # Render the actual new meshes in a private viewport. A hidden scene does not
  # compile Compatibility shaders. Warm a small number of renderables per frame.
  if bake_only:
@@ -326,6 +342,10 @@ func _build(theme_id: String, id: int) -> void:
    rings.free()
    busy = false
    return
+  var batcher = preload("res://scripts/endless/static_batches.gd").new()
+  var act_batches: Dictionary = batcher.optimize(recipe)
+  var background_batches: Dictionary = batcher.optimize(backgrounds[theme_id])
+  print("ENDLESS_BATCHED | ", key(theme_id, id), " | Act=", act_batches, " | theme=", background_batches)
   DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(bake_path.get_base_dir()))
   var result := ResourceSaver.save(baked, bake_path, ResourceSaver.FLAG_COMPRESS)
   if result != OK: error = "Could not save geometry bake: " + error_string(result)
@@ -505,9 +525,9 @@ func _shader_signatures(node: GeometryInstance3D) -> Array[int]:
   for i in node.multimesh.mesh.get_surface_count(): materials.append(node.multimesh.mesh.surface_get_material(i))
  var result: Array[int] = []
  for material: Material in materials:
-  if material is ShaderMaterial: result.append(material.shader.get_instance_id())
+  if material is ShaderMaterial: result.append(hash([node.get_class(), material.shader.get_instance_id()]))
   elif material is BaseMaterial3D:
-   var features: Array = [material.get_class()]
+   var features: Array = [node.get_class(), material.get_class()]
    for property: Dictionary in material.get_property_list():
     if int(property.usage) & PROPERTY_USAGE_STORAGE == 0: continue
     var value: Variant = material.get(property.name)

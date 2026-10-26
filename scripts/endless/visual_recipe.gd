@@ -10,6 +10,8 @@ var indices := {}
 @export var retracted: Array[int] = []
 @export var rings: Array[int] = []
 @export var bumpers := {}
+@export var batch_stats := {}
+var error := ""
 
 func capture(node: Node, parent := -1, recursive := true) -> void:
  var index := records.size()
@@ -19,10 +21,17 @@ func capture(node: Node, parent := -1, recursive := true) -> void:
   var key: String = property.name
   if int(property.usage) & PROPERTY_USAGE_STORAGE == 0 or key in ["script", "owner", "unique_name_in_owner", "scene_file_path"]: continue
   copy.set(key, node.get(key))
+ var record := {"parent": parent}
+ if node is MultiMeshInstance3D and node.multimesh != null:
+  var instance_data := _capture_instances(node.multimesh)
+  if not instance_data.is_empty():
+   record.merge(instance_data)
+   copy.multimesh = null
  var scene := PackedScene.new()
  scene.pack(copy)
  copy.free()
- records.append({"scene": scene, "parent": parent})
+ record.scene = scene
+ records.append(record)
  if node.get_script() == MechanicsVisual:
   animations.append({"index": index, "script": MechanicsVisual,
    "values": {"spinners": node.spinners, "fields": node.fields, "gimmicks": node.gimmicks}})
@@ -33,6 +42,25 @@ func capture(node: Node, parent := -1, recursive := true) -> void:
   assert(node.get_script() == null, "A new animated decor script needs an explicit streaming binding.")
  if recursive:
   for child: Node in node.get_children(): capture(child, index)
+
+func _capture_instances(multimesh: MultiMesh) -> Dictionary:
+ if multimesh.instance_count == 0: return {}
+ if multimesh.transform_format != MultiMesh.TRANSFORM_3D or multimesh.use_colors or multimesh.use_custom_data:
+  error = "This MultiMesh needs an explicit color/custom-data bake adapter."
+  return {}
+ var transforms: Array = multimesh.get_meta("offline_transforms", [])
+ if DisplayServer.get_name() == "headless" and transforms.size() != multimesh.instance_count:
+  error = "A headless MultiMesh has no saved CPU transforms. Use the theme instance-transform helper before baking."
+  return {}
+ var buffer := PackedFloat32Array()
+ var bounds := AABB()
+ for index in multimesh.instance_count:
+  var transform: Transform3D = transforms[index] if not transforms.is_empty() else multimesh.get_instance_transform(index)
+  buffer.append_array(preload("res://scripts/endless/static_batches.gd")._transform_buffer(transform))
+  var item: AABB = transform * multimesh.mesh.get_aabb()
+  bounds = item if index == 0 else bounds.merge(item)
+ if multimesh.custom_aabb != AABB(): bounds = multimesh.custom_aabb
+ return {"instance_mesh": multimesh.mesh, "instance_buffer": buffer, "instance_bounds": bounds}
 
 func finish(presenter: TablePresentation = null) -> void:
  for animation: Dictionary in animations: animation.values = _encode(animation.values)
@@ -59,6 +87,14 @@ func _encode(value: Variant) -> Variant:
 func instantiate_one(index: int, nodes: Array[Node], root: Node) -> void:
  var record := records[index]
  var node: Node = record.scene.instantiate()
+ if record.has("instance_buffer"):
+  var multimesh := MultiMesh.new()
+  multimesh.transform_format = MultiMesh.TRANSFORM_3D
+  multimesh.mesh = record.instance_mesh
+  multimesh.instance_count = record.instance_buffer.size() / 12
+  multimesh.custom_aabb = record.instance_bounds
+  multimesh.buffer = record.instance_buffer
+  node.multimesh = multimesh
  # The staging root is disabled until ready. Native particles must inherit its
  # eventual activation instead of remaining permanently disabled themselves.
  node.process_mode = Node.PROCESS_MODE_INHERIT

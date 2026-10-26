@@ -187,7 +187,7 @@ func _embers(root: Node3D, center: Vector3, width: float, length: float) -> void
  for i in multi.instance_count:
   var side := -1.0 if i%2 == 0 else 1.0
   var at := center+Vector3(side*(width*0.5+3.0+i%5),-6.8,(float(i*13%31)/31.0-0.5)*(length+12))
-  multi.set_instance_transform(i,Transform3D(Basis.IDENTITY,at))
+  _set_instance_transform(multi, i,Transform3D(Basis.IDENTITY,at))
  var instance := MultiMeshInstance3D.new()
  instance.name = "SparsePeripheralEmbers"
  instance.multimesh = multi
@@ -230,7 +230,7 @@ func _batch(root: Node3D, scheduler: Node = null) -> void:
   multi.instance_count = data.transforms.size()
   for i in data.transforms.size():
    if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
-   multi.set_instance_transform(i,data.transforms[i])
+   _set_instance_transform(multi, i,data.transforms[i])
   var instance := MultiMeshInstance3D.new()
   instance.multimesh = multi
   instance.material_override = data.material

@@ -12,6 +12,7 @@ var _border_jobs: Array[Dictionary] = []
 var _worker: Thread
 var _land_jobs: Array[Dictionary] = []
 const VisualDetail = preload("res://scripts/endless/visual_detail.gd")
+const BakedBorder = preload("res://scripts/endless/baked_border.gd")
 
 func stream_checkpoint(force := false) -> void:
  var elapsed := Time.get_ticks_usec() - _slice_start
@@ -140,7 +141,7 @@ func _add_border(outline: PackedVector2Array, holes: Array[PackedVector2Array], 
 func _finish_borders() -> void:
  await _finish_land()
  for job: Dictionary in _border_jobs:
-  var mesh: ArrayMesh = await _cached_job("border", TerrainBorder.build.bind(job.outline, job.holes, job.width, job.height + 0.001, job.material))
+  var mesh: ArrayMesh = await _cached_job("border", BakedBorder.build.bind(job.outline, job.holes, job.width, job.height + 0.001, job.material))
   if mesh == null: continue
   _bind_materials(mesh, [job.material])
   var visual := mesh_node(mesh, null, Vector3.ZERO, job.parent)

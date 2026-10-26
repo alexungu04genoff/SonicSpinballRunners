@@ -168,7 +168,7 @@ func _batch(root: Node3D, scheduler: Node = null) -> void:
   multi.instance_count = data.transforms.size()
   for i in data.transforms.size():
    if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
-   multi.set_instance_transform(i,data.transforms[i])
+   _set_instance_transform(multi, i,data.transforms[i])
   var instance := MultiMeshInstance3D.new()
   instance.multimesh = multi
   instance.material_override = data.material

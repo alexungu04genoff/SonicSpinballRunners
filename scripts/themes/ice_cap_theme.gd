@@ -146,7 +146,7 @@ func _snow(root: Node3D, center: Vector3, width: float, length: float) -> void:
  for i in flakes.instance_count:
   var side := -1.0 if i % 2 == 0 else 1.0
   var at := center + Vector3(side * (width * 0.5 + 2.0 + (i % 7)), float(i % 9) - 5.0, (float(i * 13 % 47) / 47.0 - 0.5) * (length + 14.0))
-  flakes.set_instance_transform(i, Transform3D(Basis.IDENTITY, at))
+  _set_instance_transform(flakes, i, Transform3D(Basis.IDENTITY, at))
  var instance := MultiMeshInstance3D.new()
  instance.name = "SparsePeripheralSnow"
  instance.multimesh = flakes
@@ -181,7 +181,7 @@ func _batch(root: Node3D, scheduler: Node = null) -> void:
   multi.instance_count = data.transforms.size()
   for i in data.transforms.size():
    if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
-   multi.set_instance_transform(i, data.transforms[i])
+   _set_instance_transform(multi, i, data.transforms[i])
   var instance := MultiMeshInstance3D.new()
   instance.multimesh = multi
   instance.material_override = data.material
