@@ -164,6 +164,7 @@ func _build_ui() -> void:
 	_button(header, "load", "Load", func(): request_action("load"), "Ctrl+O")
 	_button(header, "save", "Save", _save_current, "Ctrl+S")
 	_button(header, "save_as", "Save As", _open_save_dialog, "Ctrl+Shift+S")
+	_button(header, "play", "Play", _play_current, "Play the saved Act in a separate game window")
 	_button(header, "bake", "Bake", _bake_current, "Bake saved collision and complete visuals for endless streaming")
 	file_label = Label.new()
 	file_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -607,7 +608,7 @@ func _build_dialogs() -> void:
 	for dialog in [save_dialog, load_dialog]:
 		dialog.access = FileDialog.ACCESS_FILESYSTEM
 		dialog.filters = PackedStringArray(["*.tres ; Act geometry Resource"])
-		dialog.current_dir = ProjectSettings.globalize_path(DEFAULT_ACT_DIRECTORY)
+		dialog.current_dir = _act_directory()
 		dialog.size = Vector2i(850, 560)
 		dialog.canceled.connect(func(): pending_action = "")
 		add_child(dialog)
@@ -1604,7 +1605,7 @@ func _continue_action() -> void:
 	match action:
 		"new": new_document()
 		"load":
-			load_dialog.current_dir = ProjectSettings.globalize_path(DEFAULT_ACT_DIRECTORY)
+			load_dialog.current_dir = _act_directory()
 			load_dialog.popup_centered()
 		"quit": get_tree().quit()
 		"example", "gimmicks":
@@ -1631,7 +1632,7 @@ func _open_save_dialog() -> void:
 	if not current_path.is_empty():
 		save_dialog.current_path = ProjectSettings.globalize_path(current_path)
 	else:
-		save_dialog.current_dir = ProjectSettings.globalize_path(DEFAULT_ACT_DIRECTORY)
+		save_dialog.current_dir = _act_directory()
 		save_dialog.current_file = document.title.validate_filename() + ".tres"
 	save_dialog.popup_centered()
 
@@ -2244,5 +2245,32 @@ func _bake_current() -> void:
 		return
 	var arguments := PackedStringArray(["--path", ProjectSettings.globalize_path("res://"),
 		"res://scenes/act_baker.tscn", "--", "--act=" + ProjectSettings.globalize_path(current_path)])
+	if not OS.has_feature("editor"):
+		arguments = PackedStringArray(["--", "--portable-bake", "--act=" + ProjectSettings.globalize_path(current_path)])
 	var process := OS.create_process(OS.get_executable_path(), arguments)
 	_set_status("Baking opened in a separate progress window." if process >= 0 else "Could not open the Act baker.")
+
+
+func _act_directory() -> String:
+	if OS.has_feature("editor"):
+		return ProjectSettings.globalize_path(DEFAULT_ACT_DIRECTORY)
+	var directory := OS.get_executable_path().get_base_dir().path_join("Acts")
+	if DirAccess.make_dir_recursive_absolute(directory) == OK:
+		return directory
+	return OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)
+
+
+func _play_current() -> void:
+	if current_path.is_empty() or is_dirty():
+		_set_status("Save your Act before playing, then click Play again.")
+		return
+	var arguments := PackedStringArray(["--rendering-method", "gl_compatibility",
+		"--rendering-driver", "opengl3_angle"])
+	if OS.has_feature("editor"):
+		arguments.append_array(["--path", ProjectSettings.globalize_path("res://")])
+		arguments.append_array(["res://experiments/visual_lab/visual_lab.tscn", "--"])
+	else:
+		arguments.append_array(["--", "--portable-play"])
+	arguments.append_array(["--act", ProjectSettings.globalize_path(current_path)])
+	var process := OS.create_process(OS.get_executable_path(), arguments)
+	_set_status("Playtest opened. Save edits here, then use Reload Act in the game." if process >= 0 else "Could not open the Act player.")
