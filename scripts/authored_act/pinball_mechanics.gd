@@ -187,7 +187,7 @@ func _observe_gimmicks(state: PhysicsDirectBodyState2D, start: Vector2, motion: 
   var contact := {}
   if item.type == "switch_target":
    if item.active: continue
-   contact = Contact.circle_hit(start, motion, item.position, Objects.SWITCH_RADIUS + ball.radius)
+   contact = Contact.circle_hit(start, motion, item.position, Objects.switch_radius(item) + ball.radius)
   elif item.type in ["one_way_gate", "spring"]:
    var forward := Objects.forward(item)
    var depth := 4.0 if item.type == "one_way_gate" else float(item.properties.width) * 0.5
