@@ -52,6 +52,7 @@ func run() -> void:
  placement.rotation_degrees = rad_to_deg(0.32)
  var larger := await catches(probe, placement, {}, 100.0)
  check(not find_catch(larger, "Typical").is_empty(), "Changing cell size resimulates authored dimensions")
+ await check_spawn_catches(probe)
  var input_actions_after := {}
  for action: StringName in InputMap.get_actions():
   input_actions_after[action] = InputMap.action_get_events(action).size()
@@ -79,7 +80,7 @@ func run() -> void:
    await process_frame
    check(scene.canvas.get_global_rect().is_equal_approx(original_rect), "Canvas stays fixed at " + str(dimensions))
   scene._select_mode()
- check(not scene.canvas.launch_timing_variants, "Default guide shows only the typical catch")
+ check(scene.canvas.launch_from_spawn and not scene.canvas.launch_timing_variants, "Default guide uses spawn with timing variants hidden")
  check(not scene.buttons.has("example") and not scene.buttons.has("gimmicks") and not scene.buttons.has("quit"), "Requested toolbar buttons removed")
  var rect: Rect2 = scene.canvas.get_global_rect()
  for kind in ["spring", "elevated_rail", "left_flipper", "round_bumper"]:
@@ -132,6 +133,7 @@ func run() -> void:
  check(scene.verification_report().errors.is_empty(), "Verify accepts a clear ramp")
  scene._refresh()
  check(scene.buttons.spawn_reminder.text == "Spawn point: set" and scene.buttons.entry.text == "Entry: unset", "Floating reminders track marker state")
+ scene.canvas.launch_from_spawn = false
  scene.load_from("res://data/acts/curve_garden.tres")
  var paddle := Objects.make_placement("left_flipper")
  paddle.position = Vector2(220, 480)
@@ -155,6 +157,24 @@ func run() -> void:
   if DisplayServer.get_name() != "headless":
    await RenderingServer.frame_post_draw
    root.get_texture().get_image().save_png("res://test-results/editor-timing-variants.png")
+ scene.document = spawn_fixture()
+ scene.canvas.set_document(scene.document)
+ scene.canvas.select_gameplay(0)
+ scene._refresh()
+ var guide: OptionButton = scene.mechanics_properties.get_node("LaunchGuideMode")
+ var unchanged: String = scene.document.fingerprint()
+ guide.select(0)
+ guide.item_selected.emit(0)
+ var contact: OptionButton = scene.mechanics_properties.get_node("LaunchContactPosition")
+ contact.select(9)
+ contact.item_selected.emit(9)
+ check(scene.canvas.launch_from_spawn and scene.canvas.launch_contact_fraction == 1.0, "Inspector selects spawn drop and tip contact")
+ check(scene.document.fingerprint() == unchanged, "Guide controls never edit Act data")
+ if DisplayServer.get_name() != "headless":
+  await RenderingServer.frame_post_draw
+  await wait_probe(scene.canvas._launch_probe)
+  await RenderingServer.frame_post_draw
+  root.get_texture().get_image().save_png("res://test-results/editor-spawn-tip.png")
  scene.queue_free()
  await process_frame
  print("EDITOR LAUNCH PREVIEW: %d failures" % failures)
@@ -168,7 +188,7 @@ func catches(probe: Node, item: Dictionary, stats: Dictionary = {}, cell_size: f
  return probe.shots.duplicate(true)
 
 func wait_probe(probe: Node) -> void:
- for tick in 420:
+ for tick in 1800:
   if not probe.busy: return
   await physics_frame
  check(false, "Preview simulation finishes within its bounded time")
@@ -177,3 +197,57 @@ func find_catch(shots: Array[Dictionary], label: String) -> Dictionary:
  for shot: Dictionary in shots:
   if shot.label == label: return shot
  return {}
+
+func spawn_fixture() -> Resource:
+ var doc := preload("res://scripts/act_editor/act_geometry.gd").new()
+ doc.spawn_position = Vector2(167.73254, 526.2419)
+ doc.activation_y = 550.0
+ doc.entry_start_x = 3
+ doc.entry_width = 2
+ doc.exit_start_x = 4
+ doc.exit_width = 2
+ var paddle := Objects.make_placement("left_flipper")
+ paddle.position = Vector2(150, 600)
+ doc.gameplay_objects = [paddle]
+ return doc
+
+func spawn_catch(probe: Node, doc: Resource, target: float, stats: Dictionary = {}) -> Array[Dictionary]:
+ probe.request(doc.gameplay_objects[0], doc.cell_size, stats, {"document": doc, "index": 0, "target": target})
+ await wait_probe(probe)
+ return probe.shots.duplicate(true)
+
+func check_spawn_catches(probe: Node) -> void:
+ var doc := spawn_fixture()
+ var unchanged: String = doc.fingerprint()
+ var middle := await spawn_catch(probe, doc, 0.5)
+ for target in [0.6, 0.7, 0.8]:
+  var intermediate := await spawn_catch(probe, doc, target)
+  check(intermediate.size() == 1, "Contact remains reachable during small resting bounces: " + str(target))
+ var outer := await spawn_catch(probe, doc, 0.9)
+ var tip := await spawn_catch(probe, doc, 1.0)
+ check(middle.size() == 1 and outer.size() == 1 and tip.size() == 1, "Spawn drop reaches middle, outer and tip targets")
+ if not middle.is_empty() and not tip.is_empty():
+  var middle_path := Preview.trajectory(middle[0])
+  var tip_path := Preview.trajectory(tip[0])
+  var tip_range: float = tip_path[-1].x - tip_path[0].x
+  check(tip[0].actual_fraction > 0.9 and tip[0].approach.size() > 10, "Tip guide includes landing and travel along the paddle")
+  check(tip_range > 350.0 and tip_range > (middle_path[-1].x - middle_path[0].x) * 1.3, "Spawn-tip guide reproduces the longer playtested shot")
+  print("SPAWN GUIDE | middle range=", middle_path[-1].x - middle_path[0].x, " tip range=", tip_range, " actual tip contact=", tip[0].actual_fraction)
+ check(doc.fingerprint() == unchanged, "Spawn simulation preserves its source document")
+ var generation: int = probe._generation
+ doc.spawn_position += Vector2(2, -10)
+ await spawn_catch(probe, doc, 1.0)
+ check(probe._generation > generation, "Moving spawn invalidates the cached drop")
+ doc = spawn_fixture()
+ var boost := PhysicsTuning.resolve(PhysicsTuning.BALANCED, {}, [PhysicsTuning.CHAO.spring.modifier])
+ var boosted := await spawn_catch(probe, doc, 0.9, boost)
+ check(not boosted.is_empty() and not outer.is_empty() and boosted[0].velocity.length() > outer[0].velocity.length(), "Spawn catch consumes resolved Chao stats")
+ var missed := await spawn_catch(probe, doc, 0.1)
+ check(missed.is_empty() and probe.status.contains("not reached"), "An unreachable heel target cannot invent a shot farther out")
+ doc.placements = [{"shape_id": "rectangle_1x1", "base_size": Vector2i(1, 1), "anchor": Vector2i(3, 11), "quarter_turns": 0, "flip_h": false, "flip_v": false}]
+ var blocked := await spawn_catch(probe, doc, 0.9)
+ check(blocked.is_empty() and probe.status.contains("not reached"), "Authored terrain can block the path from spawn")
+ doc.placements.clear()
+ doc.spawn_position = null
+ await spawn_catch(probe, doc, 0.9)
+ check(probe.shots.is_empty() and probe.status.contains("Set a Spawn"), "Unset spawn shows a reminder instead of a synthetic drop")

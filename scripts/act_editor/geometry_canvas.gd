@@ -1,6 +1,8 @@
 extends Control
 const FlipperProbe = preload("res://scripts/act_editor/flipper_launch_probe.gd")
 var launch_timing_variants := false
+var launch_from_spawn := true
+var launch_contact_fraction := 0.9
 var _launch_probe := FlipperProbe.new()
 const LaunchPreview = preload("res://scripts/act_editor/launch_preview.gd")
 ## Authoring drawing and pointer gestures only. The editor owns changes and undo.
@@ -1835,10 +1837,11 @@ func _draw_launch_range(item: Dictionary) -> void:
  var is_flipper: bool = item.type in ["left_flipper", "right_flipper"]
  var shots: Array[Dictionary] = []
  if is_flipper:
-  _launch_probe.request(item, _local_cell_size())
+  var context := {"document": document, "index": selected_gameplay_index, "target": launch_contact_fraction} if launch_from_spawn else {}
+  _launch_probe.request(item, _local_cell_size(), {}, context)
   if not _launch_probe.busy:
    for shot: Dictionary in _launch_probe.shots:
-    if launch_timing_variants or shot.label == "Typical": shots.append(shot)
+    if launch_from_spawn or launch_timing_variants or shot.label == "Typical": shots.append(shot)
  else:
   shots = LaunchPreview.shots(item, _local_cell_size())
  for i in shots.size():
@@ -1848,8 +1851,12 @@ func _draw_launch_range(item: Dictionary) -> void:
   var color := Color(1.0, 0.84, 0.42, 0.55) if i % 2 == 0 else Color(0.44, 0.9, 0.84, 0.55)
   var width := 1.0
   if is_flipper:
-   color = {"Typical": Color("70e5d5"), "Early": Color("ffd76b"), "Late": Color("cea3f2")}[shots[i].label]
-   width = 2.0 if shots[i].label == "Typical" else 1.0
+   color = {"Spawn": Color("70e5d5"), "Typical": Color("70e5d5"), "Early": Color("ffd76b"), "Late": Color("cea3f2")}[shots[i].label]
+   width = 2.0 if shots[i].label in ["Typical", "Spawn"] else 1.0
+  var approach: PackedVector2Array = shots[i].get("approach", PackedVector2Array()).duplicate()
+  if approach.size() > 1:
+   for j in approach.size(): approach[j] = local_pixels_to_screen(approach[j] + Vector2(item.position))
+   draw_polyline(approach, Color(0.44, 0.9, 0.84, 0.3), 1.0, true)
   draw_polyline(points, color, width, true)
  var title := "BASE SONIC · gold: min rebound / teal: max rebound"
  var detail := "Incoming speed sets rebound · no tangent momentum or obstacles"
@@ -1857,8 +1864,12 @@ func _draw_launch_range(item: Dictionary) -> void:
   title = "BASE SONIC · typical falling catch"
   if launch_timing_variants: title = "BASE SONIC · teal: typical / gold: early / purple: late"
   detail = "Fall toward outer half · no steering or terrain · approximate"
+  if launch_from_spawn:
+   title = "BASE SONIC · spawn drop · target %.0f%%" % (launch_contact_fraction * 100.0)
+   detail = "Act collisions before launch · free flight afterward · no steering"
+   if not shots.is_empty(): title += " · hit %.0f%%" % (shots[0].actual_fraction * 100.0)
   if _launch_probe.busy: detail = "Simulating ball contact…"
-  elif shots.is_empty(): detail = "No catch in this falling-ball setup at this angle."
+  elif shots.is_empty(): detail = _launch_probe.status
  # Screen-space legend stays readable even when the estimated apex is outside the map.
  draw_style_box(_launch_legend_style(), Rect2(8, size.y - 50, 500, 42))
  draw_string(get_theme_default_font(), Vector2(16, size.y - 34), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("dcebf2"))

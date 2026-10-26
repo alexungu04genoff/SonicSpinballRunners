@@ -1958,14 +1958,36 @@ func _refresh_mechanics_properties() -> void:
 		baseline.add_theme_font_size_override("font_size", 11)
 		mechanics_properties.add_child(baseline)
 	if item.type in ["left_flipper", "right_flipper"]:
-		var timings := CheckButton.new()
-		timings.text = "Early / late timing"
-		timings.button_pressed = canvas.launch_timing_variants
-		timings.tooltip_text = "Show two timing variants alongside the typical falling catch. These are example contacts, not guaranteed range limits."
-		timings.toggled.connect(func(value: bool):
-			canvas.launch_timing_variants = value
+		var guide := OptionButton.new()
+		guide.name = "LaunchGuideMode"
+		guide.add_item("Guide: Drop from spawn")
+		guide.add_item("Guide: Typical catch")
+		guide.select(0 if canvas.launch_from_spawn else 1)
+		guide.item_selected.connect(func(index: int):
+			canvas.launch_from_spawn = index == 0
+			_refresh_mechanics_properties()
 			canvas.queue_redraw())
-		mechanics_properties.add_child(timings)
+		mechanics_properties.add_child(guide)
+		if canvas.launch_from_spawn:
+			var contact := OptionButton.new()
+			contact.name = "LaunchContactPosition"
+			for percent in range(10, 101, 10):
+				contact.add_item("Contact: %d%%%s" % [percent, " (tip)" if percent == 100 else (" (middle)" if percent == 50 else "")])
+			contact.select(clampi(roundi(canvas.launch_contact_fraction * 10.0) - 1, 0, 9))
+			contact.tooltip_text = "Let the ball land and move along the flipper, then press near this position. The guide reports the actual strike position; unreachable contacts show no arc. No steering is applied."
+			contact.item_selected.connect(func(index: int):
+				canvas.launch_contact_fraction = (index + 1) / 10.0
+				canvas.queue_redraw())
+			mechanics_properties.add_child(contact)
+		else:
+			var timings := CheckButton.new()
+			timings.text = "Early / late timing"
+			timings.button_pressed = canvas.launch_timing_variants
+			timings.tooltip_text = "Show two timing variants alongside the typical falling catch. These are example contacts, not guaranteed range limits."
+			timings.toggled.connect(func(value: bool):
+				canvas.launch_timing_variants = value
+				canvas.queue_redraw())
+			mechanics_properties.add_child(timings)
 	var properties := Objects.properties(item)
 	var identity := Label.new()
 	identity.text = "ID"
