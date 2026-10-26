@@ -144,8 +144,8 @@ func run() -> void:
  game.authored_act_path = RUN_PATH
  root.add_child(game)
  await frames(6)
- check(game.level_source == "authored", "Main game loads new authored mechanics", game.last_source_error)
- if game.level_source != "authored": game.free(); quit(1); return
+ check(game.playfield.source == "authored", "Main game loads new authored mechanics", game.last_source_error)
+ if game.playfield.source != "authored": game.free(); quit(1); return
  identities = engine_ids()
  manager = game.ball.mechanics
  game.controls.virtual_enabled = true

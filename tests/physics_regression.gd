@@ -89,124 +89,26 @@ func run() -> void:
  await frames(3)
 
  game = load("res://scenes/playground.tscn").instantiate()
- game.generation_enabled = false # Preserve exact legacy geometry for existing shot fixtures.
  root.add_child(game)
  await frames(5)
- check(game.ball.position.distance_to(game.ball.serve_position) < 1.0, "Serve marker does not overlap geometry", str(game.ball.position))
+ check(game.ball.position.distance_to(game.playfield.spawn) < 1.0, "Authored spawn remains exact")
  check(not contains_3d_collision(game.presentation), "Presentation contains no 3D collision objects")
- var mapping_error: float = TablePresentation.unmap_point(TablePresentation.map_point(Vector2(234.5, 678.9))).distance_to(Vector2(234.5, 678.9))
- check(mapping_error < 0.001, "2D/3D mapping round trip", str(mapping_error))
- game.set_physics_process(false)
- game.controls.virtual_enabled = false
- Input.action_press("left_flipper")
- Input.action_press("right_flipper")
- await frames(12)
- check(absf(game.flippers[0].rotation - game.flippers[0].active_angle()) < 0.01 and absf(game.flippers[1].rotation - game.flippers[1].active_angle()) < 0.01, "Both input actions actuate flippers simultaneously within 100 ms")
- Input.action_release("left_flipper")
- Input.action_release("right_flipper")
- await frames(18)
- check(absf(game.flippers[0].rotation - game.flippers[0].rest_angle()) < 0.01 and absf(game.flippers[1].rotation - game.flippers[1].rest_angle()) < 0.01, "Both flippers return after release")
+ var mapping_error := TablePresentation.unmap_point(TablePresentation.map_point(Vector2(234.5, 678.9))).distance_to(Vector2(234.5, 678.9))
+ check(mapping_error < 0.001, "2D/3D mapping round trip")
+ game.tuning.set_value("wall_restitution", 0.5)
+ var correct := true
+ for body: StaticBody2D in game.playfield.terrain_bodies:
+  correct = correct and is_equal_approx(body.physics_material_override.bounce, 0.5)
+ check(correct, "Live tuning updates every authored terrain body")
  game.controls.virtual_enabled = true
- game.tuning.effective.gravity_scale = 0.0
- game.ball.teleport_to(Vector2(310, 1240), Vector2(0, 100))
- await frames(3)
  game.controls.virtual_left = true
- await frames(12)
- check(game.flippers[0].strikes > 0 and game.ball.linear_velocity.y < -300, "Left flipper launches an approaching ball", str(game.ball.linear_velocity))
- game.controls.virtual_left = false
- await frames(20)
- game.ball.teleport_to(Vector2(490, 1240), Vector2(0, 100))
- await frames(3)
  game.controls.virtual_right = true
  await frames(12)
- check(game.flippers[1].strikes > 0 and game.ball.linear_velocity.y < -300, "Right flipper launches an approaching ball", str(game.ball.linear_velocity))
- game.controls.virtual_right = false
- await frames(20)
-
- for speed: float in [1800.0, 4000.0, 8000.0]:
-  game.ball.teleport_to(Vector2(150, 600), Vector2(-speed, 0))
-  await frames(8)
-  check(game.ball.position.x > 68 and game.ball.linear_velocity.x > 0, "CCD rebounds from left rail at %d px/s" % speed, str(game.ball.position) + " " + str(game.ball.linear_velocity))
- for start_y: float in [685.0, 700.0, 715.0]:
-  game.ball.teleport_to(Vector2(650, start_y), Vector2(4000, 0))
-  await frames(8)
-  check(game.ball.position.x < 732 and game.ball.linear_velocity.x < 0, "Chunk seam side wall is closed at y=%d" % start_y, str(game.ball.position))
- # This connector probe measures unobstructed motion at a fixed incoming speed.
- game.tuning.set_value("max_downward_speed", 1500.0)
- game.tuning.effective.gravity_scale = 0.0
- game.ball.teleport_to(Vector2(300, 660), Vector2(0, 1000))
- await frames(12)
- check(game.ball.position.y > 745 and absf(game.ball.linear_velocity.y - 1000) < 2, "Open connector crosses downward without snagging", str(game.ball.position))
- game.ball.teleport_to(Vector2(300, 740), Vector2(0, -1000))
- await frames(12)
- check(game.ball.position.y < 650 and absf(game.ball.linear_velocity.y + 1000) < 2, "Open connector crosses upward without snagging", str(game.ball.position))
- game.tuning.select_profile(0)
- game.tuning.effective.gravity_scale = 0.0
- var hits_before: int = game.ball.bumper_hit_count
- var score_before: int = game.score
- game.ball.teleport_to(Vector2(260, 240), Vector2(0, 1400))
- await frames(12)
- check(game.ball.bumper_hit_count > hits_before and game.ball.linear_velocity.y < 0, "Circular bumper rebounds and emits gameplay event", str(game.ball.linear_velocity))
- check(game.score > score_before, "Bumper hit increases score")
- hits_before = game.ball.bumper_hit_count
- game.ball.teleport_to(Vector2(205, 900), Vector2(0, 1200))
- await frames(18)
- check(game.ball.bumper_hit_count > hits_before, "Triangle bumper has solid collision")
- hits_before = game.ball.bumper_hit_count
- game.ball.teleport_to(Vector2(130, 350), Vector2(8000, 0))
- await frames(4)
- check(game.ball.bumper_hit_count > hits_before and game.ball.position.x < 317, "Shape sweep catches circular bumper at 8000 px/s", str(game.ball.position))
- game.ball.teleport_to(Vector2(120, 1015), Vector2(6000, 0))
- hits_before = game.ball.bumper_hit_count
- await frames(4)
- check(game.ball.bumper_hit_count > hits_before and game.ball.position.x < 260, "Shape sweep catches triangle at 6000 px/s", str(game.ball.position))
- var rings_before: int = game.rings_collected
- game.ring_field.reset_rings()
- game.ball.teleport_to(Vector2(155, 230), Vector2(0, 400))
- game.ring_field.previous_ball_position = Vector2(155, 230)
- await frames(12)
- check(game.rings_collected > rings_before and game.special_meter > 0, "Ring collection scores and charges special meter")
- game.tuning.select_profile(0)
- game.tuning.set_value("wall_restitution", 0.5)
- check(is_equal_approx(game.chunks[0].wall_material.bounce, 0.5) and is_equal_approx(game.chunks[1].wall_material.bounce, 0.5), "Live tuning updates both chunks")
- game.tuning.modifier_enabled = true
- game.tuning.rebuild()
- check(is_equal_approx(game.tuning.effective.steering_acceleration, 2750.0) and is_equal_approx(game.tuning.effective.flipper_launch_strength, game.tuning.BALANCED.flipper_launch_strength * 1.15), "Example Chao boosts Quick / Tight effective stats")
- game.tuning.modifier_enabled = false
- game.tuning.select_profile(0)
- game.toggle_pause()
- var paused_position: Vector2 = game.ball.position
- await frames(12)
- check(game.ball.position.distance_to(paused_position) < 0.1, "Pause freezes gameplay physics")
- game.toggle_pause()
- game.ball.teleport_to(Vector2(400, 1470), Vector2(0, 800))
- game.set_physics_process(true)
- var old_number: int = game.ball_number
- await frames(140)
- check(game.ball_number > old_number and game.ball.position.y < 1400 and not game.ball.serve_pending, "Drain automatically respawns and relaunches", str(game.ball.position))
- # Fixed-seed broad play: repeatedly time both flippers when the ball approaches.
- game.tuning.select_profile(0)
- var escaped: bool = false
- var trapped_ticks: int = 0
- var worst_trapped_ticks: int = 0
- var previous_sample: Dictionary = {}
- for i in 2400:
-  game.controls.virtual_left = game.ball.position.y > 1130 and (i % 36 < 18)
-  game.controls.virtual_right = game.controls.virtual_left
-  game.controls.virtual_steering = sin(float(i) / 110.0) * 0.7
-  # After a detected drain the body falls below the table during the respawn delay.
-  # Sample eligibility before stepping so an escape cannot hide behind a new respawn.
-  var active_shot: bool = game.respawn_time < 0.0 and not game.ball.serve_pending and not game.ball._teleport_pending
-  await frames(1)
-  if active_shot and (game.ball.position.x < 20 or game.ball.position.x > 780 or game.ball.position.y < 10):
-   if not escaped:
-    print("ESCAPE TRACE | previous=", previous_sample, " current=", {"tick": i, "position": game.ball.position, "velocity": game.ball.linear_velocity, "respawn": game.respawn_time})
-   escaped = true
-  previous_sample = {"tick": i, "position": game.ball.position, "velocity": game.ball.linear_velocity, "respawn": game.respawn_time}
-  trapped_ticks = trapped_ticks + 1 if game.ball.linear_velocity.length() < 5 and not game.ball.serve_pending else 0
-  worst_trapped_ticks = maxi(worst_trapped_ticks, trapped_ticks)
- check(not escaped, "20-second simulated play stays inside side/top rails")
- check(worst_trapped_ticks < 240, "20-second simulated play has no stationary trap lasting 2 seconds", str(worst_trapped_ticks))
+ for paddle: PlaygroundFlipper in game.flippers:
+  check(is_equal_approx(paddle.rotation, paddle.active_angle()), "Authored flipper responds to shared input")
+ game.reset_ball()
+ await frames(3)
+ check(game.ball.serve_pending and game.ball.position == game.playfield.spawn, "Reset returns to authored spawn")
  print("RESULT | %d checks | %d failures" % [checks, failures])
  game.queue_free()
  await frames(3)

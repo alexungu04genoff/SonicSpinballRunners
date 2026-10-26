@@ -27,6 +27,9 @@ func run() -> void:
  var identities := [game.ball.get_instance_id(), game.tuning.get_instance_id(), game.controls.get_instance_id(), game.presentation.camera.get_instance_id()]
  check(game.library.visuals.size() == 2, "Only the opening two variants are cached at startup")
  check(game.resident.size() == 2, "Two Acts resident at startup")
+ check(game._authored_root == null and game.authored_timings.is_empty(), "Endless never builds and discards a standalone Act")
+ check(game.debug_panel == null and game.find_children("DebugAndHUD", "", true, false).is_empty(), "Endless creates no hidden standalone Act tools")
+ check(not game.has_method("_generate_layout") and not game.has_method("request_generation"), "Endless has no legacy random-table entry point")
  check(game.retro_filter.selected_effects == [2, 4, 3], "Endless starts with the gameplay N64/VHS/CRT shader stack")
  check(game._foreground_container.get_parent() == game._composite_view and game.retro_filter.world_view == game._composite_view, "World shaders filter the combined foreground and background")
  check(game.hud.get_parent() == game, "HUD stays outside the world shader stack")

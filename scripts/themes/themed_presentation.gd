@@ -1,5 +1,5 @@
 extends TablePresentation
-## Collisionless themed renderer shared by generated and authored playfields.
+## Collisionless themed renderer for authored playfields and offline theme baking.
 ## All gameplay shapes, cameras, and animated anchors remain owned by TablePresentation.
 const DecorSlots = preload("res://scripts/act_editor/decor_slots.gd")
 const GreenHillTheme = preload("res://scripts/themes/green_hill_theme.gd")
@@ -39,30 +39,6 @@ func _clear_playfield_geometry() -> void:
  authored_floor_outline.clear()
  decor_root = null
  skipped_decor_slots.clear()
-
-func build(chunks: Array[TableChunk], junctions: Variant = [], bounds: Rect2 = Rect2()) -> void:
- super.build(chunks, junctions, bounds)
- _initialize_terrain_skin()
- for chunk: TableChunk in chunks:
-  var outline := chunk.data.world_polygon(chunk.data.playfield_outline)
-  if outline.size() >= 3:
-   _outlines.append(outline)
- # Union touching chunk footprints before extrusion so the seam stays continuous.
- var terrain_polygons: Array[PackedVector2Array] = []
- for outline: PackedVector2Array in _outlines:
-  var candidate := outline
-  var remaining: Array[PackedVector2Array] = []
-  for existing: PackedVector2Array in terrain_polygons:
-   var merged := Geometry2D.merge_polygons(candidate, existing)
-   if merged.size() == 1:
-    candidate = merged[0]
-   else:
-    remaining.append(existing)
-  remaining.append(candidate)
-  terrain_polygons = remaining
- for outline: PackedVector2Array in terrain_polygons:
-  _make_land(outline, LAND_DEPTH, terrain_root)
- _finish_terrain_skin()
 
 func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
  super.build_authored(runtime, bounds, cell_size)
@@ -232,10 +208,6 @@ func _finish_terrain_skin() -> void:
 func _floor_line(_a: Vector2, _b: Vector2, _mat: Material) -> void:
  # The procedural grass is the visual surface; the diagnostic overlay is unchanged.
  pass
-
-func _label(text: String, point: Vector2, font_size: int, color: Color, parent: Node3D = self) -> void:
- if text == "DRAIN" or parent != self:
-  super._label(text, point, font_size, color, parent)
 
 func _configure_camera() -> void:
  super._configure_camera()

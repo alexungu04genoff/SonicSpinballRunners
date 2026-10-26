@@ -28,8 +28,8 @@ func load_act(name: String) -> void:
  check(game.request_authored_act("res://data/acts/%s.tres" % name), "Main game accepts authored example: " + name)
  for i in 120:
   await frames(1)
-  if not game.generation_pending: break
- check(not game.generation_pending and game.last_source_error.is_empty(), "Authored source finishes loading: " + name)
+  if not game.loading_act: break
+ check(not game.loading_act and game.last_source_error.is_empty(), "Authored source finishes loading: " + name)
  await frames(3)
 
 func instance_ids(values: Array) -> Array:
@@ -59,7 +59,7 @@ func snapshot() -> Dictionary:
   "scoring and rings": [game.score, game.rings_collected, game.special_meter, game.ball_number, game.ring_field.rings.duplicate(true), game.scorecraft.chain, game.scorecraft.multiplier, game.scorecraft.remaining, game.scorecraft.last_award.duplicate(true)],
   "character and tuning": [game.character_id, game.specials.character_id, game.specials.definition.get_instance_id(), game.tuning.base.get_instance_id(), game.tuning.effective.duplicate(true), game.tuning.overrides.duplicate(true), game.tuning.build_ids],
   "camera": [camera.global_transform, camera.projection, camera.fov, camera.size, camera.near, camera.far, presentation.camera_focus, presentation.camera_target, presentation.camera_settings.duplicate(true), presentation.camera_preset, presentation.camera_follow_enabled],
-  "lifecycle": [game.level_source, game.layout.signature, game.authored_activation_count, game.authored_exit_count, game.respawn_time, game.auto_launch_time, game.ring_reset_time],
+  "lifecycle": [game.playfield.source, game.authored_document.fingerprint(), game.authored_activation_count, game.authored_exit_count, game.respawn_time, game.auto_launch_time, game.ring_reset_time],
   "authored document": game.authored_document.fingerprint() if game.authored_document != null else "",
   "authored silhouettes": [presentation.authored_terrain_polygons.duplicate(true), presentation.authored_composite_polygons.duplicate(true), presentation.authored_open_paths.duplicate(true), presentation.authored_floor_outline.duplicate()],
   "pickup and contact feedback": [presentation.ring_pickups.duplicate(true), presentation.flash_times.duplicate(), presentation.ball_visual.transform, ring_meshes],
@@ -70,9 +70,12 @@ func compare(before: Dictionary, label: String) -> void:
  for key: String in before:
   check(before[key] == after[key], "%s preserves %s" % [label, key])
 
+func authored_props() -> Array:
+ return game.presentation.decor_root.get_children().filter(func(node: Node): return node.has_meta("decor_slot_id"))
+
 func variants() -> Array:
  var result: Array = []
- for prop: Node3D in game.presentation.decor_root.get_children():
+ for prop: Node3D in authored_props():
   result.append([prop.get_meta("decor_slot_id"), prop.get_meta("decor_variant"), prop.get_meta("decor_skin_id"), str(prop.transform)])
  return result
 
@@ -93,10 +96,11 @@ func check_visuals(theme_id: String, label: String) -> void:
  check(lights.size() == (3 if theme_id == "lava_reef" else (2 if theme_id in ["casino_night", "aquarium_park"] else 0)), "Local lights stay bounded and clear on switching: " + label)
  if game.authored_document == null: return
  var slots: Array = game.authored_document.decor_slots
- check(p.decor_root.get_child_count() == slots.size() and p.skipped_decor_slots.is_empty(), "Every supported generic slot resolves: " + label)
+ var props := authored_props()
+ check(props.size() == slots.size() and p.skipped_decor_slots.is_empty(), "Every supported generic slot resolves: " + label)
  var exact := true
- for i in mini(slots.size(), p.decor_root.get_child_count()):
-  var prop: Node3D = p.decor_root.get_child(i)
+ for i in mini(slots.size(), props.size()):
+  var prop: Node3D = props[i]
   var slot: Dictionary = slots[i]
   exact = exact and prop.get_meta("decor_slot_id") == slot.slot_id and prop.get_meta("decor_skin_id") == theme_id
   exact = exact and prop.position.is_equal_approx(TablePresentation.map_point(slot.position, TablePresentation.RAIL_HEIGHT + TablePresentation.RAIL_CAP_HEIGHT))
@@ -134,7 +138,7 @@ func run() -> void:
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results"))
  root.size = Vector2i(1440, 1000)
  game = Game.new()
- game.generation_enabled = false
+
  game.authored_act_path = "res://data/acts/decor_terraces.tres"
  root.add_child(game)
  await frames(8)
@@ -182,17 +186,6 @@ func run() -> void:
  var status := OS.execute(OS.get_executable_path(), ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--log-file", ProjectSettings.globalize_path("res://test-results/theme-restart.log"), "--script", "res://tests/theme_runtime_regression.gd", "--", "--verify-restart"], process_output, true)
  check(status == 0 and str(process_output).contains("0 failures"), "A separate Godot process verifies stable variant selection and transforms")
  if status != 0: print(str(process_output))
- check(game.request_generated_source(), "Main game accepts generated-source smoke check")
- for i in 120:
-  await frames(1)
-  if not game.generation_pending: break
- check(game.level_source == "generated" and not game.chunks.is_empty(), "Generated source builds in the same main engine")
- game.presentation.set_camera_follow(false)
- var generated_before := snapshot()
- for theme_id: String in THEMES:
-  check(game.set_theme(theme_id), "Generated source accepts theme: " + theme_id)
-  compare(generated_before, "generated/" + theme_id)
-  check_visuals(theme_id, "generated/" + theme_id)
  var invalid_before := snapshot()
  check(not game.set_theme("unknown_theme"), "Unknown themes are rejected without resetting the run")
  compare(invalid_before, "unknown theme")

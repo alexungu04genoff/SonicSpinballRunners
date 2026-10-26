@@ -1,6 +1,6 @@
 class_name ScorecraftPanel
 extends VBoxContainer
-## Compact shared HUD; baseline comparison always starts a fresh same-seed run.
+## Compact shared HUD; baseline comparison always starts a fresh Act run.
 var game: Node
 var title: Label
 var next_action: Label
@@ -21,9 +21,9 @@ func _ready() -> void:
  toggle = CheckButton.new()
  toggle.text = "Scorecraft combos"
  toggle.add_theme_font_size_override("font_size", 13)
- toggle.tooltip_text = "Compare against baseline scoring. Switch at serve or while paused; restarts this seed and clears score."
+ toggle.tooltip_text = "Compare against baseline scoring. Switch at serve or while paused; restarts this Act and clears score."
  toggle.toggled.connect(func(value: bool):
-  game.request_generation(game.generation_seed, -1, -1, {"combos": value})
+  game.request_replay({"combos": value})
   toggle.release_focus()
  )
  add_child(toggle)
@@ -61,4 +61,4 @@ func _process(_delta: float) -> void:
   else:
    award.text = "%s +%d · ×%d" % [str(info.kind).capitalize(), info.total, info.multiplier]
  toggle.set_pressed_no_signal(combo.enabled)
- toggle.disabled = not game.can_regenerate()
+ toggle.disabled = not game.can_reload_act()

@@ -1,12 +1,12 @@
-extends "res://tests/score_attack_regression.gd"
-## Same seed and feedback-input policy; trajectories/score are observations, not
+extends "res://tests/act_game_fixture.gd"
+## Same authored Act and feedback-input policy; trajectories/score are observations, not
 ## win-rate or fun assertions. No ball/velocity edits after the normal serve.
 func run() -> void:
  var samples: Array[Dictionary] = []
  for profile in 2:
   for id: String in ["none", "ice", "spring", "magnet"]:
    game = load("res://scenes/playground.tscn").instantiate()
-   game.generation_seed = 18
+
    root.add_child(game)
    await frames(4)
    game.tuning.select_profile(profile)

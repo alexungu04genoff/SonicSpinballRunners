@@ -14,11 +14,6 @@ var merged_examples: Array[Dictionary] = []
 
 class ObservedGame:
 	extends "res://experiments/visual_lab/visual_lab.gd"
-	var generator_calls := 0
-	func _generate_layout(seed_value: int, preference: int, grid_mode: int = -1, for_zone: bool = false, difficulty_override: int = -2) -> Dictionary:
-		generator_calls += 1
-		return super._generate_layout(seed_value, preference, grid_mode, for_zone, difficulty_override)
-
 
 func _initialize() -> void:
 	call_deferred("run")
@@ -578,7 +573,7 @@ func check_main_game(document: Resource, expected: PackedVector2Array) -> void:
 	game.authored_act_path = path
 	root.add_child(game)
 	await frames(6)
-	check(game.generator_calls == 0 and game.level_source == "authored" and game.chunks.is_empty(),
+	check(not game.has_method("_generate_layout") and game.playfield.source == "authored",
 		"Normal Green Hill application loads a saved composite without procedural generation")
 	check(game.authored_document != null and game.authored_document.fingerprint() == document.fingerprint()
 		and game.authored_runtime.terrain.size() == 1 and game.authored_runtime.terrain[0].points == expected,

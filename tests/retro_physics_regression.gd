@@ -48,7 +48,7 @@ func record(index: int) -> void:
   quit(1)
   return
  var game: Node = load("res://experiments/visual_lab/visual_lab.tscn").instantiate()
- game.generation_seed = 18
+
  root.add_child(game)
  game.retro_filter.set_preset(index if index < 5 else 0)
  if index == 6:

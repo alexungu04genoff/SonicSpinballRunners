@@ -42,6 +42,9 @@ var preparing_theme := ""
 var theme_attempts := {}
 var theme_materials := {}
 var bake_status := "Not requested"
+var profile_stage := "idle"
+var profile_max_cpu_ms := {}
+var profile_resource_wait_ms := 0.0
 var _fingerprints := {}
 var _assets := BakeAssets.new()
 var _asset_theme := ""
@@ -85,6 +88,7 @@ func request_theme(theme_id: String) -> bool:
  return true
 
 func _fingerprint(theme_id: String) -> String:
+ profile_stage = "fingerprint.wait"
  if not _fingerprints.has(theme_id):
   _worker = Thread.new()
   _worker.start(Bake.pipeline_hash.bind(theme_id), Thread.PRIORITY_LOW)
@@ -104,6 +108,7 @@ func _prefetch_theme(theme_id: String) -> void:
   " | Act recipes=", visuals.size(), " | physics templates=", runtimes.size())
  preparing_theme = ""
  busy = false
+ profile_stage = "idle"
 
 func _load_theme(theme_id: String, fingerprint: String) -> bool:
  if backgrounds.has(theme_id): return true
@@ -123,6 +128,7 @@ func _load_theme(theme_id: String, fingerprint: String) -> bool:
  var mesh := ArrayMesh.new()
  mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, box.get_mesh_arrays())
  var seen := {}
+ profile_stage = "theme.probes"
  var deadline := Time.get_ticks_usec() + 1000
  for material: Material in background.preload_materials:
   if Time.get_ticks_usec() >= deadline:
@@ -193,8 +199,11 @@ func _build(theme_id: String, id: int) -> void:
   busy = false
   return
  if not runtimes.has(id):
+  profile_stage = "physics.compile"
+  var compile_started := Time.get_ticks_usec()
   # Physics is theme-independent and compiled once for a requested Act.
   var runtime := Compiler.compile(documents[id], _game.tuning, _game.controls, _game.ball, saved.collisions if saved != null else [])
+  _record_cpu("physics.compile", compile_started)
   if not runtime.error.is_empty():
    error = runtime.error
    busy = false
@@ -229,13 +238,16 @@ func _build(theme_id: String, id: int) -> void:
   fallback_builds += 1
   print("ENDLESS_BAKE_FALLBACK | ", key(theme_id, id), " | ", bake_status, " | Run Bake Endless.cmd after authoring changes")
  if not themes.has(theme_id) or themes[theme_id] is Dictionary:
-  # Theme constructors create private resources, never live scene nodes. Decode
-  # images and create materials without blocking the gameplay scene tree.
-  _worker = Thread.new()
-  _worker.start(Registry.create.bind(theme_id), Thread.PRIORITY_LOW)
-  while _worker.is_alive(): await get_tree().process_frame
-  themes[theme_id] = _worker.wait_to_finish()
-  _worker = null
+  if bake_only:
+   # Offline work can block here. The headless renderer's texture RID storage
+   # must not race threaded resource loads while constructing image textures.
+   themes[theme_id] = Registry.create(theme_id)
+  else:
+   _worker = Thread.new()
+   _worker.start(Registry.create.bind(theme_id), Thread.PRIORITY_LOW)
+   while _worker.is_alive(): await get_tree().process_frame
+   themes[theme_id] = _worker.wait_to_finish()
+   _worker = null
  _theme_lru.erase(theme_id)
  _theme_lru.append(theme_id)
  var theme: RefCounted = themes[theme_id]
@@ -261,7 +273,7 @@ func _build(theme_id: String, id: int) -> void:
  p.stage = "capture"
  var recipe := Recipe.new()
  var excluded := [p.camera, p._world_environment, p._key_light, p.ball_visual, p.physics_overlay,
-  p.chunk_overlay, p.connector_overlay, p.construction_grid_overlay, p.scenery_root]
+  p.construction_grid_overlay, p.scenery_root]
  for child: Node in p.get_children():
   if child not in excluded: await _capture(recipe, child, p)
  recipe.finish(p)
@@ -308,7 +320,12 @@ func _build(theme_id: String, id: int) -> void:
   baked.visual_recipe = recipe
   _assets.share(recipe)
   _assets.share(backgrounds[theme_id])
-  if not _assets.error.is_empty(): error = _assets.error
+  if not _assets.error.is_empty():
+   error = _assets.error
+   await _dispose(p)
+   rings.free()
+   busy = false
+   return
   DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(bake_path.get_base_dir()))
   var result := ResourceSaver.save(baked, bake_path, ResourceSaver.FLAG_COMPRESS)
   if result != OK: error = "Could not save geometry bake: " + error_string(result)
@@ -342,16 +359,31 @@ func _build(theme_id: String, id: int) -> void:
 func _finish_request(theme_id: String, id: int, started_at: int, source: String) -> void:
  last_prepare_ms = (Time.get_ticks_usec() - started_at) / 1000.0
  busy = false
+ profile_stage = "idle"
  print("ENDLESS_PREPARED | ", key(theme_id, id), " | source=", source, " | ms=", last_prepare_ms, " | GPU warm frames=", last_warm_frames, " | cached=", visuals.size(), " | geometry loaded=", last_reused_jobs, " | geometry generated=", last_computed_jobs)
 
+func _record_cpu(label: String, started_at: int) -> void:
+ profile_max_cpu_ms[label] = maxf(profile_max_cpu_ms.get(label, 0.0), (Time.get_ticks_usec() - started_at) / 1000.0)
+
 func _load_bake(path: String) -> Resource:
+ profile_stage = "resource.request"
  if not ResourceLoader.exists(path): return null
+ if bake_only: return ResourceLoader.load(path)
+ var started_at := Time.get_ticks_usec()
  if ResourceLoader.load_threaded_request(path, "", true) != OK: return null
+ _record_cpu("resource.request", started_at)
+ profile_stage = "resource.wait"
  while ResourceLoader.load_threaded_get_status(path) == ResourceLoader.THREAD_LOAD_IN_PROGRESS: await get_tree().process_frame
+ profile_resource_wait_ms += (Time.get_ticks_usec() - started_at) / 1000.0
  if ResourceLoader.load_threaded_get_status(path) != ResourceLoader.THREAD_LOAD_LOADED: return null
- return ResourceLoader.load_threaded_get(path)
+ profile_stage = "resource.collect"
+ started_at = Time.get_ticks_usec()
+ var result: Resource = ResourceLoader.load_threaded_get(path)
+ _record_cpu("resource.collect", started_at)
+ return result
 
 func _warm_recipe(recipe: Resource, theme_id: String) -> void:
+ profile_stage = "scene.instantiate"
  var started_at := Time.get_ticks_usec()
  var root := Node3D.new()
  root.process_mode = Node.PROCESS_MODE_DISABLED
@@ -383,7 +415,9 @@ func _warm_recipe(recipe: Resource, theme_id: String) -> void:
  var nodes: Array[Node] = []
  var deadline := Time.get_ticks_usec() + 1000
  for i in recipe.records.size():
+  var node_started := Time.get_ticks_usec()
   recipe.instantiate_one(i, nodes, root)
+  _record_cpu("scene.node", node_started)
   if Time.get_ticks_usec() >= deadline:
    await get_tree().process_frame
    deadline = Time.get_ticks_usec() + 1000
@@ -432,11 +466,13 @@ func _warm(p: Node3D, world_environment: WorldEnvironment = null, warm_foregroun
  await _warm_pass(renderables, overlay)
 
 func _warm_pass(renderables: Array[Node], overlay: Node) -> void:
+ profile_stage = "graphics.queue"
  var warmed := {}
  var batch: Array[GeometryInstance3D] = []
  var cold_features := 0
  var batch_limit := 8 if _game.get("started") == true else 64
  for node: GeometryInstance3D in renderables:
+  var queue_started := Time.get_ticks_usec()
   if overlay != null and overlay.is_ancestor_of(node): continue
   node.show()
   # Keep every material inside the frustum at least once, including off-camera
@@ -448,6 +484,7 @@ func _warm_pass(renderables: Array[Node], overlay: Node) -> void:
     warmed[signature] = true
     cold_features += 1
   batch.append(node)
+  _record_cpu("graphics.queue", queue_started)
   # Colors and uniform values do not require a different shader. The previous
   # per-material-instance wait spent hundreds of frames on equivalent programs.
   if cold_features >= 1 or batch.size() >= batch_limit:
@@ -480,12 +517,16 @@ func _shader_signatures(node: GeometryInstance3D) -> Array[int]:
  return result
 
 func _draw_frames(count := 2) -> void:
+ var previous_stage := profile_stage
+ profile_stage = "graphics.draw"
  for i in count:
   last_warm_frames += 1
   await get_tree().process_frame
   if DisplayServer.get_name() != "headless": await RenderingServer.frame_post_draw
+ profile_stage = previous_stage
 
 func _dispose(root: Node) -> void:
+ profile_stage = "scene.retire"
  var nodes: Array[Node] = [root]
  var index := 0
  while index < nodes.size():
@@ -496,12 +537,15 @@ func _dispose(root: Node) -> void:
   index += 1
  var deadline := Time.get_ticks_usec() + 1000
  while not nodes.is_empty():
+  var free_started := Time.get_ticks_usec()
   nodes.pop_back().free()
+  _record_cpu("scene.free", free_started)
   if Time.get_ticks_usec() >= deadline:
    await get_tree().process_frame
    deadline = Time.get_ticks_usec() + 1000
 
 func trim(protected: Array, reserve_variant := 0, reserve_theme := 0) -> void:
+ var trim_started := Time.get_ticks_usec()
  var pinned := {}
  var pinned_themes := {}
  var pinned_ids := {}
@@ -535,6 +579,7 @@ func trim(protected: Array, reserve_variant := 0, reserve_theme := 0) -> void:
   runtimes[id].root.free()
   runtimes.erase(id)
   shapes.erase(id)
+ _record_cpu("cache.release", trim_started)
 
 static func key(theme: String, id: int) -> String:
  return "%s:%d" % [theme, id]

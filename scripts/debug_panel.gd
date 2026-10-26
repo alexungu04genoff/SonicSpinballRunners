@@ -1,21 +1,15 @@
 class_name PlaygroundDebugPanel
 extends CanvasLayer
 
-const ZONE_LAYOUT_NAMES := ["Layout shuffle A", "Layout shuffle B", "Layout shuffle C"]
+const ActControls = preload("res://scripts/authored_act/act_controls.gd")
 
 var game: Node
 var tuning: PhysicsTuning
 var panel: PanelContainer
-var generation_panel: PanelContainer
-var seed_field: SpinBox
-var difficulty_selector: OptionButton
-var zone_difficulty_selector: OptionButton
-var grid_selector: OptionButton
-var grid_caption: Label
-var generation_summary: Label
-var generation_hint: Label
+var act_panel: PanelContainer
+var act_summary: Label
+var act_hint: Label
 var traversal_telemetry: Label
-var generation_buttons: Array[Button] = []
 var telemetry: Label
 var steering_telemetry: Label
 var steering_presets: OptionButton
@@ -25,7 +19,7 @@ var camera_fields: Dictionary = {}
 var score_label: Label
 var message_label: Label
 var pause_label: Label
-var challenge_panel: ScoreAttackPanel
+var act_controls: Control
 var practice_toggle: CheckButton
 var values: RichTextLabel
 var spinboxes: Dictionary = {}
@@ -43,7 +37,7 @@ func _ready() -> void:
  var hud_stack := VBoxContainer.new()
  hud.add_child(hud_stack)
  var title := Label.new()
- title.text = "SPINBALL RUNNERS  /  PHYSICS PLAYGROUND"
+ title.text = "SPINBALL RUNNERS  /  AUTHORED ACT"
  title.add_theme_font_size_override("font_size", 16)
  title.modulate = Color("73b5cb")
  hud_stack.add_child(title)
@@ -111,7 +105,7 @@ func _ready() -> void:
  modifier.tooltip_text = "Legacy test: +25% steering acceleration / +15% flip. Starts a fresh run; never stacks with Chao Lab."
  modifier.add_theme_font_size_override("font_size", 13)
  modifier.toggled.connect(func(enabled: bool):
-  game.request_generation(game.generation_seed, -1, -1, {"chao": "practice" if enabled else "none"})
+  game.request_replay({"chao": "practice" if enabled else "none"})
   modifier.set_pressed_no_signal(tuning.modifier_enabled)
   modifier.release_focus()
  )
@@ -140,21 +134,6 @@ func _ready() -> void:
  )
  overlays.add_child(geometry)
  geometry.tooltip_text = "X-ray outlines of the actual 2D collider footprints on the board surface."
- var boundaries := CheckButton.new()
- boundaries.text = "Chunks"
- boundaries.toggled.connect(func(on: bool):
-  game.presentation.chunk_overlay.visible = on
-  boundaries.release_focus()
- )
- overlays.add_child(boundaries)
- var connectors := CheckButton.new()
- connectors.text = "Connectors"
- connectors.add_theme_font_size_override("font_size", 12)
- connectors.toggled.connect(func(on: bool):
-  game.presentation.connector_overlay.visible = on
-  connectors.release_focus()
- )
- overlays.add_child(connectors)
  camera_presets = OptionButton.new()
  for camera_name: String in TablePresentation.CAMERA_NAMES:
   camera_presets.add_item("Camera: " + camera_name)
@@ -252,62 +231,27 @@ func _ready() -> void:
  tuning.changed.connect(refresh_effective)
  game.specials.character_changed.connect(func(_id: String): refresh_fields())
  refresh_effective()
- _build_generation_panel()
- challenge_panel = ScoreAttackPanel.new()
- challenge_panel.game = game
- add_child(challenge_panel)
+ _build_act_panel()
+ act_controls = ActControls.new()
+ act_controls.game = game
+ add_child(act_controls)
 
-func _build_generation_panel() -> void:
- generation_panel = PanelContainer.new()
- generation_panel.position = Vector2(18, 148)
- generation_panel.size = Vector2(204, 680)
- add_child(generation_panel)
+func _build_act_panel() -> void:
+ act_panel = PanelContainer.new()
+ act_panel.position = Vector2(18, 148)
+ act_panel.size = Vector2(204, 680)
+ add_child(act_panel)
  var margin := MarginContainer.new()
  for side: String in ["left", "right", "top", "bottom"]:
   margin.add_theme_constant_override("margin_" + side, 10)
- generation_panel.add_child(margin)
+ act_panel.add_child(margin)
  var stack := VBoxContainer.new()
  stack.custom_minimum_size.x = 184
  stack.add_theme_constant_override("separation", 8)
  margin.add_child(stack)
- _label(stack, "TABLE GENERATOR", 16)
- _label(stack, "Seed (generator v%d)" % TableGenerator.VERSION, 12)
- seed_field = SpinBox.new()
- seed_field.min_value = 0
- seed_field.max_value = 2147483647
- seed_field.step = 1
- seed_field.get_line_edit().text_submitted.connect(func(_text: String): seed_field.get_line_edit().release_focus())
- stack.add_child(seed_field)
- _label(stack, "Sandbox difficulty (on build)", 12)
- difficulty_selector = OptionButton.new()
- for difficulty_name: String in TableGenerator.DIFFICULTY_NAMES:
-  difficulty_selector.add_item(difficulty_name)
- difficulty_selector.item_selected.connect(func(_index: int): difficulty_selector.release_focus())
- stack.add_child(difficulty_selector)
- _label(stack, "Zone difficulty (development)", 12)
- zone_difficulty_selector = OptionButton.new()
- zone_difficulty_selector.add_item("Official Zone: Easy")
- zone_difficulty_selector.add_item("DEV Zone: Normal")
- zone_difficulty_selector.add_item("DEV Zone: Hard")
- zone_difficulty_selector.tooltip_text = "Selects the room composition for all three Acts on the next build or Start / replay. Official Green Hill stays Easy. Development layouts still require collision validation; an unavailable layout is reported without falling back to Easy."
- zone_difficulty_selector.item_selected.connect(func(_index: int): zone_difficulty_selector.release_focus())
- stack.add_child(zone_difficulty_selector)
- grid_caption = _label(stack, "Middle section (apply on build)", 12)
- grid_selector = OptionButton.new()
- for mode_name: String in game.GRID_MODE_NAMES:
-  grid_selector.add_item(mode_name)
- grid_selector.item_selected.connect(func(_index: int): grid_selector.release_focus())
- stack.add_child(grid_selector)
- generation_buttons.append(_button(stack, "Build seed + preference", func():
-  seed_field.apply()
-  game.request_generation(int(seed_field.value), difficulty_selector.selected, grid_selector.selected, zone_generation_settings() if game.zone_enabled else {})
- ))
- generation_buttons.append(_button(stack, "Next seed", func(): game.request_generation((game.generation_seed + 1) % 2147483648, difficulty_selector.selected, grid_selector.selected, zone_generation_settings() if game.zone_enabled else {})))
- generation_buttons.append(_button(stack, "Repeat current layout", func(): game.request_generation(game.generation_seed, game.generation_difficulty)))
+ _label(stack, "AUTHORED ACT", 16)
  var grid_toggle := CheckButton.new()
- grid_toggle.text = "Construction grid"
- grid_toggle.add_theme_font_size_override("font_size", 12)
- grid_toggle.tooltip_text = "50 px construction grid, local coordinates and source-piece footprints. Generated connector collars may reshape their ends. Use Physics geometry for the final collision shapes."
+ grid_toggle.text = "Authoring grid"
  grid_toggle.toggled.connect(func(on: bool):
   game.presentation.construction_grid_overlay.visible = on
   grid_toggle.release_focus()
@@ -315,67 +259,16 @@ func _build_generation_panel() -> void:
  stack.add_child(grid_toggle)
  traversal_telemetry = _label(stack, "", 12)
  traversal_telemetry.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
- traversal_telemetry.custom_minimum_size.x = 184
- var summary_scroll := ScrollContainer.new()
- summary_scroll.custom_minimum_size.y = 145
- summary_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
- summary_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
- stack.add_child(summary_scroll)
- generation_summary = _label(summary_scroll, "", 12)
- generation_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
- generation_summary.custom_minimum_size.x = 168
- generation_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
- generation_hint = _label(stack, "", 12)
- generation_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
- generation_hint.modulate = Color("ffcf52")
- refresh_generation()
+ act_summary = _label(stack, "", 12)
+ act_summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ act_summary.custom_minimum_size.x = 184
+ act_hint = _label(stack, "Reload this saved Act using Replay Act or F5 in the themed player.", 12)
+ act_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ refresh_act()
 
-func refresh_generation() -> void:
- seed_field.value = game.generation_seed
- difficulty_selector.select(game.generation_difficulty)
- zone_difficulty_selector.select(maxi(0, game.zone_difficulty_override))
- grid_selector.select(game.generation_grid_mode)
- grid_caption.text = "Zone layout (apply on build)" if game.zone_enabled else "Middle section (apply on build)"
- for index in grid_selector.item_count:
-  grid_selector.set_item_text(index, ZONE_LAYOUT_NAMES[index] if game.zone_enabled else game.GRID_MODE_NAMES[index])
- grid_selector.tooltip_text = "All three shuffles use the full authored Zone library. Choose a different deterministic arrangement of rooms for this seed; this does not select a single grid recipe." if game.zone_enabled else "Existing catalogue selects an authored middle chunk. Grid base and Grid variant select their respective construction recipes; Easy uses the wider versions."
- if game.level_source == "authored":
-  var document: Resource = game.authored_document
-  generation_summary.text = "AUTHORED ACT\n%s\n\nGrid: %d × %d\nCell: %.1f px\nTerrain: %d\nObjects: %d\nRing trails: %d\n\n%s" % [document.title, document.grid_size.x, document.grid_size.y, document.cell_size, document.placements.size(), document.gameplay_objects.size(), document.ring_trails.size(), game.authored_act_path]
-  generation_summary.tooltip_text = "Exact saved geometry supplies this playfield. Seeded layout controls are available after choosing Generated / Existing. Physics, characters and scoring use the same game."
-  return
- var estimate: Dictionary = game.layout.difficulty_estimate
- generation_summary.text = "CURRENT SEED  %d\nPreference: %s\nEstimate: %s %.1f / 100\n" % [game.generation_seed, TableGenerator.DIFFICULTY_NAMES[game.generation_difficulty], TableGenerator.DIFFICULTY_NAMES[estimate.band], estimate.score]
- if game.zone_enabled:
-  generation_summary.text += "Zone: %s\n" % ("Official Easy" if game.zone_difficulty_override < 0 else "DEV " + TableGenerator.DIFFICULTY_NAMES[game.zone_difficulty_override])
- generation_summary.text += "%s: %s\n" % ["Layout" if game.zone_enabled else "Middle", ZONE_LAYOUT_NAMES[game.generation_grid_mode] if game.zone_enabled else game.GRID_MODE_NAMES[game.generation_grid_mode]]
- if game.zone_enabled or game.generation_grid_mode > 0:
-  generation_summary.text += "Kit v%d / cell 50 px\n" % GridPieceKit.VERSION
- if game.layout.has("transition_summary"):
-  generation_summary.text += "Transitions: %s\n" % game.layout.transition_summary
- if game.zone_enabled:
-  for index in game.layout.acts.size():
-   var layout_name: String = game.layout.acts[index].get("layout_name", "")
-   if not layout_name.is_empty():
-    generation_summary.text += "Act %d: %s\n" % [index + 1, layout_name]
- for i in game.layout.chunks.size():
-  var chunk: ChunkData = game.layout.chunks[i]
-  generation_summary.text += "\n%d. %s\nMirror: %s  Shift: %d\n" % [i + 1, chunk.chunk_id, "yes" if chunk.mirrored else "no", chunk.horizontal_shift_cells]
- for i in game.layout.junctions.size():
-  var junction: Dictionary = game.layout.junctions[i]
-  var rating: Dictionary = junction.difficulty_estimate
-  var style: String = junction.get("transition_style", "Aligned" if junction.junction_rails.is_empty() else "Step")
-  generation_summary.text += "\nJoin %d: %s\ny %.0f; checked %.0f px\nLargest ledge: %.0f px\n%s %.0f / 100\n" % [i + 1, style, junction.passage.get_center().y, junction.passage.size.x, rating.largest_ledge, TableGenerator.DIFFICULTY_NAMES[rating.band], rating.score]
- generation_summary.text += "\nFallback: %s\nRough geometry estimate" % ("yes" if game.layout.used_fallback else "no")
- generation_summary.text += "\n" + game.layout.selection_note
- generation_summary.tooltip_text = "Estimate is the maximum across authored chunk challenge, connector severity, sampled approach difficulty, and Normal's generated bank inclination. Checked join includes a safety margin. Approach lane is the narrowest sampled contiguous ball-center route, not total space across separate lanes. These are geometry heuristics, not measured player success rates."
- if game.zone_enabled:
-  generation_summary.tooltip_text += "\nZone composition separately checks room roles and the requested challenge within every Act. A severe junction alone is not enough to qualify a Hard Zone."
- for note: String in game.layout.get("transition_notes", PackedStringArray()):
-  generation_summary.tooltip_text += "\n" + note
-
-func zone_generation_settings() -> Dictionary:
- return {"zone_difficulty": -1 if zone_difficulty_selector.selected == 0 else zone_difficulty_selector.selected}
+func refresh_act() -> void:
+ var document: Resource = game.authored_document
+ act_summary.text = "%s\n\nGrid: %d × %d\nCell: %.1f px\nTerrain: %d\nObjects: %d\nRing trails: %d\n\n%s" % [document.title, document.grid_size.x, document.grid_size.y, document.cell_size, document.placements.size(), document.gameplay_objects.size(), document.ring_trails.size(), game.authored_act_path]
 
 func _label(parent: Node, text: String, font_size: int) -> Label:
  var label := Label.new()
@@ -422,51 +315,18 @@ func refresh_effective() -> void:
    break
 
 func _process(delta: float) -> void:
- practice_toggle.disabled = not game.can_regenerate() or game.zone_enabled
+ practice_toggle.disabled = not game.can_reload_act()
  var focus: Control = get_viewport().gui_get_focus_owner()
  var source_modal: bool = game.has_method("is_source_picker_open") and game.is_source_picker_open()
  game.controls.input_blocked = focus is LineEdit or source_modal
- pause_label.visible = get_tree().paused and game.score_attack.state != ScoreAttack.State.COMPLETE and game.zone.state not in [ZoneRun.State.DRAFT, ZoneRun.State.COMPLETE]
+ pause_label.visible = get_tree().paused
  _telemetry_elapsed += delta
  if _telemetry_elapsed < 0.10:
   return
  _telemetry_elapsed = 0.0
- var safe: bool = game.can_regenerate()
- var authored: bool = game.level_source == "authored"
- difficulty_selector.disabled = game.zone_enabled or authored
- grid_selector.disabled = authored
- zone_difficulty_selector.disabled = authored
- seed_field.editable = not authored
- for button: Button in generation_buttons:
-  button.disabled = not safe or authored
- generation_hint.text = "Ready to build. Resets score, rings and ball; keeps tuning." if safe else "Pause (Escape / Menu) to generate safely."
- if safe and game.zone_enabled:
-  var zone_preference: String = "Official Easy" if zone_difficulty_selector.selected == 0 else "DEV " + TableGenerator.DIFFICULTY_NAMES[zone_difficulty_selector.selected]
-  generation_hint.text = "Fresh Zone: %s. Resets scores, Chao and checkpoints." % zone_preference
- if authored:
-  generation_hint.text = "Choose Generated / Existing for seeded layouts. Start / replay reloads this saved Act."
- var chunk_index: int = game.current_chunk_index()
- var in_chunk: bool = chunk_index >= 0 and chunk_index < game.chunks.size()
- var chunk_name: String = game.chunks[chunk_index].data.chunk_id if in_chunk else "Outside course"
- if authored:
-  chunk_name = "Authored Act"
- traversal_telemetry.text = "Ball: %s\nCamera: %s\nTarget: %.0f, %.0f px" % [chunk_name, "Follow" if game.presentation.camera_follow_enabled else "Overview", game.presentation.camera_target.x, game.presentation.camera_target.y]
- if authored:
-  traversal_telemetry.text += "\nActivation crossings: %d\nExit crossings: %d" % [game.authored_activation_count, game.authored_exit_count]
- elif in_chunk and not game.chunks[chunk_index].data.construction_grid.is_empty():
-  var data: ChunkData = game.chunks[chunk_index].data
-  var local: Vector2 = game.ball.position - Vector2(data.grid_position + Vector2i(data.horizontal_shift_cells, 0)) * ChunkData.GRID_SIZE
-  if data.mirrored:
-   local.x = data.grid_dimensions.x * ChunkData.GRID_SIZE - local.x
-  var cell := Vector2i(floori(local.x / GridPieceKit.CELL_SIZE), floori(local.y / GridPieceKit.CELL_SIZE))
-  traversal_telemetry.text += "\nLocal cell: (%d, %d)" % [cell.x, cell.y]
+ traversal_telemetry.text = "Camera: %s\nTarget: %.0f, %.0f px\nActivation crossings: %d\nExit crossings: %d" % ["Follow" if game.presentation.camera_follow_enabled else "Overview", game.presentation.camera_target.x, game.presentation.camera_target.y, game.authored_activation_count, game.authored_exit_count]
  var velocity: Vector2 = game.ball.linear_velocity
  score_label.text = "%06d   /   %02d RINGS   /   BALL %02d" % [game.score, game.rings_collected, game.ball_number]
- if game.score_attack.state != ScoreAttack.State.FREE_PLAY:
-  var goal_state: String = "LOCKED" if game.score_attack.state == ScoreAttack.State.LOCKED else "OPEN — CLIMB UP!"
-  if game.score_attack.state == ScoreAttack.State.COMPLETE:
-   goal_state = "COMPLETE"
-  score_label.text = "%06d / %06d   •   GOAL %s" % [game.score, game.score_attack.target, goal_state]
  message_label.text = game.status_message
  telemetry.text = "Position   %7.1f, %7.1f px\nVelocity   %7.1f, %7.1f px/s\nSpeed      %7.1f    Assist %6.1f\nSpecial    %3.0f%%   |   Physics 120 Hz" % [game.ball.position.x, game.ball.position.y, velocity.x, velocity.y, velocity.length(), game.ball.steering_contribution, game.special_meter]
  var paused: bool = get_tree().paused

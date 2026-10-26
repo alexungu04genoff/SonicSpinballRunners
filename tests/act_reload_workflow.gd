@@ -40,7 +40,7 @@ func run() -> void:
 	routed_wheel.button_index = MOUSE_BUTTON_WHEEL_UP
 	routed_wheel.pressed = true
 	var previous_zoom := p.overview_zoom
-	Input.parse_input_event(routed_wheel)
+	root.push_input(routed_wheel, true)
 	await frames(2)
 	check(p.overview_zoom > previous_zoom, "Root viewport routes wheel input into the overview camera")
 	var routed_drag := InputEventMouseMotion.new()
@@ -48,7 +48,7 @@ func run() -> void:
 	routed_drag.relative = Vector2(25, 20)
 	routed_drag.button_mask = MOUSE_BUTTON_MASK_MIDDLE
 	var previous_focus := p.camera_focus
-	Input.parse_input_event(routed_drag)
+	root.push_input(routed_drag, true)
 	await frames(2)
 	check(not p.camera_focus.is_equal_approx(previous_focus), "Root viewport routes middle drag into the overview camera")
 	var overview_state := [p.camera_focus, p.overview_zoom, p.camera.transform]
@@ -110,7 +110,8 @@ func run() -> void:
 	await key(KEY_F5)
 	await await_rebuild()
 	check(paused and not game.controls.input_blocked and game.authored_document.decor_slots[0].variant_index == 99, "F5 reloads while preserving an existing pause")
-	check(game.presentation.decor_warnings.size() == 1 and game.presentation.decor_root.get_child_count() == 3 and game.source_note.tooltip_text.contains("using Auto"), "Missing theme variant falls back and reports its warning in the main HUD")
+	var authored_props: Array = game.presentation.decor_root.get_children().filter(func(node: Node): return node.has_meta("decor_slot_id"))
+	check(game.presentation.decor_warnings.size() == 1 and authored_props.size() == 3 and game.source_note.tooltip_text.contains("using Auto"), "Missing theme variant falls back and reports its warning for all three authored props")
 	var stable_root: Node = game._authored_root
 	var stable_fingerprint: String = game.authored_document.fingerprint()
 	var invalid: Resource = document.copy_document()

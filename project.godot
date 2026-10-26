@@ -2,8 +2,8 @@
 config_version=5
 
 [application]
-config/name="Spinball Runners — Physics Playground"
-run/main_scene="res://scenes/playground.tscn"
+config/name="Sonic Spinball Runners"
+run/main_scene="res://experiments/visual_lab/visual_lab.tscn"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 
 [display]

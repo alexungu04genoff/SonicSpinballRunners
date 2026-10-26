@@ -58,7 +58,7 @@ func select_character(id: String) -> void:
  character_changed.emit(id)
 
 func can_use() -> bool:
- return not get_tree().paused and not game.generation_pending and not game.ball.on_ramp and not game.ball.serve_pending and not game.ball._teleport_pending and game.respawn_time < 0.0 and game.score_attack.state != ScoreAttack.State.COMPLETE and game.zone.state not in [ZoneRun.State.DRAFT, ZoneRun.State.COMPLETE]
+ return not get_tree().paused and not game.loading_act and not game.ball.on_ramp and not game.ball.serve_pending and not game.ball._teleport_pending and game.respawn_time < 0.0
 
 func ready_to_use() -> bool:
  return game.special_meter >= definition.meter_cost and flight_remaining <= 0.0 and homing_remaining <= 0.0 and glide_remaining <= 0.0 and not _area_pending
@@ -80,8 +80,6 @@ func find_target() -> Node2D:
  var hit := PhysicsTestMotionResult2D.new()
  for candidate: Node2D in game.playfield.bumpers:
   if not is_instance_valid(candidate) or not candidate.has_meta("bumper"):
-   continue
-  if game.zone_enabled and not game.zone.acts[game.zone.active_act].bounds.has_point(candidate.global_position):
    continue
   var distance: float = game.ball.position.distance_to(candidate.global_position)
   if distance < 55.0 * game.ball.radius / PlaygroundBall.RADIUS or distance > best_distance:
@@ -173,8 +171,6 @@ func _on_impact(body: Node2D, normal: Vector2, speed: float) -> void:
  if not eligible:
   return
  var origin: Vector2 = game.ball.position
- if game.zone_enabled and not game.zone.acts[game.zone.active_act].bounds.has_point(origin):
-  return
  impact_target = body if body.has_meta("bumper") else null
  _area_pending = true
  clear_glide("Impact")

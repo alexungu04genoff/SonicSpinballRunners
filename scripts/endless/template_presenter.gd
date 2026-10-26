@@ -27,7 +27,7 @@ func _finish_terrain_skin() -> void:
 func prepare_act(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
  authored_mode = true
  authored_cell_size = cell_size
- _build_shared([], [], bounds)
+ _build_shared(bounds)
  set_process(false)
  await stream_checkpoint(true)
  await _moving_objects(runtime)

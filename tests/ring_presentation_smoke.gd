@@ -53,8 +53,20 @@ func claim_three() -> void:
 
 func run() -> void:
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results"))
+ var document = preload("res://scripts/act_editor/act_geometry.gd").new()
+ document.title = "Ring pickup fixture"
+ document.cell_size = 100.0
+ document.grid_size = Vector2i(8, 11)
+ document.spawn_position = Vector2(400, 1000)
+ # Keep unclaimed rings away from the sweep, so this tests pickup scoring
+ # independently of the separate rack-clear bonus.
+ document.ring_trails = [{"start": Vector2(190, 260), "end": Vector2(190, 460), "spacing": 100.0},
+  {"start": Vector2(600, 800), "end": Vector2(700, 800), "spacing": 100.0}]
+ var path := "res://test-results/ring-pickup-act.tres"
+ check(document.save_document(path) == OK, "Save authored pickup fixture")
  game = load("res://scenes/playground.tscn").instantiate()
- game.generation_enabled = false # Stable original table: first three rings share x = 155.
+ game.authored_act_path = path
+
  root.add_child(game)
  await create_timer(0.1).timeout
  game.set_physics_process(false)
@@ -72,7 +84,7 @@ func run() -> void:
  prepare()
  field._physics_process(STEP)
  presentation._process(1.0)
- var home := TablePresentation.map_point(field.rings[0].home, TablePresentation.RING_HEIGHT)
+ var home := TablePresentation.map_point(field.rings[0].home, presentation.ring_height())
  check(events == 0 and presentation.ring_visuals[0].position == home and presentation.ring_visuals[0].visible, "Unclaimed rings stay at home outside magnet radius")
 
  claim_three()
@@ -137,20 +149,20 @@ func run() -> void:
  claim_three()
  var old_visual: MeshInstance3D = presentation.ring_visuals[0]
  paused = true
- var requested: bool = game.request_generation(10, TableGenerator.Difficulty.EASY)
+ var requested: bool = game.request_replay()
  await process_frame
  await process_frame
- check(requested and not is_instance_valid(old_visual) and is_instance_valid(presentation) and game.presentation == presentation and game.presentation.ring_pickups.is_empty() and game.rings_collected == 0 and field.pickup_claimed.get_connections().size() == 1, "Paused table regeneration replaces old ring meshes on the retained presenter and leaves one live pickup listener")
+ check(requested and not is_instance_valid(old_visual) and is_instance_valid(presentation) and game.presentation == presentation and game.presentation.ring_pickups.is_empty() and game.rings_collected == 0 and field.pickup_claimed.get_connections().size() == 1, "Paused Act replay replaces old ring meshes on the retained presenter and leaves one live pickup listener")
  paused = false
  game.presentation.set_process(false)
  game.ball.freeze = true
- game.ball._teleport_pending = false # Settle the regenerated frozen-body fixture.
+ game.ball._teleport_pending = false # Settle the reloaded frozen-body fixture.
  game.ball.serve_pending = false
  game.ball.position = field.rings[0].position
  field.previous_ball_position = game.ball.position
  field._physics_process(STEP)
  game.presentation._process(0.1)
- check(not field.rings[0].active and game.presentation.ring_visuals[0].visible and game.presentation.ring_pickups.has(0) and game.presentation.find_children("*", "CollisionObject3D", true, false).is_empty(), "New table pickups animate normally with no 3D collision objects")
+ check(not field.rings[0].active and game.presentation.ring_visuals[0].visible and game.presentation.ring_pickups.has(0) and game.presentation.find_children("*", "CollisionObject3D", true, false).is_empty(), "Reloaded Act pickups animate normally with no 3D collision objects")
 
  print("RESULT | Ring presentation | %d checks | %d failures" % [checks, failures])
  game.queue_free()

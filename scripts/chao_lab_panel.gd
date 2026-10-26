@@ -27,7 +27,7 @@ func _ready() -> void:
  stack.add_theme_constant_override("separation", 16)
  margin.add_child(stack)
  heading = _label(stack, "CHAO LAB v0", 24)
- _label(stack, "Choose one companion. Equip starts a fresh run on this seed; score and rings reset.", 15)
+ _label(stack, "Choose one companion. Equip starts a fresh run on this Act; score and rings reset.", 15)
  var row := HBoxContainer.new()
  row.add_theme_constant_override("separation", 12)
  stack.add_child(row)
@@ -49,7 +49,7 @@ func _ready() -> void:
  actions.add_theme_constant_override("separation", 12)
  stack.add_child(actions)
  _button(actions, "No Chao / baseline", func(): choose("none"))
- apply_button = _button(actions, "Equip + replay same seed", apply_choice)
+ apply_button = _button(actions, "Equip + replay Act", apply_choice)
  _button(actions, "Close", hide)
  popup_hide.connect(func(): _restore_pause = true)
  game.tuning.changed.connect(refresh)
@@ -69,7 +69,7 @@ func _button(parent: Node, text: String, action: Callable) -> Button:
  return button
 
 func open_lab() -> void:
- if not game.can_regenerate():
+ if not game.can_reload_act():
   return
  _was_paused = get_tree().paused
  _restore_pause = false
@@ -80,7 +80,7 @@ func open_lab() -> void:
  cards.ice.button.grab_focus()
 
 func choose(id: String) -> void:
- if game.generation_pending:
+ if game.loading_act:
   return
  selected_id = id
  refresh()
@@ -91,7 +91,7 @@ func refresh() -> void:
  var profile: PhysicsProfile = tuning.base if id_for_run == game.character_id else CharacterSpecials.CHARACTERS[id_for_run].profile
  var changes: Dictionary = tuning.overrides if id_for_run == game.character_id else {}
  var baseline := PhysicsTuning.resolve(profile, changes, [])
- heading.text = "CHAO LAB v0  ·  %s  ·  Seed %d" % [profile.display_name, game.generation_seed]
+ heading.text = "CHAO LAB v0  ·  %s  ·  %s" % [profile.display_name, game.authored_document.title]
  for id: String in cards:
   var stats := PhysicsTuning.resolve(profile, changes, [PhysicsTuning.CHAO[id].modifier])
   var text := ""
@@ -105,24 +105,24 @@ func refresh() -> void:
    text += "%s: %s → %s %s\n" % [label, str(snappedf(original, 0.1)), str(snappedf(modified, 0.1)), PhysicsProfile.FIELDS[key][4]]
   cards[id].stats.text = text.trim_suffix("\n")
   cards[id].button.text = ("Selected: " if selected_id == id else "Choose ") + PhysicsTuning.CHAO[id].name
- selection.text = "Equipped: %s  |  Choice: %s\nUses the mode, character and target selected above." % [PhysicsTuning.CHAO[tuning.chao_id].name, PhysicsTuning.CHAO[selected_id].name]
+ selection.text = "Equipped: %s  |  Choice: %s\nReplays the current Act with the selected character." % [PhysicsTuning.CHAO[tuning.chao_id].name, PhysicsTuning.CHAO[selected_id].name]
 
 func apply_choice() -> void:
- if game.generation_pending:
+ if game.loading_act:
   return
  _applying = start_run.call(selected_id)
 
 func _process(_delta: float) -> void:
- apply_button.disabled = game.generation_pending
- if _applying and not game.generation_pending:
+ apply_button.disabled = game.loading_act
+ if _applying and not game.loading_act:
   _applying = false
   if game.tuning.chao_id == selected_id:
-   # A victory replay resumes at serve, matching the existing replay controls.
+   # Respect the caller's pause state after replay.
    if not get_tree().paused:
     _was_paused = false
    hide()
   else:
    selection.text = game.status_message
- if _restore_pause and not game.generation_pending:
+ if _restore_pause and not game.loading_act:
   _restore_pause = false
-  get_tree().paused = _was_paused or game.score_attack.state == ScoreAttack.State.COMPLETE
+  get_tree().paused = _was_paused

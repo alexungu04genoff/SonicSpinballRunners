@@ -21,34 +21,33 @@ func check(condition: bool, label: String) -> void:
  else:
   print("PASS | " + label)
 
-func rebuild(mode: int, label: String) -> void:
+func rebuild(path: String, label: String) -> void:
  paused = true
- game.debug_panel.challenge_panel.mode_selector.select(mode)
- check(game.debug_panel.challenge_panel.start_run(), "Request " + label)
+ check(game.request_authored_act(path), "Request " + label)
  await frames(8)
- check(not game.generation_pending and game.chunks.size() == (9 if mode == 2 else 3), "Rebuild " + label)
+ check(not game.loading_act and game.authored_act_path == path, "Rebuild " + label)
  paused = false
  game.launch_ball()
  await frames(180)
- check(game.ball.position.is_finite() and game.presentation.table_bounds == game.layout.bounds, "Render and simulate " + label)
+ check(game.ball.position.is_finite() and game.presentation.table_bounds == game.playfield.bounds, "Render and simulate " + label)
 
 func run() -> void:
  print("RENDER_DRIVER | ", RenderingServer.get_current_rendering_driver_name())
  game = load("res://experiments/visual_lab/visual_lab.tscn").instantiate()
- game.generation_seed = 18
+
  root.add_child(game)
  await frames(30)
  game.launch_ball()
  await frames(180)
- check(game.chunks.size() == 3, "Initial Free Play renders and launches")
- await rebuild(2, "Free Play to Zone")
+ check(game.playfield.source == "authored", "Initial Act renders and launches")
+ await rebuild("res://data/endless/third_complex.tres", "Second Simple to Third Complex")
  if DisplayServer.get_name() != "headless":
   await RenderingServer.frame_post_draw
   var filename := "res://test-results/render-transition-%s.png" % RenderingServer.get_current_rendering_driver_name()
-  check(root.get_texture().get_image().save_png(filename) == OK, "Capture rendered Zone")
- await rebuild(2, "Zone replay")
- await rebuild(1, "Zone to Score Attack")
- await rebuild(0, "Score Attack to Free Play")
+  check(root.get_texture().get_image().save_png(filename) == OK, "Capture rendered Act")
+ await rebuild("res://data/endless/third_complex.tres", "Third Complex replay")
+ await rebuild("res://data/endless/first_try_smooth_decor.tres", "First Try Smooth Decor")
+ await rebuild("res://data/endless/second_simple.tres", "Return to Second Simple")
  paused = false
  game.free()
  await frames(4)

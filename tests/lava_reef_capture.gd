@@ -20,7 +20,7 @@ func capture(label: String, framing: String) -> void:
  await RenderingServer.frame_post_draw
  var path := OUTPUT + "/" + label + ".png"
  if root.get_texture().get_image().save_png(path) != OK: failures += 1
- manifest.append({"path": path, "theme": game.theme_id, "act": game.authored_act_path if game.level_source == "authored" else game.layout.signature, "fingerprint": game.authored_document.fingerprint() if game.authored_document != null else "generated", "camera": str(game.presentation.camera.global_transform), "ball": str(game.ball.position), "filter": game.retro_filter.display_name(), "framing": framing, "draw_calls": Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)})
+ manifest.append({"path": path, "theme": game.theme_id, "act": game.authored_act_path, "fingerprint": game.authored_document.fingerprint() if game.authored_document != null else "generated", "camera": str(game.presentation.camera.global_transform), "ball": str(game.ball.position), "filter": game.retro_filter.display_name(), "framing": framing, "draw_calls": Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)})
  if game.theme_id == "lava_reef":
   game.view.get_texture().get_image().save_png(OUTPUT + "/" + label + "-world.png")
  print("CAPTURE | ", path)
@@ -46,8 +46,8 @@ func run() -> void:
    continue
   for i in 120:
    await frames(1)
-   if not game.generation_pending: break
-  if game.generation_pending or not game.last_source_error.is_empty():
+   if not game.loading_act: break
+  if game.loading_act or not game.last_source_error.is_empty():
    failures += 1
    continue
   var original := FileAccess.get_file_as_bytes(path)
@@ -76,8 +76,6 @@ func run() -> void:
   if OS.get_cmdline_user_args().has("--effects-study"):
    await effects_study(stem)
   if original != FileAccess.get_file_as_bytes(path): failures += 1
- if OS.get_cmdline_user_args().has("--generated-study"):
-  await generated_study()
  # Each normal comparison group must share camera, ball and Act state.
  for entry: Dictionary in manifest:
   if entry.framing not in ["overview", "follow"]: continue
@@ -140,31 +138,3 @@ func effects_study(stem: String) -> void:
   push_error("Effects study changed the camera or physics ball")
   failures += 1
  shader_time(-1.0)
-
-func generated_study() -> void:
- if not game.request_generated_source():
-  failures += 1
-  return
- for i in 180:
-  await frames(1)
-  if not game.generation_pending: break
- if game.generation_pending or game.level_source != "generated":
-  failures += 1
-  return
- game.set_theme("lava_reef")
- game.retro_filter.set_preset(Filter.Preset.OFF)
- for zone: bool in [false,true]:
-  if zone:
-   if not game.request_generation(18,0,0,{"zone":true,"enabled":false}):
-    failures += 1
-    continue
-   for i in 240:
-    await frames(1)
-    if not game.generation_pending: break
-   if game.generation_pending or not game.zone_enabled:
-    failures += 1
-    continue
-  game.presentation.set_camera_follow(false)
-  for preset in 3:
-   game.presentation.set_camera_preset(preset)
-   await capture(("zone" if zone else "generated")+"-lava_reef-camera-"+str(preset),"generated camera study")

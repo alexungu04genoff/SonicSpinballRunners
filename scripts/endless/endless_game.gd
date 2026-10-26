@@ -12,6 +12,8 @@ const RetroControls = preload("res://scripts/retro/retro_controls.gd")
 var retro_filter: RetroFilter
 var retro_controls: CanvasLayer
 var _composite_view: SubViewport
+var run_seed := 18
+var _opening_document: Resource
 var planner: RefCounted
 var library: Node
 var hub: Node
@@ -50,9 +52,9 @@ var _startup_message := "Loading baked endless mode…"
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
- generation_seed = 18
+ run_seed = 18
  for argument: String in OS.get_cmdline_user_args():
-  if argument.begins_with("--seed="): generation_seed = int(argument.trim_prefix("--seed="))
+  if argument.begins_with("--seed="): run_seed = int(argument.trim_prefix("--seed="))
  var documents: Array = []
  for path: String in Plan.PATHS:
   var loaded := ActDocument.load_document(path)
@@ -61,18 +63,16 @@ func _ready() -> void:
    _startup_error(loaded.error)
    return
   documents.append(loaded.document)
- planner = Plan.new(generation_seed)
+ planner = Plan.new(run_seed)
  pending.assign(planner.next_zone(documents))
  next_zone_to_plan = 1
  authored_act_path = Plan.PATHS[pending[0].id]
- zone_enabled = false
- score_attack_enabled = false
+ _opening_document = documents[pending[0].id]
  super._ready()
  if playfield == null: return
  world.process_mode = Node.PROCESS_MODE_PAUSABLE
  ring_field.process_mode = Node.PROCESS_MODE_PAUSABLE
- debug_panel.hide()
- generation_pending = true
+ loading_act = true
  controls.input_blocked = true
  get_tree().paused = true
  _build_hud()
@@ -83,12 +83,6 @@ func _ready() -> void:
  if not library.error.is_empty():
   _startup_error(library.error)
   return
- # The inherited initial source establishes shared engine objects. Streaming now
- # takes ownership of level geometry without replacing ball/input/tuning/camera.
- _authored_root.free()
- _authored_root = null
- flippers.clear()
- ring_field.rings.clear()
  hub = Hub.new()
  world.add_child(hub)
  ball.mechanics = hub
@@ -104,13 +98,28 @@ func _ready() -> void:
  active = resident[0]
  _activate(active, true)
  started = true
- generation_pending = false
+ loading_act = false
  controls.input_blocked = false
  get_tree().paused = false
  loading_panel.hide()
  reset_ball(false)
- print("ENDLESS_READY | seed=%d | Acts=%d | cached variants=%d | normal pinball controls" % [generation_seed, resident.size(), library.visuals.size()])
+ print("ENDLESS_READY | seed=%d | Acts=%d | cached variants=%d | normal pinball controls" % [run_seed, resident.size(), library.visuals.size()])
  if "--tour" in OS.get_cmdline_user_args(): toggle_tour()
+
+func _prepare_initial_act() -> Dictionary:
+ # Only metadata is needed to start the shared engine. The library later loads
+ # baked collisions once; no throwaway authored physics or presentation is built.
+ ball.radius = _opening_document.cell_size * preload("res://scripts/act_dimensions.gd").BALL_RADIUS_CELLS
+ return {"document": _opening_document, "runtime": {"terrain": [], "objects": []}, "error": ""}
+
+func _populate_rings() -> void:
+ pass # Streamed Acts populate rings when their recipes become ready.
+
+func _build_debug_panel() -> void:
+ pass # Endless owns its small HUD; the standalone Act tools are not instantiated.
+
+func can_reload_act() -> bool:
+ return false
 
 func _build_view() -> void:
  # Compose both scenery layers and the transparent foreground before applying
@@ -239,7 +248,7 @@ func _process(delta: float) -> void:
    detail.text = "Waiting for the next Act to finish loading…" if library.error.is_empty() else library.error
   else:
    detail.text = "%s · %s" % [Plan.TITLES[active.plan.id], "Camera tour — ball parked" if touring else "No score target · unlimited checkpoint retries"]
-  diagnostics.text = "Seed %d | Resident %d | Queued %d | Build %.2f ms (max %.2f) | Frame max %.1f ms\nDisk Acts %d · Disk themes %d · Runtime rebuilds %d · Last prepare %.2f s" % [generation_seed, resident.size(), pending.size() + int(building != null), last_build_ms, max_build_ms, max_frame_ms, library.visual_bake_hits, library.theme_bake_hits, library.fallback_builds, library.last_prepare_ms / 1000.0]
+  diagnostics.text = "Seed %d | Resident %d | Queued %d | Build %.2f ms (max %.2f) | Frame max %.1f ms\nDisk Acts %d · Disk themes %d · Runtime rebuilds %d · Last prepare %.2f s" % [run_seed, resident.size(), pending.size() + int(building != null), last_build_ms, max_build_ms, max_frame_ms, library.visual_bake_hits, library.theme_bake_hits, library.fallback_builds, library.last_prepare_ms / 1000.0]
   diagnostics.text += "\nTheme preloads %d · Last %.2f s%s" % [library.theme_prefetches, library.last_theme_prepare_ms / 1000.0, " · Preparing " + library.preparing_theme if not library.preparing_theme.is_empty() else ""]
 
 func _prefetch_next_theme() -> void:
@@ -325,7 +334,6 @@ func _sync_resident() -> void:
  field.bounds = bounds
  field.terrain_bounds = bounds
  playfield = field
- layout.bounds = bounds
  presentation.flippers = flippers
  presentation.table_bounds = bounds
  presentation.clear_ring_pickups()
@@ -509,9 +517,6 @@ func _unhandled_key_input(event: InputEvent) -> void:
  elif event.keycode == KEY_F3: diagnostics.visible = not diagnostics.visible
  elif event.keycode == KEY_F11:
   DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED if DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN else DisplayServer.WINDOW_MODE_FULLSCREEN)
-
-func request_generation(_seed_value: int, _preference := -1, _grid_mode := -1, _settings: Dictionary = {}) -> bool:
- return false
 
 func request_authored_act(_path: String, _settings: Dictionary = {}) -> bool:
  return false

@@ -2,19 +2,13 @@
 
 **Current presentation (2026-10-24):** Sonic, Tails, Knuckles and Shadow always remain in their character-colored ball form, including jumps, impacts, specials and character study. State transitions, special effects and authoritative 2D gameplay remain intact. Local character models are not loaded; the existing Blender pipeline and pose hooks are retained for later work with a 3D modeler. Older model previews and verification records below describe the previous presentation.
 
-A playable Green Hill presentation of the shared physics sandbox: generator v10, the 50 px construction kit with rounded Easy recipes, side recovery flippers and a short upper paddle, Normal-flow banks/curves, optional Score Attack and the first three-Act Green Hill Zone. The original physics-playground entry point remains available. Free Play remains the default.
-
-The scene wraps the existing sandbox and its generated layout. Original procedural checkerboard terrain, grass, palms, flowers, distant rocks, sunlight, rings, bumpers, and flippers dress the same playfield. Locally prepared Sonic Runners Sonic and Tails models supply table-aligned gameplay poses and upright character-study previews. Sonic adds a target-facing homing burst and contact impact; Tails uses his original two tail chains for flight. Character-special presentation is integrated on `main` alongside the shared gameplay hooks. The invisible 2D ball remains authoritative; the character and scenery are collisionless. A contact marker tracks the physical ball independently of the visual hop. Body placement, imported-model axis correction, and spin-ball rotation use separate transforms.
+The main authored Act player wraps the shared 2D physics engine in collisionless 3D presentation. **Play Act.cmd** and **Play Green Hill.cmd** open it; the default Act is Second Simple. The former generated Free Play, Score Attack and score-gated Green Hill Zone have been removed. Endless uses authored Acts and has its own **Play Endless.cmd** launcher.
 
 ## Launch
 
-Double-click **Play Green Hill.cmd** in this worktree's repository root. **Physics Playground.cmd** opens the original debugging presentation. Both launchers use the same physics, generator, profiles and scoring code. The selected character's local prepared model is reused automatically; preparation is not repeated at launch.
+Use **Load Act…** for a saved `.tres`, **Reload Act** or F5 after editing, and **Replay Act** for a fresh run. The ball, engine, camera and presentation preferences persist across Act reloads. Invalid saves leave the active Act intact. See [authored play](../../docs/PLAYFIELD_SOURCES.md) and [Endless](../../docs/ENDLESS_MODE.md).
 
-**Authored Acts:** use the footer's **Level source → Authored Act** or **Load Act…** to open a saved `.tres` inside this same application. The existing engine, ball, HUD, character, specials and camera stay alive; only the playfield is rebuilt. **Reload Act** beside **Load Act…**, or **F5**, reloads the current file without a picker, restores the prior pause state and preserves presentation preferences. Invalid saves leave the playable Act intact. **Start / replay** also reloads the active file. **Generated / Existing** returns to the remembered generated settings. Authored play uses Free Play; authored score gates and multiple Acts remain deferred. See [playfield sources](../../docs/PLAYFIELD_SOURCES.md) for the common contract, controls, direct `--act` startup and verification. The separate authored tester is diagnostic only.
-
-**Green Hill Zone:** choose it in the shared mode dropdown, then **Start / replay**. Seed 18 has an input-only completion witness. Nine sections form one continuous Easy playfield, with score targets 750 / 1,250 / 1,750, locked gates, checkpoint retries, three Chao drafts and a final portal. Drafts pause the same ball in place; the last reward appears in the completion summary. Zone generation takes several seconds. Names, colored gates and portal are gameplay placeholders for later art. Use O for the full-course overview.
-
-**Chao Lab v0:** the shared **Chao: … · Lab** button beside Start / replay opens three simple colored choices and effective-stat comparisons. Choose at serve or pause, then equip into a fresh run on the same seed. It respects the selected mode/target and keeps the equipped name visible with F1 hidden. Replay, drains and table changes retain one slot; the debug Practice toggle replaces that slot. Chao names/colors are placeholders; terrain and character assets are unchanged. See the main README for values and lifecycle rules.
+**Chao Lab:** choose Ice, Spring or Magnet at serve or pause, then equip into a fresh run on the same Act. Replay and drains retain the selection; Practice replaces the same slot. Character selection, scoring feedback, specials and physics controls remain shared. There are no score requirements or generated modes.
 
 Alternatively, run PowerShell from this worktree's repository root:
 
@@ -22,7 +16,7 @@ Alternatively, run PowerShell from this worktree's repository root:
 .\experiments\visual_lab\launch.ps1
 ```
 
-The launcher resolves a Godot executable, waits for a dedicated headless import and checks its diagnostics, then opens only `experiments/visual_lab/visual_lab.tscn`. It does not stop existing processes or change `project.godot`. If the selected character has not been prepared, the scene still opens with a clearly reported blue Sonic or orange Tails spin-ball fallback.
+The launcher resolves a Godot executable, waits for a dedicated headless import and checks its diagnostics, then opens only `experiments/visual_lab/visual_lab.tscn`. It does not stop existing processes or change `project.godot`. The current presentation uses character-colored spin balls.
 
 Windows launchers default to **ANGLE / Direct3D 11**, retaining Godot's Compatibility renderer. This avoids the native NVIDIA OpenGL path implicated in a reported access-violation crash during a Zone rebuild. For comparison, pass `-GraphicsBackend Native`; use `-GraphicsBackend Angle` to select the default explicitly. The game's current and previous launch logs are `.godot/green-hill-game.log` and `.godot/green-hill-game.previous.log`. A failed launch reports the backend, hexadecimal exit code and log path. No driver installation or project-setting change is required. See [Godot's driver documentation](https://docs.godotengine.org/en/stable/classes/class_projectsettings.html#class-projectsettings-property-rendering-gl-compatibility-driver-windows).
 
@@ -38,13 +32,13 @@ Discovered tools: **Godot 4.7.2 stable**, **Blender 5.2.3 LTS**. The launcher al
 
 | Control | Action |
 | --- | --- |
-| Enter / gamepad X | Launch from the bottom serve |
-| Q / E or LB / RB | All left / right flippers, including the short upper paddle |
+| Enter / gamepad X | Launch from the saved Spawn |
+| Q / E or LB / RB | All authored left / right flippers |
 | Left / right arrows or left stick | Existing limited steering |
 | Space / gamepad A | Use the selected character's special when the shared meter is ready |
 | Escape / Menu | Pause or resume; leave character study |
 | R / Back | Reset and relaunch |
-| F1 / Tuning button | Open the complete existing physics, camera, seed and construction-grid controls |
+| F1 / Tuning button | Open the complete existing physics, camera and authored-grid controls |
 | F11 / Play View button | Fullscreen gameplay with development UI hidden; press again to restore the development window and tools |
 | F4 | Cycle OFF, PIXEL / DITHER, N64-ish, CRT and VHS; custom stacks return to OFF |
 | Retro... / Shift+F4 | Open live effect checkboxes and tuning sliders; F1 also has a multiselect menu. HUD stays crisp |
@@ -56,26 +50,11 @@ Discovered tools: **Godot 4.7.2 stable**, **Blender 5.2.3 LTS**. The launcher al
 | 5 in character study | Preview Sonic homing or Tails flight |
 | 6 in character study | Preview Sonic impact |
 
-**Character selection:** choose Sonic or Tails in the shared character dropdown, then **Start / replay**. Selection starts a fresh run through the shared gameplay controller. Rings and bumper contacts charge the meter. Sonic's target marker follows the eligible target selected by gameplay; an impact reaction requires a real successful homing contact. Tails' flight pose lasts for the authoritative flight window, then blends back to the orange spin-ball.
+**Character selection:** choose Sonic, Tails, Knuckles or Shadow, then **Replay Act**. Rings and bumper contacts charge the meter. Specials use the authoritative 2D targets and collision rules. Presentation remains cosmetic.
 
-The mode strip below the Green Hill title reuses the shared Free Play / Score Attack selector, score target and Start / replay action. Score Attack unlocks the upper goal at the chosen score and requires reaching it physically; the shared victory panel offers replay, next seed and Free Play. The Green Hill score card shows target progress and goal status. F1 preserves access to the same controls.
+Optional launch arguments include `-Character Tails`, `-NoModel` and `-ImportOnly`. Direct Godot launches accept `-- --character=tails --act res://data/acts/scale_comparison.tres`. F5 in the Godot editor starts the authored player; F5 inside the game reloads the current Act.
 
-The quick-build buttons disable during live play. Use Escape first, build, then resume and launch. F1 provides any other seed, preference, profile, tuning or grid combination. Regeneration preserves tuning, camera settings, overlays and pause, resets the run, and rebuilds terrain from the final mirrored/shifted/shaped chunk outlines. Surviving bottom paddles and newly generated middle paddles bind to the new character adapter exactly once.
-
-Ordinary gameplay defaults to the procedural spin-ball, including at serve. Real flipper strikes trigger a 0.62-second jump; bumper contacts trigger a 0.56-second trick. Both return to spin through a 0.12-second scale overlap. A 0.18-second event cooldown and suppression of repeated active reactions prevent contact callbacks from continually restarting the pose. Character-colored motion beads and expanding impact/pickup circles improve tracking. The physical-radius contact marker stays at the authoritative ball anchor. Ring collection retains the sandbox's 0.20-second attraction flight to that anchor. Cosmetic hops and animations never change physical position, momentum, collider size or scoring.
-
-Pose previews are confined to character study so a forgotten preview cannot suppress gameplay feedback. Returning restores the previous pause state and automatic animation. Regeneration is unavailable during study.
-
-Optional launch arguments:
-
-```powershell
-.\experiments\visual_lab\launch.ps1 -Seed 23 -Grid Variant
-.\experiments\visual_lab\launch.ps1 -Character Tails
-.\experiments\visual_lab\launch.ps1 -NoModel
-.\experiments\visual_lab\launch.ps1 -Playground
-```
-
-`-Character` accepts `Sonic` or `Tails` (default Sonic). `-Grid` accepts `Catalogue`, `Base` or `Variant`; character/seed/grid options apply to Green Hill. Direct Godot launches can pass `-- --character=tails`. `-NoModel` verifies the procedural fallback without moving or deleting local assets. F5 in Godot still opens the original playground; F6 on `visual_lab.tscn` opens Green Hill.
+The remaining sections record earlier art/model experiments and their historical checks. References to generated layouts, retired modes or old model poses are not current gameplay instructions.
 
 ## Table-relative character orientation
 
@@ -267,7 +246,7 @@ The original Sonic-only lab passed headless import, JSON/PowerShell syntax check
 
 These are historical baseline results. Run current commands from this visual worktree, using the Godot executable described under Launch.
 
-## Short visual/playtest checklist
+## Historical visual/playtest checklist
 
 - Confirm textured eyes, mouth, gloves, shoes, and body for both characters; inspect joints and both Tails tail attachments.
 - Earn a full meter, use Sonic's homing attack and Tails' flight, and check target heading, impact timing, tail rotation and return to the correctly colored spin-ball.

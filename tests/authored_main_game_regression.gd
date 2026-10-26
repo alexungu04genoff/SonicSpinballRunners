@@ -1,5 +1,5 @@
 extends SceneTree
-## One engine, two playfield sources. Uses the actual Green Hill application and
+## Authored Act replacement uses the actual themed application and
 ## shared physics callbacks; graphical runs capture its ordinary retained HUD.
 const ActData = preload("res://scripts/act_editor/act_geometry.gd")
 const FIXTURE := "res://test-results/main-engine-act.tres"
@@ -7,18 +7,14 @@ const COMPARISON := "res://data/acts/scale_comparison.tres"
 
 class ObservedGame:
 	extends "res://experiments/visual_lab/visual_lab.gd"
-	var generator_calls := 0
-	func _generate_layout(seed_value: int, preference: int, grid_mode: int = -1, for_zone: bool = false, difficulty_override: int = -2) -> Dictionary:
-		generator_calls += 1
-		return super._generate_layout(seed_value, preference, grid_mode, for_zone, difficulty_override)
 
 var game: Node
 var checks := 0
 var failures := 0
 var identities: Dictionary
 var areas: Array[Dictionary] = []
-var generated_ball_width := 0.0
-var generated_camera_basis := Basis.IDENTITY
+var comparison_ball_width := 0.0
+var comparison_camera_basis := Basis.IDENTITY
 
 
 func _initialize() -> void:
@@ -64,11 +60,11 @@ func fixture() -> Resource:
 
 func engine_ids() -> Dictionary:
 	var result := {}
-	for property in ["ball", "tuning", "controls", "ring_field", "scorecraft", "specials", "debug_panel", "presentation", "character", "lab_ui", "challenge_ui", "view"]:
+	for property in ["ball", "tuning", "controls", "ring_field", "scorecraft", "specials", "debug_panel", "presentation", "character", "lab_ui", "act_ui", "view"]:
 		result[property] = game.get(property).get_instance_id()
 	result.camera = game.presentation.camera.get_instance_id()
 	result.environment = game.presentation.find_children("*", "WorldEnvironment", false, false)[0].get_instance_id()
-	result.challenge_panel = game.debug_panel.challenge_panel.get_instance_id()
+	result.act_controls = game.debug_panel.act_controls.get_instance_id()
 	return result
 
 
@@ -80,8 +76,8 @@ func check_identity(label: String) -> void:
 func await_rebuild() -> void:
 	for tick in 240:
 		await frames(1)
-		if not game.generation_pending: break
-	check(not game.generation_pending, "Deferred source replacement completes")
+		if not game.loading_act: break
+	check(not game.loading_act, "Deferred source replacement completes")
 	await frames(3)
 
 
@@ -95,11 +91,11 @@ func place(point: Vector2, velocity := Vector2.ZERO) -> void:
 
 
 func check_authored_start() -> void:
-	check(game.generator_calls == 0 and game.level_source == "authored" and game.chunks.is_empty(), "Direct authored startup invokes neither table nor Zone generation and creates no fake chunks")
+	check(not game.has_method("_generate_layout") and game.playfield.source == "authored", "Direct authored startup invokes neither table nor Zone generation and creates no fake chunks")
 	check(game.playfield.source == "authored" and game.playfield.spawn == fixture().spawn_position and game.playfield.bumpers.size() == 2 and game.playfield.terrain_bodies.size() == 1, "The common playfield exposes exact authored spawn, targets and terrain")
 	check(game.ball.serve_pending and game.ball.position == game.authored_document.spawn_position and is_equal_approx(game.ball.radius, 14.0), "The normal ball waits at exact authored Spawn with the shared 100px-cell size")
 	check(game.presentation.camera_follow_enabled and game.presentation.camera_preset == TablePresentation.CameraPreset.DRAMATIC_PINBALL and game.presentation.camera_settings.zoom == 2.0, "Authored startup uses the normal Green Hill follow camera and perspective")
-	check(game.debug_panel.challenge_panel != null and game.lab_ui != null and game.character.specials == game.specials, "Normal modes, character HUD and rolling presenter remain the human gameplay shell")
+	check(game.debug_panel.act_controls != null and game.lab_ui != null and game.character.specials == game.specials, "Normal modes, character HUD and rolling presenter remain the human gameplay shell")
 	check(game.presentation.find_children("*", "CollisionObject3D", true, false).is_empty(), "Shared Green Hill remains collisionless")
 	check(game.authored_timings.has("total_ms") and float(game.authored_timings.total_ms) > 0, "Main-engine authored loading retains ready-time instrumentation")
 
@@ -198,26 +194,26 @@ func check_switches() -> void:
 	game.scorecraft.award_bumper(game.playfield.bumpers[0])
 	game.special_meter = 63
 	paused = true
-	check(game.request_generated_source(), "The same main application accepts an explicit generated source switch")
+	check(game.request_authored_act(COMPARISON), "The same main application accepts an explicit Act switch")
 	await await_rebuild()
-	check(game.level_source == "generated" and game.generator_calls == 1 and not game.chunks.is_empty(), "Only the explicit generated-source choice invokes generation")
-	check_identity("Authored to generated retains ball, tuning, input, rings, scoring, specials, HUD, presenter, camera and environment identities")
+	check(game.authored_act_path == COMPARISON, "Act selection loads the requested saved document")
+	check_identity("Switching Acts retains ball, tuning, input, rings, scoring, specials, HUD, presenter, camera and environment identities")
 	check(game.score == 0 and game.rings_collected == 0 and game.special_meter == 0 and game.scorecraft.chain == 0 and game.tuning._temporary.is_empty() and game.specials.flight_remaining == 0 and game.ball.serve_pending, "Source switching uses the normal complete run reset")
 	check(game.character_id == "tails" and game.specials.definition.profile == game.tuning.base and game.presentation.camera_settings == camera_settings and not game.presentation.camera_follow_enabled, "Source switching retains selected character and explicit camera preferences")
 	game.presentation.set_camera_follow(true)
-	generated_ball_width = projected_ball_width()
-	generated_camera_basis = game.presentation.camera.basis
+	comparison_ball_width = projected_ball_width()
+	comparison_camera_basis = game.presentation.camera.basis
 	game.presentation.set_camera_follow(false)
 	if DisplayServer.get_name() != "headless":
 		game.presentation.set_camera_follow(true)
 		await frames(3)
 		await RenderingServer.frame_post_draw
-		check(root.get_texture().get_image().save_png("res://test-results/generated-main-green-hill.png") == OK, "Generated source captured in the same normal main-game HUD")
+		check(root.get_texture().get_image().save_png("res://test-results/selected-act-green-hill.png") == OK, "Selected Act captured in the same normal main-game HUD")
 		game.presentation.set_camera_follow(false)
-	check(game.request_authored_act(FIXTURE), "The same application accepts an authored Act after generated play")
+	check(game.request_authored_act(FIXTURE), "The same application accepts an authored Act after another Act")
 	await await_rebuild()
-	check(game.level_source == "authored" and game.generator_calls == 1 and game.chunks.is_empty(), "Returning to authored geometry bypasses generation entirely")
-	check_identity("Generated to authored preserves every existing engine and human-presentation instance")
+	check(game.authored_act_path == FIXTURE, "Returning to authored geometry bypasses generation entirely")
+	check_identity("Returning to the original Act preserves every existing engine and human-presentation instance")
 	check(game.presentation.camera_settings == camera_settings and not game.presentation.camera_follow_enabled, "Authored replacement preserves overview and camera tuning")
 	game.presentation.set_camera_follow(true)
 	var fingerprint: String = game.authored_document.fingerprint()
@@ -228,10 +224,10 @@ func check_switches() -> void:
 	await await_rebuild()
 	check(game.authored_document.fingerprint() == fingerprint and game.authored_runtime.root.get_instance_id() == root_id and game.score == 321 and game.special_meter == 47, "Failed authored load preserves the complete active world and run state")
 	check_identity("Failed replacement also preserves camera, character, HUD and engine identities")
-	check(not game.request_authored_act(FIXTURE, {"zone": true}), "Single authored Acts cannot silently invoke Zone generation")
-	check(game.request_generation(game.generation_seed), "Ordinary replay stays on the currently selected authored source")
+	check(not game.has_method("request_generated_source") and not game.has_method("request_generation"), "Retired generation entry points are absent")
+	check(game.request_replay(), "Ordinary replay stays on the currently selected authored source")
 	await await_rebuild()
-	check(game.level_source == "authored" and game.generator_calls == 1 and game.score == 0 and game.special_meter == 0, "Replay reloads the exact authored source through the normal reset path")
+	check(game.playfield.source == "authored" and game.score == 0 and game.special_meter == 0, "Replay reloads the exact authored source through the normal reset path")
 	paused = false
 	game.controls.virtual_enabled = true
 	game.reset_ball()
@@ -270,7 +266,7 @@ func check_compact_follow_camera() -> void:
 	var p: TablePresentation = game.presentation
 	p.set_camera_follow(true)
 	var follow_width := projected_ball_width()
-	check(follow_width > generated_ball_width * 1.6 and p.camera.basis.is_equal_approx(generated_camera_basis), "Authored close follow makes the ball substantially larger while retaining the generated perspective angle", str([follow_width, generated_ball_width]))
+	check(is_equal_approx(follow_width, comparison_ball_width) and p.camera.basis.is_equal_approx(comparison_camera_basis), "Reloading the same Act preserves its projected ball size and perspective", str([follow_width, comparison_ball_width]))
 	var screen := Rect2(Vector2.ZERO, Vector2(game.view.size))
 	var visible := true
 	for point in [Vector2(40, 40), Vector2(560, 40), Vector2(40, 600), Vector2(560, 600)]:
@@ -347,8 +343,8 @@ func click(control: Control) -> void:
 
 
 func check_main_controls() -> void:
-	check(root.get_visible_rect().encloses(game.load_act_button.get_global_rect()) and root.get_visible_rect().encloses(game.source_selector.get_global_rect()), "Main-game level-source controls fit the existing window")
-	check(game.source_selector.selected == 1 and game.debug_panel.challenge_panel.mode_selector.is_item_disabled(1) and game.debug_panel.challenge_panel.mode_selector.is_item_disabled(2), "Normal HUD identifies authored Free Play and explains unavailable multi-Act challenge modes")
+	check(root.get_visible_rect().encloses(game.load_act_button.get_global_rect()) and root.get_visible_rect().encloses(game.reload_act_button.get_global_rect()), "Act loading and reload controls fit the existing window")
+	check(game.debug_panel.act_controls.start_button.text == "Replay Act" and game.load_act_button.visible, "HUD exposes authored loading and replay")
 	var follow: bool = game.presentation.camera_follow_enabled
 	await key(KEY_O)
 	check(game.presentation.camera_follow_enabled != follow, "Normal O shortcut toggles authored overview/follow on the retained camera")
@@ -366,13 +362,13 @@ func check_main_controls() -> void:
 	game.act_picker.hide()
 	game.act_picker.file_selected.emit(ProjectSettings.globalize_path(FIXTURE))
 	await await_rebuild()
-	check(not paused and not game.controls.input_blocked and game.level_source == "authored" and game.generator_calls == 1, "File-picker selection loads directly into the retained game and restores play state")
+	check(not paused and not game.controls.input_blocked and ProjectSettings.localize_path(game.authored_act_path) == FIXTURE, "File-picker selection loads directly into the retained game and restores play state")
 	check_identity("Actual main-HUD loading retains all original engine and presentation identities")
 	game.score = 222
 	game.special_meter = 50
-	await click(game.debug_panel.challenge_panel.start_button)
+	await click(game.debug_panel.act_controls.start_button)
 	await await_rebuild()
-	check(game.level_source == "authored" and game.generator_calls == 1 and game.score == 0 and game.special_meter == 0 and game.ball.serve_pending, "Actual normal Start/replay button resets the current authored source without invoking generation")
+	check(game.playfield.source == "authored" and game.score == 0 and game.special_meter == 0 and game.ball.serve_pending, "Actual normal Start/replay button resets the current authored source without invoking generation")
 	check_identity("Normal authored Start/replay retains the existing engine, HUD, camera and character")
 
 
@@ -380,7 +376,7 @@ func check_failed_cli() -> void:
 	game = ObservedGame.new()
 	root.add_child(game)
 	await frames(12)
-	check(game.generator_calls == 0 and not game.last_source_error.is_empty() and not is_instance_valid(game.ball), "Failed --act startup reports the source error without falling back to generation")
+	check(not game.last_source_error.is_empty() and not is_instance_valid(game.ball), "Failed --act startup reports the source error without falling back to generation")
 	check(not game.is_processing() and not game.is_physics_processing(), "Failed CLI startup disables the game loops before any dependent systems run")
 	check(not game.is_processing_unhandled_input() and not game.is_processing_unhandled_key_input(), "Failed CLI startup also disables presentation shortcuts")
 	for code in [KEY_O, KEY_C, KEY_1]: await key(code)
@@ -404,7 +400,7 @@ func run() -> void:
 	check(fixture().save_document(FIXTURE) == OK, "Main-engine authored fixture saves")
 	var bytes := FileAccess.get_file_as_bytes(FIXTURE)
 	game = ObservedGame.new()
-	game.generation_enabled = false # Fast existing legacy geometry for source-switch checks.
+
 	game.authored_act_path = FIXTURE
 	root.add_child(game)
 	await frames(5)

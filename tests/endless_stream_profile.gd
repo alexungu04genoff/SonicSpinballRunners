@@ -1,0 +1,88 @@
+extends SceneTree
+## Same seeded continuous tour for before/after measurements. No diagnostic jumps.
+const Game = preload("res://scripts/endless/endless_game.gd")
+var game: Node
+var rows: Array[Dictionary] = []
+var previous := 0
+var render_started := 0
+var render_wall_ms := 0.0
+var measured := {}
+
+func _initialize() -> void:
+ call_deferred("run")
+
+func run() -> void:
+ var output := "res://test-results/endless-stream-profile.json"
+ var target := 6
+ for argument: String in OS.get_cmdline_user_args():
+  if argument.begins_with("--profile-output="): output = argument.trim_prefix("--profile-output=")
+  if argument.begins_with("--profile-target="): target = int(argument.trim_prefix("--profile-target="))
+ game = Game.new()
+ var initialize_at := Time.get_ticks_msec()
+ root.add_child(game)
+ var initialize_ms := Time.get_ticks_msec() - initialize_at
+ var started_at := Time.get_ticks_msec()
+ while not game.started and game.library.error.is_empty() and Time.get_ticks_msec() - started_at < 120000: await process_frame
+ if not game.started:
+  push_error("Profile startup failed: " + game.library.error)
+  quit(1)
+  return
+ var startup_ms := Time.get_ticks_msec() - started_at
+ RenderingServer.frame_pre_draw.connect(_pre_draw)
+ RenderingServer.frame_post_draw.connect(_post_draw)
+ game.toggle_tour()
+ previous = Time.get_ticks_usec()
+ var waiting_ms := 0.0
+ while game.active_sequence < target and Time.get_ticks_msec() - started_at < 300000:
+  await process_frame
+  var now := Time.get_ticks_usec()
+  var frame_ms := (now - previous) / 1000.0
+  previous = now
+  if game.loading_boundary: waiting_ms += frame_ms
+  var views: Array[Viewport] = [root, game.view, game._composite_view, game.library._view]
+  for background: Dictionary in game.backgrounds.values(): views.append(background.layer.view)
+  var cpu := RenderingServer.get_frame_setup_time_cpu()
+  var gpu := 0.0
+  for view: Viewport in views:
+   var id := view.get_instance_id()
+   if not measured.has(id):
+    RenderingServer.viewport_set_measure_render_time(view.get_viewport_rid(), true)
+    measured[id] = true
+   if view is SubViewport and view.render_target_update_mode == SubViewport.UPDATE_DISABLED: continue
+   cpu += RenderingServer.viewport_get_measured_render_time_cpu(view.get_viewport_rid())
+   gpu += RenderingServer.viewport_get_measured_render_time_gpu(view.get_viewport_rid())
+  rows.append({"frame_ms": frame_ms, "stage": game.library.profile_stage,
+   "render_wall_ms": render_wall_ms, "render_cpu_ms": cpu, "render_gpu_ms": gpu,
+   "build_ms": game.last_build_ms, "blend": game.background_blend, "sequence": game.active_sequence,
+   "draw_calls": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
+   "memory_mb": Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0,
+   "video_mb": Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0,
+   "nodes": Performance.get_monitor(Performance.OBJECT_NODE_COUNT)})
+ var frames: Array = rows.map(func(row: Dictionary): return row.frame_ms)
+ frames.sort()
+ var worst: Array = rows.duplicate()
+ worst.sort_custom(func(a: Dictionary, b: Dictionary): return a.frame_ms > b.frame_ms)
+ var summary := {"startup_ms": startup_ms, "initialize_ms": initialize_ms, "sequence": game.active_sequence, "waiting_ms": waiting_ms,
+  "rebuilds": game.library.fallback_builds, "shaders": game.retro_filter.display_name(),
+  "frame_max_ms": frames[-1], "frame_p99_ms": frames[int(frames.size() * 0.99)],
+  "cpu_max_ms": game.library.profile_max_cpu_ms, "threaded_resource_wall_ms": game.library.profile_resource_wait_ms,
+  "worst_frames": worst.slice(0, 8)}
+ print("ENDLESS_PROFILE | ", JSON.stringify(summary))
+ DirAccess.make_dir_recursive_absolute(output.get_base_dir())
+ var file := FileAccess.open(output, FileAccess.WRITE)
+ file.store_string(JSON.stringify({"summary": summary, "frames": rows}))
+ file.close()
+ RenderingServer.frame_pre_draw.disconnect(_pre_draw)
+ RenderingServer.frame_post_draw.disconnect(_post_draw)
+ game.set_process(false)
+ game.set_physics_process(false)
+ while game.library.busy: await process_frame
+ var success: bool = game.active_sequence >= target and is_zero_approx(waiting_ms) and game.library.fallback_builds == 0
+ game.free()
+ quit(0 if success else 1)
+
+func _pre_draw() -> void:
+ render_started = Time.get_ticks_usec()
+
+func _post_draw() -> void:
+ render_wall_ms = (Time.get_ticks_usec() - render_started) / 1000.0

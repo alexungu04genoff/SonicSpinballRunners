@@ -534,6 +534,9 @@ func _advance_spin(delta: float, velocity: Vector2) -> void:
   # A roll axis is unsigned; preserve its hemisphere across the jump apex.
   if axis.dot(_spin_axis) < 0.0:
    axis = -axis
-  _spin_axis = _spin_axis.slerp(axis, 1.0 - exp(-8.0 * delta)).normalized()
+  var weight := 1.0 - exp(-8.0 * delta)
+  # Nearly parallel axes have an ill-conditioned cross product in Vector3.slerp.
+  # Use normalized linear interpolation there to avoid invalid-axis log spam.
+  _spin_axis = (_spin_axis.lerp(axis, weight) if _spin_axis.dot(axis) > 0.9999 else _spin_axis.slerp(axis, weight)).normalized()
  var angular_speed := clampf(velocity.length() / ball.radius, 22.0, 36.0)
  spin_root.rotate(_spin_axis, angular_speed * delta)

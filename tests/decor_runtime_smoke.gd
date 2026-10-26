@@ -74,7 +74,7 @@ func run() -> void:
   var source := FileAccess.get_file_as_bytes(path)
   await rebuild(path)
   var act: Resource = game.authored_document
-  check(game.level_source == "authored" and game.presentation.decor_root.get_child_count() == act.decor_slots.size(), "All manual slots spawn in main gameplay: " + file)
+  check(game.playfield.source == "authored" and game.presentation.decor_root.get_child_count() == act.decor_slots.size(), "All manual slots spawn in main gameplay: " + file)
   check(game.presentation.skipped_decor_slots.is_empty() and only_visual_nodes(game.presentation.decor_root), "Decor is supported and entirely collisionless: " + file)
   var transforms_match := true
   for i in act.decor_slots.size():

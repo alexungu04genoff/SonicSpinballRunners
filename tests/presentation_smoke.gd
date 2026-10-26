@@ -1,5 +1,5 @@
 extends SceneTree
-## Run graphically to capture identical seed/ball state through all three cameras.
+## Run graphically to capture identical authored Act/ball state through all three cameras.
 var failures := 0
 var checks := 0
 
@@ -49,7 +49,7 @@ func flippers_aligned(game: Node) -> bool:
  return true
 
 func prism_faces_outward(presentation: TablePresentation) -> bool:
- # Both windings occur when chunks are mirrored. Test actual generated face normals.
+ # Both windings occur when authored contours are mirrored. Test mesh face normals.
  var points := PackedVector2Array([Vector2(-40, 35), Vector2(0, -50), Vector2(40, 35)])
  for mirrored in [false, true]:
   if mirrored:
@@ -70,17 +70,17 @@ func prism_faces_outward(presentation: TablePresentation) -> bool:
 func run() -> void:
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results"))
  var game: Node = load("res://scenes/playground.tscn").instantiate()
- game.legacy_pair_fixture = true # Retain the original stationary-view comparison fixture.
+ game.authored_act_path = "res://data/acts/scale_comparison.tres"
  root.add_child(game)
  await create_timer(0.25).timeout
  game.presentation.set_camera_follow(false)
  var ui: PlaygroundDebugPanel = game.debug_panel
- var original_signature: String = game.layout.signature
+ var original_signature: String = game.authored_document.fingerprint()
  var original_position: Vector2 = game.ball.position
  var original_values: Dictionary = game.tuning.effective.duplicate()
  check(game.presentation.camera_preset == TablePresentation.CameraPreset.REAL_PINBALL and ui.camera_presets.selected == 1, "Real Pinball is the default and UI agrees")
  check(game.presentation.find_children("*", "CollisionObject3D", true, false).is_empty(), "Raised presentation has no 3D collision objects")
- check(prism_faces_outward(game.presentation), "Triangle top and side faces point outward for normal and mirrored chunks")
+ check(prism_faces_outward(game.presentation), "Triangle top and side faces point outward for normal and mirrored authored contours")
  var light: DirectionalLight3D = game.presentation.get_node("TableKeyLight")
  check(light.shadow_enabled and game.presentation.ball_visual.cast_shadow != GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, "Directional shadows and ball shadow casting are enabled")
  var ratios: Array[float] = []
@@ -94,13 +94,13 @@ func run() -> void:
   await capture(names[preset])
  check(is_equal_approx(ratios[0], 1.0) and ratios[1] > 1.2 and ratios[2] > ratios[1] + 0.2, "Perspective naturally enlarges the near edge; Dramatic strengthens the effect")
  print("CAMERA_WIDTH_RATIOS | ", ratios)
- check(game.layout.signature == original_signature and game.ball.position.is_equal_approx(original_position) and game.ball.linear_velocity.is_zero_approx() and game.tuning.effective == original_values, "Camera changes preserve layout, serve position, velocity and effective physics")
+ check(game.authored_document.fingerprint() == original_signature and game.ball.position.is_equal_approx(original_position) and game.ball.linear_velocity.is_zero_approx() and game.tuning.effective == original_values, "Camera changes preserve layout, serve position, velocity and effective physics")
  # Inspect the camera-far side of a raised bumper, where occlusion is most likely.
  game.toggle_pause()
  await process_frame
  var probe_position := original_position
- for item: Dictionary in game.chunks[0].descriptors:
-  if item.kind == "circle":
+ for item: Dictionary in game.authored_runtime.objects:
+  if item.type == "round_bumper":
    probe_position = item.position + Vector2.UP * (item.radius + PlaygroundBall.RADIUS + 2.0)
    break
  game.ball.position = probe_position
@@ -113,7 +113,7 @@ func run() -> void:
  game.ball.position = original_position
  game.toggle_pause()
  var table_rect: Rect2 = game.view.get_parent().get_global_rect()
- check(not table_rect.intersects(ui.generation_panel.get_global_rect()) and not table_rect.intersects(ui.panel.get_global_rect()) and ui.camera_presets.get_global_rect().end.y < ui.panel.get_global_rect().end.y, "Table and camera controls remain clear of both debug panels")
+ check(not table_rect.intersects(ui.act_panel.get_global_rect()) and not table_rect.intersects(ui.panel.get_global_rect()) and ui.camera_presets.get_global_rect().end.y < ui.panel.get_global_rect().end.y, "Table and camera controls remain clear of both debug panels")
  check(flippers_aligned(game), "Resting flipper tips match their 2D endpoints")
  Input.action_press("left_flipper")
  Input.action_press("right_flipper")
@@ -127,27 +127,23 @@ func run() -> void:
  ui.camera_presets.select(1)
  ui.camera_presets.item_selected.emit(1)
  game.presentation.physics_overlay.visible = true
- game.presentation.chunk_overlay.visible = true
- game.presentation.connector_overlay.visible = true
  await create_timer(0.1).timeout
  check(paused and game.presentation.camera_preset == 1 and game.presentation.dynamic_geometry.get_surface_count() == 1, "Camera and ground-plane collision overlays work while paused")
  await capture("depth-collision-overlay")
  game.presentation.physics_overlay.visible = false
- game.presentation.chunk_overlay.visible = false
- game.presentation.connector_overlay.visible = false
  game.toggle_pause()
- for sample in [{"seed": 10, "preference": TableGenerator.Difficulty.EASY}, {"seed": 6, "preference": TableGenerator.Difficulty.NORMAL}]:
-  game.request_generation(sample.seed, sample.preference)
+ for sample: String in ["res://data/endless/third_complex.tres", "res://data/endless/second_simple.tres"]:
+  game.request_authored_act(sample)
   await create_timer(0.2).timeout
-  check(game.generation_seed == sample.seed and game.presentation.camera_preset == 1 and ui.camera_presets.selected == 1 and framing_valid(game.presentation), "Seed %d rebuild preserves camera and framing" % sample.seed)
-  await capture("depth-seed-%d-real" % sample.seed)
+  check(game.authored_act_path == sample and game.presentation.camera_preset == 1 and ui.camera_presets.selected == 1 and framing_valid(game.presentation), "Act replacement preserves camera and framing: " + sample)
+  await capture("depth-" + sample.get_file().get_basename())
  game.launch_ball()
  var aligned := true
  var stationary: Transform3D = game.presentation.camera.transform
  for frame in 120:
   # SceneTree timers run after Node._process; process_frame fires before visual sync.
   await create_timer(1.0 / 120.0).timeout
-  aligned = aligned and game.presentation.ball_visual.position.distance_to(TablePresentation.map_point(game.ball.position, TablePresentation.BALL_HEIGHT)) < 0.001
+  aligned = aligned and game.presentation.ball_visual.position.distance_to(TablePresentation.map_point(game.ball.position, game.presentation.ball_height())) < 0.001
  check(aligned and not game.ball.serve_pending and game.presentation.camera.transform == stationary, "Moving ball follows exact 2D mapping while camera stays stationary")
  print("RESULT | Presentation | %d checks | %d failures" % [checks, failures])
  game.queue_free()

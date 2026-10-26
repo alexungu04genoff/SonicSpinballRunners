@@ -21,6 +21,9 @@ func share(value: Variant) -> Variant:
   if not resource.resource_path.is_empty() and not resource.resource_path.contains("::"): return resource
   if resource is ImageTexture:
    var image: Image = resource.get_image()
+   if image == null or image.is_empty():
+    error = "A bake texture has no image pixels. The bake cannot be saved."
+    return resource
    var digest := HashingContext.new()
    digest.start(HashingContext.HASH_SHA256)
    digest.update(var_to_bytes([image.get_width(), image.get_height(), image.get_format(), image.has_mipmaps()]))
@@ -41,7 +44,11 @@ func share(value: Variant) -> Variant:
    if not canonical is ImageTexture:
     error = "Invalid shared bake texture: " + path
     return resource
-   if not canonical.get_image().resource_path.is_empty():
+   var canonical_image: Image = canonical.get_image()
+   if canonical_image == null or canonical_image.is_empty():
+    error = "Shared bake texture has no image pixels: " + path
+    return resource
+   if not canonical_image.resource_path.is_empty():
     canonical.set_image(pixels)
     var result := ResourceSaver.save(canonical, path, ResourceSaver.FLAG_COMPRESS)
     if result != OK: error = "Could not update shared bake texture: " + error_string(result)

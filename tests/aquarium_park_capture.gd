@@ -39,7 +39,7 @@ func run() -> void:
   if argument.begins_with("--output="): output = argument.trim_prefix("--output=")
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(output))
  game = Game.new()
- game.generation_enabled = false
+
  game.authored_act_path = act
  root.add_child(game)
  await frames(20)

@@ -1,6 +1,5 @@
-extends "res://tests/score_attack_regression.gd"
+extends "res://tests/act_game_fixture.gd"
 ## Controlled trajectory fixtures use actual 120 Hz collisions and score callbacks.
-## Input-only comparisons are in character_play_survey.gd.
 var target_body: StaticBody2D
 var wall: StaticBody2D
 var homing_events: Array[String] = []
@@ -23,8 +22,8 @@ func place(at: Vector2, velocity: Vector2 = Vector2.ZERO) -> void:
  await frames(3)
 
 func run() -> void:
- game = load("res://experiments/visual_lab/visual_lab.tscn").instantiate()
- game.generation_seed = 18
+ game = create_game()
+
  root.add_child(game)
  await frames(5)
  game.specials.homing_started.connect(func(body: Node2D, direction: Vector2):
@@ -44,8 +43,7 @@ func run() -> void:
  var target_visual := Node3D.new()
  game.presentation.add_child(target_visual)
  game.presentation.bumper_visuals[target_body.get_instance_id()] = target_visual
- game.chunks[0].descriptors.append({"kind": "bumper", "body": target_body})
- game.playfield = PlayfieldData.from_generated(game.chunks, game.layout)
+ game.playfield._add_bumper(target_body, 30.0)
  var box := RectangleShape2D.new()
  box.size = Vector2(25, 500)
  wall = collider(Vector2(2100, 2000), box, false)
@@ -137,51 +135,30 @@ func run() -> void:
  target_body.free()
  wall.free()
  # Exercise the same UI entry points used by players, including replay.
- var ui: ScoreAttackPanel = game.debug_panel.challenge_panel
+ var ui: Control = game.debug_panel.act_controls
  ui.character_selector.select(1)
  ui.chao_lab.refresh()
  check(ui.chao_lab.heading.text.contains("Tails") and ui.chao_lab.cards.ice.stats.text.contains("135") and game.tuning.base == PhysicsTuning.BALANCED, "Chao preview uses pending Tails profile without changing the current run")
- for mode in [0, 1, 2]:
-  paused = true
-  ui.mode_selector.select(mode)
-  ui.character_selector.select(1)
-  check(ui.start_run(), "UI starts Tails mode %d" % mode)
-  await frames(8)
-  check(game.character_id == "tails" and game.specials.character_id == "tails" and game.special_meter == 0 and game.tuning._temporary.is_empty(), "Fresh character state in mode %d" % mode)
-  check(game.debug_panel.spinboxes.steering_acceleration.value == 2400, "Editable physics fields show Tails baseline in mode %d" % mode)
-  paused = false
+ paused = true
+ ui.character_selector.select(1)
+ check(ui.start_run(), "UI replays the Act as Tails")
+ await frames(8)
+ check(game.character_id == "tails" and game.specials.character_id == "tails" and game.special_meter == 0 and game.tuning._temporary.is_empty(), "Fresh character state on Act replay")
+ check(game.debug_panel.spinboxes.steering_acceleration.value == 2400, "Editable physics fields show Tails baseline")
+ paused = false
  game.set_physics_process(true)
  game.ring_field.set_physics_process(true)
- # Closed Act gate remains a physical obstruction during flight.
- var gate: ZoneGate = game.zone_gates[0]
- var gate_y: float = gate.opening.position.y
- await place(Vector2(gate.opening.get_center().x, gate_y + 100), Vector2(0, -500))
+ # Authored drains retain the same temporary-modifier cleanup.
+ game.ball.teleport_to(Vector2(game.playfield.spawn.x, game.playfield.bounds.end.y - 10), Vector2(0, 400))
  game.special_meter = 100
- check(game.specials.activate(), "Flight activates beneath the closed Act gate")
- var minimum_y: float = game.ball.position.y
- for tick in 35:
-  await frames(1)
-  minimum_y = minf(minimum_y, game.ball.position.y)
- check(minimum_y > gate_y and game.zone.active_act == 0, "Flight cannot bypass a locked Act gate")
- game.special_meter = 37
- game.zone.observe_score(10000)
- var clear_y: float = game.zone.acts[0].clear_y
- game.zone.observe_motion(Vector2(400, clear_y + 50), Vector2(400, clear_y - 60))
- game._sync_zone_gates()
- paused = true
- check(game.choose_zone_chao("spring") and game.special_meter == 37 and game.specials.flight_remaining > 0, "Act draft retains unused meter and paused flight")
- game.specials.reset(false, "Test drain setup")
- await place(game.zone.acts[1].entry + Vector2(0, -100), Vector2(0, 600))
- game.special_meter = 100
+ await frames(3)
  game.specials.activate()
- game.special_meter = 19
- game.ball.teleport_to(game.zone.acts[1].drain - Vector2(0, 30), Vector2(0, 400))
  await frames(8)
- check(game.respawn_time > 0 and game.specials.flight_remaining == 0 and game.special_meter == 19 and game.tuning._temporary.is_empty(), "Checkpoint drain ends flight and retains unused meter without refill")
+ check(game.respawn_time > 0 and game.specials.flight_remaining == 0 and game.tuning._temporary.is_empty(), "Authored drain ends flight and queues retry")
  paused = true
- check(game.request_generation(18), "Replay request accepted")
+ check(game.request_replay(), "Authored replay is accepted")
  await frames(8)
- check(game.zone.active_act == 0 and game.special_meter == 0 and game.tuning.build_ids.is_empty() and game.specials.target == null, "Zone replay resets meter, acquired Chao and targeting")
+ check(game.special_meter == 0 and game.specials.target == null, "Act replay resets meter and targeting")
  paused = false
  await frames(5)
  check(game.character.visible and game.character.character_id == "tails" and game.character.spin_material.albedo_color.r > game.character.spin_material.albedo_color.b, "Green Hill presents the selected Tails character with its orange spinball")

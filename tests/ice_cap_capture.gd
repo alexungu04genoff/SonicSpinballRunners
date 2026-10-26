@@ -43,8 +43,8 @@ func run() -> void:
    continue
   for i in 120:
    await frames(1)
-   if not game.generation_pending: break
-  if game.generation_pending or not game.last_source_error.is_empty():
+   if not game.loading_act: break
+  if game.loading_act or not game.last_source_error.is_empty():
    failures += 1
    continue
   var original := FileAccess.get_file_as_bytes(path)

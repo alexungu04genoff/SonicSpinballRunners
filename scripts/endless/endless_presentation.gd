@@ -1,4 +1,4 @@
-extends "res://scripts/themes/themed_presentation.gd"
+extends "res://scripts/presentation.gd"
 ## Persistent camera and player presentation; streamed roots own their local art.
 var touring := false
 var tour_focus := Vector2.ZERO
@@ -9,7 +9,7 @@ func build_authored(_runtime: Dictionary, bounds: Rect2, cell_size: float) -> vo
  var saved_rings := ring_field.rings
  ring_field.rings = []
  flippers = []
- _build_shared([], [], bounds)
+ _build_shared(bounds)
  ring_field.rings = saved_rings
  get_node("TableFloor").queue_free()
  camera.far = 180.0
@@ -58,3 +58,6 @@ func _update_ring_visuals(delta: float) -> void:
 
 func build_study(_parent: Node3D, _origin: Vector3) -> void:
  pass
+
+func _floor_line(_a: Vector2, _b: Vector2, _mat: Material) -> void:
+ pass # Streamed Act recipes own the complete visible floor.

@@ -8,7 +8,7 @@ var _pinball_materials: Dictionary = {}
 const SCALE: float = 0.01
 const BALL_HEIGHT: float = 0.16
 const RING_HEIGHT: float = 0.23
-## Shared wall styling for generated rails and authored solid/path obstacles.
+## Shared wall styling for authored solid/path obstacles.
 const RAIL_HEIGHT: float = 0.30
 const RAIL_CAP_HEIGHT: float = preload("res://scripts/act_dimensions.gd").TERRAIN_HEIGHT_PIXELS * SCALE - RAIL_HEIGHT
 const RAIL_SIDE_COLOR := Color("267f81")
@@ -42,13 +42,9 @@ var ring_field: RingField
 var ball_visual: MeshInstance3D
 var flipper_visuals: Array[Node3D] = []
 var flipper_retracted_visuals: Array[Node3D] = []
-var checkpoint_visuals: Array[Dictionary] = []
-var serve_visuals: Array[Dictionary] = []
 var ring_visuals: Array[MeshInstance3D] = []
 var ring_pickups: Dictionary = {}
 var physics_overlay: Node3D
-var chunk_overlay: Node3D
-var connector_overlay: Node3D
 var construction_grid_overlay: Node3D
 var bumper_visuals: Dictionary = {}
 var flash_times: Dictionary = {}
@@ -116,35 +112,28 @@ func line(a: Vector2, b: Vector2, radius: float, height: float, mat: Material, p
  instance.quaternion = Quaternion(Vector3.UP, (end - start).normalized())
  return instance
 
-func build(chunks: Array[TableChunk], junctions: Variant = [], bounds: Rect2 = Rect2()) -> void:
- authored_mode = false
- _build_shared(chunks, junctions, bounds)
-
 func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
  # The shared camera, lights and moving visuals accept compiler data directly.
  # An authored Act never needs a generated chunk or procedural layout.
  authored_mode = true
  authored_cell_size = cell_size
  camera_follow_enabled = false
- _build_shared([], [], bounds)
+ _build_shared(bounds)
  _build_authored_objects(runtime)
  _build_authored_grid(bounds, cell_size)
 
-func rebuild_playfield(playfield: RefCounted, chunks: Array[TableChunk], layout: Dictionary) -> void:
+func rebuild_playfield(playfield: RefCounted) -> void:
  # The game owns one presentation/camera for every level source. Only disposable
  # terrain, moving-object meshes and per-layout feedback are replaced here.
  var overlays: Array[bool] = []
- for overlay: Node3D in [physics_overlay, chunk_overlay, connector_overlay, construction_grid_overlay]:
+ for overlay: Node3D in [physics_overlay, construction_grid_overlay]:
   overlays.append(is_instance_valid(overlay) and overlay.visible)
  var follow := camera_follow_enabled
  _clear_playfield_geometry()
- if playfield.document != null:
-  build_authored(playfield.authored_runtime, playfield.bounds, float(playfield.document.cell_size))
- else:
-  build(chunks, layout.get("junctions", []), playfield.bounds)
+ build_authored(playfield.authored_runtime, playfield.bounds, float(playfield.document.cell_size))
  camera_follow_enabled = follow
  reset_camera(ball.serve_position)
- var rebuilt: Array[Node3D] = [physics_overlay, chunk_overlay, connector_overlay, construction_grid_overlay]
+ var rebuilt: Array[Node3D] = [physics_overlay, construction_grid_overlay]
  for i in rebuilt.size():
   rebuilt[i].visible = overlays[i]
 
@@ -156,21 +145,15 @@ func _clear_playfield_geometry() -> void:
   child.free()
  flipper_visuals.clear()
  flipper_retracted_visuals.clear()
- checkpoint_visuals.clear()
- serve_visuals.clear()
  ring_visuals.clear()
  ring_pickups.clear()
  bumper_visuals.clear()
  flash_times.clear()
  _last_ball_position = ball.position
 
-func _build_shared(chunks: Array[TableChunk], junctions: Variant, bounds: Rect2) -> void:
+func _build_shared(bounds: Rect2) -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
  table_bounds = bounds
- if not table_bounds.has_area():
-  for chunk: TableChunk in chunks:
-   var chunk_bounds := chunk.data.world_rect(Rect2(Vector2.ZERO, Vector2(chunk.data.grid_dimensions) * ChunkData.GRID_SIZE))
-   table_bounds = table_bounds.merge(chunk_bounds) if table_bounds.has_area() else chunk_bounds
  if not is_instance_valid(_world_environment):
   _world_environment = WorldEnvironment.new()
   _world_environment.environment = Environment.new()
@@ -205,8 +188,6 @@ func _build_shared(chunks: Array[TableChunk], junctions: Variant, bounds: Rect2)
  floor_visual.name = "TableFloor"
  # Receive object shadows without self-shadow artifacts on the large, flat slab.
  floor_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
- var rail_mat := terrain_side_material()
- var rail_top := terrain_top_material()
  _pinball_materials = PinballModels.materials(_pinball_theme_id(), pinball_palette)
  var gold := material(Color("ffd568"), 0.08)
  var grid_mat := material(Color("1b414c"))
@@ -224,79 +205,10 @@ func _build_shared(chunks: Array[TableChunk], junctions: Variant, bounds: Rect2)
  dynamic_debug.material_override = debug_material(Color("70ff85"))
  dynamic_debug.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  physics_overlay.add_child(dynamic_debug)
- chunk_overlay = Node3D.new()
- chunk_overlay.name = "ChunkBoundaryOverlay"
- add_child(chunk_overlay)
- chunk_overlay.visible = false
- connector_overlay = Node3D.new()
- connector_overlay.name = "ConnectorRegionOverlay"
- add_child(connector_overlay)
- connector_overlay.visible = false
  construction_grid_overlay = Node3D.new()
  construction_grid_overlay.name = "ConstructionGridOverlay"
  add_child(construction_grid_overlay)
  construction_grid_overlay.visible = false
- var debug_mat := debug_material(Color("70ff85"))
- var boundary_mat := debug_material(Color("d8a9ff"))
- for chunk: TableChunk in chunks:
-  if not chunk.data.construction_grid.is_empty():
-   _build_construction_grid(chunk.data)
-  for item: Dictionary in chunk.descriptors:
-   match item.kind:
-    "rail":
-     var rail := Node3D.new()
-     rail.position = map_point(item.a)
-     rail.rotation.y = -(item.b - item.a).angle()
-     add_child(rail)
-     var length: float = item.a.distance_to(item.b) * SCALE
-     _paddle(length, item.radius * SCALE, RAIL_HEIGHT, 0.0, rail_mat, rail)
-     _paddle(length, item.radius * SCALE * 0.68, RAIL_CAP_HEIGHT, RAIL_HEIGHT, rail_top, rail)
-     if item.get("checkpoint_only", false):
-      var guide := line(item.a, item.b, 0.025, 0.025, material(Color("82978d")))
-      checkpoint_visuals.append({"visual": rail, "guide": guide, "body": item.body, "a": item.a, "b": item.b, "radius": item.radius})
-     else:
-      _capsule_outline(item.a, item.b, item.radius, debug_mat)
-    "circle":
-     var body_visual := Node3D.new()
-     body_visual.position = map_point(item.position)
-     add_child(body_visual)
-     var radius: float = item.radius * SCALE
-     PinballModels.round_bumper(self, body_visual, radius, 1.0, _pinball_materials)
-     bumper_visuals[item.body.get_instance_id()] = body_visual
-     _circle_outline(item.position, item.radius, debug_mat)
-    "flipper_mount":
-     var housing := mesh_node(_prism(item.points, 0.18, rail_mat, rail_top), null, map_point(item.position))
-     housing.name = "WallFlipperHousing"
-     # The bearing is part of the same solid footprint; the moving paddle sits
-     # above its deck. No presentation object owns gameplay collisions.
-     mesh_node(cylinder(ChunkData.MOUNT_RADIUS * SCALE, 0.05), rail_mat, map_point(item.position, 0.205))
-     for i in item.points.size():
-      line(item.position + item.points[i], item.position + item.points[(i + 1) % item.points.size()], 0.012, OVERLAY_HEIGHT, debug_mat, physics_overlay)
-    "triangle":
-     var body_visual := Node3D.new()
-     body_visual.position = map_point(item.position)
-     add_child(body_visual)
-     PinballModels.triangle_bumper(self, body_visual, item.points, 0.34, _pinball_materials)
-     bumper_visuals[item.body.get_instance_id()] = body_visual
-     for i in item.points.size():
-      line(item.position + item.points[i], item.position + item.points[(i + 1) % item.points.size()], 0.012, OVERLAY_HEIGHT, debug_mat, physics_overlay)
-  var chunk_bounds := chunk.data.world_rect(Rect2(Vector2.ZERO, Vector2(chunk.data.grid_dimensions) * ChunkData.GRID_SIZE))
-  _rect_outline(chunk_bounds, boundary_mat, chunk_overlay)
-  for connection: Rect2 in [chunk.data.top_connection, chunk.data.bottom_connection]:
-   if connection.size.x > 0:
-    _rect_outline(chunk.data.world_rect(connection), boundary_mat, connector_overlay)
-  var title := chunk.data.title
-  var title_parts := title.split(" / ", true, 1)
-  if title_parts.size() == 2 and title_parts[0].is_valid_int():
-   title = title_parts[1]
-  _label("%02d / %s" % [chunks.find(chunk) + 1, title], chunk.data.world_point(Vector2(chunk.data.grid_dimensions.x * 50.0, 95 if chunk == chunks[0] else 40)), 18, Color("71cbbf"))
- if junctions is Rect2:
-  if junctions.has_area():
-   _rect_outline(junctions, debug_mat, connector_overlay)
- else:
-  for junction: Dictionary in junctions:
-   if junction.passage.has_area():
-    _rect_outline(junction.passage, debug_mat, connector_overlay)
  for ring: Dictionary in ring_field.rings:
   var torus := TorusMesh.new()
   torus.inner_radius = ring_field.ring_radius * SCALE * 0.55 if authored_mode else 0.075
@@ -326,16 +238,6 @@ func _build_shared(chunks: Array[TableChunk], junctions: Variant, bounds: Rect2)
  stripe.inner_radius = ball.radius * SCALE * 0.96 if authored_mode else 0.134
  stripe.outer_radius = ball.radius * SCALE * 1.04 if authored_mode else 0.146
  mesh_node(stripe, material(Color("e5f4ff")), Vector3.ZERO, ball_visual)
- # Drain and serve guides have no gameplay collision.
- for chunk: TableChunk in chunks:
-  if chunk.data.markers.has("serve"):
-   _build_serve_marker(chunk.data)
-  if chunk.data.markers.has("drain"):
-   var drain := chunk.data.world_point(chunk.data.markers.drain)
-   line(drain + Vector2(-40, -25), drain + Vector2(40, -25), 0.035, 0.01, material(Color("ef6473"), 0.4))
-   _label("DRAIN", drain + Vector2(0, -60), 18, Color("ee8693"))
- _update_serve_markers()
- _update_checkpoint_visuals()
 
 func ball_height() -> float:
  return (ball.radius * SCALE + authored_cell_size * SCALE * 0.02 if authored_mode else BALL_HEIGHT) + ball.ramp_height * SCALE
@@ -402,42 +304,7 @@ func _build_authored_grid(bounds: Rect2, cell_size: float) -> void:
   var at := bounds.position.y + y * cell_size
   line(Vector2(bounds.position.x, at), Vector2(terrain_end.x, at), 0.005, OVERLAY_HEIGHT, grid_mat, construction_grid_overlay)
 
-func _build_serve_marker(data: ChunkData) -> void:
- var serve := data.world_point(data.markers.serve)
- var marker := Node3D.new()
- marker.name = "ServeMarker_" + data.chunk_id
- add_child(marker)
- var ink := material(Color("82978d"))
- # Flat corner marks identify a starting position without suggesting a physical cup.
- for side_x: float in [-1.0, 1.0]:
-  for side_y: float in [-1.0, 1.0]:
-   var corner := serve + Vector2(side_x, side_y) * 22.0
-   line(corner, corner - Vector2(side_x * 10.0, 0), 0.012, 0.02, ink, marker)
-   line(corner, corner - Vector2(0, side_y * 10.0), 0.012, 0.02, ink, marker)
- # A dedicated parent keeps this gameplay hint visible in themed presentations.
- var hint := Label3D.new()
- hint.text = "ENTER / X\nROLL IN"
- hint.font_size = 18
- hint.pixel_size = 0.012
- hint.modulate = Color("ffe27a")
- hint.outline_size = 2
- hint.rotation.x = -PI / 2.0
- hint.position = map_point(serve + Vector2(100 if data.mirrored else -100, 55), 0.04)
- marker.add_child(hint)
- serve_visuals.append({"serve": serve, "ink": ink, "hint": hint})
-
-func _update_serve_markers() -> void:
- for marker: Dictionary in serve_visuals:
-  var active: bool = marker.serve.is_equal_approx(ball.serve_position)
-  var waiting: bool = active and ball.serve_pending
-  marker.hint.visible = waiting
-  marker.ink.albedo_color = Color("ffe27a") if waiting else Color("82978d")
-
-func _update_checkpoint_visuals() -> void:
- for checkpoint: Dictionary in checkpoint_visuals:
-  var active: bool = is_instance_valid(checkpoint.body) and checkpoint.body.collision_layer != 0
-  checkpoint.visual.visible = active
-  checkpoint.guide.visible = not active
+func _update_flipper_visibility() -> void:
  for i in flippers.size():
   flipper_visuals[i].visible = flippers[i].enabled
   flipper_retracted_visuals[i].visible = not flippers[i].enabled
@@ -652,58 +519,8 @@ func _floor_line(a: Vector2, b: Vector2, mat: Material) -> void:
  marking.rotation.y = -(b - a).angle()
  marking.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
-func _rect_outline(rect: Rect2, mat: Material, parent: Node3D) -> void:
- var points: Array[Vector2] = [rect.position, Vector2(rect.end.x, rect.position.y), rect.end, Vector2(rect.position.x, rect.end.y)]
- for i in 4:
-  line(points[i], points[(i + 1) % 4], 0.018, OVERLAY_HEIGHT, mat, parent)
-
-func _build_construction_grid(data: ChunkData) -> void:
- var metadata: Dictionary = data.construction_grid
- var size: float = metadata.cell_size
- var dimensions: Vector2i = metadata.dimensions
- var grid_material := debug_material(Color("437f9e"))
- var footprint_material := debug_material(Color("dfab63"))
- for x in range(dimensions.x + 1):
-  line(data.world_point(Vector2(x, 0) * size), data.world_point(Vector2(x, dimensions.y) * size), 0.007, OVERLAY_HEIGHT, grid_material, construction_grid_overlay)
-  _label(str(x), data.world_point(Vector2(x, 0.35) * size), 16, Color("a7daee"), construction_grid_overlay)
- for y in range(dimensions.y + 1):
-  line(data.world_point(Vector2(0, y) * size), data.world_point(Vector2(dimensions.x, y) * size), 0.007, OVERLAY_HEIGHT, grid_material, construction_grid_overlay)
-  _label(str(y), data.world_point(Vector2(0.35, y) * size), 16, Color("a7daee"), construction_grid_overlay)
- for placement: Dictionary in metadata.placements:
-  var footprint: Rect2 = placement.footprint
-  # Footprints describe authoring extents, not colliders or guaranteed free space.
-  if footprint.has_area():
-   _rect_outline(data.world_rect(Rect2(footprint.position * size, footprint.size * size)), footprint_material, construction_grid_overlay)
-  var cell: Vector2i = placement.cell
-  _label("%d,%d" % [cell.x, cell.y], data.world_point((Vector2(cell) + Vector2(0.25, 0.35)) * size), 13, Color("ffcf8c"), construction_grid_overlay)
-
-func _label(text: String, point: Vector2, font_size: int, color: Color, parent: Node3D = self) -> void:
- var label := Label3D.new()
- label.text = text
- label.font_size = font_size
- label.pixel_size = 0.012
- label.modulate = color
- label.outline_size = 0
- label.rotation.x = -PI / 2.0
- label.position = map_point(point, 0.01)
- if parent == construction_grid_overlay:
-  label.no_depth_test = true
-  label.pixel_size = 0.016
- parent.add_child(label)
-
-func _circle_outline(center: Vector2, radius: float, mat: Material) -> void:
- for i in 32:
-  line(center + Vector2.from_angle(i * TAU / 32) * radius, center + Vector2.from_angle((i + 1) * TAU / 32) * radius, 0.012, OVERLAY_HEIGHT, mat, physics_overlay)
-
-func _capsule_outline(a: Vector2, b: Vector2, radius: float, mat: Material) -> void:
- var normal := (b - a).normalized().orthogonal() * radius
- line(a + normal, b + normal, 0.012, OVERLAY_HEIGHT, mat, physics_overlay)
- line(a - normal, b - normal, 0.012, OVERLAY_HEIGHT, mat, physics_overlay)
- _circle_outline(a, radius, mat)
- _circle_outline(b, radius, mat)
-
 func _prism(points: PackedVector2Array, height: float, side_mat: Material, top_mat: Material) -> ArrayMesh:
- # Mirrored chunks reverse polygon winding; normalize only the visual copy.
+ # Mirrored contours reverse polygon winding; normalize only the visual copy.
  points = points.duplicate()
  if Geometry2D.is_polygon_clockwise(points):
   points.reverse()
@@ -779,8 +596,7 @@ func _process(delta: float) -> void:
  _last_ball_position = ball.position
  for i in flippers.size():
   flipper_visuals[i].rotation.y = -flippers[i].rotation
- _update_checkpoint_visuals()
- _update_serve_markers()
+ _update_flipper_visibility()
  _update_ring_visuals(delta)
  for id: int in flash_times.keys():
   flash_times[id] -= delta
@@ -796,9 +612,6 @@ func _draw_dynamic_geometry() -> void:
  dynamic_geometry.clear_surfaces()
  dynamic_geometry.surface_begin(Mesh.PRIMITIVE_LINES)
  _debug_circle(ball.position, ball.radius)
- for checkpoint: Dictionary in checkpoint_visuals:
-  if checkpoint.body.collision_layer != 0:
-   _debug_capsule(checkpoint.a, checkpoint.b, checkpoint.radius)
  for flipper: PlaygroundFlipper in flippers:
   if not flipper.enabled:
    continue

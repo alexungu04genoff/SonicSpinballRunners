@@ -46,7 +46,7 @@ func listener_count(signal_name: String) -> int:
 
 func run() -> void:
  game = load("res://experiments/visual_lab/visual_lab.tscn").instantiate()
- game.generation_seed = 18
+
  root.add_child(game)
  await frames(5)
  actor = game.character
@@ -66,8 +66,7 @@ func run() -> void:
  collision.shape = shape
  target.add_child(collision)
  game.world.add_child(target)
- game.chunks[0].descriptors.append({"kind": "bumper", "body": target})
- game.playfield = PlayfieldData.from_generated(game.chunks, game.layout)
+ game.playfield._add_bumper(target, 30.0)
  var target_visual := Node3D.new()
  game.presentation.add_child(target_visual)
  game.presentation.bumper_visuals[target.get_instance_id()] = target_visual
@@ -158,7 +157,7 @@ func run() -> void:
  target.free()
  var previous_actor: WeakRef = weakref(actor)
  paused = true
- var regenerated: bool = game.request_generation(23, TableGenerator.Difficulty.NORMAL, 1, {"character": "sonic", "zone": false, "enabled": false})
+ var regenerated: bool = game.request_replay({"character": "sonic"})
  await frames(12)
  actor = game.character
  var listeners_ok := true

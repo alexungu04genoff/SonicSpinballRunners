@@ -1,4 +1,4 @@
-extends "res://tests/score_attack_regression.gd"
+extends "res://tests/act_game_fixture.gd"
 ## Actual 120 Hz bodies plus the shared loadout UI/lifecycle. No test framework.
 
 func fixture(id: String, profile: int = 0, spawn: Vector2 = Vector2.ZERO) -> Dictionary:
@@ -22,7 +22,9 @@ func steering_trial(id: String, incoming_x: float, ticks: int) -> Dictionary:
  var f := fixture(id)
  f.ball.teleport_to(Vector2.ZERO, Vector2(incoming_x, 0))
  f.controls.virtual_steering = 1.0
- await frames(ticks)
+ # Count physics ticks directly: render waits can skip extra physics steps.
+ for tick in ticks:
+  await physics_frame
  var result := {"vx": f.ball.linear_velocity.x, "x": f.ball.position.x, "contribution": f.ball.steering_contribution}
  f.node.free()
  await frames(2)
@@ -96,14 +98,13 @@ func run() -> void:
   check(ordinary.strikes == 1 and spring.strikes == 1 and spring.finite and spring.peak_up > ordinary.peak_up * 1.1 and spring.rise > ordinary.rise * 1.15, "Spring increases real strike speed and height without repeated impulses: profile %d" % profile)
 
  # Use the real score listener and cosmetic pickup signal at an 80 px offset.
- game = load("res://experiments/visual_lab/visual_lab.tscn").instantiate()
- game.generation_seed = 18
+ game = create_game()
+
  root.add_child(game)
  await frames(6)
- green_hill = true
- var original_signature: String = game.layout.signature
- var lab: ChaoLabPanel = game.debug_panel.challenge_panel.chao_lab
- check(game.tuning.chao_id == "none" and game.score_attack.state == ScoreAttack.State.FREE_PLAY, "Free Play starts without an upgrade")
+ var original_signature: String = game.authored_document.fingerprint()
+ var lab: ChaoLabPanel = game.debug_panel.act_controls.chao_lab
+ check(game.tuning.chao_id == "none", "Authored play starts without an upgrade")
  lab.open_lab()
  lab.choose("spring")
  lab.hide()
@@ -115,7 +116,7 @@ func run() -> void:
  await capture("chao-lab")
  lab.apply_choice()
  await frames(8)
- check(not paused and not lab.visible and game.tuning.chao_id == "ice" and game.ball.serve_pending and game.layout.signature == original_signature, "UI equips Ice into a fresh run on the exact same table")
+ check(not paused and not lab.visible and game.tuning.chao_id == "ice" and game.ball.serve_pending and game.authored_document.fingerprint() == original_signature, "UI equips Ice into a fresh run on the exact same table")
  game.debug_panel.practice_toggle.button_pressed = true
  await frames(8)
  check(game.tuning.chao_id == "practice" and game.debug_panel.practice_toggle.button_pressed, "Legacy toggle starts a fresh run with only Practice equipped")
@@ -123,7 +124,7 @@ func run() -> void:
  lab.choose("magnet")
  lab.apply_choice()
  await frames(8)
- check(game.tuning.chao_id == "magnet" and not game.debug_panel.practice_toggle.button_pressed and game.tuning.effective.flipper_launch_strength == 1050, "Lab selection removes Practice and synchronizes its toggle")
+ check(game.tuning.chao_id == "magnet" and not game.debug_panel.practice_toggle.button_pressed and game.tuning.effective.flipper_launch_strength == game.tuning.preview_chao("none").flipper_launch_strength, "Lab selection removes Practice and synchronizes its toggle")
  var field: RingField = game.ring_field
  var ring: Dictionary = field.rings[0]
  var home: Vector2 = ring.home
@@ -142,40 +143,23 @@ func run() -> void:
  var score_after: int = game.score
  field._physics_process(0)
  check(outside and not ring.active and claims.has(0) and game.score > before and game.score == score_after and ring.position == home and game.ball.linear_velocity == velocity, "Magnet claims an 80 px ring immediately and once, through existing score/visual signals without moving the ball")
- check(not game.request_generation(18, -1, -1, {"chao": "spring"}) and game.tuning.chao_id == "magnet", "Active play rejects loadout swaps without pause or reset")
+ check(not game.request_replay({"chao": "spring"}) and game.tuning.chao_id == "magnet", "Active play rejects loadout swaps without pause or reset")
  game.reset_ball(false)
  await frames(2)
  check(game.tuning.chao_id == "magnet" and game.score == score_after, "Ball reset keeps equipment and earned progress")
- game.ball.teleport_to(Vector2(400, game.layout.bounds.end.y + 80), Vector2(0, 200))
+ game.ball.teleport_to(Vector2(400, game.playfield.bounds.end.y + 80), Vector2(0, 200))
  await frames(125)
  check(game.ball_number == 2 and not game.ball.serve_pending and game.tuning.chao_id == "magnet", "Drain automatically respawns and relaunches with the same equipped Chao")
  paused = true
- game.debug_panel.challenge_panel.mode_selector.select(1)
- game.debug_panel.challenge_panel.target_field.get_line_edit().text = "25"
  lab.open_lab()
  lab.choose("spring")
  lab.apply_choice()
  await frames(8)
- check(game.score == 0 and game.tuning.chao_id == "spring" and game.layout.signature == original_signature and game.score_attack.state == ScoreAttack.State.LOCKED and game.score_attack.target == 25 and paused, "Chao UI applies the selected mode/typed target on the same seed and preserves pause")
- game._on_ring_collected(Vector2.ZERO)
- check(game.score_attack.state == ScoreAttack.State.UNLOCKED, "Chao leaves the existing score threshold intact")
- var goal: Vector2 = game.score_attack.goal_position
- game.score_attack.observe_motion(goal, goal)
- await frames(2)
- game.debug_panel.challenge_panel.replay_button.pressed.emit()
- await frames(8)
- check(game.tuning.chao_id == "spring" and game.score == 0 and game.score_attack.state == ScoreAttack.State.LOCKED and not paused, "Victory replay retains one Chao, clears progress and resumes at serve")
- game.request_generation(8, TableGenerator.Difficulty.EASY, 2)
- await frames(8)
- check(game.tuning.chao_id == "spring" and game.tuning.effective.flipper_launch_strength == 1417.5 and game.generation_grid_mode == 2, "Regeneration preserves one equipped modifier across difficulty and grid changes")
- check(not game.request_generation(8, -1, -1, {"chao": "unknown"}) and game.tuning.chao_id == "spring", "Invalid choices leave the active run intact")
- var recipe: GridChunkRecipe = game.GRID_EASY_RECIPES[0]
- var placements := recipe.placements.duplicate(true)
- recipe.placements.append({"piece": "invalid_chao_fixture", "cell": Vector2i(0, 0)})
- game.request_generation(8, TableGenerator.Difficulty.EASY, 1, {"chao": "ice"})
+ check(game.score == 0 and game.tuning.chao_id == "spring" and game.authored_document.fingerprint() == original_signature and paused, "Chao replay preserves the Act and caller pause state")
+ check(not game.request_replay({"chao": "unknown"}) and game.tuning.chao_id == "spring", "Invalid choices preserve the active run")
+ check(game.request_authored_act("res://missing-act.tres", {"chao": "ice"}), "Invalid path reaches validation")
  await frames(6)
- recipe.placements = placements
- check(game.tuning.chao_id == "spring" and game.generation_grid_mode == 2 and not game.generation_pending, "Rejected geometry cannot change the equipped Chao")
+ check(game.tuning.chao_id == "spring" and game.authored_document.fingerprint() == original_signature and not game.loading_act, "Rejected Act cannot change the equipped Chao or active geometry")
  await capture("chao-equipped")
  game.free()
  paused = false

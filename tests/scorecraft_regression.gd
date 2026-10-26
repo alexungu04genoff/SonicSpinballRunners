@@ -1,4 +1,4 @@
-extends "res://tests/score_attack_regression.gd"
+extends "res://tests/act_game_fixture.gd"
 ## Formula cases plus real contact/collection and shared mode lifecycle fixtures.
 
 func bumper(at: Vector2) -> StaticBody2D:
@@ -11,19 +11,11 @@ func bumper(at: Vector2) -> StaticBody2D:
  collision.shape = shape
  body.add_child(collision)
  game.world.add_child(body)
- game.chunks[0].descriptors.append({"kind": "bumper", "body": body})
- game.playfield = PlayfieldData.from_generated(game.chunks, game.layout)
+ game.playfield._add_bumper(body, 30.0)
  var visual := Node3D.new()
  game.presentation.add_child(visual)
  game.presentation.bumper_visuals[body.get_instance_id()] = visual
  return body
-
-func active_bumper() -> Node2D:
- for chunk: TableChunk in game.chunks:
-  for item: Dictionary in chunk.descriptors:
-   if item.has("body") and item.body.has_meta("bumper") and (not game.zone_enabled or game.zone.acts[game.zone.active_act].bounds.has_point(item.body.global_position)):
-    return item.body
- return null
 
 func run() -> void:
  var combo := Scorecraft.new()
@@ -79,8 +71,8 @@ func run() -> void:
  b.free()
  c.free()
 
- game = load("res://experiments/visual_lab/visual_lab.tscn").instantiate()
- game.generation_seed = 18
+ game = create_game()
+
  root.add_child(game)
  await frames(5)
  game.set_physics_process(false)
@@ -112,49 +104,16 @@ func run() -> void:
  first.free()
  second.free()
  paused = true
- var hud: ScorecraftPanel = game.debug_panel.challenge_panel.character_panel.combo_hud
+ var hud: ScorecraftPanel = game.debug_panel.act_controls.character_panel.combo_hud
  hud.toggle.button_pressed = false
  await frames(8)
- check(not game.scorecraft_enabled and not game.scorecraft.enabled and game.score == 0 and game.generation_seed == 18, "Baseline HUD toggle replays the same seed with clean score")
+ check(not game.scorecraft_enabled and not game.scorecraft.enabled and game.score == 0 and game.authored_act_path == "res://test-results/session-physics-act.tres", "Baseline HUD toggle replays the same Act with clean score")
  hud.toggle.button_pressed = true
  await frames(8)
  check(game.scorecraft.enabled and game.scorecraft.chain == 0 and game.scorecraft.last_award.is_empty(), "Re-enabling combos leaves no stale timer or award feedback")
- for mode in [1, 2]:
-  check(game.request_generation(18, -1, -1, {"enabled": mode == 1, "zone": mode == 2, "target": 200}), "Start scoring mode %d" % mode)
-  await frames(8)
-  var target := active_bumper()
-  game._on_bumper_hit(target)
-  game._on_ring_collected(Vector2.ZERO)
-  game._on_ring_collected(Vector2.ZERO)
-  game._on_ring_collected(Vector2.ZERO)
-  check(game.score == 200 and (game.zone.act_score == 200 if mode == 2 else game.score_attack.state == ScoreAttack.State.UNLOCKED), "Existing objective observes the same combo-adjusted total in mode %d" % mode)
- if game.zone_enabled:
-  var target := active_bumper()
-  while not game.zone.exit_unlocked:
-   game._on_bumper_hit(target)
-  var clear_y: float = game.zone.acts[0].clear_y
-  game.zone.observe_motion(Vector2(400, clear_y + 50), Vector2(400, clear_y - 60))
-  game._sync_zone_gates()
-  preserved_time = game.scorecraft.remaining
-  var preserved_score: int = game.score
-  await frames(20)
-  check(game.zone.state == ZoneRun.State.DRAFT and game.scorecraft.remaining == preserved_time, "Chao draft freezes an active combo")
-  check(game.choose_zone_chao("ice") and game.scorecraft.chain == 0 and game.score == preserved_score and game.zone.act_score == 0, "Act advancement clears combo but preserves cumulative score and equips Chao")
-  game._on_bumper_hit(active_bumper())
-  game.set_physics_process(true)
-  game.ball.teleport_to(game.zone.acts[1].drain - Vector2(0, 30), Vector2(0, 400))
-  await frames(8)
-  check(game.respawn_time > 0 and game.scorecraft.chain == 0, "Actual checkpoint drain ends the combo")
-  preserved_score = game.score
-  game._on_bumper_hit(active_bumper())
-  game._on_ring_collected(Vector2.ZERO)
-  check(game.score == preserved_score and game.scorecraft.chain == 0, "Late contacts during drain cannot restart or score a combo")
-  game.reset_ball()
-  check(game.scorecraft.chain == 0 and game.tuning.chao_id == "ice", "Ball reset retains Chao while clearing combo")
- paused = true
- check(game.request_generation(19, -1, 2), "Regeneration accepts a different seed and grid variant")
+ check(game.request_replay(), "Authored replay is accepted")
  await frames(8)
- check(game.score == 0 and game.scorecraft.chain == 0 and game.scorecraft.remaining == 0, "Regeneration clears totals, target history and combo timer")
+ check(game.score == 0 and game.scorecraft.chain == 0 and game.scorecraft.remaining == 0, "Replay clears totals, target history and combo timer")
  paused = false
  game.free()
  await frames(3)

@@ -1,15 +1,10 @@
 [CmdletBinding()]
 param(
     [string]$GodotPath,
-    [ValidateRange(0, 2147483647)]
-    [int]$Seed = 18,
-    [ValidateSet('Catalogue', 'Base', 'Variant')]
-    [string]$Grid = 'Catalogue',
     [ValidateSet('Angle', 'Native')]
     [string]$GraphicsBackend = 'Angle',
     [ValidateSet('Sonic', 'Tails', 'Knuckles', 'Shadow')]
     [string]$Character = 'Sonic',
-    [switch]$Playground,
     [switch]$NoModel,
     [ValidateSet('gameplay', 'overview', 'idle', 'jump', 'trick', 'roll', 'reel', 'homing', 'impact', 'fly')]
     [string]$Capture,
@@ -21,11 +16,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
-$scenePath = if ($Playground) { 'res://scenes/playground.tscn' } else { 'res://experiments/visual_lab/visual_lab.tscn' }
-
-if ($Playground -and $Capture) {
-    throw 'Capture options target Green Hill; omit -Playground.'
-}
+$scenePath = 'res://experiments/visual_lab/visual_lab.tscn'
 
 if ($Sequence -and -not $Capture) {
     throw '-Sequence requires -Capture.'
@@ -113,8 +104,7 @@ if (Test-Path -LiteralPath $gameLog -PathType Leaf) {
 Write-Host "Graphics backend: $GraphicsBackend ($renderingDriver)"
 Write-Host "Game log: $gameLog"
 $launchArguments = @('--path', $repoRoot, '--rendering-method', 'gl_compatibility', '--rendering-driver', $renderingDriver, '--log-file', $gameLog, $scenePath)
-$userArguments = @("--seed=$Seed", "--grid=$(@{Catalogue=0; Base=1; Variant=2}[$Grid])")
-if (-not $Playground) { $userArguments += "--character=$($Character.ToLowerInvariant())" }
+$userArguments = @("--character=$($Character.ToLowerInvariant())")
 if ($NoModel) { $userArguments += '--no-model' }
 if ($Capture) {
     $launchArguments = @('--fixed-fps', '60') + $launchArguments

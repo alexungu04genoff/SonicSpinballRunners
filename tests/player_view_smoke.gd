@@ -67,7 +67,7 @@ func run() -> void:
  game.ball.freeze = true
  var p: TablePresentation = game.presentation
  p.set_process(false)
- var gameplay := [game.score, game.rings_collected, game.tuning.effective.duplicate(true), game.layout.signature]
+ var gameplay := [game.score, game.rings_collected, game.tuning.effective.duplicate(true), game.authored_document.fingerprint()]
  var modes := [false, true]
  for debug_mode in modes:
   if game.debug_open != debug_mode:
@@ -87,8 +87,8 @@ func run() -> void:
   await frames(20)
   check(game.player_view and p.camera_follow_enabled, "F11 enables Player View and following from development mode " + str(debug_mode))
   check(DisplayServer.get_name() == "headless" or DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN, "Native fullscreen enabled")
-  check(not game.development_footer.is_visible_in_tree() and not game.debug_panel.visible and not game.retro_controls.visible and not game.debug_panel.challenge_panel.get_child(0).is_visible_in_tree() and not game.debug_panel.challenge_panel.character_panel.combo_hud.toggle.is_visible_in_tree(), "All toolbars, source controls, tuning, retro and character development controls hidden")
-  check(not p.physics_overlay.visible and not p.construction_grid_overlay.visible and game.score_label_lab.is_visible_in_tree() and game.debug_panel.challenge_panel.character_panel.is_visible_in_tree(), "Debug geometry hidden; score, specials and Scorecraft HUD retained")
+  check(not game.development_footer.is_visible_in_tree() and not game.debug_panel.visible and not game.retro_controls.visible and not game.debug_panel.act_controls.get_child(0).is_visible_in_tree() and not game.debug_panel.act_controls.character_panel.combo_hud.toggle.is_visible_in_tree(), "All toolbars, source controls, tuning, retro and character development controls hidden")
+  check(not p.physics_overlay.visible and not p.construction_grid_overlay.visible and game.score_label_lab.is_visible_in_tree() and game.debug_panel.act_controls.character_panel.is_visible_in_tree(), "Debug geometry hidden; score, specials and Scorecraft HUD retained")
   check(game.view_container.get_rect().size.is_equal_approx(root.get_visible_rect().size) and root.content_scale_aspect == Window.CONTENT_SCALE_ASPECT_EXPAND, "Gameplay fills the available viewport with uniform root scaling")
   for shortcut in [KEY_F1, KEY_F4, KEY_O, KEY_C]:
    await key(shortcut)
@@ -118,7 +118,7 @@ func run() -> void:
   check(not game.player_view and game.debug_open == debug_mode and game.debug_panel.visible == debug_mode and game.lab_ui.visible != debug_mode and game.retro_controls.visible and game.retro_controls.tuning_panel.visible, "F11 restores development visibility including an open Retro panel")
   check(Vector4(game.view_container.offset_left, game.view_container.offset_top, game.view_container.offset_right, game.view_container.offset_bottom) == offsets and root.content_scale_aspect == prior_aspect and not p.camera_follow_enabled and p.physics_overlay.visible and p.construction_grid_overlay.visible, "Viewport, aspect mode, overview and overlay preferences restored")
   check(DisplayServer.get_name() == "headless" or (DisplayServer.window_get_mode() == prior_mode and DisplayServer.window_get_size() == prior_size and DisplayServer.window_get_position() == prior_position), "Exact native window mode, size and position restored")
- check(gameplay == [game.score, game.rings_collected, game.tuning.effective, game.layout.signature], "View switches and camera probes leave score, physics tuning and geometry unchanged")
+ check(gameplay == [game.score, game.rings_collected, game.tuning.effective, game.authored_document.fingerprint()], "View switches and camera probes leave score, physics tuning and geometry unchanged")
  game.retro_controls.tuning_panel.hide()
  if game.debug_open:
   game.toggle_debug()

@@ -67,8 +67,8 @@ func run() -> void:
  game.authored_act_path = RUN_ACT
  root.add_child(game)
  await frames(6)
- check(game.level_source == "authored", "Sandbox starts in the main game", game.last_source_error)
- if game.level_source != "authored": game.queue_free(); quit(1); return
+ check(game.playfield.source == "authored", "Sandbox starts in the main game", game.last_source_error)
+ if game.playfield.source != "authored": game.queue_free(); quit(1); return
  identities = engine_ids()
  game.controls.virtual_enabled = true
  game.ring_field.set_physics_process(false)
@@ -190,9 +190,9 @@ func run() -> void:
  check(not is_instance_valid(manager) and not game.ball.on_ramp and game.ball.mechanics != null, "Reload removes old forces and rail ownership")
  await enter_rail()
  paused = true
- check(game.request_generated_source(), "Paused source switch is accepted")
+ check(game.request_authored_act("res://data/endless/second_simple.tres"), "Paused source switch is accepted")
  await await_rebuild()
- check(game.level_source == "generated" and not game.ball.on_ramp and game.ball.mechanics == null and game.ball.collision_mask == 1, "Source switch destroys mechanics and restores ordinary physics")
+ check(game.authored_act_path == "res://data/endless/second_simple.tres" and not game.ball.on_ramp and game.ball.mechanics != null and game.ball.collision_mask == 1, "Act replacement rebinds mechanics and restores ordinary physics")
  check_identity("Source switch preserves authoritative ball and systems")
  paused = false
  game.queue_free()

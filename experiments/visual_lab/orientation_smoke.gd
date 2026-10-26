@@ -140,12 +140,12 @@ func flipper_probe(label: String, incoming_x: float, nearly_vertical: bool) -> v
 func bumper_probe() -> void:
  await prepare_contact()
  var bumper: Dictionary = {}
- for descriptor: Dictionary in game.chunks.back().descriptors:
-  if descriptor.kind == "circle":
+ for descriptor: Dictionary in game.authored_runtime.objects:
+  if descriptor.type == "round_bumper":
    bumper = descriptor
    break
  if bumper.is_empty():
-  check(false, "Descending bumper probe has a generated circular bumper")
+  check(false, "Descending bumper probe has a authored circular bumper")
   return
  var hits_before: int = game.ball.bumper_hit_count
  game.ball.teleport_to(bumper.position - Vector2(0, bumper.radius + PlaygroundBall.RADIUS + 35), Vector2(0, 700))
@@ -189,7 +189,8 @@ func bumper_probe() -> void:
 func run() -> void:
  capture_enabled = OS.get_cmdline_user_args().has("--screenshots")
  game = load("res://experiments/visual_lab/visual_lab.tscn").instantiate()
- game.generation_seed = 18
+ game.authored_act_path = "res://data/acts/playtest_showcase.tres"
+
  root.add_child(game)
  await frames(5)
  actor = game.character

@@ -32,7 +32,7 @@ func freeze_processes(node: Node) -> void:
 
 func snapshot() -> Array:
  return [game.ball.position, game.ball.linear_velocity, game.score, game.rings_collected,
-  game.layout.signature, game.tuning.effective.duplicate(true), game.presentation.camera.global_transform,
+  game.authored_document.fingerprint(), game.tuning.effective.duplicate(true), game.presentation.camera.global_transform,
   game.presentation.camera.fov, game.presentation.camera_settings.duplicate(true), Engine.physics_ticks_per_second]
 
 func key(shift := false) -> void:
@@ -89,7 +89,7 @@ func run() -> void:
   output += "-native"
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(output))
  game = load("res://experiments/visual_lab/visual_lab.tscn").instantiate()
- game.generation_seed = 18
+
  root.add_child(game)
  await frames(45)
  check(game.retro_filter.selected_effects == [Filter.Preset.N64, Filter.Preset.VHS, Filter.Preset.CRT], "Normal application starts with the selected N64/VHS/CRT stack")
@@ -119,7 +119,7 @@ func run() -> void:
   var menu: PopupMenu = game.retro_controls.selector.get_popup()
   check(game.retro_filter.preset == selected and (selected == 0 or menu.is_item_checked(menu.get_item_index(selected))), "F4 cycles and synchronizes selector: " + Filter.NAMES[selected])
   check(snapshot() == original, "Preset preserves camera and gameplay state: " + Filter.NAMES[selected])
-  check(game.debug_panel.get_viewport() == root and game.lab_ui.get_viewport() == root and game.challenge_ui.get_viewport() == root, "HUD, debug, Scorecraft and menus stay in native root viewport")
+  check(game.debug_panel.get_viewport() == root and game.lab_ui.get_viewport() == root and game.act_ui.get_viewport() == root, "HUD, debug, Scorecraft and menus stay in native root viewport")
   if graphical:
    var rendered := await image_now()
    rendered.save_png(output + "/" + ["off-restored", "pixel", "n64", "crt", "vhs"][selected] + ".png")

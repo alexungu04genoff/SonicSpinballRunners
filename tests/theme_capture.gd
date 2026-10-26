@@ -45,7 +45,7 @@ func run() -> void:
    continue
   for i in 120:
    await frames(1)
-   if not game.generation_pending: break
+   if not game.loading_act: break
   await frames(8)
   for framing: String in ["overview", "follow"]:
    game.presentation.set_camera_follow(framing == "follow")

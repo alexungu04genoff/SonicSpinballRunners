@@ -1,5 +1,5 @@
 extends "res://tests/authored_act_runtime_regression.gd"
-## Compare the existing chunk constructors and authored compiler under identical
+## Compare baked and freshly compiled authored collisions under identical
 ## profiles, dimensions and contact planes. No alternative physics implementation.
 const Playfield = preload("res://scripts/playfield_data.gd")
 
@@ -22,38 +22,22 @@ func build_source(authored: bool, character: String) -> Dictionary:
 	var env := environment()
 	env.tuning.use_profile(CharacterSpecials.CHARACTERS[character].profile)
 	var document := matched_document()
-	if authored:
-		var compiled: Dictionary = Compiler.compile(document, env.tuning, env.controls, env.ball)
-		check(compiled.error.is_empty(), "Authored comparison geometry compiles for " + character)
-		env.world.add_child(compiled.root)
-		env.paddle = compiled.flippers[0]
-		env.playfield = Playfield.from_authored(document, compiled)
-	else:
-		var data := ChunkData.new()
-		data.grid_dimensions = Vector2i(12, 12)
-		data.markers = {"serve": document.spawn_position}
-		# The legacy capsule rail extends 12px toward the ball. Move its centerline
-		# outward so the actual contact face is x800 in both source constructors.
-		data.rails = [PackedVector2Array([Vector2(812, 600), Vector2(812, 900)])]
-		data.bumpers = [{"kind": "circle", "position": Vector2(600, 400), "radius": 25.0},
-			{"kind": "triangle", "position": Vector2(900, 400), "points": Dimensions.sling_points(100.0), "rotation": deg_to_rad(32.0)}]
-		data.rings = PackedVector2Array([Vector2(300, 300), Vector2(325, 300), Vector2(350, 300), Vector2(375, 300), Vector2(400, 300)])
-		var chunk := TableChunk.new()
-		chunk.data = data
-		env.world.add_child(chunk)
-		chunk.build()
-		chunk.wall_material.bounce = env.tuning.effective.wall_restitution
-		var paddle := PlaygroundFlipper.new()
-		paddle.ball = env.ball
-		paddle.controls = env.controls
-		paddle.tuning = env.tuning
-		paddle.position = Vector2(400, 1000)
-		paddle.length = 65.0
-		paddle.radius = 5.0
-		env.world.add_child(paddle)
-		env.paddle = paddle
-		var chunks: Array[TableChunk] = [chunk]
-		env.playfield = Playfield.from_generated(chunks, {"bounds": Rect2(0, 0, 1200, 1300)})
+	var compiled: Dictionary = Compiler.compile(document, env.tuning, env.controls, env.ball)
+	check(compiled.error.is_empty(), "Authored comparison geometry compiles for " + character)
+	if not authored:
+		var baked: Array = []
+		for item: Dictionary in compiled.terrain:
+			var shapes: Array = []
+			for owner: int in item.body.get_shape_owners():
+				for index in item.body.shape_owner_get_shape_count(owner):
+					shapes.append({"shape": item.body.shape_owner_get_shape(owner, index), "transform": item.body.shape_owner_get_transform(owner)})
+			baked.append(shapes)
+		compiled.root.free()
+		compiled = Compiler.compile(document, env.tuning, env.controls, env.ball, baked)
+		check(compiled.error.is_empty(), "Baked comparison physics compiles for " + character)
+	env.world.add_child(compiled.root)
+	env.paddle = compiled.flippers[0]
+	env.playfield = Playfield.from_authored(document, compiled)
 	var field := RingField.new()
 	field.ball = env.ball
 	field.tuning = env.tuning
@@ -120,38 +104,19 @@ func sample_source(authored: bool, character: String) -> Dictionary:
 	return result
 
 
-func check_common_eligibility() -> void:
-	var world := Node2D.new()
-	root.add_child(world)
-	var chunk := TableChunk.new()
-	chunk.data = ChunkData.new()
-	world.add_child(chunk)
-	var bodies: Array[StaticBody2D] = []
-	for kind in ["rail", "rail", "flipper_mount", "gate"]:
-		var body := StaticBody2D.new()
-		chunk.add_child(body)
-		bodies.append(body)
-		chunk.descriptors.append({"kind": kind, "body": body, "checkpoint_only": bodies.size() == 2})
-	var chunks: Array[TableChunk] = [chunk]
-	var field := Playfield.from_generated(chunks, {})
-	check(field.terrain_bodies.size() == 4 and field.is_glide_surface(bodies[0]) and not field.is_glide_surface(bodies[1]) and not field.is_glide_surface(bodies[2]) and not field.is_glide_surface(bodies[3]), "Common generated terrain retains material targets but only ordinary rails trigger glide impacts")
-	world.free()
-
-
 func run() -> void:
-	check_common_eligibility()
 	for character: String in CharacterSpecials.CHARACTER_IDS:
-		var legacy := await sample_source(false, character)
+		var baked := await sample_source(false, character)
 		var authored := await sample_source(true, character)
-		check(legacy.tuning == authored.tuning and legacy.mass == authored.mass, character + ": source constructors share the exact profile and mass")
-		check(legacy.paddle_geometry == authored.paddle_geometry and authored.paddle_geometry.pivot == Vector2(400, 1000) and authored.paddle_geometry.length == 65.0 and authored.paddle_geometry.radius == 5.0, character + ": source constructors preserve the same compact paddle pivot and dimensions")
+		check(baked.tuning == authored.tuning and baked.mass == authored.mass, character + ": source constructors share the exact profile and mass")
+		check(baked.paddle_geometry == authored.paddle_geometry and authored.paddle_geometry.pivot == Vector2(400, 1000) and authored.paddle_geometry.length == 65.0 and authored.paddle_geometry.radius == 5.0, character + ": source constructors preserve the same compact paddle pivot and dimensions")
 		for kind in ["gravity", "steering", "countersteering"]:
-			check(legacy[kind].position.distance_to(authored[kind].position) < 0.02 and legacy[kind].velocity.distance_to(authored[kind].velocity) < 0.02 and absf(legacy[kind].assist - authored[kind].assist) < 0.001, character + ": identical " + kind + " trajectory across playfield sources", str([legacy[kind], authored[kind]]))
-		check(legacy.wall.velocity.distance_to(authored.wall.velocity) < 0.5 and legacy.wall.velocity.x < 0 and authored.wall.velocity.x < 0, character + ": matched real wall faces produce the same rebound", str([legacy.wall, authored.wall]))
-		check(legacy.bumper_hits == 1 and authored.bumper_hits == 1 and legacy.bumper.velocity.distance_to(authored.bumper.velocity) < 0.5, character + ": the same bumper contact applies the same normal impulse", str([legacy.bumper, authored.bumper]))
-		check(legacy.sling_hits == 1 and authored.sling_hits == 1 and legacy.sling.velocity.distance_to(authored.sling.velocity) < 0.5, character + ": the same rotated sling contact produces the same response", str([legacy.sling, authored.sling]))
-		check(legacy.shot.count == 1 and authored.shot.count == 1 and legacy.shot.impulse.distance_to(authored.shot.impulse) < 0.01 and legacy.flipper_velocity.distance_to(authored.flipper_velocity) < 0.5, character + ": equal paddle geometry produces the same real strike and launch velocity", str([legacy.shot, authored.shot]))
-		check(legacy.rings == authored.rings and authored.rings.count == 5 and authored.rings.score == 125, character + ": equal rings use the same collection contacts and Scorecraft awards", str([legacy.rings, authored.rings]))
-		check(legacy.serve.position.distance_to(authored.serve.position) < 0.02 and legacy.serve.velocity.distance_to(authored.serve.velocity) < 0.02 and not authored.serve.pending, character + ": normal serve behavior is independent of the source")
+			check(baked[kind].position.distance_to(authored[kind].position) < 0.02 and baked[kind].velocity.distance_to(authored[kind].velocity) < 0.02 and absf(baked[kind].assist - authored[kind].assist) < 0.001, character + ": identical " + kind + " trajectory across baked and authored collision paths", str([baked[kind], authored[kind]]))
+		check(baked.wall.velocity.distance_to(authored.wall.velocity) < 0.5 and baked.wall.velocity.x < 0 and authored.wall.velocity.x < 0, character + ": matched real wall faces produce the same rebound", str([baked.wall, authored.wall]))
+		check(baked.bumper_hits == 1 and authored.bumper_hits == 1 and baked.bumper.velocity.distance_to(authored.bumper.velocity) < 0.5, character + ": the same bumper contact applies the same normal impulse", str([baked.bumper, authored.bumper]))
+		check(baked.sling_hits == 1 and authored.sling_hits == 1 and baked.sling.velocity.distance_to(authored.sling.velocity) < 0.5, character + ": the same rotated sling contact produces the same response", str([baked.sling, authored.sling]))
+		check(baked.shot.count == 1 and authored.shot.count == 1 and baked.shot.impulse.distance_to(authored.shot.impulse) < 0.01 and baked.flipper_velocity.distance_to(authored.flipper_velocity) < 0.5, character + ": equal paddle geometry produces the same real strike and launch velocity", str([baked.shot, authored.shot]))
+		check(baked.rings == authored.rings and authored.rings.count == 5 and authored.rings.score == 125, character + ": equal rings use the same collection contacts and Scorecraft awards", str([baked.rings, authored.rings]))
+		check(baked.serve.position.distance_to(authored.serve.position) < 0.02 and baked.serve.velocity.distance_to(authored.serve.velocity) < 0.02 and not authored.serve.pending, character + ": normal serve behavior is independent of the source")
 	print("RESULT | Authored source physics | %d checks | %d failures" % [checks, failures])
 	quit(0 if failures == 0 else 1)

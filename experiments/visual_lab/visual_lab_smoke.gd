@@ -27,6 +27,7 @@ func collision_count(node: Node) -> int:
 
 func run() -> void:
  game = load("res://experiments/visual_lab/visual_lab.tscn").instantiate()
+ game.authored_act_path = "res://data/acts/playtest_showcase.tres"
  root.add_child(game)
  await frames(3)
  check(ProjectSettings.get_setting("application/run/main_scene") == "res://scenes/playground.tscn", "Normal playground entry point remains unchanged")
@@ -97,11 +98,11 @@ func run() -> void:
  game.reset_ball()
  await frames(24)
  var bumper: Dictionary = {}
- for descriptor: Dictionary in game.chunks.back().descriptors:
-  if descriptor.kind == "circle":
+ for descriptor: Dictionary in game.authored_runtime.objects:
+  if descriptor.type == "round_bumper":
    bumper = descriptor
    break
- check(not bumper.is_empty(), "Generated launch section supplies a real bumper for the visual-event probe")
+ check(not bumper.is_empty(), "Authored Act supplies a real bumper for the visual-event probe")
  if not bumper.is_empty():
   var hits_before: int = game.ball.bumper_hit_count
   game.ball.teleport_to(bumper.position - Vector2(0, bumper.radius + PlaygroundBall.RADIUS + 35), Vector2(0, 900))
