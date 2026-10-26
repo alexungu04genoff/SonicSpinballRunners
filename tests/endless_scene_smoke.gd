@@ -27,6 +27,9 @@ func run() -> void:
  var identities := [game.ball.get_instance_id(), game.tuning.get_instance_id(), game.controls.get_instance_id(), game.presentation.camera.get_instance_id()]
  check(game.library.visuals.size() == 2, "Only the opening two variants are cached at startup")
  check(game.resident.size() == 2, "Two Acts resident at startup")
+ if "--no-bakes" not in OS.get_cmdline_user_args():
+  check(game.library.reused_visual_nodes == game.resident[0].nodes.size() + game.resident[1].nodes.size(), "Opening Acts reuse their warmed nodes instead of instantiating visuals twice")
+  check(game.library.retirement.pending_count() <= game.library.retirement.MAX_PENDING, "Retiring resource graphs remain bounded")
  # The require-bakes branch below deliberately issues a manual theme request
  # before the rolling scheduler runs. Exercise automatic ordering separately.
  if "--require-bakes" not in OS.get_cmdline_user_args():
@@ -117,6 +120,7 @@ func run() -> void:
   max_resident = maxi(max_resident, game.resident.size())
   check(game.library.visuals.size() <= game.library.MAX_VARIANTS, "Visual cache stays bounded")
   check(game.library.themes.size() <= game.library.MAX_THEMES, "Theme resource cache stays bounded")
+  check(game.library.retirement.pending_count() <= game.library.retirement.MAX_PENDING, "Resource retirement backpressure preserves its bound")
   check(game.ball.position == parked, "Camera tour never forces the physics ball through terrain")
   check(game.active_sequence == i + 1, "Checkpoint ownership advances exactly once")
   check(game.ball.mechanics == game.hub, "Loading another Act never steals mechanics ownership")

@@ -22,7 +22,7 @@ func _ready() -> void:
  heading.add_theme_font_size_override("font_size", 28)
  panel.add_child(heading)
  var description := Label.new()
- description.text = "Builds collision, terrain, props and reusable visual recipes offline.\nBackgrounds are shared per theme; textures are shared on disk. Your saved Act stays unchanged."
+ description.text = "Bakes collision, meshes, textures, scenery, warm-up probes and resource-release plans to disk.\nEndless loads these files and stages live instances and device-specific graphics ahead. Your saved Act stays unchanged."
  panel.add_child(description)
  status = Label.new()
  status.text = "Choose a saved Act to bake."
@@ -75,7 +75,8 @@ func bake(paths: Array) -> void:
    break
   for id in paths.size():
    if not library.error.is_empty(): break
-   library.trim([{"theme": theme_id, "id": id}], 1, 0 if library.themes.has(theme_id) else 1)
+   while not library.trim([{"theme": theme_id, "id": id}], 1, 0 if library.themes.has(theme_id) else 1):
+    await get_tree().process_frame
    library.request(theme_id, id)
    while library.busy: await get_tree().process_frame
    progress.value += 1

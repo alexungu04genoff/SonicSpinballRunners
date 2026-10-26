@@ -1,6 +1,6 @@
 extends Resource
 ## Derived data only. Never owns or edits the authored document.
-const VERSION := 4
+const VERSION := 5
 const DEPENDENCIES := ["res://scripts/presentation.gd", "res://scripts/themes/themed_presentation.gd",
  "res://scripts/themes/terrain_border.gd", "res://scripts/endless/template_presenter.gd",
  "res://scripts/authored_act/act_runtime_compiler.gd", "res://scripts/act_dimensions.gd"]
@@ -9,12 +9,15 @@ const DEPENDENCIES := ["res://scripts/presentation.gd", "res://scripts/themes/th
 @export var pipeline_fingerprint := ""
 @export var theme_id := ""
 @export var geometry: Dictionary = {}
+@export var geometry_job_count := 0
 @export var collisions: Array = []
 @export var visual_recipe: Resource
 @export var environment: Environment
 @export var light: Dictionary = {}
 @export var kind := "act"
 @export var preload_materials: Array[Material] = []
+@export var preload_recipe: Resource
+@export var retirement_dependencies: Array[Resource] = []
 
 static func path_for(act_path: String, theme: String) -> String:
  return act_path.get_basename() + ".bake/" + theme + ".res"
@@ -24,6 +27,7 @@ static func pipeline_hash(theme: String) -> String:
  var pending: Array = DEPENDENCIES + ["res://scripts/themes/" + theme + "_theme.gd",
   "res://scripts/endless/visual_recipe.gd", "res://scripts/endless/geometry_bake.gd",
   "res://scripts/endless/bake_assets.gd", "res://scripts/endless/static_batches.gd",
+  "res://scripts/endless/warm_manifest.gd", "res://scripts/endless/resource_retirement.gd",
   "res://scripts/pinball_models.gd", "res://scripts/authored_act/mechanics_presentation.gd"]
  var visited := {}
  var references := RegEx.create_from_string("res://[^\"'\\s]+")

@@ -214,7 +214,7 @@ func _process(delta: float) -> void:
      for index: int in backgrounds:
       if index >= _background_zone and index <= _background_zone + 1:
        protected.append({"theme": backgrounds[index].theme, "id": entry.id})
-     library.trim(protected, 1, 0 if library.themes.has(entry.theme) else 1)
+     if not library.trim(protected, 1, 0 if library.themes.has(entry.theme) else 1): break
     library.request(entry.theme, entry.id)
     break
    if not library.busy:
@@ -278,7 +278,7 @@ func _prefetch_next_theme() -> void:
    for index: int in backgrounds:
     if index >= _background_zone:
      protected.append({"theme": backgrounds[index].theme, "id": entry.id})
-   library.trim(protected, 0, 1)
+   if not library.trim(protected, 0, 1): return
    library.request_theme(entry.theme)
   return
 

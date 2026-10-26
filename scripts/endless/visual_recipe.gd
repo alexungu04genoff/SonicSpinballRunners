@@ -3,6 +3,7 @@ extends Resource
 ## an entire Act or recursively duplicates a large scene in a single frame.
 const MechanicsVisual = preload("res://scripts/authored_act/mechanics_presentation.gd")
 const Flicky = preload("res://scripts/decor/island_flicky.gd")
+const WarmManifest = preload("res://scripts/endless/warm_manifest.gd")
 @export var records: Array[Dictionary] = []
 var indices := {}
 @export var animations: Array[Dictionary] = []
@@ -11,7 +12,16 @@ var indices := {}
 @export var rings: Array[int] = []
 @export var bumpers := {}
 @export var batch_stats := {}
+@export var warm_manifest_version := 0
+@export var retirement_dependencies: Array[Resource] = []
 var error := ""
+
+func has_warm_manifest() -> bool:
+ if warm_manifest_version != WarmManifest.VERSION: return false
+ for record: Dictionary in records:
+  if not record.get("warm_signatures") is PackedStringArray: return false
+  if not record.get("warm_visible") is bool or not record.get("warm_cull_margin") is float: return false
+ return true
 
 func capture(node: Node, parent := -1, recursive := true) -> void:
  var index := records.size()

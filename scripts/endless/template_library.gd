@@ -10,6 +10,8 @@ const Presenter = preload("res://scripts/endless/template_presenter.gd")
 const Recipe = preload("res://scripts/endless/visual_recipe.gd")
 const Registry = preload("res://scripts/themes/theme_registry.gd")
 const BakeAssets = preload("res://scripts/endless/bake_assets.gd")
+const WarmManifest = preload("res://scripts/endless/warm_manifest.gd")
+const Retirement = preload("res://scripts/endless/resource_retirement.gd")
 const MAX_VARIANTS := 8
 const MAX_THEMES := 3
 var documents: Array = []
@@ -53,6 +55,11 @@ var _fingerprint_jobs := {}
 var _primed_themes := {}
 var _primed_paths := {}
 var _warmed_features := {}
+var _prepared_visuals := {}
+var reused_visual_nodes := 0
+var _act_bakes := {}
+var _theme_bakes := {}
+var retirement := Retirement.new()
 var _assets := BakeAssets.new()
 var _asset_theme := ""
 var _lru: Array[String] = []
@@ -60,6 +67,16 @@ var _theme_lru: Array[String] = []
 var _game: Node
 var _view: SubViewport
 var _worker: Thread
+
+func _process(_delta: float) -> void:
+ if retirement.pending_count() == 0: return
+ # Keep resources pinned until old live nodes have released their references;
+ # otherwise the final node free could inherit the entire resource teardown.
+ var retiring_nodes: Variant = _game.get("retire_nodes") if is_instance_valid(_game) else null
+ if retiring_nodes is Array and not retiring_nodes.is_empty(): return
+ var started_at := Time.get_ticks_usec()
+ retirement.step(64, 500)
+ _record_cpu("cache.retire", started_at)
 
 func prepare(game: Node, act_paths: Array = Plan.PATHS, validate_pool := true) -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
@@ -141,6 +158,8 @@ func _load_theme(theme_id: String, fingerprint: String) -> bool:
  if backgrounds.has(theme_id): return true
  var background: Resource = await _load_bake(Bake.theme_path(theme_id))
  if not background is Bake or background.kind != "theme" or not background.matches_pipeline(theme_id, fingerprint) or background.visual_recipe == null: return false
+ if not background.visual_recipe.has_warm_manifest() or background.preload_recipe == null or not background.preload_recipe.has_warm_manifest(): return false
+ _theme_bakes[theme_id] = background
  environments[theme_id] = background.environment
  lights[theme_id] = background.light
  backgrounds[theme_id] = background.visual_recipe
@@ -150,35 +169,7 @@ func _load_theme(theme_id: String, fingerprint: String) -> bool:
  _theme_lru.append(theme_id)
  # Tiny probes upload foreground textures and warm material/shadow features.
  # They contain no terrain, props, Act layout or collision data.
- var probes := Recipe.new()
- var box := BoxMesh.new()
- var mesh := ArrayMesh.new()
- mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, box.get_mesh_arrays())
- var seen := {}
- profile_stage = "theme.probes"
- var deadline := Time.get_ticks_usec() + 1000
- for material: Material in background.preload_materials:
-  if Time.get_ticks_usec() >= deadline:
-   await get_tree().process_frame
-   deadline = Time.get_ticks_usec() + 1000
-  var signature := _material_probe_key(material)
-  if seen.has(signature): continue
-  seen[signature] = true
-  var probe := MeshInstance3D.new()
-  probe.mesh = mesh
-  probe.material_override = material
-  probes.capture(probe)
-  probe.free()
-  # Instancing uses a different graphics path. Warm that path with the same
-  # one-cube probe; this still loads no Act layout, physics or scenery chunks.
-  var instanced := MultiMeshInstance3D.new()
-  instanced.material_override = material
-  probes.capture(instanced)
-  var record: Dictionary = probes.records[-1]
-  record.instance_mesh = mesh
-  record.instance_buffer = preload("res://scripts/endless/static_batches.gd")._transform_buffer(Transform3D.IDENTITY)
-  record.instance_bounds = mesh.get_aabb()
-  instanced.free()
+ var probes: Resource = background.preload_recipe
  if not probes.records.is_empty(): await _warm_recipe(probes, theme_id, "probes")
  await _warm_recipe(background.visual_recipe, theme_id, "background")
  theme_bake_hits += 1
@@ -262,12 +253,17 @@ func _build(theme_id: String, id: int) -> void:
   if not themes.has(theme_id): themes[theme_id] = {"display_name": Registry.NAMES[Registry.IDS.find(theme_id)]}
   _theme_lru.erase(theme_id)
   _theme_lru.append(theme_id)
-  await _warm_recipe(saved.visual_recipe, theme_id)
+  if not saved.visual_recipe.has_warm_manifest():
+   error = "Missing offline warm-up metadata. Run Bake Endless.cmd."
+   busy = false
+   return
+  _act_bakes[key(theme_id, id)] = saved
+  await _warm_recipe(saved.visual_recipe, theme_id, "act", key(theme_id, id))
   visuals[key(theme_id, id)] = saved.visual_recipe
   _lru.append(key(theme_id, id))
   visual_bake_hits += 1
   last_computed_jobs = 0
-  last_reused_jobs = saved.geometry.size()
+  last_reused_jobs = saved.geometry_job_count
   _finish_request(theme_id, id, started_at, "disk")
   return
  if not bake_only:
@@ -358,7 +354,9 @@ func _build(theme_id: String, id: int) -> void:
   baked.source_fingerprint = documents[id].fingerprint()
   baked.pipeline_fingerprint = fingerprint
   baked.theme_id = theme_id
-  baked.geometry = Bake.without_materials(p.baked_geometry)
+  # Full recipes already contain their meshes. The old raw-geometry dictionary
+  # was never used by disk-only play and duplicated data in every sidecar.
+  baked.geometry_job_count = p.baked_geometry.size()
   baked.collisions = shapes[id]
   baked.visual_recipe = recipe
   _assets.share(recipe)
@@ -372,6 +370,16 @@ func _build(theme_id: String, id: int) -> void:
   var batcher = preload("res://scripts/endless/static_batches.gd").new()
   var act_batches: Dictionary = batcher.optimize(recipe)
   var background_batches: Dictionary = batcher.optimize(backgrounds[theme_id])
+  var manifest := WarmManifest.new()
+  manifest.prepare(recipe)
+  manifest.prepare(backgrounds[theme_id])
+  if not recipe.error.is_empty() or not backgrounds[theme_id].error.is_empty():
+   error = recipe.error if not recipe.error.is_empty() else backgrounds[theme_id].error
+   await _dispose(p)
+   rings.free()
+   busy = false
+   return
+  baked.retirement_dependencies = Retirement.dependencies(baked)
   print("ENDLESS_BATCHED | ", key(theme_id, id), " | Act=", act_batches, " | theme=", background_batches)
   DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(bake_path.get_base_dir()))
   var result := ResourceSaver.save(baked, bake_path, ResourceSaver.FLAG_COMPRESS)
@@ -384,8 +392,16 @@ func _build(theme_id: String, id: int) -> void:
   theme_bake.environment = environments[theme_id]
   theme_bake.light = lights[theme_id]
   var unique_materials := {}
-  for material: Material in _assets.materials.values(): unique_materials[_material_probe_key(material)] = material
+  for material: Material in _assets.materials.values(): unique_materials[manifest.material_probe_key(material)] = material
   theme_bake.preload_materials.assign(unique_materials.values())
+  theme_bake.preload_recipe = manifest.build_probes(theme_bake.preload_materials)
+  if not theme_bake.preload_recipe.error.is_empty():
+   error = theme_bake.preload_recipe.error
+   await _dispose(p)
+   rings.free()
+   busy = false
+   return
+  theme_bake.retirement_dependencies = Retirement.dependencies(theme_bake)
   DirAccess.make_dir_recursive_absolute(Bake.theme_path(theme_id).get_base_dir())
   result = ResourceSaver.save(theme_bake, Bake.theme_path(theme_id), ResourceSaver.FLAG_COMPRESS)
   if result != OK: error = "Could not save shared theme bake: " + error_string(result)
@@ -449,7 +465,7 @@ func _load_bake(path: String) -> Resource:
  _record_cpu("resource.collect", started_at)
  return result
 
-func _warm_recipe(recipe: Resource, theme_id: String, kind := "act") -> void:
+func _warm_recipe(recipe: Resource, theme_id: String, kind := "act", retain_variant := "") -> void:
  profile_stage = "scene.instantiate"
  var started_at := Time.get_ticks_usec()
  var root := Node3D.new()
@@ -480,10 +496,12 @@ func _warm_recipe(recipe: Resource, theme_id: String, kind := "act") -> void:
  camera.far = 300.0
  camera.current = true
  var nodes: Array[Node] = []
+ var signatures := {}
  var deadline := Time.get_ticks_usec() + 1000
  for i in recipe.records.size():
   var node_started := Time.get_ticks_usec()
   recipe.instantiate_one(i, nodes, root)
+  signatures[nodes[-1].get_instance_id()] = recipe.records[i].warm_signatures
   _record_cpu("scene.node", node_started)
   if Time.get_ticks_usec() >= deadline:
    await get_tree().process_frame
@@ -494,13 +512,38 @@ func _warm_recipe(recipe: Resource, theme_id: String, kind := "act") -> void:
  _record_event("warm.instantiate", started_at, details, instantiated_at)
  var feature_key := theme_id + (":background" if is_background else ":foreground")
  if not _warmed_features.has(feature_key): _warmed_features[feature_key] = {}
- await _warm(root, environment, false, _warmed_features[feature_key])
+ await _warm(root, environment, false, _warmed_features[feature_key], signatures)
  var warmed_at := Time.get_ticks_usec()
  _record_event("warm.graphics", instantiated_at, details, warmed_at)
+ if not retain_variant.is_empty():
+  # Detach children before parents, so each tree operation handles one node.
+  # Preserve recipe order and local transforms for incremental live attachment.
+  root.process_mode = Node.PROCESS_MODE_DISABLED
+  # Register ownership before the first yield during detachment, including
+  # shutdown while only part of the graph has left the warm-up viewport.
+  _prepared_visuals[retain_variant] = nodes
+  deadline = Time.get_ticks_usec() + 1000
+  for index in range(nodes.size() - 1, -1, -1):
+   var node: Node = nodes[index]
+   if node is GeometryInstance3D:
+    node.visible = recipe.records[index].warm_visible
+    node.extra_cull_margin = recipe.records[index].warm_cull_margin
+   node.get_parent().remove_child(node)
+   if Time.get_ticks_usec() >= deadline:
+    await get_tree().process_frame
+    deadline = Time.get_ticks_usec() + 1000
  await _dispose(root)
- _record_event("warm.retire", warmed_at, details)
+ _record_event("warm.handoff" if not retain_variant.is_empty() else "warm.retire", warmed_at, details)
  print("ENDLESS_DISK_WARM | ", theme_id, " | nodes=", nodes.size(), " | instantiate_ms=", (instantiated_at - started_at) / 1000.0, " | graphics_ms=", (warmed_at - instantiated_at) / 1000.0, " | retire_ms=", (Time.get_ticks_usec() - warmed_at) / 1000.0)
  _view.render_target_update_mode = SubViewport.UPDATE_DISABLED
+
+func take_prepared_visuals(variant: String) -> Array[Node]:
+ var result: Array[Node] = []
+ if not _prepared_visuals.has(variant): return result
+ result.assign(_prepared_visuals[variant])
+ _prepared_visuals.erase(variant)
+ reused_visual_nodes += result.size()
+ return result
 
 func _capture(recipe: RefCounted, root: Node, p: Node) -> void:
  var stack: Array = [[root, -1]]
@@ -514,7 +557,7 @@ func _capture(recipe: RefCounted, root: Node, p: Node) -> void:
   for child: Node in children: stack.append([child, index])
   await p.stream_checkpoint()
 
-func _warm(p: Node3D, world_environment: WorldEnvironment = null, warm_foreground := true, known_features: Dictionary = {}) -> void:
+func _warm(p: Node3D, world_environment: WorldEnvironment = null, warm_foreground := true, known_features: Dictionary = {}, baked_signatures: Dictionary = {}) -> void:
  var overlay: Node
  if p is Presenter:
   p.set_camera_follow(false)
@@ -522,26 +565,58 @@ func _warm(p: Node3D, world_environment: WorldEnvironment = null, warm_foregroun
   overlay = p.physics_overlay
   world_environment = p._world_environment
  var renderables: Array[Node] = p.find_children("*", "GeometryInstance3D", true, false)
- for node: GeometryInstance3D in renderables: node.hide()
+ var render_state := _begin_warm_visibility(renderables, overlay)
  _view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
  # Render the sky on its own before introducing geometry/shader permutations.
  # Foreground recipes use a clear-color environment; waiting for an absent sky
  # added two idle frames to every probe and Act preparation.
  if world_environment.environment.background_mode == Environment.BG_SKY:
   await _draw_frames()
- await _warm_pass(renderables, overlay, known_features)
- if not warm_foreground: return
- # The procedural fallback presenter mixes Act and background geometry. Disk
- # recipes instead warm only the environment in which they will actually draw.
- var foreground: Environment = world_environment.environment.duplicate()
- foreground.background_mode = Environment.BG_COLOR
- foreground.sky = null
- foreground.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
- foreground.reflected_light_source = Environment.REFLECTION_SOURCE_DISABLED
- world_environment.environment = foreground
- await _warm_pass(renderables, overlay)
+ await _warm_pass(renderables, overlay, known_features, baked_signatures, render_state)
+ if warm_foreground:
+  # The procedural fallback presenter mixes Act and background geometry. Disk
+  # recipes instead warm only the environment in which they will actually draw.
+  var foreground: Environment = world_environment.environment.duplicate()
+  foreground.background_mode = Environment.BG_COLOR
+  foreground.sky = null
+  foreground.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+  foreground.reflected_light_source = Environment.REFLECTION_SOURCE_DISABLED
+  world_environment.environment = foreground
+  await _warm_pass(renderables, overlay, {}, {}, render_state)
+ # Retained nodes recover their authored state before detaching. Stop the
+ # viewport first so restoration cannot submit the entire scene at once.
+ _view.render_target_update_mode = SubViewport.UPDATE_DISABLED
+ _end_warm_visibility(render_state)
 
-func _warm_pass(renderables: Array[Node], overlay: Node, warmed: Dictionary = {}) -> void:
+func _begin_warm_visibility(renderables: Array[Node], overlay: Node) -> Dictionary:
+ var state := {"geometry": {}, "visibility": {}}
+ # Visibility inherits through Node3D parents. Hide only each mesh's rendering
+ # layers, otherwise warming a child after its parent leaves the child hidden.
+ for node: GeometryInstance3D in renderables:
+  state.geometry[node.get_instance_id()] = {"node": node, "layers": node.layers, "margin": node.extra_cull_margin}
+  node.layers = 0
+ # Disable all geometry before showing authored hidden parents. This includes
+ # non-rendering ancestors such as retracted-object groups.
+ for node: GeometryInstance3D in renderables:
+  if overlay != null and (node == overlay or overlay.is_ancestor_of(node)): continue
+  var ancestor: Node = node
+  while ancestor is Node3D:
+   var id := ancestor.get_instance_id()
+   if state.visibility.has(id): break
+   state.visibility[id] = {"node": ancestor, "visible": ancestor.visible}
+   ancestor.show()
+   ancestor = ancestor.get_parent()
+ return state
+
+func _end_warm_visibility(state: Dictionary) -> void:
+ for item: Dictionary in state.geometry.values():
+  item.node.layers = item.layers
+  item.node.extra_cull_margin = item.margin
+ for item: Dictionary in state.visibility.values(): item.node.visible = item.visible
+
+func _warm_pass(renderables: Array[Node], overlay: Node, warmed: Dictionary = {}, baked_signatures: Dictionary = {}, render_state: Dictionary = {}) -> void:
+ var owns_state := render_state.is_empty()
+ if owns_state: render_state = _begin_warm_visibility(renderables, overlay)
  profile_stage = "graphics.queue"
  var batch: Array[GeometryInstance3D] = []
  var cold_features := 0
@@ -550,15 +625,20 @@ func _warm_pass(renderables: Array[Node], overlay: Node, warmed: Dictionary = {}
  var batch_limit := 32 if _game.get("started") == true else 64
  for node: GeometryInstance3D in renderables:
   var queue_started := Time.get_ticks_usec()
-  if overlay != null and overlay.is_ancestor_of(node): continue
-  node.show()
+  if overlay != null and (node == overlay or overlay.is_ancestor_of(node)): continue
+  var original_layers: int = render_state.geometry[node.get_instance_id()].layers
+  node.layers = original_layers if original_layers != 0 else 1
   # Keep every material inside the frustum at least once, including off-camera
   # props. Use a generous AABB without altering any visible gameplay instance.
   node.extra_cull_margin = 16384.0
-  var signature_started := Time.get_ticks_usec()
-  var signatures := _shader_signatures(node)
-  if profile_enabled: _record_cpu("graphics.signatures", signature_started)
-  for signature: int in signatures:
+  var signatures: Variant
+  if baked_signatures.has(node.get_instance_id()):
+   signatures = baked_signatures[node.get_instance_id()]
+  else:
+   var signature_started := Time.get_ticks_usec()
+   signatures = _shader_signatures(node)
+   if profile_enabled: _record_cpu("graphics.signatures", signature_started)
+  for signature: Variant in signatures:
    if not warmed.has(signature):
     warmed[signature] = true
     cold_features += 1
@@ -568,12 +648,13 @@ func _warm_pass(renderables: Array[Node], overlay: Node, warmed: Dictionary = {}
   # per-material-instance wait spent hundreds of frames on equivalent programs.
   if cold_features >= 1 or batch.size() >= batch_limit:
    await _draw_frames(1)
-   for shown: GeometryInstance3D in batch: shown.hide()
+   for shown: GeometryInstance3D in batch: shown.layers = 0
    batch.clear()
    cold_features = 0
  if not batch.is_empty():
   await _draw_frames(1)
-  for shown: GeometryInstance3D in batch: shown.hide()
+  for shown: GeometryInstance3D in batch: shown.layers = 0
+ if owns_state: _end_warm_visibility(render_state)
 
 func _shader_signatures(node: GeometryInstance3D) -> Array[int]:
  var materials: Array[Material] = []
@@ -623,7 +704,7 @@ func _dispose(root: Node) -> void:
    await get_tree().process_frame
    deadline = Time.get_ticks_usec() + 1000
 
-func trim(protected: Array, reserve_variant := 0, reserve_theme := 0) -> void:
+func trim(protected: Array, reserve_variant := 0, reserve_theme := 0) -> bool:
  var trim_started := Time.get_ticks_usec()
  var pinned := {}
  var pinned_themes := {}
@@ -635,15 +716,19 @@ func trim(protected: Array, reserve_variant := 0, reserve_theme := 0) -> void:
  for variant: String in _lru.duplicate():
   if visuals.size() <= MAX_VARIANTS - reserve_variant: break
   if pinned.has(variant): continue
-  visuals.erase(variant)
-  _lru.erase(variant)
+  if not _evict_variant(variant): return false
  for theme_id: String in _theme_lru.duplicate():
   if themes.size() <= MAX_THEMES - reserve_theme: break
   if pinned_themes.has(theme_id): continue
   for variant: String in _lru.duplicate():
    if variant.begins_with(theme_id + ":"):
-    visuals.erase(variant)
-    _lru.erase(variant)
+    if not _evict_variant(variant): return false
+  if _theme_bakes.has(theme_id):
+   var baked: Resource = _theme_bakes[theme_id]
+   if not retirement.enqueue(baked, baked.retirement_dependencies): return false
+   _theme_bakes.erase(theme_id)
+  elif not retirement.enqueue_unbaked([backgrounds.get(theme_id), environments.get(theme_id), theme_materials.get(theme_id)]):
+   return false
   themes.erase(theme_id)
   backgrounds.erase(theme_id)
   environments.erase(theme_id)
@@ -662,6 +747,20 @@ func trim(protected: Array, reserve_variant := 0, reserve_theme := 0) -> void:
   runtimes.erase(id)
   shapes.erase(id)
  _record_cpu("cache.release", trim_started)
+ return visuals.size() <= MAX_VARIANTS - reserve_variant and themes.size() <= MAX_THEMES - reserve_theme
+
+func _evict_variant(variant: String) -> bool:
+ # Prepared nodes belong to the imminent request and must be consumed first.
+ if _prepared_visuals.has(variant): return false
+ if _act_bakes.has(variant):
+  var baked: Resource = _act_bakes[variant]
+  if not retirement.enqueue(baked, baked.retirement_dependencies): return false
+  _act_bakes.erase(variant)
+ elif not retirement.enqueue_unbaked(visuals[variant]):
+  return false
+ visuals.erase(variant)
+ _lru.erase(variant)
+ return true
 
 static func key(theme: String, id: int) -> String:
  return "%s:%d" % [theme, id]
@@ -670,5 +769,8 @@ func _exit_tree() -> void:
  if _worker != null: _worker.wait_to_finish()
  for worker: Thread in _fingerprint_jobs.values(): worker.wait_to_finish()
  for path: String in _primed_paths: ResourceLoader.load_threaded_get(path)
+ for nodes: Array in _prepared_visuals.values():
+  for node: Node in nodes:
+   if is_instance_valid(node) and node.get_parent() == null: node.free()
  for runtime: Dictionary in runtimes.values():
   if is_instance_valid(runtime.root): runtime.root.free()

@@ -152,7 +152,7 @@ func run() -> void:
  warmer.submissions = 0
  await warmer._warm_pass(renderables, null, warmed)
  check(warmer.submissions == 1 and warmed.size() == 3, "Subsequent recipes reuse warmed features while still drawing every mesh")
- check(renderables.all(func(node: Node3D): return not node.visible), "Warm-up meshes are hidden after submission")
+ check(renderables.all(func(node: GeometryInstance3D): return node.visible and node.layers == 1 and node.extra_cull_margin == 0.0), "Warm-up restores original visibility, layers and cull margins")
  warmer.free()
  host.free()
  mesh.free()

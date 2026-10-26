@@ -75,6 +75,8 @@ func run() -> void:
  var summary := {"startup_ms": startup_ms, "initialize_ms": initialize_ms, "sequence": game.active_sequence, "tour_speed": speed, "waiting_ms": waiting_ms,
   "gameplay_started_us": gameplay_started_us, "duration_ms": (Time.get_ticks_usec() - gameplay_started_us) / 1000.0,
   "device": RenderingServer.get_video_adapter_name(), "startup_cpu": startup_cpu, "gameplay_cpu": game.library.profile_cpu,
+  "reused_visual_nodes": game.library.reused_visual_nodes, "retirement_peak": game.library.retirement.peak_pending,
+  "retirement_completed": game.library.retirement.completed,
   "rebuilds": game.library.fallback_builds, "shaders": game.retro_filter.display_name(),
   "frame_max_ms": frames[-1], "frame_p99_ms": frames[int(frames.size() * 0.99)],
   "cpu_max_ms": game.library.profile_max_cpu_ms, "threaded_resource_wall_ms": game.library.profile_resource_wait_ms,
