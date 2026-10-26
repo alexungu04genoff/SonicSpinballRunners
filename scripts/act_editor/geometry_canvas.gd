@@ -1,4 +1,7 @@
 extends Control
+const FlipperProbe = preload("res://scripts/act_editor/flipper_launch_probe.gd")
+var launch_timing_variants := false
+var _launch_probe := FlipperProbe.new()
 const LaunchPreview = preload("res://scripts/act_editor/launch_preview.gd")
 ## Authoring drawing and pointer gestures only. The editor owns changes and undo.
 
@@ -133,6 +136,8 @@ var _marker_drag_moved := false
 
 
 func _ready() -> void:
+ add_child(_launch_probe)
+ _launch_probe.changed.connect(queue_redraw)
  mouse_filter = Control.MOUSE_FILTER_STOP
  focus_mode = Control.FOCUS_ALL
  clip_contents = true
@@ -1827,26 +1832,37 @@ func _rail_input(event: InputEvent) -> bool:
  return false
 
 func _draw_launch_range(item: Dictionary) -> void:
- var shots := LaunchPreview.shots(item, _local_cell_size())
- if shots.is_empty(): return
- var low := 0
- var high := 0
- for i in shots.size():
-  if shots[i].velocity.y > shots[low].velocity.y: low = i
-  if shots[i].velocity.y < shots[high].velocity.y: high = i
+ var is_flipper: bool = item.type in ["left_flipper", "right_flipper"]
+ var shots: Array[Dictionary] = []
+ if is_flipper:
+  _launch_probe.request(item, _local_cell_size())
+  if not _launch_probe.busy:
+   for shot: Dictionary in _launch_probe.shots:
+    if launch_timing_variants or shot.label == "Typical": shots.append(shot)
+ else:
+  shots = LaunchPreview.shots(item, _local_cell_size())
  for i in shots.size():
   var points := LaunchPreview.trajectory(shots[i])
-  for j in points.size(): points[j] = local_pixels_to_screen(points[j])
-  var color := Color(0.4, 0.8, 0.95, 0.13)
-  if i == low: color = Color("ffd76b")
-  if i == high: color = Color("70e5d5")
-  if item.type in ["round_bumper", "triangle_bumper"]:
-   color = Color(1.0, 0.84, 0.42, 0.55) if i % 2 == 0 else Color(0.44, 0.9, 0.84, 0.55)
-  draw_polyline(points, color, 1.5 if i in [low, high] else 1.0, true)
+  for j in points.size():
+   points[j] = local_pixels_to_screen(points[j] + (Vector2(item.position) if is_flipper else Vector2.ZERO))
+  var color := Color(1.0, 0.84, 0.42, 0.55) if i % 2 == 0 else Color(0.44, 0.9, 0.84, 0.55)
+  var width := 1.0
+  if is_flipper:
+   color = {"Typical": Color("70e5d5"), "Early": Color("ffd76b"), "Late": Color("cea3f2")}[shots[i].label]
+   width = 2.0 if shots[i].label == "Typical" else 1.0
+  draw_polyline(points, color, width, true)
+ var title := "BASE SONIC · gold: min rebound / teal: max rebound"
+ var detail := "Incoming speed sets rebound · no tangent momentum or obstacles"
+ if is_flipper:
+  title = "BASE SONIC · typical falling catch"
+  if launch_timing_variants: title = "BASE SONIC · teal: typical / gold: early / purple: late"
+  detail = "Fall toward outer half · no steering or terrain · approximate"
+  if _launch_probe.busy: detail = "Simulating ball contact…"
+  elif shots.is_empty(): detail = "No catch in this falling-ball setup at this angle."
  # Screen-space legend stays readable even when the estimated apex is outside the map.
  draw_style_box(_launch_legend_style(), Rect2(8, size.y - 50, 500, 42))
- draw_string(get_theme_default_font(), Vector2(16, size.y - 34), "BASE SONIC · gold: min rebound / teal: max rebound" if item.type in ["round_bumper", "triangle_bumper"] else "BASE SONIC · gold: min assist / teal: max assist (sampled)", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("dcebf2"))
- draw_string(get_theme_default_font(), Vector2(16, size.y - 16), "Incoming speed sets rebound · no tangent momentum or obstacles" if item.type in ["round_bumper", "triangle_bumper"] else "Stationary ball · collision momentum may add range · no obstacles", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("9cb3c6"))
+ draw_string(get_theme_default_font(), Vector2(16, size.y - 34), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("dcebf2"))
+ draw_string(get_theme_default_font(), Vector2(16, size.y - 16), detail, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("9cb3c6"))
 
 func _launch_legend_style() -> StyleBoxFlat:
  var style := StyleBoxFlat.new()

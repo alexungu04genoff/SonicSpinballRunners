@@ -1956,6 +1956,15 @@ func _refresh_mechanics_properties() -> void:
 		baseline.tooltip_text = "Base Sonic, no modifiers. Flipper upward cap additionally scales with the square root of ball size. Runtime retains the selected character and session tuning."
 		baseline.add_theme_font_size_override("font_size", 11)
 		mechanics_properties.add_child(baseline)
+	if item.type in ["left_flipper", "right_flipper"]:
+		var timings := CheckButton.new()
+		timings.text = "Early / late timing"
+		timings.button_pressed = canvas.launch_timing_variants
+		timings.tooltip_text = "Show two timing variants alongside the typical falling catch. These are example contacts, not guaranteed range limits."
+		timings.toggled.connect(func(value: bool):
+			canvas.launch_timing_variants = value
+			canvas.queue_redraw())
+		mechanics_properties.add_child(timings)
 	var properties := Objects.properties(item)
 	var identity := Label.new()
 	identity.text = "ID"

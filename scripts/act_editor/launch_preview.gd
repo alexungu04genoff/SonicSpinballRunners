@@ -1,7 +1,6 @@
 extends RefCounted
-## Free-flight estimates only: no incoming tangential velocity, steering or collisions.
+## Ballistic paths and bumper estimates. Flippers use isolated production-physics probes.
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
-const Flipper = preload("res://scripts/flipper.gd")
 const Ball = preload("res://scripts/ball.gd")
 const Profile = preload("res://data/balanced.tres")
 
@@ -13,24 +12,7 @@ static func shots(item: Dictionary, cell_size: float, resolved_stats: Dictionary
  var type: String = item.get("type", "")
  var angle := deg_to_rad(float(item.get("rotation_degrees", 0.0)))
  var radius := Objects.Dimensions.BALL_RADIUS_CELLS * cell_size
- if type in ["left_flipper", "right_flipper"]:
-  var flipper := Flipper.new()
-  flipper.side = 1.0 if type == "left_flipper" else -1.0
-  flipper.authored_rest_angle = angle
-  # Sample face contact across swing timing and heel-to-tip position. Native
-  # collision velocity can exceed this stationary-ball assistance estimate.
-  for timing in [0.0, 0.5, 1.0]:
-   flipper.rotation = lerpf(flipper.rest_angle(), flipper.active_angle(), timing)
-   for fraction in [0.0, 0.35, 0.65, 1.0]:
-    var axis := Vector2.RIGHT.rotated(flipper.rotation)
-    var normal := Vector2(axis.y, -axis.x) * flipper.side
-    var origin: Vector2 = item.position + axis * Objects.Dimensions.FLIPPER_LENGTH_CELLS * cell_size * fraction
-    origin += normal * (radius + Objects.Dimensions.FLIPPER_RADIUS_CELLS * cell_size)
-    var velocity := Flipper.assisted_velocity(Vector2.ZERO, flipper.strike_direction(fraction), fraction, stats)
-    velocity.y = maxf(velocity.y, -float(stats.flipper_upward_speed_limit) * sqrt(radius / Ball.RADIUS))
-    result.append({"origin": origin, "velocity": velocity})
-  flipper.free()
- elif type in ["round_bumper", "triangle_bumper"]:
+ if type in ["round_bumper", "triangle_bumper"]:
   var points := Objects.local_points(item, cell_size)
   var count := 12 if type == "round_bumper" else 3
   for i in count:
@@ -53,9 +35,11 @@ static func shots(item: Dictionary, cell_size: float, resolved_stats: Dictionary
 static func trajectory(shot: Dictionary) -> PackedVector2Array:
  var gravity := float(ProjectSettings.get_setting("physics/2d/default_gravity", 700.0)) * float(shot.get("gravity_scale", Profile.gravity_scale))
  var velocity: Vector2 = shot.velocity
- # End at launch height for upward shots; show one second for horizontal/downward shots.
- var duration := maxf(1.0, -2.0 * velocity.y / gravity) if gravity > 0.0 else 1.0
- var points := PackedVector2Array()
+ var points: PackedVector2Array = shot.get("path_prefix", PackedVector2Array()).duplicate()
+ # Return to the original contact height, including the measured follow-through.
+ var end_height: float = shot.origin.y if points.is_empty() else points[0].y
+ var discriminant: float = velocity.y * velocity.y + 2.0 * gravity * (end_height - shot.origin.y)
+ var duration := maxf(0.01 if not points.is_empty() else 1.0, (-velocity.y + sqrt(maxf(0.0, discriminant))) / gravity) if gravity > 0.0 else 1.0
  for i in 81:
   var t := duration * i / 80.0
   points.append(shot.origin + velocity * t + Vector2.DOWN * 0.5 * gravity * t * t)
