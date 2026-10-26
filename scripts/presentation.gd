@@ -720,9 +720,11 @@ func _prism(points: PackedVector2Array, height: float, side_mat: Material, top_m
  for i in points.size():
   var a := Vector3(points[i].x * SCALE, 0, points[i].y * SCALE)
   var b := Vector3(points[(i + 1) % points.size()].x * SCALE, 0, points[(i + 1) % points.size()].y * SCALE)
+  # Keep each vertical face's outward normal. Averaging across acute corners
+  # cancels opposing normals and produces black wedges in wall texture blending.
+  surface.set_normal(Vector3((b - a).z, 0, -(b - a).x).normalized())
   for vertex: Vector3 in [a, b, a + Vector3.UP * height, b, b + Vector3.UP * height, a + Vector3.UP * height]:
    surface.add_vertex(vertex)
- surface.generate_normals()
  return surface.commit(mesh)
 
 func flash_bumper(body: Node) -> void:
