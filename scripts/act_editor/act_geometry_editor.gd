@@ -65,7 +65,7 @@ var ring_rotation_field: SpinBox
 var ring_ellipse_settings: VBoxContainer
 var bank_controls: VBoxContainer
 var selected_bank_id := ""
-var composite_bar: HBoxContainer
+var composite_bar: HFlowContainer
 var composite_strength: SpinBox
 var composite_preserve_corners: CheckBox
 var composite_angle: SpinBox
@@ -100,6 +100,9 @@ var decor_position_fields: Array[LineEdit] = []
 var decor_visible_field: CheckBox
 var decor_snap_field: CheckBox
 var decor_info: Label
+var inspector: VBoxContainer
+var marker_reminders: VBoxContainer
+var verify_dialog: AcceptDialog
 var _decor_position_text: Array[String] = ["", ""]
 
 func _ready() -> void:
@@ -179,6 +182,7 @@ func _build_ui() -> void:
 	_button(tools, "undo", "Undo", undo, "Ctrl+Z • up to 100 edits")
 	_button(tools, "redo", "Redo", redo, "Ctrl+Y / Ctrl+Shift+Z")
 	tools.add_child(VSeparator.new())
+	_button(tools, "verify", "Verify", verify_document, "Check saved data and runtime ramp clearance before play")
 	_button(tools, "fullscreen", "Fullscreen", _toggle_fullscreen, "F11 • toggle fullscreen")
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -349,6 +353,17 @@ func _build_ui() -> void:
 	workspace.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	workspace.add_theme_constant_override("separation", 4)
 	body.add_child(workspace)
+	var inspector_scroll := ScrollContainer.new()
+	inspector_scroll.custom_minimum_size.x = 300
+	inspector_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	body.add_child(inspector_scroll)
+	inspector = VBoxContainer.new()
+	inspector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	inspector.add_theme_constant_override("separation", 8)
+	inspector_scroll.add_child(inspector)
+	var inspector_title := Label.new()
+	inspector_title.text = "PROPERTIES / PLACEMENT PREVIEW"
+	inspector.add_child(inspector_title)
 	var settings := HBoxContainer.new()
 	workspace.add_child(settings)
 	var title_label := Label.new()
@@ -375,14 +390,13 @@ func _build_ui() -> void:
 	settings.add_child(cell_size_field)
 	var connectors := HBoxContainer.new()
 	connectors.add_theme_constant_override("separation", 4)
-	workspace.add_child(connectors)
-	_button(connectors, "entry", "Entry (bottom)", func(): choose_connector("entry"), "Drag contiguous cells along the bottom border to create or replace Entry")
-	_button(connectors, "exit", "Exit (top)", func(): choose_connector("exit"), "Drag contiguous cells along the top border to create or replace Exit")
+	inspector.add_child(connectors)
 	connector_summary = Label.new()
 	connector_summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	connector_summary.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	connector_summary.add_theme_font_size_override("font_size", 13)
 	connector_summary.add_theme_color_override("font_color", Color("76edab"))
+	connector_summary.visible = false
 	connectors.add_child(connector_summary)
 	terrain_snap_field = OptionButton.new()
 	terrain_snap_field.add_item("Snap: 1 cell")
@@ -400,18 +414,18 @@ func _build_ui() -> void:
 	terrain_scale_field.item_selected.connect(func(index):
 		if not _refreshing: _transform_active("half_size" if index == 1 else "full_size"))
 	connectors.add_child(terrain_scale_field)
-	composite_bar = HBoxContainer.new()
+	composite_bar = HFlowContainer.new()
 	composite_bar.add_theme_constant_override("separation", 6)
-	workspace.add_child(composite_bar)
+	inspector.add_child(composite_bar)
 	_button(composite_bar, "merge", "Merge", func(): preview_composite("merge"), "Ctrl-click filled terrain to select two or more pieces, then preview their union")
 	_button(composite_bar, "smooth", "Smooth", func(): preview_composite("smooth"), "Preview conservative corner smoothing on one filled terrain piece or composite")
 	_button(composite_bar, "merge_smooth", "Merge + Smooth", func(): preview_composite("merge_smooth"), "Union selected filled terrain, then smooth the resulting outline")
 	_button(composite_bar, "composite_apply", "Apply", apply_composite, "Replace the selected sources in one undo step")
 	_button(composite_bar, "composite_cancel", "Cancel", cancel_composite_preview, "Discard the preview; original terrain stays unchanged")
 	_button(composite_bar, "composite_clear_pins", "Clear pins", _clear_composite_pins, "Release all manually protected corners in this preview")
-	var sculpt_settings := HBoxContainer.new()
+	var sculpt_settings := VBoxContainer.new()
 	sculpt_settings.add_theme_constant_override("separation", 4)
-	workspace.add_child(sculpt_settings)
+	inspector.add_child(sculpt_settings)
 	var strength_label := Label.new()
 	strength_label.text = "Strength"
 	sculpt_settings.add_child(strength_label)
@@ -473,11 +487,21 @@ func _build_ui() -> void:
 	composite_hint.add_theme_font_size_override("font_size", 12)
 	composite_hint.add_theme_color_override("font_color", Color("9cb3c6"))
 	composite_hint.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	workspace.add_child(composite_hint)
+	inspector.add_child(composite_hint)
 	canvas = Canvas.new()
 	canvas.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	canvas.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	workspace.add_child(canvas)
+	marker_reminders = VBoxContainer.new()
+	marker_reminders.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	marker_reminders.offset_left = -185
+	marker_reminders.offset_top = 8
+	marker_reminders.offset_right = -8
+	canvas.add_child(marker_reminders)
+	_button(marker_reminders, "entry", "Entry: unset", func(): choose_connector("entry"), "Set the bottom entry connector")
+	_button(marker_reminders, "exit", "Exit: unset", func(): choose_connector("exit"), "Set the top exit connector")
+	_button(marker_reminders, "activation_reminder", "Activation trigger: unset", func(): choose_marker("activation"), "Set the activation trigger")
+	_button(marker_reminders, "spawn_reminder", "Spawn point: unset", func(): choose_marker("spawn"), "Set the spawn point")
 	canvas.placement_requested.connect(add_placement)
 	canvas.move_requested.connect(move_placement)
 	canvas.selection_changed.connect(func(_index): _refresh())
@@ -496,12 +520,14 @@ func _build_ui() -> void:
 	canvas.decor_requested.connect(set_decor_slot)
 	canvas.decor_selection_changed.connect(func(_index): _refresh())
 	canvas.status_changed.connect(_set_status)
-	var object_properties := HBoxContainer.new()
+	canvas.preview_scale_requested.connect(_scale_preview)
+	var object_properties := VBoxContainer.new()
 	object_properties.add_theme_constant_override("separation", 4)
-	workspace.add_child(object_properties)
+	inspector.add_child(object_properties)
 	mode_label = Label.new()
 	mode_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	mode_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	mode_label.custom_minimum_size.y = 20
 	mode_label.add_theme_color_override("font_color", Color("70e5d5"))
 	object_properties.add_child(mode_label)
 	var angle_label := Label.new()
@@ -524,14 +550,15 @@ func _build_ui() -> void:
 	_button(object_properties, "duplicate", "Duplicate", duplicate_selected, "Ctrl+D • duplicate selected terrain, gameplay object or ring trail")
 	mechanics_properties = HFlowContainer.new()
 	mechanics_properties.add_theme_constant_override("h_separation", 10)
-	workspace.add_child(mechanics_properties)
+	inspector.add_child(mechanics_properties)
 	canvas.rail_points_changed.connect(set_rail_points)
 	detail_label = Label.new()
 	detail_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	detail_label.add_theme_color_override("font_color", Color("b5c8d6"))
 	detail_label.visible = false
-	workspace.add_child(detail_label)
+	inspector.add_child(detail_label)
 	status_label = Label.new()
+	status_label.custom_minimum_size.y = 20
 	status_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	column.add_child(status_label)
 	var help := Label.new()
@@ -562,7 +589,7 @@ func _button(parent: Node, id: String, label: String, action: Callable, hint: St
 		ring_spacing_field.apply()
 		_commit_gameplay_angle()
 		_commit_title()
-		if id in ["select", "rotate", "angle_minus", "angle_plus", "flip_h", "flip_v", "delete", "duplicate", "undo", "redo", "fit"]:
+		if id in ["select", "rotate", "angle_minus", "angle_plus", "flip_h", "flip_v", "delete", "duplicate", "undo", "redo", "fit", "verify"]:
 			canvas.grab_focus()
 		action.call())
 	parent.add_child(button)
@@ -1668,6 +1695,7 @@ func _refresh() -> void:
 	title_field.text = document.title
 	cell_size_field.set_value_no_signal(document.cell_size)
 	grid_label.text = "   %d × %d cells    Cell size" % [document.grid_size.x, document.grid_size.y]
+	_refresh_reminders()
 	_refresh_file_state()
 	buttons.undo.disabled = undo_stack.is_empty()
 	buttons.redo.disabled = redo_stack.is_empty()
@@ -1826,7 +1854,7 @@ func _show_error(message: String) -> void:
 	_set_status(message.get_slice("\n", 0))
 
 func _modal_open() -> bool:
-	return save_dialog.visible or load_dialog.visible or unsaved_dialog.visible or error_dialog.visible
+	return (verify_dialog != null and verify_dialog.visible) or save_dialog.visible or load_dialog.visible or unsaved_dialog.visible or error_dialog.visible
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_F11:
@@ -1916,6 +1944,18 @@ func _refresh_mechanics_properties() -> void:
 			else:
 				item.position = at
 				_refresh())
+	if not canvas.gameplay_brush.is_empty():
+		var hint := Label.new()
+		hint.text = "Preview only · click the map to place.\nShift + wheel resizes supported objects."
+		hint.add_theme_font_size_override("font_size", 11)
+		mechanics_properties.add_child(hint)
+	if item.type in ["left_flipper", "right_flipper", "round_bumper", "triangle_bumper"]:
+		var baseline := Label.new()
+		var profile: Resource = preload("res://data/balanced.tres")
+		baseline.text = "Sonic: launch %.0f · upward cap %.0f px/s*" % [profile.flipper_launch_strength, profile.flipper_upward_speed_limit] if item.type in ["left_flipper", "right_flipper"] else "Sonic rebound: %.0f–%.0f px/s" % [profile.bumper_launch_speed * profile.bumper_rebound_multiplier, profile.bumper_speed_limit * profile.bumper_rebound_multiplier]
+		baseline.tooltip_text = "Base Sonic, no modifiers. Flipper upward cap additionally scales with the square root of ball size. Runtime retains the selected character and session tuning."
+		baseline.add_theme_font_size_override("font_size", 11)
+		mechanics_properties.add_child(baseline)
 	var properties := Objects.properties(item)
 	var identity := Label.new()
 	identity.text = "ID"
@@ -2094,3 +2134,73 @@ func _refresh_banks() -> void:
 
 func _toggle_fullscreen() -> void:
 	get_window().mode = Window.MODE_WINDOWED if get_window().mode == Window.MODE_FULLSCREEN else Window.MODE_FULLSCREEN
+
+func _refresh_reminders() -> void:
+	var values := {
+		"entry": ["Entry", document.entry_width > 0],
+		"exit": ["Exit", document.exit_width > 0],
+		"activation_reminder": ["Activation trigger", document.activation_y != null],
+		"spawn_reminder": ["Spawn point", document.spawn_position != null],
+	}
+	for key: String in values:
+		var value: Array = values[key]
+		buttons[key].text = value[0] + (": set" if value[1] else ": unset")
+		for state in ["font_color", "font_hover_color", "font_pressed_color"]:
+			buttons[key].add_theme_color_override(state, Color("76edab") if value[1] else Color("ff858e"))
+
+func verification_report() -> Dictionary:
+	var errors: PackedStringArray = document.validation_errors()
+	var warnings := PackedStringArray()
+	if document.entry_width == 0: warnings.append("Entry connector is unset.")
+	if document.exit_width == 0: warnings.append("Exit connector is unset.")
+	if document.activation_y == null: warnings.append("Activation trigger is unset.")
+	if not errors.is_empty(): return {"errors": errors, "warnings": warnings}
+	var candidate: Resource = document.duplicate(true)
+	if candidate.spawn_position == null:
+		errors.append("Spawn point is unset: the Act cannot be played.")
+		# Still check ramp geometry, without changing the authored document.
+		candidate.spawn_position = Vector2.ZERO
+	var tuning := PhysicsTuning.new()
+	var controls := PlaygroundInput.new()
+	var ball := PlaygroundBall.new()
+	var compiled := AuthoredActRuntimeCompiler.compile(candidate, tuning, controls, ball)
+	if not compiled.error.is_empty():
+		var message: String = compiled.error
+		for index in document.gameplay_objects.size():
+			var item: Dictionary = document.gameplay_objects[index]
+			message = message.replace(Objects.identity(item, index), "#%d at %s" % [index + 1, item.position])
+		errors.append(message)
+	if is_instance_valid(compiled.root): compiled.root.free()
+	ball.free()
+	controls.free()
+	tuning.free()
+	return {"errors": errors, "warnings": warnings}
+
+func verify_document() -> void:
+	var report := verification_report()
+	if verify_dialog == null:
+		verify_dialog = AcceptDialog.new()
+		verify_dialog.title = "Verify Act"
+		verify_dialog.get_label().autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		verify_dialog.get_label().custom_minimum_size.x = 680
+		add_child(verify_dialog)
+	var lines := PackedStringArray()
+	lines.append("Runtime checks passed." if report.errors.is_empty() else "Fix these before playing:")
+	lines.append_array(report.errors)
+	if not report.warnings.is_empty():
+		lines.append("\nAuthoring reminders:")
+		lines.append_array(report.warnings)
+	lines.append("\nChecks data, switch links and runtime ramp clearance. Does not prove reachability or gameplay difficulty.")
+	verify_dialog.dialog_text = "\n".join(lines)
+	verify_dialog.popup_centered(Vector2i(720, 360))
+
+func _scale_preview(direction: float) -> void:
+	if canvas.gameplay_brush.is_empty(): return
+	var item: Dictionary = canvas.gameplay_brush
+	var key: String = {"one_way_gate": "width", "spinner": "width", "magnetic_field": "radius", "round_bumper": "scale", "triangle_bumper": "scale", "switch_target": "scale"}.get(item.type, "")
+	if key.is_empty(): return
+	var limits: Array = Objects.property_limits(item.type)[key]
+	var step := 0.1 if key == "scale" else 5.0
+	var value := clampf(float(Objects.properties(item)[key]) + step * direction, limits[0], limits[1])
+	set_gameplay_property(key, value)
+	_set_status("Preview %s: %s %.2f · Shift + wheel resizes; click to place" % [Objects.get_definition(item.type).label, key, value])

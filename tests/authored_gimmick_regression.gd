@@ -58,6 +58,9 @@ func fixture() -> Resource:
   {"kind": "ellipse", "start": Vector2(210, 90), "end": Vector2(390, 230), "spacing": 30.0, "rotation_degrees": 0.0, "fill": true},
   {"kind": "ellipse", "start": Vector2(150, 450), "end": Vector2(450, 600), "spacing": 35.0, "rotation_degrees": 0.0, "fill": false},
  ]
+ # Preserve the shipped pre-scaling fixture: omitted target scale resolves to 1.0.
+ for item: Dictionary in act.gameplay_objects:
+  if item.type == "switch_target": item.properties.erase("scale")
  return act
 
 func isolated_fixture() -> Resource:

@@ -50,7 +50,7 @@ static func local_points(placement: Dictionary, cell_size: float) -> PackedVecto
    points = PackedVector2Array([Vector2(-width / 2, -depth), Vector2(width / 2, -depth), Vector2(width / 2, depth), Vector2(-width / 2, depth)])
   "switch_target":
    for step in 48:
-    points.append(Vector2.from_angle(TAU * step / 48.0) * SWITCH_RADIUS)
+    points.append(Vector2.from_angle(TAU * step / 48.0) * switch_radius(placement))
   "magnetic_field":
    for step in 64:
     points.append(Vector2.from_angle(TAU * step / 64.0) * float(properties(placement).radius))
@@ -88,8 +88,8 @@ static func defaults(type: String) -> Dictionary:
  match type:
   "round_bumper", "triangle_bumper": return {"scale": 1.0}
   "one_way_gate": return {"width": 80.0, "initial_state": "closed", "visual_mode": "auto"}
-  "switch_target": return {"color": "blue", "label": "", "score_reward": 0.0}
-  "spring": return {"width": 40.0, "launch_strength": 900.0, "color": "red"}
+  "switch_target": return {"scale": 1.0, "color": "blue", "label": "", "score_reward": 0.0}
+  "spring": return {"width": 40.0, "launch_strength": 300.0, "color": "red"}
   "spinner": return {"width": 40.0, "tick_score": 5.0, "decay": 2.0, "max_spin": 40.0}
   "magnetic_field": return {"radius": 100.0, "strength": 260.0, "mode": "attract"}
   "elevated_rail": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(0, -100), Vector2(100, -170)]), "width": 40.0, "height": 40.0, "drag": 0.06, "entry_speed": 100.0}
@@ -104,7 +104,7 @@ static func property_limits(type: String) -> Dictionary:
  match type:
   "round_bumper", "triangle_bumper": return {"scale": [0.35, 2.5]}
   "one_way_gate": return {"width": [20.0, 500.0]}
-  "switch_target": return {"score_reward": [0.0, 1000.0]}
+  "switch_target": return {"scale": [0.35, 2.5], "score_reward": [0.0, 1000.0]}
   "spring": return {"width": [20.0, 100.0], "launch_strength": [100.0, 2400.0]}
   "spinner": return {"width": [10.0, 300.0], "tick_score": [0.0, 25.0], "decay": [0.5, 8.0], "max_spin": [1.0, 60.0]}
   "magnetic_field": return {"radius": [15.0, 500.0], "strength": [0.0, 600.0]}
@@ -161,3 +161,6 @@ static func spring_trajectory(item: Dictionary, gravity_scale: float, ball_radiu
   var t := float(i) / 40.0
   result.append(origin + velocity * t + Vector2.DOWN * gravity * t * t * 0.5)
  return result
+
+static func switch_radius(item: Dictionary) -> float:
+ return SWITCH_RADIUS * float(properties(item).scale)

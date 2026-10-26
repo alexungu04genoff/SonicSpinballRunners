@@ -100,6 +100,7 @@ static func _gate(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dicti
  return {"item": item, "root": root, "panel": panel, "light": light, "kind": "gate"}
 
 static func _switch(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dictionary:
+ root.scale = Vector3.ONE * float(Objects.properties(item).scale)
  var radius: float = Objects.SWITCH_RADIUS * p.SCALE
  var color: Color = Objects.COLORS[item.properties.color]
  _disc(p, root, radius, 0.045, Vector3(0, 0.0225, 0), style.body, "OctagonalHousing", 8)

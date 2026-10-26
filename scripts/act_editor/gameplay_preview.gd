@@ -120,7 +120,7 @@ static func _draw_gimmick(target: CanvasItem, item: Dictionary, anchor: Vector2,
   outline.append(points[0])
   target.draw_polyline(outline, SELECTION_COLOR if selected else color, 3.0 if selected else 1.5, true)
  if item.type == "switch_target":
-  target.draw_circle(anchor, Objects.SWITCH_RADIUS * scale_factor * 0.65, color.lightened(0.3) if state.get("active", false) else color.darkened(0.35))
+  target.draw_circle(anchor, Objects.switch_radius(item) * scale_factor * 0.65, color.lightened(0.3) if state.get("active", false) else color.darkened(0.35))
   var text: String = "ON" if state.get("active", false) else props.label
   if not text.is_empty(): target.draw_string(ThemeDB.fallback_font, anchor + Vector2(0, -22), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, color)
  elif item.type == "spring":

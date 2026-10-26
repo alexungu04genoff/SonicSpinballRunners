@@ -2,6 +2,7 @@ extends Control
 const LaunchPreview = preload("res://scripts/act_editor/launch_preview.gd")
 ## Authoring drawing and pointer gestures only. The editor owns changes and undo.
 
+signal preview_scale_requested(direction: float)
 signal placement_requested(placement: Dictionary)
 signal selection_changed(index: int)
 signal terrain_selection_changed(indices: Array[int])
@@ -889,6 +890,10 @@ func _draw_gameplay_objects() -> void:
    var shown := active_brush.duplicate(true)
    shown.position = point
    _draw_spring_trajectory(shown)
+  elif active_brush.type in ["left_flipper", "right_flipper", "round_bumper", "triangle_bumper"]:
+   var shown := active_brush.duplicate(true)
+   shown.position = point
+   _draw_launch_range(shown)
  _draw_bank_links()
 
 func _draw_spring_trajectory(item: Dictionary) -> void:
@@ -1163,7 +1168,10 @@ func _gui_input(event: InputEvent) -> void:
     grab_focus()
    accept_event()
   elif event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
-   _zoom_at(event.position, 1.12 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0 / 1.12)
+   if event.shift_pressed and not gameplay_brush.is_empty() and gameplay_brush.type in ["one_way_gate", "spinner", "switch_target", "magnetic_field", "round_bumper", "triangle_bumper"]:
+    preview_scale_requested.emit(1.0 if event.button_index == MOUSE_BUTTON_WHEEL_UP else -1.0)
+   else:
+    _zoom_at(event.position, 1.12 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0 / 1.12)
    accept_event()
   elif event.button_index == MOUSE_BUTTON_LEFT:
    if event.pressed:
@@ -1836,9 +1844,9 @@ func _draw_launch_range(item: Dictionary) -> void:
    color = Color(1.0, 0.84, 0.42, 0.55) if i % 2 == 0 else Color(0.44, 0.9, 0.84, 0.55)
   draw_polyline(points, color, 1.5 if i in [low, high] else 1.0, true)
  # Screen-space legend stays readable even when the estimated apex is outside the map.
- draw_style_box(_launch_legend_style(), Rect2(8, 8, 540, 42))
- draw_string(get_theme_default_font(), Vector2(16, 24), "BASE SONIC · gold: min rebound / teal: max rebound" if item.type in ["round_bumper", "triangle_bumper"] else "BASE SONIC · gold: min rise / teal: max rise (sampled)", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("dcebf2"))
- draw_string(get_theme_default_font(), Vector2(16, 42), "Free flight · no tangential momentum, steering or collisions", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("9cb3c6"))
+ draw_style_box(_launch_legend_style(), Rect2(8, size.y - 50, 500, 42))
+ draw_string(get_theme_default_font(), Vector2(16, size.y - 34), "BASE SONIC · gold: min rebound / teal: max rebound" if item.type in ["round_bumper", "triangle_bumper"] else "BASE SONIC · gold: min rise / teal: max rise (sampled)", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("dcebf2"))
+ draw_string(get_theme_default_font(), Vector2(16, size.y - 16), "Free flight · no tangential momentum, steering or collisions", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("9cb3c6"))
 
 func _launch_legend_style() -> StyleBoxFlat:
  var style := StyleBoxFlat.new()

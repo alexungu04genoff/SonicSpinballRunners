@@ -12,7 +12,7 @@ func configure(value: Dictionary) -> void:
 	alignment = HORIZONTAL_ALIGNMENT_LEFT
 	custom_minimum_size = Vector2(220, 36)
 	focus_mode = Control.FOCUS_NONE
-	tooltip_text = "%s\nGameplay object. Click to place repeatedly, or drag onto the canvas. Hold Alt for free position." % definition.label
+	tooltip_text = "%s\nGameplay object. Click to place repeatedly, or drag onto the canvas. Hold Alt for free position. Shift + wheel resizes supported previews." % definition.label
 	for state in ["normal", "hover", "pressed", "disabled", "focus"]:
 		var style := StyleBoxFlat.new()
 		style.bg_color = Color("17283a") if state == "normal" else Color("29465b")

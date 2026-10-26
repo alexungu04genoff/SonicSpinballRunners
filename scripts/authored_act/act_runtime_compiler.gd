@@ -176,8 +176,8 @@ static func _validate_rail_clearance(result: Dictionary, ball_radius: float) -> 
       var tip: Vector2 = object.position + Vector2.from_angle(angle) * float(object.length)
       if Geometry2D.get_closest_point_to_segment(point, object.position, tip).distance_to(point) < footprint + float(object.radius): touching = true
     elif object.type == "switch_target":
-     touching = point.distance_to(object.position) < footprint + Objects.SWITCH_RADIUS
-     obstacle_height = 14.0
+     touching = point.distance_to(object.position) < footprint + Objects.switch_radius(object)
+     obstacle_height = 14.0 * float(Objects.properties(object).scale)
     elif object.type in ["one_way_gate", "spring"]:
      var props := Objects.properties(object)
      var side := Vector2.RIGHT.rotated(deg_to_rad(float(object.rotation_degrees)))
