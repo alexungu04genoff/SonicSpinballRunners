@@ -1,7 +1,10 @@
 extends RefCounted
 ## A reproducible, bounded stream of whole authored Acts. Never edits source data.
-const PATHS := ["res://data/endless/second_simple.tres", "res://data/endless/third_complex.tres", "res://data/endless/first_try_smooth_decor.tres"]
-const TITLES := ["Second Simple", "Third Complex", "First Try Smooth Decor"]
+const PATHS := ["res://data/endless/second_simple.tres", "res://data/endless/third_complex.tres",
+ "res://data/endless/first_try_smooth_decor.tres", "res://data/endless/ramp_mania.tres",
+ "res://data/endless/reverse_c_spring.tres", "res://data/endless/secret_entry.tres", "res://data/endless/spring_up.tres"]
+const TITLES := ["Second Simple", "Third Complex", "First Try Smooth Decor", "RampMania",
+ "Reverse C Spring", "Secret Entry", "SpringUp"]
 const Registry = preload("res://scripts/themes/theme_registry.gd")
 var rng := RandomNumberGenerator.new()
 var themes: Array = []

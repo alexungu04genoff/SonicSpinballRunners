@@ -64,21 +64,30 @@ func run() -> void:
    "engine_process_ms": Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0,
    "engine_physics_ms": Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0,
    "build_ms": game.last_build_ms, "blend": game.background_blend, "sequence": game.active_sequence, "waiting": game.loading_boundary,
+   "act": Game.Plan.TITLES[game.active.plan.id], "theme": game.active.plan.theme,
    "draw_calls": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
    "memory_mb": Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0,
    "video_mb": Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0,
    "nodes": Performance.get_monitor(Performance.OBJECT_NODE_COUNT)})
  var frames: Array = rows.map(func(row: Dictionary): return row.frame_ms)
  frames.sort()
+ var draws: Array = rows.map(func(row: Dictionary): return row.draw_calls)
+ draws.sort()
  var worst: Array = rows.duplicate()
  worst.sort_custom(func(a: Dictionary, b: Dictionary): return a.frame_ms > b.frame_ms)
  var summary := {"startup_ms": startup_ms, "initialize_ms": initialize_ms, "sequence": game.active_sequence, "tour_speed": speed, "waiting_ms": waiting_ms,
   "gameplay_started_us": gameplay_started_us, "duration_ms": (Time.get_ticks_usec() - gameplay_started_us) / 1000.0,
-  "device": RenderingServer.get_video_adapter_name(), "startup_cpu": startup_cpu, "gameplay_cpu": game.library.profile_cpu,
+  "device": RenderingServer.get_video_adapter_name(), "command_line": OS.get_cmdline_args(),
+  "viewport_size": [game.view.size.x, game.view.size.y], "pool_size": Game.Plan.PATHS.size(),
+  "startup_cpu": startup_cpu, "gameplay_cpu": game.library.profile_cpu,
   "reused_visual_nodes": game.library.reused_visual_nodes, "retirement_peak": game.library.retirement.peak_pending,
   "retirement_completed": game.library.retirement.completed,
   "rebuilds": game.library.fallback_builds, "shaders": game.retro_filter.display_name(),
   "frame_max_ms": frames[-1], "frame_p99_ms": frames[int(frames.size() * 0.99)],
+  "frame_median_ms": frames[frames.size() / 2], "frame_p95_ms": frames[int(frames.size() * 0.95)],
+  "sample_count": frames.size(), "frames_over_50_ms": frames.filter(func(ms: float): return ms > 50.0).size(),
+  "frames_over_100_ms": frames.filter(func(ms: float): return ms > 100.0).size(),
+  "draw_calls_median": draws[draws.size() / 2], "draw_calls_p95": draws[int(draws.size() * 0.95)],
   "cpu_max_ms": game.library.profile_max_cpu_ms, "threaded_resource_wall_ms": game.library.profile_resource_wait_ms,
   "worst_frames": worst.slice(0, 8)}
  print("ENDLESS_PROFILE | ", JSON.stringify(summary))

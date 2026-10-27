@@ -15,6 +15,7 @@ const DEPENDENCIES := ["res://scripts/presentation.gd", "res://scripts/themes/th
 @export var environment: Environment
 @export var light: Dictionary = {}
 @export var kind := "act"
+@export var surface_detail := "flat"
 @export var preload_materials: Array[Material] = []
 @export var preload_recipe: Resource
 @export var retirement_dependencies: Array[Resource] = []

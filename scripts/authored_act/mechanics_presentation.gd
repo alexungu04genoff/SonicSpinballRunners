@@ -198,7 +198,7 @@ func _rail_pipes(parent: Node3D, path: Dictionary, width: float, peak: float, st
    var surface: SurfaceTool = entry[0]
    surface.generate_normals()
    var material: Material = entry[1].duplicate()
-   material.cull_mode = BaseMaterial3D.CULL_DISABLED
+   if material is BaseMaterial3D: material.cull_mode = BaseMaterial3D.CULL_DISABLED
    table.mesh_node(surface.commit(), material, Vector3.ZERO, pipes).name = str(entry[2]) + ("Left" if side < 0.0 else "Right")
 
 func _pipe_section(surface: SurfaceTool, path: Dictionary, width: float, peak: float, side: float, start: float, finish: float, radius_scale: float, first_facet := 0, last_facet := 12) -> void:

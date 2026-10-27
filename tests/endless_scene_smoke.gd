@@ -94,6 +94,7 @@ func run() -> void:
  game.toggle_tour()
  var parked: Vector2 = game.ball.position
  var max_resident: int = game.resident.size()
+ var seen_acts := {game.active.plan.id: true}
  var transitions := 27
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--transitions="): transitions = int(argument.trim_prefix("--transitions="))
@@ -123,9 +124,13 @@ func run() -> void:
   check(game.library.retirement.pending_count() <= game.library.retirement.MAX_PENDING, "Resource retirement backpressure preserves its bound")
   check(game.ball.position == parked, "Camera tour never forces the physics ball through terrain")
   check(game.active_sequence == i + 1, "Checkpoint ownership advances exactly once")
+  if not seen_acts.has(game.active.plan.id): await capture("act-%02d" % game.active.plan.id)
+  seen_acts[game.active.plan.id] = true
   check(game.ball.mechanics == game.hub, "Loading another Act never steals mechanics ownership")
   check(game.presentation.ring_visuals.size() == game.ring_field.rings.size(), "Ring visuals remain aligned with collection state")
   if i % 3 == 2: await capture("zone-%02d" % (i / 3 + 2))
+ if transitions >= 27:
+  check(seen_acts.size() == Game.Plan.PATHS.size(), "The seeded rendered tour visits every published Act")
  check(max_resident <= 8, "Resident Acts remain bounded over nine Zone transitions")
  check(identities == [game.ball.get_instance_id(), game.tuning.get_instance_id(), game.controls.get_instance_id(), game.presentation.camera.get_instance_id()], "Shared engine identities survive streaming")
  game.toggle_tour()

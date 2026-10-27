@@ -5,9 +5,9 @@ Godot 4 / GDScript pinball with authored Acts and seamless Endless streaming. An
 ## Play
 
 - **Play Act.cmd** or Godot **F5** opens the themed authored player, initially **Second Simple**. Use **Load Act…** for another saved `.tres`, then **F5 / Reload Act** after saving editor changes. A failed reload preserves the active world.
-- **Play Endless.cmd** streams **Second Simple**, **Third Complex** and **First Try Smooth Decor**. Three shuffled Acts form each themed Zone; the next Zone uses another theme. Acts connect physically, backgrounds overlap and lighting blends. No score gates.
+- **Play Endless.cmd** streams seven authored Acts: **Second Simple**, **Third Complex**, **First Try Smooth Decor**, **RampMania**, **Reverse C Spring**, **Secret Entry** and **SpringUp**. Each Zone selects three distinct shuffled Acts; the next Zone uses another theme. Acts connect physically, backgrounds overlap and lighting blends. No score gates.
 - **Act Geometry Editor.cmd** opens the editor. Terrain, gameplay objects, decor, ring trails and markers share undo/redo and exact saved geometry. Verify checks the authored runtime; it does not guarantee reachability.
-- **Bake Endless.cmd** builds the trial pool offline. Re-bake after changing an Act, referenced art or the bake pipeline. Normal Endless startup loads valid bakes and does not silently regenerate them.
+- **Bake Endless.cmd** builds all 56 Act/theme variants offline, with simplified curves, shared assets, spatial batches and flat surface materials for this trial. Re-bake after changing an Act, referenced art or the bake pipeline. Normal Endless startup loads valid bakes and does not silently regenerate them.
 
 **Play Green Hill.cmd** remains an existing art-review launcher. **Authored Act Playtest.cmd** remains a diagnostic view of a saved Act. Both use authored geometry.
 

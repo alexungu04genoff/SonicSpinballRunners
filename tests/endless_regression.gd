@@ -29,14 +29,18 @@ func run() -> void:
  var a := Plan.new(79)
  var b := Plan.new(79)
  var themes: Array[String] = []
+ var seen_acts := {}
  var last: Dictionary = {}
  for zone_index in 64:
   var zone_a := a.next_zone(documents)
   var zone_b := b.next_zone(documents)
   check(zone_a == zone_b, "Seed reproduces Zone %d" % zone_index)
   var ids: Array[int] = []
+  var zone_ids := {}
   for entry: Dictionary in zone_a:
    ids.append(entry.id)
+   zone_ids[entry.id] = true
+   seen_acts[entry.id] = true
    check(entry.zone == zone_index, "Zone numbering")
    if not last.is_empty():
     var previous: Resource = documents[last.id]
@@ -47,7 +51,7 @@ func run() -> void:
     check(last.id != entry.id, "No immediate Act repeat")
    last = entry
   ids.sort()
-  check(ids == [0, 1, 2], "Every Zone uses all three Acts once")
+  check(ids.size() == 3 and zone_ids.size() == 3, "Every Zone chooses three different authored Acts")
   if not themes.is_empty(): check(themes.back() != zone_a[0].theme, "No adjacent theme repeat")
   themes.append(zone_a[0].theme)
   if themes.size() == 8:
@@ -55,6 +59,7 @@ func run() -> void:
    for theme: String in themes: unique[theme] = true
    check(unique.size() == 8, "Theme bag visits all eight themes")
    themes.clear()
+ check(seen_acts.size() == documents.size(), "The seeded run visits every registered Act")
  var tuning := PhysicsTuning.new()
  root.add_child(tuning)
  var controls := PlaygroundInput.new()
@@ -82,11 +87,11 @@ func run() -> void:
   print("ENDLESS_TEMPLATE | terrain=%d shapes=%d objects=%d" % [runtime.terrain.size(), shape_count, runtime.objects.size()])
  # Test every ordered connector pair against actual collision shapes. The probe
  # moves through the seam; this checks validity, not difficulty or route reachability.
- for lower in 3:
-  for upper in 3:
+ for lower in documents.size():
+  for upper in documents.size():
    var previous: Resource = documents[lower]
    var next: Resource = documents[upper]
-   for i in 3: runtimes[i].root.position = Vector2(10000, 10000)
+   for i in runtimes.size(): runtimes[i].root.position = Vector2(10000, 10000)
    runtimes[lower].root.position = Vector2.ZERO
    var second := Compiler.compile(next, tuning, controls, ball)
    second.mechanics.bind_ball_on_ready = false
@@ -106,7 +111,7 @@ func run() -> void:
    check(clear > 0, "Connector %d to %d has ball-width clearance" % [lower, upper])
    print("ENDLESS_JOIN | %d to %d | clear probes=%d/9" % [lower, upper, clear])
    second.root.free()
- for i in 3:
+ for i in documents.size():
   check(documents[i].fingerprint() == fingerprints[i], "Streaming plan and compilation preserve authored data")
   runtimes[i].root.free()
  ball.free()
