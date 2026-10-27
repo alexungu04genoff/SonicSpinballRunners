@@ -1,0 +1,179 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=3]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+format_version = 14
+library_version = 2
+title = "Switchback Junction — Bank the Fork"
+grid_size = Vector2i(12, 14)
+cell_size = 50.0
+placements = [{
+"anchor": Vector2i(0, 0),
+"base_size": Vector2i(5, 14),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedVector2Array(0, 0, 5, 0, 5, 0.5, 4.6, 0.75, 3.8, 1.3, 3.2, 2, 2.4, 2.8, 1.8, 3.7, 1.2, 4.6, 0.8, 5.3, 0.6, 6, 0.6, 11, 0.75, 11.4, 1.2, 11.8, 2, 12.3, 2.8, 12.7, 3.9, 13.1, 5, 13.4, 5, 14, 0, 14),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": 0.0
+}, {
+"anchor": Vector2i(7, 0),
+"base_size": Vector2i(5, 14),
+"composite_version": 1,
+"flip_h": true,
+"flip_v": false,
+"outline": PackedVector2Array(0, 0, 5, 0, 5, 0.5, 4.6, 0.75, 3.8, 1.3, 3.2, 2, 2.4, 2.8, 1.8, 3.7, 1.2, 4.6, 0.8, 5.3, 0.6, 6, 0.6, 11, 0.75, 11.4, 1.2, 11.8, 2, 12.3, 2.8, 12.7, 3.9, 13.1, 5, 13.4, 5, 14, 0, 14),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": 0.0
+}, {
+"anchor": Vector2i(0, 7),
+"base_size": Vector2i(4, 2),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedVector2Array(0.6, 0, 1, 0.15, 1.6, 0.4, 2.3, 0.6, 3.1, 0.7, 3.6, 0.7, 3.6, 1.1, 3, 1.05, 2, 0.9, 1, 0.65, 0.6, 0.4),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": 0.0
+}, {
+"anchor": Vector2i(8, 7),
+"base_size": Vector2i(4, 2),
+"composite_version": 1,
+"flip_h": true,
+"flip_v": false,
+"outline": PackedVector2Array(0.6, 0, 1, 0.15, 1.6, 0.4, 2.3, 0.6, 3.1, 0.7, 3.6, 0.7, 3.6, 1.1, 3, 1.05, 2, 0.9, 1, 0.65, 0.6, 0.4),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": 0.0
+}]
+gameplay_objects = [{
+"object_id": "junction_left",
+"type": "left_flipper",
+"position": Vector2(250, 700),
+"rotation_degrees": 18.334649444186343,
+"properties": {}
+}, {
+"object_id": "junction_right",
+"type": "right_flipper",
+"position": Vector2(350, 700),
+"rotation_degrees": 161.66535055581366,
+"properties": {}
+}, {
+"object_id": "junction_upper_left",
+"type": "left_flipper",
+"position": Vector2(185, 390),
+"rotation_degrees": 18.334649444186343,
+"properties": {}
+}, {
+"object_id": "junction_upper_right",
+"type": "right_flipper",
+"position": Vector2(415, 390),
+"rotation_degrees": 161.66535055581366,
+"properties": {}
+}, {
+"object_id": "junction_serve",
+"type": "spring",
+"position": Vector2(300, 590),
+"rotation_degrees": 0.0,
+"properties": {"width": 40.0, "launch_strength": 420.0, "color": "red"}
+}, {
+"object_id": "junction_floor_switch",
+"type": "switch_target",
+"position": Vector2(220, 560),
+"rotation_degrees": 0.0,
+"properties": {"scale": 1.0, "color": "blue", "label": "FORK 1", "score_reward": 100.0}
+}, {
+"object_id": "junction_wall_switch",
+"type": "wall_switch",
+"position": Vector2(30, 500),
+"rotation_degrees": 90.0,
+"properties": {"scale": 1.2, "color": "green", "label": "FORK 2", "score_reward": 150.0}
+}, {
+"object_id": "junction_fork",
+"type": "diverter",
+"position": Vector2(300, 440),
+"rotation_degrees": 0.0,
+"properties": {"length": 100.0, "state_a_angle": -60.0, "state_b_angle": 60.0, "initial_state": "a"}
+}, {
+"object_id": "junction_passing_lanes",
+"type": "lane_barrier",
+"position": Vector2(75, 300),
+"rotation_degrees": 0.0,
+"properties": {"points": PackedVector2Array(0, 0, 90, 0, 180, 0, 270, 0, 360, 0, 450, 0), "post_radius": 8.0, "reward_type": "score", "lane_reward": 100.0, "completion_mode": "light_all", "completion_bonus": 1000.0, "reset_delay": 2.0}
+}, {
+"object_id": "junction_left_dash",
+"type": "dash_panel",
+"position": Vector2(150, 245),
+"rotation_degrees": 30.0,
+"properties": {"width": 60.0, "boost_strength": 240.0, "directional_influence": 85.0, "speed_cap": 800.0}
+}, {
+"object_id": "junction_right_dash",
+"type": "dash_panel",
+"position": Vector2(450, 245),
+"rotation_degrees": -30.0,
+"properties": {"width": 60.0, "boost_strength": 240.0, "directional_influence": 85.0, "speed_cap": 800.0}
+}, {
+"object_id": "junction_exit_gate",
+"type": "one_way_gate",
+"position": Vector2(300, 25),
+"rotation_degrees": 180.0,
+"properties": {"width": 100.0, "initial_state": "closed", "visual_mode": "auto"}
+}, {
+"object_id": "junction_finish_spring",
+"type": "spring",
+"position": Vector2(300, 155),
+"rotation_degrees": 0.0,
+"properties": {"width": 30.0, "launch_strength": 300.0, "color": "yellow"}
+}, {
+"object_id": "junction_right_bumper",
+"type": "round_bumper",
+"position": Vector2(440, 540),
+"rotation_degrees": 0.0,
+"properties": {"scale": 1.1}
+}, {
+"object_id": "junction_left_spinner",
+"type": "spinner",
+"position": Vector2(140, 470),
+"rotation_degrees": -25.0,
+"properties": {"width": 45.0, "tick_score": 5.0, "decay": 2.0, "max_spin": 40.0}
+}]
+switch_banks = [{
+"bank_id": "junction_unlock",
+"label": "FORK 1 + FORK 2: route right and open the exit",
+"members": ["junction_floor_switch", "junction_wall_switch"],
+"gates": [],
+"actions": [{"object_id": "junction_fork", "action": "set_b"}, {"object_id": "junction_exit_gate", "action": "open"}],
+"completion_bonus": 500.0,
+"reset_delay": 0.0
+}]
+ring_trails = [{
+"start": Vector2(300, 550), "end": Vector2(300, 510), "spacing": 20.0
+}, {
+"start": Vector2(120, 345), "end": Vector2(120, 280), "spacing": 22.0
+}, {
+"start": Vector2(210, 345), "end": Vector2(210, 280), "spacing": 22.0
+}, {
+"start": Vector2(300, 345), "end": Vector2(300, 280), "spacing": 22.0
+}, {
+"start": Vector2(390, 345), "end": Vector2(390, 280), "spacing": 22.0
+}, {
+"start": Vector2(480, 345), "end": Vector2(480, 280), "spacing": 22.0
+}, {
+"start": Vector2(175, 205), "end": Vector2(255, 115), "spacing": 24.0
+}, {
+"start": Vector2(425, 205), "end": Vector2(345, 115), "spacing": 24.0
+}, {
+"start": Vector2(300, 120), "end": Vector2(300, 55), "spacing": 22.0
+}]
+decor_seed = "switchback-junction-playtest"
+decor_slots = []
+entry_start_x = 5
+entry_width = 2
+exit_start_x = 5
+exit_width = 2
+activation_y = 650.0
+spawn_position = Vector2(285, 630)
