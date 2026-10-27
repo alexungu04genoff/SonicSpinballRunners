@@ -123,7 +123,7 @@ func run() -> void:
  var old_path := "res://test-results/gimmick-legacy-12.tres"
  ResourceSaver.save(old_act, old_path)
  var old_loaded := ActData.load_document(old_path)
- check(old_loaded.document != null and old_loaded.document.format_version == 13 and old_loaded.document.switch_banks.is_empty(), "Format 12 migrates with empty banks")
+ check(old_loaded.document != null and old_loaded.document.format_version == ActData.FORMAT_VERSION and old_loaded.document.switch_banks.is_empty(), "Format 12 migrates with empty banks")
  check(Objects.properties(old_loaded.document.gameplay_objects[0]).scale == 1.0 and FileAccess.get_file_as_string(old_path).contains("format_version = 12"), "Legacy bumper defaults to unit scale without rewriting the source")
  old_act.gameplay_objects.append(object("spring", "unsupported", Vector2(200, 200)))
  ResourceSaver.save(old_act, old_path)

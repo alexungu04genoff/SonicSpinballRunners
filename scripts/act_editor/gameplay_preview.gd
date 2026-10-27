@@ -20,6 +20,9 @@ static func draw_object(target: CanvasItem, placement: Dictionary, anchor: Vecto
  var points := rotated_points(placement, cell_size)
  for index in points.size():
   points[index] = anchor + points[index] * scale_factor
+ if placement.type in ["lane_barrier", "diverter", "dash_panel", "wall_switch"]:
+  _draw_new_gimmick(target, placement, anchor, scale_factor, points, selected, ghost)
+  return
  if placement.type in ["one_way_gate", "switch_target", "spring"]:
   _draw_gimmick(target, placement, anchor, scale_factor, points, selected, ghost)
   return
@@ -129,4 +132,42 @@ static func _draw_gimmick(target: CanvasItem, item: Dictionary, anchor: Vector2,
  if item.type != "switch_target":
   var forward := Objects.forward(item)
   _arrow(target, anchor - forward * 14, anchor + forward * 28, color)
+ if selected: target.draw_arc(anchor, 6, 0, TAU, 24, Color.WHITE, 1.5, true)
+
+static func _draw_new_gimmick(target: CanvasItem, item: Dictionary, anchor: Vector2, scale_factor: float, points: PackedVector2Array, selected: bool, ghost: bool) -> void:
+ var props := Objects.properties(item)
+ var color: Color = Objects.get_definition(item.type).color
+ if ghost: color.a = 0.5
+ if item.type == "lane_barrier":
+  for i in points.size() - 1:
+   target.draw_line(points[i], points[i + 1], Color(color, 0.3), maxf(2.0, 12.0 * scale_factor), true)
+   var center := (points[i] + points[i + 1]) * 0.5
+   var normal := (points[i + 1] - points[i]).normalized().orthogonal()
+   _arrow(target, center - normal * 12, center + normal * 12, color)
+  for point: Vector2 in points:
+   target.draw_circle(point, maxf(2.0, float(props.post_radius) * scale_factor), Color("18243a"))
+   target.draw_arc(point, maxf(2.0, float(props.post_radius) * scale_factor), 0, TAU, 12, SELECTION_COLOR if selected else color, 2, true)
+ elif item.type == "diverter":
+  for state: String in ["a", "b"]:
+   var side := Objects.diverter_forward(item, state).orthogonal() * float(props.length) * scale_factor * 0.5
+   target.draw_line(anchor - side, anchor + side, Color(color, 0.25), 8.0 * scale_factor, true)
+   if selected: target.draw_string(ThemeDB.fallback_font, anchor + side + Vector2(4, -4), state.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, color)
+  target.draw_colored_polygon(points, color)
+ elif item.type == "dash_panel":
+  target.draw_colored_polygon(points, Color("30224e", color.a))
+  var outline := points.duplicate()
+  outline.append(points[0])
+  target.draw_polyline(outline, color, 2, true)
+  var forward := Objects.forward(item)
+  for offset: float in [-9.0, 1.0, 11.0]:
+   var tip := anchor + forward * offset * scale_factor
+   var side := forward.orthogonal() * minf(12.0, float(props.width) * 0.28) * scale_factor
+   target.draw_polyline(PackedVector2Array([tip - forward * 7.0 * scale_factor - side, tip, tip - forward * 7.0 * scale_factor + side]), color, 2.0, true)
+  if selected: _arrow(target, anchor + forward * 24.0 * scale_factor, anchor + forward * 120.0 * scale_factor, Color(color, 0.6))
+ else:
+  color = Objects.COLORS[props.color]
+  target.draw_colored_polygon(points, color)
+  var forward := Objects.forward(item)
+  _arrow(target, anchor, anchor + forward * 30.0 * scale_factor, color)
+  target.draw_line(points[2], points[3], Color.WHITE, 2, true)
  if selected: target.draw_arc(anchor, 6, 0, TAU, 24, Color.WHITE, 1.5, true)

@@ -86,7 +86,7 @@ func run() -> void:
  check(composed and completed_route and game.score > 0, "Ordinary flipper input composes spinner, magnet, complete rail and tangent exit", str([composed, completed_route, game.ball.position, game.score]))
  game.reset_ball(false)
  await frames(2)
- manager.scoring_tick.connect(func(_id: String, _points: int): ticks += 1)
+ manager.mechanic_score.connect(func(_kind: StringName, _id: String, _points: int): ticks += 1)
  # Cross the spinner once, then move away without resetting its stored spin.
  await place(Vector2(280, 470), Vector2(0, -900))
  await frames(20)

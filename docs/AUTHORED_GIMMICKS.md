@@ -1,5 +1,7 @@
 # Authored gates, switches, springs and ring patterns
 
+The next batch adds Lane Barriers, Wall Switches, Diverters, Dash Panels, explicit bank actions and typed fixed scoring. See [routing mechanics, format 14 and verification](ROUTING_MECHANICS.md). The format-13 details below describe the preceding milestone.
+
 Implemented 2026-10-25 in the existing Act Editor and main gameplay engine. These objects use the same authoritative 2D ball, profile/modifier system, scoring, ring collection and reload workflow as other authored Acts. All models are collisionless.
 
 ## Try the objective
@@ -32,7 +34,7 @@ The spring's **Arc: Balanced / Floaty** selector previews two seconds using proj
 1. Place switches and gates in **Gameplay**.
 2. Choose **Select / Move**, then **Ctrl-click** two or more switches.
 3. Click **Create Switch Bank** at the top of the Gameplay palette.
-4. Name the bank and check each gate it should open.
+4. Name the bank and choose **Open** for each linked gate (the current inspector also supports diverter actions).
 
 Bank lines connect member switches to their linked gates on the canvas. The bank picker reopens its relationship controls. **Use selected switches as members** replaces membership; **Dissolve bank** keeps all physical objects. Deleting an object prunes its links in the same undo action; deleting the last member dissolves the empty bank. Undo restores both objects and relationships. Duplicated switches start outside any bank.
 

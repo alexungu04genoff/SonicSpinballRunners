@@ -119,7 +119,7 @@ func _object_step() -> void:
  descriptor.position = item.position + plan.offset
  var body: Node2D
  if item.has("mechanic"):
-  body = Node2D.new()
+  body = item.body.duplicate() if item.type == "lane_barrier" else Node2D.new()
   var placement: Dictionary = document.gameplay_objects[index].duplicate(true)
   placement.object_id = descriptor.object_id
   placement.position = descriptor.position

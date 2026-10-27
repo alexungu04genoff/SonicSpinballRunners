@@ -19,7 +19,7 @@ func build(presenter: TablePresentation, runtime: Dictionary) -> void:
    "spinner": _spinner(item)
    "magnetic_field": _field(item)
    "elevated_rail": await _rail(item)
-   "one_way_gate", "switch_target", "spring":
+   "one_way_gate", "switch_target", "wall_switch", "spring", "lane_barrier", "diverter", "dash_panel":
     var entry := Gimmicks.build(table, self, item)
     gimmicks.append(entry)
     Gimmicks.update(entry)

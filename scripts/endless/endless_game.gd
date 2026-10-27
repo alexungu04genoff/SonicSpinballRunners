@@ -194,7 +194,9 @@ func _process(delta: float) -> void:
    if building.ready:
     resident.append(building)
     hub.runtimes.append(building.runtime.mechanics)
-    building.runtime.mechanics.scoring_tick.connect(_on_mechanic_score)
+    building.runtime.mechanics.mechanic_score.connect(_on_mechanic_score)
+    building.runtime.mechanics.mechanic_rings.connect(_on_mechanic_rings)
+    building.runtime.mechanics.feature_completed.connect(_on_feature_completed)
     building = null
     operation_started = Time.get_ticks_usec()
     _sync_resident()

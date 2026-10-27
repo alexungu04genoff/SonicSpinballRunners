@@ -142,6 +142,7 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
  steering_acceleration_applied = 0.0
  steering_impulse_applied = 0.0
  if _teleport_pending:
+  if is_instance_valid(mechanics): mechanics.reset_motion()
   state.transform = Transform2D(0.0, _teleport_position)
   state.linear_velocity = _teleport_velocity
   state.angular_velocity = 0.0

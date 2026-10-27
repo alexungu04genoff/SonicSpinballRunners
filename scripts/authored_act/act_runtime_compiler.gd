@@ -100,8 +100,8 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
   var descriptor := placement.duplicate(true)
   var body: Node2D
   match placement.type:
-   "spinner", "magnetic_field", "elevated_rail", "one_way_gate", "switch_target", "spring":
-    body = Node2D.new()
+   "spinner", "magnetic_field", "elevated_rail", "one_way_gate", "switch_target", "wall_switch", "spring", "lane_barrier", "diverter", "dash_panel":
+    body = lane_barrier_body(placement, wall_material) if placement.type == "lane_barrier" else Node2D.new()
     body.position = placement.position
     body.rotation_degrees = placement.rotation_degrees
     mechanics.add_object(placement, descriptor)
@@ -143,6 +143,22 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
  result.timings.total_ms = float(Time.get_ticks_usec() - started) / 1000.0
  return result
 
+static func lane_barrier_body(placement: Dictionary, material: PhysicsMaterial) -> StaticBody2D:
+ var body := StaticBody2D.new()
+ body.name = "LaneBarrierPosts"
+ body.collision_layer = 1
+ body.collision_mask = 2
+ body.physics_material_override = material
+ var props := Objects.properties(placement)
+ for point: Vector2 in props.points:
+  var collision := CollisionShape2D.new()
+  var shape := CircleShape2D.new()
+  shape.radius = float(props.post_radius)
+  collision.shape = shape
+  collision.position = point
+  body.add_child(collision)
+ return body
+
 static func _near_outline(point: Vector2, points: PackedVector2Array, closed: bool, clearance: float) -> bool:
  if closed and Geometry2D.is_point_in_polygon(point, points): return true
  for i in (points.size() if closed else points.size() - 1):
@@ -182,7 +198,7 @@ static func _validate_rail_clearance(result: Dictionary, ball_radius: float) -> 
       var angle := deg_to_rad(float(object.rotation_degrees)) - float(object.side) * 0.8 * angle_step / 12.0
       var tip: Vector2 = object.position + Vector2.from_angle(angle) * float(object.length)
       if Geometry2D.get_closest_point_to_segment(point, object.position, tip).distance_to(point) < footprint + float(object.radius): touching = true
-    elif object.type == "switch_target":
+    elif object.type in ["switch_target", "wall_switch"]:
      touching = point.distance_to(object.position) < footprint + Objects.switch_radius(object)
      obstacle_height = 14.0 * float(Objects.properties(object).scale)
     elif object.type in ["one_way_gate", "spring"]:
@@ -194,6 +210,18 @@ static func _validate_rail_clearance(result: Dictionary, ball_radius: float) -> 
      var b: Vector2 = object.position + side * half_segment
      touching = Geometry2D.get_closest_point_to_segment(point, a, b).distance_to(point) < footprint + depth
      obstacle_height = 30.0 if object.type == "one_way_gate" else float(props.width) * 0.8
+    elif object.type == "lane_barrier":
+     for post: Vector2 in Objects.world_posts(object):
+      if point.distance_to(post) < footprint + float(Objects.properties(object).post_radius): touching = true
+     obstacle_height = 38.0
+    elif object.type == "diverter":
+     # Check the entire machinery sweep, not just its initially authored state.
+     touching = point.distance_to(object.position) < footprint + float(Objects.properties(object).length) * 0.5 + 4.0
+     obstacle_height = 24.0
+    elif object.type == "dash_panel":
+     var local := (point - Vector2(object.position)).rotated(-deg_to_rad(float(object.rotation_degrees)))
+     touching = _near_outline(local, Objects.local_points(object, result.cell_size), true, footprint)
+     obstacle_height = 7.0
     if touching and height < obstacle_height + margin:
      return "Rail %s: route overlaps lower gameplay hardware or a flipper sweep; needs %.1f px elevation here (currently %.1f). Move the mouth or raise the crossing." % [item.object_id, obstacle_height + margin, height]
  return ""

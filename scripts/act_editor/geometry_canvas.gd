@@ -505,12 +505,12 @@ func gameplay_hit_indices_at(local_position: Vector2) -> Array[int]:
   var point := pixel_position - Vector2(placement.position)
   if points.size() < 2:
    continue
-  if placement.type != "elevated_rail" and Geometry2D.is_point_in_polygon(point, points):
+  if placement.type not in ["elevated_rail", "lane_barrier"] and Geometry2D.is_point_in_polygon(point, points):
    hits.append(index)
    continue
-  for segment in (points.size() - 1 if placement.type == "elevated_rail" else points.size()):
+  for segment in (points.size() - 1 if placement.type in ["elevated_rail", "lane_barrier"] else points.size()):
    var nearest := Geometry2D.get_closest_point_to_segment(point, points[segment], points[(segment + 1) % points.size()])
-   var hit_width := maxf(tolerance, float(Objects.properties(placement).width) * 0.5) if placement.type == "elevated_rail" else tolerance
+   var hit_width := maxf(tolerance, float(Objects.properties(placement).width) * 0.5) if placement.type == "elevated_rail" else (maxf(tolerance, float(Objects.properties(placement).post_radius)) if placement.type == "lane_barrier" else tolerance)
    if nearest.distance_to(point) <= hit_width:
     hits.append(index)
     break
@@ -919,7 +919,8 @@ func _draw_bank_links() -> void:
   center /= maxf(1.0, bank.members.size())
   for id: String in bank.members:
    if positions.has(id): _draw_dashes(positions[id], center, Color(0.5, 0.8, 1.0, 0.5))
-  for id: String in bank.gates:
+  for action: Dictionary in preload("res://scripts/act_editor/switch_banks.gd").actions(bank):
+   var id: String = action.object_id
    if positions.has(id):
     _draw_dashes(center, positions[id], Color(0.5, 0.8, 1.0, 0.5))
     ObjectPreview._arrow(self, center.lerp(positions[id], 0.8), positions[id], Color("81caff"))
@@ -1285,7 +1286,7 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
    var border := "bottom" if connector_tool == "entry" else "top"
    _set_status("%s can only be created on the %s border." % [connector_tool.capitalize(), border])
   return
- if gameplay_brush.get("type") == "elevated_rail":
+ if gameplay_brush.get("type") in ["elevated_rail", "lane_barrier"]:
   if _inside_grid(pointer):
    var at := legal_gameplay_position(screen_to_local_pixels(pointer), cycle_overlaps)
    if _rail_draft.is_empty():
@@ -1295,7 +1296,9 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
     _rail_draft.properties.points = PackedVector2Array([Vector2.ZERO])
    else:
     var point := (at - Vector2(_rail_draft.position)).rotated(-deg_to_rad(float(_rail_draft.rotation_degrees)))
-    if point.distance_to(_rail_draft.properties.points[-1]) >= 12.0 and _rail_draft.properties.points.size() < 64:
+    var limit := Objects.MAX_POSTS if _rail_draft.type == "lane_barrier" else 64
+    var minimum := float(_rail_draft.properties.post_radius) * 2.0 + 2.0 if _rail_draft.type == "lane_barrier" else 12.0
+    if point.distance_to(_rail_draft.properties.points[-1]) > minimum and _rail_draft.properties.points.size() < limit:
      _rail_draft.properties.points.append(point)
    queue_redraw()
   return
@@ -1716,6 +1719,12 @@ func _drop_data(at_position: Vector2, data: Variant) -> void:
   var object: Dictionary = data["gameplay_stamp"].duplicate(true)
   object["position"] = legal_gameplay_position(screen_to_local_pixels(at_position), _alt_held)
   set_gameplay_brush(data["gameplay_stamp"])
+  if object.type in ["elevated_rail", "lane_barrier"]:
+   _rail_draft = object
+   _rail_draft.properties.points = PackedVector2Array([Vector2.ZERO])
+   grab_focus()
+   queue_redraw()
+   return
   gameplay_placement_requested.emit(object)
   return
  var placement: Dictionary = data["terrain_stamp"].duplicate(true)
@@ -1783,15 +1792,22 @@ func _set_status(message: String) -> void:
   status_changed.emit(message)
 
 func _rail_input(event: InputEvent) -> bool:
+ if not _rail_draft.is_empty() and ((event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE) or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT)):
+  _rail_draft = {}
+  queue_redraw()
+  return true
  if not _rail_draft.is_empty() and event is InputEventKey and event.pressed and event.keycode == KEY_ENTER:
   if _rail_draft.properties.points.size() >= 2:
-   gameplay_placement_requested.emit(_rail_draft)
+   var committed := _rail_draft.duplicate(true)
    _rail_draft = {}
+   gameplay_placement_requested.emit(committed)
+   # Repeated chains must receive distinct identities, like ordinary stamps.
+   if not gameplay_brush.is_empty(): gameplay_brush.object_id = Objects.new_id()
    queue_redraw()
   return true
  if not rail_edit or selected_gameplay_index < 0 or selected_gameplay_index >= _gameplay_objects().size(): return false
  var item: Dictionary = _gameplay_objects()[selected_gameplay_index]
- if item.type != "elevated_rail":
+ if item.type not in ["elevated_rail", "lane_barrier"]:
   rail_edit = false
   return false
  var points: PackedVector2Array = Objects.properties(item).points
@@ -1810,7 +1826,7 @@ func _rail_input(event: InputEvent) -> bool:
    elif nearest >= 0:
     _rail_drag = nearest
     _rail_preview = points.duplicate()
-   elif points.size() < 64:
+   elif points.size() < (Objects.MAX_POSTS if item.type == "lane_barrier" else 64):
     var insert_at := points.size()
     if event.shift_pressed:
      var best := INF
@@ -1834,6 +1850,7 @@ func _rail_input(event: InputEvent) -> bool:
  return false
 
 func _draw_launch_range(item: Dictionary) -> void:
+ if item.get("type") not in ["left_flipper", "right_flipper", "round_bumper", "triangle_bumper"]: return
  var is_flipper: bool = item.type in ["left_flipper", "right_flipper"]
  var shots: Array[Dictionary] = []
  if is_flipper:

@@ -14,10 +14,14 @@ static func definitions() -> Array[Dictionary]:
   {"id": "right_flipper", "label": "Right Flipper", "color": Color("ffd76b")},
   {"id": "one_way_gate", "label": "One-Way Gate", "color": Color("66e0b2")},
   {"id": "switch_target", "label": "Switch Target", "color": Color("599dff")},
+  {"id": "wall_switch", "label": "Wall Switch", "color": Color("599dff")},
   {"id": "spring", "label": "Spring", "color": Color("ff5968")},
   {"id": "spinner", "label": "Spinner", "color": Color("ffc76c")},
   {"id": "magnetic_field", "label": "Magnetic Field", "color": Color("ba8cff")},
   {"id": "elevated_rail", "label": "Elevated Ramp / Rail", "color": Color("6ee8dd")},
+  {"id": "lane_barrier", "label": "Lane Barrier", "color": Color("66efd1")},
+  {"id": "diverter", "label": "Diverter", "color": Color("f3b669")},
+  {"id": "dash_panel", "label": "Dash Panel", "color": Color("56eaff")},
  ]
 
 static func get_definition(id: String) -> Dictionary:
@@ -51,6 +55,19 @@ static func local_points(placement: Dictionary, cell_size: float) -> PackedVecto
   "switch_target":
    for step in 48:
     points.append(Vector2.from_angle(TAU * step / 48.0) * switch_radius(placement))
+  "wall_switch":
+   var radius := switch_radius(placement)
+   points = PackedVector2Array([Vector2(-radius, -4), Vector2(radius, -4), Vector2(radius, 0), Vector2(-radius, 0)])
+  "lane_barrier":
+   points = properties(placement).points.duplicate()
+  "diverter":
+   var props := properties(placement)
+   var angle := deg_to_rad(float(props.state_a_angle if props.initial_state == "a" else props.state_b_angle))
+   for point: Vector2 in [Vector2(-props.length / 2, -4), Vector2(props.length / 2, -4), Vector2(props.length / 2, 4), Vector2(-props.length / 2, 4)]:
+    points.append(point.rotated(angle))
+  "dash_panel":
+   var width := float(properties(placement).width)
+   points = PackedVector2Array([Vector2(-width / 2, -18), Vector2(width / 2, -18), Vector2(width / 2, 18), Vector2(-width / 2, 18)])
   "magnetic_field":
    for step in 64:
     points.append(Vector2.from_angle(TAU * step / 64.0) * float(properties(placement).radius))
@@ -88,7 +105,10 @@ static func defaults(type: String) -> Dictionary:
  match type:
   "round_bumper", "triangle_bumper": return {"scale": 1.0}
   "one_way_gate": return {"width": 80.0, "initial_state": "closed", "visual_mode": "auto"}
-  "switch_target": return {"scale": 1.0, "color": "blue", "label": "", "score_reward": 0.0}
+  "switch_target", "wall_switch": return {"scale": 1.0, "color": "blue", "label": "", "score_reward": 0.0}
+  "lane_barrier": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(80, 0)]), "post_radius": 9.0, "reward_type": "score", "lane_reward": 100.0, "completion_mode": "light_all", "completion_bonus": 500.0, "reset_delay": 1.5}
+  "diverter": return {"length": 90.0, "state_a_angle": -35.0, "state_b_angle": 35.0, "initial_state": "a"}
+  "dash_panel": return {"width": 50.0, "boost_strength": 350.0, "directional_influence": 70.0, "speed_cap": 2400.0}
   "spring": return {"width": 40.0, "launch_strength": 300.0, "color": "red"}
   "spinner": return {"width": 40.0, "tick_score": 5.0, "decay": 2.0, "max_spin": 40.0}
   "magnetic_field": return {"radius": 100.0, "strength": 260.0, "mode": "attract"}
@@ -104,7 +124,10 @@ static func property_limits(type: String) -> Dictionary:
  match type:
   "round_bumper", "triangle_bumper": return {"scale": [0.35, 2.5]}
   "one_way_gate": return {"width": [20.0, 500.0]}
-  "switch_target": return {"scale": [0.35, 2.5], "score_reward": [0.0, 1000.0]}
+  "switch_target", "wall_switch": return {"scale": [0.35, 2.5], "score_reward": [0.0, 1000.0]}
+  "lane_barrier": return {"post_radius": [5.0, 25.0], "lane_reward": [0.0, 1000.0], "completion_bonus": [0.0, 100000.0], "reset_delay": [0.2, 10.0]}
+  "diverter": return {"length": [24.0, 400.0], "state_a_angle": [-180.0, 180.0], "state_b_angle": [-180.0, 180.0]}
+  "dash_panel": return {"width": [40.0, 200.0], "boost_strength": [0.0, 2400.0], "directional_influence": [0.0, 100.0], "speed_cap": [100.0, 3000.0]}
   "spring": return {"width": [20.0, 100.0], "launch_strength": [100.0, 2400.0]}
   "spinner": return {"width": [10.0, 300.0], "tick_score": [0.0, 25.0], "decay": [0.5, 8.0], "max_spin": [1.0, 60.0]}
   "magnetic_field": return {"radius": [15.0, 500.0], "strength": [0.0, 600.0]}
@@ -129,8 +152,12 @@ static func property_errors(placement: Dictionary) -> PackedStringArray:
     errors.append(str(key) + " is outside its supported finite range.")
   elif key == "mode" and values[key] not in ["attract", "repel"]:
    errors.append("mode must be attract or repel.")
-  elif key == "initial_state" and values[key] not in ["closed", "open"]:
-   errors.append("initial_state must be closed or open.")
+  elif key == "initial_state" and values[key] not in (["a", "b"] if placement.type == "diverter" else ["closed", "open"]):
+   errors.append("Unsupported initial state.")
+  elif key == "reward_type" and values[key] not in ["score", "rings"]:
+   errors.append("Reward type must be score or rings.")
+  elif key == "completion_mode" and values[key] not in ["off", "light_all"]:
+   errors.append("Completion mode must be off or light_all.")
   elif key == "visual_mode" and values[key] != "auto":
    errors.append("visual_mode must be auto.")
   elif key == "color" and values[key] not in (["red", "yellow", "blue"] if placement.type == "spring" else ["blue", "red", "yellow", "green"]):
@@ -138,7 +165,9 @@ static func property_errors(placement: Dictionary) -> PackedStringArray:
   elif key == "label" and (typeof(values[key]) != TYPE_STRING or values[key].length() > 80):
    errors.append("Switch label must be a string of at most 80 characters.")
   elif key == "points":
-   var error := RailPath.validation_error(values[key])
+   var radius: Variant = properties(placement).get("post_radius", 9.0)
+   var safe_radius := float(radius) if typeof(radius) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(radius)) else 9.0
+   var error := lane_points_error(values[key], safe_radius) if placement.type == "lane_barrier" else RailPath.validation_error(values[key])
    if not error.is_empty(): errors.append(error)
  return errors
 
@@ -164,3 +193,31 @@ static func spring_trajectory(item: Dictionary, gravity_scale: float, ball_radiu
 
 static func switch_radius(item: Dictionary) -> float:
  return SWITCH_RADIUS * float(properties(item).scale)
+
+const MAX_POSTS := 12
+
+static func lane_points_error(points: Variant, radius: float) -> String:
+ if not points is PackedVector2Array or points.size() < 2 or points.size() > MAX_POSTS:
+  return "Lane Barrier needs 2–12 ordered post positions."
+ for i in points.size():
+  if not points[i].is_finite() or points[i].length() > 20000.0: return "Post positions must be finite and within 20000 pixels."
+  for j in i:
+   if points[i].distance_to(points[j]) <= radius * 2.0 + 2.0: return "Barrier posts must not overlap."
+ return ""
+
+static func world_posts(item: Dictionary) -> PackedVector2Array:
+ var result: PackedVector2Array = properties(item).points.duplicate()
+ for i in result.size(): result[i] = Vector2(item.position) + result[i].rotated(deg_to_rad(float(item.rotation_degrees)))
+ return result
+
+static func diverter_forward(item: Dictionary, state: String) -> Vector2:
+ var props := properties(item)
+ return forward(item).rotated(deg_to_rad(float(props.state_a_angle if state == "a" else props.state_b_angle)))
+
+static func dash_velocity(incoming: Vector2, item: Dictionary) -> Vector2:
+ var props := properties(item)
+ var facing := forward(item)
+ var direction := incoming.normalized() if incoming.length_squared() > 0.0001 else facing
+ # Rotate on the unit circle: opposite directions never cancel into a zero vector.
+ direction = facing if float(props.directional_influence) >= 100.0 else direction.rotated(direction.angle_to(facing) * float(props.directional_influence) / 100.0)
+ return direction * minf(incoming.length() + float(props.boost_strength), float(props.speed_cap))

@@ -1,7 +1,7 @@
 class_name ActGeometry
 extends Resource
 ## A single Act's terrain, connectors, gameplay objects and lifecycle authoring data.
-const FORMAT_VERSION := 13
+const FORMAT_VERSION := 14
 ## The system gutter is outside terrain bounds and is never a thirteenth terrain row.
 const RED_GUTTER_CELLS := 1
 const SHAPES = preload("res://scripts/act_editor/terrain_shapes.gd")
@@ -386,16 +386,21 @@ static func load_document(path: String) -> Dictionary:
   return {"document": null, "error": "The selected file is not an Act Geometry resource."}
  if not loaded._format_version_was_set or not loaded._library_version_was_set:
   return {"document": null, "error": "This Act file is missing its required format or terrain library version."}
- if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
-  if typeof(loaded.switch_banks) != TYPE_ARRAY or not loaded.switch_banks.is_empty():
+ if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
+  if typeof(loaded.switch_banks) != TYPE_ARRAY or (loaded.format_version < 13 and not loaded.switch_banks.is_empty()):
    return {"document": null, "error": "Switch banks require Act format 13."}
+  for bank: Variant in loaded.switch_banks:
+   if bank is Dictionary and (bank.has("actions") or bank.has("completion_bonus") or bank.has("reset_delay")):
+    return {"document": null, "error": "Bank actions and feature bonuses require Act format 14."}
   if typeof(loaded.gameplay_objects) == TYPE_ARRAY:
    for item: Variant in loaded.gameplay_objects:
-    if item is Dictionary and item.get("type") in ["one_way_gate", "switch_target", "spring"]:
+    if item is Dictionary and item.get("type") in ["lane_barrier", "wall_switch", "diverter", "dash_panel"]:
+     return {"document": null, "error": "Lane barriers, wall switches, diverters and dash panels require Act format 14."}
+    if loaded.format_version < 13 and item is Dictionary and item.get("type") in ["one_way_gate", "switch_target", "spring"]:
      return {"document": null, "error": "Gates, switches and springs require Act format 13."}
   if typeof(loaded.ring_trails) == TYPE_ARRAY:
    for trail: Variant in loaded.ring_trails:
-    if trail is Dictionary and trail.has("kind"): return {"document": null, "error": "Ring ellipses require Act format 13."}
+    if loaded.format_version < 13 and trail is Dictionary and trail.has("kind"): return {"document": null, "error": "Ring ellipses require Act format 13."}
   if loaded.format_version < 12 and typeof(loaded.decor_slots) == TYPE_ARRAY:
    for slot: Variant in loaded.decor_slots:
     if slot is Dictionary and slot.has("placement_source"):
@@ -456,6 +461,14 @@ static func load_document(path: String) -> Dictionary:
      slot[key] = decoded
  var property_error := _decode_object_properties(loaded)
  if not property_error.is_empty(): return {"document": null, "error": property_error}
+ if loaded.switch_banks is Array:
+  for bank: Variant in loaded.switch_banks:
+   if not bank is Dictionary: continue
+   for key: String in ["completion_bonus", "reset_delay"]:
+    if typeof(bank.get(key)) == TYPE_PACKED_BYTE_ARRAY:
+     var decoded: Variant = _decode_numeric_payload(bank[key])
+     if decoded == null: return {"document": null, "error": "Invalid stored bank " + key}
+     bank[key] = decoded
  var errors: PackedStringArray = loaded.validation_errors()
  if not errors.is_empty():
   return {"document": null, "error": "\n".join(errors)}
@@ -541,6 +554,9 @@ func _storage_document() -> Resource:
   for key: Variant in placement.get("properties", {}):
    if typeof(placement.properties[key]) in [TYPE_FLOAT, TYPE_INT, TYPE_PACKED_VECTOR2_ARRAY]:
     placement.properties[key] = var_to_bytes(placement.properties[key])
+ for bank: Dictionary in stored.switch_banks:
+  for key: String in ["completion_bonus", "reset_delay"]:
+   if bank.has(key): bank[key] = var_to_bytes(bank[key])
  if stored.activation_y != null:
   # Use the same single-authority scalar representation as authored angles.
   stored.activation_y = var_to_bytes(stored.activation_y)
@@ -628,7 +644,8 @@ static func _decode_object_properties(document: Resource) -> String:
     var stride := var_to_bytes(PackedVector2Array([Vector2.ZERO])).size() - layout.size()
     if payload.size() < 8 or payload.decode_u32(0) != layout.decode_u32(0): return "Invalid stored rail points."
     var count := payload.decode_u32(4)
-    if count < 2 or count > 64 or payload.size() != layout.size() + count * stride: return "Invalid stored rail point count."
+    var maximum := OBJECTS.MAX_POSTS if item.get("type") == "lane_barrier" else 64
+    if count < 2 or count > maximum or payload.size() != layout.size() + count * stride: return "Invalid stored path point count."
     item.properties[key] = bytes_to_var(payload)
    else:
     var decoded: Variant = _decode_numeric_payload(payload)

@@ -2002,9 +2002,9 @@ func _refresh_mechanics_properties() -> void:
 		var visual := Label.new()
 		visual.text = "Theme: Auto · Arrow: allowed direction"
 		mechanics_properties.add_child(visual)
-	if item.type in ["switch_target", "spring"]:
+	if item.type in ["switch_target", "wall_switch", "spring"]:
 		_mechanic_choice("Color", "color", ["red", "yellow", "blue"] if item.type == "spring" else ["blue", "red", "yellow", "green"], properties.color)
-	if item.type == "switch_target":
+	if item.type in ["switch_target", "wall_switch"]:
 		var label := LineEdit.new()
 		label.placeholder_text = "Optional switch label"
 		label.text = properties.label
@@ -2032,14 +2032,24 @@ func _refresh_mechanics_properties() -> void:
 		mode.select(1 if properties.mode == "repel" else 0)
 		mode.item_selected.connect(func(index: int): set_gameplay_property("mode", "repel" if index == 1 else "attract"))
 		mechanics_properties.add_child(mode)
-	if item.type == "elevated_rail":
+	if item.type == "lane_barrier":
+		_mechanic_choice("Reward", "reward_type", ["score", "rings"], properties.reward_type)
+		_mechanic_choice("Completion", "completion_mode", ["off", "light_all"], properties.completion_mode)
+	if item.type == "diverter":
+		_mechanic_choice("Initial", "initial_state", ["a", "b"], properties.initial_state)
+		detail_label.text = "Physical routing arm · Bank links: Set A / Set B / Toggle · Changes wait for a clear ball sweep."
+	if item.type == "dash_panel":
+		detail_label.text = "Adds speed on entry · Influence 0% preserves direction; 100% follows arrow · Full departure rearms · Cap applies to total speed."
+	if item.type == "wall_switch":
+		detail_label.text = "Anchor on wall face · Arrow faces exposed side · Front impacts only · Shares floor-switch banks."
+	if item.type in ["elevated_rail", "lane_barrier"]:
 		var edit := CheckButton.new()
-		edit.text = "Edit path points"
+		edit.text = "Edit posts" if item.type == "lane_barrier" else "Edit path points"
 		edit.disabled = not canvas.gameplay_brush.is_empty()
 		edit.set_pressed_no_signal(canvas.rail_edit)
 		edit.toggled.connect(func(enabled: bool): canvas.rail_edit = enabled; canvas.queue_redraw(); canvas.grab_focus())
 		mechanics_properties.add_child(edit)
-		detail_label.text = "Click entry and path points; Enter finishes. Edit path: drag points, click appends, Shift-click inserts, right-click removes. Alt frees placement."
+		detail_label.text = "Click posts (2–12); Enter commits; Esc / right-click cancels. Edit posts: drag, click appends, Shift-click inserts, right-click removes. Alt frees coordinates." if item.type == "lane_barrier" else "Click entry and path points; Enter finishes. Edit path: drag points, click appends, Shift-click inserts, right-click removes. Alt frees placement."
 
 func _mechanic_number(label_text: String, value: float, action: Callable) -> void:
 	var label := Label.new()
@@ -2069,7 +2079,7 @@ func _selected_switch_ids() -> Array:
 	var result: Array = []
 	for index: int in canvas.selected_gameplay_indices:
 		var item: Dictionary = document.gameplay_objects[index]
-		if item.type != "switch_target": return []
+		if item.type not in ["switch_target", "wall_switch"]: return []
 		result.append(Objects.identity(item, index))
 	return result
 
@@ -2078,9 +2088,23 @@ func create_switch_bank() -> void:
 	if members.size() < 2: return
 	_record_edit()
 	selected_bank_id = "bank_" + Objects.new_id()
-	document.switch_banks.append({"bank_id": selected_bank_id, "label": "Bank %d" % (document.switch_banks.size() + 1), "members": members, "gates": []})
+	document.switch_banks.append({"bank_id": selected_bank_id, "label": "Bank %d" % (document.switch_banks.size() + 1), "members": members, "gates": [], "actions": [], "completion_bonus": 0.0, "reset_delay": 0.0})
 	_refresh()
-	_set_status("Bank created. Check one or more gates below to open them when every member is pressed.")
+	_set_status("Bank created. Link gates or diverters below. Each action runs when every member is pressed.")
+
+func set_bank_action(bank_id: String, object_id: String, action: String) -> void:
+	for bank: Dictionary in document.switch_banks:
+		if bank.bank_id != bank_id: continue
+		var next: Dictionary = bank.duplicate(true)
+		next.gates.erase(object_id)
+		next["actions"] = next.get("actions", []).filter(func(link): return link.object_id != object_id)
+		if not action.is_empty(): next.actions.append({"object_id": object_id, "action": action})
+		if next == bank: return
+		if not Banks.validation_errors([next], document.gameplay_objects).is_empty(): return
+		_record_edit()
+		bank.merge(next, true)
+		_refresh()
+		return
 
 func set_bank_gates(bank_id: String, gates: Array) -> void:
 	for bank: Dictionary in document.switch_banks:
@@ -2131,23 +2155,44 @@ func _refresh_banks() -> void:
 	label.focus_exited.connect(commit_label)
 	bank_controls.add_child(label)
 	var help := Label.new()
-	help.text = "%d switches · Complete bank opens:" % active.members.size()
+	help.text = "%d switches · Completion actions:" % active.members.size()
 	help.add_theme_font_size_override("font_size", 12)
 	bank_controls.add_child(help)
 	for i in document.gameplay_objects.size():
 		var item: Dictionary = document.gameplay_objects[i]
-		if item.type != "one_way_gate": continue
+		if item.type not in ["one_way_gate", "diverter"]: continue
 		var id := Objects.identity(item, i)
-		var gate := CheckBox.new()
-		gate.text = "Gate %d · %s" % [i + 1, item.position]
-		gate.tooltip_text = id
-		gate.set_pressed_no_signal(active.gates.has(id))
-		gate.toggled.connect(func(enabled: bool):
-			var gates: Array = active.gates.duplicate()
-			if enabled: gates.append(id)
-			else: gates.erase(id)
-			set_bank_gates(active.bank_id, gates))
-		bank_controls.add_child(gate)
+		var target := Label.new()
+		target.text = "%s %d · %s" % ["Gate" if item.type == "one_way_gate" else "Diverter", i + 1, item.position]
+		target.tooltip_text = id
+		bank_controls.add_child(target)
+		var action := OptionButton.new()
+		var choices: Array = ["", "open"] if item.type == "one_way_gate" else ["", "set_a", "set_b", "toggle"]
+		for choice: String in choices: action.add_item("No link" if choice.is_empty() else choice.replace("_", " ").capitalize())
+		for link: Dictionary in Banks.actions(active):
+			if link.object_id == id: action.select(choices.find(link.action))
+		action.item_selected.connect(func(index: int): set_bank_action(active.bank_id, id, choices[index]))
+		bank_controls.add_child(action)
+	for key: String in ["completion_bonus", "reset_delay"]:
+		var row := HBoxContainer.new()
+		bank_controls.add_child(row)
+		var caption := Label.new()
+		caption.text = "Bonus" if key == "completion_bonus" else "Reset seconds (0: off)"
+		row.add_child(caption)
+		var value := LineEdit.new()
+		value.text = str(active.get(key, 0.0))
+		value.custom_minimum_size.x = 55
+		row.add_child(value)
+		var commit := func():
+			if not value.text.is_valid_float(): return
+			var next: Dictionary = active.duplicate(true)
+			next[key] = value.text.to_float()
+			if not Banks.validation_errors([next], document.gameplay_objects).is_empty() or next == active: return
+			_record_edit()
+			active[key] = next[key]
+			_refresh()
+		value.text_submitted.connect(func(_text): commit.call(); canvas.grab_focus())
+		value.focus_exited.connect(commit)
 	var replace_members := Button.new()
 	replace_members.text = "Use selected switches as members"
 	replace_members.disabled = _selected_switch_ids().is_empty()

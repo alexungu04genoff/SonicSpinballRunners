@@ -1,9 +1,13 @@
 extends Node
 ## Authored mechanics run only through the authoritative ball's 120 Hz integration.
-signal scoring_tick(object_id: String, points: int)
+signal mechanic_score(kind: StringName, object_id: String, points: int)
+signal mechanic_rings(kind: StringName, object_id: String, amount: int)
+signal feature_completed(kind: StringName, object_id: String, bonus: int)
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const RailPath = preload("res://scripts/authored_act/rail_path.gd")
 const Contact = preload("res://scripts/authored_act/gimmick_geometry.gd")
+const Lanes = preload("res://scripts/authored_act/passing_lanes.gd")
+const Banks = preload("res://scripts/act_editor/switch_banks.gd")
 const MAX_FIELD_ACCELERATION := 600.0
 const MAX_TICKS_PER_STEP := 2
 var ball: PlaygroundBall
@@ -19,6 +23,7 @@ var age := 0.0
 var reentry_time := 0.0
 var _saved_layer := 2
 var _saved_mask := 1
+var _travel_origin: Variant = null
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -41,6 +46,15 @@ func add_object(placement: Dictionary, descriptor: Dictionary) -> void:
  item["passing"] = false
  item["pulse"] = 0.0
  item["launch_count"] = 0
+ if item.type == "lane_barrier":
+  item["posts"] = Objects.world_posts(item)
+  item["lanes"] = []
+  for i in item.posts.size() - 1: item.lanes.append(Lanes.make_lane())
+  item["complete"] = false
+  item["completions"] = 0
+ if item.type == "diverter":
+  item["state"] = item.properties.initial_state
+  item["pending_state"] = ""
  if item.type == "elevated_rail":
   var control: PackedVector2Array = item.properties.points.duplicate()
   for i in control.size(): control[i] = item.position + control[i].rotated(deg_to_rad(float(item.rotation_degrees)))
@@ -51,6 +65,7 @@ func add_object(placement: Dictionary, descriptor: Dictionary) -> void:
 
 func reset() -> void:
  leave_ramp()
+ reset_motion()
  reentry_time = 0.0
  for item: Dictionary in items:
   item.spin = 0.0
@@ -63,7 +78,24 @@ func reset() -> void:
   item.passing = false
   item.pulse = 0.0
   item.launch_count = 0
- for bank: Dictionary in banks: bank["complete"] = false
+  if item.type == "lane_barrier":
+   for i in item.lanes.size(): item.lanes[i] = Lanes.make_lane()
+   item.complete = false
+   item.completions = 0
+  elif item.type == "diverter":
+   item.state = item.properties.initial_state
+   item.pending_state = ""
+ for bank: Dictionary in banks:
+  bank["complete"] = false
+  bank["reset_remaining"] = 0.0
+
+func reset_motion() -> void:
+ _travel_origin = null
+ for item: Dictionary in items:
+  if item.type == "lane_barrier":
+   for lane: Dictionary in item.lanes:
+    lane.side = 0
+    lane.latched = false
 
 func leave_ramp() -> void:
  if is_instance_valid(ball) and not ramp.is_empty():
@@ -76,13 +108,26 @@ func leave_ramp() -> void:
  progress = 0.0
  speed = 0.0
  age = 0.0
+ reset_motion()
 
 func tick(dt: float) -> void:
  reentry_time = maxf(0.0, reentry_time - dt)
  var budget := MAX_TICKS_PER_STEP
+ for bank: Dictionary in banks:
+  if not bank.get("complete", false) or float(bank.get("reset_delay", 0.0)) <= 0.0: continue
+  bank.reset_remaining = maxf(0.0, float(bank.get("reset_remaining", 0.0)) - dt)
+  if bank.reset_remaining <= 0.0:
+   bank.complete = false
+   for id: String in bank.members:
+    if by_id.has(id): by_id[id].active = false
  for item: Dictionary in items:
   item.cooldown = maxf(0.0, item.cooldown - dt)
   item.pulse = maxf(0.0, item.pulse - dt)
+  if item.type == "lane_barrier":
+   for lane: Dictionary in item.lanes: lane.pulse = maxf(0.0, lane.pulse - dt)
+   if item.complete and item.cooldown <= 0.0:
+    item.complete = false
+    for lane: Dictionary in item.lanes: lane.lit = false
   if item.type != "spinner": continue
   var rotation_step: float = item.spin * dt
   item.angle = fposmod(item.angle + rotation_step, TAU)
@@ -93,7 +138,7 @@ func tick(dt: float) -> void:
   # Discard excess complete rotations instead of building an event backlog.
   item.tick_rotation = fmod(item.tick_rotation, PI)
   for i in ticks:
-   scoring_tick.emit(item.get("object_id", ""), int(item.properties.tick_score))
+   mechanic_score.emit(&"spinner", item.get("object_id", ""), int(item.properties.tick_score))
   budget -= ticks
 
 static func magnetic_acceleration(item: Dictionary, at: Vector2) -> Vector2:
@@ -121,10 +166,18 @@ static func crossing_fraction(start: Vector2, end: Vector2, center: Vector2, for
  if absf((start.lerp(end, fraction) - center).dot(sideways)) > half_width: return -1.0
  return fraction
 
-func observe_motion(state: PhysicsDirectBodyState2D) -> bool:
+func observe_actual_motion(state: PhysicsDirectBodyState2D) -> void:
+ # Reward only actual travel since the last integration, never a speculative shot
+ # that the ball's conservative terrain sweep might rebound before completing.
+ if _travel_origin != null: _observe_travel(state, _travel_origin, state.transform.origin)
+ _travel_origin = state.transform.origin
+
+func observe_motion(state: PhysicsDirectBodyState2D, sample_travel := true) -> bool:
  if items.is_empty(): return false
+ if sample_travel: observe_actual_motion(state)
  var start := state.transform.origin
  var motion := state.linear_velocity * state.step
+ _advance_diverters(start, motion)
  var query := PhysicsTestMotionParameters2D.new()
  query.from = state.transform
  query.motion = motion
@@ -170,9 +223,10 @@ func observe_motion(state: PhysicsDirectBodyState2D) -> bool:
 func _activate_switch(item: Dictionary) -> void:
  if item.active: return
  item.active = true
+ item.latched = true
  item.pulse = 0.25
  if int(item.properties.score_reward) > 0:
-  scoring_tick.emit(item.object_id, int(item.properties.score_reward))
+  mechanic_score.emit(&"switch", item.object_id, int(item.properties.score_reward))
  for bank: Dictionary in banks:
   if bank.get("complete", false): continue
   var complete: bool = not bank.members.is_empty()
@@ -180,16 +234,95 @@ func _activate_switch(item: Dictionary) -> void:
    if not by_id.has(id) or not by_id[id].active: complete = false
   if not complete: continue
   bank["complete"] = true
-  for id: String in bank.gates:
-   if by_id.has(id): by_id[id].open = true
+  bank["reset_remaining"] = float(bank.get("reset_delay", 0.0))
+  complete_feature(&"switch_bank", bank.bank_id, int(bank.get("completion_bonus", 0)))
+  for action: Dictionary in Banks.actions(bank):
+   if not by_id.has(action.object_id): continue
+   var target: Dictionary = by_id[action.object_id]
+   if action.action == "open": target.open = true
+   else: request_diverter(target, action.action)
+
+func complete_feature(kind: StringName, object_id: String, bonus: int) -> void:
+ if bonus > 0: mechanic_score.emit(kind, object_id, bonus)
+ feature_completed.emit(kind, object_id, bonus)
+
+func request_diverter(item: Dictionary, action: String) -> void:
+ var requested: String = item.pending_state if not str(item.pending_state).is_empty() else item.state
+ match action:
+  "set_a": requested = "a"
+  "set_b": requested = "b"
+  "toggle": requested = "b" if requested == "a" else "a"
+  _: return
+ item.pending_state = "" if requested == item.state else requested
+
+func _advance_diverters(at: Vector2, motion: Vector2) -> void:
+ for item: Dictionary in items:
+  if item.type != "diverter" or item.pending_state == "": continue
+  # The full circumscribed sweep must be empty, including this tick's travel.
+  # A delayed instantaneous switch cannot intersect, carry or launch the ball.
+  var nearest := Geometry2D.get_closest_point_to_segment(item.position, at, at + motion)
+  if nearest.distance_to(item.position) <= float(item.properties.length) * 0.5 + ball.radius + 5.0: continue
+  item.state = item.pending_state
+  item.pending_state = ""
+  item.pulse = 0.25
+
+func _observe_travel(state: PhysicsDirectBodyState2D, start: Vector2, end: Vector2) -> void:
+ for item: Dictionary in items:
+  if item.type == "lane_barrier":
+   for i in item.lanes.size():
+    if not Lanes.observe(item.lanes[i], start, end, item.posts[i], item.posts[i + 1], item.properties.post_radius, ball.radius): continue
+    if item.complete: continue
+    var reward := int(item.properties.lane_reward)
+    if reward > 0:
+     if item.properties.reward_type == "rings": mechanic_rings.emit(&"lane", item.object_id, reward)
+     else: mechanic_score.emit(&"lane", item.object_id, reward)
+    if item.properties.completion_mode == "light_all" and item.lanes.all(func(lane): return lane.lit):
+     item.complete = true
+     item.completions += 1
+     item.cooldown = float(item.properties.reset_delay)
+     item.pulse = item.cooldown
+     complete_feature(&"lane_set", item.object_id, int(item.properties.completion_bonus))
+  elif item.type == "dash_panel":
+   var forward := Objects.forward(item)
+   var half_segment := maxf(0.0, float(item.properties.width) * 0.5 - 18.0)
+   var radius := 18.0 + ball.radius
+   var inside := not Contact.capsule_hit(start, Vector2.ZERO, item.position, forward, half_segment, radius + 0.5).is_empty()
+   if not inside: item.latched = false
+   if item.latched or item.cooldown > 0.0: continue
+   if inside:
+    item.latched = true # Placement inside the pad is not an entry crossing.
+    continue
+   if (end - start).length_squared() < 0.0001: continue
+   if Contact.capsule_hit(start, end - start, item.position, forward, half_segment, radius).is_empty(): continue
+   item.latched = true
+   item.cooldown = 0.18
+   item.pulse = 0.3
+   item.launch_count += 1
+   state.linear_velocity = Objects.dash_velocity(state.linear_velocity, item)
+   ball._reset_steering("Dash Panel")
 
 func _observe_gimmicks(state: PhysicsDirectBodyState2D, start: Vector2, motion: Vector2) -> bool:
  var events: Array[Dictionary] = []
  for item: Dictionary in items:
   var contact := {}
+  if item.type in ["switch_target", "wall_switch"]:
+   var outside := Contact.circle_hit(start, Vector2.ZERO, item.position, Objects.switch_radius(item) + ball.radius + 0.5).is_empty()
+   if outside: item.latched = false
+   elif item.active: item.latched = true
+   if item.latched and not item.active: continue
   if item.type == "switch_target":
    if item.active: continue
    contact = Contact.circle_hit(start, motion, item.position, Objects.switch_radius(item) + ball.radius)
+  elif item.type == "wall_switch":
+   if item.active: continue
+   var forward := Objects.forward(item)
+   var distance := (start - Vector2(item.position)).dot(forward)
+   if distance < ball.radius - 0.5 or motion.dot(forward) >= -0.001: continue
+   contact = Contact.capsule_hit(start, motion, item.position, forward, maxf(0.0, Objects.switch_radius(item) - 2.0), ball.radius + 2.0)
+   if not contact.is_empty() and Vector2(contact.normal).dot(forward) < 0.5: continue
+  elif item.type == "diverter":
+   contact = Contact.capsule_hit(start, motion, item.position, Objects.diverter_forward(item, item.state), float(item.properties.length) * 0.5 - 4.0, ball.radius + 4.0)
+   if not contact.is_empty() and motion.dot(contact.normal) >= -0.001: continue
   elif item.type in ["one_way_gate", "spring"]:
    var forward := Objects.forward(item)
    var depth := 4.0 if item.type == "one_way_gate" else float(item.properties.width) * 0.5
@@ -218,15 +351,15 @@ func _observe_gimmicks(state: PhysicsDirectBodyState2D, start: Vector2, motion: 
   return a.fraction < b.fraction)
  for event: Dictionary in events:
   var item: Dictionary = event.item
-  if item.type == "switch_target":
+  if item.type in ["switch_target", "wall_switch"]:
    _activate_switch(item)
-  elif item.type == "one_way_gate":
+  elif item.type in ["one_way_gate", "diverter"]:
    if item.open: continue # An earlier switch contact may complete its bank this step.
    var incoming := state.linear_velocity.dot(event.normal)
    if incoming >= 0.0: continue
    state.transform = Transform2D(0.0, start + motion * float(event.fraction) + Vector2(event.normal) * 0.05)
    state.linear_velocity -= Vector2(event.normal) * incoming * (1.0 + float(ball.tuning.effective.wall_restitution))
-   ball._reset_steering("One-way gate")
+   ball._reset_steering("Diverter" if item.type == "diverter" else "One-way gate")
    item.pulse = 0.15
    return true
   elif item.type == "spring":

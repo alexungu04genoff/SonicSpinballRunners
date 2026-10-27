@@ -1,0 +1,172 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=3]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_evrv2"]
+
+[resource]
+script = ExtResource("1_evrv2")
+format_version = 14
+library_version = 2
+title = "Routing Mechanics — Switch, Divert, Light, Dash"
+grid_size = Vector2i(12, 20)
+placements = [{
+"anchor": Vector2i(0, 0),
+"base_size": Vector2i(1, 20),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray(35, 0, 0, 0, 4, 0, 0, 0, 205, 204, 204, 62, 0, 0, 0, 0, 154, 153, 25, 63, 0, 0, 0, 0, 154, 153, 25, 63, 0, 0, 160, 65, 205, 204, 204, 62, 0, 0, 160, 65),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0)
+}, {
+"anchor": Vector2i(11, 0),
+"base_size": Vector2i(1, 20),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray(35, 0, 0, 0, 4, 0, 0, 0, 205, 204, 204, 62, 0, 0, 0, 0, 154, 153, 25, 63, 0, 0, 0, 0, 154, 153, 25, 63, 0, 0, 160, 65, 205, 204, 204, 62, 0, 0, 160, 65),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0)
+}, {
+"anchor": Vector2i(0, 17),
+"base_size": Vector2i(5, 3),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray(35, 0, 0, 0, 4, 0, 0, 0, 205, 204, 204, 62, 0, 0, 0, 0, 0, 0, 160, 64, 154, 153, 153, 63, 0, 0, 160, 64, 154, 153, 217, 63, 205, 204, 204, 62, 0, 0, 64, 64),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0)
+}, {
+"anchor": Vector2i(7, 17),
+"base_size": Vector2i(5, 3),
+"composite_version": 1,
+"flip_h": true,
+"flip_v": false,
+"outline": PackedByteArray(35, 0, 0, 0, 4, 0, 0, 0, 205, 204, 204, 62, 0, 0, 0, 0, 0, 0, 160, 64, 154, 153, 153, 63, 0, 0, 160, 64, 154, 153, 217, 63, 205, 204, 204, 62, 0, 0, 64, 64),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0)
+}]
+gameplay_objects = [{
+"object_id": "floor_blue",
+"position": Vector2(220, 790),
+"properties": {
+"color": "blue",
+"label": "1",
+"scale": PackedByteArray(3, 0, 0, 0, 0, 0, 128, 63),
+"score_reward": PackedByteArray(3, 0, 0, 0, 0, 0, 200, 66)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "switch_target"
+}, {
+"object_id": "floor_red",
+"position": Vector2(380, 790),
+"properties": {
+"color": "red",
+"label": "2",
+"scale": PackedByteArray(3, 0, 0, 0, 0, 0, 128, 63),
+"score_reward": PackedByteArray(3, 0, 0, 0, 0, 0, 200, 66)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "switch_target"
+}, {
+"object_id": "wall_green",
+"position": Vector2(30, 740),
+"properties": {
+"color": "green",
+"label": "3",
+"scale": PackedByteArray(3, 0, 0, 0, 0, 0, 128, 63),
+"score_reward": PackedByteArray(3, 0, 0, 0, 0, 0, 200, 66)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 180, 66),
+"type": "wall_switch"
+}, {
+"object_id": "route",
+"position": Vector2(300, 640),
+"properties": {
+"initial_state": "a",
+"length": PackedByteArray(3, 0, 0, 0, 0, 0, 220, 66),
+"state_a_angle": PackedByteArray(3, 0, 0, 0, 0, 0, 32, 193),
+"state_b_angle": PackedByteArray(3, 0, 0, 0, 0, 0, 112, 66)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "diverter"
+}, {
+"object_id": "lanes",
+"position": Vector2(80, 430),
+"properties": {
+"completion_bonus": PackedByteArray(3, 0, 0, 0, 0, 128, 59, 68),
+"completion_mode": "light_all",
+"lane_reward": PackedByteArray(3, 0, 0, 0, 0, 0, 200, 66),
+"points": PackedByteArray(35, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 160, 66, 0, 0, 0, 0, 0, 0, 32, 67, 0, 0, 0, 0, 0, 0, 112, 67, 0, 0, 0, 0),
+"post_radius": PackedByteArray(3, 0, 0, 0, 0, 0, 16, 65),
+"reset_delay": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 63),
+"reward_type": "score"
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "lane_barrier"
+}, {
+"object_id": "dash",
+"position": Vector2(120, 270),
+"properties": {
+"boost_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 22, 68),
+"directional_influence": PackedByteArray(3, 0, 0, 0, 0, 0, 140, 66),
+"speed_cap": PackedByteArray(3, 0, 0, 0, 0, 0, 22, 69),
+"width": PackedByteArray(3, 0, 0, 0, 0, 0, 130, 66)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "dash_panel"
+}, {
+"object_id": "left",
+"position": Vector2(260, 900),
+"properties": {},
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 169, 103, 2, 150, 171, 85, 50, 64),
+"type": "left_flipper"
+}, {
+"object_id": "right",
+"position": Vector2(340, 900),
+"properties": {},
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 11, 179, 63, 141, 74, 53, 100, 64),
+"type": "right_flipper"
+}, {
+"object_id": "upper",
+"position": Vector2(175, 555),
+"properties": {},
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 125, 155, 3, 97, 129, 128, 27, 192),
+"type": "left_flipper"
+}, {
+"object_id": "serve_spring",
+"position": Vector2(300, 850),
+"properties": {
+"color": "red",
+"launch_strength": PackedByteArray(3, 0, 0, 0, 0, 128, 137, 68),
+"width": PackedByteArray(3, 0, 0, 0, 0, 0, 32, 66)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "spring"
+}]
+switch_banks = [{
+"actions": [{
+"action": "set_b",
+"object_id": "route"
+}],
+"bank_id": "route_bank",
+"completion_bonus": PackedByteArray(3, 0, 0, 0, 0, 0, 122, 67),
+"gates": [],
+"label": "Route to the Passing Lanes",
+"members": ["floor_blue", "floor_red", "wall_green"],
+"reset_delay": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0)
+}]
+ring_trails = [{
+"end": Vector2(120, 50),
+"spacing": PackedByteArray(3, 0, 0, 0, 0, 0, 200, 65),
+"start": Vector2(120, 210)
+}]
+entry_start_x = 5
+entry_width = 2
+exit_start_x = 2
+exit_width = 2
+activation_y = PackedByteArray(3, 0, 0, 0, 0, 0, 72, 68)
+spawn_position = Vector2(300, 850)

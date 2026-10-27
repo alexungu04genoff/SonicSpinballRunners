@@ -79,7 +79,9 @@ func _ready() -> void:
  _authored_root = authored_runtime.get("root")
  if _authored_root != null:
   world.add_child(_authored_root)
-  authored_runtime.mechanics.scoring_tick.connect(_on_mechanic_score)
+  authored_runtime.mechanics.mechanic_score.connect(_on_mechanic_score)
+  authored_runtime.mechanics.mechanic_rings.connect(_on_mechanic_rings)
+  authored_runtime.mechanics.feature_completed.connect(_on_feature_completed)
   flippers.assign(authored_runtime.flippers)
  ring_field = RingField.new()
  ring_field.name = "Rings"
@@ -284,7 +286,9 @@ func _replace_playfield(prepared: Dictionary, settings: Dictionary) -> void:
  authored_runtime = prepared.runtime
  _authored_root = authored_runtime.root
  world.add_child(_authored_root)
- authored_runtime.mechanics.scoring_tick.connect(_on_mechanic_score)
+ authored_runtime.mechanics.mechanic_score.connect(_on_mechanic_score)
+ authored_runtime.mechanics.mechanic_rings.connect(_on_mechanic_rings)
+ authored_runtime.mechanics.feature_completed.connect(_on_feature_completed)
  flippers.assign(authored_runtime.flippers)
  playfield = Playfield.from_authored(authored_document, authored_runtime)
  if settings.has("chao"):
@@ -363,9 +367,18 @@ func toggle_debug() -> void:
 func toggle_pause() -> void:
  get_tree().paused = not get_tree().paused
 
-func _on_mechanic_score(_object_id: String, points: int) -> void:
+func _on_mechanic_score(kind: StringName, object_id: String, points: int) -> void:
  if respawn_time >= 0.0 or loading_act or ball.serve_pending: return
- score += scorecraft.award_spinner(points)
+ score += scorecraft.award_mechanic(kind, object_id, points)
+
+func _on_mechanic_rings(_kind: StringName, _object_id: String, amount: int) -> void:
+ if respawn_time >= 0.0 or loading_act or ball.serve_pending: return
+ rings_collected += maxi(0, amount)
+ status_message = "LANE REWARD  +%d RINGS" % amount
+
+func _on_feature_completed(kind: StringName, _object_id: String, bonus: int) -> void:
+ if respawn_time >= 0.0 or loading_act or ball.serve_pending: return
+ status_message = ("LANE SET COMPLETE" if kind == &"lane_set" else "SWITCH BANK COMPLETE") + ("  +%d" % bonus if bonus > 0 else "")
 
 func _on_bumper_hit(body: Node) -> void:
  var impact: bool = specials.impact_target == body

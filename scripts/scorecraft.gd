@@ -61,6 +61,12 @@ func award_spinner(points: int) -> int:
  # Modest fixed ticks cannot advance or sustain a combo, or charge a special.
  return _award("spinner", clampi(points, 0, 25), 1, 0, false)
 
+func award_mechanic(kind: StringName, object_id: String, points: int) -> int:
+ # Fixed feature awards do not advance combos or charge character abilities.
+ # Only spinner ticks retain the spinner's small per-tick safety bound.
+ var amount := clampi(points, 0, 25) if kind == &"spinner" else clampi(points, 0, 100000)
+ return _award(String(kind), amount, 1, 0, false, 0, object_id)
+
 func award_rack() -> int:
  # Rack completion is a fixed award, never a combo link or timer refresh.
  return _award("rack", RACK_POINTS, 1, 0, false)
@@ -71,9 +77,9 @@ func award_area(kind: String, source: String, scale: int, body: Node = null) -> 
  var base := BUMPER_POINTS if kind == "bumper" else RING_POINTS
  return _award(source + "_" + kind, base, clampi(scale, 1, 2), 0, false, body.get_instance_id() if is_instance_valid(body) else 0)
 
-func _award(kind: String, base: int, applied: int, bonus: int, eligible: bool, target_id: int = 0) -> int:
+func _award(kind: String, base: int, applied: int, bonus: int, eligible: bool, target_id: int = 0, object_id: String = "") -> int:
  var amount := base * applied + bonus
- last_award = {"kind": kind, "base": base, "multiplier": applied, "special_bonus": bonus, "total": amount, "chain": chain, "fresh_bumper": eligible, "target_id": target_id}
+ last_award = {"kind": kind, "base": base, "multiplier": applied, "special_bonus": bonus, "total": amount, "chain": chain, "fresh_bumper": eligible, "target_id": target_id, "object_id": object_id}
  feedback_remaining = 2.0
  score_awarded.emit(last_award.duplicate())
  return amount
