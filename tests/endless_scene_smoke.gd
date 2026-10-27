@@ -42,6 +42,7 @@ func run() -> void:
    check(game.library._primed_themes.size() == 1 and game.library._primed_themes.has(hinted_theme), "Only the next theme's disk reads and validation overlap Act preparation")
    check(not game.library.backgrounds.has(hinted_theme), "Early disk prefetch creates no next-theme scene or Act")
  check(game._authored_root == null and game.authored_timings.is_empty(), "Endless never builds and discards a standalone Act")
+ check(game._opening_document == game.library.documents[game.resident[0].plan.id], "Startup shares the already loaded Act document with the streamer")
  check(game.debug_panel == null and game.find_children("DebugAndHUD", "", true, false).is_empty(), "Endless creates no hidden standalone Act tools")
  check(not game.has_method("_generate_layout") and not game.has_method("request_generation"), "Endless has no legacy random-table entry point")
  check(game.retro_filter.selected_effects == [2, 4, 3], "Endless starts with the gameplay N64/VHS/CRT shader stack")
@@ -52,6 +53,7 @@ func run() -> void:
  check(game.resident[0].nodes.all(func(node: Node): return node.process_mode != Node.PROCESS_MODE_DISABLED), "Ready Act visuals restore native processing for particles")
  if "--require-bakes" in OS.get_cmdline_user_args():
   check(game.library.visual_bake_hits == 2 and game.library.fallback_builds == 0, "Opening Acts load complete disk recipes without procedural rebuilding")
+  check(game.library.runtimes.values().all(func(runtime: Dictionary): return runtime.validation_reused), "Opening physics templates reuse verified offline validation")
   game.set_process(false)
   var before: Array = [game.library.visuals.size(), game.library.runtimes.size(), game.library.shapes.size(), game.library.requested_count, game.resident.size()]
   var next_theme: String = game.pending.filter(func(entry: Dictionary): return entry.zone == 1)[0].theme

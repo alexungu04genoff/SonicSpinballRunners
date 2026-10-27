@@ -34,6 +34,7 @@ func run() -> void:
    var baked: Resource = load(Bake.path_for(path, theme))
    check(baked is Bake and baked.matches(document, theme, fingerprint), "Fresh Act: " + path + " / " + theme)
    if not baked is Bake: continue
+   check(baked.has_validated_collisions(document), "Act includes successful physics validation and complete collisions")
    check(baked.surface_detail == "flat" and baked.visual_recipe.has_warm_manifest(), "Flat Act has an offline warm manifest")
    check(not baked.collisions.is_empty() and not baked.visual_recipe.records.is_empty(), "Saved Act contains collisions and visual records")
    variants += 1

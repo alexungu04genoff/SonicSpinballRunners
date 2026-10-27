@@ -77,9 +77,15 @@ func _ready() -> void:
  get_tree().paused = true
  _build_hud()
  library = Library.new()
+ # Construction is an explicit developer path; normal play loads only the
+ # runtime library and cannot invoke the authoring builder.
+ if "--no-bakes" in OS.get_cmdline_user_args():
+  library.free()
+  library = load("res://scripts/endless/template_builder.gd").new()
+  library.bake_only = false
  add_child(library)
  library.progress.connect(func(message: String): _startup_message = message)
- library.prepare(self)
+ library.prepare(self, Plan.PATHS, true, documents)
  if not library.error.is_empty():
   _startup_error(library.error)
   return

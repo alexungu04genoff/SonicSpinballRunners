@@ -2,6 +2,7 @@ extends "res://tests/authored_act_runtime_regression.gd"
 ## Compare baked and freshly compiled authored collisions under identical
 ## profiles, dimensions and contact planes. No alternative physics implementation.
 const Playfield = preload("res://scripts/playfield_data.gd")
+const Bake = preload("res://scripts/endless/geometry_bake.gd")
 
 
 func matched_document() -> Resource:
@@ -33,7 +34,13 @@ func build_source(authored: bool, character: String) -> Dictionary:
 					shapes.append({"shape": item.body.shape_owner_get_shape(owner, index), "transform": item.body.shape_owner_get_transform(owner)})
 			baked.append(shapes)
 		compiled.root.free()
-		compiled = Compiler.compile(document, env.tuning, env.controls, env.ball, baked)
+		var receipt := Bake.new()
+		receipt.source_fingerprint = document.fingerprint()
+		receipt.theme_id = "green_hill"
+		receipt.pipeline_fingerprint = Bake.pipeline_hash(receipt.theme_id)
+		receipt.physics_validated = true
+		receipt.collisions = baked
+		compiled = Compiler.compile_baked(document, env.tuning, env.controls, env.ball, receipt, receipt.pipeline_fingerprint)
 		check(compiled.error.is_empty(), "Baked comparison physics compiles for " + character)
 	env.world.add_child(compiled.root)
 	env.paddle = compiled.flippers[0]

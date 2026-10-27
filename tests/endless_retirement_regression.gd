@@ -1,6 +1,7 @@
 extends SceneTree
 const Retirement = preload("res://scripts/endless/resource_retirement.gd")
 const Recipe = preload("res://scripts/endless/visual_recipe.gd")
+const Library = preload("res://scripts/endless/template_library.gd")
 var checks := 0
 var failures := 0
 
@@ -142,5 +143,30 @@ func run() -> void:
  check(queue.step(0, 1000000) == 0 and queue.step(1, 0) == 0, "Zero budget does no work")
  drain(queue)
  check(queue.peak_pending == Retirement.MAX_PENDING, "The pending graph bound is enforced")
+ var library := Library.new()
+ root.add_child(library)
+ library.set_process(false)
+ var first_root: WeakRef
+ for id in 10:
+  var physics_root := Node2D.new()
+  for child_index in 4:
+   var child := Node2D.new()
+   child.add_child(Node2D.new())
+   physics_root.add_child(child)
+  if id == 0: first_root = weakref(physics_root)
+  library.runtimes[id] = {"root": physics_root}
+  library.shapes[id] = []
+ var pinned := [{"theme": "green_hill", "id": 9}]
+ check(not library.trim(pinned), "A second physics eviction waits for the first retirement")
+ check(library.runtimes.size() == 9 and library.runtimes.has(9), "Only one unpinned physics owner leaves the cache")
+ check(first_root.get_ref() != null, "Cache eviction does not synchronously free a physics tree")
+ check(library._step_physics_retirement(0) == 0 and library._step_physics_retirement(1, 0) == 0, "Physics retirement respects zero budgets")
+ var steps := 0
+ while not library._retiring_physics.is_empty() and steps < 100:
+  check(library._step_physics_retirement(1, 1000000) == 1, "A physics slice performs at most one traversal or node free")
+  steps += 1
+ check(first_root.get_ref() == null and library._retiring_runtime.is_empty(), "Retired physics nodes and their owner are released")
+ check(library.trim(pinned) and library.runtimes.size() == library.MAX_VARIANTS, "Draining allows the next eviction and restores the cache bound")
+ library.free()
  print("ENDLESS_RETIREMENT_REGRESSION | checks=", checks, " | failures=", failures)
  quit(0 if failures == 0 else 1)

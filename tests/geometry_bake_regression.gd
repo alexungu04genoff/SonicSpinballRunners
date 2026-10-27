@@ -27,6 +27,7 @@ func run() -> void:
   var saved := Bake.new()
   saved.source_fingerprint = document.fingerprint()
   saved.theme_id = "green_hill"
+  saved.physics_validated = true
   saved.pipeline_fingerprint = Bake.pipeline_hash(saved.theme_id)
   for item: Dictionary in original.terrain:
    var records: Array = []
@@ -38,7 +39,9 @@ func run() -> void:
   check(ResourceSaver.save(saved, file, ResourceSaver.FLAG_COMPRESS) == OK, "Geometry sidecar saves")
   var loaded: Resource = ResourceLoader.load(file, "", ResourceLoader.CACHE_MODE_IGNORE)
   check(loaded.matches(document, "green_hill"), "Freshly loaded sidecar matches the exact source and pipeline")
-  var baked: Dictionary = Compiler.compile(document, tuning, controls, ball, loaded.collisions)
+  var baked: Dictionary = Compiler.compile_baked(document, tuning, controls, ball, loaded, saved.pipeline_fingerprint)
+  check(baked.get("validation_reused", false) and not original.validation_reused, "Only a verified bake reuses validation")
+  check(loaded.physics_validated, "Successful offline physics validation survives serialization")
   check(baked.error.is_empty(), "Baked collisions compile with the existing gameplay compiler")
   for i in original.terrain.size():
    var body: StaticBody2D = baked.terrain[i].body
@@ -51,22 +54,22 @@ func run() -> void:
      check(shapes[j].points == saved.collisions[i][j].shape.points, "Convex decomposition survives saving exactly")
     elif shapes[j] is ConcavePolygonShape2D:
      check(shapes[j].segments == saved.collisions[i][j].shape.segments, "Open walls keep their exact segment pairs")
+  loaded.physics_validated = false
+  check(not Compiler.compile_baked(document, tuning, controls, ball, loaded, saved.pipeline_fingerprint).error.is_empty(), "A bake without successful physics validation is rejected")
+  loaded.physics_validated = true
+  var collision_backup: Array = loaded.collisions
+  loaded.collisions = []
+  check(not Compiler.compile_baked(document, tuning, controls, ball, loaded, saved.pipeline_fingerprint).error.is_empty(), "A receipt cannot hide incomplete collision data")
+  loaded.collisions = collision_backup
+  check(not Compiler.compile_baked(document, tuning, controls, ball, loaded, "changed-physics-pipeline").error.is_empty(), "Changed validation or physics dependencies invalidate reuse")
   document.spawn_position += Vector2(1, 0)
+  check(not Compiler.compile_baked(document, tuning, controls, ball, loaded, saved.pipeline_fingerprint).error.is_empty(), "Editing a validated Act invalidates physics reuse")
   check(not loaded.matches(document, "green_hill"), "Editing an Act invalidates its old bake")
   document.spawn_position -= Vector2(1, 0)
   loaded.pipeline_fingerprint = "outdated"
   check(not loaded.matches(document, "green_hill"), "Changing the geometry pipeline invalidates its old bake")
   original.root.free()
   baked.root.free()
- var surface := SurfaceTool.new()
- surface.begin(Mesh.PRIMITIVE_TRIANGLES)
- var material := StandardMaterial3D.new()
- surface.set_material(material)
- for vertex: Vector3 in [Vector3.ZERO, Vector3.RIGHT, Vector3.FORWARD]: surface.add_vertex(vertex)
- var source := surface.commit()
- var stripped: ArrayMesh = Bake.without_materials(source)
- check(stripped.surface_get_material(0) == null and source.surface_get_material(0) == material, "Baked meshes exclude theme materials without mutating live resources")
- check(stripped.surface_get_arrays(0)[Mesh.ARRAY_VERTEX] == source.surface_get_arrays(0)[Mesh.ARRAY_VERTEX], "Stripping materials preserves every visual vertex")
  ball.free()
  controls.free()
  tuning.free()

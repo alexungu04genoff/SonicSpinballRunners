@@ -3,6 +3,7 @@ const Bake = preload("res://scripts/endless/geometry_bake.gd")
 const Assets = preload("res://scripts/endless/bake_assets.gd")
 const Recipe = preload("res://scripts/endless/visual_recipe.gd")
 const Library = preload("res://scripts/endless/template_library.gd")
+const Manifest = preload("res://scripts/endless/warm_manifest.gd")
 const Flicky = preload("res://scripts/decor/island_flicky.gd")
 var checks := 0
 var failures := 0
@@ -94,9 +95,9 @@ func run() -> void:
  blue.albedo_color = Color.BLUE
  mesh.material_override = blue
  check(library._shader_signatures(mesh) == red_signature, "Different uniform colors share a warm-up shader signature")
- check(Library._material_probe_key(red) == Library._material_probe_key(blue), "Repeated uniform colors need one theme probe")
+ check(Manifest.new().material_probe_key(red) == Manifest.new().material_probe_key(blue), "Repeated uniform colors need one theme probe")
  blue.albedo_texture = first
- check(Library._material_probe_key(red) != Library._material_probe_key(blue), "Distinct texture bindings keep separate theme probes")
+ check(Manifest.new().material_probe_key(red) != Manifest.new().material_probe_key(blue), "Distinct texture bindings keep separate theme probes")
  blue.albedo_texture = null
  blue.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
  check(library._shader_signatures(mesh) != red_signature, "Different shader features keep distinct warm-up signatures")

@@ -6,11 +6,7 @@ const Bake = preload("res://scripts/endless/geometry_bake.gd")
 const Plan = preload("res://scripts/endless/endless_plan.gd")
 const Document = preload("res://scripts/act_editor/act_geometry.gd")
 const Compiler = preload("res://scripts/authored_act/act_runtime_compiler.gd")
-const Presenter = preload("res://scripts/endless/template_presenter.gd")
-const Recipe = preload("res://scripts/endless/visual_recipe.gd")
 const Registry = preload("res://scripts/themes/theme_registry.gd")
-const BakeAssets = preload("res://scripts/endless/bake_assets.gd")
-const WarmManifest = preload("res://scripts/endless/warm_manifest.gd")
 const Retirement = preload("res://scripts/endless/resource_retirement.gd")
 const MAX_VARIANTS := 8
 const MAX_THEMES := 3
@@ -24,7 +20,6 @@ var environments := {}
 var lights := {}
 var error := ""
 var busy := false
-var bake_only := false
 var use_disk_bakes := true
 var paths: Array = []
 var bake_hits := 0
@@ -60,15 +55,18 @@ var reused_visual_nodes := 0
 var _act_bakes := {}
 var _theme_bakes := {}
 var retirement := Retirement.new()
-var _assets := BakeAssets.new()
-var _asset_theme := ""
 var _lru: Array[String] = []
 var _theme_lru: Array[String] = []
 var _game: Node
 var _view: SubViewport
-var _worker: Thread
+var _retiring_physics: Array[Node] = []
+var _retiring_runtime: Dictionary = {}
 
 func _process(_delta: float) -> void:
+ if not _retiring_physics.is_empty():
+  var physics_started := Time.get_ticks_usec()
+  _step_physics_retirement()
+  _record_cpu("physics.retire", physics_started)
  if retirement.pending_count() == 0: return
  # Keep resources pinned until old live nodes have released their references;
  # otherwise the final node free could inherit the entire resource teardown.
@@ -78,17 +76,22 @@ func _process(_delta: float) -> void:
  retirement.step(64, 500)
  _record_cpu("cache.retire", started_at)
 
-func prepare(game: Node, act_paths: Array = Plan.PATHS, validate_pool := true) -> void:
+func prepare(game: Node, act_paths: Array = Plan.PATHS, validate_pool := true, loaded_documents: Array = []) -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
  _game = game
- use_disk_bakes = "--no-bakes" not in OS.get_cmdline_user_args()
  paths = act_paths.duplicate()
- for path: String in paths:
-  var loaded := Document.load_document(path)
-  if loaded.document == null:
-   error = loaded.error
+ if not loaded_documents.is_empty():
+  if loaded_documents.size() != paths.size():
+   error = "The loaded Act pool does not match its source paths."
    return
-  documents.append(loaded.document)
+  documents.assign(loaded_documents)
+ else:
+  for path: String in paths:
+   var loaded := Document.load_document(path)
+   if loaded.document == null:
+    error = loaded.error
+    return
+   documents.append(loaded.document)
  if validate_pool: error = Plan.pool_error(documents)
  _view = SubViewport.new()
  _view.name = "StreamingWarmup"
@@ -103,7 +106,7 @@ func has_variant(theme_id: String, id: int) -> bool:
 
 func request_theme(theme_id: String) -> bool:
  # No Act file, physics template or gameplay node is needed for this request.
- if busy or not error.is_empty() or bake_only or not use_disk_bakes: return false
+ if busy or not error.is_empty() or not use_disk_bakes: return false
  if backgrounds.has(theme_id) or theme_attempts.has(theme_id): return false
  theme_attempts[theme_id] = true
  preparing_theme = theme_id
@@ -114,7 +117,7 @@ func request_theme(theme_id: String) -> bool:
 func prime_theme(theme_id: String) -> void:
  # Disk reads and validation can overlap the current Act's staged graphics
  # work. This bounded hint loads only the next theme, never an Act variant.
- if bake_only or not use_disk_bakes or _primed_themes.has(theme_id) or not error.is_empty(): return
+ if not use_disk_bakes or _primed_themes.has(theme_id) or not error.is_empty(): return
  _primed_themes[theme_id] = true
  _start_fingerprint(theme_id)
  var path := Bake.theme_path(theme_id)
@@ -175,23 +178,6 @@ func _load_theme(theme_id: String, fingerprint: String) -> bool:
  theme_bake_hits += 1
  return true
 
-static func _material_probe_key(material: Material) -> String:
- # Uniform colors/numbers do not need another probe. Keep texture bindings,
- # shader code and feature flags distinct, including any next material pass.
- var features: Array = [material.get_class()]
- for property: Dictionary in material.get_property_list():
-  if int(property.usage) & PROPERTY_USAGE_STORAGE == 0: continue
-  var value: Variant = material.get(property.name)
-  if value is Shader:
-   features.append([property.name, value.code])
-  elif value is Texture:
-   features.append([property.name, value.resource_path if not value.resource_path.is_empty() else str(value.get_instance_id())])
-  elif value is Material:
-   features.append([property.name, _material_probe_key(value)])
-  elif value is bool or value is int:
-   features.append([property.name, value])
- return var_to_str(features).sha256_text()
-
 func request(theme_id: String, id: int) -> void:
  var variant := key(theme_id, id)
  if has_variant(theme_id, id):
@@ -207,217 +193,68 @@ func request(theme_id: String, id: int) -> void:
 func _build(theme_id: String, id: int) -> void:
  var started_at := Time.get_ticks_usec()
  last_warm_frames = 0
- progress.emit(("Baking %s · %s…" if bake_only else "Loading %s · %s and warming graphics…") % [Registry.NAMES[Registry.IDS.find(theme_id)], str(paths[id]).get_file().get_basename()])
+ progress.emit("Loading %s · %s and warming graphics…" % [Registry.NAMES[Registry.IDS.find(theme_id)], str(paths[id]).get_file().get_basename()])
  await get_tree().process_frame
  var fingerprint := await _fingerprint(theme_id)
- var bake_path := Bake.path_for(paths[id], theme_id)
- var saved: Resource
- if not bake_only and use_disk_bakes:
-  var candidate: Resource = await _load_bake(bake_path)
-  if candidate is Bake and candidate.matches(documents[id], theme_id, fingerprint):
-   saved = candidate
-   bake_hits += 1
-  bake_status = "disk" if saved != null else ("missing" if candidate == null else "stale")
-  if not backgrounds.has(theme_id):
-   if not await _load_theme(theme_id, fingerprint) and saved != null: bake_status = "theme missing or stale"
- elif not use_disk_bakes:
-  bake_status = "disabled by --no-bakes"
- if not bake_only and use_disk_bakes and (saved == null or saved.visual_recipe == null or not backgrounds.has(theme_id)):
+ var saved: Resource = await _load_bake(Bake.path_for(paths[id], theme_id))
+ bake_status = "missing" if saved == null else "stale or incomplete"
+ if not saved is Bake or not saved.matches(documents[id], theme_id, fingerprint) or saved.visual_recipe == null or not saved.has_validated_collisions(documents[id]):
   error = "The %s bake is %s. Run Bake Endless.cmd, then restart Endless mode." % [key(theme_id, id), bake_status]
   busy = false
   return
- if not runtimes.has(id):
-  profile_stage = "physics.compile"
-  var compile_started := Time.get_ticks_usec()
-  # Physics is theme-independent and compiled once for a requested Act.
-  var runtime := Compiler.compile(documents[id], _game.tuning, _game.controls, _game.ball, saved.collisions if saved != null else [])
-  _record_cpu("physics.compile", compile_started)
-  if not runtime.error.is_empty():
-   error = runtime.error
-   busy = false
-   return
-  runtimes[id] = runtime
-  var records: Array = []
-  for item: Dictionary in runtime.terrain:
-   var body: StaticBody2D = item.body
-   var body_shapes: Array = []
-   for owner: int in body.get_shape_owners():
-    for i in body.shape_owner_get_shape_count(owner):
-     body_shapes.append({"shape": body.shape_owner_get_shape(owner, i), "transform": body.shape_owner_get_transform(owner)})
-   records.append(body_shapes)
-   await get_tree().process_frame
-  shapes[id] = records
- if not bake_only and saved != null and saved.visual_recipe != null and backgrounds.has(theme_id):
-  # A full bake skips every procedural mesh, prop, scene capture and theme
-  # constructor. Only staged instantiation and local GPU preparation remain.
-  if not themes.has(theme_id): themes[theme_id] = {"display_name": Registry.NAMES[Registry.IDS.find(theme_id)]}
-  _theme_lru.erase(theme_id)
-  _theme_lru.append(theme_id)
-  if not saved.visual_recipe.has_warm_manifest():
-   error = "Missing offline warm-up metadata. Run Bake Endless.cmd."
-   busy = false
-   return
-  _act_bakes[key(theme_id, id)] = saved
-  await _warm_recipe(saved.visual_recipe, theme_id, "act", key(theme_id, id))
-  visuals[key(theme_id, id)] = saved.visual_recipe
-  _lru.append(key(theme_id, id))
-  visual_bake_hits += 1
-  last_computed_jobs = 0
-  last_reused_jobs = saved.geometry_job_count
-  _finish_request(theme_id, id, started_at, "disk")
-  return
- if not bake_only:
-  if saved != null and saved.visual_recipe == null: bake_status = "geometry only"
-  fallback_builds += 1
-  print("ENDLESS_BAKE_FALLBACK | ", key(theme_id, id), " | ", bake_status, " | Run Bake Endless.cmd after authoring changes")
- if not themes.has(theme_id) or themes[theme_id] is Dictionary:
-  if bake_only:
-   # Offline work can block here. The headless renderer's texture RID storage
-   # must not race threaded resource loads while constructing image textures.
-   themes[theme_id] = Registry.create(theme_id)
-  else:
-   _worker = Thread.new()
-   _worker.start(Registry.create.bind(theme_id), Thread.PRIORITY_LOW)
-   while _worker.is_alive(): await get_tree().process_frame
-   themes[theme_id] = _worker.wait_to_finish()
-   _worker = null
- _theme_lru.erase(theme_id)
- _theme_lru.append(theme_id)
- var theme: RefCounted = themes[theme_id]
- var p := Presenter.new()
- p.name = "IncrementalVisualBaker"
- p.ball = _game.ball
- var rings := RingField.new()
- rings.ball = _game.ball
- rings.tuning = _game.tuning
- rings.process_mode = Node.PROCESS_MODE_DISABLED
- rings.ring_radius = documents[id].cell_size * preload("res://scripts/act_dimensions.gd").RING_RADIUS_CELLS
- add_child(rings)
- p.ring_field = rings
- _view.add_child(p)
- p.set_theme_definition(theme)
- if saved != null: p.baked_geometry = saved.geometry
- var runtime: Dictionary = runtimes[id].duplicate()
- runtime.ring_trails = documents[id].ring_trails
- await p.prepare_act(runtime, Rect2(Vector2.ZERO, documents[id].red_gutter_bounds().end), documents[id].cell_size)
- p.stage = "environment"
- theme.configure_environment(p)
- await p.stream_checkpoint()
- p.stage = "capture"
- var recipe := Recipe.new()
- var excluded := [p.camera, p._world_environment, p._key_light, p.ball_visual, p.physics_overlay,
-  p.construction_grid_overlay, p.scenery_root]
- for child: Node in p.get_children():
-  if child not in excluded: await _capture(recipe, child, p)
- recipe.finish(p)
- var bumpers := {}
- for i in runtime.objects.size():
-  var body: Node = runtime.objects[i].body
-  if recipe.bumpers.has(body.get_instance_id()): bumpers[i] = recipe.bumpers[body.get_instance_id()]
- recipe.bumpers = bumpers
- if not backgrounds.has(theme_id):
-  p.table_bounds = Rect2(0, 0, 600, 1800)
-  p.authored_mode = false
-  p._outlines.assign([PackedVector2Array([Vector2.ZERO, Vector2(600, 0), Vector2(600, 1800), Vector2(0, 1800)])])
-  p.authored_floor_outline = PackedVector2Array()
-  p.stage = "background"
-  await theme.build_background(p)
-  p.stage = "edges"
-  await theme.build_edges(p)
-  await p._finish_borders()
-  var background := Recipe.new()
-  for child: Node in p.scenery_root.get_children(): await _capture(background, child, p)
-  background.finish()
-  backgrounds[theme_id] = background
-  environments[theme_id] = p._world_environment.environment
-  lights[theme_id] = {"rotation": p._key_light.rotation, "color": p._key_light.light_color,
-   "energy": p._key_light.light_energy, "bias": p._key_light.shadow_normal_bias}
- else:
-  p._world_environment.environment = environments[theme_id]
- if not recipe.error.is_empty() or not backgrounds[theme_id].error.is_empty():
-  error = recipe.error if not recipe.error.is_empty() else backgrounds[theme_id].error
-  await _dispose(p)
-  rings.free()
+ if not saved.visual_recipe.has_warm_manifest():
+  error = "Missing offline warm-up metadata. Run Bake Endless.cmd."
   busy = false
   return
- # Render the actual new meshes in a private viewport. A hidden scene does not
- # compile Compatibility shaders. Warm a small number of renderables per frame.
- if bake_only:
-  if _asset_theme != theme_id:
-   _asset_theme = theme_id
-   _assets.materials.clear()
-   # A single-Act bake keeps the other verified Acts' material preload entries.
-   var previous: Resource = await _load_bake(Bake.theme_path(theme_id))
-   if previous is Bake and previous.matches_pipeline(theme_id, fingerprint):
-    for material: Material in previous.preload_materials: _assets.materials[material.get_instance_id()] = material
-  var baked := Bake.new()
-  baked.source_fingerprint = documents[id].fingerprint()
-  baked.pipeline_fingerprint = fingerprint
-  baked.theme_id = theme_id
-  # Full recipes already contain their meshes. The old raw-geometry dictionary
-  # was never used by disk-only play and duplicated data in every sidecar.
-  baked.geometry_job_count = p.baked_geometry.size()
-  baked.collisions = shapes[id]
-  baked.visual_recipe = recipe
-  _assets.share(recipe)
-  _assets.share(backgrounds[theme_id])
-  if not _assets.error.is_empty():
-   error = _assets.error
-   await _dispose(p)
-   rings.free()
-   busy = false
-   return
-  var batcher = preload("res://scripts/endless/static_batches.gd").new()
-  var act_batches: Dictionary = batcher.optimize(recipe)
-  var background_batches: Dictionary = batcher.optimize(backgrounds[theme_id])
-  var manifest := WarmManifest.new()
-  manifest.prepare(recipe)
-  manifest.prepare(backgrounds[theme_id])
-  if not recipe.error.is_empty() or not backgrounds[theme_id].error.is_empty():
-   error = recipe.error if not recipe.error.is_empty() else backgrounds[theme_id].error
-   await _dispose(p)
-   rings.free()
-   busy = false
-   return
-  baked.retirement_dependencies = Retirement.dependencies(baked)
-  print("ENDLESS_BATCHED | ", key(theme_id, id), " | Act=", act_batches, " | theme=", background_batches)
-  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(bake_path.get_base_dir()))
-  var result := ResourceSaver.save(baked, bake_path, ResourceSaver.FLAG_COMPRESS)
-  if result != OK: error = "Could not save geometry bake: " + error_string(result)
-  var theme_bake := Bake.new()
-  theme_bake.kind = "theme"
-  theme_bake.theme_id = theme_id
-  theme_bake.pipeline_fingerprint = fingerprint
-  theme_bake.visual_recipe = backgrounds[theme_id]
-  theme_bake.environment = environments[theme_id]
-  theme_bake.light = lights[theme_id]
-  var unique_materials := {}
-  for material: Material in _assets.materials.values(): unique_materials[manifest.material_probe_key(material)] = material
-  theme_bake.preload_materials.assign(unique_materials.values())
-  theme_bake.preload_recipe = manifest.build_probes(theme_bake.preload_materials)
-  if not theme_bake.preload_recipe.error.is_empty():
-   error = theme_bake.preload_recipe.error
-   await _dispose(p)
-   rings.free()
-   busy = false
-   return
-  theme_bake.retirement_dependencies = Retirement.dependencies(theme_bake)
-  DirAccess.make_dir_recursive_absolute(Bake.theme_path(theme_id).get_base_dir())
-  result = ResourceSaver.save(theme_bake, Bake.theme_path(theme_id), ResourceSaver.FLAG_COMPRESS)
-  if result != OK: error = "Could not save shared theme bake: " + error_string(result)
-  _assets.visited.clear()
-  print("ACT_BAKED | ", bake_path, " | jobs=", p.computed_jobs)
- else:
-  await _warm(p)
- last_computed_jobs = p.computed_jobs
- last_reused_jobs = p.reused_jobs
- max_prepare_slice_ms = maxf(max_prepare_slice_ms, p.max_slice_ms)
- await _dispose(p)
- rings.free()
- _view.render_target_update_mode = SubViewport.UPDATE_DISABLED
- visuals[key(theme_id, id)] = recipe
+ if not backgrounds.has(theme_id) and not await _load_theme(theme_id, fingerprint):
+  error = "The %s theme bake is missing or stale. Run Bake Endless.cmd." % theme_id
+  busy = false
+  return
+ bake_status = "disk"
+ bake_hits += 1
+ if not await _prepare_runtime(id, saved, fingerprint):
+  busy = false
+  return
+ _theme_lru.erase(theme_id)
+ _theme_lru.append(theme_id)
+ _act_bakes[key(theme_id, id)] = saved
+ await _warm_recipe(saved.visual_recipe, theme_id, "act", key(theme_id, id))
+ visuals[key(theme_id, id)] = saved.visual_recipe
  _lru.append(key(theme_id, id))
- _finish_request(theme_id, id, started_at, "offline" if bake_only else "generated")
+ visual_bake_hits += 1
+ last_computed_jobs = 0
+ last_reused_jobs = saved.geometry_job_count
+ _finish_request(theme_id, id, started_at, "disk")
+
+func _prepare_runtime(id: int, saved: Resource = null, fingerprint := "") -> bool:
+ if runtimes.has(id): return true
+ profile_stage = "physics.compile"
+ var started_at := Time.get_ticks_usec()
+ var runtime: Dictionary
+ if saved != null:
+  runtime = Compiler.compile_baked(documents[id], _game.tuning, _game.controls, _game.ball, saved, fingerprint)
+ else:
+  runtime = Compiler.compile(documents[id], _game.tuning, _game.controls, _game.ball)
+ _record_cpu("physics.compile", started_at)
+ _record_event("physics.prepare", started_at, {"act_path": paths[id], "validation_reused": runtime.get("validation_reused", false), "timings": runtime.get("timings", {})})
+ if not runtime.error.is_empty():
+  error = runtime.error
+  return false
+ runtimes[id] = runtime
+ if saved != null:
+  shapes[id] = saved.collisions
+  return true
+ var records: Array = []
+ for item: Dictionary in runtime.terrain:
+  var body: StaticBody2D = item.body
+  var body_shapes: Array = []
+  for owner: int in body.get_shape_owners():
+   for i in body.shape_owner_get_shape_count(owner):
+    body_shapes.append({"shape": body.shape_owner_get_shape(owner, i), "transform": body.shape_owner_get_transform(owner)})
+  records.append(body_shapes)
+  await get_tree().process_frame
+ shapes[id] = records
+ return true
 
 func _finish_request(theme_id: String, id: int, started_at: int, source: String) -> void:
  last_prepare_ms = (Time.get_ticks_usec() - started_at) / 1000.0
@@ -447,7 +284,6 @@ func _record_event(label: String, started_at: int, details: Dictionary = {}, fin
 func _load_bake(path: String) -> Resource:
  profile_stage = "resource.request"
  if not ResourceLoader.exists(path): return null
- if bake_only: return ResourceLoader.load(path)
  var started_at := Time.get_ticks_usec()
  if _primed_paths.has(path):
   _primed_paths.erase(path)
@@ -545,25 +381,7 @@ func take_prepared_visuals(variant: String) -> Array[Node]:
  reused_visual_nodes += result.size()
  return result
 
-func _capture(recipe: RefCounted, root: Node, p: Node) -> void:
- var stack: Array = [[root, -1]]
- while not stack.is_empty():
-  var item: Array = stack.pop_back()
-  var node: Node = item[0]
-  var index: int = recipe.records.size()
-  recipe.capture(node, item[1], false)
-  var children := node.get_children()
-  children.reverse()
-  for child: Node in children: stack.append([child, index])
-  await p.stream_checkpoint()
-
-func _warm(p: Node3D, world_environment: WorldEnvironment = null, warm_foreground := true, known_features: Dictionary = {}, baked_signatures: Dictionary = {}) -> void:
- var overlay: Node
- if p is Presenter:
-  p.set_camera_follow(false)
-  p.reset_camera()
-  overlay = p.physics_overlay
-  world_environment = p._world_environment
+func _warm(p: Node3D, world_environment: WorldEnvironment = null, warm_foreground := true, known_features: Dictionary = {}, baked_signatures: Dictionary = {}, overlay: Node = null) -> void:
  var renderables: Array[Node] = p.find_children("*", "GeometryInstance3D", true, false)
  var render_state := _begin_warm_visibility(renderables, overlay)
  _view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
@@ -743,11 +561,29 @@ func trim(protected: Array, reserve_variant := 0, reserve_theme := 0) -> bool:
  for id: int in runtimes.keys():
   if runtimes.size() <= MAX_VARIANTS: break
   if pinned_ids.has(id): continue
-  runtimes[id].root.free()
+  # At most one detached physics tree retires at a time. Free leaves before
+  # parents so a single call cannot recursively destroy the whole Act.
+  if not _retiring_physics.is_empty(): return false
+  _retiring_runtime = runtimes[id]
+  _retiring_physics.append(_retiring_runtime.root)
   runtimes.erase(id)
   shapes.erase(id)
  _record_cpu("cache.release", trim_started)
  return visuals.size() <= MAX_VARIANTS - reserve_variant and themes.size() <= MAX_THEMES - reserve_theme
+
+func _step_physics_retirement(max_steps := 64, budget_usec := 500) -> int:
+ var steps := 0
+ var deadline := Time.get_ticks_usec() + budget_usec
+ while not _retiring_physics.is_empty() and steps < max_steps and Time.get_ticks_usec() < deadline:
+  var node: Node = _retiring_physics.back()
+  if node.get_child_count() > 0:
+   _retiring_physics.append(node.get_child(0))
+  else:
+   _retiring_physics.pop_back()
+   node.free()
+  steps += 1
+ if _retiring_physics.is_empty(): _retiring_runtime = {}
+ return steps
 
 func _evict_variant(variant: String) -> bool:
  # Prepared nodes belong to the imminent request and must be consumed first.
@@ -766,7 +602,9 @@ static func key(theme: String, id: int) -> String:
  return "%s:%d" % [theme, id]
 
 func _exit_tree() -> void:
- if _worker != null: _worker.wait_to_finish()
+ if not _retiring_physics.is_empty(): _retiring_physics[0].free()
+ _retiring_physics.clear()
+ _retiring_runtime = {}
  for worker: Thread in _fingerprint_jobs.values(): worker.wait_to_finish()
  for path: String in _primed_paths: ResourceLoader.load_threaded_get(path)
  for nodes: Array in _prepared_visuals.values():

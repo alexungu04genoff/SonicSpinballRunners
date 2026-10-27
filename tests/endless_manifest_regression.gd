@@ -93,7 +93,7 @@ func run() -> void:
  var path := "res://test-results/endless-manifest-test.res"
  check(ResourceSaver.save(baked, path, ResourceSaver.FLAG_COMPRESS) == OK, "Recipe and probe manifest save to disk")
  var loaded: Resource = ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE)
- check(loaded.version == 5 and loaded.preload_recipe.has_warm_manifest(), "Version 5 reloads complete offline probes")
+ check(loaded.version == 6 and loaded.preload_recipe.has_warm_manifest(), "Version 6 reloads complete offline probes")
  check(loaded.visual_recipe.records[0].warm_signatures == red, "Feature signatures survive disk serialization unchanged")
  check(not loaded.visual_recipe.records[0].warm_visible and loaded.visual_recipe.records[0].warm_cull_margin == 3.25, "Original render state survives disk serialization")
  var parent := Node3D.new()

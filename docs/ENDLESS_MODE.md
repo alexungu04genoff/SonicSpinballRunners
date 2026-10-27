@@ -18,14 +18,17 @@ The background blend starts 200 pixels before a Zone entrance and finishes 250 p
 2. Click **Bake** in the editor header. The same offline baker used by **Bake Endless.cmd** prepares the saved Act for every theme.
 3. Keep `<Act name>.bake/` beside its `.tres` source, together with `data/endless/themes.bake/`, `data/endless/assets.bake/` and referenced imported assets.
 
-**Version 5** stores reusable Endless preparation data on disk:
+**Version 6** stores reusable Endless preparation data on disk:
 
 - Act sidecars contain pre-decomposed terrain collision shapes, complete visual recipes, material assignments, explicit animation bindings and CPU instance buffers. Primitive geometry is converted to vertex buffers offline.
+- Successful full document and rail-clearance validation is recorded with the Act bake. The runtime accepts this receipt only when the document, engine and pipeline fingerprints match and collision records are complete. The editor, standalone player and offline baker retain full validation; stale or incomplete Endless bakes stop with a rebake message.
 - Shared theme sidecars contain scenery, sky, lighting and the foreground material preload list. Ordinary and instanced probe recipes are now built offline and saved alongside them.
 - Warm-up manifests store stable material/render-feature signatures, original visibility and cull margins. Dependency manifests record resource ownership for gradual cache retirement. Normal baked play consumes these lists without repeating material reflection or discovering resource dependencies.
 - Identical meshes and procedural image textures share content-addressed files in `assets.bake`; imported assets retain their external references. Full Act bakes omit the unused material-free geometry dictionary, which duplicated meshes already in their recipes. A small geometry-job count remains for diagnostics.
 
 Sidecars record their source and presentation-pipeline fingerprints, including engine version and referenced generators, shaders and assets. Validation hashes run off the main thread and are reused within a session. Missing, old or stale full bakes stop with an offline-rebake message; normal play never silently regenerates them. Re-bake after changing the Act or its presentation dependencies. Source Acts remain unchanged. The explicit developer `--no-bakes` flag still exercises the construction fallback.
+
+`template_library.gd` now owns disk loading, graphics staging and bounded caches. `template_builder.gd` adds authored construction and disk output for editor **Bake**, the batch baker and the explicitly selected developer fallback. Normal Endless cannot select construction in response to a failed load. Obsolete geometry-only loading, the raw geometry cache, the unused material-stripping helper and the duplicate material-probe helper have been removed; probe tests exercise the production warm-manifest implementation.
 
 **Bake Endless.cmd** bakes the seven trial snapshots across eight themes (56 variants); it is an authoring operation, not a session loading screen. Editor **Bake** saves beside the selected document and does not publish it into the fixed pool. Updating `data/acts/` does not update its snapshot in `data/endless/`. The four additions were copied unchanged from `data/acts/Authored/`, registered in `endless_plan.gd`, and validated across all 49 ordered connector pairs. Publishing future Acts still requires an explicit snapshot, roster update, connector verification and offline bake.
 
@@ -43,13 +46,34 @@ The rendered 27-transition test passed **254** checks, visiting all seven Acts a
 
 The following warm-cache continuous run (same 400 px/s, seed 18, sequence 24, RTX 4060 / ANGLE, 673×473 internal viewport) took **39.40 seconds**: median **16.56 ms**, p99 **43.31 ms**, maximum **463.33 ms**, zero runtime rebakes, and **749.60 ms total entrance waits**. The strict profiler therefore exited **1**: functional streaming completed, but the zero-wait performance criterion failed. Details are saved locally in `test-results/seven-flat-fast-profile.json`.
 
-The largest timed CPU call was first-use `physics.compile` at **445.08 ms**. A separate headless breakdown found that document validation dominated Secret Entry (**436 ms**) and Third Complex (**294 ms**); terrain construction was only **1–6 ms**. RampMania also repeated **68 ms** of rail-clearance checks. These separate timings are diagnostic samples, not values to add to the rendered frame measurements. Profiler row Act/theme labels describe the active checkpoint, which can differ from the upcoming Act being prepared. The next CPU optimization is to persist successful validation evidence with exact source/pipeline fingerprints, reusing it only for verified fresh bakes while preserving full editor, stale-source and unbaked checks. That validation reuse is not implemented by this material/roster change. A **233 ms** graphics-heavy frame also remains, so physics work is not the only remaining cost.
+The largest timed CPU call in that pre-refactor run was first-use `physics.compile` at **445.08 ms**. A separate headless breakdown found that document validation dominated Secret Entry (**436 ms**) and Third Complex (**294 ms**); terrain construction was only **1–6 ms**. RampMania also repeated **68 ms** of rail-clearance checks. These separate timings are diagnostic samples, not values to add to the rendered frame measurements. Profiler row Act/theme labels describe the active checkpoint, which can differ from the upcoming Act being prepared. Version 6 addresses this repeated validation through the verified-bake path described above. A **233 ms** graphics-heavy frame was also present, so physics work was not the only cost.
+
+### Version-6 validation reuse and cleanup verification
+
+All 56 variants were rebuilt and passed **447** fingerprint, receipt, collision-presence and material/manifest checks. Every variant retained its previous batching statistics. Collision equivalence and invalidation passed **2,842** checks; cache/warm-up **28**, manifests **30**, visual reuse **127**, and gradual retirement **72**, including ten physics templates and a pinned root. Planning and connector regression retained **845** passing checks. The explicit developer construction path passed a three-transition smoke with **54** checks. The normal rendered 27-transition run passed **256** checks across all seven Acts and eight themes with gameplay filters enabled.
+
+The four-character physics equivalence test now compares verified baked loading with full authored compilation: **56** checks passed using `--headless --fixed-fps 120`. An earlier wall-clock run alongside the baker differed by one physics tick on Sonic steering; fixed-step execution removes that scheduling ambiguity without changing assertions or tolerances.
+
+The matched warm-cache fast tour remained seed 18, 400 px/s, sequence 24, Compatibility/ANGLE, RTX 4060 and a 673×473 internal viewport:
+
+| Measurement | Before | Version 6 |
+| --- | ---: | ---: |
+| Maximum physics compilation | 445.08 ms | 10.70 ms |
+| Synchronous startup initialization | 2,286 ms | 1,316 ms |
+| Opening preparation | 2,758 ms | 2,327 ms |
+| Maximum frame | 463.33 ms | 101.18 ms |
+| p99 frame | 43.31 ms | 41.66 ms |
+| Frames over 100 ms | 5 | 1 |
+| Total entrance waits | 749.60 ms | 932.98 ms |
+| Runtime rebakes | 0 | 0 |
+
+The new run took 38.55 seconds and reused validation for all seven physics templates. It still exited **1** under the strict zero-wait criterion. All entrance waiting occurred at sequence 17 (Rooftop Run / SpringUp), largely during graphics warm-up and subsequent live preparation. Median total draw calls remained similar (3,776 before, 3,813 after, including warm-up work); this refactor does not reduce rendering submissions. Remaining work is graphics preparation scheduling and shader/material costs. These are single-run observations with uncontrolled driver-cache history, not a guaranteed frame-time improvement. Raw events, including the actual Act being compiled, are in `test-results/validation-v6-fast-profile.json`. The profile and rendered smoke still reported one and two ObjectDB instances at shutdown respectively; that cleanup warning remains open.
 
 This guarantee applies to the source-project editor's Endless bake pipeline. Standalone Act play and editor previews retain their dynamic construction path. The portable Act Editor exporter currently excludes bake folders, and its shared `res://` output paths need separate writable-location and packaging work. A production Endless package must include fresh sidecars and shared assets; that packaging workflow is not implemented here. Derived bake folders remain ignored by Git.
 
 ## Runtime preparation and bounds
 
-Startup prepares only the first **two** Act/theme variants and opening background. During play, the library prioritizes the rest of the current Zone and then the next Zone. Only one graphics preparation request runs at a time. Next-theme disk reads and validation can overlap current-Act preparation without loading another Act. The library retains at most eight visual recipes and three themes, with active entries pinned; resident Acts use bounded lookahead.
+Startup prepares only the first **two** Act/theme variants and opening background. Source documents are loaded and validated once, then shared with the streaming library instead of being loaded again. This still reads the whole authored roster; a compact catalogue index for much larger libraries is future work. During play, the library prioritizes the rest of the current Zone and then the next Zone. Only one graphics preparation request runs at a time. Next-theme disk reads and validation can overlap current-Act preparation without loading another Act. The library retains at most eight visual recipes and three themes, with active entries pinned; resident Acts use bounded lookahead.
 
 Theme-only preparation loads saved scenery, lighting and probes without opening an Act sidecar or compiling its physics. Tiny probes upload textures and exercise ordinary and instanced material paths. Actual Act meshes still need later preparation. Known graphics features can submit up to 32 geometry instances per frame during play, or 64 during startup; a new feature ends the batch early. Foreground and background feature knowledge stay separate.
 
@@ -57,7 +81,7 @@ The nodes warmed for an Act are retained and attached incrementally to its live 
 
 Evicted baked resource graphs enter a retirement queue with at most four pending graphs. Saved dependency lists allow owners and dependencies to be released separately without mutating shared resources. Each process slice requests at most 64 steps and a **500 microsecond cooperative budget**. This is not a hard deadline: one resource destruction or driver call can exceed it. A full queue defers eviction rather than dropping resources synchronously.
 
-Disk decoding, live Node/physics instances and bindings, GPU uploads and machine-specific shader preparation remain runtime work. Warm live nodes and graphics handles are session state, not portable disk assets. Terrain collision decomposition is baked, but physics compilation still reconstructs descriptors and rail paths and validates clearance. Physics-template eviction also frees its root synchronously above eight unique cached Acts; the seven-Act trial stays below that threshold. Invalid-bake teardown can still release resources synchronously.
+Disk decoding, live Node/physics instances and bindings, GPU uploads and machine-specific shader preparation remain runtime work. Warm live nodes and graphics handles are session state, not portable disk assets. Physics compilation still reconstructs descriptors and rail paths; fresh verified bakes reuse the offline validation result and saved collision records. Above eight cached physics templates, eviction queues one unpinned tree and frees leaves before parents with at most 64 operations and a requested 500-microsecond slice. A second retirement waits for the first to finish. This is a cooperative budget, not a hard per-call deadline. The seven-Act trial stays below that eviction threshold; a ten-template fixture covers backpressure and pinned roots. Invalid-bake teardown and application shutdown can still release resources synchronously.
 
 If the camera or ball outruns preparation, physics pauses safely before the unavailable entrance while the course remains visible. Compatibility/ANGLE can also stall during first-use uploads and shader/driver work. Driver caches are machine-specific, and Godot's export shader baker does not support Compatibility ([official documentation](https://docs.godotengine.org/en/stable/tutorials/performance/pipeline_compilations.html)). These changes do not guarantee hitch-free cold loading.
 

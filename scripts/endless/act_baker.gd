@@ -1,6 +1,6 @@
 extends Control
 ## Offline authoring step. This screen never starts an endless session.
-const Library = preload("res://scripts/endless/template_library.gd")
+const Builder = preload("res://scripts/endless/template_builder.gd")
 const Plan = preload("res://scripts/endless/endless_plan.gd")
 const Registry = preload("res://scripts/themes/theme_registry.gd")
 var ball: PlaygroundBall
@@ -60,8 +60,7 @@ func bake(paths: Array) -> void:
  view = SubViewport.new()
  view.msaa_3d = Viewport.MSAA_4X
  add_child(view)
- library = Library.new()
- library.bake_only = true
+ library = Builder.new()
  add_child(library)
  library.progress.connect(func(message: String): status.text = message)
  library.prepare(self, paths, false)

@@ -1,10 +1,7 @@
 extends "res://scripts/themes/themed_presentation.gd"
 ## A private staging viewport builds cold variants cooperatively. Terrain band
 ## triangulation runs on a resource-only worker; all scene nodes stay on main.
-var baked_geometry: Dictionary = {}
 var computed_jobs := 0
-var reused_jobs := 0
-var _job_counts := {}
 var stage := "shared objects"
 var _slice_start := 0
 var max_slice_ms := 0.0
@@ -52,7 +49,7 @@ func prepare_act(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
  # This is a visual footprint only; it never fills or alters physical geometry.
  var floor_bounds := Rect2(bounds.position, bounds.size - Vector2(0, cell_size * AuthoredActData.RED_GUTTER_CELLS))
  stage = "floor outline"
- authored_floor_outline = await _cached_job("footprint", _authored_floor_boundary.bind(floor_bounds))
+ authored_floor_outline = await _geometry_job(_authored_floor_boundary.bind(floor_bounds))
  authored_floor_outline = VisualDetail.contour(authored_floor_outline)
  await stream_checkpoint()
  stage = "floor mesh"
@@ -68,7 +65,7 @@ func prepare_act(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
  var wall_top := terrain_top_material()
  for outline: PackedVector2Array in authored_terrain_polygons:
   await stream_checkpoint()
-  var mesh: ArrayMesh = await _cached_job("wall", _prism.bind(outline, RAIL_HEIGHT + RAIL_CAP_HEIGHT, wall_side, wall_top))
+  var mesh: ArrayMesh = await _geometry_job(_prism.bind(outline, RAIL_HEIGHT + RAIL_CAP_HEIGHT, wall_side, wall_top))
   _bind_materials(mesh, [wall_top, wall_side])
   var obstacle := mesh_node(mesh, null, Vector3.ZERO, terrain_root)
   obstacle.name = "SolidTerrainObstacle"
@@ -83,7 +80,7 @@ func prepare_act(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
   for ribbon: PackedVector2Array in Geometry2D.offset_polyline(path, cell_size * 0.02, Geometry2D.JOIN_ROUND, Geometry2D.END_ROUND):
    ribbon = VisualDetail.contour(ribbon)
    await stream_checkpoint()
-   var mesh: ArrayMesh = await _cached_job("wall", _prism.bind(ribbon, RAIL_HEIGHT + RAIL_CAP_HEIGHT, wall_side, wall_top))
+   var mesh: ArrayMesh = await _geometry_job(_prism.bind(ribbon, RAIL_HEIGHT + RAIL_CAP_HEIGHT, wall_side, wall_top))
    _bind_materials(mesh, [wall_top, wall_side])
    mesh_node(mesh, null, Vector3.ZERO, rail)
    floor_obstacles.append(ribbon)
@@ -141,7 +138,7 @@ func _add_border(outline: PackedVector2Array, holes: Array[PackedVector2Array], 
 func _finish_borders() -> void:
  await _finish_land()
  for job: Dictionary in _border_jobs:
-  var mesh: ArrayMesh = await _cached_job("border", BakedBorder.build.bind(job.outline, job.holes, job.width, job.height + 0.001, job.material))
+  var mesh: ArrayMesh = await _geometry_job(BakedBorder.build.bind(job.outline, job.holes, job.width, job.height + 0.001, job.material))
   if mesh == null: continue
   _bind_materials(mesh, [job.material])
   var visual := mesh_node(mesh, null, Vector3.ZERO, job.parent)
@@ -160,15 +157,8 @@ func _finish_borders() -> void:
 func _exit_tree() -> void:
  if _worker != null: _worker.wait_to_finish()
 
-func _cached_job(kind: String, job: Callable) -> Variant:
- var index: int = _job_counts.get(kind, 0)
- _job_counts[kind] = index + 1
- var key := "%s:%d" % [kind, index]
- if baked_geometry.has(key):
-  reused_jobs += 1
-  return baked_geometry[key]
+func _geometry_job(job: Callable) -> Variant:
  var result: Variant = await _resource_job(job)
- baked_geometry[key] = result
  computed_jobs += 1
  return result
 
@@ -193,7 +183,7 @@ func _finish_land() -> void:
  for job: Dictionary in _land_jobs:
   if theme_definition.theme_id == "casino_night" and theme_definition.has_method("set_facade_reference"):
    theme_definition.set_facade_reference(job.outline)
-  var meshes: Array = await _cached_job("land", _land_meshes.bind(job.outline, job.depth, job.height))
+  var meshes: Array = await _geometry_job(_land_meshes.bind(job.outline, job.depth, job.height))
   _bind_materials(meshes[0], [_grass])
   _bind_materials(meshes[1], [_cliff])
   var grass := mesh_node(meshes[0], null, Vector3.ZERO, job.parent)

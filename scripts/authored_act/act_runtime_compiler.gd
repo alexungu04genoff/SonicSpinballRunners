@@ -10,8 +10,21 @@ const Flipper = preload("res://scripts/flipper.gd")
 const Mechanics = preload("res://scripts/authored_act/pinball_mechanics.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const Dimensions = preload("res://scripts/act_dimensions.gd")
+const Bake = preload("res://scripts/endless/geometry_bake.gd")
 
 static func compile(document: Resource, tuning: PhysicsTuning, controls: PlaygroundInput, ball: PlaygroundBall, baked_shapes: Array = []) -> Dictionary:
+ return _compile(document, tuning, controls, ball, baked_shapes, false)
+
+static func compile_baked(document: Resource, tuning: PhysicsTuning, controls: PlaygroundInput, ball: PlaygroundBall, bake: Resource, current_pipeline: String) -> Dictionary:
+ # The loader obtains current_pipeline from its source-hash worker. A receipt
+ # is reusable only with the exact document, engine and validation dependencies.
+ if document == null or document.get_script() != Document or not bake is Bake or current_pipeline.is_empty():
+  return {"root": null, "error": "A verified full Act bake is required."}
+ if not bake.matches(document, bake.theme_id, current_pipeline) or not bake.has_validated_collisions(document):
+  return {"root": null, "error": "Act validation is missing or stale. Run Bake Endless.cmd."}
+ return _compile(document, tuning, controls, ball, bake.collisions, true)
+
+static func _compile(document: Resource, tuning: PhysicsTuning, controls: PlaygroundInput, ball: PlaygroundBall, baked_shapes: Array, validated: bool) -> Dictionary:
  var started := Time.get_ticks_usec()
  var terrain: Array[Dictionary] = []
  var objects: Array[Dictionary] = []
@@ -20,10 +33,12 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
  if document == null or document.get_script() != Document:
   result.error = "Choose a valid Act Geometry document."
   return result
- var errors: PackedStringArray = document.validation_errors()
- if not errors.is_empty():
-  result.error = "\n".join(errors)
-  return result
+ if not validated:
+  var errors: PackedStringArray = document.validation_errors()
+  if not errors.is_empty():
+   result.error = "\n".join(errors)
+   return result
+ result.validation_reused = validated
  if document.spawn_position == null:
   result.error = "This Act needs a Launch / Spawn marker before it can be played."
   return result
@@ -132,7 +147,7 @@ static func compile(document: Resource, tuning: PhysicsTuning, controls: Playgro
   descriptor.body = body
   result.objects.append(descriptor)
   act_root.add_child(body)
- var rail_error := _validate_rail_clearance(result, ball.radius)
+ var rail_error := "" if validated else _validate_rail_clearance(result, ball.radius)
  if not rail_error.is_empty():
   act_root.free()
   ball.radius = previous_radius
