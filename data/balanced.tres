@@ -6,7 +6,7 @@ display_name = "Balanced"
 steering_acceleration = 2200.0
 counter_steering_deceleration = 4000.0
 steering_deceleration = 3000.0
-steering_strength = 0.1
+steering_strength = 0.05
 
 flipper_launch_strength = 340.0
 flipper_upward_speed_limit = 400.0

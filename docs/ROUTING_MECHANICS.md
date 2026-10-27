@@ -12,6 +12,10 @@ This is an editable verification playground. Regression shots place the real bal
 
 ## Authoring
 
+Act width and height are editable in the **Cells** fields beside the Act name. Click **Resize** to apply both dimensions as one undoable edit. Existing terrain, objects, rings and decor retain their coordinates and scale; entry stays on the new bottom edge. A resize that invalidates terrain frames, connector spans, spawn or activation markers is rejected without deleting content. Gameplay objects remain permitted outside the terrain grid, as before. Save/reload preserves the dimensions.
+
+The laptop build uses steering strength **0.05**, reduced from **0.10**, for Balanced, Floaty, Tails, Knuckles and Shadow. This halves acceleration and counter-steering rates before saturation; contribution limits and neutral momentum behavior are unchanged. **Light / half strength** reproduces the Balanced/Floaty default in the session preset menu; earlier comparison presets remain available.
+
 All four palette entries use default grid snapping, **Alt** for free coordinates and exact numeric rotation. Rotation 0° faces up; 90° faces right. Moving or rotating a chain preserves its local post positions. Duplicating creates a fresh object ID.
 
 | Tool | Controls and inspector |

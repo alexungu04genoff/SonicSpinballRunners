@@ -21,12 +21,13 @@ const CHAO: Dictionary = {
 const MAX_BUILD_SLOTS := 5
 const MAX_CHAO_COPIES := 2
 const DRAFT_CHAO_IDS: Array[String] = ["ice", "spring", "magnet"]
-# Session experiments. Character resources start with provisional Quick / Tight tuning.
+# Session experiments. Character resources start with half-strength steering.
 const STEERING_PRESETS: Array[Dictionary] = [
  {"name": "Original (6.5%)", "values": {"steering_strength": 0.065, "steering_acceleration": 1000.0, "counter_steering_deceleration": 1000.0, "max_steering_speed": 120.0, "steering_deceleration": 1400.0}},
  {"name": "Quick / tight", "values": {"steering_strength": 0.1, "steering_acceleration": 2200.0, "counter_steering_deceleration": 4000.0, "max_steering_speed": 120.0, "steering_deceleration": 3000.0}},
  {"name": "Air control", "values": {"steering_strength": 0.1, "steering_acceleration": 1800.0, "counter_steering_deceleration": 3600.0, "max_steering_speed": 180.0, "steering_deceleration": 2200.0}},
  {"name": "Stronger brake", "values": {"steering_strength": 0.1, "steering_acceleration": 2000.0, "counter_steering_deceleration": 6000.0, "max_steering_speed": 220.0, "steering_deceleration": 2600.0}},
+ {"name": "Light / half strength", "values": {"steering_strength": 0.05, "steering_acceleration": 2200.0, "counter_steering_deceleration": 4000.0, "max_steering_speed": 120.0, "steering_deceleration": 3000.0}},
 ]
 var base: PhysicsProfile = BALANCED
 var overrides: Dictionary = {}

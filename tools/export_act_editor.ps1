@@ -1,12 +1,13 @@
 [CmdletBinding()]
 param(
     [string]$GodotPath = 'C:\Program Files\Godot\Godot.exe',
-    [Parameter(Mandatory = $true)][string]$WindowsTemplate
+    [Parameter(Mandatory = $true)][string]$WindowsTemplate,
+    [ValidatePattern('^[A-Za-z0-9 _-]+$')][string]$OutputName = 'Portable Act Editor'
 )
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
 $build = Join-Path $repo ('test-results\portable-build\snapshot-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
-$output = Join-Path $repo 'test-results\portable-build\Portable Act Editor'
+$output = Join-Path $repo ('test-results\portable-build\' + $OutputName)
 New-Item -ItemType Directory -Force $build, $output | Out-Null
 foreach ($folder in @('assets', 'data', 'scenes', 'scripts', 'experiments', 'tests', 'third_party')) {
     & robocopy (Join-Path $repo $folder) (Join-Path $build $folder) /E /XD '*.bake' /NFL /NDL /NJH /NJS /NP | Out-Null
@@ -24,7 +25,7 @@ name="Portable Act Editor"
 platform="Windows Desktop"
 runnable=true
 export_filter="all_resources"
-include_filter=""
+include_filter="assets/**/*.png"
 exclude_filter="tools/*,*.bake/*"
 script_export_mode=0
 
@@ -57,8 +58,13 @@ try {
     if (Select-String -Path (Join-Path $build 'export-errors.log') -Pattern '^(SCRIPT ERROR|ERROR):' -Quiet) { throw "Export reported errors: $build\export-errors.log" }
 } finally { $env:APPDATA = $previousAppData }
 New-Item -ItemType Directory -Force (Join-Path $output 'Acts') | Out-Null
-Copy-Item (Join-Path $repo 'data\acts\*.tres') (Join-Path $output 'Acts')
-$archive = Join-Path (Split-Path $output -Parent) 'Portable Act Editor.zip'
+foreach ($act in Get-ChildItem (Join-Path $build 'data\acts') -Filter '*.tres' -Recurse) {
+    $relative = $act.FullName.Substring((Join-Path $build 'data\acts').Length + 1)
+    $destination = Join-Path (Join-Path $output 'Acts') $relative
+    New-Item -ItemType Directory -Force (Split-Path $destination -Parent) | Out-Null
+    Copy-Item -LiteralPath $act.FullName -Destination $destination
+}
+$archive = Join-Path (Split-Path $output -Parent) ($OutputName + '.zip')
 Compress-Archive -Path (Join-Path $output 'Act Editor.exe'), (Join-Path $output 'Acts') -DestinationPath $archive -Force
 Write-Output "Build: $output"
 Write-Output "Archive: $archive"

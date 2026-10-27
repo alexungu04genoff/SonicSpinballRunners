@@ -30,6 +30,8 @@ var unsaved_dialog: ConfirmationDialog
 var error_dialog: AcceptDialog
 var title_field: LineEdit
 var cell_size_field: SpinBox
+var grid_width_field: SpinBox
+var grid_height_field: SpinBox
 var file_label: Label
 var gameplay_scroll: ScrollContainer
 var mechanics_properties: HFlowContainer
@@ -379,7 +381,26 @@ func _build_ui() -> void:
 	title_field.focus_exited.connect(func(): _commit_title(); _title_edit_recorded = false)
 	settings.add_child(title_field)
 	grid_label = Label.new()
+	grid_label.text = "Cells"
 	settings.add_child(grid_label)
+	grid_width_field = SpinBox.new()
+	grid_height_field = SpinBox.new()
+	for field: SpinBox in [grid_width_field, grid_height_field]:
+		field.min_value = 1
+		field.max_value = 256
+		field.allow_greater = true
+		field.step = 1
+		field.custom_minimum_size.x = 70
+		field.tooltip_text = "Act dimensions in cells. Resize keeps existing content at its original coordinates."
+		settings.add_child(field)
+		if field == grid_width_field:
+			var separator := Label.new()
+			separator.text = "×"
+			settings.add_child(separator)
+	_button(settings, "resize_grid", "Resize", _resize_grid, "Apply width × height as one undoable edit; content is not scaled or deleted")
+	var cell_label := Label.new()
+	cell_label.text = "Cell size"
+	settings.add_child(cell_label)
 	cell_size_field = SpinBox.new()
 	cell_size_field.min_value = 0.01
 	cell_size_field.max_value = 512
@@ -585,6 +606,10 @@ func _button(parent: Node, id: String, label: String, action: Callable, hint: St
 			return
 		# Toolbar buttons do not take keyboard focus. Commit numeric drafts before
 		# an edit refreshes the fields, then give editing shortcuts to the canvas.
+		if id == "resize_grid":
+			action.call()
+			canvas.grab_focus()
+			return
 		cell_size_field.apply()
 		composite_strength.apply()
 		composite_angle.apply()
@@ -1670,6 +1695,28 @@ func _edit_title(value: String) -> void:
 	buttons.undo.disabled = undo_stack.is_empty()
 	buttons.redo.disabled = redo_stack.is_empty()
 
+func _resize_grid() -> void:
+	if _refreshing or document == null or composite_preview_active:
+		return
+	grid_width_field.apply()
+	grid_height_field.apply()
+	var dimensions := Vector2i(int(grid_width_field.value), int(grid_height_field.value))
+	if dimensions == document.grid_size:
+		return
+	var candidate: Resource = document.copy_document()
+	candidate.grid_size = dimensions
+	var errors: PackedStringArray = candidate.validation_errors()
+	if not errors.is_empty():
+		_refresh()
+		_set_status("Grid size unchanged: " + errors[0])
+		return
+	canvas.cancel_gesture()
+	_record_edit()
+	document.grid_size = dimensions
+	_refresh()
+	canvas.fit_view()
+	_set_status("Act resized to %d × %d cells. Existing content remains at its original coordinates." % [dimensions.x, dimensions.y])
+
 func _change_cell_size(value: float) -> void:
 	if _refreshing or document == null or is_equal_approx(value, document.cell_size):
 		return
@@ -1696,7 +1743,8 @@ func _refresh() -> void:
 		button.disabled = false
 	title_field.text = document.title
 	cell_size_field.set_value_no_signal(document.cell_size)
-	grid_label.text = "   %d × %d cells    Cell size" % [document.grid_size.x, document.grid_size.y]
+	grid_width_field.set_value_no_signal(document.grid_size.x)
+	grid_height_field.set_value_no_signal(document.grid_size.y)
 	_refresh_reminders()
 	_refresh_file_state()
 	buttons.undo.disabled = undo_stack.is_empty()
@@ -1831,6 +1879,9 @@ func _refresh_composite_controls() -> void:
 	composite_hint.tooltip_text = composite_hint.text
 	title_field.editable = not composite_preview_active
 	cell_size_field.editable = not composite_preview_active
+	grid_width_field.editable = not composite_preview_active
+	grid_height_field.editable = not composite_preview_active
+	buttons.resize_grid.disabled = composite_preview_active
 	ring_spacing_field.editable = not composite_preview_active
 	for item: Button in palette_buttons.values():
 		item.disabled = composite_preview_active

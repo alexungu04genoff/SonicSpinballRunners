@@ -26,7 +26,7 @@ func run() -> void:
  check(game.debug_panel.steering_presets.selected == 0, "Independent field editing labels the preset as custom")
  game.tuning.select_profile(1)
  game.debug_panel.refresh_fields()
- check(game.debug_panel.steering_presets.selected == 2 and game.tuning.effective.counter_steering_deceleration == 4000.0, "Profile switch restores Quick / Tight steering and keeps UI selection truthful")
+ check(game.debug_panel.steering_presets.selected == 5 and game.tuning.effective.counter_steering_deceleration == 4000.0, "Profile switch restores half-strength steering and keeps UI selection truthful")
  game.tuning.select_profile(0)
  game.debug_panel.steering_presets.item_selected.emit(3)
  # Show a reproducible airborne counter-steering state without injecting OS input.
