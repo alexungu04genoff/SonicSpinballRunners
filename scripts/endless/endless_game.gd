@@ -49,6 +49,16 @@ var loading_panel: ColorRect
 var loading_label: Label
 var tour_button: Button
 var _startup_message := "Loading baked endless mode…"
+var closing := false
+
+func _source_paths() -> Array:
+ return Plan.PATHS
+
+func _next_planned_zone(documents: Array) -> Array[Dictionary]:
+ return planner.next_zone(documents)
+
+func _has_next_act() -> bool:
+ return true
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
@@ -56,7 +66,7 @@ func _ready() -> void:
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--seed="): run_seed = int(argument.trim_prefix("--seed="))
  var documents: Array = []
- for path: String in Plan.PATHS:
+ for path: String in _source_paths():
   var loaded := ActDocument.load_document(path)
   if loaded.document == null:
    _build_hud()
@@ -64,9 +74,9 @@ func _ready() -> void:
    return
   documents.append(loaded.document)
  planner = Plan.new(run_seed)
- pending.assign(planner.next_zone(documents))
+ pending.assign(_next_planned_zone(documents))
  next_zone_to_plan = 1
- authored_act_path = Plan.PATHS[pending[0].id]
+ authored_act_path = _source_paths()[pending[0].id]
  _opening_document = documents[pending[0].id]
  super._ready()
  if playfield == null: return
@@ -85,7 +95,7 @@ func _ready() -> void:
   library.bake_only = false
  add_child(library)
  library.progress.connect(func(message: String): _startup_message = message)
- library.prepare(self, Plan.PATHS, true, documents)
+ library.prepare(self, _source_paths(), true, documents)
  if not library.error.is_empty():
   _startup_error(library.error)
   return
@@ -93,14 +103,16 @@ func _ready() -> void:
  world.add_child(hub)
  ball.mechanics = hub
  library_ready = true
- pending.append_array(planner.next_zone(library.documents))
+ pending.append_array(_next_planned_zone(library.documents))
  next_zone_to_plan = 2
  _startup_message = "Loading the opening Acts and warming graphics…"
  while resident.size() < 2 or not _zone_ready(0):
+  if closing: return
   if not library.error.is_empty():
    _startup_error(library.error)
    return
   await get_tree().process_frame
+ if closing: return
  active = resident[0]
  _activate(active, true)
  started = true
@@ -174,6 +186,7 @@ func _build_presentation() -> void:
  presentation.add_child(character)
 
 func _process(delta: float) -> void:
+ if closing: return
  if is_instance_valid(loading_label): loading_label.text = _startup_message
  if not library_ready: return
  var tick := Time.get_ticks_usec()
@@ -260,7 +273,7 @@ func _process(delta: float) -> void:
   if loading_boundary:
    detail.text = "Waiting for the next Act to finish loading…" if library.error.is_empty() else library.error
   else:
-   detail.text = "%s · %s\nACT SCORE  %s     TOTAL SCORE  %d     COMBO ×%d\n%s" % [Plan.TITLES[active.plan.id], "Camera tour — ball parked" if touring else "Unlimited checkpoint retries", act_score_text(), score, scorecraft.multiplier, status_message]
+   detail.text = "%s · %s\nACT SCORE  %s     TOTAL SCORE  %d     COMBO ×%d\n%s" % [active.document.title, "Camera tour — ball parked" if touring else "Unlimited checkpoint retries", act_score_text(), score, scorecraft.multiplier, status_message]
    if not scoring_feedback_text().is_empty(): detail.text += "\n" + scoring_feedback_text()
   diagnostics.text = "Seed %d | Resident %d | Queued %d | Build %.2f ms (max %.2f) | Frame max %.1f ms\nDisk Acts %d · Disk themes %d · Runtime rebuilds %d · Last prepare %.2f s" % [run_seed, resident.size(), pending.size() + int(building != null), last_build_ms, max_build_ms, max_frame_ms, library.visual_bake_hits, library.theme_bake_hits, library.fallback_builds, library.last_prepare_ms / 1000.0]
   diagnostics.text += "\nTheme preloads %d · Last %.2f s%s" % [library.theme_prefetches, library.last_theme_prepare_ms / 1000.0, " · Preparing " + library.preparing_theme if not library.preparing_theme.is_empty() else ""]
@@ -326,9 +339,9 @@ func _activate(act: RefCounted, initial := false) -> void:
  _sync_resident()
  _show_background(act.plan.zone, act.plan.theme, initial)
  if next_zone_to_plan <= act.plan.zone + 1:
-  pending.append_array(planner.next_zone(library.documents))
+  pending.append_array(_next_planned_zone(library.documents))
   next_zone_to_plan += 1
- print("ENDLESS_CHECKPOINT | zone=%d act=%d template=%s" % [act.plan.zone + 1, act.plan.act + 1, Plan.TITLES[act.plan.id]])
+ print("ENDLESS_CHECKPOINT | zone=%d act=%d template=%s" % [act.plan.zone + 1, act.plan.act + 1, act.document.title])
 
 func _sync_resident() -> void:
  presentation.ring_pickups.clear()
@@ -452,6 +465,7 @@ func _zone_ready(index: int) -> bool:
  return backgrounds.has(index) and backgrounds[index].ready
 
 func _next_ready() -> bool:
+ if not _has_next_act(): return true
  for act: RefCounted in resident:
   if act.plan.sequence == active_sequence + 1: return _zone_ready(act.plan.zone)
  return false
@@ -611,3 +625,15 @@ func _startup_error(message: String) -> void:
  _startup_message = "Endless mode could not start:\n" + message
  loading_label.text = _startup_message
  push_error(message)
+
+func prepare_to_close() -> void:
+ # Let any in-flight library coroutine finish before its owner is freed.
+ closing = true
+ set_process(false)
+ set_physics_process(false)
+ if is_instance_valid(controls): controls.input_blocked = true
+ if is_instance_valid(world): world.process_mode = Node.PROCESS_MODE_DISABLED
+ if is_instance_valid(ring_field): ring_field.scoring_enabled = false
+ await get_tree().process_frame
+ while is_instance_valid(library) and library.busy:
+  await get_tree().process_frame
