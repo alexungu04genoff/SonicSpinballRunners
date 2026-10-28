@@ -19,7 +19,7 @@ func _ready() -> void:
  for entry: Array in [["ring", 880.0, 0.08], ["bumper", 220.0, 0.1], ["feature", 660.0, 0.22], ["unlock", 1046.5, 0.35], ["drain", 146.8, 0.24], ["act", 784.0, 0.3]]:
   cues[entry[0]] = _tone(float(entry[1]), float(entry[2]))
  if is_instance_valid(game.scorecraft): game.scorecraft.score_awarded.connect(_on_award)
- game.completed.connect(func(_result: Dictionary): _play("unlock"))
+ game.completed.connect(func(result: Dictionary): _play("unlock" if result.won else "drain"))
 
 func _tone(frequency: float, duration: float) -> AudioStreamWAV:
  var stream := AudioStreamWAV.new()

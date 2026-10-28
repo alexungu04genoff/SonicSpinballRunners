@@ -438,9 +438,12 @@ func _warm_pass(renderables: Array[Node], overlay: Node, warmed: Dictionary = {}
  profile_stage = "graphics.queue"
  var batch: Array[GeometryInstance3D] = []
  var cold_features := 0
- # Cold shader features still get their own frame. Known features can upload
+ # During live play, cold shader features get their own frame. Known features can upload
  # more meshes together; eight per frame made the 400 px/s tour outrun loading.
  var batch_limit := 32 if _game.get("started") == true else 64
+ # During the loading screen, compile a small group per frame. Live streaming
+ # keeps the one-feature limit to avoid moving those stalls into gameplay.
+ var cold_limit := 1 if _game.get("started") == true else 4
  for node: GeometryInstance3D in renderables:
   var queue_started := Time.get_ticks_usec()
   if overlay != null and (node == overlay or overlay.is_ancestor_of(node)): continue
@@ -464,7 +467,7 @@ func _warm_pass(renderables: Array[Node], overlay: Node, warmed: Dictionary = {}
   _record_cpu("graphics.queue", queue_started)
   # Colors and uniform values do not require a different shader. The previous
   # per-material-instance wait spent hundreds of frames on equivalent programs.
-  if cold_features >= 1 or batch.size() >= batch_limit:
+  if cold_features >= cold_limit or batch.size() >= batch_limit:
    await _draw_frames(1)
    for shown: GeometryInstance3D in batch: shown.layers = 0
    batch.clear()

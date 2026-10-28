@@ -113,7 +113,7 @@ func _ready() -> void:
   _activate_scoring_context(authored_document, authored_runtime, active_scoring_id)
  _build_debug_panel()
  controls.launch_requested.connect(launch_ball)
- controls.reset_requested.connect(func(): reset_ball(true))
+ controls.reset_requested.connect(_on_retry_requested)
  controls.pause_requested.connect(toggle_pause)
  controls.debug_requested.connect(toggle_debug)
  controls.special_requested.connect(func():
@@ -373,6 +373,9 @@ func reset_ball(relaunch: bool = false) -> void:
  auto_launch_time = 0.25 if relaunch else -1.0
  status_message = "Ready to launch"
 
+func _on_retry_requested() -> void:
+ reset_ball(true)
+
 func toggle_debug() -> void:
  if not is_instance_valid(debug_panel): return
  debug_panel.panel.visible = not debug_panel.panel.visible
@@ -531,14 +534,7 @@ func _physics_process(delta: float) -> void:
   if respawn_time <= 0:
    reset_ball(true)
  elif not ball.serve_pending and not ball._teleport_pending and _at_playfield_drain():
-  ball_number += 1
-  respawn_time = 0.65
-  ring_field.scoring_enabled = false
-  if is_instance_valid(ball.mechanics): ball.mechanics.reset()
-  specials.reset(false, "Drain")
-  scorecraft.reset("Drain", true)
-  presentation.clear_ring_pickups()
-  status_message = "DRAIN — automatic respawn"
+  _on_ball_drained()
  if auto_launch_time >= 0:
   auto_launch_time -= delta
   if auto_launch_time <= 0:
@@ -555,6 +551,16 @@ func _physics_process(delta: float) -> void:
  if ball.serve_pending or ball._teleport_pending:
   previous_goal_position = ball.serve_position
   _goal_motion_ready = true
+
+func _on_ball_drained() -> void:
+ ball_number += 1
+ respawn_time = 0.65
+ ring_field.scoring_enabled = false
+ if is_instance_valid(ball.mechanics): ball.mechanics.reset()
+ specials.reset(false, "Drain")
+ scorecraft.reset("Drain", true)
+ presentation.clear_ring_pickups()
+ status_message = "DRAIN — automatic respawn"
 
 func _observe_authored_motion(start: Vector2, finish: Vector2) -> void:
  var events: Dictionary = ActLifecycle.crossings(authored_document, start, finish)

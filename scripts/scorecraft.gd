@@ -24,6 +24,8 @@ var protected_rail := ""
 var rail_protection_remaining := 0.0
 var act_context := ""
 var support_feedback_remaining := 0.0
+## Optional run-owned bonuses. Empty for existing standalone and Endless play.
+var award_bonuses: Dictionary = {}
 
 func _ready() -> void:
  # Green Hill's UI root processes during pause; gameplay timers must not.
@@ -88,8 +90,17 @@ func award_area(kind: String, source: String, scale: int, body: Node = null, obj
 func _award(kind: String, base: int, applied: int, bonus: int, eligible: bool, target_id: int = 0, object_id: String = "", ability: String = "") -> int:
  var amount := base * applied + bonus
  if amount <= 0: return 0
+ var normal_total := amount
+ var buddy_bonuses := {}
+ for id: String in award_bonuses:
+  var modifier: Dictionary = award_bonuses[id]
+  if kind not in modifier.kinds: continue
+  var extra := clampi(int(modifier.points), 0, 100000)
+  if extra <= 0: continue
+  buddy_bonuses[id] = extra
+  amount += extra
  support_feedback_remaining = 0.0
- last_award = {"kind": kind, "base": base, "multiplier": applied, "special_bonus": bonus, "total": amount, "chain": chain, "fresh_bumper": eligible, "target_id": target_id, "object_id": object_id, "act_id": act_context, "ability": ability}
+ last_award = {"kind": kind, "base": base, "multiplier": applied, "special_bonus": bonus, "normal_total": normal_total, "buddy_bonuses": buddy_bonuses, "total": amount, "chain": chain, "fresh_bumper": eligible, "target_id": target_id, "object_id": object_id, "act_id": act_context, "ability": ability}
  feedback_remaining = 2.0
  score_awarded.emit(last_award.duplicate())
  return amount

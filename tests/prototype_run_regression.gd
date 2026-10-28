@@ -37,6 +37,7 @@ func run() -> void:
  await capture("menu")
  session.selected_character = "tails"
  session.sound_enabled = false
+ session.practice_mode = false
  await session.start_run()
  check(await await_run(), "Menu starts the real streamed three-Act run")
  if not session.game.started:
@@ -90,6 +91,18 @@ func run() -> void:
   if index < 2:
    var at: Vector2 = next.plan.offset + Vector2(next.document.spawn_position.x, next.document.activation_y)
    game._observe_authored_motion(at + Vector2.DOWN * 2, at - Vector2.DOWN * 2)
+   check(game.drafting and session.state == "draft" and paused and game.active_sequence == index, "Physical Act clear pauses for a mandatory Buddy choice")
+   check(game.buddies.offers().size() == 3 and not game.choose_buddy("unknown"), "Draft offers three valid choices and rejects an invalid ID")
+   var before_draft: int = game.score
+   game.active.runtime.mechanics.complete_feature(&"switch_bank", "during_draft", 100)
+   game.toggle_pause()
+   check(paused and game.score == before_draft, "Draft cannot be skipped with pause or score while awaiting a choice")
+   await capture("draft")
+   var before_choice: Vector2 = game.ball.position
+   var velocity_before_choice: Vector2 = game.ball.linear_velocity
+   session._choose_buddy("ring_scout")
+   check(not paused and game.active_sequence == index + 1 and game.balls_remaining == 3 and game.ball.position == before_choice and game.ball.linear_velocity == velocity_before_choice, "Buddy choice starts a fresh three-ball Act without changing position or velocity")
+   check(game.buddies.levels.ring_scout == index + 1 and not game.choose_buddy("bumper_coach"), "Repeated Buddy choice upgrades once and cannot be submitted twice")
   else:
    var at: Vector2 = game.active.plan.offset + Vector2((game.active.document.exit_start_x + game.active.document.exit_width * 0.5) * game.active.document.cell_size, 0)
    game._observe_authored_motion(at + Vector2.DOWN * 2, at - Vector2.DOWN * 2)
@@ -103,10 +116,11 @@ func run() -> void:
  await session.return_to_menu()
  check(session.state == "menu" and session.game == null and not paused, "Return to menu closes the run and restores menu input")
  var settings := ConfigFile.new()
- check(settings.load(session.settings_path) == OK and int(settings.get_value("records", "score", 0)) >= 4500, "Completed personal best is saved")
+ check(settings.load(session.settings_path) == OK and int(settings.get_value("challenge_records", "score", 0)) >= 4500, "Completed Challenge personal best is saved separately")
  await session.start_run()
  check(await await_run(), "Replay starts another real run")
  check(session.game.score == 0 and session.game.act_score == 0 and session.game.active_sequence == 0 and not session.game.exit_unlocked, "Replay clears progress and locks the first exit again")
+ check(session.game.buddies.levels.is_empty() and session.game.scorecraft.award_bonuses.is_empty(), "Replay clears Buddy levels, bonuses and contribution ledgers")
  session.game.toggle_pause()
  await frames()
  await session.start_run()

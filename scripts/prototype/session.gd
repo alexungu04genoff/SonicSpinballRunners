@@ -10,8 +10,11 @@ var state := "menu"
 var transitioning := false
 var selected_character := "sonic"
 var sound_enabled := true
+var practice_mode := false
 var best_score := 0
 var best_seconds := 0.0
+var practice_best_score := 0
+var practice_best_seconds := 0.0
 var settings_path := SETTINGS_PATH
 var last_summary: Dictionary = {}
 
@@ -24,8 +27,12 @@ func _ready() -> void:
   var saved := str(settings.get_value("player", "character", "sonic"))
   if CharacterSpecials.CHARACTERS.has(saved): selected_character = saved
   sound_enabled = bool(settings.get_value("player", "sound", true))
-  best_score = maxi(0, int(settings.get_value("records", "score", 0)))
-  best_seconds = maxf(0.0, float(settings.get_value("records", "seconds", 0.0)))
+  practice_mode = bool(settings.get_value("player", "practice", false))
+  # Earlier prototype records had unlimited retries and belong to Practice.
+  practice_best_score = maxi(0, int(settings.get_value("records", "score", 0)))
+  practice_best_seconds = maxf(0.0, float(settings.get_value("records", "seconds", 0.0)))
+  best_score = maxi(0, int(settings.get_value("challenge_records", "score", 0)))
+  best_seconds = maxf(0.0, float(settings.get_value("challenge_records", "seconds", 0.0)))
  overlay = CanvasLayer.new()
  overlay.layer = 40
  add_child(overlay)
@@ -35,8 +42,11 @@ func _save_settings() -> void:
  var settings := ConfigFile.new()
  settings.set_value("player", "character", selected_character)
  settings.set_value("player", "sound", sound_enabled)
- settings.set_value("records", "score", best_score)
- settings.set_value("records", "seconds", best_seconds)
+ settings.set_value("player", "practice", practice_mode)
+ settings.set_value("records", "score", practice_best_score)
+ settings.set_value("records", "seconds", practice_best_seconds)
+ settings.set_value("challenge_records", "score", best_score)
+ settings.set_value("challenge_records", "seconds", best_seconds)
  if settings.save(settings_path) != OK: push_warning("Could not save prototype preferences.")
 
 func _panel(title: String, subtitle: String) -> VBoxContainer:
@@ -83,7 +93,7 @@ func _action(parent: Node, text: String, callback: Callable, focus := false) -> 
 func _show_menu() -> void:
  state = "menu"
  var stack := _panel("SONIC SPINBALL RUNNERS", "ONE ZONE · THREE ACTS")
- _label(stack, "Earn each Act's target. Reach its exit. Keep your run score.\nCheckpoint retries preserve your points.")
+ _label(stack, "Three balls per Act. Earn the target, then reach its exit.\nChoose a Buddy after Acts 1 and 2. Retries keep your points.")
  _label(stack, "Act 1: 1,000     Act 2: 1,500     Act 3: 2,000", 19, Color("8fe9b1"))
  var characters := OptionButton.new()
  for id: String in CharacterSpecials.CHARACTERS:
@@ -95,14 +105,20 @@ func _show_menu() -> void:
   _save_settings()
  )
  stack.add_child(characters)
+ var practice := CheckButton.new()
+ practice.text = "Practice · Unlimited retries · Separate records"
+ practice.button_pressed = practice_mode
+ practice.toggled.connect(func(value: bool): practice_mode = value; _save_settings())
+ stack.add_child(practice)
  var sound := CheckButton.new()
  sound.text = "Scoring sounds"
  sound.button_pressed = sound_enabled
  sound.toggled.connect(func(value: bool): sound_enabled = value; _save_settings())
  stack.add_child(sound)
- if best_score > 0: _label(stack, "Personal best: %d · Fastest clear: %s" % [best_score, _time_text(best_seconds)])
+ if best_score > 0: _label(stack, "Challenge best: %d · Fastest clear: %s" % [best_score, _time_text(best_seconds)])
+ if practice_best_score > 0: _label(stack, "Practice best: %d" % practice_best_score, 16)
  _action(stack, "Start run", start_run, true)
- _label(stack, "Q / E or LB / RB: flippers     Arrows or stick: steer\nEnter / X: launch     Space / A: special     Esc / Menu: pause\nR / Back: checkpoint retry     F11: fullscreen", 16)
+ _label(stack, "Q / E or LB / RB: flippers     Arrows or stick: steer\nEnter / X: launch     Space / A: special     Esc / Menu: pause\nR / Back: retry (uses a ball in Challenge)     F11: fullscreen", 16)
  _action(stack, "Quit", _quit)
 
 func start_run() -> void:
@@ -113,7 +129,9 @@ func start_run() -> void:
  await _close_run()
  game = Run.new()
  game.character_id = selected_character
+ game.practice_mode = practice_mode
  game.completed.connect(_on_completed)
+ game.draft_started.connect(_on_draft_started)
  add_child(game)
  var sounds := Sounds.new()
  sounds.enabled = sound_enabled
@@ -147,16 +165,40 @@ func _show_pause() -> void:
  _action(stack, "Return to menu", return_to_menu)
  _action(stack, "Quit", _quit)
 
+func _on_draft_started(act_result: Dictionary, offers: Array[Dictionary]) -> void:
+ state = "draft"
+ var stack := _panel("ACT %d CLEARED · CHOOSE A BUDDY" % act_result.act, "%d / %d points · %d balls lost\nNext Act starts with %s." % [act_result.score, act_result.target, act_result.drains, "unlimited retries" if game.practice_mode else "three balls"])
+ _label(stack, "Buddies last for this run. Pick the same Buddy to upgrade it.", 16)
+ _label(stack, game.buddies.summary(), 17, Color("8fe9b1"))
+ for i in offers.size():
+  var offer: Dictionary = offers[i]
+  var button := _action(stack, "%s · Level %d\n%s" % [offer.name, offer.level, offer.description], _choose_buddy.bind(str(offer.id)), i == 0)
+  button.custom_minimum_size.y = 88
+ _action(stack, "Return to menu", return_to_menu)
+
+func _choose_buddy(id: String) -> void:
+ if transitioning or not is_instance_valid(game) or not game.choose_buddy(id): return
+ state = "playing"
+ overlay_root.hide()
+
 func _on_completed(summary: Dictionary) -> void:
  last_summary = summary.duplicate(true)
- best_score = maxi(best_score, int(summary.score))
- if best_seconds <= 0.0 or float(summary.seconds) < best_seconds: best_seconds = float(summary.seconds)
+ if summary.won:
+  if summary.practice:
+   practice_best_score = maxi(practice_best_score, int(summary.score))
+   if practice_best_seconds <= 0.0 or float(summary.seconds) < practice_best_seconds: practice_best_seconds = float(summary.seconds)
+  else:
+   best_score = maxi(best_score, int(summary.score))
+   if best_seconds <= 0.0 or float(summary.seconds) < best_seconds: best_seconds = float(summary.seconds)
  _save_settings()
  state = "results"
- var stack := _panel("ZONE COMPLETE", "%d POINTS · %s · %d DRAINS" % [summary.score, _time_text(summary.seconds), summary.drains])
+ var stack := _panel("ZONE COMPLETE" if summary.won else "RUN ENDED · OUT OF BALLS", "%s · %d POINTS · %s · %d BALLS LOST" % ["PRACTICE" if summary.practice else "CHALLENGE", summary.score, _time_text(summary.seconds), summary.drains])
  for act: Dictionary in summary.acts:
-  _label(stack, "ACT %d · %s\n%d / %d points · %s · %d drains" % [act.act, act.title, act.score, act.target, _time_text(act.seconds), act.drains])
- _label(stack, "Personal best: %d" % best_score, 20, Color("8fe9b1"))
+  _label(stack, "ACT %d · %s%s\n%d / %d points · %s · %d balls lost · Buddies +%d" % [act.act, act.title, " · NOT CLEARED" if not act.cleared else "", act.score, act.target, _time_text(act.seconds), act.drains, Run.Buddies.total(act.buddy_contributions)])
+ _label(stack, "Scoring: %d base / combo / special + %d from Buddies" % [summary.normal_score, Run.Buddies.total(summary.buddy_contributions)], 17)
+ for id: String in summary.buddies:
+  _label(stack, "%s Lv.%d: +%d points" % [Run.Buddies.CATALOG[id].name, summary.buddies[id], int(summary.buddy_contributions.get(id, 0))], 17, Color("8fe9b1"))
+ _label(stack, "%s best: %d" % ["Practice" if summary.practice else "Challenge", practice_best_score if summary.practice else best_score], 18, Color("8fe9b1"))
  _action(stack, "Play again", start_run, true)
  _action(stack, "Return to menu", return_to_menu)
  _action(stack, "Quit", _quit)
