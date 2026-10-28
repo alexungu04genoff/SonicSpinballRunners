@@ -1,5 +1,7 @@
 # Act Geometry Editor
 
+**Act scoring (format 15):** Act Markers now exposes an optional Score Target. Rings supports independent timed respawns and opt-in Bonus Racks; Spinner Goals and repeatable Switch Banks use the shared score pipeline. See [Act scoring, settings, examples and migration](ACT_SCORING.md).
+
 **Current authored gimmicks (format 13):** Gameplay now includes one-way gates, colored switches/banks, instant springs and scalable bumpers. The separate **Rings** tab offers line and circle/ellipse drawing with optional fill. **Pinball Example** opens the switch/gate/spring objective as an editable copy. See [controls, lifecycle, format and verification](AUTHORED_GIMMICKS.md); historical format notes below describe earlier milestones.
 
 This standalone scene edits **one Act**, initially **12 columns × 12 rows**, with terrain, gameplay objects and optional Act markers. A system-owned red gutter appears below the terrain; it adds no terrain row. Authoring Resources remain independent of the existing generator, playable layouts and physics.

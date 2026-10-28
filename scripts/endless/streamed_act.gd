@@ -46,12 +46,11 @@ func initialize(owner_game: Node, entry: Dictionary, library: Node) -> void:
  var mechanics := Mechanics.new()
  mechanics.ball = game.ball
  mechanics.bind_ball_on_ready = false
+ mechanics.scoring_active = false
  mechanics.banks = document.switch_banks.duplicate(true)
  root.add_child(mechanics)
  runtime = {"root": root, "mechanics": mechanics, "terrain": [], "objects": [], "flippers": [], "cell_size": document.cell_size}
- for trail: Dictionary in document.ring_trails:
-  for point: Vector2 in preload("res://scripts/act_editor/ring_trails.gd").positions(trail):
-   ring_data.append({"home": point + plan.offset, "position": point + plan.offset, "active": true})
+ ring_data.assign(RingField.pattern_records(document.ring_trails, "act:%d" % plan.sequence, plan.offset))
 
 func step() -> void:
  match phase:

@@ -110,7 +110,7 @@ static func defaults(type: String) -> Dictionary:
   "diverter": return {"length": 90.0, "state_a_angle": -35.0, "state_b_angle": 35.0, "initial_state": "a"}
   "dash_panel": return {"width": 50.0, "boost_strength": 350.0, "directional_influence": 70.0, "speed_cap": 2400.0}
   "spring": return {"width": 40.0, "launch_strength": 300.0, "color": "red"}
-  "spinner": return {"width": 40.0, "tick_score": 5.0, "decay": 2.0, "max_spin": 40.0}
+  "spinner": return {"width": 40.0, "tick_score": 5.0, "decay": 2.0, "max_spin": 40.0, "completion_enabled": true, "target_ticks": 10.0, "completion_bonus": 300.0}
   "magnetic_field": return {"radius": 100.0, "strength": 260.0, "mode": "attract"}
   "elevated_rail": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(0, -100), Vector2(100, -170)]), "width": 40.0, "height": 40.0, "drag": 0.06, "entry_speed": 100.0}
  return {}
@@ -129,7 +129,7 @@ static func property_limits(type: String) -> Dictionary:
   "diverter": return {"length": [24.0, 400.0], "state_a_angle": [-180.0, 180.0], "state_b_angle": [-180.0, 180.0]}
   "dash_panel": return {"width": [40.0, 200.0], "boost_strength": [0.0, 2400.0], "directional_influence": [0.0, 100.0], "speed_cap": [100.0, 3000.0]}
   "spring": return {"width": [20.0, 100.0], "launch_strength": [100.0, 2400.0]}
-  "spinner": return {"width": [10.0, 300.0], "tick_score": [0.0, 25.0], "decay": [0.5, 8.0], "max_spin": [1.0, 60.0]}
+  "spinner": return {"width": [10.0, 300.0], "tick_score": [0.0, 25.0], "decay": [0.5, 8.0], "max_spin": [1.0, 60.0], "target_ticks": [1.0, 1000.0], "completion_bonus": [0.0, 100000.0]}
   "magnetic_field": return {"radius": [15.0, 500.0], "strength": [0.0, 600.0]}
   "elevated_rail": return {"width": [18.0, 120.0], "height": [10.0, 200.0], "drag": [0.0, 1.0], "entry_speed": [30.0, 600.0]}
  return {}
@@ -150,6 +150,10 @@ static func property_errors(placement: Dictionary) -> PackedStringArray:
   elif limits.has(key):
    if typeof(values[key]) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(float(values[key])) or float(values[key]) < limits[key][0] or float(values[key]) > limits[key][1]:
     errors.append(str(key) + " is outside its supported finite range.")
+   elif key == "target_ticks" and float(values[key]) != floorf(float(values[key])):
+    errors.append("Spinner target ticks must be a whole number.")
+  elif key == "completion_enabled" and typeof(values[key]) != TYPE_BOOL:
+   errors.append("Completion enabled must be a boolean.")
   elif key == "mode" and values[key] not in ["attract", "repel"]:
    errors.append("mode must be attract or repel.")
   elif key == "initial_state" and values[key] not in (["a", "b"] if placement.type == "diverter" else ["closed", "open"]):

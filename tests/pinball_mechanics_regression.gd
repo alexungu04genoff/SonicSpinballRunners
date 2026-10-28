@@ -5,6 +5,7 @@ const RailPath = preload("res://scripts/authored_act/rail_path.gd")
 const SANDBOX := "res://data/acts/pinball_mechanics_sandbox.tres"
 const RUN_ACT := "res://test-results/pinball-mechanics.tres"
 var ticks := 0
+var traversal_events: Array = []
 
 func frames(count := 3) -> void:
  # Count simulation steps, independent of rendered frames or headless catch-up.
@@ -46,6 +47,9 @@ func run() -> void:
  var document := fixture()
  check(document.validation_errors().is_empty(), "Sandbox schema validates", str(document.validation_errors()))
  var shipped := ActData.load_document(SANDBOX)
+ # Newly introduced optional defaults need not rewrite old authored records.
+ if shipped.document != null:
+  for item: Dictionary in shipped.document.gameplay_objects: item.properties = Objects.properties(item)
  check(shipped.document != null and shipped.document.fingerprint() == document.fingerprint(), "Shipped sandbox matches the tested composition")
  check(document.save_document(RUN_ACT) == OK, "Sandbox saves through ordinary Act persistence")
  var restored: Dictionary = ActData.load_document(RUN_ACT)
@@ -73,6 +77,7 @@ func run() -> void:
  game.controls.virtual_enabled = true
  game.ring_field.set_physics_process(false)
  var manager: Node = game.ball.mechanics
+ manager.traversal_event.connect(func(kind, id, phase): traversal_events.append([kind, id, phase]))
  game.launch_ball()
  var composed := false
  var completed_route := false
@@ -86,7 +91,8 @@ func run() -> void:
  check(composed and completed_route and game.score > 0, "Ordinary flipper input composes spinner, magnet, complete rail and tangent exit", str([composed, completed_route, game.ball.position, game.score]))
  game.reset_ball(false)
  await frames(2)
- manager.mechanic_score.connect(func(_kind: StringName, _id: String, _points: int): ticks += 1)
+ manager.mechanic_score.connect(func(kind: StringName, _id: String, _points: int):
+  if kind == &"spinner_tick": ticks += 1)
  # Cross the spinner once, then move away without resetting its stored spin.
  await place(Vector2(280, 470), Vector2(0, -900))
  await frames(20)
@@ -102,6 +108,7 @@ func run() -> void:
  manager.tick(1.0 / 120.0)
  check(ticks - before <= Mechanics.MAX_TICKS_PER_STEP and manager.items[0].tick_rotation < PI, "Extreme spin cannot emit unbounded ticks or retain backlog")
  manager.reset()
+ _spinner_goal_checks(manager)
  # With normal gravity, an off-axis field produces measurable horizontal momentum.
  await place(Vector2(260, 415), Vector2.ZERO)
  await frames(10)
@@ -118,6 +125,7 @@ func run() -> void:
  # A strong forward entry crosses lower collision geometry on this same ball.
  await enter_rail()
  check(game.ball.on_ramp and game.ball.collision_mask == 0 and game.ball.collision_layer == 0, "Forward mouth crossing enters explicit elevated state")
+ check(traversal_events.back() == [&"elevated_rail", "sandbox_elevated_rail", &"entered"], "Actual rail capture emits typed entry with stable identity")
  var ball_id: int = game.ball.get_instance_id()
  game.ring_field.set_physics_process(true)
  game.tuning.set_value("ring_magnet_radius", 0.0)
@@ -135,6 +143,7 @@ func run() -> void:
  check(camera_followed, "Existing follow camera keeps the elevated ball on screen")
  check(saw_crossing, "Raised ball traverses above the lower lane and collision rails")
  check(not game.ball.on_ramp and game.ball.collision_layer == 2 and game.ball.collision_mask == 1 and not game.ball.custom_integrator, "Exit restores original collision and integration state")
+ check(traversal_events.back() == [&"elevated_rail", "sandbox_elevated_rail", &"exited"], "Actual rail departure emits typed exit")
  check(game.ball.get_instance_id() == ball_id and game.ball.position.x > 440 and game.ball.linear_velocity.y > 0, "Same ball exits with forward tangent momentum")
  await enter_rail()
  if DisplayServer.get_name() != "headless":
@@ -156,6 +165,7 @@ func run() -> void:
  game.reset_ball(false)
  await frames(2)
  check(not game.ball.on_ramp and game.ball.collision_mask == 1 and game.ball.ramp_height == 0.0, "Reset from rail restores the normal table state")
+ check(traversal_events.back() == [&"elevated_rail", "sandbox_elevated_rail", &"exited"], "Reset cancels traversal through the same typed exit")
  await place(Vector2(280, 365), Vector2(0, 220))
  check(not game.ball.on_ramp, "Backward entry cannot capture the ball")
  await place(Vector2(250, 380), Vector2(900, 0))
@@ -205,3 +215,44 @@ func enter_rail() -> void:
  for i in 12:
   if game.ball.on_ramp: break
   await frames(1)
+
+func _spinner_goal_checks(manager: Node) -> void:
+ var item: Dictionary = manager.items[0]
+ var awards: Array = []
+ var completions: Array = []
+ var on_award := func(kind, id, points): awards.append([kind, id, points])
+ var on_complete := func(kind, id, points): completions.append([kind, id, points])
+ manager.mechanic_score.connect(on_award)
+ manager.feature_completed.connect(on_complete)
+ var was_waiting: bool = game.ball.serve_pending
+ game.ball.serve_pending = false
+ var score_before: int = game.score
+ # The production spinner integrates real angular travel, one half-turn each step.
+ for i in 20:
+  item.spin = PI * 10.0
+  manager.tick(0.1)
+ check(awards.filter(func(event): return event[0] == &"spinner_tick").size() == 20 and completions.size() == 2, "Twenty awarded half-turns complete two repeatable Spinner Goals")
+ check(item.goal_ticks == 0 and item.completions == 2 and item.pulse > 0.0, "Spinner consumes goal threshold once and exposes completion feedback")
+ check(game.score - score_before == 700 and completions.all(func(event): return event == [&"spinner_goal", "sandbox_spinner", 300]), "Spinner ticks and fixed bonuses reach main-game Scorecraft exactly once")
+ item.spin = 0.0
+ item.tick_rotation = 0.0
+ manager.tick(1.0)
+ check(awards.size() == 22, "Stationary spinner cannot fabricate ticks or goal completions")
+ manager.scoring_active = false
+ item.spin = PI * 20.0
+ manager.tick(0.1)
+ check(awards.size() == 22 and item.goal_ticks == 0, "Inactive resident spinner cannot award or consume goal progress")
+ manager.scoring_active = true
+ item.properties.completion_enabled = false
+ item.spin = PI * 20.0
+ manager.tick(0.1)
+ check(item.completions == 2 and awards.size() == 24, "Disabling Spinner Goal retains ordinary ticks without new bonus")
+ item.properties.completion_enabled = true
+ manager.reset()
+ check(item.goal_ticks == 0 and item.completions == 0, "Runtime reset clears spinner goal and physical energy together")
+ var invalid := Objects.make_placement("spinner")
+ invalid.properties.target_ticks = 2.5
+ check(not Objects.property_errors(invalid).is_empty(), "Fractional Spinner Goal thresholds are rejected")
+ manager.mechanic_score.disconnect(on_award)
+ manager.feature_completed.disconnect(on_complete)
+ game.ball.serve_pending = was_waiting

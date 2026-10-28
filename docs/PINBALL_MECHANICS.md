@@ -1,5 +1,7 @@
 # Authored pinball mechanics
 
+**Scoring extension (2026-10-28):** Spinners now expose repeatable goals, and elevated rails provide bounded protection for active combos. See [Act scoring](ACT_SCORING.md) for current authoring defaults and lifecycle rules; earlier implementation notes below remain historical context.
+
 Implemented 2026-10-25 in the existing Act Editor and main game. Gates, cannons and target banks were absent from the starting repository; this milestone adds the minimal common object identity/property foundation and the three requested mechanics. It does not implement those earlier proposed mechanics.
 
 ## Try the sandbox

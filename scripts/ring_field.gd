@@ -5,6 +5,9 @@ signal collected(position: Vector2)
 signal scoring_pickup(position: Vector2, source: String, multiplier: int)
 signal pickup_claimed(index: int)
 signal rack_reset
+signal feature_completed(kind: StringName, object_id: String, bonus: int)
+signal rack_completed(position: Vector2, object_id: String)
+const RingTrails = preload("res://scripts/act_editor/ring_trails.gd")
 const CONTACT_RADIUS := PlaygroundBall.RADIUS + 12.0
 ## Per-instance geometry; ordinary tables retain their original 12 px ring contact.
 var ring_radius := 12.0
@@ -14,12 +17,42 @@ var tuning: PhysicsTuning
 var previous_ball_position: Vector2
 ## Empty bounds preserve sandbox behavior; Zone mode collects only the active Act.
 var collection_bounds := Rect2()
+## Ownership is authoritative when neighboring Acts are resident simultaneously.
+var active_owner_id := ""
+var scoring_enabled := true
+var last_pickup_source_id := ""
+
+static func pattern_records(trails: Array, owner_id: String, offset := Vector2.ZERO) -> Array[Dictionary]:
+ var result: Array[Dictionary] = []
+ for index in trails.size():
+  var trail: Dictionary = trails[index]
+  var points := RingTrails.positions(trail)
+  var source_id := owner_id + ":" + RingTrails.pattern_id(trail, index)
+  var rack := _new_rack(source_id, owner_id, points.size(), RingTrails.scoring_settings(trail))
+  for point_index in points.size():
+   var at: Vector2 = points[point_index] + offset
+   result.append({"home": at, "position": at, "active": true, "rack": rack, "source_id": "%s:ring_%d" % [source_id, point_index]})
+ return result
+
+static func _new_rack(source_id: String, owner_id: String, total: int, settings: Dictionary) -> Dictionary:
+ return {"id": source_id, "owner_id": owner_id, "total": total, "remaining": total, "timeout_remaining": -1.0, "respawn_remaining": -1.0, "settings": settings}
 
 func ring_eligible(ring: Dictionary) -> bool:
+ if not scoring_enabled: return false
+ if not active_owner_id.is_empty():
+  return ring.has("rack") and ring.rack.owner_id == active_owner_id
  return not collection_bounds.has_area() or collection_bounds.has_point(ring.home)
 
 func add_ring(at: Vector2) -> void:
- rings.append({"home": at, "position": at, "active": true})
+ # Legacy callers create ordinary single-ring patterns, never implicit +500 racks.
+ var source_id := "%s:ring_pattern_%d" % [active_owner_id, rings.size()]
+ var rack := _new_rack(source_id, active_owner_id, 1, RingTrails.scoring_settings({}))
+ rings.append({"home": at, "position": at, "active": true, "rack": rack, "source_id": source_id + ":ring_0"})
+
+func add_pattern(trail: Dictionary, source_id: String, owner_id := "", offset := Vector2.ZERO) -> void:
+ var pattern := trail.duplicate(true)
+ pattern.pattern_id = source_id
+ rings.append_array(pattern_records([pattern], owner_id, offset))
 
 func reset_rings() -> void:
  for ring: Dictionary in rings:
@@ -27,6 +60,39 @@ func reset_rings() -> void:
    continue
   ring.position = ring.home
   ring.active = true
+  if ring.has("rack"): _reset_rack_state(ring.rack)
+ rack_reset.emit()
+
+static func _reset_rack_state(rack: Dictionary) -> void:
+ rack.remaining = rack.total
+ rack.timeout_remaining = -1.0
+ rack.respawn_remaining = -1.0
+
+func advance_racks(delta: float) -> void:
+ if not scoring_enabled or delta <= 0.0: return
+ var visited: Dictionary = {}
+ var expired_racks: Dictionary = {}
+ for ring: Dictionary in rings:
+  if not ring_eligible(ring) or not ring.has("rack"): continue
+  var rack: Dictionary = ring.rack
+  var id: String = rack.id
+  if visited.has(id): continue
+  visited[id] = true
+  var expired := false
+  if rack.respawn_remaining >= 0.0:
+   rack.respawn_remaining = maxf(0.0, rack.respawn_remaining - delta)
+   expired = rack.respawn_remaining <= 0.0
+  elif rack.timeout_remaining >= 0.0:
+   rack.timeout_remaining = maxf(0.0, rack.timeout_remaining - delta)
+   expired = rack.timeout_remaining <= 0.0
+  if not expired: continue
+  expired_racks[id] = true
+  _reset_rack_state(rack)
+ if expired_racks.is_empty(): return
+ for ring: Dictionary in rings:
+  if ring.has("rack") and expired_racks.has(ring.rack.id) and ring_eligible(ring):
+   ring.position = ring.home
+   ring.active = true
  rack_reset.emit()
 
 func claim_ring(index: int, source: String = "", multiplier: int = 1) -> bool:
@@ -38,14 +104,34 @@ func claim_ring(index: int, source: String = "", multiplier: int = 1) -> bool:
  # One atomic claim is shared by contact, magnet and area abilities. Cosmetic
  # flight and legacy collection observers still receive exactly one event.
  ring.active = false
+ last_pickup_source_id = str(ring.get("source_id", "ring_%d" % index))
+ var completed := false
+ if ring.has("rack"):
+  var rack: Dictionary = ring.rack
+  if rack.timeout_remaining < 0.0: rack.timeout_remaining = rack.settings.timeout
+  rack.remaining = maxi(0, int(rack.remaining) - 1)
+  if rack.remaining == 0:
+   rack.timeout_remaining = -1.0
+   rack.respawn_remaining = rack.settings.respawn_delay
+   completed = bool(rack.settings.bonus_rack)
  pickup_claimed.emit(index)
  scoring_pickup.emit(ring.position, source, multiplier)
  collected.emit(ring.position)
+ if completed:
+  # Completion follows its last physical pickup, through the fixed-feature path.
+  # Respawn is armed before callbacks, so observers cannot complete it twice.
+  feature_completed.emit(&"ring_rack", ring.rack.id, int(ring.rack.settings.completion_bonus))
+  rack_completed.emit(ring.position, ring.rack.id)
  return true
 
-func _physics_process(_delta: float) -> void:
- if ball.serve_pending or ball._teleport_pending or ball.on_ramp:
+func _physics_process(delta: float) -> void:
+ if not is_instance_valid(ball) or not scoring_enabled: return
+ if ball.serve_pending or ball._teleport_pending:
   previous_ball_position = ball._teleport_position if ball._teleport_pending else ball.position
+  return
+ advance_racks(delta)
+ if ball.on_ramp:
+  previous_ball_position = ball.position
   return
  # Radius is measured from the swept ball center to the stationary ring center.
  # A disabled or small magnet must never shrink the existing direct-contact pickup.

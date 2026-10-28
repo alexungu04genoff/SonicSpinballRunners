@@ -19,6 +19,7 @@ var pose_label: Label
 var status_label: Label
 var score_label_lab: Label
 var score_header_lab: Label
+var score_feedback_lab: Label
 var view_button: Button
 var pose_buttons: Dictionary = {}
 var close_view := false
@@ -293,8 +294,8 @@ func _build_lab_ui() -> void:
  title_stack.add_child(development_subtitle)
  var score_panel := PanelContainer.new()
  score_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
- score_panel.position = Vector2(-250, 24)
- score_panel.size = Vector2(226, 98)
+ score_panel.position = Vector2(-324, 24)
+ score_panel.size = Vector2(300, 98)
  score_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.025, 0.13, 0.16, 0.91)))
  score_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
  root.add_child(score_panel)
@@ -304,6 +305,10 @@ func _build_lab_ui() -> void:
  scores.add_child(score_header_lab)
  score_label_lab = _label("00 / 000000", 25, Color("ffe373"))
  scores.add_child(score_label_lab)
+ score_feedback_lab = _label("", 13, Color("a4e5e3"))
+ score_feedback_lab.custom_minimum_size.x = 270
+ score_feedback_lab.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ scores.add_child(score_feedback_lab)
  var footer := PanelContainer.new()
  development_footer = footer
  footer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
@@ -616,9 +621,10 @@ func _process(_delta: float) -> void:
   if not last_source_error.is_empty(): player_hint.text = "Act reload failed: " + last_source_error
  var context := "CHARACTER STUDY" if close_view else ("PAUSED" if get_tree().paused else ("READY TO ROLL IN" if ball.serve_pending else "LIVE PLAY"))
  pose_label.text = "%s / %s" % [character.pose.to_upper(), context]
- score_label_lab.text = "%02d / %06d" % [rings_collected, score]
- score_header_lab.text = "RINGS / SCORE"
- score_label_lab.add_theme_font_size_override("font_size", 25)
+ score_label_lab.text = "%s\n%d TOTAL · %d RINGS" % [act_score_text(), score, rings_collected]
+ score_header_lab.text = "ACT SCORE / TARGET"
+ score_label_lab.add_theme_font_size_override("font_size", 18)
+ score_feedback_lab.text = scoring_feedback_text()
  status_label.text = "Authored Act · %s" % authored_document.title
  status_label.tooltip_text = character.model_status
  if character.BALL_FORM_ONLY:

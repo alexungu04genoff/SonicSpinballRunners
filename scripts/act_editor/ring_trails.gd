@@ -2,14 +2,44 @@ extends RefCounted
 ## Pure authoring geometry. Endpoints and spacing are exact local pixels.
 const DEFAULT_SPACING_CELLS := 0.4
 const MAX_RINGS := 4096
+const SCORING_KEYS := ["pattern_id", "bonus_rack", "completion_bonus", "timeout", "respawn_delay"]
+
+static func scoring_settings(trail: Dictionary) -> Dictionary:
+ return {"bonus_rack": bool(trail.get("bonus_rack", false)), "completion_bonus": int(trail.get("completion_bonus", 500)), "timeout": float(trail.get("timeout", 12.0)), "respawn_delay": float(trail.get("respawn_delay", 1.0))}
+
+static func pattern_id(trail: Dictionary, index: int) -> String:
+ return str(trail.get("pattern_id", "ring_pattern_%d" % index))
+
+static func _scoring_error(trail: Dictionary) -> String:
+ if trail.has("pattern_id") and (not trail.pattern_id is String or trail.pattern_id.is_empty() or trail.pattern_id.length() > 128):
+  return "Ring pattern ID must be a nonempty string of at most 128 characters."
+ if trail.has("bonus_rack") and typeof(trail.bonus_rack) != TYPE_BOOL:
+  return "Bonus Rack must be boolean."
+ if trail.has("completion_bonus") and (typeof(trail.completion_bonus) != TYPE_INT or trail.completion_bonus < 0 or trail.completion_bonus > 100000):
+  return "Ring completion bonus must be an integer from 0 to 100000."
+ for key: String in ["timeout", "respawn_delay"]:
+  if not trail.has(key): continue
+  var value: Variant = trail[key]
+  var maximum := 300.0 if key == "timeout" else 60.0
+  if typeof(value) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(value) or value < 0.1 or value > maximum:
+   return "Ring %s must be from 0.1 to %.0f seconds." % [key, maximum]
+ return ""
+
+static func _allowed_keys(trail: Dictionary, geometry_keys: Array) -> bool:
+ if not trail.has_all(geometry_keys): return false
+ for key: Variant in trail:
+  if key not in geometry_keys and key not in SCORING_KEYS: return false
+ return true
 
 static func validation_error(trail: Variant) -> String:
  if not trail is Dictionary:
   return "Ring trail must be a dictionary."
+ var scoring_error := _scoring_error(trail)
+ if not scoring_error.is_empty(): return scoring_error
  if trail.get("kind") == "ellipse":
   return _ellipse_error(trail)
- if trail.size() != 3 or not trail.has_all(["start", "end", "spacing"]):
-  return "Ring trail needs only start, end and spacing."
+ if not _allowed_keys(trail, ["start", "end", "spacing"]):
+  return "Ring trail needs start, end and spacing, plus optional rack settings."
  if not trail.start is Vector2 or not trail.end is Vector2 or not trail.start.is_finite() or not trail.end.is_finite():
   return "Ring endpoints must be finite local Vector2 coordinates."
  if typeof(trail.spacing) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(trail.spacing) or trail.spacing <= 0:
@@ -37,7 +67,7 @@ static func positions(trail: Dictionary) -> PackedVector2Array:
  return result
 
 static func _ellipse_error(trail: Dictionary) -> String:
- if trail.size() != 6 or not trail.has_all(["kind", "start", "end", "spacing", "fill", "rotation_degrees"]):
+ if not _allowed_keys(trail, ["kind", "start", "end", "spacing", "fill", "rotation_degrees"]):
   return "Ellipse needs kind, start/end bounds, spacing, fill and rotation_degrees."
  if not trail.start is Vector2 or not trail.end is Vector2 or not trail.start.is_finite() or not trail.end.is_finite():
   return "Ellipse bounds must be finite Vector2 coordinates."

@@ -27,7 +27,7 @@ All four palette entries use default grid snapping, **Alt** for free coordinates
 
 For banks, Ctrl-select floor and/or wall switches, then **Create Switch Bank**. The bank picker exposes each gate or diverter with explicit actions: **Open**, **Set A**, **Set B**, or **Toggle**. A target has one action per bank. Several banks may control the same target. The canvas draws these links. Deletion prunes links; undo restores the relationships.
 
-Bank **Bonus** is a fixed score award. **Reset seconds** defaults to 0 (one completion per attempt); a positive value clears member switches and rearms the bank after completion. A switch still overlapping the ball must be left before another press. Gates retain their open state, and diverters retain their selected state, until the ordinary run reset. Repeating a Toggle bank changes its arm each completion. This is a feature reset delay, not a scripting or timed-puzzle system.
+Bank **Bonus** is a fixed score award. New banks default to 500 points and **Reset seconds = 0.75**; already-authored settings are preserved. Zero keeps one completion per attempt; a positive value clears member switches and rearms the bank after completion. A switch still overlapping the ball must be left before another press. Gates retain their open state, and diverters retain their selected state, until the ordinary run reset. Repeating a Toggle bank changes its arm each completion. This is a feature reset delay, not a scripting or timed-puzzle system. See [Act scoring](ACT_SCORING.md) for rack bonuses, Spinner Goals, traversal support and optional Act targets.
 
 ## Runtime behavior
 

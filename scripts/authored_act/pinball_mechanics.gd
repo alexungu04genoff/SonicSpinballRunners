@@ -3,6 +3,8 @@ extends Node
 signal mechanic_score(kind: StringName, object_id: String, points: int)
 signal mechanic_rings(kind: StringName, object_id: String, amount: int)
 signal feature_completed(kind: StringName, object_id: String, bonus: int)
+## Movement events describe actual launches and rail ownership, independently of rewards.
+signal traversal_event(kind: StringName, object_id: String, phase: StringName)
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const RailPath = preload("res://scripts/authored_act/rail_path.gd")
 const Contact = preload("res://scripts/authored_act/gimmick_geometry.gd")
@@ -13,6 +15,8 @@ const MAX_TICKS_PER_STEP := 2
 var ball: PlaygroundBall
 ## Streaming coordinates several independent Act runtimes through one ball adapter.
 var bind_ball_on_ready := true
+## Loaded neighbors retain physical routes, but only the active Act owns objectives.
+var scoring_active := true
 var items: Array[Dictionary] = []
 var banks: Array = []
 var by_id: Dictionary = {}
@@ -46,6 +50,9 @@ func add_object(placement: Dictionary, descriptor: Dictionary) -> void:
  item["passing"] = false
  item["pulse"] = 0.0
  item["launch_count"] = 0
+ if item.type == "spinner":
+  item["goal_ticks"] = 0
+  item["completions"] = 0
  if item.type == "lane_barrier":
   item["posts"] = Objects.world_posts(item)
   item["lanes"] = []
@@ -78,6 +85,9 @@ func reset() -> void:
   item.passing = false
   item.pulse = 0.0
   item.launch_count = 0
+  if item.type == "spinner":
+   item.goal_ticks = 0
+   item.completions = 0
   if item.type == "lane_barrier":
    for i in item.lanes.size(): item.lanes[i] = Lanes.make_lane()
    item.complete = false
@@ -98,6 +108,7 @@ func reset_motion() -> void:
     lane.latched = false
 
 func leave_ramp() -> void:
+ var leaving_id: String = ramp.get("object_id", "")
  if is_instance_valid(ball) and not ramp.is_empty():
   ball.collision_layer = _saved_layer
   ball.collision_mask = _saved_mask
@@ -109,6 +120,7 @@ func leave_ramp() -> void:
  speed = 0.0
  age = 0.0
  reset_motion()
+ if not leaving_id.is_empty(): traversal_event.emit(&"elevated_rail", leaving_id, &"exited")
 
 func tick(dt: float) -> void:
  reentry_time = maxf(0.0, reentry_time - dt)
@@ -137,8 +149,17 @@ func tick(dt: float) -> void:
   var ticks := mini(budget, floori(item.tick_rotation / PI))
   # Discard excess complete rotations instead of building an event backlog.
   item.tick_rotation = fmod(item.tick_rotation, PI)
+  if not scoring_active: continue
   for i in ticks:
-   mechanic_score.emit(&"spinner", item.get("object_id", ""), int(item.properties.tick_score))
+   mechanic_score.emit(&"spinner_tick", item.object_id, int(item.properties.tick_score))
+   if not bool(item.properties.completion_enabled): continue
+   item.goal_ticks += 1
+   if item.goal_ticks >= int(item.properties.target_ticks):
+    # Consume the threshold before dispatch, so callbacks cannot award it twice.
+    item.goal_ticks = 0
+    item.completions += 1
+    item.pulse = 0.6
+    complete_feature(&"spinner_goal", item.object_id, int(item.properties.completion_bonus))
   budget -= ticks
 
 static func magnetic_acceleration(item: Dictionary, at: Vector2) -> Vector2:
@@ -216,12 +237,13 @@ func observe_motion(state: PhysicsDirectBodyState2D, sample_travel := true) -> b
    ball.on_ramp = true
    ball._reset_steering("Elevated rail")
    ball.flipper_launch_pending = false
+   traversal_event.emit(&"elevated_rail", item.object_id, &"entered")
    advance_ramp(state, state.step * (1.0 - fraction))
    return true
  return false
 
 func _activate_switch(item: Dictionary) -> void:
- if item.active: return
+ if not scoring_active or item.active: return
  item.active = true
  item.latched = true
  item.pulse = 0.25
@@ -243,6 +265,7 @@ func _activate_switch(item: Dictionary) -> void:
    else: request_diverter(target, action.action)
 
 func complete_feature(kind: StringName, object_id: String, bonus: int) -> void:
+ if not scoring_active: return
  if bonus > 0: mechanic_score.emit(kind, object_id, bonus)
  feature_completed.emit(kind, object_id, bonus)
 
@@ -269,6 +292,7 @@ func _advance_diverters(at: Vector2, motion: Vector2) -> void:
 func _observe_travel(state: PhysicsDirectBodyState2D, start: Vector2, end: Vector2) -> void:
  for item: Dictionary in items:
   if item.type == "lane_barrier":
+   if not scoring_active: continue
    for i in item.lanes.size():
     if not Lanes.observe(item.lanes[i], start, end, item.posts[i], item.posts[i + 1], item.properties.post_radius, ball.radius): continue
     if item.complete: continue
@@ -300,6 +324,7 @@ func _observe_travel(state: PhysicsDirectBodyState2D, start: Vector2, end: Vecto
    item.launch_count += 1
    state.linear_velocity = Objects.dash_velocity(state.linear_velocity, item)
    ball._reset_steering("Dash Panel")
+   traversal_event.emit(&"dash_panel", item.object_id, &"used")
 
 func _observe_gimmicks(state: PhysicsDirectBodyState2D, start: Vector2, motion: Vector2) -> bool:
  var events: Array[Dictionary] = []
@@ -371,6 +396,7 @@ func _observe_gimmicks(state: PhysicsDirectBodyState2D, start: Vector2, motion: 
    state.linear_velocity = Objects.forward(item) * float(item.properties.launch_strength)
    state.angular_velocity = 0.0
    ball._reset_steering("Spring launch")
+   traversal_event.emit(&"spring", item.object_id, &"used")
    return true
  return false
 

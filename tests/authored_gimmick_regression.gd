@@ -204,12 +204,15 @@ func run() -> void:
  check(not manager.by_id.s1.active and not manager.by_id.gate.open and manager.by_id.open_gate.open and not manager.banks[0].complete, "Reset restores switch, bank and authored gate initial states")
  # Launch strength and angle checked at the first integration that reports a hit.
  var spring: Dictionary = manager.by_id.spring
+ var spring_events: Array = []
+ manager.traversal_event.connect(func(kind, id, phase): spring_events.append([kind, id, phase]))
  var direction := Objects.forward(spring)
  await move_in_run(spring.position + direction * 35.0, -direction * 800.0)
  for i in 20:
   if spring.launch_count > 0: break
   await frames(1)
  check(spring.launch_count == 1 and game.ball.linear_velocity.normalized().dot(direction) > 0.999, "Spring responds immediately with its authored angle")
+ check(spring_events == [[&"spring", "spring", &"used"]], "Actual spring launch emits one typed traversal event with stable identity")
  check(absf(game.ball.linear_velocity.length() - float(spring.properties.launch_strength)) < 4.0 and not game.ball.on_ramp, "Spring uses exact launch strength with no capture state", str(game.ball.linear_velocity))
  var original_cooldown: float = spring.cooldown
  paused = true

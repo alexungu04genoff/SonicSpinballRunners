@@ -9,6 +9,15 @@ var ring_field: RingField
 var presentation: TablePresentation
 var debug_panel: PlaygroundDebugPanel
 var score: int = 0
+var act_score: int = 0
+var act_score_breakdown: Dictionary = {}
+var active_scoring_id := "standalone"
+var act_score_target := 0
+var exit_unlocked := true
+@export var scored_progression_enabled := true
+var _score_exit: StaticBody2D
+const ScoreExit = preload("res://scripts/authored_act/score_exit.gd")
+const ScoringFeedback = preload("res://scripts/authored_act/scoring_feedback.gd")
 var rings_collected: int = 0
 var ball_number: int = 1
 var special_meter: float = 0.0
@@ -51,6 +60,7 @@ func _ready() -> void:
  scorecraft.config = scorecraft_config
  scorecraft.enabled = scorecraft_enabled
  add_child(scorecraft)
+ scorecraft.score_awarded.connect(_on_score_awarded)
  controls = PlaygroundInput.new()
  controls.name = "InputRouter"
  add_child(controls)
@@ -62,6 +72,7 @@ func _ready() -> void:
  ball.tuning = tuning
  ball.controls = controls
  var args := OS.get_cmdline_user_args()
+ if "--free-play" in args: scored_progression_enabled = false
  var act_argument := args.find("--act")
  if act_argument >= 0 and act_argument + 1 < args.size():
   authored_act_path = args[act_argument + 1]
@@ -79,9 +90,7 @@ func _ready() -> void:
  _authored_root = authored_runtime.get("root")
  if _authored_root != null:
   world.add_child(_authored_root)
-  authored_runtime.mechanics.mechanic_score.connect(_on_mechanic_score)
-  authored_runtime.mechanics.mechanic_rings.connect(_on_mechanic_rings)
-  authored_runtime.mechanics.feature_completed.connect(_on_feature_completed)
+  _wire_scoring_runtime(authored_runtime, active_scoring_id)
   flippers.assign(authored_runtime.flippers)
  ring_field = RingField.new()
  ring_field.name = "Rings"
@@ -99,6 +108,9 @@ func _ready() -> void:
  var presentation_started := Time.get_ticks_usec()
  _build_view()
  var presentation_ms := (Time.get_ticks_usec() - presentation_started) / 1000.0
+ if _authored_root != null:
+  _add_scoring_hardware(authored_runtime, authored_document, Vector2.ZERO, presentation, active_scoring_id)
+  _activate_scoring_context(authored_document, authored_runtime, active_scoring_id)
  _build_debug_panel()
  controls.launch_requested.connect(launch_ball)
  controls.reset_requested.connect(func(): reset_ball(true))
@@ -110,6 +122,7 @@ func _ready() -> void:
  )
  ball.bumper_hit.connect(_on_bumper_hit)
  ring_field.scoring_pickup.connect(_on_ring_collected)
+ ring_field.feature_completed.connect(_on_ring_feature_completed)
  tuning.changed.connect(_apply_tuning)
  _apply_tuning()
  if _authored_root != null:
@@ -144,11 +157,10 @@ func _fail_startup(message: String) -> void:
 
 func _populate_rings() -> void:
  var started := Time.get_ticks_usec()
- ring_field.rings.clear()
+ ring_field.active_owner_id = active_scoring_id
+ ring_field.rings = RingField.pattern_records(authored_document.ring_trails, active_scoring_id)
  ring_field.previous_ball_position = ball.serve_position
  ring_field.ring_radius = float(authored_document.cell_size) * preload("res://scripts/act_dimensions.gd").RING_RADIUS_CELLS
- for point: Vector2 in playfield.ring_positions:
-  ring_field.add_ring(point)
  _ring_population_ms = (Time.get_ticks_usec() - started) / 1000.0
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -286,9 +298,7 @@ func _replace_playfield(prepared: Dictionary, settings: Dictionary) -> void:
  authored_runtime = prepared.runtime
  _authored_root = authored_runtime.root
  world.add_child(_authored_root)
- authored_runtime.mechanics.mechanic_score.connect(_on_mechanic_score)
- authored_runtime.mechanics.mechanic_rings.connect(_on_mechanic_rings)
- authored_runtime.mechanics.feature_completed.connect(_on_feature_completed)
+ _wire_scoring_runtime(authored_runtime, active_scoring_id)
  flippers.assign(authored_runtime.flippers)
  playfield = Playfield.from_authored(authored_document, authored_runtime)
  if settings.has("chao"):
@@ -304,6 +314,8 @@ func _replace_playfield(prepared: Dictionary, settings: Dictionary) -> void:
   flipper.struck_this_swing = false
   flipper.strikes = 0
  score = 0
+ act_score = 0
+ act_score_breakdown.clear()
  rings_collected = 0
  ball_number = 1
  special_meter = 0.0
@@ -319,6 +331,8 @@ func _replace_playfield(prepared: Dictionary, settings: Dictionary) -> void:
  _goal_motion_ready = false
  var presentation_started := Time.get_ticks_usec()
  _rebuild_presentation()
+ _add_scoring_hardware(authored_runtime, authored_document, Vector2.ZERO, presentation, active_scoring_id)
+ _activate_scoring_context(authored_document, authored_runtime, active_scoring_id)
  presentation.reset_camera(ball.serve_position)
  var presentation_ms := (Time.get_ticks_usec() - presentation_started) / 1000.0
  ball.freeze = false
@@ -355,6 +369,7 @@ func reset_ball(relaunch: bool = false) -> void:
  ball.teleport_to(ball.serve_position, Vector2.ZERO, true)
  presentation.reset_camera(ball.serve_position)
  ring_field.previous_ball_position = ball.serve_position
+ ring_field.scoring_enabled = true
  auto_launch_time = 0.25 if relaunch else -1.0
  status_message = "Ready to launch"
 
@@ -367,18 +382,105 @@ func toggle_debug() -> void:
 func toggle_pause() -> void:
  get_tree().paused = not get_tree().paused
 
-func _on_mechanic_score(kind: StringName, object_id: String, points: int) -> void:
- if respawn_time >= 0.0 or loading_act or ball.serve_pending: return
- score += scorecraft.award_mechanic(kind, object_id, points)
+func _wire_scoring_runtime(runtime: Dictionary, owner_id: String) -> void:
+ var mechanics: Node = runtime.mechanics
+ mechanics.mechanic_score.connect(_on_mechanic_score.bind(owner_id))
+ mechanics.mechanic_rings.connect(_on_mechanic_rings.bind(owner_id))
+ mechanics.feature_completed.connect(_on_feature_completed.bind(owner_id))
+ mechanics.traversal_event.connect(_on_traversal_event.bind(owner_id))
+ for index in runtime.objects.size():
+  var item: Dictionary = runtime.objects[index]
+  item.body.set_meta("scoring_owner", owner_id)
+  item.body.set_meta("scoring_source", owner_id + ":" + str(item.get("object_id", "object_%d" % index)))
 
-func _on_mechanic_rings(_kind: StringName, _object_id: String, amount: int) -> void:
- if respawn_time >= 0.0 or loading_act or ball.serve_pending: return
+func _add_scoring_hardware(runtime: Dictionary, document: Resource, offset: Vector2, visual_parent: Node3D, owner_id: String) -> void:
+ var visuals := Node3D.new()
+ visuals.name = "ActScoringFeedback"
+ visuals.set_meta("keep_on_playfield_rebuild", true)
+ visual_parent.add_child(visuals)
+ runtime.root.tree_exiting.connect(visuals.queue_free)
+ if int(document.score_target) > 0 and int(document.exit_width) > 0:
+  var barrier := ScoreExit.new()
+  runtime.root.add_child(barrier)
+  barrier.configure(document, offset, visuals, scored_progression_enabled)
+  runtime["score_exit"] = barrier
+ var feedback := ScoringFeedback.new()
+ visuals.add_child(feedback)
+ feedback.configure(runtime.mechanics, ring_field, owner_id)
+
+func _activate_scoring_context(document: Resource, runtime: Dictionary, owner_id: String) -> void:
+ active_scoring_id = owner_id
+ scorecraft.act_context = owner_id
+ scorecraft.reset("Act activated", true)
+ act_score = 0
+ act_score_breakdown.clear()
+ _target_awards.clear()
+ ring_field.active_owner_id = owner_id
+ ring_field.scoring_enabled = true
+ ring_field.previous_ball_position = ball.position
+ act_score_target = int(document.score_target) if scored_progression_enabled else 0
+ exit_unlocked = act_score_target <= 0
+ _score_exit = runtime.get("score_exit")
+ if is_instance_valid(_score_exit): _score_exit.set_unlocked(exit_unlocked)
+
+func _accept_scoring(owner_id: String = "") -> bool:
+ return (owner_id.is_empty() or owner_id == active_scoring_id) and respawn_time < 0.0 and not loading_act and not ball.serve_pending
+
+func _on_score_awarded(details: Dictionary) -> void:
+ # Scorecraft alone calculates each award. Both ledgers consume that exact result.
+ var amount := int(details.total)
+ score += amount
+ act_score += amount
+ var kind := String(details.kind)
+ act_score_breakdown[kind] = int(act_score_breakdown.get(kind, 0)) + amount
+ if not exit_unlocked and act_score >= act_score_target:
+  exit_unlocked = true
+  if is_instance_valid(_score_exit): _score_exit.set_unlocked(true)
+  status_message = "ACT TARGET REACHED — EXIT OPEN"
+
+func scoring_breakdown_text() -> String:
+ var lines := PackedStringArray(["Current Act Score: %d" % act_score])
+ for kind: String in act_score_breakdown:
+  lines.append("%s: %d" % [kind.capitalize(), int(act_score_breakdown[kind])])
+ return "\n".join(lines)
+
+func act_score_text() -> String:
+ return "%d / %d%s" % [act_score, act_score_target, " · EXIT OPEN" if exit_unlocked else ""] if act_score_target > 0 else "%d · Free Play" % act_score
+
+func scoring_feedback_text() -> String:
+ if scorecraft.support_feedback_remaining > 0.0: return "COMBO EXTENDED"
+ if scorecraft.feedback_remaining <= 0.0 or scorecraft.last_award.is_empty(): return ""
+ var award: Dictionary = scorecraft.last_award
+ var label: String = {"ring_rack": "RING RACK COMPLETE", "switch_bank": "SWITCH BANK COMPLETE", "spinner_goal": "SPINNER BONUS", "lane_set": "LANE SET COMPLETE"}.get(award.kind, String(award.kind).replace("_", " ").to_upper())
+ if not String(award.ability).is_empty(): label = String(award.ability).replace("_", " ").to_upper() + " " + label
+ elif int(award.special_bonus) > 0: label = "HOMING"
+ return "%s +%d%s" % [label, int(award.total), " ×%d" % int(award.multiplier) if int(award.multiplier) > 1 else ""]
+
+func _on_mechanic_score(kind: StringName, object_id: String, points: int, owner_id: String = "") -> void:
+ if not _accept_scoring(owner_id): return
+ scorecraft.award_mechanic(kind, (active_scoring_id if owner_id.is_empty() else owner_id) + ":" + object_id, points)
+
+func _on_mechanic_rings(_kind: StringName, _object_id: String, amount: int, owner_id: String = "") -> void:
+ if not _accept_scoring(owner_id): return
  rings_collected += maxi(0, amount)
  status_message = "LANE REWARD  +%d RINGS" % amount
 
-func _on_feature_completed(kind: StringName, _object_id: String, bonus: int) -> void:
- if respawn_time >= 0.0 or loading_act or ball.serve_pending: return
- status_message = ("LANE SET COMPLETE" if kind == &"lane_set" else "SWITCH BANK COMPLETE") + ("  +%d" % bonus if bonus > 0 else "")
+func _on_feature_completed(kind: StringName, _object_id: String, bonus: int, owner_id: String = "") -> void:
+ if not _accept_scoring(owner_id): return
+ var labels := {&"lane_set": "LANE SET COMPLETE", &"switch_bank": "SWITCH BANK COMPLETE", &"spinner_goal": "SPINNER BONUS", &"ring_rack": "RING RACK COMPLETE"}
+ status_message = String(labels.get(kind, String(kind).to_upper())) + ("  +%d" % bonus if bonus > 0 else "")
+ if act_score_target > 0 and exit_unlocked: status_message += " · EXIT OPEN"
+
+func _on_ring_feature_completed(kind: StringName, object_id: String, bonus: int) -> void:
+ if not _accept_scoring() or not object_id.begins_with(active_scoring_id + ":"): return
+ scorecraft.award_mechanic(kind, object_id, bonus)
+ _on_feature_completed(kind, object_id, bonus)
+
+func _on_traversal_event(kind: StringName, object_id: String, phase: StringName, owner_id: String = "") -> void:
+ if not owner_id.is_empty() and owner_id != active_scoring_id: return
+ var source_id := active_scoring_id + ":" + object_id
+ if phase != &"exited" and not _accept_scoring(owner_id): return
+ if scorecraft.traversal_event(kind, source_id, phase): status_message = "COMBO EXTENDED · " + String(kind).replace("_", " ").to_upper()
 
 func _on_bumper_hit(body: Node) -> void:
  var impact: bool = specials.impact_target == body
@@ -387,7 +489,7 @@ func _on_bumper_hit(body: Node) -> void:
 func scoring_target_eligible(body: Node2D) -> bool:
  if not is_instance_valid(body) or not body.has_meta("bumper") or respawn_time >= 0.0 or loading_act:
   return false
- return true
+ return str(body.get_meta("scoring_owner", active_scoring_id)) == active_scoring_id
 
 func activate_area_target(body: Node2D, source: String, multiplier: int) -> bool:
  if source not in ["shockwave", "chaos_blast"]:
@@ -405,7 +507,8 @@ func _award_bumper(body: Node2D, source: String, multiplier: int, physical: bool
  if not previous.is_empty() and frame - previous.frame < ceili(0.16 * Engine.physics_ticks_per_second) and (not physical or previous.remote):
   return false
  _target_awards[key] = {"frame": frame, "remote": not physical}
- score += scorecraft.award_bumper(body, specials.hit_multiplier(body)) if source.is_empty() else scorecraft.award_area("bumper", source, multiplier, body)
+ if source.is_empty(): scorecraft.award_bumper(body, specials.hit_multiplier(body))
+ else: scorecraft.award_area("bumper", source, multiplier, body)
  if physical:
   specials.charge(specials.definition.bumper_charge)
  presentation.flash_bumper(body)
@@ -414,18 +517,11 @@ func _award_bumper(body: Node2D, source: String, multiplier: int, physical: bool
 func _on_ring_collected(_where: Vector2, source: String = "", multiplier: int = 1) -> void:
  if respawn_time >= 0.0 or loading_act:
   return
- score += scorecraft.award_ring() if source.is_empty() else scorecraft.award_area("ring", source, multiplier)
+ if source.is_empty(): scorecraft.award_ring(ring_field.last_pickup_source_id)
+ else: scorecraft.award_area("ring", source, multiplier, null, ring_field.last_pickup_source_id)
  rings_collected += 1
  if source.is_empty():
   specials.charge(specials.definition.ring_charge)
- var active: int = 0
- for ring: Dictionary in ring_field.rings:
-  if ring.active and ring_field.ring_eligible(ring):
-   active += 1
- if active == 0:
-  score += scorecraft.award_rack()
-  ring_reset_time = 1.0
-  status_message = "RING RACK CLEARED  +500"
 
 func _physics_process(delta: float) -> void:
  if not is_instance_valid(ball) or loading_act:
@@ -437,6 +533,7 @@ func _physics_process(delta: float) -> void:
  elif not ball.serve_pending and not ball._teleport_pending and _at_playfield_drain():
   ball_number += 1
   respawn_time = 0.65
+  ring_field.scoring_enabled = false
   if is_instance_valid(ball.mechanics): ball.mechanics.reset()
   specials.reset(false, "Drain")
   scorecraft.reset("Drain", true)
@@ -446,12 +543,9 @@ func _physics_process(delta: float) -> void:
   auto_launch_time -= delta
   if auto_launch_time <= 0:
    launch_ball()
- if ring_reset_time >= 0:
-  ring_reset_time -= delta
-  if ring_reset_time <= 0:
-   ring_field.reset_rings()
- if ball.on_ramp: _goal_motion_ready = false
- if not ball.on_ramp and not ball.serve_pending and not ball._teleport_pending and respawn_time < 0.0:
+ # Rail travel is authoritative ball motion too. It can cross an Activation
+ # marker even though rings and lower-table bumper contacts are suspended.
+ if not ball.serve_pending and not ball._teleport_pending and respawn_time < 0.0:
   var start := previous_goal_position if _goal_motion_ready else ball.position
   _observe_authored_motion(start, ball.position)
   _goal_motion_ready = true
@@ -467,7 +561,7 @@ func _observe_authored_motion(start: Vector2, finish: Vector2) -> void:
  if events.activation:
   authored_activation_count += 1
   print("ACT ACTIVATED | upward crossing ", authored_activation_count)
- if events.exit:
+ if events.exit and exit_unlocked:
   authored_exit_count += 1
   print("ACT EXIT REACHED | upward crossing ", authored_exit_count)
 

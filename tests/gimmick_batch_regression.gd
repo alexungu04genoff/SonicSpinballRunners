@@ -6,6 +6,7 @@ const BATCH_PATH := "res://test-results/gimmick-batch.tres"
 const BATCH_EXAMPLE := "res://data/acts/routing_mechanics_sandbox.tres"
 var score_events: Array = []
 var ring_events: Array = []
+var traversal_events: Array = []
 
 func batch_fixture() -> Resource:
  var act := ActData.new()
@@ -103,6 +104,7 @@ func run() -> void:
  identities = engine_ids()
  manager.mechanic_score.connect(func(kind, id, points): score_events.append([kind, id, points]))
  manager.mechanic_rings.connect(func(kind, id, count): ring_events.append([kind, id, count]))
+ manager.traversal_event.connect(func(kind, id, phase): traversal_events.append([kind, id, phase]))
  game.controls.virtual_enabled = true
  game.tuning.set_value("max_downward_speed", 3000.0)
  await _wall_and_bank_checks()
@@ -221,6 +223,14 @@ func _wall_and_bank_checks() -> void:
  await frames(30)
  check(not manager.by_id.wall_green.active and not manager.banks[0].complete and manager.by_id.gate.open, "Repeatable bank clears switches while gate stays open")
  check(not manager.by_id.floor_blue.active, "Switch reset while overlapping requires departure before another press")
+ var score_before: int = game.score
+ for id: String in ["floor_blue", "floor_red", "wall_green"]: manager._activate_switch(manager.by_id[id])
+ check(manager.banks[0].complete and game.score - score_before == 550 and manager.by_id.gate.open, "Rearmed mixed bank awards explicit member rewards and one bonus without closing gate")
+ manager.tick(0.25)
+ manager.scoring_active = false
+ for id: String in ["floor_blue", "floor_red", "wall_green"]: manager._activate_switch(manager.by_id[id])
+ check(not manager.banks[0].complete and not manager.by_id.floor_blue.active, "Inactive resident bank cannot consume a completion")
+ manager.scoring_active = true
  manager.reset()
 
 func _lane_shots() -> void:
@@ -305,6 +315,7 @@ func _dash_shots() -> void:
   if item.launch_count > 0: break
   await frames(1)
  check(item.launch_count == 1 and game.ball.linear_velocity.length() > 1100.0 and not game.ball.on_ramp, "Dash accelerates real ball without capture")
+ check(traversal_events.back() == [&"dash_panel", "dash", &"used"], "Actual dash entry emits typed traversal with stable identity")
  for i in 30: await move_in_run(item.position, Vector2.ZERO)
  check(item.launch_count == 1, "Continuous overlap cannot retrigger after cooldown")
  await move_in_run(Vector2(120, 350), Vector2.ZERO)

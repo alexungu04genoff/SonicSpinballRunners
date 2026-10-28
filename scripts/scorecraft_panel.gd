@@ -49,6 +49,8 @@ func _process(_delta: float) -> void:
   next_action.text = "%.1fs · Rings %d/%d%s" % [combo.remaining, combo.ring_progress, combo.config.rings_per_link, " for ×3" if combo.multiplier == 2 and not combo.has_ring_link else " or a new bumper"]
  else:
   next_action.text = "%.1fs · Find a new bumper" % combo.remaining
+ if not combo.protected_rail.is_empty() and combo.rail_protection_remaining > 0.0:
+  next_action.text = "Rail protection %.1fs · combo %.1fs" % [combo.rail_protection_remaining, combo.remaining]
  clock_bar.max_value = maxf(0.5, combo.config.combo_window)
  clock_bar.value = combo.remaining
  award.text = "Repeated bumpers: ×1, no refresh"
@@ -56,9 +58,10 @@ func _process(_delta: float) -> void:
   var info: Dictionary = combo.last_award
   if info.special_bonus > 0:
    award.text = "HOMING +%d · %d×%d + %d finish" % [info.total, info.base, info.multiplier, info.special_bonus]
-  elif info.kind == "bumper" and combo.enabled and not info.fresh_bumper:
+  elif info.kind == "bumper" and combo.enabled and not info.fresh_bumper and String(info.get("ability", "")).is_empty():
    award.text = "Repeat bumper +%d · no refresh" % info.total
   else:
-   award.text = "%s +%d · ×%d" % [str(info.kind).capitalize(), info.total, info.multiplier]
+   award.text = game.scoring_feedback_text()
+ if combo.support_feedback_remaining > 0.0: award.text = "COMBO EXTENDED"
  toggle.set_pressed_no_signal(combo.enabled)
  toggle.disabled = not game.can_reload_act()

@@ -200,9 +200,9 @@ func _process(delta: float) -> void:
    if building.ready:
     resident.append(building)
     hub.runtimes.append(building.runtime.mechanics)
-    building.runtime.mechanics.mechanic_score.connect(_on_mechanic_score)
-    building.runtime.mechanics.mechanic_rings.connect(_on_mechanic_rings)
-    building.runtime.mechanics.feature_completed.connect(_on_feature_completed)
+    var owner_id := "act:%d" % building.plan.sequence
+    _wire_scoring_runtime(building.runtime, owner_id)
+    _add_scoring_hardware(building.runtime, building.document, building.plan.offset, presentation, owner_id)
     building = null
     operation_started = Time.get_ticks_usec()
     _sync_resident()
@@ -260,9 +260,11 @@ func _process(delta: float) -> void:
   if loading_boundary:
    detail.text = "Waiting for the next Act to finish loading…" if library.error.is_empty() else library.error
   else:
-   detail.text = "%s · %s" % [Plan.TITLES[active.plan.id], "Camera tour — ball parked" if touring else "No score target · unlimited checkpoint retries"]
+   detail.text = "%s · %s\nACT SCORE  %s     TOTAL SCORE  %d     COMBO ×%d\n%s" % [Plan.TITLES[active.plan.id], "Camera tour — ball parked" if touring else "Unlimited checkpoint retries", act_score_text(), score, scorecraft.multiplier, status_message]
+   if not scoring_feedback_text().is_empty(): detail.text += "\n" + scoring_feedback_text()
   diagnostics.text = "Seed %d | Resident %d | Queued %d | Build %.2f ms (max %.2f) | Frame max %.1f ms\nDisk Acts %d · Disk themes %d · Runtime rebuilds %d · Last prepare %.2f s" % [run_seed, resident.size(), pending.size() + int(building != null), last_build_ms, max_build_ms, max_frame_ms, library.visual_bake_hits, library.theme_bake_hits, library.fallback_builds, library.last_prepare_ms / 1000.0]
   diagnostics.text += "\nTheme preloads %d · Last %.2f s%s" % [library.theme_prefetches, library.last_theme_prepare_ms / 1000.0, " · Preparing " + library.preparing_theme if not library.preparing_theme.is_empty() else ""]
+  diagnostics.text += "\n" + scoring_breakdown_text()
 
 func _prefetch_next_theme() -> void:
  if not started or active == null: return
@@ -298,6 +300,7 @@ func _physics_process(delta: float) -> void:
  super._physics_process(delta)
 
 func _observe_authored_motion(start: Vector2, finish: Vector2) -> void:
+ if not exit_unlocked: return
  for act: RefCounted in resident:
   if act.plan.sequence != active_sequence + 1: continue
   var events := ActLifecycle.crossings(act.document, start - Vector2(act.plan.offset), finish - Vector2(act.plan.offset))
@@ -307,16 +310,19 @@ func _at_playfield_drain() -> bool:
  return active != null and ball.position.y >= float(active.document.red_gutter_bounds().end.y) + active.plan.offset.y
 
 func _activate(act: RefCounted, initial := false) -> void:
+ if not initial and active == act: return
  active = act
  active_sequence = act.plan.sequence
  authored_document = act.document
  authored_runtime = act.runtime
  ball.serve_position = act.spawn()
  ring_field.collection_bounds = act.bounds()
+ for resident_act: RefCounted in resident:
+  resident_act.runtime.mechanics.scoring_active = resident_act == act
+ _activate_scoring_context(act.document, act.runtime, "act:%d" % act.plan.sequence)
  if not initial:
   specials.act_advanced()
   scorecraft.reset("Act advanced", true)
- ring_reset_time = -1.0
  _sync_resident()
  _show_background(act.plan.zone, act.plan.theme, initial)
  if next_zone_to_plan <= act.plan.zone + 1:

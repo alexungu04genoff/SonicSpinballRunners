@@ -27,12 +27,11 @@ func prepare(points: PackedVector2Array, radius: float = 50.0, sentinel: bool = 
  for point: Vector2 in points:
   field.add_ring(point)
  if sentinel:
-  field.add_ring(Vector2(10000, 10000)) # Keep rack bonus out of isolated pickup assertions.
+  field.add_ring(Vector2(10000, 10000))
  events.clear()
  game.score = 0
  game.rings_collected = 0
  game.special_meter = 0
- game.ring_reset_time = -1.0
  game.tuning.set_value("ring_magnet_radius", radius)
  game.ball.position = Vector2(2000, 500)
  game.ball.serve_pending = false
@@ -65,9 +64,10 @@ func run() -> void:
   field._physics_process(1.0 / 120.0)
  check(field.rings[0].active and field.rings[0].position == field.rings[0].home and not field.rings[1].active and events.size() == 1, "Outside rings remain fixed; exact radius boundary collects")
 
- prepare(PackedVector2Array([Vector2(2026, 500), Vector2(2027, 500)]), 0)
+ var contact_radius: float = game.ball.radius + field.ring_radius
+ prepare(PackedVector2Array([Vector2(2000 + contact_radius, 500), Vector2(2001 + contact_radius, 500)]), 0)
  field._physics_process(1.0 / 120.0)
- check(not field.rings[0].active and field.rings[1].active and game.score == 25, "Radius zero preserves the 26 px direct-contact pickup threshold")
+ check(not field.rings[0].active and field.rings[1].active and game.score == 25, "Radius zero preserves the authored direct-contact pickup threshold")
 
  var swept_both_ways := true
  for direction: float in [-1.0, 1.0]:
@@ -78,7 +78,7 @@ func run() -> void:
   swept_both_ways = swept_both_ways and not field.rings[0].active and field.rings[1].active and events.size() == 1
  check(swept_both_ways, "Swept magnet collects between distant endpoints in both directions without widening radius")
 
- prepare(PackedVector2Array([Vector2(2100, 526), Vector2(2100, 527)]), 0)
+ prepare(PackedVector2Array([Vector2(2100, 500 + contact_radius), Vector2(2100, 501 + contact_radius)]), 0)
  game.ball.position = Vector2(2200, 500)
  field._physics_process(1.0 / 120.0)
  check(not field.rings[0].active and field.rings[1].active and events.size() == 1, "Swept direct contact stays reliable at high speed with magnetism disabled")
@@ -101,14 +101,14 @@ func run() -> void:
  check(events.is_empty() and field.previous_ball_position == game.ball.position, "Waiting at serve suppresses pickups and discards the previous travel segment")
 
  prepare(PackedVector2Array([Vector2(2020, 500), Vector2(2040, 500)]), 50, false)
+ field.rings.clear()
+ field.add_pattern({"start": Vector2(2020, 500), "end": Vector2(2040, 500), "spacing": 20.0, "bonus_rack": true}, "bonus_test", field.active_owner_id)
  field._physics_process(1.0 / 120.0)
  field._physics_process(1.0 / 120.0)
- var first_rack: bool = events.size() == 2 and game.score == 550 and game.special_meter == 10 and game.ring_reset_time == 1.0
- game.ball.serve_pending = true
- game._physics_process(1.1)
- game.ball.serve_pending = false
+ var first_rack: bool = events.size() == 2 and game.score == 550 and game.special_meter == 10 and field.rings[0].rack.respawn_remaining > 0.0
+ field.advance_racks(1.1)
  field._physics_process(1.0 / 120.0)
- check(first_rack and events.size() == 4 and game.score == 1100 and game.rings_collected == 4 and game.special_meter == 20, "Rack bonus occurs once per rack; timed reset rearms stationary rings for endless play")
+ check(first_rack and events.size() == 4 and game.score == 1100 and game.rings_collected == 4 and game.special_meter == 20, "Explicit rack bonus occurs once per clear; timed reset rearms rings")
 
  prepare(PackedVector2Array([Vector2(2100, 545)]))
  game.controls.virtual_enabled = true

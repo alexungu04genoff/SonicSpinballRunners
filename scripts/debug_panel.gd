@@ -325,8 +325,9 @@ func _process(delta: float) -> void:
   return
  _telemetry_elapsed = 0.0
  traversal_telemetry.text = "Camera: %s\nTarget: %.0f, %.0f px\nActivation crossings: %d\nExit crossings: %d" % ["Follow" if game.presentation.camera_follow_enabled else "Overview", game.presentation.camera_target.x, game.presentation.camera_target.y, game.authored_activation_count, game.authored_exit_count]
+ traversal_telemetry.text += "\n\n" + game.scoring_breakdown_text()
  var velocity: Vector2 = game.ball.linear_velocity
- score_label.text = "%06d   /   %02d RINGS   /   BALL %02d" % [game.score, game.rings_collected, game.ball_number]
+ score_label.text = "ACT %s   /   TOTAL %d   /   %02d RINGS" % [game.act_score_text(), game.score, game.rings_collected]
  message_label.text = game.status_message
  telemetry.text = "Position   %7.1f, %7.1f px\nVelocity   %7.1f, %7.1f px/s\nSpeed      %7.1f    Assist %6.1f\nSpecial    %3.0f%%   |   Physics 120 Hz" % [game.ball.position.x, game.ball.position.y, velocity.x, velocity.y, velocity.length(), game.ball.steering_contribution, game.special_meter]
  var paused: bool = get_tree().paused

@@ -208,9 +208,8 @@ func load_act(path: String) -> bool:
  next_rings.tuning = tuning
  next_rings.ring_radius = Dimensions.RING_RADIUS_CELLS * float(candidate.cell_size)
  next_rings.previous_ball_position = candidate.spawn_position
- for trail: Dictionary in candidate.ring_trails:
-  for point: Vector2 in RingTrails.positions(trail):
-   next_rings.add_ring(point)
+ next_rings.active_owner_id = "preview"
+ next_rings.rings = RingField.pattern_records(candidate.ring_trails, "preview")
  next_simulation.add_child(next_rings)
  var rings_ms := (Time.get_ticks_usec() - rings_started) / 1000.0
  var presentation_started := Time.get_ticks_usec()

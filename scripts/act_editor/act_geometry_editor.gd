@@ -58,6 +58,9 @@ var _angle_display_text := ""
 var marker_buttons: Dictionary = {}
 var marker_list: VBoxContainer
 var marker_summary: Label
+var score_target_enabled: CheckBox
+var score_target_field: SpinBox
+var _last_score_target := 3000
 var ring_spacing_field: SpinBox
 var rings_scroll: ScrollContainer
 var rings_list: VBoxContainer
@@ -65,6 +68,9 @@ var ring_fill_field: CheckBox
 var ring_radius_fields: Array[SpinBox] = []
 var ring_rotation_field: SpinBox
 var ring_ellipse_settings: VBoxContainer
+var ring_bonus_field: CheckBox
+var ring_scoring_fields: Dictionary = {}
+var ring_scoring_defaults := {"bonus_rack": false, "completion_bonus": 500, "timeout": 12.0, "respawn_delay": 1.0}
 var bank_controls: VBoxContainer
 var selected_bank_id := ""
 var composite_bar: HFlowContainer
@@ -324,6 +330,26 @@ func _build_ui() -> void:
 	ring_rotation_field.suffix = "degrees"
 	ring_rotation_field.value_changed.connect(func(value: float): _change_ring_pattern("rotation_degrees", value))
 	ring_ellipse_settings.add_child(ring_rotation_field)
+	ring_bonus_field = CheckBox.new()
+	ring_bonus_field.text = "Bonus Rack"
+	ring_bonus_field.tooltip_text = "Complete this pattern before its timeout for a fixed bonus. Other patterns are independent."
+	ring_bonus_field.toggled.connect(func(value: bool): _change_ring_scoring("bonus_rack", value))
+	rings_list.add_child(ring_bonus_field)
+	for key: String in ["completion_bonus", "timeout", "respawn_delay"]:
+		var row := HBoxContainer.new()
+		rings_list.add_child(row)
+		var caption := Label.new()
+		caption.text = {"completion_bonus": "Completion bonus", "timeout": "Timeout", "respawn_delay": "Respawn delay"}[key]
+		row.add_child(caption)
+		var field := SpinBox.new()
+		field.min_value = 0 if key == "completion_bonus" else 0.1
+		field.max_value = 100000 if key == "completion_bonus" else (300 if key == "timeout" else 60)
+		field.step = 1 if key == "completion_bonus" else 0.1
+		field.suffix = "points" if key == "completion_bonus" else "s"
+		field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		field.value_changed.connect(func(value: float): _change_ring_scoring(key, int(value) if key == "completion_bonus" else value))
+		row.add_child(field)
+		ring_scoring_fields[key] = field
 	var ring_hint := Label.new()
 	ring_hint.text = "Drag bounds to size an ellipse.\nEqual radii make a circle.\nSpacing controls ring count.\nAlt: free bounds. One gesture: one Undo."
 	ring_hint.add_theme_font_size_override("font_size", 12)
@@ -347,6 +373,19 @@ func _build_ui() -> void:
 	marker_summary.add_theme_color_override("font_color", Color("9bdedb"))
 	marker_summary.add_theme_font_size_override("font_size", 13)
 	marker_list.add_child(marker_summary)
+	score_target_enabled = CheckBox.new()
+	score_target_enabled.text = "Enable Score Target"
+	score_target_enabled.tooltip_text = "Require points earned during this Act before its Exit opens. Disabled keeps Free Play traversal."
+	score_target_enabled.toggled.connect(func(enabled: bool): set_score_target(_last_score_target if enabled else 0))
+	marker_list.add_child(score_target_enabled)
+	score_target_field = SpinBox.new()
+	score_target_field.min_value = 1
+	score_target_field.max_value = ActData.MAX_SCORE_TARGET
+	score_target_field.step = 1
+	score_target_field.suffix = "points"
+	score_target_field.value_changed.connect(func(value: float):
+		if not _refreshing and score_target_enabled.button_pressed: set_score_target(int(value)))
+	marker_list.add_child(score_target_field)
 	var marker_hint := Label.new()
 	marker_hint.text = "Entry / Exit: physical connection\nActivation: upward checkpoint line\nSpawn: launch / respawn point\n\nThe red gutter is system-owned.\nIt adds no terrain cells.\n\nMarkers may remain unset.\nNo gameplay runs in this editor."
 	marker_hint.add_theme_color_override("font_color", Color("9cb3c6"))
@@ -614,6 +653,7 @@ func _button(parent: Node, id: String, label: String, action: Callable, hint: St
 		composite_strength.apply()
 		composite_angle.apply()
 		ring_spacing_field.apply()
+		_apply_scoring_fields()
 		_commit_gameplay_angle()
 		_commit_title()
 		if id in ["select", "rotate", "angle_minus", "angle_plus", "flip_h", "flip_v", "delete", "duplicate", "undo", "redo", "fit", "verify"]:
@@ -974,6 +1014,12 @@ func _change_ring_radius(axis: int, value: float) -> void:
 func set_ring_trail(index: int, trail: Dictionary) -> void:
 	if index < -1 or index >= document.ring_trails.size():
 		return
+	trail = trail.duplicate(true)
+	if index < 0:
+		trail["pattern_id"] = "ring_" + Objects.new_id()
+		trail.merge(ring_scoring_defaults, false)
+	elif not trail.has("pattern_id"):
+		trail["pattern_id"] = Rings.pattern_id(document.ring_trails[index], index)
 	var error: String = Rings.validation_error(trail)
 	if not error.is_empty():
 		_set_status(error)
@@ -987,6 +1033,23 @@ func set_ring_trail(index: int, trail: Dictionary) -> void:
 		document.ring_trails[index] = trail.duplicate(true)
 	_set_status("%d rings in one pattern. Select / Move to drag the group or its bounds handles." % Rings.positions(trail).size())
 	_refresh()
+
+func _change_ring_scoring(key: String, value: Variant) -> void:
+	if _refreshing: return
+	ring_scoring_defaults[key] = value
+	if canvas.selected_ring_index >= 0:
+		var trail: Dictionary = document.ring_trails[canvas.selected_ring_index].duplicate(true)
+		trail[key] = value
+		set_ring_trail(canvas.selected_ring_index, trail)
+	else:
+		_refresh()
+
+func _apply_scoring_fields() -> void:
+	if score_target_field.get_line_edit().has_focus(): score_target_field.apply()
+	for key: String in ring_scoring_fields:
+		var field: SpinBox = ring_scoring_fields[key]
+		# Applying an untouched SpinBox would quantize an exact loaded timer.
+		if field.get_line_edit().has_focus(): field.apply()
 
 func _change_ring_spacing(value: float) -> void:
 	if _refreshing or canvas == null:
@@ -1176,6 +1239,15 @@ func set_lifecycle_marker(kind: String, value: Variant) -> void:
 	canvas.select_marker(kind if value != null else "")
 	_set_status(("Activation Trigger" if kind == "activation" else "Spawn Point") + (" removed. Incomplete drafts can still be saved." if value == null else " set. Drag to move; Delete removes; Alt allows fine position."))
 	_refresh()
+
+func set_score_target(value: int) -> void:
+	if _refreshing or value < 0 or value > ActData.MAX_SCORE_TARGET: return
+	if value > 0: _last_score_target = value
+	if document.score_target != value:
+		_record_edit()
+		document.score_target = value
+	_refresh()
+	_set_status("Score Target disabled: Free Play traversal." if value == 0 else "Exit opens after earning %d points during this Act." % value)
 
 func set_connector(kind: String, start_x: int, width: int) -> void:
 	if kind not in ["entry", "exit"]:
@@ -1556,6 +1628,8 @@ func is_dirty() -> bool:
 func new_document() -> void:
 	_clear_composite_preview()
 	document = ActData.new()
+	_last_score_target = 3000
+	ring_scoring_defaults = Rings.scoring_settings({})
 	_title_edit_recorded = false
 	current_path = ""
 	selected_bank_id = ""
@@ -1571,6 +1645,7 @@ func save_to(path: String) -> bool:
 	_commit_decor_position()
 	decor_scale_field.apply()
 	ring_spacing_field.apply()
+	_apply_scoring_fields()
 	_commit_gameplay_angle()
 	cell_size_field.apply()
 	_commit_title()
@@ -1614,6 +1689,7 @@ func request_action(action: String) -> void:
 	_commit_decor_position()
 	decor_scale_field.apply()
 	ring_spacing_field.apply()
+	_apply_scoring_fields()
 	_commit_gameplay_angle()
 	cell_size_field.apply()
 	_commit_title()
@@ -1650,6 +1726,7 @@ func _save_current() -> void:
 
 func _open_save_dialog() -> void:
 	ring_spacing_field.apply()
+	_apply_scoring_fields()
 	_commit_gameplay_angle()
 	cell_size_field.apply()
 	_commit_title()
@@ -1745,6 +1822,10 @@ func _refresh() -> void:
 	cell_size_field.set_value_no_signal(document.cell_size)
 	grid_width_field.set_value_no_signal(document.grid_size.x)
 	grid_height_field.set_value_no_signal(document.grid_size.y)
+	score_target_enabled.set_pressed_no_signal(document.score_target > 0)
+	if document.score_target > 0: _last_score_target = document.score_target
+	score_target_field.set_value_no_signal(_last_score_target)
+	score_target_field.editable = document.score_target > 0
 	_refresh_reminders()
 	_refresh_file_state()
 	buttons.undo.disabled = undo_stack.is_empty()
@@ -1755,6 +1836,11 @@ func _refresh() -> void:
 	var ring_spacing: float = document.ring_trails[canvas.selected_ring_index].spacing / float(document.cell_size) if canvas.selected_ring_index >= 0 else canvas.ring_spacing_cells
 	ring_spacing_field.set_value_no_signal(ring_spacing)
 	var selected_pattern: Dictionary = document.ring_trails[canvas.selected_ring_index] if canvas.selected_ring_index >= 0 else {}
+	var ring_scoring: Dictionary = Rings.scoring_settings(selected_pattern) if not selected_pattern.is_empty() else ring_scoring_defaults
+	ring_bonus_field.set_pressed_no_signal(ring_scoring.bonus_rack)
+	for key: String in ring_scoring_fields:
+		ring_scoring_fields[key].set_value_no_signal(ring_scoring[key])
+		ring_scoring_fields[key].editable = key != "completion_bonus" or ring_scoring.bonus_rack
 	ring_ellipse_settings.visible = selected_pattern.get("kind", canvas.ring_kind) == "ellipse"
 	ring_fill_field.set_pressed_no_signal(selected_pattern.get("fill", canvas.ring_fill))
 	ring_rotation_field.set_value_no_signal(selected_pattern.get("rotation_degrees", canvas.ring_rotation))
@@ -2048,6 +2134,12 @@ func _refresh_mechanics_properties() -> void:
 	mechanics_properties.add_child(identity)
 	for key: String in Objects.property_limits(item.type):
 		_mechanic_number(key.replace("_", " ").capitalize(), float(properties[key]), func(value: float): set_gameplay_property(key, value))
+	if item.type == "spinner":
+		var completion := CheckBox.new()
+		completion.text = "Enable completion bonus"
+		completion.button_pressed = properties.completion_enabled
+		completion.toggled.connect(func(value: bool): set_gameplay_property("completion_enabled", value))
+		mechanics_properties.add_child(completion)
 	if item.type == "one_way_gate":
 		_mechanic_choice("Initial", "initial_state", ["closed", "open"], properties.initial_state)
 		var visual := Label.new()
@@ -2139,7 +2231,7 @@ func create_switch_bank() -> void:
 	if members.size() < 2: return
 	_record_edit()
 	selected_bank_id = "bank_" + Objects.new_id()
-	document.switch_banks.append({"bank_id": selected_bank_id, "label": "Bank %d" % (document.switch_banks.size() + 1), "members": members, "gates": [], "actions": [], "completion_bonus": 0.0, "reset_delay": 0.0})
+	document.switch_banks.append({"bank_id": selected_bank_id, "label": "Bank %d" % (document.switch_banks.size() + 1), "members": members, "gates": [], "actions": [], "completion_bonus": 500.0, "reset_delay": 0.75})
 	_refresh()
 	_set_status("Bank created. Link gates or diverters below. Each action runs when every member is pressed.")
 
