@@ -28,12 +28,18 @@ var hint: Label
 var score_overlay: Control
 var _ring_award_position := Vector2.INF
 var goal_pending := false
+var combo_glow: Node
+var fps_label: Label
+var fps_update := 0.0
 
 func _ready() -> void:
  scorecraft_config = scorecraft_config.duplicate()
  scorecraft_config.multiplier_cap = 4
  scorecraft_config.tiered_decay = true
  super._ready()
+ combo_glow = preload("res://scripts/prototype/combo_glow.gd").new()
+ combo_glow.game = self
+ add_child(combo_glow)
 
 func _add_scoring_hardware(runtime: Dictionary, document: Resource, offset: Vector2, visual_parent: Node3D, _owner_id: String) -> void:
  var goal := preload("res://scripts/prototype/goal_ring.gd").new()
@@ -49,6 +55,7 @@ func _add_scoring_hardware(runtime: Dictionary, document: Resource, offset: Vect
 
 func _sync_resident() -> void:
  super._sync_resident()
+ if is_instance_valid(combo_glow): combo_glow.rebuild()
  if is_instance_valid(score_overlay):
   for label: Node in presentation.find_children("*", "Label3D", true, false):
    if not character.is_ancestor_of(label): score_overlay.track_label(label)
@@ -286,6 +293,10 @@ func prepare_to_close() -> void:
 
 func _process(delta: float) -> void:
  super._process(delta)
+ fps_update -= delta
+ if is_instance_valid(fps_label) and fps_update <= 0.0:
+  fps_label.text = "%d FPS" % Engine.get_frames_per_second()
+  fps_update = 0.25
  if not started or closing: return
  if goal_pending and _next_ready():
   goal_pending = false
@@ -309,6 +320,20 @@ func _build_hud() -> void:
  score_overlay = preload("res://scripts/prototype/score_overlay.gd").new()
  score_overlay.game = self
  hud.add_child(score_overlay)
+ fps_label = Label.new()
+ fps_label.name = "FPSCounter"
+ fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+ fps_label.add_theme_font_size_override("font_size", 16)
+ fps_label.add_theme_color_override("font_shadow_color", Color.BLACK)
+ fps_label.add_theme_constant_override("shadow_offset_x", 1)
+ fps_label.add_theme_constant_override("shadow_offset_y", 1)
+ fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+ hud.add_child(fps_label)
+ fps_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+ fps_label.offset_left = -120
+ fps_label.offset_right = -18
+ fps_label.offset_top = 18
+ fps_label.offset_bottom = 42
  var backing := PanelContainer.new()
  backing.position = Vector2(20, 18)
  var style := StyleBoxFlat.new()

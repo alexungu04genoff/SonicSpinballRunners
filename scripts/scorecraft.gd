@@ -38,6 +38,13 @@ func _advance() -> void:
  remaining = maxf(0.5, config.combo_window)
  combo_changed.emit(chain, multiplier)
 
+func bumper_can_build_multiplier(body: Node) -> bool:
+ var cap := clampi(config.multiplier_cap, 1, 4) if has_ring_link else mini(2, clampi(config.multiplier_cap, 1, 4))
+ return enabled and is_instance_valid(body) and not _bumpers_seen.has(body.get_instance_id()) and multiplier < cap
+
+func rings_can_build_multiplier() -> bool:
+ return enabled and chain > 0 and ring_link_available and multiplier < clampi(config.multiplier_cap, 1, 4)
+
 func award_bumper(body: Node, special_multiplier: int = 1) -> int:
  var eligible := enabled and not _bumpers_seen.has(body.get_instance_id())
  if eligible:

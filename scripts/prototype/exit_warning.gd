@@ -9,7 +9,7 @@ func configure(document: Resource, offset: Vector2) -> void:
  var center := offset + Vector2((float(entry.start_x) + float(entry.width) * 0.5) * cell, document.terrain_bounds().end.y + cell * 0.6)
  position = TablePresentation.map_point(center, 0.025)
  var material := StandardMaterial3D.new()
- material.albedo_color = Color("ffad35")
+ material.albedo_color = Color("171b20")
  material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
  material.cull_mode = BaseMaterial3D.CULL_DISABLED
  var mesh := ImmediateMesh.new()
@@ -25,7 +25,28 @@ func configure(document: Resource, offset: Vector2) -> void:
    for vertex: Vector3 in [a - normal, a + normal, b + normal, a - normal, b + normal, b - normal]:
     mesh.surface_add_vertex(vertex)
  mesh.surface_end()
+ var yellow := material.duplicate() as StandardMaterial3D
+ yellow.albedo_color = Color("ffd43b")
+ mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES, yellow)
+ for index in 3:
+  var x := (index - 1) * width * 0.28 * TablePresentation.SCALE
+  for vertex: Vector3 in [Vector3(x, 0, -size * 0.43), Vector3(x + size * 0.43, 0, size * 0.46), Vector3(x - size * 0.43, 0, size * 0.46)]:
+   mesh.surface_add_vertex(vertex)
+ mesh.surface_end()
+ mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES, material)
+ for index in 3:
+  var x := (index - 1) * width * 0.28 * TablePresentation.SCALE
+  _quad(mesh, x, -size * 0.12, size * 0.15, size * 0.11)
+  _quad(mesh, x, size * 0.24, size * 0.34, size * 0.11)
+ mesh.surface_end()
  var marker := MeshInstance3D.new()
  marker.mesh = mesh
  marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  add_child(marker)
+
+func _quad(mesh: ImmediateMesh, x: float, top: float, bottom: float, width: float) -> void:
+ var a := Vector3(x - width * 0.5, 0.002, top)
+ var b := Vector3(x + width * 0.5, 0.002, top)
+ var c := Vector3(x + width * 0.5, 0.002, bottom)
+ var d := Vector3(x - width * 0.5, 0.002, bottom)
+ for vertex: Vector3 in [a, b, c, a, c, d]: mesh.surface_add_vertex(vertex)
