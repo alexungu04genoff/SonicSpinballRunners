@@ -230,7 +230,7 @@ func _pipe_section(surface: SurfaceTool, path: Dictionary, width: float, peak: f
 
 func _process(delta: float) -> void:
  elapsed += delta
- for entry: Dictionary in enemies: BuzzModel.update(entry, elapsed)
+ for entry: Dictionary in enemies: BuzzModel.update(entry, elapsed, table)
  for entry: Dictionary in gimmicks: Gimmicks.update(entry)
  for entry: Dictionary in spinners: entry.paddle.rotation.x = float(entry.item.angle)
  for field: Dictionary in fields:

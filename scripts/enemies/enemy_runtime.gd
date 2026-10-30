@@ -2,7 +2,7 @@ extends RefCounted
 ## Destructible 2D sensors. Rendering and abilities use this same atomic lifecycle.
 signal enemy_destroyed(enemy_type: StringName, object_id: String, base_points: int, source: StringName)
 const Contact = preload("res://scripts/authored_act/gimmick_geometry.gd")
-const DEFINITIONS := {"buzz_bomber": {"base_score": 100, "half_segment": 14.0, "radius": 12.0}}
+const DEFINITIONS := {"buzz_bomber": {"base_score": 100, "half_segment": 6.0, "radius": 6.0}}
 const ENEMY_TOP_BOUNCE_SPEED := 420.0
 const ENEMY_TOP_SPEED_RETENTION := 0.85
 const ENEMY_MAX_BOUNCE_SPEED := 850.0

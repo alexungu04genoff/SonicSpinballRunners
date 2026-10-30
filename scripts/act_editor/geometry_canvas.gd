@@ -1906,49 +1906,80 @@ func _patrol_input(event: InputEvent) -> bool:
    if _patrol_index < 0:
     _patrol_preview.properties.patrol_left = clampf(x, -2000, 0)
     _patrol_preview.properties.patrol_right = clampf(x, 0, 2000)
-   elif _patrol_side == "left": _patrol_preview.properties.patrol_left = clampf(x, -2000, 0)
-   else: _patrol_preview.properties.patrol_right = clampf(x, 0, 2000)
+   else:
+    if _patrol_side == "auto": _patrol_side = "left" if x < 0 else "right"
+    _patrol_preview.properties["patrol_" + _patrol_side] = clampf(x, -2000, 0) if _patrol_side == "left" else clampf(x, 0, 2000)
    if event is InputEventMouseButton:
     var edited := _patrol_preview.duplicate(true)
     var index := _patrol_index
     _patrol_dragging = false
     _patrol_preview = {}
-    if index < 0:
-     gameplay_placement_requested.emit(edited)
-    else:
-     patrol_changed.emit(index, Vector2(edited.properties.patrol_left, edited.properties.patrol_right))
+    if index < 0: gameplay_placement_requested.emit(edited)
+    else: patrol_changed.emit(index, Vector2(edited.properties.patrol_left, edited.properties.patrol_right))
    queue_redraw()
    return true
   return false
+ # Shift may be pressed after the mouse button. Promote an uncommitted move
+ # gesture to patrol editing without moving the anchor or adding an Undo step.
+ if event is InputEventMouseMotion and event.shift_pressed and _gameplay_drag_index >= 0:
+  var index := _gameplay_drag_index
+  if _gameplay_objects()[index].type == "buzz_bomber":
+   _begin_patrol_edit(index, "auto")
+   return _patrol_input(event)
  if not event is InputEventMouseButton or not event.pressed or event.button_index != MOUSE_BUTTON_LEFT: return false
- if gameplay_brush.get("type") == "buzz_bomber" and event.shift_pressed and _inside_grid(event.position):
-  _patrol_index = -1
-  _patrol_preview = gameplay_brush.duplicate(true)
-  _patrol_preview.object_id = Objects.new_id()
-  _patrol_preview.position = legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed)
-  _patrol_preview.properties = Objects.properties(_patrol_preview)
-  _patrol_preview.properties.patrol_left = 0.0
-  _patrol_preview.properties.patrol_right = 0.0
- elif gameplay_brush.is_empty() and selected_gameplay_index >= 0 and selected_gameplay_index < _gameplay_objects().size():
-  var item: Dictionary = _gameplay_objects()[selected_gameplay_index]
-  if item.type != "buzz_bomber": return false
-  var props := Objects.properties(item)
-  _patrol_side = ""
-  for side: String in ["left", "right"]:
-   var endpoint := local_pixels_to_screen(Vector2(item.position) + Vector2(props["patrol_" + side], 0))
-   if endpoint.distance_to(event.position) <= 10: _patrol_side = side
-  if _patrol_side.is_empty() and event.shift_pressed and local_pixels_to_screen(item.position).distance_to(event.position) < 30:
-   _patrol_side = "right" if screen_to_local_pixels(event.position).x >= item.position.x else "left"
-  if _patrol_side.is_empty(): return false
-  _patrol_index = selected_gameplay_index
-  _patrol_preview = item.duplicate(true)
-  _patrol_preview.properties = props
- else: return false
+ if not gameplay_brush.is_empty() and gameplay_brush.get("type") != "buzz_bomber": return false
+ var edit_index := -1
+ var edit_side := "auto"
+ if selected_gameplay_index >= 0 and selected_gameplay_index < _gameplay_objects().size():
+  var selected: Dictionary = _gameplay_objects()[selected_gameplay_index]
+  if selected.type == "buzz_bomber":
+   var props := Objects.properties(selected)
+   var anchor := local_pixels_to_screen(selected.position)
+   var left := local_pixels_to_screen(Vector2(selected.position) + Vector2(props.patrol_left, 0))
+   var right := local_pixels_to_screen(Vector2(selected.position) + Vector2(props.patrol_right, 0))
+   for side: String in ["left", "right"]:
+    var endpoint := left if side == "left" else right
+    if endpoint.distance_to(event.position) <= 10 and (event.shift_pressed or endpoint.distance_to(anchor) > 12):
+     edit_index = selected_gameplay_index
+     edit_side = side
+   if event.shift_pressed and Geometry2D.get_closest_point_to_segment(event.position, left, right).distance_to(event.position) <= 12:
+    edit_index = selected_gameplay_index
+    edit_side = "auto" if event.position.distance_to(anchor) <= 12 else ("left" if event.position.x < anchor.x else "right")
+ # Editing an existing Buzz takes priority over stamping another one, including
+ # while the Buzz brush remains active after ordinary placement.
+ if edit_index < 0 and event.shift_pressed:
+  for index in gameplay_hit_indices_at(event.position):
+   if _gameplay_objects()[index].type == "buzz_bomber":
+    edit_index = index
+    break
+ if edit_index >= 0:
+  _begin_patrol_edit(edit_index, edit_side)
+  return true
+ if gameplay_brush.get("type") != "buzz_bomber" or not event.shift_pressed or not _inside_grid(event.position): return false
+ _patrol_index = -1
+ _patrol_preview = gameplay_brush.duplicate(true)
+ _patrol_preview.object_id = Objects.new_id()
+ _patrol_preview.position = legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed)
+ _patrol_preview.properties = Objects.properties(_patrol_preview)
+ _patrol_preview.properties.patrol_left = 0.0
+ _patrol_preview.properties.patrol_right = 0.0
  _patrol_dragging = true
  grab_focus()
  _set_status("Buzz Bomber patrol: drag horizontally. Alt frees snapping; Esc cancels. Zero length is stationary.")
  queue_redraw()
  return true
+
+func _begin_patrol_edit(index: int, side: String) -> void:
+ select_gameplay(index)
+ _emit_selection_changed()
+ _patrol_index = index
+ _patrol_side = side
+ _patrol_preview = _gameplay_objects()[index].duplicate(true)
+ _patrol_preview.properties = Objects.properties(_patrol_preview)
+ _patrol_dragging = true
+ grab_focus()
+ _set_status("Resize patrol: drag left or right. Anchor stays fixed. Alt frees snapping; Esc cancels.")
+ queue_redraw()
 
 func _draw_launch_range(item: Dictionary) -> void:
  if item.get("type") not in ["left_flipper", "right_flipper", "round_bumper", "triangle_bumper"]: return

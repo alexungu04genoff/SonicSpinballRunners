@@ -60,7 +60,7 @@ static func draw_object(target: CanvasItem, placement: Dictionary, anchor: Vecto
 
 static func _draw_enemy(target: CanvasItem, placement: Dictionary, anchor: Vector2, scale_factor: float, selected: bool, ghost: bool, annotations: bool) -> void:
  var props := Objects.properties(placement)
- var size_value := float(props.scale) * scale_factor
+ var size_value := float(props.scale) * scale_factor * 0.75
  var color := Color("ffe074") if selected else Color("5bafff")
  if ghost: color.a = 0.55
  if annotations:
@@ -69,15 +69,29 @@ static func _draw_enemy(target: CanvasItem, placement: Dictionary, anchor: Vecto
   target.draw_line(left, right, Color("ffe074"), 2.0, true)
   for endpoint: Vector2 in [left, right]:
    target.draw_rect(Rect2(endpoint - Vector2.ONE * 5, Vector2.ONE * 10), Color("ffe074"), selected)
- var outline := PackedVector2Array()
- for i in 33: outline.append(anchor + Vector2(cos(TAU * i / 32) * 26, sin(TAU * i / 32) * 12) * size_value)
- target.draw_colored_polygon(outline, Color("e7b52f"))
- target.draw_polyline(outline, color, 2.0, true)
- for x in [-8, 2, 12]: target.draw_line(anchor + Vector2(x, -10) * size_value, anchor + Vector2(x, 10) * size_value, Color("172c48"), maxf(1.0, size_value * 4), true)
  var facing := -1.0 if props.starting_direction == "left" else 1.0
- target.draw_circle(anchor + Vector2(facing * 21, -2) * size_value, maxf(2, 8 * size_value), color)
- for side in [-1, 1]:
-  target.draw_line(anchor, anchor + Vector2(-5, side * 25) * size_value, Color("beeaff"), maxf(2, 6 * size_value), true)
+ var transform_point := func(point: Vector2) -> Vector2: return anchor + Vector2(point.x * facing, point.y) * size_value
+ for tip: Vector2 in [Vector2(-18, -18), Vector2(-21, -10)]:
+  var blade := PackedVector2Array()
+  for point: Vector2 in [Vector2(-5, -5), tip + Vector2(2, 0), tip, tip + Vector2(-1, 2)]: blade.append(transform_point.call(point))
+  target.draw_colored_polygon(blade, Color("d7edf1", color.a))
+ target.draw_circle(transform_point.call(Vector2(-3, -2)), maxf(2, 7 * size_value), Color("172c38", color.a))
+ var abdomen := PackedVector2Array()
+ for i in 17: abdomen.append(transform_point.call(Vector2(3, 8) + Vector2(cos(TAU * i / 16) * 6, sin(TAU * i / 16) * 9)))
+ target.draw_colored_polygon(abdomen, Color("178ed2", color.a))
+ for y in [4, 9]: target.draw_line(transform_point.call(Vector2(-2, y)), transform_point.call(Vector2(8, y)), Color("153f99", color.a), maxf(1, 2 * size_value), true)
+ target.draw_line(transform_point.call(Vector2(5, 16)), transform_point.call(Vector2(8, 21)), Color("b9cedb", color.a), maxf(1, 2 * size_value), true)
+ target.draw_circle(transform_point.call(Vector2(6, -3)), maxf(2, 7 * size_value), Color("36b9e8", color.a))
+ target.draw_circle(transform_point.call(Vector2(9, -4)), maxf(1.5, 3.6 * size_value), Color("f6f5e8", color.a))
+ target.draw_circle(transform_point.call(Vector2(10, -4)), maxf(1, 1.3 * size_value), Color("062237", color.a))
+ target.draw_line(transform_point.call(Vector2(6, -9)), transform_point.call(Vector2(8, -15)), Color("ffc536", color.a), maxf(1, size_value), true)
+ target.draw_line(transform_point.call(Vector2(5, -15)), transform_point.call(Vector2(12, -15)), Color("ffc536", color.a), maxf(1, 2 * size_value), true)
+ target.draw_line(transform_point.call(Vector2(-3, 1)), transform_point.call(Vector2(-11, 1)), Color("b9cedb", color.a), maxf(2, 4 * size_value), true)
+ if selected:
+  var outline := PackedVector2Array()
+  for i in 33: outline.append(anchor + Vector2(cos(TAU * i / 32) * 16, sin(TAU * i / 32) * 8) * size_value)
+  target.draw_polyline(outline, Color(color, 0.65), 1.0, true)
+
 
 static func _draw_swing(target: CanvasItem, placement: Dictionary, anchor: Vector2, cell_pixels: float, color: Color) -> void:
  var rest := deg_to_rad(float(placement.rotation_degrees))

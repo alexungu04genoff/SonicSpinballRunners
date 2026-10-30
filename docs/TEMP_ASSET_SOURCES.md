@@ -20,4 +20,4 @@ Retrieved 2026-10-30 through Sonic Wiki Zone public MediaWiki API. Each image is
 
 Machine-readable URLs and SHA-256 checksums: `assets/ui/buddies/sra/sources.json`.
 
-Buzz Bomber is an original primitive-mesh interpretation built in GDScript, with no downloaded Sega model, mesh or texture. Visual reference: [Buzz Bomber](https://sonic.fandom.com/wiki/Buzz_Bomber); mechanical reference: [Sonic Retro React_BadnikHit](https://github.com/sonicretro/s1disasm/blob/AS/_incObj/Sonic%20ReactToItem.asm#L247). No assembly code or fixed-point constants copied.
+Buzz Bomber is an original primitive-mesh interpretation built in GDScript, with no downloaded Sega model, mesh or texture. The smaller side-profile revision also follows three reference images supplied by the user in chat (classic concept art, modern render and game sprite). Visual reference: [Buzz Bomber](https://sonic.fandom.com/wiki/Buzz_Bomber); mechanical reference: [Sonic Retro React_BadnikHit](https://github.com/sonicretro/s1disasm/blob/AS/_incObj/Sonic%20ReactToItem.asm#L247). No assembly code or fixed-point constants copied.

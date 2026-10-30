@@ -10,10 +10,11 @@ func capture(label: String) -> void:
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://test-results/buzz-" + label + ".png")
 
-func drag_to(point: Vector2) -> void:
+func drag_to(point: Vector2, shift := false) -> void:
  var event := InputEventMouseMotion.new()
  event.position = editor.canvas.local_pixels_to_screen(point)
  event.alt_pressed = true
+ event.shift_pressed = shift
  editor.canvas._gui_input(event)
 
 func shoot(at: Vector2, velocity: Vector2, id: String) -> void:
@@ -48,6 +49,25 @@ func run() -> void:
  check(editor.document.gameplay_objects[0].properties.patrol_right == original_endpoint, "One patrol drag is one Undo step, restoring exact sampled coordinates")
  editor.redo()
  check(editor.document.gameplay_objects[0].properties.patrol_right == 190.5, "Redo restores patrol geometry")
+ editor.choose_gameplay("buzz_bomber")
+ pointer(Vector2(200, 300), true, MOUSE_BUTTON_LEFT, true)
+ drag_to(Vector2(450, 300), true)
+ pointer(Vector2(450, 300), false)
+ check(editor.document.gameplay_objects.size() == 1 and editor.document.gameplay_objects[0].properties.patrol_right == 250.0, "Shift edits an existing Buzz while its placement brush is active, without stamping another")
+ editor.undo()
+ editor.canvas.select_gameplay(0)
+ pointer(Vector2(200, 300), true)
+ drag_to(Vector2(100, 300), true)
+ pointer(Vector2(100, 300), false)
+ check(editor.document.gameplay_objects[0].position.distance_to(Vector2(200, 300)) < 0.001 and editor.document.gameplay_objects[0].properties.patrol_left == -100.0, "Pressing Shift after mouse-down extends the left patrol without moving the anchor")
+ editor.undo()
+ editor.canvas.select_gameplay(0)
+ pointer(Vector2(300, 300), true, MOUSE_BUTTON_LEFT, true)
+ drag_to(Vector2(500, 300), true)
+ pointer(Vector2(500, 300), false)
+ check(editor.document.gameplay_objects[0].properties.patrol_right == 300.0, "Shift-drag anywhere on the selected patrol line extends its endpoint")
+ editor.undo()
+ editor.canvas.select_gameplay(0)
  await capture("editor")
  editor.duplicate_selected()
  check(editor.document.gameplay_objects.size() == 2 and editor.document.gameplay_objects[1].object_id != id and editor.document.gameplay_objects[1].properties.patrol_right == 190.5, "Duplication preserves patrol but assigns a fresh object ID")

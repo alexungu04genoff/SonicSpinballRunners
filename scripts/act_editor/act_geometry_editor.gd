@@ -2192,7 +2192,12 @@ func _refresh_mechanics_properties() -> void:
 		_mechanic_number(key.replace("_", " ").capitalize(), float(properties[key]), func(value: float): set_gameplay_property(key, value))
 	if item.type == "buzz_bomber":
 		_mechanic_choice("Starting direction", "starting_direction", ["left", "right"], properties.starting_direction)
-		detail_label.text = "Horizontal patrol: Shift-drag when placing; select to drag endpoint handles. Alt frees snapping. Zero length is stationary."
+		detail_label.text = "Shift-drag Buzz Bomber or its patrol line to resize. Alt frees snapping. Zero length is stationary."
+		var patrol_help := Label.new()
+		patrol_help.text = "Shift-drag Buzz or its line to resize the patrol. You can also drag either endpoint."
+		patrol_help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		patrol_help.custom_minimum_size.x = 260
+		mechanics_properties.add_child(patrol_help)
 		var stationary := Button.new()
 		stationary.text = "Stationary (zero patrol)"
 		stationary.disabled = not canvas.gameplay_brush.is_empty()

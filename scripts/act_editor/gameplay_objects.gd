@@ -49,7 +49,7 @@ static func local_points(placement: Dictionary, cell_size: float) -> PackedVecto
   "buzz_bomber":
    var size_value := float(properties(placement).scale)
    for step in 32:
-    points.append(Vector2(cos(TAU * step / 32.0) * 26.0, sin(TAU * step / 32.0) * 12.0) * size_value)
+    points.append(Vector2(cos(TAU * step / 32.0) * 12.0, sin(TAU * step / 32.0) * 6.0) * size_value)
   "spring":
    for step in 48:
     points.append(Vector2.from_angle(TAU * step / 48.0) * float(properties(placement).width) * 0.5)
