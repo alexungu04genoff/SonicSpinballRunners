@@ -1,5 +1,19 @@
 # Configurable playable prototype
 
+## Automatic run archive and run feel
+
+Prototype automatically archives one JSON per run in `user://telemetry/runs/`. On Windows with the default profile this resolves to `%APPDATA%\Godot\app_userdata\Sonic Spinball Runners\telemetry\runs`. Results retain **Copy run data**, show save status, and offer **Open telemetry folder**. No administrator permissions, repository writes, uploads or automatic retention deletion are involved.
+
+Wins and out-of-Balls losses save immediately. Return to menu during play archives a partial run and opens **Run abandoned** Results, where the player can add feedback before returning to the menu. Restart and explicit Quit also archive partial progress without a blocking prompt. Forced process termination or power loss cannot guarantee a save. A run abandoned during startup records `started: false` with no fabricated played Acts; abandoning a Buddy draft does not duplicate its already-cleared Act.
+
+The empty-by-default **Run feel** textbox is exported as `run_feel`. Notes autosave after a short typing pause and flush on Copy, replay, menu exit and Quit. Edits update only that run's existing JSON, with no extra archive copies. Each note replacement verifies that the existing file still matches the session's previous write, so external edits are not silently overwritten.
+
+Disk and clipboard use the same cached exported object and JSON. Each archive includes local end time, `won`, `completed`, `termination_reason` (`completed`, `out_of_balls`, `returned_to_menu`, `restarted` or `quit`), character, mode, seed, effective configuration, planned course and played-Act telemetry. `completed` means all configured Acts were cleared; an abandoned run is distinguished from a loss by its termination reason. Filenames contain timestamp, seed, mode and outcome, with numeric suffixes on collisions. Temporary writes are flushed and verified before same-directory publication; failures leave Results and Copy usable and report a concise warning.
+
+`tests/prototype_archive_regression.gd` exercises real runs, partial exits, feedback autosave, exact disk/clipboard equality, collision handling, external-edit protection and an intentionally failed write. Its temporary data is isolated under `telemetry/runs/_validation` and cleaned up by the fixture.
+
+Archive verification (2026-10-30): 34 archive/feedback integration checks and 57 existing ball-budget checks passed; the fresh Windows package passed 170 asset/bake checks and launched through its normal UI. The actual exported-write check was waived by the user during playtesting. A longer source session regression stalled after restart and was stopped, so it is not counted as passing. Prototype Enter pause/resume, repeat suppression, Results text entry and X launch passed a small headless input check. The currently running executable must be relaunched from the refreshed build to pick up the Enter binding.
+
 Ramps / elevated rails generate ordinary rings along their curved centerline by default, including existing Acts. Select a rail in the Act editor: **Ring spacing** adjusts the distance from 12–200 px (default 25 px); disable **Rings along path** to create a bare rail. The editor previews the ring chain, and both controls support undo/redo and saving. Rings follow the rail's elevation, collect only while traversing that rail, and use normal ring scoring and respawn. Standalone, editor playtest and baked streamed Acts share the same placements.
 
 Rail verification (2026-10-30): 13 placement/ownership/lifecycle checks, 30 editor checks (including slider dragging, undo and fresh-process persistence), seven rendered streaming checks and 43 local bake checks passed. All ten variants of the five current authored Acts were rebaked. Rendered mechanics checks passed 55/56, including complete high-speed curved rail collection and lower-table isolation; the older scripted flipper-route assertion also fails with rail rings disabled. Rail elevation and centered placement were visually reviewed. Human playtesting still needs to judge spacing and scoring pace. Launch the current source with `Play Prototype.cmd`; this change does not replace an older exported ZIP.
@@ -56,10 +70,10 @@ At the bottom of the drain zone, the ball stops immediately, shrinks away, and g
 | --- | --- | --- |
 | Flippers | Q / E | LB / RB |
 | Steer | Left / right arrows | Left stick |
-| Launch | Enter | X |
+| Launch | X | X |
 | Character special | Space | A |
 | Checkpoint retry (spends a ball in Challenge) | R | Back / View |
-| Pause / resume | Escape | Menu / Start |
+| Pause / resume | Enter / Escape | Menu / Start |
 | Fullscreen | F11 | — |
 
 The menu saves character choice, Practice preference, sound preference, best completed score and fastest completion time in Godot's user-data folder. Existing completion records aggregate run setups; Challenge and Practice records remain separate from each other and from the earlier three-Act records, which remain preserved in the settings file. Failed runs do not replace completion records. Pause provides resume, restart, menu and quit. Short synthesized cues identify scoring, feature completion, exit unlocks, Act changes and drains.

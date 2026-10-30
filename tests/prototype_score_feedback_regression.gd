@@ -21,6 +21,7 @@ func capture(label: String) -> void:
 func run() -> void:
  var session := Session.new()
  session.settings_path = "user://score-feedback-regression.cfg"
+ session.archive_directory = "user://telemetry/runs/_validation/prototype_score_feedback_regression"
  root.add_child(session)
  session.selected_character = "sonic"
  session.sound_enabled = false

@@ -2,6 +2,7 @@ extends Control
 ## Player-facing session flow; the run uses the shared authored streaming engine.
 const Run = preload("res://scripts/prototype/zone_run.gd")
 const Telemetry = preload("res://scripts/prototype/run_telemetry.gd")
+const Archive = preload("res://scripts/prototype/telemetry_archive.gd")
 const Sounds = preload("res://scripts/prototype/score_sounds.gd")
 const SETTINGS_PATH := "user://prototype_settings.cfg"
 const CHALLENGE_RECORDS := "two_zone_challenge_records"
@@ -25,12 +26,26 @@ var available_act_paths: Array = []
 var run_configuration: RefCounted
 var setup_menu: VBoxContainer
 var start_button: Button
+var archive_directory := Archive.DIRECTORY
+var archive_attempted := false
+var archive_result := {}
+var last_export := {}
+var last_json := ""
+var archive_status: Label
+var run_feel: TextEdit
+var archived_json := ""
+var note_timer: Timer
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
  get_window().content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND
  get_tree().auto_accept_quit = false
  get_tree().root.close_requested.connect(_quit)
+ note_timer = Timer.new()
+ note_timer.one_shot = true
+ note_timer.wait_time = 0.6
+ note_timer.timeout.connect(_flush_run_feel)
+ add_child(note_timer)
  available_act_paths = Run.RunPlan.source_paths()
  run_configuration = Run.RunPlan.Configuration.new(available_act_paths)
  var settings := ConfigFile.new()
@@ -146,7 +161,7 @@ func _show_menu() -> void:
  stack.move_child(setup_menu, start_button.get_index())
  setup_menu.changed.connect(_save_settings)
  setup_menu.configure(run_configuration, available_act_paths, start_button)
- _label(stack, "Q / E or LB / RB: flippers     Arrows or stick: steer\nEnter / X: launch     Space / A: special     Esc / Menu: pause\nR / Back: retry (uses a ball in Challenge)     F11: fullscreen", 16)
+ _label(stack, "Q / E or LB / RB: flippers     Arrows or stick: steer\nX: launch     Space / A: special     Enter / Esc / Menu: pause\nR / Back: retry (uses a ball in Challenge)     F11: fullscreen", 16)
  _action(stack, "Quit", _quit)
 
 func start_run() -> void:
@@ -156,7 +171,13 @@ func start_run() -> void:
  transitioning = true
  state = "loading"
  _panel("PREPARING RUN", "Loading the authored Acts…")
- await _close_run()
+ await _close_run("restarted")
+ archive_attempted = false
+ archive_result = {}
+ last_summary = {}
+ last_export = {}
+ last_json = ""
+ archived_json = ""
  game = Run.new()
  game.run_configuration = Run.RunPlan.Configuration.new(run_configuration.selected_act_paths)
  game.run_configuration.zone_count = run_configuration.zone_count
@@ -174,8 +195,10 @@ func start_run() -> void:
  state = "playing"
  transitioning = false
 
-func _close_run() -> void:
+func _close_run(reason := "returned_to_menu") -> void:
+ _flush_run_feel()
  if is_instance_valid(game):
+  if not archive_attempted: _archive_run(game.run_summary(false, reason))
   await game.prepare_to_close()
   game.free()
   game = null
@@ -183,11 +206,13 @@ func _close_run() -> void:
 
 func return_to_menu() -> void:
  if transitioning: return
+ var abandoned := is_instance_valid(game) and not archive_attempted
  transitioning = true
  state = "loading"
  _panel("RETURNING TO MENU", "Finishing the current session…")
  await _close_run()
- _show_menu()
+ if abandoned: _on_completed(last_summary)
+ else: _show_menu()
  transitioning = false
 
 func _show_pause() -> void:
@@ -243,7 +268,7 @@ func _choose_buddy(id: String) -> void:
  overlay_root.hide()
 
 func _on_completed(summary: Dictionary) -> void:
- last_summary = summary.duplicate(true)
+ _archive_run(summary)
  if summary.won:
   if summary.practice:
    practice_best_score = maxi(practice_best_score, int(summary.score))
@@ -253,7 +278,7 @@ func _on_completed(summary: Dictionary) -> void:
    if best_seconds <= 0.0 or float(summary.seconds) < best_seconds: best_seconds = float(summary.seconds)
  _save_settings()
  state = "results"
- var stack := _panel("RUN COMPLETE" if summary.won else "RUN ENDED · OUT OF BALLS", "%s · %d POINTS · %s · %d BALLS LOST\nRun seed: %d" % ["PRACTICE" if summary.practice else "CHALLENGE", summary.score, _time_text(summary.seconds), summary.drains, summary.seed])
+ var stack := _panel("RUN COMPLETE" if summary.won else ("RUN ENDED · OUT OF BALLS" if last_export.termination_reason == "out_of_balls" else "RUN ABANDONED"), "%s · %d POINTS · %s · %d BALLS LOST\nRun seed: %d" % ["PRACTICE" if summary.practice else "CHALLENGE", summary.score, _time_text(summary.seconds), summary.drains, summary.seed])
  stack.add_theme_constant_override("separation", 7)
  var scroll := ScrollContainer.new()
  scroll.custom_minimum_size = Vector2(600, minf(180.0, get_viewport_rect().size.y * 0.21))
@@ -278,6 +303,19 @@ func _on_completed(summary: Dictionary) -> void:
   state_label.custom_minimum_size.x = 610
   _label(stack, "Buddy virtual Rings: %d · Emergency rescues: %d" % [summary.buddy_state.run.get("virtual_rings", 0), summary.buddy_state.run.get("rescues", 0)], 16)
  _label(stack, "%s best (all setups): %d" % ["Practice" if summary.practice else "Challenge", practice_best_score if summary.practice else best_score], 18, Color("8fe9b1"))
+ _label(stack, "Run feel (optional)", 16)
+ run_feel = TextEdit.new()
+ run_feel.name = "RunFeel"
+ run_feel.placeholder_text = "How did this run feel? What felt fun, frustrating, too easy or confusing?"
+ run_feel.custom_minimum_size = Vector2(560, 100)
+ run_feel.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
+ run_feel.text = str(last_export.get("run_feel", ""))
+ run_feel.text_changed.connect(func(): _set_run_feel(run_feel.text))
+ stack.add_child(run_feel)
+ archive_status = _label(stack, "Telemetry saved: " + str(archive_result.path).get_file() if archive_result.get("error", "").is_empty() else str(archive_result.error), 14)
+ archive_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ archive_status.custom_minimum_size.x = 560
+ _action(stack, "Open telemetry folder", _open_telemetry_folder)
  _action(stack, "Copy run data", _copy_run_data)
  copy_status = _label(stack, "", 14, Color("8fe9b1"))
  copy_status.hide()
@@ -285,11 +323,47 @@ func _on_completed(summary: Dictionary) -> void:
  _action(stack, "Return to menu", return_to_menu)
  _action(stack, "Quit", _quit)
 
+func _archive_run(summary: Dictionary) -> void:
+ if archive_attempted: return
+ archive_attempted = true
+ last_summary = summary.duplicate(true)
+ last_summary["ended_at_local"] = Time.get_datetime_string_from_system(false)
+ last_export = Telemetry.export_run(last_summary)
+ last_json = JSON.stringify(last_export, "  ", false, true)
+ archive_result = Archive.save(last_json, last_export, archive_directory)
+ if archive_result.error.is_empty(): archived_json = last_json
+ if not archive_result.error.is_empty(): push_warning(archive_result.error)
+
+func _set_run_feel(text: String) -> void:
+ last_export["run_feel"] = text
+ last_summary["run_feel"] = text
+ last_json = JSON.stringify(last_export, "  ", false, true)
+ note_timer.start()
+
+func _flush_run_feel() -> void:
+ if is_instance_valid(note_timer): note_timer.stop()
+ if last_json == archived_json or archive_result.get("path", "").is_empty(): return
+ var result := Archive.update_notes(archive_result.path, archived_json, last_json)
+ if result.error.is_empty():
+  archived_json = last_json
+  if is_instance_valid(archive_status): archive_status.text = "Telemetry saved (including run feel)"
+ else:
+  if is_instance_valid(archive_status): archive_status.text = result.error
+  push_warning(result.error)
+
 func run_data_json() -> String:
- return JSON.stringify(Telemetry.export_run(last_summary), "  ", false, true)
+ return last_json if not last_json.is_empty() else JSON.stringify(Telemetry.export_run(last_summary), "  ", false, true)
+
+func _open_telemetry_folder() -> void:
+ var error := DirAccess.make_dir_recursive_absolute(archive_directory)
+ if error == OK: error = OS.shell_open(ProjectSettings.globalize_path(archive_directory))
+ if error != OK:
+  archive_status.text = "Could not open telemetry folder: " + ProjectSettings.globalize_path(archive_directory)
+  push_warning(archive_status.text)
 
 func _copy_run_data() -> void:
  if state != "results" or last_summary.is_empty(): return
+ _flush_run_feel()
  DisplayServer.clipboard_set(run_data_json())
  copy_status.text = "Run data copied"
  copy_status.show()
@@ -312,6 +386,16 @@ func _process(_delta: float) -> void:
   state = "playing"
   overlay_root.hide()
 
+func _input(event: InputEvent) -> void:
+ if not event is InputEventKey or state not in ["playing", "paused"] or not is_instance_valid(game) or not game.started: return
+ if event.keycode in [KEY_ENTER, KEY_KP_ENTER]:
+  # Consume Enter before UI accept or the shared launch binding can also fire.
+  get_viewport().set_input_as_handled()
+  if event.pressed and not event.echo: game.toggle_pause()
+ elif event.keycode == KEY_X and event.pressed and not event.echo and state == "playing":
+  get_viewport().set_input_as_handled()
+  game.launch_ball()
+
 func _unhandled_key_input(event: InputEvent) -> void:
  if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F11:
   DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED if DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN else DisplayServer.WINDOW_MODE_FULLSCREEN)
@@ -320,5 +404,5 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _quit() -> void:
  if transitioning: return
  transitioning = true
- await _close_run()
+ await _close_run("quit")
  get_tree().quit()

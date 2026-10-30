@@ -151,7 +151,11 @@ static func export_run(summary: Dictionary) -> Dictionary:
   "configuration_fingerprint": summary.get("configuration_fingerprint", ""),
   "course": summary.get("course", []).duplicate(true),
   "mode": "practice" if summary.practice else "challenge", "character": summary.character,
-  "won": summary.won, "total_score": summary.score, "normal_score": summary.normal_score,
+  "won": summary.won, "completed": summary.get("completed", summary.won),
+  "termination_reason": summary.get("termination_reason", "completed" if summary.won else "out_of_balls"),
+  "run_feel": summary.get("run_feel", ""),
+  "ended_at_local": summary.get("ended_at_local", ""), "started": summary.get("started", true),
+  "total_score": summary.score, "normal_score": summary.normal_score,
   "buddy_score": buddy_score, "total_time_seconds": summary.seconds,
   "balls_lost": summary.drains, "buddies": buddies,
   "buddy_state": summary.get("buddy_state", {}).duplicate(true), "acts": acts}

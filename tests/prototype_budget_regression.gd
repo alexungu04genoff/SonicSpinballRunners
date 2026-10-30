@@ -49,6 +49,7 @@ func run() -> void:
  legacy.set_value("challenge_records", "score", 2468)
  legacy.set_value("records", "score", 9999)
  legacy.save(session.settings_path)
+ session.archive_directory = "user://telemetry/runs/_validation/prototype_budget_regression"
  root.add_child(session)
  check(session.best_score == 0 and session.practice_best_score == 0, "Old three-Act records do not become two-Zone completion records")
  session.sound_enabled = false
@@ -153,7 +154,7 @@ func run() -> void:
  var cancelled_proxy: WeakRef = weakref(game.transfer.proxy)
  await session.return_to_menu()
  for frame in 3: await process_frame
- check(cancelled_transfer.get_ref() == null and cancelled_proxy.get_ref() == null and not paused and session.state == "menu", "Returning to menu cancels the animation and frees its visual proxy")
+ check(cancelled_transfer.get_ref() == null and cancelled_proxy.get_ref() == null and not paused and session.state == "results", "Abandoning cancels the animation, frees its proxy and shows partial Results")
  session.free()
  print("RESULT | Prototype budget | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)

@@ -206,10 +206,13 @@ func _transfer_arrived() -> void:
  controls.input_blocked = false
  auto_launch_time = 0.35
 
-func _record_act(cleared: bool) -> void:
- results.append({"act": active_sequence + 1, "zone": active.plan.zone + 1, "zone_act": active.plan.act + 1, "theme": active.plan.theme, "source": source_paths[active.plan.id], "title": act_title(active), "cleared": cleared, "score": act_score, "target": act_score_target, "seconds": elapsed - act_started_at, "drains": ball_number - act_start_ball, "categories": act_score_breakdown.duplicate(), "buddy_contributions": act_buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "buddy_state": buddies.state(), "normal_score": act_score - Buddies.total(act_buddy_contributions)})
+func _act_result(cleared: bool) -> Dictionary:
+ var row := {"act": active_sequence + 1, "zone": active.plan.zone + 1, "zone_act": active.plan.act + 1, "theme": active.plan.theme, "source": source_paths[active.plan.id], "title": act_title(active), "cleared": cleared, "score": act_score, "target": act_score_target, "seconds": elapsed - act_started_at, "drains": ball_number - act_start_ball, "categories": act_score_breakdown.duplicate(), "buddy_contributions": act_buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "buddy_state": buddies.state(), "normal_score": act_score - Buddies.total(act_buddy_contributions)}
+ row["telemetry"] = telemetry.finish_act(row, elapsed)
+ return row
 
- results.back()["telemetry"] = telemetry.finish_act(results.back(), elapsed)
+func _record_act(cleared: bool) -> void:
+ results.append(_act_result(cleared))
 
 func _observe_authored_motion(start: Vector2, finish: Vector2) -> void:
  if finished or drafting or is_instance_valid(transfer) or not exit_unlocked: return
@@ -241,7 +244,14 @@ func _finish_run(won: bool) -> void:
  ball.freeze = true
  controls.input_blocked = true
  get_tree().paused = true
- completed.emit({"run_configuration": effective_configuration().snapshot(), "configuration_fingerprint": effective_configuration().fingerprint(), "course": course_snapshot(), "won": won, "practice": practice_mode, "seed": run_seed, "score": score, "normal_score": score - Buddies.total(buddy_contributions), "buddy_contributions": buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "buddy_state": buddies.state(), "seconds": elapsed, "drains": ball_number - 1, "character": character_id, "acts": results.duplicate(true)})
+ completed.emit(run_summary(won, "completed" if won else "out_of_balls"))
+
+func run_summary(won := false, reason := "returned_to_menu") -> Dictionary:
+ # Snapshot a partial Act without changing the recorder or gameplay lifecycle.
+ var rows: Array[Dictionary] = results.duplicate(true)
+ if not finished and started and active != null and (rows.is_empty() or int(rows.back().act) != active_sequence + 1):
+  rows.append(_act_result(false))
+ return {"run_configuration": effective_configuration().snapshot(), "configuration_fingerprint": effective_configuration().fingerprint(), "course": course_snapshot(), "won": won, "completed": won, "termination_reason": reason, "started": started, "practice": practice_mode, "seed": run_seed, "score": score, "normal_score": score - Buddies.total(buddy_contributions), "buddy_contributions": buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "buddy_state": buddies.state(), "seconds": elapsed, "drains": ball_number - 1, "character": character_id, "acts": rows}
 
 func _on_ball_drained() -> void:
  if finished or closing or drafting or is_instance_valid(transfer) or respawn_time >= 0.0: return

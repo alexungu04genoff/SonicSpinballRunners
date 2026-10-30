@@ -54,6 +54,7 @@ func await_run() -> bool:
 func run() -> void:
  session = Session.new()
  session.settings_path = "user://prototype-regression.cfg"
+ session.archive_directory = "user://telemetry/runs/_validation/prototype_run_regression"
  root.add_child(session)
  check(session.state == "menu" and session.overlay_root.visible, "Player starts at the menu")
  await capture("menu")
@@ -198,11 +199,14 @@ func run() -> void:
  await frames()
  press("Return to menu")
  await await_transition()
- check(session.state == "menu" and session.game == null and not paused, "Return to menu closes the run and restores menu input")
+ check(session.state == "results" and session.game == null and not paused, "Abandoning closes the run and opens partial Results")
+ press("Return to menu")
+ await await_transition()
+ check(session.state == "menu", "Leaving abandoned Results restores the menu")
  while session.setup_menu.checking: await process_frame
  press("Start run")
  await session.return_to_menu()
- check(session.state == "menu" and session.game == null, "Menu return safely cancels an unfinished startup")
+ check(session.state == "results" and session.game == null, "Abandoning safely cancels an unfinished startup")
  await session.return_to_menu()
  session.free()
  print("RESULT | Prototype run | %d checks | %d failures" % [checks, failures])
