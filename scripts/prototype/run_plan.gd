@@ -16,14 +16,21 @@ static func source_paths() -> Array:
  return paths
 
 static func pool_error(documents: Array) -> String:
- if documents.size() < ACT_COUNT:
-  return "The two-Zone prototype needs at least six Acts in data/acts/Authored."
+ if documents.size() < ACTS_PER_ZONE:
+  return "The two-Zone prototype needs at least three Acts in data/acts/Authored."
  return StreamPlan.pool_error(documents)
 
 static func build(documents: Array, seed_value: int) -> Array[Dictionary]:
  if not pool_error(documents).is_empty(): return []
  var shuffler := StreamPlan.new(seed_value)
  var order := shuffler.shuffled(range(documents.size()))
+ while order.size() < ACT_COUNT:
+  var next_order := shuffler.shuffled(range(documents.size()))
+  if next_order[0] == order.back():
+   var swap: Variant = next_order[0]
+   next_order[0] = next_order[1]
+   next_order[1] = swap
+  order.append_array(next_order)
  var entries: Array[Dictionary] = []
  var offset := Vector2.ZERO
  for sequence in ACT_COUNT:

@@ -1480,6 +1480,8 @@ func _marker_position_value(kind: String, position: Vector2, free_move: bool) ->
    candidates.append(Vector2(clampf(roundf(point.x), 1, grid.x - 1), clampf(floorf(point.y) + 0.5, 0.5, grid.y - 0.5)) * cell)
   if grid.y > 1:
    candidates.append(Vector2(clampf(floorf(point.x) + 0.5, 0.5, grid.x - 0.5), clampf(roundf(point.y), 1, grid.y - 1)) * cell)
+  if grid.x > 1 and grid.y > 1:
+   candidates.append(Vector2(clampf(roundf(point.x), 1, grid.x - 1), clampf(roundf(point.y), 1, grid.y - 1)) * cell)
   if candidates.is_empty(): return Vector2.ONE * cell * 0.5
   var nearest := candidates[0]
   for candidate: Vector2 in candidates:

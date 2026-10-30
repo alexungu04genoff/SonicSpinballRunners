@@ -4,7 +4,7 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 if (-not (Test-Path -LiteralPath $GodotPath -PathType Leaf)) { throw 'Godot 4 was not found. Pass -GodotPath with its executable path.' }
 $acts = @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'data\acts\Authored') -Filter '*.tres' -File)
-if ($acts.Count -lt 6) { throw 'The two-Zone prototype requires at least six Acts in data\acts\Authored.' }
+if ($acts.Count -lt 3) { throw 'The two-Zone prototype requires at least three Acts in data\acts\Authored.' }
 $missing = @(foreach ($act in $acts) {
     foreach ($theme in @('green_hill', 'chemical_plant')) {
         $baked = Join-Path $act.DirectoryName ($act.BaseName + ".bake\$theme.res")

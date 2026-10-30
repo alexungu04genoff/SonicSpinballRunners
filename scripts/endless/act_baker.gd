@@ -36,8 +36,8 @@ func _ready() -> void:
  if "--pool" in OS.get_cmdline_user_args(): paths = Plan.PATHS.duplicate()
  if "--prototype" in OS.get_cmdline_user_args():
   paths = PrototypePlan.source_paths()
-  if paths.size() < PrototypePlan.ACT_COUNT:
-   push_error("Prototype baking requires at least six Acts in data/acts/Authored.")
+  if paths.size() < PrototypePlan.ACTS_PER_ZONE:
+   push_error("Prototype baking requires at least three Acts in data/acts/Authored.")
    get_tree().quit(1)
    return
  if paths.is_empty():
