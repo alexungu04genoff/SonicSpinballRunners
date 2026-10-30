@@ -25,7 +25,7 @@ extends Resource
 @export var bumper_rebound_multiplier: float = 0.5
 @export var wall_restitution: float = 0.60
 @export_group("Collectibles and abilities")
-@export var ring_magnet_radius: float = 50.0
+@export var ring_magnet_radius: float = 25.0
 @export var special_meter_charge_multiplier: float = 1.0
 
 # key: [minimum, maximum, step, label, unit]. This is also the tuning UI schema.

@@ -50,7 +50,7 @@ func run() -> void:
  field.pickup_claimed.disconnect(game.presentation._on_ring_claimed)
  field.rack_reset.disconnect(game.presentation.clear_ring_pickups)
  field.collected.connect(func(where: Vector2): events.append(where))
- check(PhysicsTuning.BALANCED.ring_magnet_radius == 50.0 and PhysicsTuning.FLOATY.ring_magnet_radius == 50.0 and not PhysicsProfile.FIELDS.has("ring_magnet_strength"), "Both profiles use 50 px; obsolete attraction-speed control removed")
+ check(PhysicsTuning.BALANCED.ring_magnet_radius == 25.0 and PhysicsTuning.FLOATY.ring_magnet_radius == 25.0 and not PhysicsProfile.FIELDS.has("ring_magnet_strength"), "Both profiles use 25 px; obsolete attraction-speed control removed")
 
  prepare(PackedVector2Array([Vector2(2040, 500)]))
  field._physics_process(1.0 / 120.0)
@@ -90,7 +90,7 @@ func run() -> void:
  magnet_chao.additions = {"ring_magnet_radius": 25.0}
  game.tuning.effective = PhysicsTuning.resolve(PhysicsTuning.BALANCED, {"ring_magnet_radius": 25.0}, [magnet_chao])
  field._physics_process(1.0 / 120.0)
- check(initially_active and not field.rings[0].active and PhysicsTuning.BALANCED.ring_magnet_radius == 50.0, "Live resolved radius and future Chao additions affect pickup without mutating the base")
+ check(initially_active and not field.rings[0].active and PhysicsTuning.BALANCED.ring_magnet_radius == 25.0, "Live resolved radius and future Chao additions affect pickup without mutating the base")
 
  prepare(PackedVector2Array([Vector2(2100, 500)]))
  game.ball.serve_pending = true
