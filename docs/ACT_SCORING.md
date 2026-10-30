@@ -57,6 +57,31 @@ Actual elevated-rail entry protects an existing combo for at most the configured
 
 The existing ring value (25), fresh bumper chain, repeated-bumper flat 100, ring links, bounded multiplier and character-special awards remain in Scorecraft. Routing-only gates, diverters, magnetic fields, terrain and flippers add no direct points.
 
+## Production authored-Act normalization — 2026-10-30
+
+The five source Acts in `data/acts/Authored` now explicitly describe the existing mechanics before any future scoring/combo redesign. This pass started from implementation commit `338c28e410a352aee85f8d9d9237aa61e8a345ff` and, with the author's approval, retained the newer local Act revisions, including their Buzz Bombers and Goal Rings. Terrain, connectors, spawn/goal positions, object transforms, ring geometry, physics properties and decoration were preserved from those local revisions.
+
+| Source Act | Bonus Racks / patterns | Authored rings | Rail rings | Total physical rings | Rail spacing |
+| --- | ---: | ---: | ---: | ---: | --- |
+| First Try Smooth Decor | 0 / 3 | 20 | 0 | 20 | No rails |
+| RampMania | 3 / 4 | 55 | 27 | 82 | Short: 35 px (7 rings); long: 45 px (20 rings) |
+| Reverse C Spring | 1 / 4 | 25 | 0 | 25 | No rails |
+| Secret Entry | 2 / 3 | 34 | 10 | 44 | 30 px |
+| SpringUp | 0 / 5 | 34 | 0 | 34 | No rails |
+| **Total** | **6 / 19** | **168** | **37** | **205** | |
+
+Ring totals count each physical collectible in a fresh Act, before any respawns. All 19 patterns previously opted into Bonus Rack behavior. Ordinary route trails now explicitly store no completion reward, a 25-second partial timeout and an 18-second full-clear respawn. The six retained racks explicitly store 500 points, a 12-second timeout and an 11-second respawn. They are RampMania patterns 0/2/3, Reverse C Spring pattern 4, and Secret Entry patterns 0/1.
+
+RampMania retains its five-member gate bank with an explicit 500-point reward and zero reset delay. Secret Entry retains its original seven-member gate bank with the same settings; its second bank had identical members and the same gate and was removed. Reverse C Spring's three existing targets now award 25 points individually and form one 500-point, zero-reset-delay scoring bank. SpringUp's four targets retain their individual 25-point rewards and form the same kind of scoring bank. Neither scoring bank has a gate. All four banks are one-shot objectives for the Act and preserve completion through soft retries.
+
+All seven Spinners explicitly enable the 10-tick, 300-point goal while preserving their authored tick score and physical properties. All three Rails explicitly enable ordinary physical rings. Their new spacing reduces generated rail rings from 58 to 37; paths, heights and traversal remain unchanged. Rendered overview and top-down rail inspection supported the proposed 35/45/30 px spacing without further adjustment.
+
+Scorecraft, Ring Link, combo participation, enemy lifecycle, Sonic Homing, Special Meter and global defaults are unchanged. Challenge still assigns sequence targets of 1000/1500/2000/2500/3000/3500. No per-Act score targets or additional mechanic families were added.
+
+The existing prototype baker rebuilt all ten derived Act/theme variants (five Acts across Green Hill and Chemical Plant); the source/pipeline fingerprint and collision/visual-recipe audit passed 33 checks. Sidecars remain ignored, rebuildable outputs. The historical fixed Endless snapshots were not republished.
+
+Focused verification on Godot 4.7.2: 151 source-preservation, validation, physical-ring and objective checks passed both in the working checkout and against an isolated HEAD implementation with the five normalized Acts. Existing ring-rack checks passed 25 assertions, rail-ring checks passed 13, and the real soft-retry regression passed 26. Seven rendered captures covered all five Acts and both rail layouts. Disk-loaded rail streaming passed seven assertions and exited cleanly headlessly. The rendered streaming run passed those assertions but encountered a native Windows shutdown crash (exit -1073740771); this is recorded as an unresolved shutdown limitation, not a successful process exit. Manual flipper feel, route difficulty and scoring balance remain unassessed.
+
 ## Three scoring examples
 
 Load these in the main game's **Load Act** or the Act Editor. They reuse the existing routing sandbox's side walls and lower funnels; the original sandboxes remain unchanged.

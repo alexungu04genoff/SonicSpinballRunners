@@ -1,14 +1,11 @@
 [gd_resource type="Resource" script_class="ActGeometry" format=4]
 
-[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_cjj3y"]
 
 [resource]
-script = ExtResource("1")
-format_version = 13
+script = ExtResource("1_cjj3y")
+format_version = 17
 library_version = 2
-title = "Untitled Act"
-grid_size = Vector2i(12, 12)
-cell_size = 50.0
 placements = [{
 "anchor": Vector2i(0, 0),
 "base_size": Vector2i(5, 12),
@@ -70,6 +67,9 @@ gameplay_objects = [{
 "object_id": "obj_1cb26b9c6b4f9fc500af9f1c",
 "position": Vector2(150, 500),
 "properties": {
+"completion_bonus": 300.0,
+"completion_enabled": true,
+"target_ticks": 10.0,
 "decay": PackedByteArray("AwAAAAAAAEA="),
 "max_spin": PackedByteArray("AwAAAAAAIEI="),
 "tick_score": PackedByteArray("AwAAAAAAoEA="),
@@ -84,7 +84,7 @@ gameplay_objects = [{
 "color": "blue",
 "label": "",
 "scale": PackedByteArray("AwABAAEAAAAAAOA/"),
-"score_reward": PackedByteArray("AwAAAAAAAAA=")
+"score_reward": 25.0
 },
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "type": "switch_target"
@@ -150,6 +150,9 @@ gameplay_objects = [{
 "object_id": "obj_7c086bd868d3cff27f4f4f3d",
 "position": Vector2(251.6999, 187.18353),
 "properties": {
+"completion_bonus": 300.0,
+"completion_enabled": true,
+"target_ticks": 10.0,
 "decay": PackedByteArray("AwAAAAAAAEA="),
 "max_spin": PackedByteArray("AwAAAAAAIEI="),
 "tick_score": PackedByteArray("AwAAAAAAoEA="),
@@ -164,7 +167,7 @@ gameplay_objects = [{
 "color": "blue",
 "label": "",
 "scale": PackedByteArray("AwABAAEAAAAAAOA/"),
-"score_reward": PackedByteArray("AwAAAAAAAAA=")
+"score_reward": 25.0
 },
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "type": "switch_target"
@@ -175,7 +178,7 @@ gameplay_objects = [{
 "color": "blue",
 "label": "",
 "scale": PackedByteArray("AwABAAEAAAAAAOA/"),
-"score_reward": PackedByteArray("AwAAAAAAAAA=")
+"score_reward": 25.0
 },
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "type": "switch_target"
@@ -191,32 +194,67 @@ gameplay_objects = [{
 "properties": {
 "mode": "attract",
 "radius": PackedByteArray("AwAAAAAADEM="),
-"strength": PackedByteArray("AwAAAAAAyEM=")
+"strength": PackedByteArray("AwAAAAAAyEI=")
 },
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "type": "magnetic_field"
+}, {
+"object_id": "obj_3ce243c7248dc88d2976820b",
+"position": Vector2(200, 400),
+"properties": {
+"patrol_left": PackedByteArray("AwAAAAAA8ME="),
+"patrol_right": PackedByteArray("AwAAAAAA8EE="),
+"patrol_speed": PackedByteArray("AwAAAAAAgkI="),
+"scale": PackedByteArray("AwAAAAAAgD8="),
+"starting_direction": "right"
+},
+"rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
+"type": "buzz_bomber"
 }]
-switch_banks = []
+switch_banks = [{
+"bank_id": "bank_reverse_c_targets",
+"completion_bonus": 500.0,
+"gates": [],
+"label": "Clear the Targets",
+"members": ["obj_2d8852632641e99d860b5adc", "obj_675aaa60e5f3410db2a3f0e2", "obj_0558124776658beabef7ce52"],
+"reset_delay": 0.0
+}]
 ring_trails = [{
+"bonus_rack": false,
+"completion_bonus": 0,
+"respawn_delay": 18.0,
+"timeout": 25.0,
 "end": Vector2(150, 450),
+"pattern_id": "ring_pattern_0",
 "spacing": PackedByteArray("AwAAAAAAoEE="),
 "start": Vector2(150, 550)
 }, {
+"bonus_rack": false,
+"completion_bonus": 0,
+"respawn_delay": 18.0,
+"timeout": 25.0,
 "end": Vector2(308.97528, 258.0695),
+"pattern_id": "ring_pattern_1",
 "spacing": PackedByteArray("AwAAAAAAoEE="),
 "start": Vector2(341.0258, 348.7971)
 }, {
+"bonus_rack": false,
+"completion_bonus": 0,
+"respawn_delay": 18.0,
+"timeout": 25.0,
 "end": Vector2(209.68457, 159.90298),
+"pattern_id": "ring_pattern_2",
 "spacing": PackedByteArray("AwAAAAAAoEE="),
 "start": Vector2(293.18552, 213.71472)
 }, {
-"end": Vector2(99.38148, 38.248016),
-"spacing": PackedByteArray("AwAAAAAAoEE="),
-"start": Vector2(99.38148, 138.24802)
-}, {
+"bonus_rack": true,
+"completion_bonus": 500,
+"respawn_delay": 11.0,
+"timeout": 12.0,
 "end": Vector2(279.90118, 386.7226),
 "fill": true,
 "kind": "ellipse",
+"pattern_id": "ring_pattern_4",
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "spacing": PackedByteArray("AwAAAAAAoEE="),
 "start": Vector2(219.9012, 326.7226)
@@ -642,3 +680,4 @@ exit_start_x = 1
 exit_width = 2
 activation_y = PackedByteArray("AwAAAACACUQ=")
 spawn_position = Vector2(114.69394, 526.1787)
+goal_position = Vector2(100, 75)

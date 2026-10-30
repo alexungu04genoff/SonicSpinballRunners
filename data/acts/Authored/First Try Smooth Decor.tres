@@ -1,10 +1,10 @@
 [gd_resource type="Resource" script_class="ActGeometry" format=4]
 
-[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_msf1e"]
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_uitji"]
 
 [resource]
-script = ExtResource("1_msf1e")
-format_version = 10
+script = ExtResource("1_uitji")
+format_version = 17
 library_version = 2
 placements = [{
 "anchor": Vector2i(7, 0),
@@ -63,102 +63,135 @@ placements = [{
 "shape_id": "capsule_1x2"
 }]
 gameplay_objects = [{
+"object_id": "legacy_d210b89002dc65bdc88b655e",
 "position": Vector2(350, 600),
+"properties": {},
 "rotation_degrees": PackedByteArray("AwABAAuzP41KNWRA"),
 "type": "right_flipper"
 }, {
+"object_id": "legacy_12fb0e60625532e564d0ff4c",
 "position": Vector2(250, 600),
+"properties": {},
 "rotation_degrees": PackedByteArray("AwABAKlnAparVTJA"),
 "type": "left_flipper"
 }, {
+"object_id": "legacy_5595366cd67a772e0343b708",
 "position": Vector2(200, 500),
+"properties": {},
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "type": "triangle_bumper"
 }, {
+"object_id": "legacy_ae7b94b88df71edcb8fe2524",
 "position": Vector2(400, 450),
+"properties": {},
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "type": "round_bumper"
 }, {
+"object_id": "legacy_ebd75fddf1acc4691764fc7c",
 "position": Vector2(250, 400),
+"properties": {},
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "type": "round_bumper"
 }, {
+"object_id": "legacy_e8a0c91b2db8631daa89b4bc",
 "position": Vector2(100, 400),
+"properties": {},
 "rotation_degrees": PackedByteArray("AwABAKlnAparVTJA"),
 "type": "left_flipper"
 }, {
+"object_id": "legacy_9c9f40ad37bb36980618aff8",
 "position": Vector2(500, 400),
+"properties": {},
 "rotation_degrees": PackedByteArray("AwABAAuzP41KNWRA"),
 "type": "right_flipper"
 }, {
+"object_id": "legacy_2483aa42eb1232236c1f9730",
 "position": Vector2(300, 250),
+"properties": {},
 "rotation_degrees": PackedByteArray("AwABAAuzP41KNWRA"),
 "type": "right_flipper"
 }, {
+"object_id": "legacy_5f190dc86dcd869ee6cfc283",
 "position": Vector2(350, 250),
+"properties": {},
 "rotation_degrees": PackedByteArray("AwABAKlnAparVTJA"),
 "type": "left_flipper"
 }, {
+"object_id": "legacy_992aae8f5bbec22426e58d14",
 "position": Vector2(150, 200),
+"properties": {},
 "rotation_degrees": PackedByteArray("AwABAKlnAparVTJA"),
 "type": "left_flipper"
 }, {
+"object_id": "legacy_09d3009c6bdbfefba6f4a54f",
 "position": Vector2(350, 350),
+"properties": {},
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "type": "round_bumper"
 }, {
+"object_id": "legacy_5bf7df5256c94dfa4f40a719",
 "position": Vector2(450, 200),
+"properties": {},
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "type": "round_bumper"
 }, {
+"object_id": "legacy_a147f27a5c7ef39b427ddc54",
 "position": Vector2(550, 250),
+"properties": {},
 "rotation_degrees": PackedByteArray("AwABAAuzP41KNWRA"),
 "type": "right_flipper"
+}, {
+"object_id": "obj_94a17f1ac9dd68276442f953",
+"position": Vector2(350, 400),
+"properties": {
+"patrol_left": PackedByteArray("AwAAAAAAIMI="),
+"patrol_right": PackedByteArray("AwAAAAAAIEI="),
+"patrol_speed": PackedByteArray("AwAAAAAAgkI="),
+"scale": PackedByteArray("AwAAAAAAgD8="),
+"starting_direction": "right"
+},
+"rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
+"type": "buzz_bomber"
+}, {
+"object_id": "obj_2390405183de611a5312495b",
+"position": Vector2(450, 300),
+"properties": {
+"patrol_left": PackedByteArray("AwAAAAAAIMI="),
+"patrol_right": PackedByteArray("AwAAAAAAIEI="),
+"patrol_speed": PackedByteArray("AwAAAAAAgkI="),
+"scale": PackedByteArray("AwAAAAAAgD8="),
+"starting_direction": "left"
+},
+"rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
+"type": "buzz_bomber"
 }]
 ring_trails = [{
-"end": Vector2(198.15631, 172.42233),
+"bonus_rack": false,
+"completion_bonus": 0,
+"respawn_delay": 18.0,
+"timeout": 25.0,
+"end": Vector2(292.76773, 143.4946),
+"pattern_id": "ring_obj_c0502bbc26c0552ba4ddb32e",
 "spacing": PackedByteArray("AwAAAAAAoEE="),
-"start": Vector2(348.1563, 72.42233)
+"start": Vector2(202.42404, 188.66646)
 }, {
-"end": Vector2(297.80527, 437.65744),
+"bonus_rack": false,
+"completion_bonus": 0,
+"respawn_delay": 18.0,
+"timeout": 25.0,
+"end": Vector2(199.47806, 276.06415),
+"pattern_id": "ring_obj_4f2b298c3d7f641db9ad452d",
 "spacing": PackedByteArray("AwAAAAAAoEE="),
-"start": Vector2(320.72238, 557.7676)
+"start": Vector2(148.41423, 378.1918)
 }, {
-"end": Vector2(214.2656, 254.50558),
+"bonus_rack": false,
+"completion_bonus": 0,
+"respawn_delay": 18.0,
+"timeout": 25.0,
+"end": Vector2(290.62354, 475.80466),
+"pattern_id": "ring_obj_1c612db9582388bb62f6bd24",
 "spacing": PackedByteArray("AwAAAAAAoEE="),
-"start": Vector2(145.92413, 375.55524)
-}, {
-"end": Vector2(317.7467, 348.11783),
-"spacing": PackedByteArray("AwAAAAAAoEE="),
-"start": Vector2(317.7467, 348.11783)
-}, {
-"end": Vector2(350.23935, 316.18042),
-"spacing": PackedByteArray("AwAAAAAAoEE="),
-"start": Vector2(350.23935, 316.18042)
-}, {
-"end": Vector2(382.73203, 349.74176),
-"spacing": PackedByteArray("AwAAAAAAoEE="),
-"start": Vector2(382.73203, 349.74176)
-}, {
-"end": Vector2(351.32242, 380.5966),
-"spacing": PackedByteArray("AwAAAAAAoEE="),
-"start": Vector2(351.32242, 380.5966)
-}, {
-"end": Vector2(328.57758, 370.31168),
-"spacing": PackedByteArray("AwAAAAAAoEE="),
-"start": Vector2(328.57758, 370.31168)
-}, {
-"end": Vector2(330.2022, 325.92404),
-"spacing": PackedByteArray("AwAAAAAAoEE="),
-"start": Vector2(330.2022, 325.92404)
-}, {
-"end": Vector2(374.06732, 327.54797),
-"spacing": PackedByteArray("AwAAAAAAoEE="),
-"start": Vector2(374.06732, 327.54797)
-}, {
-"end": Vector2(374.60883, 369.22903),
-"spacing": PackedByteArray("AwAAAAAAoEE="),
-"start": Vector2(374.60883, 369.22903)
+"start": Vector2(316.92703, 566.99005)
 }]
 decor_seed = "de29ef4dc4da8457d82e883232ec70de"
 decor_slots = [{
@@ -404,4 +437,5 @@ entry_width = 2
 exit_start_x = 6
 exit_width = 2
 activation_y = PackedByteArray("AwAAAACACUQ=")
-spawn_position = Vector2(417.04266, 517.0353)
+spawn_position = Vector2(400, 500)
+goal_position = Vector2(350, 125)

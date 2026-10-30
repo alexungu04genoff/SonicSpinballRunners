@@ -1,14 +1,13 @@
 [gd_resource type="Resource" script_class="ActGeometry" format=4]
 
-[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_avts8"]
 
 [resource]
-script = ExtResource("1")
-format_version = 13
+script = ExtResource("1_avts8")
+format_version = 17
 library_version = 2
 title = "Switch Court — Open the Sky Lane"
 grid_size = Vector2i(12, 16)
-cell_size = 50.0
 placements = [{
 "anchor": Vector2i(0, 0),
 "base_size": Vector2i(4, 11),
@@ -107,6 +106,8 @@ gameplay_objects = [{
 "object_id": "obj_a87f31793fb5052ec00e5bd4",
 "position": Vector2(114, 500),
 "properties": {
+"ring_spacing": 35.0,
+"rings_enabled": true,
 "drag": PackedByteArray("AwABAHsUrkfheoQ/"),
 "entry_speed": PackedByteArray("AwAAAAAASEM="),
 "height": PackedByteArray("AwAAAAAASEI="),
@@ -119,6 +120,8 @@ gameplay_objects = [{
 "object_id": "obj_2b22fda5038d856244649a22",
 "position": Vector2(498, 197),
 "properties": {
+"ring_spacing": 45.0,
+"rings_enabled": true,
 "drag": PackedByteArray("AwABALgehetRuK4/"),
 "entry_speed": PackedByteArray("AwAAAAAAyEI="),
 "height": PackedByteArray("AwAAAAAAcEI="),
@@ -157,6 +160,9 @@ gameplay_objects = [{
 "object_id": "obj_75bd17862886dd0d8ddfcb57",
 "position": Vector2(200, 650),
 "properties": {
+"completion_bonus": 300.0,
+"completion_enabled": true,
+"target_ticks": 10.0,
 "decay": PackedByteArray("AwAAAAAAAEA="),
 "max_spin": PackedByteArray("AwAAAAAAIEI="),
 "tick_score": PackedByteArray("AwAAAAAAoEA="),
@@ -164,16 +170,6 @@ gameplay_objects = [{
 },
 "rotation_degrees": PackedByteArray("AwAAAAAAm0M="),
 "type": "spinner"
-}, {
-"object_id": "obj_62fb52eaa9be80b542ef635f",
-"position": Vector2(300, 26),
-"properties": {
-"color": "red",
-"launch_strength": PackedByteArray("AwAAAAAANEM="),
-"width": PackedByteArray("AwAAAAAAoEE=")
-},
-"rotation_degrees": PackedByteArray("AwAAAAAAgEA="),
-"type": "spring"
 }, {
 "object_id": "obj_ef7c51beb5ee62c7d18fbd8c",
 "position": Vector2(452.36523, 375.8685),
@@ -226,6 +222,9 @@ gameplay_objects = [{
 "object_id": "obj_fd9b6c84bd5c998a54f1d4f1",
 "position": Vector2(300, 100),
 "properties": {
+"completion_bonus": 300.0,
+"completion_enabled": true,
+"target_ticks": 10.0,
 "decay": PackedByteArray("AwAAAAAAAEA="),
 "max_spin": PackedByteArray("AwAAAAAAIEI="),
 "tick_score": PackedByteArray("AwAAAAAAoEA="),
@@ -325,7 +324,7 @@ gameplay_objects = [{
 "position": Vector2(112.39186, 573.86584),
 "properties": {
 "mode": "attract",
-"radius": PackedByteArray("AwAAAAAANEI="),
+"radius": PackedByteArray("AwAAAAAASEI="),
 "strength": PackedByteArray("AwAAAAAA+kM=")
 },
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
@@ -360,44 +359,77 @@ gameplay_objects = [{
 },
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "type": "magnetic_field"
+}, {
+"object_id": "obj_d79cfa0fec59ce493fe04b3c",
+"position": Vector2(100, 650),
+"properties": {
+"patrol_left": PackedByteArray("AwAAAAAAIMI="),
+"patrol_right": PackedByteArray("AwAAAAAAIEI="),
+"patrol_speed": PackedByteArray("AwAAAAAAgkI="),
+"scale": PackedByteArray("AwAAAAAAgD8="),
+"starting_direction": "right"
+},
+"rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
+"type": "buzz_bomber"
 }]
 switch_banks = [{
+"completion_bonus": 500.0,
+"reset_delay": 0.0,
 "bank_id": "bank_obj_160d7e371bda20a7e0795d81",
 "gates": ["obj_b8599a44a5ac2a74c5d650b0"],
 "label": "Bank 1",
 "members": ["obj_96f249332380f976130efe53", "obj_a0a8616814e0001d9d179267", "obj_ae0591db6fb941397edf55f3", "obj_67d325833047a82fe115343c", "obj_6176c17b9c1283a05bd33ac6"]
 }]
 ring_trails = [{
+"bonus_rack": true,
+"completion_bonus": 500,
+"respawn_delay": 11.0,
+"timeout": 12.0,
 "end": Vector2(250, 250),
 "fill": false,
 "kind": "ellipse",
+"pattern_id": "ring_pattern_0",
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "spacing": PackedByteArray("AwAAAAAAoEE="),
 "start": Vector2(150, 150)
 }, {
+"bonus_rack": false,
+"completion_bonus": 0,
+"respawn_delay": 18.0,
+"timeout": 25.0,
 "end": Vector2(310.0396, 281.9467),
+"pattern_id": "ring_pattern_1",
 "spacing": PackedByteArray("AwAAAAAAoEE="),
 "start": Vector2(234.93295, 373.66348)
 }, {
+"bonus_rack": true,
+"completion_bonus": 500,
+"respawn_delay": 11.0,
+"timeout": 12.0,
 "end": Vector2(300, 600),
 "fill": false,
 "kind": "ellipse",
+"pattern_id": "ring_pattern_2",
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "spacing": PackedByteArray("AwAAAAAAoEE="),
 "start": Vector2(200, 500)
 }, {
+"bonus_rack": true,
+"completion_bonus": 500,
+"respawn_delay": 11.0,
+"timeout": 12.0,
 "end": Vector2(450, 750),
 "fill": false,
 "kind": "ellipse",
+"pattern_id": "ring_pattern_3",
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "spacing": PackedByteArray("AwAAAAAAoEE="),
 "start": Vector2(350, 650)
 }]
-decor_seed = ""
-decor_slots = []
 entry_start_x = 5
 entry_width = 2
 exit_start_x = 5
 exit_width = 2
 activation_y = PackedByteArray("AwAAAACAO0Q=")
-spawn_position = Vector2(250, 700)
+spawn_position = Vector2(200, 700)
+goal_position = Vector2(300, 25)

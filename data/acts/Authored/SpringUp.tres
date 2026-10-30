@@ -1,14 +1,11 @@
 [gd_resource type="Resource" script_class="ActGeometry" format=4]
 
-[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_vmfcn"]
 
 [resource]
-script = ExtResource("1")
-format_version = 13
+script = ExtResource("1_vmfcn")
+format_version = 17
 library_version = 2
-title = "Untitled Act"
-grid_size = Vector2i(12, 12)
-cell_size = 50.0
 placements = [{
 "anchor": Vector2i(1, 0),
 "base_size": Vector2i(3, 12),
@@ -114,6 +111,9 @@ gameplay_objects = [{
 "object_id": "obj_77b322226b9924ee1b89f16a",
 "position": Vector2(250, 500),
 "properties": {
+"completion_bonus": 300.0,
+"completion_enabled": true,
+"target_ticks": 10.0,
 "decay": PackedByteArray("AwAAAAAAAEA="),
 "max_spin": PackedByteArray("AwAAAAAAIEI="),
 "tick_score": PackedByteArray("AwAAAAAAoEA="),
@@ -185,6 +185,9 @@ gameplay_objects = [{
 "object_id": "obj_1e6a924684c8e3874b1323c8",
 "position": Vector2(381.2005, 275.89874),
 "properties": {
+"completion_bonus": 300.0,
+"completion_enabled": true,
+"target_ticks": 10.0,
 "decay": PackedByteArray("AwAAAAAAAEA="),
 "max_spin": PackedByteArray("AwAAAAAAIEI="),
 "tick_score": PackedByteArray("AwAAAAAAoEA="),
@@ -193,35 +196,81 @@ gameplay_objects = [{
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "type": "spinner"
 }, {
-"object_id": "obj_4273c82e2e0d0347787d18b8",
-"position": Vector2(200, 50),
+"object_id": "obj_909f7958822deeff7b6d7381",
+"position": Vector2(300, 450),
 "properties": {
-"color": "blue",
-"launch_strength": PackedByteArray("AwAAAAAAL0M="),
-"width": PackedByteArray("AwAAAAAAoEE=")
+"patrol_left": PackedByteArray("AwAAAAAA8ME="),
+"patrol_right": PackedByteArray("AwAAAAAA8EE="),
+"patrol_speed": PackedByteArray("AwAAAAAAgkI="),
+"scale": PackedByteArray("AwAAAAAAgD8="),
+"starting_direction": "right"
 },
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
-"type": "spring"
+"type": "buzz_bomber"
+}, {
+"object_id": "obj_60b96d12279262ca8f63eae9",
+"position": Vector2(250, 200),
+"properties": {
+"patrol_left": PackedByteArray("AwAAAAAA8ME="),
+"patrol_right": PackedByteArray("AwAAAAAA8EE="),
+"patrol_speed": PackedByteArray("AwAAAAAAgkI="),
+"scale": PackedByteArray("AwAAAAAAgD8="),
+"starting_direction": "left"
+},
+"rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
+"type": "buzz_bomber"
 }]
-switch_banks = []
+switch_banks = [{
+"bank_id": "bank_springup_targets",
+"completion_bonus": 500.0,
+"gates": [],
+"label": "Clear the Targets",
+"members": ["obj_a0f5cb15e3e87080f2f183d0", "obj_64fef59184b74c726e557ede", "obj_eef89f33cf3ec7da171e5a62", "obj_cab9be3228cfc00fa0a0843d"],
+"reset_delay": 0.0
+}]
 ring_trails = [{
+"bonus_rack": false,
+"completion_bonus": 0,
+"respawn_delay": 18.0,
+"timeout": 25.0,
 "end": Vector2(250, 450),
+"pattern_id": "ring_pattern_0",
 "spacing": PackedByteArray("AwAAAAAAoEE="),
 "start": Vector2(250, 550)
 }, {
+"bonus_rack": false,
+"completion_bonus": 0,
+"respawn_delay": 18.0,
+"timeout": 25.0,
 "end": Vector2(381.2726, 240.13078),
+"pattern_id": "ring_pattern_1",
 "spacing": PackedByteArray("AwAAAAAAoEE="),
 "start": Vector2(382.52078, 401.76663)
 }, {
+"bonus_rack": false,
+"completion_bonus": 0,
+"respawn_delay": 18.0,
+"timeout": 25.0,
 "end": Vector2(173.86652, 343.29523),
+"pattern_id": "ring_pattern_2",
 "spacing": PackedByteArray("AwAAAAAAoEE="),
 "start": Vector2(134.2213, 417.94946)
 }, {
+"bonus_rack": false,
+"completion_bonus": 0,
+"respawn_delay": 18.0,
+"timeout": 25.0,
 "end": Vector2(185.82193, 236.64902),
+"pattern_id": "ring_pattern_3",
 "spacing": PackedByteArray("AwAAAAAAoEE="),
 "start": Vector2(215.91641, 321.6905)
 }, {
+"bonus_rack": false,
+"completion_bonus": 0,
+"respawn_delay": 18.0,
+"timeout": 25.0,
 "end": Vector2(223.7432, 142.77553),
+"pattern_id": "ring_pattern_4",
 "spacing": PackedByteArray("AwAAAAAAoEE="),
 "start": Vector2(137, 188)
 }]
@@ -612,3 +661,4 @@ exit_start_x = 3
 exit_width = 2
 activation_y = PackedByteArray("AwAAAACACUQ=")
 spawn_position = Vector2(309.9923, 548.8159)
+goal_position = Vector2(199.6034, 49.220215)
