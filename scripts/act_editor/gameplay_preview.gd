@@ -116,6 +116,8 @@ static func _draw_mechanic(target: CanvasItem, placement: Dictionary, anchor: Ve
  if ghost: color.a = 0.55
  var angle := deg_to_rad(float(placement.rotation_degrees))
  if placement.type == "elevated_rail":
+  for ring: Dictionary in preload("res://scripts/authored_act/rail_rings.gd").samples(placement, props):
+   target.draw_arc(anchor + (ring.position - placement.position) * scale_factor, maxf(2.0, 5.0 * scale_factor), 0, TAU, 16, Color("ffd568"), 1.5, true)
   if points.size() >= 2:
    target.draw_polyline(points, Color(color, 0.18), maxf(3.0, float(props.width) * scale_factor), true)
    target.draw_polyline(points, color, 2.0, true)

@@ -29,7 +29,7 @@ func _update_camera(delta: float) -> void:
 func _on_ring_claimed(index: int) -> void:
  if index >= ring_visuals.size(): return
  var visual := ring_visuals[index]
- visual.global_position = map_point(ring_field.rings[index].position, ring_height())
+ visual.global_position = map_point(ring_field.rings[index].position, ring_height() + float(ring_field.rings[index].get("height", 0.0)) * SCALE)
  visual.scale = Vector3.ONE
  visual.visible = true
  ring_pickups[index] = {"start": visual.global_position, "elapsed": 0.0}
@@ -38,7 +38,7 @@ func clear_ring_pickups() -> void:
  ring_pickups.clear()
  for i in mini(ring_visuals.size(), ring_field.rings.size()):
   ring_visuals[i].visible = ring_field.rings[i].active
-  ring_visuals[i].global_position = map_point(ring_field.rings[i].position, ring_height())
+  ring_visuals[i].global_position = map_point(ring_field.rings[i].position, ring_height() + float(ring_field.rings[i].get("height", 0.0)) * SCALE)
   ring_visuals[i].scale = Vector3.ONE
 
 func _update_ring_visuals(delta: float) -> void:

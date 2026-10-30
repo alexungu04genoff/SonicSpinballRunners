@@ -158,7 +158,7 @@ func _fail_startup(message: String) -> void:
 func _populate_rings() -> void:
  var started := Time.get_ticks_usec()
  ring_field.active_owner_id = active_scoring_id
- ring_field.rings = RingField.pattern_records(authored_document.ring_trails, active_scoring_id)
+ ring_field.rings = RingField.document_records(authored_document, active_scoring_id)
  ring_field.previous_ball_position = ball.serve_position
  ring_field.ring_radius = float(authored_document.cell_size) * preload("res://scripts/act_dimensions.gd").RING_RADIUS_CELLS
  _ring_population_ms = (Time.get_ticks_usec() - started) / 1000.0
@@ -385,12 +385,17 @@ func toggle_debug() -> void:
 func toggle_pause() -> void:
  get_tree().paused = not get_tree().paused
 
+func _on_rail_traveled(rail_id: String, from: float, to: float, owner_id: String) -> void:
+ if is_instance_valid(ring_field) and _accept_scoring(owner_id):
+  ring_field.collect_rail_progress(rail_id, from, to, owner_id)
+
 func _wire_scoring_runtime(runtime: Dictionary, owner_id: String) -> void:
  var mechanics: Node = runtime.mechanics
  mechanics.mechanic_score.connect(_on_mechanic_score.bind(owner_id))
  mechanics.mechanic_rings.connect(_on_mechanic_rings.bind(owner_id))
  mechanics.feature_completed.connect(_on_feature_completed.bind(owner_id))
  mechanics.traversal_event.connect(_on_traversal_event.bind(owner_id))
+ mechanics.rail_traveled.connect(_on_rail_traveled.bind(owner_id))
  mechanics.enemy_destroyed.connect(_on_enemy_destroyed.bind(owner_id))
  mechanics.scoring_allowed = _accept_scoring.bind(owner_id)
  mechanics.enemies.owner_act = owner_id

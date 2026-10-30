@@ -100,9 +100,10 @@ func run() -> void:
  var previous_spin: float = absf(manager.items[0].spin)
  await frames(10)
  check(absf(manager.items[0].spin) < previous_spin, "Spinner spins down after crossing")
+ var previous_fraction: float = manager.items[0].tick_rotation
  game.reset_ball(false)
  await frames(2)
- check(manager.items[0].spin == 0.0 and manager.items[0].tick_rotation == 0.0, "Reset clears spinner energy and fractional ticks")
+ check(manager.items[0].spin == 0.0 and manager.items[0].tick_rotation == previous_fraction, "Soft retry clears spinner energy and preserves fractional goal progress")
  manager.items[0].spin = 1e12
  var before := ticks
  manager.tick(1.0 / 120.0)
@@ -123,6 +124,11 @@ func run() -> void:
  check(field_frozen == [game.ball.position, game.ball.linear_velocity], "Pause freezes magnetic force and ball motion")
  paused = false
  # A strong forward entry crosses lower collision geometry on this same ball.
+ game.ring_field.reset_rings()
+ var rings_before: int = game.rings_collected
+ var rail_rings: Array = game.ring_field.rings.filter(func(ring): return ring.has("rail_id"))
+ check(not rail_rings.is_empty(), "Authored rail generates collectible rings")
+ check(not game.ring_field.claim_ring(game.ring_field.rings.find(rail_rings[0])), "Floor contact and area abilities cannot claim elevated rings")
  await enter_rail()
  check(game.ball.on_ramp and game.ball.collision_mask == 0 and game.ball.collision_layer == 0, "Forward mouth crossing enters explicit elevated state")
  check(traversal_events.back() == [&"elevated_rail", "sandbox_elevated_rail", &"entered"], "Actual rail capture emits typed entry with stable identity")
@@ -139,12 +145,14 @@ func run() -> void:
   if game.ball.on_ramp and game.ball.position.x > 310 and game.ball.position.x < 435:
    saw_crossing = saw_crossing or game.ball.ramp_height >= 45.0
   if not game.ball.on_ramp: break
- check(game.rings_collected == 0, "Elevated traversal cannot collect rings on the lower table")
+ check(game.ring_field.rings.filter(func(ring): return not ring.has("rail_id")).all(func(ring): return ring.active), "Elevated traversal cannot collect rings on the lower table")
+ check(game.rings_collected - rings_before == rail_rings.size() and rail_rings.all(func(ring): return not ring.active), "Curved high-speed traversal collects every rail ring exactly once")
  check(camera_followed, "Existing follow camera keeps the elevated ball on screen")
  check(saw_crossing, "Raised ball traverses above the lower lane and collision rails")
  check(not game.ball.on_ramp and game.ball.collision_layer == 2 and game.ball.collision_mask == 1 and not game.ball.custom_integrator, "Exit restores original collision and integration state")
  check(traversal_events.back() == [&"elevated_rail", "sandbox_elevated_rail", &"exited"], "Actual rail departure emits typed exit")
  check(game.ball.get_instance_id() == ball_id and game.ball.position.x > 440 and game.ball.linear_velocity.y > 0, "Same ball exits with forward tangent momentum")
+ game.ring_field.reset_rings()
  await enter_rail()
  if DisplayServer.get_name() != "headless":
   for i in 12: await frames(1)

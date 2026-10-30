@@ -23,6 +23,7 @@ var collection_bounds := Rect2()
 var active_owner_id := ""
 var scoring_enabled := true
 var last_pickup_source_id := ""
+var _collecting_rail_id := ""
 
 static func pattern_records(trails: Array, owner_id: String, offset := Vector2.ZERO) -> Array[Dictionary]:
  var result: Array[Dictionary] = []
@@ -39,6 +40,37 @@ static func pattern_records(trails: Array, owner_id: String, offset := Vector2.Z
    var at: Vector2 = points[point_index] + offset
    result.append({"home": at, "position": at, "active": true, "rack": rack, "source_id": "%s:ring_%d" % [source_id, point_index]})
  return result
+
+static func document_records(document: Resource, owner_id: String, offset := Vector2.ZERO) -> Array[Dictionary]:
+ var result := pattern_records(document.ring_trails, owner_id, offset)
+ var objects = preload("res://scripts/act_editor/gameplay_objects.gd")
+ var rails = preload("res://scripts/authored_act/rail_rings.gd")
+ for index in document.gameplay_objects.size():
+  var item: Dictionary = document.gameplay_objects[index]
+  if item.type != "elevated_rail": continue
+  var samples: Array[Dictionary] = rails.samples(item, objects.properties(item))
+  if samples.is_empty(): continue
+  var rail_id: String = objects.identity(item, index)
+  var id := owner_id + ":rail:" + rail_id
+  var rack := _new_rack(id, owner_id, samples.size(), RingTrails.scoring_settings({}))
+  var bounds := Rect2(samples[0].position + offset, Vector2.ZERO)
+  for sample: Dictionary in samples: bounds = bounds.expand(sample.position + offset)
+  rack["bounds"] = bounds
+  for i in samples.size():
+   var sample: Dictionary = samples[i]
+   var at: Vector2 = sample.position + offset
+   result.append({"home": at, "position": at, "height": sample.height, "rail_id": rail_id,
+    "rail_distance": sample.distance, "active": true, "rack": rack, "source_id": "%s:ring_%d" % [id, i]})
+ return result
+
+func collect_rail_progress(rail_id: String, from: float, to: float, owner_id: String) -> void:
+ if not scoring_enabled or not is_instance_valid(ball) or ball.serve_pending or ball._teleport_pending: return
+ _collecting_rail_id = rail_id
+ for index in rings.size():
+  var ring: Dictionary = rings[index]
+  if ring.get("rail_id", "") != rail_id or ring.rack.owner_id != owner_id: continue
+  if float(ring.rail_distance) >= minf(from, to) and float(ring.rail_distance) <= maxf(from, to): claim_ring(index)
+ _collecting_rail_id = ""
 
 static func _new_rack(source_id: String, owner_id: String, total: int, settings: Dictionary) -> Dictionary:
  return {"id": source_id, "owner_id": owner_id, "total": total, "remaining": total, "timeout_remaining": -1.0, "respawn_remaining": -1.0, "ready": false, "fade": 0.0, "settings": settings}
@@ -134,6 +166,7 @@ func claim_ring(index: int, source: String = "", multiplier: int = 1) -> bool:
  if index < 0 or index >= rings.size():
   return false
  var ring: Dictionary = rings[index]
+ if ring.has("rail_id") and ring.rail_id != _collecting_rail_id: return false
  if not ring.active or not ring_eligible(ring):
   return false
  # One atomic claim is shared by contact, magnet and area abilities. Cosmetic

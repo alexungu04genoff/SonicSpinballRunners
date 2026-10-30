@@ -57,7 +57,7 @@ func _build(theme_id: String, id: int) -> void:
  _view.add_child(p)
  p.set_theme_definition(theme)
  var runtime: Dictionary = runtimes[id].duplicate()
- runtime.ring_trails = documents[id].ring_trails
+ runtime.ring_records = RingField.document_records(documents[id], "template")
  await p.prepare_act(runtime, Rect2(Vector2.ZERO, documents[id].red_gutter_bounds().end), documents[id].cell_size)
  p.stage = "environment"
  theme.configure_environment(p)

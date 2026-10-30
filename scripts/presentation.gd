@@ -216,7 +216,7 @@ func _build_shared(bounds: Rect2) -> void:
   torus.outer_radius = ring_field.ring_radius * SCALE if authored_mode else 0.135
   torus.rings = 16
   torus.ring_segments = 8
-  ring_visuals.append(mesh_node(torus, gold, map_point(ring.position, ring_height())))
+  ring_visuals.append(mesh_node(torus, gold, map_point(ring.position, ring_height() + float(ring.get("height", 0.0)) * SCALE)))
  if not ring_field.pickup_claimed.is_connected(_on_ring_claimed):
   ring_field.pickup_claimed.connect(_on_ring_claimed)
  if not ring_field.rack_reset.is_connected(clear_ring_pickups):
@@ -551,7 +551,7 @@ func flash_bumper(body: Node) -> void:
 func _on_ring_claimed(index: int) -> void:
  var visual := ring_visuals[index]
  # Start from the authored position even if the rack reset and pickup share a frame.
- visual.position = map_point(ring_field.rings[index].position, ring_height())
+ visual.position = map_point(ring_field.rings[index].position, ring_height() + float(ring_field.rings[index].get("height", 0.0)) * SCALE)
  visual.scale = Vector3.ONE
  visual.visible = true
  visual.transparency = 0.0
@@ -562,7 +562,7 @@ func clear_ring_pickups() -> void:
  ring_pickups.clear()
  for i in ring_visuals.size():
   ring_visuals[i].visible = ring_field.rings[i].active
-  ring_visuals[i].position = map_point(ring_field.rings[i].position, ring_height())
+  ring_visuals[i].position = map_point(ring_field.rings[i].position, ring_height() + float(ring_field.rings[i].get("height", 0.0)) * SCALE)
   ring_visuals[i].scale = Vector3.ONE
 
 func _spin_rings(delta: float) -> void:
@@ -591,7 +591,7 @@ func _update_ring_visuals(delta: float) -> void:
    visual.visible = alpha > 0.0
    visual.transparency = 1.0 - alpha
    if visual.visible:
-    visual.position = map_point(ring_field.rings[i].position, ring_height())
+    visual.position = map_point(ring_field.rings[i].position, ring_height() + float(ring_field.rings[i].get("height", 0.0)) * SCALE)
     visual.scale = Vector3.ONE
 
 func _process(delta: float) -> void:

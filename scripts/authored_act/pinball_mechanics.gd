@@ -1,5 +1,6 @@
 extends Node
 ## Authored mechanics run only through the authoritative ball's 120 Hz integration.
+signal rail_traveled(rail_id: String, from: float, to: float)
 signal mechanic_score(kind: StringName, object_id: String, points: int)
 signal mechanic_rings(kind: StringName, object_id: String, amount: int)
 signal feature_completed(kind: StringName, object_id: String, bonus: int)
@@ -444,6 +445,7 @@ func advance_ramp(state: PhysicsDirectBodyState2D, dt: float) -> void:
  if age > 12.0: acceleration = -180.0
  speed = (speed + acceleration * dt) * exp(-float(ramp.properties.drag) * dt)
  speed = clampf(speed, -2400.0, 2400.0)
+ var previous_progress := progress
  progress += speed * dt / metric
  var at_end: bool = progress >= path.length
  var at_start := progress <= 0.0 and speed < 0.0
@@ -453,6 +455,7 @@ func advance_ramp(state: PhysicsDirectBodyState2D, dt: float) -> void:
  state.linear_velocity = Vector2.ZERO
  state.angular_velocity = 0.0
  ball.ramp_height = RailPath.height(path, progress, ramp.properties.height)
+ if scoring_active: rail_traveled.emit(str(ramp.object_id), previous_progress, progress)
  if at_end or at_start:
   var outgoing := RailPath.tangent(path, progress) * speed
   if not _exit_clear(point):

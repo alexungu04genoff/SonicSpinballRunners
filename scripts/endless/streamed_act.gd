@@ -50,7 +50,7 @@ func initialize(owner_game: Node, entry: Dictionary, library: Node) -> void:
  mechanics.banks = document.switch_banks.duplicate(true)
  root.add_child(mechanics)
  runtime = {"root": root, "mechanics": mechanics, "terrain": [], "objects": [], "flippers": [], "cell_size": document.cell_size}
- ring_data.assign(RingField.pattern_records(document.ring_trails, "act:%d" % plan.sequence, plan.offset))
+ ring_data.assign(RingField.document_records(document, "act:%d" % plan.sequence, plan.offset))
 
 func step() -> void:
  match phase:

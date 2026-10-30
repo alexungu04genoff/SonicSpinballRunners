@@ -2188,7 +2188,7 @@ func _refresh_mechanics_properties() -> void:
 	identity.add_theme_font_size_override("font_size", 11)
 	mechanics_properties.add_child(identity)
 	for key: String in Objects.property_limits(item.type):
-		if key in ["patrol_left", "patrol_right"]: continue
+		if key in ["patrol_left", "patrol_right", "ring_spacing"]: continue
 		_mechanic_number(key.replace("_", " ").capitalize(), float(properties[key]), func(value: float): set_gameplay_property(key, value))
 	if item.type == "buzz_bomber":
 		_mechanic_choice("Starting direction", "starting_direction", ["left", "right"], properties.starting_direction)
@@ -2203,6 +2203,31 @@ func _refresh_mechanics_properties() -> void:
 		stationary.disabled = not canvas.gameplay_brush.is_empty()
 		stationary.pressed.connect(func(): set_enemy_patrol(canvas.selected_gameplay_index, Vector2.ZERO))
 		mechanics_properties.add_child(stationary)
+	if item.type == "elevated_rail":
+		var enabled := CheckBox.new()
+		enabled.name = "RailRingsEnabled"
+		enabled.text = "Rings along path"
+		enabled.button_pressed = properties.rings_enabled
+		enabled.toggled.connect(func(value: bool): set_gameplay_property.call_deferred("rings_enabled", value))
+		mechanics_properties.add_child(enabled)
+		var distance := Label.new()
+		distance.text = "Ring spacing: %.0f px" % properties.ring_spacing
+		mechanics_properties.add_child(distance)
+		var slider := HSlider.new()
+		slider.name = "RailRingSpacing"
+		slider.min_value = 12
+		slider.max_value = 200
+		slider.step = 1
+		slider.value = properties.ring_spacing
+		slider.editable = properties.rings_enabled
+		slider.custom_minimum_size.x = 220
+		slider.tooltip_text = "Distance along the curved centerline. Release to apply; undo restores the previous spacing."
+		slider.value_changed.connect(func(value: float):
+			distance.text = "Ring spacing: %.0f px" % value
+			if not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT): set_gameplay_property.call_deferred("ring_spacing", value))
+		slider.drag_ended.connect(func(changed: bool):
+			if changed: set_gameplay_property.call_deferred("ring_spacing", slider.value))
+		mechanics_properties.add_child(slider)
 	if item.type == "spinner":
 		var completion := CheckBox.new()
 		completion.text = "Enable completion bonus"

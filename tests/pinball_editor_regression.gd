@@ -68,6 +68,42 @@ func run() -> void:
  canvas._gui_input(enter)
  check(editor.document.gameplay_objects.size() == 3, "Enter commits one path object")
  canvas.select_gameplay(2)
+ check(editor.document.gameplay_objects[2].properties.rings_enabled, "New rails enable centered rings by default")
+ var slider: HSlider = editor.find_child("RailRingSpacing", true, false)
+ check(slider != null and slider.value == 25.0 and slider.editable, "Rail inspector exposes the default spacing slider")
+ slider.value = 40.0
+ await process_frame
+ check(editor.document.gameplay_objects[2].properties.ring_spacing == 40.0, "Spacing slider updates the authored rail")
+ editor.undo()
+ check(editor.document.gameplay_objects[2].properties.ring_spacing == 25.0, "Spacing change undoes in one step")
+ editor.redo()
+ slider = editor.find_child("RailRingSpacing", true, false)
+ var drag_press := InputEventMouseButton.new()
+ drag_press.button_index = MOUSE_BUTTON_LEFT
+ drag_press.pressed = true
+ drag_press.position = Vector2.ZERO
+ Input.parse_input_event(drag_press)
+ Input.flush_buffered_events()
+ slider.value = 55.0
+ await process_frame
+ slider.value = 65.0
+ await process_frame
+ check(editor.document.gameplay_objects[2].properties.ring_spacing == 40.0, "Dragging previews spacing without rebuilding the inspector mid-drag")
+ drag_press.pressed = false
+ Input.parse_input_event(drag_press)
+ Input.flush_buffered_events()
+ slider.drag_ended.emit(true)
+ await process_frame
+ check(editor.document.gameplay_objects[2].properties.ring_spacing == 65.0, "Releasing the slider commits its final distance")
+ editor.undo()
+ check(editor.document.gameplay_objects[2].properties.ring_spacing == 40.0, "An entire slider drag is one undo action")
+ var enabled: CheckBox = editor.find_child("RailRingsEnabled", true, false)
+ enabled.button_pressed = false
+ await process_frame
+ check(not editor.document.gameplay_objects[2].properties.rings_enabled and not editor.find_child("RailRingSpacing", true, false).editable, "No-ring option disables rings and the spacing slider")
+ editor.undo()
+ check(editor.document.gameplay_objects[2].properties.rings_enabled, "No-ring option is undoable")
+ editor.redo()
  for height in [20.0, 30.0, 40.0]:
   editor.set_gameplay_property("height", height)
   check(editor.document.gameplay_objects[2].properties.height == height, "Inspector accepts rail height %s" % height)

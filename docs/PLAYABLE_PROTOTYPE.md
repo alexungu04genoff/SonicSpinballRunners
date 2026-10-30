@@ -1,5 +1,9 @@
 # Two-Zone playable prototype
 
+Ramps / elevated rails generate ordinary rings along their curved centerline by default, including existing Acts. Select a rail in the Act editor: **Ring spacing** adjusts the distance from 12–200 px (default 25 px); disable **Rings along path** to create a bare rail. The editor previews the ring chain, and both controls support undo/redo and saving. Rings follow the rail's elevation, collect only while traversing that rail, and use normal ring scoring and respawn. Standalone, editor playtest and baked streamed Acts share the same placements.
+
+Rail verification (2026-10-30): 13 placement/ownership/lifecycle checks, 30 editor checks (including slider dragging, undo and fresh-process persistence), seven rendered streaming checks and 43 local bake checks passed. All ten variants of the five current authored Acts were rebaked. Rendered mechanics checks passed 55/56, including complete high-speed curved rail collection and lower-table isolation; the older scripted flipper-route assertion also fails with rail rings disabled. Rail elevation and centered placement were visually reviewed. Human playtesting still needs to judge spacing and scoring pace. Launch the current source with `Play Prototype.cmd`; this change does not replace an older exported ZIP.
+
 Ball loss and manual retry are soft checkpoints: switch/bank progress, opened gates, diverter routing, spinner goals, lane lights, defeated enemies, ring timers, score and telemetry survive. Ball/contact/rail state, spinner motion, combo and transient abilities reset. Existing objective timers pause during the protected transfer and serve wait; they resume afterward without restarting. Fresh Act instances and new runs start from authored initial state.
 
 Buzz Bombers turn smoothly toward patrol direction in roughly a quarter-second. Turning only animates their model and freezes with the existing animation clock; collision and patrol behavior remain unchanged.

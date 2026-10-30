@@ -102,10 +102,9 @@ func _moving_objects(runtime: Dictionary) -> void:
  torus.outer_radius = ring_field.ring_radius * SCALE
  torus.rings = 16
  torus.ring_segments = 8
- for trail: Dictionary in runtime.get("ring_trails", []):
-  for point: Vector2 in preload("res://scripts/act_editor/ring_trails.gd").positions(trail):
-   ring_visuals.append(mesh_node(torus, gold, map_point(point, ring_height())))
-   await stream_checkpoint()
+ for ring: Dictionary in runtime.get("ring_records", []):
+  ring_visuals.append(mesh_node(torus, gold, map_point(ring.position, ring_height() + float(ring.get("height", 0.0)) * SCALE)))
+  await stream_checkpoint()
  for flipper: PlaygroundFlipper in runtime.flippers:
   var pivot := Node3D.new()
   pivot.position = map_point(flipper.position)

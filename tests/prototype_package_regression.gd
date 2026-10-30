@@ -21,6 +21,8 @@ func _initialize() -> void:
    var baked = load(Bake.path_for(path, theme_id))
    check(baked is Bake and baked.matches(loaded.document, theme_id, fingerprint), "Packaged Act fingerprints match: " + path + " / " + theme_id)
    check(baked is Bake and baked.has_validated_collisions(loaded.document) and baked.visual_recipe != null and baked.visual_recipe.has_warm_manifest(), "Packaged Act retains validated collisions, presentation and warm-up metadata: " + path)
+   var rings := preload("res://scripts/ring_field.gd").document_records(loaded.document, "package")
+   check(baked is Bake and baked.visual_recipe != null and baked.visual_recipe.rings.size() == rings.size(), "Baked floor and rail ring counts match runtime: " + path + " / " + theme_id)
  print("RESULT | Prototype package | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)
 
