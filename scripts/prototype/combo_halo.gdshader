@@ -1,9 +1,12 @@
 shader_type spatial;
-render_mode unshaded, blend_add, cull_disabled, depth_draw_never, shadows_disabled;
+render_mode unshaded, blend_add, cull_front, depth_draw_never, shadows_disabled;
+
+// An expanded back-face pass follows each mesh silhouette instead of its bounds.
+void vertex() {
+ VERTEX += NORMAL * 0.012;
+}
 
 void fragment() {
- float distance_from_center = length(UV * 2.0 - 1.0);
- float falloff = 1.0 - smoothstep(0.62, 1.0, distance_from_center);
- ALBEDO = vec3(0.22, 0.8, 1.0);
- ALPHA = falloff * 0.24;
+ ALBEDO = vec3(0.18, 0.65, 0.8);
+ ALPHA = 0.14;
 }
