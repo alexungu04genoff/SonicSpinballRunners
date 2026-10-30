@@ -1,5 +1,7 @@
 # Two-Zone playable prototype
 
+Results include **Copy run data**, which copies readable version-1 JSON for successful and failed runs. Each Act retains its first target-ready time and score/Buddy snapshots, physical goal-touch time, final score, lost balls, and useful rates. Unreached target/goal fields and zero-denominator rates are `null`. Timestamps are seconds on the existing run elapsed clock: pause, drafts, protected transfers and serve waits do not advance it. Goal touch is latched before any next-Act loading wait. Raw fields remain alongside derived rates; the results list shows target time and goal delay without displaying the JSON. Data stays local until you copy and share it.
+
 A compact FPS counter sits at the top right. A dim cyan silhouette glow (mesh expansion of 1.2 physics pixels) marks active-Act bumpers and rings that can currently build the multiplier. Used bumpers, exhausted ring links, inactive Acts and capped multipliers receive no eligibility glow. Fresh bumpers start/build the chain up to ×2; a ring link enables higher tiers. Routing-only gimmicks and fixed feature bonuses do not raise the multiplier.
 
 Collection/steering tuning: base ring attraction is now 25 px (previously 50 px); direct-contact collection remains intact. Sonic's Balanced profile uses 20% less steering acceleration (1760), 25% less counter-steering (3000), and a smaller steering contribution limit (110 instead of 120 px/s). Release braking is unchanged. These are provisional feel values for playtesting.

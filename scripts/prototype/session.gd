@@ -1,6 +1,7 @@
 extends Control
 ## Player-facing session flow; the run uses the shared authored streaming engine.
 const Run = preload("res://scripts/prototype/zone_run.gd")
+const Telemetry = preload("res://scripts/prototype/run_telemetry.gd")
 const Sounds = preload("res://scripts/prototype/score_sounds.gd")
 const SETTINGS_PATH := "user://prototype_settings.cfg"
 const CHALLENGE_RECORDS := "two_zone_challenge_records"
@@ -19,6 +20,7 @@ var practice_best_score := 0
 var practice_best_seconds := 0.0
 var settings_path := SETTINGS_PATH
 var last_summary: Dictionary = {}
+var copy_status: Label
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
@@ -203,8 +205,9 @@ func _on_completed(summary: Dictionary) -> void:
  _save_settings()
  state = "results"
  var stack := _panel("TWO ZONES COMPLETE" if summary.won else "RUN ENDED · OUT OF BALLS", "%s · %d POINTS · %s · %d BALLS LOST\nRun seed: %d" % ["PRACTICE" if summary.practice else "CHALLENGE", summary.score, _time_text(summary.seconds), summary.drains, summary.seed])
+ stack.add_theme_constant_override("separation", 7)
  var scroll := ScrollContainer.new()
- scroll.custom_minimum_size = Vector2(600, 220)
+ scroll.custom_minimum_size = Vector2(600, minf(180.0, get_viewport_rect().size.y * 0.21))
  scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
  stack.add_child(scroll)
  var act_rows := VBoxContainer.new()
@@ -212,14 +215,29 @@ func _on_completed(summary: Dictionary) -> void:
  act_rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  scroll.add_child(act_rows)
  for act: Dictionary in summary.acts:
-  _label(act_rows, "ZONE %d · ACT %d · %s%s\n%d / %d points · %s · %d balls lost · Buddies +%d" % [act.zone, act.zone_act, act.title, " · NOT CLEARED" if not act.cleared else "", act.score, act.target, _time_text(act.seconds), act.drains, Run.Buddies.total(act.buddy_contributions)], 16)
+  var data: Dictionary = act.telemetry
+  var target_time := "not reached" if data.time_to_target_seconds == null else _time_text(data.time_to_target_seconds)
+  var goal_time := "not reached" if data.time_target_to_goal_seconds == null else "+" + _time_text(data.time_target_to_goal_seconds)
+  _label(act_rows, "ZONE %d · ACT %d · %s%s\n%d / %d · target %s · goal %s · total %s · Buddies +%d" % [act.zone, act.zone_act, act.title, " · NOT CLEARED" if not act.cleared else "", act.score, act.target, target_time, goal_time, _time_text(data.total_time_seconds), data.final_buddy_score], 16)
  _label(stack, "Scoring: %d base / combo / special + %d from Buddies" % [summary.normal_score, Run.Buddies.total(summary.buddy_contributions)], 17)
  for id: String in summary.buddies:
   _label(stack, "%s Lv.%d: +%d points" % [Run.Buddies.CATALOG[id].name, summary.buddies[id], int(summary.buddy_contributions.get(id, 0))], 17, Color("8fe9b1"))
  _label(stack, "%s best: %d" % ["Practice" if summary.practice else "Challenge", practice_best_score if summary.practice else best_score], 18, Color("8fe9b1"))
+ _action(stack, "Copy run data", _copy_run_data)
+ copy_status = _label(stack, "", 14, Color("8fe9b1"))
+ copy_status.hide()
  _action(stack, "Play again", start_run, true)
  _action(stack, "Return to menu", return_to_menu)
  _action(stack, "Quit", _quit)
+
+func run_data_json() -> String:
+ return JSON.stringify(Telemetry.export_run(last_summary), "  ", false, true)
+
+func _copy_run_data() -> void:
+ if state != "results" or last_summary.is_empty(): return
+ DisplayServer.clipboard_set(run_data_json())
+ copy_status.text = "Run data copied"
+ copy_status.show()
 
 static func _time_text(seconds: float) -> String:
  return "%d:%02d" % [int(seconds) / 60, int(seconds) % 60]

@@ -112,10 +112,12 @@ func run() -> void:
    var at: Vector2 = game.active.runtime.goal_ring.center
    game._observe_authored_motion(at + Vector2.DOWN * 2, at - Vector2.DOWN * 2)
    check(game.active_sequence == index, "Next Act cannot activate below the current target")
+  await sample_play_time()
   var target: int = game.act_score_target
   game.active.runtime.mechanics.mechanic_score.emit(&"wall_switch", "integration_award", target)
   total += target
   check(game.score == total and game.act_score == target and game.exit_unlocked, "Act %d threshold uses local points and preserves cumulative score" % (index + 1))
+  await sample_play_time()
   var position: Vector2 = game.ball.position
   await frames(2)
   check(game.ball.position == position and not game.finished, "Unlocking never teleports or completes a run")
@@ -161,6 +163,15 @@ func run() -> void:
    game._observe_authored_motion(at + Vector2.DOWN * 2, at - Vector2.DOWN * 2)
  check(game.finished and session.state == "results" and session.last_summary.acts.size() == 6, "Only the sixth physical exit produces the completed two-Zone result")
  await capture("results")
+ var copied: String = session.run_data_json()
+ var data = JSON.parse_string(copied)
+ check(data is Dictionary and data.won and data.acts.size() == 6 and data.total_score == session.last_summary.score, "Successful run exports all six Acts as plain JSON")
+ press("Copy run data")
+ check(session.copy_status.visible and session.copy_status.text == "Run data copied", "Copy action confirms telemetry export")
+ if DisplayServer.get_name() != "headless":
+  check(DisplayServer.clipboard_get().replace("\r\n", "\n") == copied, "OS clipboard contains the exact pretty-printed run JSON")
+ if "--telemetry-sample" in OS.get_cmdline_user_args():
+  FileAccess.open("res://test-results/run-telemetry-success.json", FileAccess.WRITE).store_string(DisplayServer.clipboard_get())
  check(session.last_summary.score == 13500 and game.results.size() == 6, "Results preserve all six separate Act awards exactly once")
  check(game.pending.is_empty() and not game.loading_boundary, "Final exit does not wait for an imaginary seventh Act")
  if "--no-bakes" not in OS.get_cmdline_user_args():
@@ -190,3 +201,14 @@ func run() -> void:
  session.free()
  print("RESULT | Prototype run | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)
+
+func sample_play_time() -> void:
+ if "--telemetry-sample" not in OS.get_cmdline_user_args(): return
+ var game: Node = session.game
+ game.auto_launch_time = -1.0
+ game.ball.position = game.active.runtime.goal_ring.center + Vector2(0, -100)
+ game.previous_goal_position = game.ball.position
+ game._goal_motion_ready = false
+ game.set_physics_process(true)
+ await create_timer(0.35).timeout
+ game.set_physics_process(false)
