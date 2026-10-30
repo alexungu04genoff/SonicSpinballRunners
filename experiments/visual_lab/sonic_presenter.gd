@@ -130,7 +130,7 @@ func _build_visuals() -> void:
  ring.outer_radius = ring.inner_radius + (spin_radius * 0.12 if table.authored_mode else 0.018)
  ring.rings = 32
  ring.ring_segments = 8
- var contact := table.mesh_node(ring, table.material(Color("fff2a7"), 0.2), Vector3(0, 0.009, 0), marker)
+ var contact := table.mesh_node(ring, table.material(Color.WHITE, 0.2), Vector3(0, 0.009, 0), marker)
  contact.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  study_origin = Vector3(table.table_bounds.end.x * TablePresentation.SCALE + 4.0, 0.9, table.table_bounds.end.y * TablePresentation.SCALE - 3.0)
  study_root = Node3D.new()

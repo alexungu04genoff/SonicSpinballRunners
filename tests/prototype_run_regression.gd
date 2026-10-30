@@ -90,7 +90,7 @@ func run() -> void:
   while resident_at(index) == null and Time.get_ticks_msec() < until: await process_frame
   check(game.active_sequence == index and game.act_score == 0 and not game.exit_unlocked, "Act %d starts a fresh local target" % (index + 1))
   check(game.active.plan.zone == index / 3 and game.active.plan.theme == Session.Run.RunPlan.THEMES[index / 3], "Act %d uses its planned Zone and theme" % (index + 1))
-  check(game._score_exit != null and not game._score_exit.unlocked and game.active.document.score_target == 0, "Run-owned target installs a physical gate without editing the source Act")
+  check(game.active.runtime.has("goal_ring") and not game.active.runtime.goal_ring.unlocked and game.active.document.score_target == 0, "Run-owned target locks the mandatory goal without editing the source Act")
   var next: RefCounted = resident_at(index + 1)
   if index < Session.Run.RunPlan.ACT_COUNT - 1:
    until = Time.get_ticks_msec() + 180000
@@ -102,7 +102,7 @@ func run() -> void:
     await session.return_to_menu()
     quit(1)
     return
-   var at: Vector2 = next.plan.offset + Vector2(next.document.spawn_position.x, next.document.activation_y)
+   var at: Vector2 = game.active.runtime.goal_ring.center
    game._observe_authored_motion(at + Vector2.DOWN * 2, at - Vector2.DOWN * 2)
    check(game.active_sequence == index, "Next Act cannot activate below the current target")
   var target: int = game.act_score_target
@@ -119,7 +119,7 @@ func run() -> void:
    game.ball.serve_pending = false
    game.ball._teleport_pending = false
   if index < Session.Run.RunPlan.ACT_COUNT - 1:
-   var at: Vector2 = next.plan.offset + Vector2(next.document.spawn_position.x, next.document.activation_y)
+   var at: Vector2 = game.active.runtime.goal_ring.center
    game.ball.position = at - Vector2.DOWN * 2
    game._observe_authored_motion(at + Vector2.DOWN * 2, at - Vector2.DOWN * 2)
    check(game.drafting and session.state == "draft" and paused and game.active_sequence == index, "Physical Act clear pauses for a mandatory Buddy choice")
@@ -149,7 +149,7 @@ func run() -> void:
    game.ball.position = game.active.spawn()
    if index == 2: await capture("zone-two")
   else:
-   var at: Vector2 = game.active.plan.offset + Vector2((game.active.document.exit_start_x + game.active.document.exit_width * 0.5) * game.active.document.cell_size, 0)
+   var at: Vector2 = game.active.runtime.goal_ring.center
    game._observe_authored_motion(at + Vector2.DOWN * 2, at - Vector2.DOWN * 2)
    game._observe_authored_motion(at + Vector2.DOWN * 2, at - Vector2.DOWN * 2)
  check(game.finished and session.state == "results" and session.last_summary.acts.size() == 6, "Only the sixth physical exit produces the completed two-Zone result")

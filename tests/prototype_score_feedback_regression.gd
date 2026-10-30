@@ -38,7 +38,7 @@ func run() -> void:
  game.scorecraft.set_physics_process(false)
  var overlay: Control = game.score_overlay
  await frames()
- check(overlay.visible and overlay.displayed_multiplier == 1 and overlay.mouse_filter == Control.MOUSE_FILTER_IGNORE, "Ball starts with a visible x1 indicator that does not intercept input")
+ check(overlay.visible and overlay.displayed_multiplier == 1 and overlay.mouse_filter == Control.MOUSE_FILTER_IGNORE, "Base combo uses the white circle and does not intercept input")
  await capture("x1")
  var bumpers: Array[Node2D] = []
  for item: Dictionary in game.active.runtime.objects:
@@ -67,15 +67,28 @@ func run() -> void:
  for popup: Dictionary in overlay.popups: shown += int(popup.total)
  check(shown == game.score and game.score == 825, "Visible popup totals reconcile with the actual score ledger")
  await capture("x3")
+ var extra_bumper := Node2D.new()
+ game.world.add_child(extra_bumper)
+ extra_bumper.position = game.ball.position
+ game.scorecraft.award_bumper(extra_bumper)
+ await frames()
+ check(overlay.displayed_multiplier == 4 and game.active.runtime.goal_ring.unlocked, "A fresh hit earns red x4 and meeting the target unlocks the goal")
+ game.scorecraft.remaining = game.scorecraft.config.combo_window * 0.5
+ await frames()
+ await capture("x4")
+ game.ball.position = game.active.runtime.goal_ring.center + Vector2(50, 0)
+ await frames(15)
+ await capture("goal-ready")
+ extra_bumper.queue_free()
  if "--capture" in OS.get_cmdline_user_args() and DisplayServer.get_name() != "headless":
   root.size = Vector2i(1920, 810)
   await frames(15)
   await capture("wide")
  game.toggle_pause()
  await frames()
- var age: float = overlay.popups.back().age
+ var age: float = overlay.popups.back().age if not overlay.popups.is_empty() else 0.0
  await frames(5)
- check(not overlay.visible and overlay.popups.back().age == age, "Pause hides feedback and freezes its lifetime")
+ check(not overlay.visible and (overlay.popups.is_empty() or overlay.popups.back().age == age), "Pause hides feedback and freezes its lifetime")
  game.toggle_pause()
  await frames()
  game.scorecraft.reset("Expired")

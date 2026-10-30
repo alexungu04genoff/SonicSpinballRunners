@@ -34,7 +34,7 @@ func _ready() -> void:
 func _advance() -> void:
  chain += 1
  # Fresh bumpers can build x2; the top tier requires a completed ring link.
- multiplier = mini(chain, mini(clampi(config.multiplier_cap, 1, 3), 3 if has_ring_link else 2))
+ multiplier = mini(chain, mini(clampi(config.multiplier_cap, 1, 4), config.multiplier_cap if has_ring_link else 2))
  remaining = maxf(0.5, config.combo_window)
  combo_changed.emit(chain, multiplier)
 
@@ -157,4 +157,10 @@ func _physics_process(delta: float) -> void:
   delta -= protected_time
   remaining = maxf(0.0, remaining - delta)
   if remaining == 0.0:
-   reset("Expired")
+   if config.tiered_decay and multiplier > 2:
+    multiplier -= 1
+    chain = multiplier
+    remaining = maxf(0.5, config.combo_window)
+    combo_changed.emit(chain, multiplier)
+   else:
+    reset("Expired")

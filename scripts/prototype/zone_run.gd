@@ -27,11 +27,39 @@ var run_plan: Array[Dictionary] = []
 var hint: Label
 var score_overlay: Control
 var _ring_award_position := Vector2.INF
+var goal_pending := false
+
+func _ready() -> void:
+ scorecraft_config = scorecraft_config.duplicate()
+ scorecraft_config.multiplier_cap = 4
+ scorecraft_config.tiered_decay = true
+ super._ready()
+
+func _add_scoring_hardware(runtime: Dictionary, document: Resource, offset: Vector2, visual_parent: Node3D, _owner_id: String) -> void:
+ var goal := preload("res://scripts/prototype/goal_ring.gd").new()
+ visual_parent.add_child(goal)
+ goal.configure(document, offset)
+ runtime["goal_ring"] = goal
+ runtime.root.tree_exiting.connect(goal.queue_free)
+ # Keep the ball in this Act; only the goal may advance the finite run.
+ var barrier := ScoreExit.new()
+ runtime.root.add_child(barrier)
+ barrier.configure(document, offset, visual_parent, true)
+ barrier.label.text = "USE GOAL RING"
+
+func _sync_resident() -> void:
+ super._sync_resident()
+ if is_instance_valid(score_overlay):
+  for label: Node in presentation.find_children("*", "Label3D", true, false):
+   if not character.is_ancestor_of(label): score_overlay.track_label(label)
 
 func _build_presentation() -> void:
  super._build_presentation()
  presentation.camera_settings.screen_target_y = 0.55
  presentation.set_camera_value("zoom", 1.3)
+ var meter := preload("res://scripts/prototype/combo_meter.gd").new()
+ meter.game = self
+ character.marker.add_child(meter)
 
 func _source_paths() -> Array:
  if source_paths.is_empty(): source_paths = RunPlan.source_paths()
@@ -61,6 +89,9 @@ func act_title(act: RefCounted) -> String:
 func progress_text() -> String:
  return "ZONE %d / %d · %s · ACT %d / %d" % [active.plan.zone + 1, RunPlan.THEMES.size(), library.themes[active.plan.theme].display_name.to_upper(), active.plan.act + 1, RunPlan.ACTS_PER_ZONE]
 
+func act_score_text() -> String:
+ return super.act_score_text().replace("EXIT OPEN", "GOAL READY")
+
 func _physics_process(delta: float) -> void:
  if closing or finished or not started or get_tree().paused: return
  if is_instance_valid(transfer): return
@@ -86,6 +117,7 @@ func _begin_act(act: RefCounted, initial: bool) -> void:
  scorecraft.award_bonuses = buddies.modifiers()
  act_started_at = elapsed
  act_start_ball = ball_number
+ active.runtime.goal_ring.set_unlocked(exit_unlocked)
  if not initial: status_message = "ACT %d · NEW SCORE TARGET %d" % [active_sequence + 1, act_score_target]
 
 func choose_buddy(id: String) -> bool:
@@ -140,11 +172,18 @@ func _record_act(cleared: bool) -> void:
 
 func _observe_authored_motion(start: Vector2, finish: Vector2) -> void:
  if finished or drafting or is_instance_valid(transfer) or not exit_unlocked: return
+ if not active.runtime.goal_ring.crossed(start, finish, ball.radius): return
  if _has_next_act():
-  super._observe_authored_motion(start, finish)
+  if not _next_ready():
+   goal_pending = true
+   ball.freeze = true
+   _wait_for_next()
+   return
+  for act: RefCounted in resident:
+   if act.plan.sequence == active_sequence + 1:
+    _activate(act)
+    return
   return
- var crossed: Dictionary = ActLifecycle.crossings(active.document, start - Vector2(active.plan.offset), finish - Vector2(active.plan.offset))
- if not crossed.exit: return
  _finish_run(true)
 
 func _finish_run(won: bool) -> void:
@@ -186,7 +225,9 @@ func _on_retry_requested() -> void:
 func _on_score_awarded(details: Dictionary) -> void:
  if finished or closing or drafting or is_instance_valid(transfer): return
  super._on_score_awarded(details)
+ active.runtime.goal_ring.set_unlocked(exit_unlocked)
  if is_instance_valid(score_overlay): score_overlay.add_award(details, _award_position(details))
+ status_message = status_message.replace("EXIT OPEN", "GOAL READY")
  for id: String in details.get("buddy_bonuses", {}):
   var bonus := int(details.buddy_bonuses[id])
   buddy_contributions[id] = int(buddy_contributions.get(id, 0)) + bonus
@@ -245,8 +286,11 @@ func prepare_to_close() -> void:
 func _process(delta: float) -> void:
  super._process(delta)
  if not started or closing: return
+ if goal_pending and _next_ready():
+  goal_pending = false
+  _observe_authored_motion(active.runtime.goal_ring.center, active.runtime.goal_ring.center)
  heading.text = progress_text() + "\n" + act_title(active)
- detail.text = "ACT   %s\nTOTAL   %d     COMBO ×%d\nBALLS   %s     SPECIAL   %s" % [act_score_text(), score, scorecraft.multiplier, "Unlimited" if practice_mode else "%d / %d" % [balls_remaining, BALLS_PER_ACT], "READY" if special_meter >= 100.0 else "%d%%" % int(special_meter)]
+ detail.text = "ACT   %s\nTOTAL   %d%s\nBALLS   %s     SPECIAL   %s" % [act_score_text(), score, "     COMBO ×%d" % scorecraft.multiplier if scorecraft.multiplier >= 2 else "", "Unlimited" if practice_mode else "%d / %d" % [balls_remaining, BALLS_PER_ACT], "READY" if special_meter >= 100.0 else "%d%%" % int(special_meter)]
  if not buddies.levels.is_empty(): detail.text += "\n" + buddies.summary()
  if not scoring_feedback_text().is_empty(): detail.text += "\n" + scoring_feedback_text()
  var bonus := Buddies.total(scorecraft.last_award.get("buddy_bonuses", {}))

@@ -57,6 +57,7 @@ var handedness_field: OptionButton
 var _angle_display_text := ""
 var marker_buttons: Dictionary = {}
 var marker_list: VBoxContainer
+var goal_size_field: SpinBox
 var marker_summary: Label
 var score_target_enabled: CheckBox
 var score_target_field: SpinBox
@@ -373,6 +374,19 @@ func _build_ui() -> void:
 	marker_summary.add_theme_color_override("font_color", Color("9bdedb"))
 	marker_summary.add_theme_font_size_override("font_size", 13)
 	marker_list.add_child(marker_summary)
+	_button(marker_list, "goal", "Place / move goal ring", func(): choose_marker("goal"), "Required goal. Defaults to spawn; drag to move, Delete restores the default.")
+	goal_size_field = SpinBox.new()
+	goal_size_field.min_value = 0.25
+	goal_size_field.max_value = 8.0
+	goal_size_field.step = 0.05
+	goal_size_field.prefix = "Goal diameter"
+	goal_size_field.suffix = "cells"
+	goal_size_field.value_changed.connect(func(value):
+		if _refreshing: return
+		_record_edit()
+		document.goal_diameter_cells = value
+		_refresh())
+	marker_list.add_child(goal_size_field)
 	score_target_enabled = CheckBox.new()
 	score_target_enabled.text = "Enable Score Target"
 	score_target_enabled.tooltip_text = "Require points earned during this Act before its Exit opens. Disabled keeps Free Play traversal."
@@ -387,7 +401,7 @@ func _build_ui() -> void:
 		if not _refreshing and score_target_enabled.button_pressed: set_score_target(int(value)))
 	marker_list.add_child(score_target_field)
 	var marker_hint := Label.new()
-	marker_hint.text = "Entry / Exit: physical connection\nActivation: upward checkpoint line\nSpawn: launch / respawn point\n\nThe red gutter is system-owned.\nIt adds no terrain cells.\n\nMarkers may remain unset.\nNo gameplay runs in this editor."
+	marker_hint.text = "Entry / Exit: physical connection\nActivation: upward checkpoint line\nSpawn: launch / respawn point\n\nThe red gutter is system-owned.\nIt adds no terrain cells.\n\nGoal: required; defaults to spawn.\nOther markers may remain unset.\nNo gameplay runs in this editor."
 	marker_hint.add_theme_color_override("font_color", Color("9cb3c6"))
 	marker_hint.add_theme_font_size_override("font_size", 13)
 	marker_list.add_child(marker_hint)
@@ -1216,17 +1230,17 @@ func choose_connector(kind: String) -> void:
 	_refresh()
 
 func choose_marker(kind: String) -> void:
-	if kind not in ["activation", "spawn"]:
+	if kind not in ["activation", "spawn", "goal"]:
 		return
 	canvas.grab_focus()
 	canvas.set_marker_tool(kind)
-	_set_status("Click inside the Act to place %s. Snap is on; hold Alt for fine position. The red gutter is outside the Act." % ("the Activation Trigger" if kind == "activation" else "the Spawn Point"))
+	_set_status("Click inside the Act to place %s. Snap is on; hold Alt for fine position. The red gutter is outside the Act." % {"activation": "the Activation Trigger", "spawn": "the Spawn Point", "goal": "the Goal Ring"}[kind])
 	_refresh()
 
 func set_lifecycle_marker(kind: String, value: Variant) -> void:
-	if kind not in ["activation", "spawn"]:
+	if kind not in ["activation", "spawn", "goal"]:
 		return
-	var field := "activation_y" if kind == "activation" else "spawn_position"
+	var field: String = {"activation": "activation_y", "spawn": "spawn_position", "goal": "goal_position"}[kind]
 	var candidate: Resource = document.copy_document()
 	candidate.set(field, value)
 	var errors: PackedStringArray = candidate.validation_errors()
@@ -1237,6 +1251,10 @@ func set_lifecycle_marker(kind: String, value: Variant) -> void:
 		_record_edit()
 		document.set(field, value)
 	canvas.select_marker(kind if value != null else "")
+	if kind == "goal":
+		_set_status("Goal ring updated. Delete restores its default position; every Act keeps one goal.")
+		_refresh()
+		return
 	_set_status(("Activation Trigger" if kind == "activation" else "Spawn Point") + (" removed. Incomplete drafts can still be saved." if value == null else " set. Drag to move; Delete removes; Alt allows fine position."))
 	_refresh()
 
@@ -1822,6 +1840,7 @@ func _refresh() -> void:
 	cell_size_field.set_value_no_signal(document.cell_size)
 	grid_width_field.set_value_no_signal(document.grid_size.x)
 	grid_height_field.set_value_no_signal(document.grid_size.y)
+	goal_size_field.set_value_no_signal(document.goal_diameter_cells)
 	score_target_enabled.set_pressed_no_signal(document.score_target > 0)
 	if document.score_target > 0: _last_score_target = document.score_target
 	score_target_field.set_value_no_signal(_last_score_target)
@@ -1875,8 +1894,11 @@ func _refresh() -> void:
 		mode_label.text = "DRAW RINGS" if canvas.ring_tool else "SELECTED  ·  Ring pattern"
 		detail_label.text = "Click / drag · Alt frees bounds · Generated rings never snap · Select pattern to move or resize · Delete removes pattern"
 	elif not canvas.marker_tool.is_empty():
-		mode_label.text = "PLACE  ·  " + ("Activation Trigger" if canvas.marker_tool == "activation" else "Spawn Point")
+		mode_label.text = "PLACE  ·  " + {"activation": "Activation Trigger", "spawn": "Spawn Point", "goal": "Goal Ring"}[canvas.marker_tool]
 		detail_label.text = "Inside terrain bounds only · grid snap / Alt free position · red gutter is system-owned"
+	elif canvas.selected_marker == "goal":
+		mode_label.text = "SELECTED · GOAL RING"
+		detail_label.text = "Position %s · Diameter %.2f cells · Delete restores default" % [document.goal_center(), document.goal_diameter_cells]
 	elif not canvas.selected_marker.is_empty():
 		mode_label.text = "SELECTED  ·  " + ("Activation Trigger" if canvas.selected_marker == "activation" else "Spawn Point")
 		detail_label.text = ("Y %s px · Full Act width · Future upward crossing activates the checkpoint" % var_to_str(document.activation_y) if canvas.selected_marker == "activation" else "Position %s px · Future launch / respawn point" % document.spawn_position) + " · Delete removes"

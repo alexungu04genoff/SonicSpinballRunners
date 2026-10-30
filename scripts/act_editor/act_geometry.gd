@@ -1,7 +1,7 @@
 class_name ActGeometry
 extends Resource
 ## A single Act's terrain, connectors, gameplay objects and lifecycle authoring data.
-const FORMAT_VERSION := 15
+const FORMAT_VERSION := 16
 const MAX_SCORE_TARGET := 100000000
 ## The system gutter is outside terrain bounds and is never a thirteenth terrain row.
 const RED_GUTTER_CELLS := 1
@@ -56,6 +56,14 @@ const OPTIONAL_TRANSFORM_FIELDS := ["offset", "terrain_scale", "fine_rotation_de
 ## Independent optional guides; entry itself does not activate the checkpoint.
 @export_storage var activation_y = null
 @export_storage var spawn_position = null
+## Required goal object; legacy Acts inherit the validated spawn as its safe default.
+@export var goal_position = null
+@export var goal_diameter_cells = 1.0
+
+func goal_center() -> Vector2:
+ if goal_position is Vector2: return goal_position
+ if spawn_position is Vector2: return spawn_position
+ return terrain_bounds().get_center()
 
 var _format_version_was_set := false
 var _library_version_was_set := false
@@ -89,6 +97,10 @@ func red_gutter_bounds() -> Rect2:
 
 func validation_errors() -> PackedStringArray:
  var errors := PackedStringArray()
+ if goal_position != null and (not goal_position is Vector2 or not goal_position.is_finite()):
+  errors.append("Goal position must be a finite Vector2 or the default spawn position.")
+ if typeof(goal_diameter_cells) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(float(goal_diameter_cells)) or float(goal_diameter_cells) < 0.25 or float(goal_diameter_cells) > 8.0:
+  errors.append("Goal diameter must be between 0.25 and 8 cells.")
  if typeof(format_version) != TYPE_INT:
   errors.append("Act format version must be an integer.")
  elif format_version != FORMAT_VERSION:
@@ -127,6 +139,8 @@ func validation_errors() -> PackedStringArray:
  errors.append_array(_ring_validation_errors())
  errors.append_array(_decor_validation_errors())
  errors.append_array(_lifecycle_validation_errors())
+ if goal_position is Vector2 and valid_grid_type and typeof(cell_size) in [TYPE_FLOAT, TYPE_INT] and cell_size > 0.0 and not terrain_bounds().has_point(goal_position):
+  errors.append("Goal center must stay inside the Act bounds.")
  if typeof(placements) != TYPE_ARRAY:
   errors.append("Terrain placements must be an array of dictionaries.")
   return errors
@@ -367,7 +381,7 @@ func fingerprint() -> String:
  else:
   ordered_trails.append(ring_trails)
  # Hash native scalar bits: decimal formatting can collapse adjacent float values.
- return var_to_bytes([format_version, library_version, title, grid_size, normalized_cell_size, ordered_placements, entry_start_x, entry_width, exit_start_x, exit_width, ordered_objects, normalized_activation, spawn_position, ordered_trails, decor_seed, DECOR.fingerprint_records(decor_slots), BANKS.fingerprint_records(switch_banks), score_target]).hex_encode().sha256_text()
+ return var_to_bytes([format_version, library_version, title, grid_size, normalized_cell_size, ordered_placements, entry_start_x, entry_width, exit_start_x, exit_width, ordered_objects, normalized_activation, spawn_position, ordered_trails, decor_seed, DECOR.fingerprint_records(decor_slots), BANKS.fingerprint_records(switch_banks), score_target, goal_position, float(goal_diameter_cells)]).hex_encode().sha256_text()
 
 func copy_document() -> Resource:
  var result: Resource = get_script().new()
@@ -389,6 +403,8 @@ func copy_document() -> Resource:
  result.score_target = score_target
  result.activation_y = activation_y
  result.spawn_position = spawn_position
+ result.goal_position = goal_position
+ result.goal_diameter_cells = goal_diameter_cells
  return result
 
 static func load_document(path: String) -> Dictionary:
@@ -402,6 +418,9 @@ static func load_document(path: String) -> Dictionary:
   return {"document": null, "error": "The selected file is not an Act Geometry resource."}
  if not loaded._format_version_was_set or not loaded._library_version_was_set:
   return {"document": null, "error": "This Act file is missing its required format or terrain library version."}
+ if typeof(loaded.format_version) == TYPE_INT and loaded.format_version < 16 and (loaded.goal_position != null or loaded.goal_diameter_cells != 1.0):
+  return {"document": null, "error": "Authored goal settings require Act format 16."}
+ if typeof(loaded.format_version) == TYPE_INT and loaded.format_version == 15: loaded.format_version = FORMAT_VERSION
  if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
   if typeof(loaded.score_target) != TYPE_INT or loaded.score_target != 0:
    return {"document": null, "error": "Act score targets require Act format 15."}

@@ -64,7 +64,7 @@ func run() -> void:
  await finish_transfer(game)
  game.active.runtime.mechanics.complete_feature(&"switch_bank", "clear", 1000)
  var next: RefCounted = game.resident[1]
- var at: Vector2 = next.plan.offset + Vector2(next.document.spawn_position.x, next.document.activation_y)
+ var at: Vector2 = game.active.runtime.goal_ring.center
  game._observe_authored_motion(at + Vector2.DOWN, at - Vector2.DOWN)
  session._choose_buddy("feature_fox")
  check(game.balls_remaining == 3 and game.active_sequence == 1, "Clearing an Act refreshes the budget to three balls")

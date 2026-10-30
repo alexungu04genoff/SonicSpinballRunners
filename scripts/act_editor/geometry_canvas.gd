@@ -341,7 +341,7 @@ func set_gameplay_selection(indices: Array[int]) -> void:
 
 func set_marker_tool(kind: String) -> void:
  select_piece(-1)
- marker_tool = kind if kind in ["activation", "spawn"] else ""
+ marker_tool = kind if kind in ["activation", "spawn", "goal"] else ""
  queue_redraw()
 
 
@@ -366,6 +366,8 @@ func marker_value(kind: String) -> Variant:
   return null
  if kind == "activation":
   return document.get("activation_y")
+ if kind == "goal":
+  return document.goal_center()
  if kind == "spawn":
   return document.get("spawn_position")
  return null
@@ -548,6 +550,9 @@ func mixed_hit_indices_at(local_position: Vector2) -> Array[Dictionary]:
 
 func marker_hits_at(local_position: Vector2) -> Array[String]:
  var hits: Array[String] = []
+ var goal: Vector2 = document.goal_center()
+ if absf(local_position.distance_to(local_pixels_to_screen(goal)) - float(document.goal_diameter_cells) * _cell_pixels * 0.5) <= 10.0:
+  hits.append("goal")
  var spawn: Variant = marker_value("spawn")
  if spawn is Vector2 and local_position.distance_to(local_pixels_to_screen(spawn)) <= 15.0:
   hits.append("spawn")
@@ -564,7 +569,7 @@ func valid_marker_value(kind: String, value: Variant) -> bool:
  if document == null:
   return false
  var bounds: Rect2 = document.terrain_bounds()
- if kind == "spawn":
+ if kind in ["spawn", "goal"]:
   return value is Vector2 and value.is_finite() and bounds.has_point(value)
  if kind == "activation" and typeof(value) in [TYPE_FLOAT, TYPE_INT]:
   return is_finite(value) and value >= bounds.position.y and value < bounds.end.y
@@ -806,7 +811,7 @@ func _draw_gutter() -> void:
 
 
 func _draw_markers() -> void:
- for kind: String in ["activation", "spawn"]:
+ for kind: String in ["activation", "spawn", "goal"]:
   var value: Variant = marker_value(kind)
   if value == null:
    continue
@@ -822,6 +827,13 @@ func _draw_markers() -> void:
 
 
 func _draw_marker(kind: String, value: Variant, selected: bool, ghost: bool, valid: bool = true) -> void:
+ if kind == "goal":
+  var point := local_pixels_to_screen(value)
+  var radius := float(document.goal_diameter_cells) * _cell_pixels * 0.5
+  var tint := Color("ffd653") if valid else INVALID_MARKER_COLOR
+  draw_arc(point, radius, 0, TAU, 48, tint, 4.0 if selected else 2.0, true)
+  draw_string(get_theme_default_font(), point + Vector2(radius + 5, 0), "GOAL", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, tint)
+  return
  var color := ACTIVATION_COLOR if kind == "activation" else SPAWN_COLOR
  if not valid:
   color = INVALID_MARKER_COLOR
@@ -1139,7 +1151,7 @@ func _gui_input(event: InputEvent) -> void:
    var direction: Vector2 = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP, KEY_DOWN: Vector2.DOWN}[event.keycode]
    var distance := 1.0 if event.alt_pressed else _local_cell_size()
    var value: Variant = marker_value(selected_marker)
-   if selected_marker == "spawn":
+   if selected_marker in ["spawn", "goal"]:
     _request_marker(selected_marker, value + direction * distance)
    elif direction.y != 0.0:
     _request_marker(selected_marker, float(value) + direction.y * distance)

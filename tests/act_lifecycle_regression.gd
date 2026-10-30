@@ -31,8 +31,10 @@ func make_fixture() -> Resource:
  document.placements = [{"shape_id": "rectangle_3x3", "base_size": Vector2i(3, 3),
   "anchor": Vector2i(2, 4), "quarter_turns": 3, "flip_h": true, "flip_v": false}]
  var bumper: Dictionary = Objects.make_placement("round_bumper")
+ bumper.object_id = "lifecycle_bumper"
  bumper.position = Vector2(438.5, 271.25)
  var flipper: Dictionary = Objects.make_placement("left_flipper")
+ flipper.object_id = "lifecycle_flipper"
  flipper.position = Vector2(320, 610.5)
  flipper.rotation_degrees += 1.0 / 7.0
  document.gameplay_objects = [bumper, flipper]
