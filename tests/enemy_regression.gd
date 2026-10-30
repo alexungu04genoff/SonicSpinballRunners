@@ -166,6 +166,29 @@ func run() -> void:
  var compiled := preload("res://scripts/authored_act/act_runtime_compiler.gd").compile(fresh.document, game.tuning, game.controls, game.ball)
  check(compiled.mechanics.enemies.items.all(func(enemy): return enemy.alive), "A fresh Act instance restores all enemy targets")
  compiled.root.free()
+ var turn_portrait := Node3D.new()
+ var turn_body := Node3D.new()
+ var turn_pose := Node3D.new()
+ var turn_flash := Node3D.new()
+ turn_portrait.add_child(turn_pose)
+ turn_pose.add_child(turn_body)
+ turn_portrait.add_child(turn_flash)
+ var turn_item := {"alive": true, "death_remaining": 0.0, "position": Vector2.ZERO, "anchor": Vector2.ZERO, "direction": 1.0}
+ var turn_entry := {"root": turn_portrait, "body": turn_body, "pose": turn_pose, "flash": turn_flash, "item": turn_item, "base": Vector3.ZERO, "wings": []}
+ var turn_model = preload("res://scripts/enemies/buzz_bomber_model.gd")
+ var turn_presenter := TablePresentation.new()
+ turn_model.update(turn_entry, 0.0, turn_presenter)
+ var turn_initial_angle := turn_body.rotation.y
+ turn_item.direction = -1.0
+ turn_model.update(turn_entry, 0.1, turn_presenter)
+ var turn_partial_angle := turn_body.rotation.y
+ check(not is_equal_approx(turn_initial_angle, turn_partial_angle) and absf(angle_difference(turn_partial_angle, PI + deg_to_rad(15))) > 0.5, "Badnik reversal rotates through intermediate angles instead of snapping")
+ turn_model.update(turn_entry, 0.1, turn_presenter)
+ check(is_equal_approx(turn_body.rotation.y, turn_partial_angle), "Paused presentation time freezes the turn")
+ turn_model.update(turn_entry, 0.4, turn_presenter)
+ check(absf(angle_difference(turn_body.rotation.y, PI + deg_to_rad(15))) < 0.001 and turn_item.direction == -1.0, "Turn reaches its target without changing patrol direction")
+ turn_portrait.free()
+ turn_presenter.free()
  game.free()
  # A fresh instance exercises real Sonic acquisition/contact and Knuckles' area
  # adapter without resurrecting or mutating the defeated fixture targets.

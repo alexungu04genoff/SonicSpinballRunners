@@ -109,7 +109,13 @@ static func update(entry: Dictionary, elapsed: float, table: TablePresentation) 
  var normal := Vector3(0, sin(PI / 3), cos(PI / 3))
  if is_instance_valid(table.camera): normal = table.camera.global_basis.z
  entry.pose.rotation.x = -atan2(normal.y, normal.z)
- entry.body.rotation.y = PI + deg_to_rad(15) if item.direction < 0.0 else deg_to_rad(-15)
+ var facing := PI + deg_to_rad(15) if item.direction < 0.0 else deg_to_rad(-15)
+ if not entry.has("last_turn_time"):
+  entry.body.rotation.y = facing
+ else:
+  var delta := maxf(0.0, elapsed - float(entry.last_turn_time))
+  entry.body.rotation.y = rotate_toward(entry.body.rotation.y, facing, delta * TAU / 0.6)
+ entry.last_turn_time = elapsed
  entry.body.visible = item.alive
  entry.flash.visible = not item.alive and item.death_remaining > 0.0
  if item.alive:
