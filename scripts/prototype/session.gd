@@ -54,7 +54,11 @@ func _save_settings() -> void:
  if settings.save(settings_path) != OK: push_warning("Could not save prototype preferences.")
 
 func _panel(title: String, subtitle: String) -> VBoxContainer:
- if is_instance_valid(overlay_root): overlay_root.free()
+ if is_instance_valid(overlay_root):
+  # A button in this panel may still be emitting pressed. Retire it after dispatch.
+  overlay_root.hide()
+  overlay_root.process_mode = Node.PROCESS_MODE_DISABLED
+  overlay_root.queue_free()
  overlay_root = ColorRect.new()
  overlay_root.color = Color(0.025, 0.045, 0.075, 0.96)
  overlay_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

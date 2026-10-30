@@ -1,5 +1,7 @@
 # Two-Zone playable prototype
 
+Menu panels hide immediately and use deferred deletion so button signal emitters survive their callbacks. The session regression now triggers the actual Start, Resume, Buddy, Play again, Restart and Return to menu signals; the rendered source run passed 108 checks with no engine errors on 2026-10-30. Earlier direct transition calls did not cover the panel-deletion crash.
+
 The prototype camera uses zoom 1.3 and a vertical target 55% down the screen. The compact HUD uses 18/16-point headings/body text and a 35%-opaque backing; control instructions remain in the menu instead of covering gameplay. Window resizing and F11 fullscreen expand to the display aspect ratio, including ultrawide, instead of letterboxing the original canvas. Rendered checks covered 1600×900, 1920×810 and native 1920×1200 fullscreen on 2026-10-30.
 
 Run **Sonic Spinball Runners.exe** from the Windows build. No Godot installation or repository is required for that build. In the source checkout, run **Play Prototype.cmd** with Godot 4.7.2 installed; it prepares missing bakes on first launch. Run **Bake Prototype.cmd** after changing the Acts or presentation sources.

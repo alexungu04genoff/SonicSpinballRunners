@@ -16,6 +16,23 @@ func check(value: bool, label: String) -> void:
 func frames(count := 3) -> void:
  for i in count: await process_frame
 
+func press(label: String) -> void:
+ var button: Button
+ for candidate: Node in session.overlay_root.find_children("*", "Button", true, false):
+  if candidate.text.begins_with(label): button = candidate; break
+ check(button != null, "Visible action exists: " + label)
+ if button == null: return
+ var old_panel: Control = session.overlay_root
+ button.pressed.emit()
+ check(is_instance_valid(button), "Action emitter survives signal dispatch: " + label)
+ if old_panel != session.overlay_root:
+  check(is_instance_valid(old_panel) and old_panel.is_queued_for_deletion() and not old_panel.visible, "Replaced panel is hidden and retired after signal dispatch")
+
+func await_transition() -> void:
+ var until := Time.get_ticks_msec() + 180000
+ while session.transitioning and Time.get_ticks_msec() < until: await process_frame
+ check(not session.transitioning, "Button transition completes")
+
 func resident_at(sequence: int) -> RefCounted:
  for act: RefCounted in session.game.resident:
   if act.plan.sequence == sequence: return act
@@ -29,7 +46,7 @@ func capture(label: String) -> void:
 
 func await_run() -> bool:
  var until := Time.get_ticks_msec() + 180000
- while (not is_instance_valid(session.game) or not session.game.started) and Time.get_ticks_msec() < until:
+ while (session.transitioning or not is_instance_valid(session.game) or not session.game.started) and Time.get_ticks_msec() < until:
   if session.state == "error": return false
   await process_frame
  return is_instance_valid(session.game) and session.game.started
@@ -43,7 +60,7 @@ func run() -> void:
  session.selected_character = "tails"
  session.sound_enabled = false
  session.practice_mode = false
- await session.start_run()
+ press("Start run")
  check(await await_run(), "Menu starts the real streamed six-Act run")
  if not session.game.started:
   await session.return_to_menu()
@@ -56,7 +73,7 @@ func run() -> void:
  await frames()
  check(session.state == "paused" and paused, "Pause opens player session controls")
  await capture("pause")
- game.toggle_pause()
+ press("Resume")
  await frames()
  check(session.state == "playing" and not paused, "Resume restores the same run")
  game.ball.freeze = true
@@ -115,7 +132,7 @@ func run() -> void:
    var velocity_before_choice: Vector2 = game.ball.linear_velocity
    var chosen: String = choices[index]
    var previous_level: int = game.buddies.levels.get(chosen, 0)
-   session._choose_buddy(chosen)
+   press(str(Session.Run.Buddies.CATALOG[chosen].name))
    check(not paused and game.active_sequence == index + 1 and game.balls_remaining == 3 and game.ball.position == before_choice and game.ball.linear_velocity == velocity_before_choice, "Buddy choice starts a fresh three-ball Act without changing position or velocity")
    check(game.buddies.levels[chosen] == previous_level + 1 and not game.choose_buddy("bumper_coach"), "Buddy choice upgrades once and cannot be submitted twice")
    if index == 2:
@@ -135,21 +152,23 @@ func run() -> void:
   check(game.library.fallback_builds == 0 and game.library.visual_bake_hits == 6 and game.library.theme_bake_hits == 2, "Both Zones use six disk Act variants and two baked themes without runtime construction")
  game.active.runtime.mechanics.mechanic_score.emit(&"spinner_tick", "late", 5)
  check(game.score == total, "Completed run rejects late mechanic rewards")
- await session.return_to_menu()
- check(session.state == "menu" and session.game == null and not paused, "Return to menu closes the run and restores menu input")
  var settings := ConfigFile.new()
  check(settings.load(session.settings_path) == OK and int(settings.get_value(Session.CHALLENGE_RECORDS, "score", 0)) >= 13500, "Completed two-Zone Challenge personal best is saved separately")
- await session.start_run()
+ press("Play again")
  check(await await_run(), "Replay starts another real run")
  check(session.game.score == 0 and session.game.act_score == 0 and session.game.active_sequence == 0 and not session.game.exit_unlocked, "Replay clears progress and locks the first exit again")
  check(session.game.buddies.levels.is_empty() and session.game.scorecraft.award_bonuses.is_empty(), "Replay clears Buddy levels, bonuses and contribution ledgers")
  session.game.toggle_pause()
  await frames()
- await session.start_run()
+ press("Restart run")
  check(await await_run(), "Restart from pause finishes cleanup and starts a fresh run")
  check(not paused and session.game.score == 0, "Restart releases pause and clears score")
- await session.return_to_menu()
- await session.start_run()
+ session.game.toggle_pause()
+ await frames()
+ press("Return to menu")
+ await await_transition()
+ check(session.state == "menu" and session.game == null and not paused, "Return to menu closes the run and restores menu input")
+ press("Start run")
  await session.return_to_menu()
  check(session.state == "menu" and session.game == null, "Menu return safely cancels an unfinished startup")
  await session.return_to_menu()
