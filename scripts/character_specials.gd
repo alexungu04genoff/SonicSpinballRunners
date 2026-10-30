@@ -74,31 +74,41 @@ func charge(base_amount: float) -> void:
 func find_target() -> Node2D:
  var nearest: Node2D
  var best_distance := definition.target_range
+ var best_priority := 3
  var query := PhysicsTestMotionParameters2D.new()
  query.from = game.ball.transform
  query.margin = 0.1 * game.ball.radius / PlaygroundBall.RADIUS
  var hit := PhysicsTestMotionResult2D.new()
  for candidate: Node2D in game.playfield.bumpers:
-  if not is_instance_valid(candidate) or not candidate.has_meta("bumper"):
+  if not game.scoring_target_eligible(candidate):
    continue
   var distance: float = game.ball.position.distance_to(candidate.global_position)
-  if distance < 55.0 * game.ball.radius / PlaygroundBall.RADIUS or distance > best_distance:
+  var priority := _homing_priority(candidate, &"bumper")
+  if distance < 55.0 * game.ball.radius / PlaygroundBall.RADIUS or distance > definition.target_range or priority > best_priority or (priority == best_priority and distance > best_distance):
    continue
   # Sweep the full authoritative ball shape. Terrain, paddles and closed gates
   # reject a target if they are the first obstruction, including narrow corners.
   query.motion = candidate.global_position - game.ball.position
   if PhysicsServer2D.body_test_motion(game.ball.get_rid(), query, hit) and hit.get_collider() == candidate:
    best_distance = distance
+   best_priority = priority
    nearest = candidate
  for candidate: Node2D in game.enemy_targets():
   var distance: float = game.ball.position.distance_to(candidate.global_position)
-  if distance < game.ball.radius or distance > best_distance: continue
+  var priority := _homing_priority(candidate, &"enemy")
+  if distance < game.ball.radius or distance > definition.target_range or priority > best_priority or (priority == best_priority and distance > best_distance): continue
   query.motion = candidate.global_position - game.ball.position
   # Enemies are sensors, so a clear full-ball sweep has no native collision.
   if not PhysicsServer2D.body_test_motion(game.ball.get_rid(), query, hit):
    best_distance = distance
+   best_priority = priority
    nearest = candidate
  return nearest
+
+func _homing_priority(candidate: Node2D, kind: StringName) -> int:
+ var source := str(candidate.get_meta("scoring_source", candidate.get_instance_id()))
+ if not game.scorecraft.enabled or game.scorecraft.builder_eligible(kind, source): return 0
+ return 1 if kind == &"enemy" else 2
 
 func _set_target(value: Node2D) -> void:
  if target != value:
@@ -257,7 +267,7 @@ func _release_area(source: String, origin: Vector2) -> void:
 func hit_multiplier(body: Node2D) -> int:
  if homing_remaining > 0.0 and is_instance_valid(pending_target) and body == pending_target:
   clear_homing("Hit")
-  feedback = "HOMING HIT!  ×%d target points" % definition.hit_multiplier
+  feedback = "HOMING HIT! Combo cashed out"
   special_hit.emit(body, definition.hit_multiplier)
   return definition.hit_multiplier
  return 1

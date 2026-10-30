@@ -49,7 +49,7 @@ func run() -> void:
  check(not game.specials.activate() and game.special_meter == 99, "Shadow requires full charge")
  game.special_meter = 100
  check(game.specials.activate() and game.special_meter == 0, "Shadow spends full meter before remote awards")
- check(game.score - before == 250 and areas.back().targets == 2 and areas.back().rings == 2, "Blast pays two distinct bumpers and two rings at base value, excluding distant targets")
+ check(game.score - before == 230 and areas.back().targets == 2 and areas.back().rings == 2, "Blast pays two distinct bumpers and two rings at base value, excluding distant targets")
  check(game.ball.bumper_hit_count == contacts and game.scorecraft.chain == chain and game.scorecraft.remaining == timer, "Remote blast impersonates no contacts, combo links or timer refresh")
  before = game.score
  check(not game.ring_field.claim_ring(0) and not game.activate_area_target(target_body, "chaos_blast", 1), "Overlapping claims and same-target area calls are deduplicated")
@@ -109,7 +109,7 @@ func run() -> void:
  print("WALL GLIDE | max_x=", max_x, " position=", game.ball.position, " areas=", areas, " ends=", endings, " impacts=", impacts)
  check(areas.size() == area_count + 1 and endings.back() == "Impact", "Real side-wall impact releases exactly one shockwave")
  check(max_x < 2250 and game.ball.position.y > start_y, "Glide collides with the wall while gravity pulls down; no upward launch")
- check(areas.back().targets == 1 and areas.back().rings == 1 and game.score - before == 250, "Vertical shockwave activates an exposed target and ring at exactly 2x base")
+ check(areas.back().targets == 1 and areas.back().rings == 1 and game.score - before == 230, "Vertical shockwave activates an exposed target and ring at exactly 2x base")
  check(game.special_meter == 0 and game.tuning.effective == baseline, "Remote wave cannot refill meter; impact removes only glide modifier")
  var barrier_shape := RectangleShape2D.new()
  barrier_shape.size = Vector2(180, 25)

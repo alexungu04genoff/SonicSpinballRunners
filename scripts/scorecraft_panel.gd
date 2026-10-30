@@ -38,17 +38,17 @@ func _label(size: int) -> Label:
 
 func _process(_delta: float) -> void:
  var combo: Scorecraft = game.scorecraft
- title.text = "COMBO ×%d · %d links" % [combo.multiplier, combo.chain] if combo.chain > 0 else "SCORECRAFT · ×1"
+ title.text = "COMBO ×%d" % combo.multiplier if combo.chain > 0 else "SCORECRAFT · ×1"
  title.modulate = Color("ffe27a") if combo.multiplier > 1 else Color("b7c6ce")
  if not combo.enabled:
   title.text = "BASELINE SCORING"
-  next_action.text = "Combos off · original point values"
+  next_action.text = "Combos off · base point values"
  elif combo.chain == 0:
-  next_action.text = "Hit a bumper to start · %.1fs window" % combo.config.combo_window
+  next_action.text = "Bumper, enemy or objective · %.1fs window" % combo.config.combo_window
  elif combo.ring_link_available:
-  next_action.text = "%.1fs · Rings %d/%d%s" % [combo.remaining, combo.ring_progress, combo.config.rings_per_link, " for ×3" if combo.multiplier == 2 and not combo.has_ring_link else " or a new bumper"]
+  next_action.text = "%.1fs · RING LINK %d/%d" % [combo.remaining, combo.ring_progress, combo.config.rings_per_link]
  else:
-  next_action.text = "%.1fs · Find a new bumper" % combo.remaining
+  next_action.text = "%.1fs · Find a fresh builder" % combo.remaining
  if not combo.protected_rail.is_empty() and combo.rail_protection_remaining > 0.0:
   next_action.text = "Rail protection %.1fs · combo %.1fs" % [combo.rail_protection_remaining, combo.remaining]
  clock_bar.max_value = maxf(0.5, combo.config.combo_window)

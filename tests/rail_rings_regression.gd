@@ -27,10 +27,10 @@ func _initialize() -> void:
  var control: PackedVector2Array = rail.properties.points.duplicate()
  for i in control.size(): control[i] = rail.position + control[i].rotated(deg_to_rad(37.0))
  var path := RailPath.build(control)
- check(samples.size() == floori(path.length / 25.0), "Ring count follows curved arc length")
+ check(samples.size() == floori(path.length / 35.0), "Ring count follows curved arc length")
  check(samples.all(func(ring): return ring.position.is_equal_approx(RailPath.sample(path, ring.distance)) and is_equal_approx(ring.height, RailPath.height(path, ring.distance, rail.properties.height))), "Rotated rail rings follow the exact physics centerline and height")
  var evenly_spaced := true
- for i in range(1, samples.size()): evenly_spaced = evenly_spaced and is_equal_approx(samples[i].distance - samples[i - 1].distance, 25.0)
+ for i in range(1, samples.size()): evenly_spaced = evenly_spaced and is_equal_approx(samples[i].distance - samples[i - 1].distance, 35.0)
  check(evenly_spaced and is_equal_approx(samples[0].distance, path.length - samples[-1].distance), "Rings have equal spacing and symmetric mouth clearance")
  var document := ActData.new()
  document.gameplay_objects = [rail]

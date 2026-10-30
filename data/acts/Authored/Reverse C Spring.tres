@@ -202,6 +202,7 @@ gameplay_objects = [{
 "object_id": "obj_3ce243c7248dc88d2976820b",
 "position": Vector2(200, 400),
 "properties": {
+"respawn_delay": 15.0,
 "patrol_left": PackedByteArray("AwAAAAAA8ME="),
 "patrol_right": PackedByteArray("AwAAAAAA8EE="),
 "patrol_speed": PackedByteArray("AwAAAAAAgkI="),

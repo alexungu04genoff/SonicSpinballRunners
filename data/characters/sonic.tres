@@ -7,4 +7,4 @@ display_name = "Sonic"
 selection_label = "Sonic · Homing"
 profile = ExtResource("2")
 ability = 0
-description = "Homing Attack: hit a clear-path bumper for 100 × combo + 400 points, ending the chain. 100 meter; actual contact required."
+description = "Homing Attack: cash out a clear target for base × combo + 400. Bumper base 100; enemy base 200. Ends the chain. 100 meter; actual contact required."

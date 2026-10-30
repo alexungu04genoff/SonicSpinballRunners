@@ -51,12 +51,12 @@ func run() -> void:
  field.advance_racks(19.0)
  check(field.rings[0].rack.ready and not field.claim_ring(2), "Expired partial pattern waits without collectible remnants")
  field.advance_racks(0.35)
- check(field.rings[0].active and field.rings[1].active and field.rings[2].active and completions.is_empty() and game.score == 50, "Incomplete ordinary pattern fully respawns at timeout without a bonus")
+ check(field.rings[0].active and field.rings[1].active and field.rings[2].active and completions.is_empty() and game.score == 30, "Incomplete ordinary pattern fully respawns at timeout without a bonus")
 
  field.claim_ring(3)
  field.claim_ring(4, "chaos_blast", 2)
  field.claim_ring(5)
- check(game.score == 650 and game.rings_collected == 5 and game.special_meter == 20 and completions == ["standalone:bonus"], "Contact and remote claims share one completion with fixed bonus and physical-only meter")
+ check(game.score == 590 and game.rings_collected == 5 and game.special_meter == 20 and completions == ["standalone:bonus"], "Contact and remote claims share one completion with fixed bonus and physical-only meter")
  check(not field.claim_ring(5) and completions.size() == 1, "Repeated claim cannot award the same completion twice")
  field.advance_racks(1.0)
  check(not field.rings[3].active, "Bonus Rack does not return after the historical one-second delay")
@@ -110,7 +110,7 @@ func run() -> void:
  field.add_ring(Vector2(100, 100))
  var before_single: int = game.score
  field.claim_ring(0)
- check(game.score == before_single + 25 and completions.size() == 1, "Ordinary single ring never becomes an implicit +500 rack")
+ check(game.score == before_single + 15 and completions.size() == 1, "Ordinary single ring never becomes an implicit +500 rack")
  field.advance_racks(1.0)
  check(not field.rings[0].active, "Ordinary full clear does not respawn after one second")
  field.advance_racks(16.99)

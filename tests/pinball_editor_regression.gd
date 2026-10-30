@@ -70,12 +70,12 @@ func run() -> void:
  canvas.select_gameplay(2)
  check(editor.document.gameplay_objects[2].properties.rings_enabled, "New rails enable centered rings by default")
  var slider: HSlider = editor.find_child("RailRingSpacing", true, false)
- check(slider != null and slider.value == 25.0 and slider.editable, "Rail inspector exposes the default spacing slider")
+ check(slider != null and slider.value == 35.0 and slider.editable, "Rail inspector exposes the default spacing slider")
  slider.value = 40.0
  await process_frame
  check(editor.document.gameplay_objects[2].properties.ring_spacing == 40.0, "Spacing slider updates the authored rail")
  editor.undo()
- check(editor.document.gameplay_objects[2].properties.ring_spacing == 25.0, "Spacing change undoes in one step")
+ check(editor.document.gameplay_objects[2].properties.ring_spacing == 35.0, "Spacing change undoes in one step")
  editor.redo()
  slider = editor.find_child("RailRingSpacing", true, false)
  var drag_press := InputEventMouseButton.new()

@@ -71,7 +71,7 @@ var ring_rotation_field: SpinBox
 var ring_ellipse_settings: VBoxContainer
 var ring_bonus_field: CheckBox
 var ring_scoring_fields: Dictionary = {}
-var ring_scoring_defaults := {"bonus_rack": false, "completion_bonus": 500, "timeout": 25.0, "respawn_delay": 18.0}
+var ring_scoring_defaults := {"bonus_rack": false, "completion_bonus": 0, "timeout": 25.0, "respawn_delay": 18.0}
 var bank_controls: VBoxContainer
 var selected_bank_id := ""
 var composite_bar: HFlowContainer
@@ -1065,7 +1065,7 @@ func _change_ring_scoring(key: String, value: Variant) -> void:
 func _switch_ring_defaults(trail: Dictionary, was_bonus: bool, bonus: bool) -> void:
 	var old := Rings.scoring_settings({"bonus_rack": was_bonus})
 	var fresh := Rings.scoring_settings({"bonus_rack": bonus})
-	for key: String in ["timeout", "respawn_delay"]:
+	for key: String in ["completion_bonus", "timeout", "respawn_delay"]:
 		if not trail.has(key) or trail[key] == old[key]: trail[key] = fresh[key]
 
 func _apply_scoring_fields() -> void:
@@ -2325,7 +2325,7 @@ func create_switch_bank() -> void:
 	if members.size() < 2: return
 	_record_edit()
 	selected_bank_id = "bank_" + Objects.new_id()
-	document.switch_banks.append({"bank_id": selected_bank_id, "label": "Bank %d" % (document.switch_banks.size() + 1), "members": members, "gates": [], "actions": [], "completion_bonus": 500.0, "reset_delay": 0.75})
+	document.switch_banks.append({"bank_id": selected_bank_id, "label": "Bank %d" % (document.switch_banks.size() + 1), "members": members, "gates": [], "actions": [], "completion_bonus": 500.0, "reset_delay": 0.0})
 	_refresh()
 	_set_status("Bank created. Link gates or diverters below. Each action runs when every member is pressed.")
 
@@ -2470,6 +2470,7 @@ func verification_report() -> Dictionary:
 	if document.exit_width == 0: warnings.append("Exit connector is unset.")
 	if document.activation_y == null: warnings.append("Activation trigger is unset.")
 	if not errors.is_empty(): return {"errors": errors, "warnings": warnings}
+	warnings.append_array(preload("res://scripts/act_editor/switch_banks.gd").authoring_warnings(document.switch_banks, document.gameplay_objects))
 	var candidate: Resource = document.duplicate(true)
 	if candidate.spawn_position == null:
 		errors.append("Spawn point is unset: the Act cannot be played.")

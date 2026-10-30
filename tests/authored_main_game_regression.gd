@@ -115,7 +115,7 @@ func check_rings_and_score() -> void:
 	game.tuning.effective.ring_magnet_radius = 0.0
 	game.ball.teleport_to(Vector2(380, 400), Vector2(300, 0))
 	await frames(30)
-	check(game.rings_collected >= 3 and game.score >= 200 and game.scorecraft.chain == 2 and game.scorecraft.has_ring_link and game.special_meter > 2, "Real authored ring contacts feed the existing score, Scorecraft ring link and special meter", str([game.score, game.rings_collected, game.scorecraft.chain, game.special_meter]))
+	check(game.rings_collected >= 3 and game.score >= 160 and game.scorecraft.chain == 2 and not game.scorecraft.ring_link_available and game.special_meter > 2, "Real authored ring contacts feed the existing score, Scorecraft ring link and special meter", str([game.score, game.rings_collected, game.scorecraft.chain, game.special_meter]))
 	var before: int = game.score
 	check(not game.ring_field.claim_ring(0) and game.score == before, "A collected authored ring cannot score twice")
 	game.tuning.use_profile(game.specials.definition.profile)
@@ -138,7 +138,7 @@ func check_specials() -> void:
 	for tick in 90:
 		await frames(1)
 		if game.score > 0: break
-	check(game.score == 500 and game.specials.pending_target == null and game.special_meter == 2, "Physical authored homing contact awards the normal 5x hit and ordinary recharge", str([game.score, game.special_meter]))
+	check(game.score == 500 and game.specials.pending_target == null and game.special_meter == 2, "Physical authored Homing cashes out 100x1 + 400 and ordinary recharge", str([game.score, game.special_meter]))
 	game.specials.select_character("tails")
 	await place(Vector2(300, 500), Vector2(0, 400))
 	var gravity: float = game.tuning.effective.gravity_scale

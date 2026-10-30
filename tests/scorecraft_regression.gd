@@ -20,52 +20,54 @@ func bumper(at: Vector2) -> StaticBody2D:
 func run() -> void:
  var combo := Scorecraft.new()
  combo.config = ScorecraftConfig.new()
+ combo.config.multiplier_cap = 4
+ combo.config.tiered_decay = true
  root.add_child(combo)
  combo.set_physics_process(false)
  var a := Node.new()
  var b := Node.new()
  var c := Node.new()
- check(combo.award_ring() == 25 and combo.chain == 0, "Rings alone cannot start or grow a combo")
+ check(combo.award_ring() == 15 and combo.chain == 0, "Rings alone cannot start or grow a combo")
  check(combo.award_bumper(a) == 100 and combo.chain == 1 and combo.multiplier == 1, "First bumper starts at x1")
  combo._physics_process(0.4)
  var time_left := combo.remaining
  check(combo.award_bumper(a) == 100 and combo.remaining == time_left and combo.chain == 1, "Repeated bumper pays base and cannot refresh")
- check(combo.award_ring() == 25 and combo.award_ring() == 25 and combo.remaining == time_left, "Partial ring sequence does not refresh the window")
- check(combo.award_ring() == 50 and combo.multiplier == 2 and combo.remaining == 3.0, "Third ring advances to x2 and refreshes")
+ check(combo.award_ring() == 15 and combo.award_ring() == 15 and combo.remaining == time_left, "Partial ring sequence does not refresh the window")
+ check(combo.award_ring() == 30 and combo.multiplier == 2 and combo.remaining == 3.0, "Third ring advances to x2 and refreshes")
  combo._physics_process(0.3)
  time_left = combo.remaining
- check(combo.award_ring() == 50 and combo.remaining == time_left and combo.chain == 2, "Extra rings pay current multiplier without automatic refresh")
+ check(combo.award_ring() == 30 and combo.remaining == time_left and combo.chain == 2, "Extra rings pay current multiplier without automatic refresh")
  check(combo.award_bumper(a) == 100 and not combo.ring_link_available and combo.remaining == time_left, "Ring collection cannot make an old bumper fresh again")
- check(combo.award_bumper(b) == 300 and combo.multiplier == 3 and combo.ring_link_available, "Different bumper advances to capped x3")
+ check(combo.award_bumper(b) == 300 and combo.multiplier == 3 and combo.ring_link_available, "Different bumper visibly advances to x3")
  combo.award_ring()
  combo.award_ring()
- check(combo.award_ring() == 75 and combo.multiplier == 3 and combo.chain == 4, "Further valid links stay capped")
+ check(combo.award_ring() == 60 and combo.multiplier == 4 and combo.chain == 4 and not combo.ring_link_available, "Further valid link reaches x4 with no stored link")
  combo._physics_process(0.25)
  time_left = combo.remaining
  check(combo.award_bumper(a) == 100 and combo.award_bumper(b) == 100 and combo.remaining == time_left, "Alternating two already-used bumpers cannot sustain a chain")
- check(combo.award_rack() == 500 and combo.remaining == time_left and combo.chain == 4, "Rack award stays fixed and cannot extend combos")
- check(combo.award_bumper(c, 5) == 700 and combo.chain == 0 and combo.last_award.special_bonus == 400, "Homing finisher is 100x3 + 400, never 100x5x3")
+ check(combo.award_rack() == 500 and combo.remaining == 3.0 and combo.chain == 4, "Rack award stays fixed and refreshes without advancing")
+ check(combo.award_bumper(c, 5) == 800 and combo.chain == 0 and combo.last_award.special_bonus == 400, "Homing finisher uses pre-hit 100x4 + 400")
  check(combo.award_bumper(a, 5) == 500 and combo.chain == 0, "Unchained Homing keeps its original 500 points")
  combo.award_bumper(a)
  combo.award_bumper(b)
- check(combo.award_bumper(a, 5) == 500 and combo.chain == 0, "Repeated-target Homing retains special bonus but gets no combo multiplier")
+ check(combo.award_bumper(a, 5) == 600 and combo.chain == 0, "Repeated-target Homing retains the pre-hit x2 multiplier")
  combo.award_bumper(a)
  combo._physics_process(3.0)
  check(combo.chain == 0 and combo.multiplier == 1 and combo.award_bumper(a) == 100, "Expiry clears target history and restarts at x1")
- check(combo.award_bumper(b) == 200 and combo.award_bumper(c) == 200 and combo.multiplier == 2, "Bumper-only chains cannot reach x3 without a ring link")
+ check(combo.award_bumper(b) == 200 and combo.award_bumper(c) == 300 and combo.multiplier == 3, "Each distinct bumper advances exactly one visible tier")
  combo.award_ring()
  combo.award_ring()
- check(combo.award_ring() == 75 and combo.multiplier == 3, "Mixing three rings into a bumper chain earns the top tier")
+ check(combo.award_ring() == 60 and combo.multiplier == 4, "Mixing three rings into a bumper chain earns the top tier")
  combo.reset("Fixture")
  combo.config.combo_window = 1.2
  combo.config.rings_per_link = 2
  combo.config.multiplier_cap = 2
  combo.award_bumper(a)
  combo.award_ring()
- check(combo.award_ring() == 50 and combo.remaining == 1.2 and combo.award_bumper(b) == 200, "Window, ring threshold and cap are configurable")
+ check(combo.award_ring() == 30 and combo.remaining == 1.2 and combo.award_bumper(b) == 200, "Window, ring threshold and cap are configurable")
  combo.reset("Baseline")
  combo.enabled = false
- check(combo.award_bumper(a) == 100 and combo.award_bumper(b) == 100 and combo.award_ring() == 25 and combo.award_bumper(c, 5) == 500 and combo.chain == 0, "Baseline mode exactly preserves original awards")
+ check(combo.award_bumper(a) == 100 and combo.award_bumper(b) == 100 and combo.award_ring() == 15 and combo.award_bumper(c, 5) == 500 and combo.chain == 0, "Baseline mode uses V1 base awards without combos")
  combo.free()
  a.free()
  b.free()
@@ -90,7 +92,7 @@ func run() -> void:
   game.ring_field.rings[i].position = game.ring_field.rings[i].home
   game.ring_field.rings[i].active = true
  game.ring_field._physics_process(0.0)
- check(game.score == 200 and game.rings_collected == 3 and game.special_meter == 17 and game.scorecraft.multiplier == 2, "Actual ring pickup gives 25+25+50 while meter remains ordinary +5")
+ check(game.score == 160 and game.rings_collected == 3 and game.special_meter == 17 and game.scorecraft.multiplier == 2, "Actual ring pickup gives 15+15+30 while meter remains ordinary +5")
  var preserved_time: float = game.scorecraft.remaining
  paused = true
  await frames(20)
@@ -100,7 +102,7 @@ func run() -> void:
  var before: int = game.score
  check(game.specials.activate(), "Homing activates through the normal ability path")
  await frames(50)
- check(game.score - before == 700 and game.scorecraft.chain == 0 and game.special_meter == 2, "Real Homing contact finishes x3 once without extra meter multiplication")
+ check(game.score - before == 600 and game.scorecraft.chain == 0 and game.special_meter == 2, "Real Homing contact cashes out x2 once without extra meter multiplication")
  first.free()
  second.free()
  paused = true

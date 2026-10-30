@@ -28,11 +28,17 @@ func run() -> void:
  check(not Rings.scoring_settings(editor.document.ring_trails[0]).bonus_rack, "Ordinary patterns start without rack bonuses")
  check(editor.document.ring_trails[0].timeout == 25.0 and editor.document.ring_trails[0].respawn_delay == 18.0, "New ordinary editor patterns use 25/18-second pacing")
  editor.ring_bonus_field.button_pressed = true
- check(editor.document.ring_trails[0].timeout == 12.0 and editor.document.ring_trails[0].respawn_delay == 11.0, "Switching to Bonus Rack uses 12/11-second defaults")
+ check(editor.document.ring_trails[0].completion_bonus == 500 and editor.document.ring_trails[0].timeout == 12.0 and editor.document.ring_trails[0].respawn_delay == 11.0, "Switching to Bonus Rack uses clean 500/12/11 defaults")
+ editor.ring_bonus_field.button_pressed = false
+ check(editor.document.ring_trails[0].completion_bonus == 0 and editor.document.ring_trails[0].timeout == 25.0 and editor.document.ring_trails[0].respawn_delay == 18.0, "Untouched rack toggles back to clean ordinary 0/25/18 defaults")
+ editor.ring_bonus_field.button_pressed = true
  editor._change_ring_scoring("completion_bonus", 750)
  editor._change_ring_scoring("timeout", 12.123456789012345)
  editor._change_ring_scoring("respawn_delay", 1.123456789012345)
  check(editor.document.ring_trails[0].bonus_rack and editor.document.ring_trails[0].completion_bonus == 750, "Selected pattern exposes optional rack rewards")
+ editor.ring_bonus_field.button_pressed = false
+ check(editor.document.ring_trails[0].completion_bonus == 750 and editor.document.ring_trails[0].timeout == 12.123456789012345 and editor.document.ring_trails[0].respawn_delay == 1.123456789012345, "Toggling preserves deliberate bonus and timer tuning")
+ editor.ring_bonus_field.button_pressed = true
  editor.duplicate_selected()
  check(editor.document.ring_trails[1].pattern_id != id and editor.document.ring_trails[1].completion_bonus == 750, "Duplicate retains settings with an independent rack identity")
  editor.undo()
@@ -62,11 +68,61 @@ func run() -> void:
  var members: Array[int] = [1, 2]
  editor.canvas.set_gameplay_selection(members)
  editor.create_switch_bank()
- check(editor.document.switch_banks[0].completion_bonus == 500.0 and editor.document.switch_banks[0].reset_delay == 0.75, "New banks award 500 and rearm after 0.75 seconds")
- check(Objects.properties(editor.document.gameplay_objects[1]).score_reward == 0 and Objects.properties(editor.document.gameplay_objects[2]).score_reward == 0, "New floor and wall switches share zero-point defaults")
+ check(editor.document.switch_banks[0].completion_bonus == 500.0 and editor.document.switch_banks[0].reset_delay == 0.0, "New banks award 500 once unless deliberately made repeatable")
+ check(Objects.properties(editor.document.gameplay_objects[1]).score_reward == 25 and Objects.properties(editor.document.gameplay_objects[2]).score_reward == 25, "New floor and wall switches explicitly award 25 points")
+ editor.document.grid_size = Vector2i(20, 20)
+ editor._refresh()
+ for type: String in ["lane_barrier", "spinner", "elevated_rail", "buzz_bomber"]:
+  editor.choose_gameplay(type)
+  var point := Vector2(250, 550 + 60 * (editor.document.gameplay_objects.size() - 3))
+  pointer(point, true)
+  pointer(point, false)
+  if type in ["lane_barrier", "elevated_rail"]:
+   pointer(point + Vector2(100, 0), true)
+   pointer(point + Vector2(100, 0), false)
+   var enter := InputEventKey.new()
+   enter.pressed = true
+   enter.keycode = KEY_ENTER
+   editor.canvas._gui_input(enter)
+ var modern: Array = editor.document.gameplay_objects
+ check(modern[3].properties.lane_reward == 50 and modern[3].properties.completion_bonus == 500, "New Lane Set stores 50-point lanes and fixed 500 completion")
+ check(modern[4].properties.tick_score == 5 and modern[4].properties.completion_enabled and modern[4].properties.target_ticks == 10 and modern[4].properties.completion_bonus == 300, "New Spinner explicitly stores 5/10/300 with its goal enabled")
+ check(modern[5].properties.rings_enabled and modern[5].properties.ring_spacing == 35, "New Rail stores enabled Rings at 35 px")
+ check(modern[6].properties.respawn_delay == 15, "New enemy explicitly stores the generic 15-second respawn property")
+ editor.ring_scoring_defaults = {"bonus_rack": false, "completion_bonus": 0, "timeout": 25.0, "respawn_delay": 18.0}
+ editor.set_ring_trail(-1, {"start": Vector2(500, 300), "end": Vector2(600, 300), "spacing": 20.0})
+ check(editor.document.ring_trails.back().completion_bonus == 0 and not editor.document.ring_trails.back().bonus_rack, "New ordinary trail explicitly stores zero completion bonus")
  var fingerprint: String = editor.document.fingerprint()
  check(editor.save_to(SCORING_PATH), "Scoring settings save through the real Act Editor")
  check(editor.load_from(SCORING_PATH) and editor.document.fingerprint() == fingerprint, "Reload preserves exact target, rack timers, identities, spinner and bank settings")
+ var clean_document: Resource = editor.document.copy_document()
+ # Real Verify Act warnings must not become validation errors.
+ editor.document.spawn_position = Vector2(100, 100)
+ editor.document.gameplay_objects.append(Objects.make_placement("switch_target"))
+ editor.document.gameplay_objects.back().position = Vector2(500, 400)
+ editor.document.gameplay_objects.back().object_id = "zero_switch"
+ editor.document.gameplay_objects.back().properties.score_reward = 0
+ var duplicate: Dictionary = editor.document.switch_banks[0].duplicate(true)
+ duplicate.bank_id = "duplicate_bank"
+ duplicate.members.reverse()
+ duplicate.completion_bonus = 0
+ editor.document.switch_banks.append(duplicate)
+ var report: Dictionary = editor.verification_report()
+ var warnings := "\n".join(report.warnings)
+ check(warnings.contains("zero_switch") and warnings.contains("no Bank") and warnings.contains("no completion score") and warnings.contains("Likely duplicate"), "Verify Act reports standalone zero switch, empty-purpose bank and reordered duplicate")
+ check(editor.document.validation_errors().is_empty(), "Semantic warnings preserve unusual but legal designs")
+ var gate: Dictionary = Objects.make_placement("one_way_gate")
+ gate.object_id = "warning_gate"
+ gate.position = Vector2(800, 100)
+ editor.document.gameplay_objects.append(gate)
+ editor.document.switch_banks[0].gates = ["warning_gate"]
+ duplicate.actions = [{"object_id": "warning_gate", "action": "open"}]
+ report = editor.verification_report()
+ check("\n".join(report.warnings).contains("Likely duplicate"), "Equivalent legacy gate and explicit Open action still reveal duplicate banks")
+ duplicate.members = [duplicate.members[0]]
+ report = editor.verification_report()
+ check(not "\n".join(report.warnings).contains("Likely duplicate"), "Merely sharing a subset of targets does not warn as a duplicate")
+ editor.document = clean_document
  var output: Array = []
  var code := OS.execute(OS.get_executable_path(), ["--headless", "--path", ProjectSettings.globalize_path("res://"), "--script", "res://tests/scoring_authoring_regression.gd", "--", "--reopen-scoring", fingerprint], output, true)
  check(code == 0, "Fresh Godot process preserves scoring settings and timer bits")

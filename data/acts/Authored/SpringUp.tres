@@ -199,6 +199,7 @@ gameplay_objects = [{
 "object_id": "obj_909f7958822deeff7b6d7381",
 "position": Vector2(300, 450),
 "properties": {
+"respawn_delay": 15.0,
 "patrol_left": PackedByteArray("AwAAAAAA8ME="),
 "patrol_right": PackedByteArray("AwAAAAAA8EE="),
 "patrol_speed": PackedByteArray("AwAAAAAAgkI="),
@@ -211,6 +212,7 @@ gameplay_objects = [{
 "object_id": "obj_60b96d12279262ca8f63eae9",
 "position": Vector2(250, 200),
 "properties": {
+"respawn_delay": 15.0,
 "patrol_left": PackedByteArray("AwAAAAAA8ME="),
 "patrol_right": PackedByteArray("AwAAAAAA8EE="),
 "patrol_speed": PackedByteArray("AwAAAAAAgkI="),

@@ -108,17 +108,17 @@ static func new_id() -> String:
 
 static func defaults(type: String) -> Dictionary:
  match type:
-  "buzz_bomber": return {"scale": 1.0, "patrol_speed": 65.0, "starting_direction": "right", "patrol_left": -60.0, "patrol_right": 60.0}
+  "buzz_bomber": return {"scale": 1.0, "patrol_speed": 65.0, "starting_direction": "right", "patrol_left": -60.0, "patrol_right": 60.0, "respawn_delay": 15.0}
   "round_bumper", "triangle_bumper": return {"scale": 1.0}
   "one_way_gate": return {"width": 80.0, "initial_state": "closed", "visual_mode": "auto"}
-  "switch_target", "wall_switch": return {"scale": 1.0, "color": "blue", "label": "", "score_reward": 0.0}
-  "lane_barrier": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(80, 0)]), "post_radius": 9.0, "reward_type": "score", "lane_reward": 100.0, "completion_mode": "light_all", "completion_bonus": 500.0, "reset_delay": 1.5}
+  "switch_target", "wall_switch": return {"scale": 1.0, "color": "blue", "label": "", "score_reward": 25.0}
+  "lane_barrier": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(80, 0)]), "post_radius": 9.0, "reward_type": "score", "lane_reward": 50.0, "completion_mode": "light_all", "completion_bonus": 500.0, "reset_delay": 1.5}
   "diverter": return {"length": 90.0, "state_a_angle": -35.0, "state_b_angle": 35.0, "initial_state": "a"}
   "dash_panel": return {"width": 50.0, "boost_strength": 350.0, "directional_influence": 70.0, "speed_cap": 2400.0}
   "spring": return {"width": 40.0, "launch_strength": 300.0, "color": "red"}
   "spinner": return {"width": 40.0, "tick_score": 5.0, "decay": 2.0, "max_spin": 40.0, "completion_enabled": true, "target_ticks": 10.0, "completion_bonus": 300.0}
   "magnetic_field": return {"radius": 100.0, "strength": 260.0, "mode": "attract"}
-  "elevated_rail": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(0, -100), Vector2(100, -170)]), "width": 40.0, "height": 40.0, "drag": 0.06, "entry_speed": 100.0, "rings_enabled": true, "ring_spacing": 25.0}
+  "elevated_rail": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(0, -100), Vector2(100, -170)]), "width": 40.0, "height": 40.0, "drag": 0.06, "entry_speed": 100.0, "rings_enabled": true, "ring_spacing": 35.0}
  return {}
 
 static func properties(placement: Dictionary) -> Dictionary:
@@ -128,7 +128,7 @@ static func properties(placement: Dictionary) -> Dictionary:
 
 static func property_limits(type: String) -> Dictionary:
  match type:
-  "buzz_bomber": return {"scale": [0.35, 2.5], "patrol_speed": [0.0, 400.0], "patrol_left": [-2000.0, 0.0], "patrol_right": [0.0, 2000.0]}
+  "buzz_bomber": return {"scale": [0.35, 2.5], "patrol_speed": [0.0, 400.0], "patrol_left": [-2000.0, 0.0], "patrol_right": [0.0, 2000.0], "respawn_delay": [0.1, 300.0]}
   "round_bumper", "triangle_bumper": return {"scale": [0.35, 2.5]}
   "one_way_gate": return {"width": [20.0, 500.0]}
   "switch_target", "wall_switch": return {"scale": [0.35, 2.5], "score_reward": [0.0, 1000.0]}

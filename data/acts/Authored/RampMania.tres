@@ -271,7 +271,7 @@ gameplay_objects = [{
 "color": "blue",
 "label": "",
 "scale": PackedByteArray("AwAAAAAAgD8="),
-"score_reward": PackedByteArray("AwAAAAAAAAA=")
+"score_reward": 25.0
 },
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "type": "switch_target"
@@ -282,7 +282,7 @@ gameplay_objects = [{
 "color": "blue",
 "label": "",
 "scale": PackedByteArray("AwAAAAAAgD8="),
-"score_reward": PackedByteArray("AwAAAAAAAAA=")
+"score_reward": 25.0
 },
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "type": "switch_target"
@@ -293,7 +293,7 @@ gameplay_objects = [{
 "color": "blue",
 "label": "",
 "scale": PackedByteArray("AwABAGdmZmZmZuY/"),
-"score_reward": PackedByteArray("AwAAAAAAAAA=")
+"score_reward": 25.0
 },
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "type": "switch_target"
@@ -304,7 +304,7 @@ gameplay_objects = [{
 "color": "blue",
 "label": "",
 "scale": PackedByteArray("AwABAGdmZmZmZuY/"),
-"score_reward": PackedByteArray("AwAAAAAAAAA=")
+"score_reward": 25.0
 },
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "type": "switch_target"
@@ -315,7 +315,7 @@ gameplay_objects = [{
 "color": "blue",
 "label": "",
 "scale": PackedByteArray("AwAAAAAAgD8="),
-"score_reward": PackedByteArray("AwAAAAAAAAA=")
+"score_reward": 25.0
 },
 "rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
 "type": "switch_target"
@@ -363,6 +363,7 @@ gameplay_objects = [{
 "object_id": "obj_d79cfa0fec59ce493fe04b3c",
 "position": Vector2(100, 650),
 "properties": {
+"respawn_delay": 15.0,
 "patrol_left": PackedByteArray("AwAAAAAAIMI="),
 "patrol_right": PackedByteArray("AwAAAAAAIEI="),
 "patrol_speed": PackedByteArray("AwAAAAAAgkI="),

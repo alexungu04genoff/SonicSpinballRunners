@@ -11,7 +11,7 @@ static func samples(placement: Dictionary, properties: Dictionary) -> Array[Dict
  for i in control.size(): control[i] = placement.position + control[i].rotated(angle)
  var path := Path.build(control)
  if path.length <= 0.0: return result
- var spacing := clampf(float(properties.get("ring_spacing", 25.0)), 12.0, 200.0)
+ var spacing := clampf(float(properties.get("ring_spacing", 35.0)), 12.0, 200.0)
  # A centered sequence with at least half a spacing clear of each mouth.
  var count := mini(MAX_RINGS, floori(path.length / spacing))
  var first: float = (path.length - (count - 1) * spacing) * 0.5

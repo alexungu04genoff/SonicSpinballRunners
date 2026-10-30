@@ -101,7 +101,8 @@ static func _wing(table: TablePresentation, parent: Node3D, start: Vector3, end:
 static func update(entry: Dictionary, elapsed: float, table: TablePresentation) -> void:
  var item: Dictionary = entry.item
  var root: Node3D = entry.root
- root.visible = item.alive or item.death_remaining > 0.0
+ var appearing: bool = item.get("respawn_ready", false) and item.get("respawn_fade", 0.0) > 0.0
+ root.visible = item.alive or item.death_remaining > 0.0 or appearing
  var displacement: Vector2 = item.position - item.anchor
  root.position = entry.base + Vector3(displacement.x, sin(elapsed * 3.8) * 0.9, displacement.y) * TablePresentation.SCALE
  # Rotate only the collisionless portrait plane. Its local up projects upward
@@ -116,7 +117,8 @@ static func update(entry: Dictionary, elapsed: float, table: TablePresentation) 
   var delta := maxf(0.0, elapsed - float(entry.last_turn_time))
   entry.body.rotation.y = rotate_toward(entry.body.rotation.y, facing, delta * TAU / 0.6)
  entry.last_turn_time = elapsed
- entry.body.visible = item.alive
+ entry.body.visible = item.alive or appearing
+ entry.body.scale = Vector3.ONE * (float(item.respawn_fade) / 0.35 if appearing else 1.0)
  entry.flash.visible = not item.alive and item.death_remaining > 0.0
  if item.alive:
   for i in entry.wings.size():

@@ -54,10 +54,10 @@ func run() -> void:
 
  prepare(PackedVector2Array([Vector2(2040, 500)]))
  field._physics_process(1.0 / 120.0)
- check(not field.rings[0].active and field.rings[0].position == Vector2(2040, 500) and events == [Vector2(2040, 500)] and game.score == 25 and game.special_meter == 5, "Nearby ring collects immediately at its authored position and awards once")
+ check(not field.rings[0].active and field.rings[0].position == Vector2(2040, 500) and events == [Vector2(2040, 500)] and game.score == 15 and game.special_meter == 5, "Nearby ring collects immediately at its authored position and awards once")
  for i in 120:
   field._physics_process(1.0 / 120.0)
- check(events.size() == 1 and game.rings_collected == 1 and game.score == 25 and game.special_meter == 5, "Repeated proximity does not duplicate score, meter or collection events")
+ check(events.size() == 1 and game.rings_collected == 1 and game.score == 15 and game.special_meter == 5, "Repeated proximity does not duplicate score, meter or collection events")
 
  prepare(PackedVector2Array([Vector2(2051, 500), Vector2(2050, 500)]))
  for i in 120:
@@ -67,7 +67,7 @@ func run() -> void:
  var contact_radius: float = game.ball.radius + field.ring_radius
  prepare(PackedVector2Array([Vector2(2000 + contact_radius, 500), Vector2(2001 + contact_radius, 500)]), 0)
  field._physics_process(1.0 / 120.0)
- check(not field.rings[0].active and field.rings[1].active and game.score == 25, "Radius zero preserves the authored direct-contact pickup threshold")
+ check(not field.rings[0].active and field.rings[1].active and game.score == 15, "Radius zero preserves the authored direct-contact pickup threshold")
 
  var swept_both_ways := true
  for direction: float in [-1.0, 1.0]:
@@ -105,10 +105,15 @@ func run() -> void:
  field.add_pattern({"start": Vector2(2020, 500), "end": Vector2(2040, 500), "spacing": 20.0, "bonus_rack": true}, "bonus_test", field.active_owner_id)
  field._physics_process(1.0 / 120.0)
  field._physics_process(1.0 / 120.0)
- var first_rack: bool = events.size() == 2 and game.score == 550 and game.special_meter == 10 and field.rings[0].rack.respawn_remaining > 0.0
- field.advance_racks(1.1)
+ var first_rack: bool = events.size() == 2 and game.score == 530 and game.special_meter == 10 and field.rings[0].rack.respawn_remaining > 0.0
+ game.ball.position = Vector2(3000, 500)
+ field._physics_process(0.0)
+ field.advance_racks(11.0)
+ field.advance_racks(0.35)
+ game.ball.position = Vector2(2000, 500)
+ field.previous_ball_position = game.ball.position
  field._physics_process(1.0 / 120.0)
- check(first_rack and events.size() == 4 and game.score == 1100 and game.rings_collected == 4 and game.special_meter == 20, "Explicit rack bonus occurs once per clear; timed reset rearms rings")
+ check(first_rack and events.size() == 4 and game.score == 1060 and game.rings_collected == 4 and game.special_meter == 20, "Explicit rack bonus occurs once per clear; timed reset rearms rings")
 
  prepare(PackedVector2Array([Vector2(2100, 545)]))
  game.controls.virtual_enabled = true

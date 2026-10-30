@@ -194,7 +194,7 @@ func _geometry_checks() -> void:
  check(is_equal_approx(Objects.dash_velocity(Vector2.UP * 3000, dash).length(), 2400.0), "Dash respects total safety cap")
  var craft := Scorecraft.new()
  check(craft.award_mechanic(&"switch", "wall", 100) == 100 and craft.last_award.kind == "switch", "Switch reward is typed and not clamped to spinner ticks")
- check(craft.award_mechanic(&"lane_set", "lanes", 750) == 750 and craft.chain == 0 and craft.remaining == 0, "Feature bonus remains fixed and cannot refresh combo")
+ check(craft.award_mechanic(&"lane_set", "lanes", 750) == 750 and craft.chain == 1 and craft.remaining == 3.0, "Feature bonus remains fixed while starting a visible x1 combo")
  check(craft.award_mechanic(&"spinner", "spin", 100) == 25, "Spinner retains its own tick cap")
  craft.free()
 

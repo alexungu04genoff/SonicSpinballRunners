@@ -29,16 +29,19 @@ func retry(manual := false) -> void:
  var spinner_ticks: int = manager.by_id.spinner.goal_ticks
  var bank_timer: float = manager.banks[0].get("reset_remaining", 0.0)
  var lane_timer: float = manager.by_id.lanes.cooldown
+ var enemy_timer: float = manager.enemies.by_id.enemy.respawn_remaining
  var rack = game.ring_field.rings[0].rack
  var rack_timer: float = rack.timeout_remaining
  if manual: game._on_retry_requested()
  else: game._on_ball_drained()
  check(game.score == score and game.scorecraft.multiplier == 1 and game.scorecraft.chain == 0, "Actual drain preserves score and resets combo")
  game.ring_field._physics_process(1.0)
+ manager.enemies.tick(1.0)
  while is_instance_valid(game.transfer): await process_frame
  live_ball()
  check(manager.by_id.spinner.goal_ticks == spinner_ticks and manager.banks[0].get("reset_remaining", 0.0) == bank_timer and manager.by_id.lanes.cooldown == lane_timer, "Protected retry preserves objective progress and exact timers")
  check(rack.timeout_remaining == rack_timer and game.telemetry.target_at == target_time, "Ring rack lifecycle and telemetry snapshots survive retry")
+ check(manager.enemies.by_id.enemy.respawn_remaining == enemy_timer, "Actual protected retry pauses and preserves the enemy respawn countdown")
  check(game.ball.position.distance_to(game.active.spawn()) < 1.0, "Retry arrives at the existing checkpoint")
 
 func cross_lane(index: int) -> void:

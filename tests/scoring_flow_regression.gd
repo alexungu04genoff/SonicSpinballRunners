@@ -121,7 +121,7 @@ func _rail_checks() -> void:
   await frames(1)
  check(not game.ball.on_ramp and game.scorecraft.protected_rail.is_empty(), "Normal rail departure clears protection through actual exit event")
  game.scorecraft._physics_process(0.25)
- check(game.scorecraft.remaining == 0.75, "Ordinary timer resumes after rail departure")
+ check(game.scorecraft.remaining == 2.75, "Completed rail refreshes the active combo before ordinary decay resumes")
 
 func _award_and_lifecycle_checks() -> void:
  await move_in_run(Vector2(800, 700), Vector2.ZERO)
@@ -133,7 +133,7 @@ func _award_and_lifecycle_checks() -> void:
  for feature: Array in [[&"switch_bank", 500], [&"spinner_goal", 300], [&"lane_set", 750]]:
   manager.complete_feature(feature[0], "fixture_feature", feature[1])
  check(game.score - before == 1550 and game.act_score == game.score, "Fixed feature events enter both ledgers exactly once")
- check(game.scorecraft.chain == chain and game.scorecraft.remaining == remaining and game.special_meter == meter, "Feature awards cannot extend combo or charge special meter")
+ check(game.scorecraft.chain >= chain and game.scorecraft.chain == game.scorecraft.multiplier and game.scorecraft.remaining == 3.0 and game.special_meter == meter, "Distinct feature completions build visible tiers without charging Special")
  check(game.exit_unlocked and game.ball.position == position, "Target award unlocks exit without moving the authoritative ball")
  var sum := 0
  for value: int in game.act_score_breakdown.values(): sum += value

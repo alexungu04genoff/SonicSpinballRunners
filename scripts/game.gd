@@ -397,6 +397,7 @@ func _wire_scoring_runtime(runtime: Dictionary, owner_id: String) -> void:
  mechanics.traversal_event.connect(_on_traversal_event.bind(owner_id))
  mechanics.rail_traveled.connect(_on_rail_traveled.bind(owner_id))
  mechanics.enemy_destroyed.connect(_on_enemy_destroyed.bind(owner_id))
+ mechanics.enemies.enemy_respawned.connect(_on_enemy_respawned.bind(owner_id))
  mechanics.scoring_allowed = _accept_scoring.bind(owner_id)
  mechanics.enemies.owner_act = owner_id
  for index in runtime.objects.size():
@@ -486,9 +487,15 @@ func award_virtual_rings(amount: int) -> void:
 
 func _on_enemy_destroyed(_enemy_type: StringName, object_id: String, points: int, _source: StringName, owner_id: String = "") -> void:
  if not _accept_scoring(owner_id): return
- scorecraft.award_mechanic(&"enemy", owner_id + ":" + object_id, points)
- if is_instance_valid(specials.pending_target) and str(specials.pending_target.get_meta("scoring_source", "")) == owner_id + ":" + object_id:
-  specials.clear_homing("Enemy destroyed")
+ var source_id := (active_scoring_id if owner_id.is_empty() else owner_id) + ":" + object_id
+ var target: Node2D = specials.pending_target
+ if is_instance_valid(target) and str(target.get_meta("scoring_source", "")) == source_id and specials.hit_multiplier(target) > 1:
+  scorecraft.award_homing(&"enemy", source_id, points, target.get_instance_id())
+ else:
+  scorecraft.award_mechanic(&"enemy", source_id, points)
+
+func _on_enemy_respawned(_enemy_type: StringName, _object_id: String, _owner_id: String = "") -> void:
+ pass # The run's passive telemetry adapter observes this lifecycle event.
 
 func enemy_targets() -> Array[Node2D]:
  if authored_runtime.is_empty() or not _accept_scoring(): return []

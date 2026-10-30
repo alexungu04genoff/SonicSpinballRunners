@@ -42,6 +42,11 @@ func _ready() -> void:
  scorecraft_config.multiplier_cap = 4
  scorecraft_config.tiered_decay = true
  super._ready()
+ scorecraft.combo_advanced.connect(func(kind: StringName, id: String, tier: int, began: bool): telemetry.combo_advanced(kind, id, tier, began, elapsed))
+ scorecraft.combo_supported.connect(telemetry.combo_supported)
+ scorecraft.combo_ended.connect(func(reason: String, chain: int, tier: int): telemetry.combo_ended(reason, chain, tier, elapsed))
+ specials.special_activated.connect(func(id: String):
+  if id == "sonic": telemetry.homing_used())
  combo_glow = preload("res://scripts/prototype/combo_glow.gd").new()
  combo_glow.game = self
  add_child(combo_glow)
@@ -252,6 +257,7 @@ func _on_retry_requested() -> void:
 func _on_score_awarded(details: Dictionary) -> void:
  if finished or closing or drafting or is_instance_valid(transfer): return
  super._on_score_awarded(details)
+ telemetry.record_score(details)
  active.runtime.goal_ring.set_unlocked(exit_unlocked)
  if is_instance_valid(score_overlay): score_overlay.add_award(details, _award_position(details))
  status_message = status_message.replace("EXIT OPEN", "GOAL READY")
@@ -267,7 +273,7 @@ func _award_position(details: Dictionary) -> Vector2:
   var target := instance_from_id(target_id) as Node2D
   if target != null: return target.global_position
  if active != null:
-  var object_id := str(details.get("object_id", "")).trim_prefix(active_scoring_id + ":")
+  var object_id := str(details.get("object_id", "")).trim_prefix(active_scoring_id + ":").get_slice(":lane:", 0)
   var item: Dictionary = active.runtime.mechanics.by_id.get(object_id, {})
   if item.has("position"): return item.position
  return ball.position
@@ -288,7 +294,11 @@ func _on_ring_collected(where: Vector2, source: String = "", multiplier: int = 1
 func _on_enemy_destroyed(enemy_type: StringName, object_id: String, points: int, source: StringName, owner_id: String = "") -> void:
  if not _accept_scoring(owner_id): return
  super._on_enemy_destroyed(enemy_type, object_id, points, source, owner_id)
+ telemetry.enemy_event(enemy_type, "destructions")
  buddies.enemy_destroyed(enemy_type, object_id, source)
+
+func _on_enemy_respawned(enemy_type: StringName, _object_id: String, owner_id: String = "") -> void:
+ if _accept_scoring(owner_id): telemetry.enemy_event(enemy_type, "respawns")
 
 func toggle_tour() -> void:
  pass # A camera tour cannot advance a player run.
@@ -330,6 +340,10 @@ func _process(delta: float) -> void:
  heading.text = progress_text() + "\n" + act_title(active)
  detail.text = "ACT   %s\nTOTAL   %d%s\nBALLS   %s     SPECIAL   %s" % [act_score_text(), score, "     COMBO ×%d" % scorecraft.multiplier if scorecraft.multiplier >= 2 else "", "Unlimited" if practice_mode else "%d / %d" % [balls_remaining, starting_balls], "READY" if special_meter >= 100.0 else "%d%%" % int(special_meter)]
  if not buddies.levels.is_empty(): detail.text += "\n" + buddies.summary()
+ if scorecraft.ring_link_available:
+  detail.text += "\nRING LINK %d/%d" % [scorecraft.ring_progress, scorecraft.config.rings_per_link]
+ elif scorecraft.combo_feedback_remaining > 0.0:
+  detail.text += "\n" + scorecraft.combo_feedback
  if not scoring_feedback_text().is_empty(): detail.text += "\n" + scoring_feedback_text()
  var bonus := Buddies.total(scorecraft.last_award.get("buddy_bonuses", {}))
  if bonus > 0 and scorecraft.feedback_remaining > 0.0: detail.text += "\nBuddy bonus included: +%d" % bonus

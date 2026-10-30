@@ -143,11 +143,11 @@ func run() -> void:
  game.ball.freeze = false
  await shoot(Vector2(180, 330), Vector2(40, 700), "easy_top")
  check(not top.alive and game.ball.linear_velocity.y < -400 and absf(game.ball.linear_velocity.x - 40) < 1, "Real authoritative Ball top contact destroys and bounces")
- check(game.score == 125 and game.rings_collected == 1 and game.special_meter == 0 and game.scorecraft.chain == 0, "Generic enemy event pays 100 + 25 Dark Chao and one virtual Ring, without Special or combo")
- check(not enemies.destroy("easy_top") and game.score == 125, "Destruction is atomic and cannot award twice")
+ check(game.score == 250 and game.rings_collected == 1 and game.special_meter == 0 and game.scorecraft.chain == 1, "Generic enemy event builds x1, pays 200 + 50 Dark Chao and one virtual Ring without Special")
+ check(not enemies.destroy("easy_top") and game.score == 250, "Destruction is atomic and cannot award twice")
  game.reset_ball(false)
  for i in 3: await physics_frame
- check(not top.alive and game.score == 125, "Checkpoint reset retains defeated enemies and legitimate score")
+ check(not top.alive and game.score == 250, "Checkpoint reset retains defeated enemies and legitimate score")
  await shoot(Vector2(300, 780), Vector2(0, -650), "bottom_target")
  check(not enemies.by_id.bottom_target.alive and game.ball.linear_velocity.y < -450, "Real rising underside hit remains upward")
  # Remove terrain from this extreme-speed isolation shot so the nearby wall
@@ -155,13 +155,13 @@ func run() -> void:
  game.ball.collision_mask = 0
  await shoot(Vector2(100, 550), Vector2(12000, 0), "side_target")
  check(not enemies.by_id.side_target.alive and game.ball.linear_velocity.x > 11990, "Real 12000 px/s side shot cannot tunnel or ricochet")
- check(game.score == 375 and game.rings_collected == 3 and not build.cadence.has("rc_ufo"), "Enemy virtual Rings never enter the RC UFO physical counter")
+ check(game.score == 1000 and game.rings_collected == 3 and not build.cadence.has("rc_ufo"), "Enemy combo score reconciles and virtual Rings never enter the RC UFO physical counter")
  game.ball.freeze = true
  game.ball.serve_pending = false
  game.ball._teleport_pending = false
  game.specials.select_character("shadow")
  game.specials._release_area("chaos_blast", patrol.position)
- check(not patrol.alive and game.score >= 500, "Chaos Blast uses the same enemy destruction path")
+ check(not patrol.alive and game.score >= 1250, "Chaos Blast uses the same enemy destruction path")
  var fresh := ActData.load_document(FIXTURE)
  var compiled := preload("res://scripts/authored_act/act_runtime_compiler.gd").compile(fresh.document, game.tuning, game.controls, game.ball)
  check(compiled.mechanics.enemies.items.all(func(enemy): return enemy.alive), "A fresh Act instance restores all enemy targets")
@@ -209,7 +209,7 @@ func run() -> void:
   await physics_frame
   await process_frame
   if not game.authored_runtime.mechanics.enemies.by_id.easy_top.alive: break
- check(not game.authored_runtime.mechanics.enemies.by_id.easy_top.alive and game.score == 100 and game.specials.homing_remaining == 0, "Real Homing contact destroys once for fixed 100 and clears its target")
+ check(not game.authored_runtime.mechanics.enemies.by_id.easy_top.alive and game.score == 600 and game.specials.homing_remaining == 0 and game.scorecraft.chain == 0, "Real Homing contact destroys once for 200 + 400 and clears its target and combo")
  game.ball.freeze = true
  game.ball.serve_pending = false
  game.ball._teleport_pending = false
@@ -219,7 +219,9 @@ func run() -> void:
  var enemy_points_before: int = game.act_score_breakdown.get("enemy", 0)
  game.specials._release_area("shockwave", Vector2(300, 780))
  var destroyed: int = alive_before - ability_enemies.items.filter(func(enemy): return enemy.alive).size()
- check(not ability_enemies.by_id.bottom_target.alive and game.act_score_breakdown.get("enemy", 0) - enemy_points_before == destroyed * 100, "Knuckles Shockwave uses generic destruction without its bumper multiplier")
+ var normal_enemy_score := 0
+ for tier in range(1, destroyed + 1): normal_enemy_score += 200 * mini(tier, 3)
+ check(not ability_enemies.by_id.bottom_target.alive and game.act_score_breakdown.get("enemy", 0) - enemy_points_before == normal_enemy_score, "Knuckles Shockwave uses generic enemy combo scoring without its bumper multiplier")
  game.free()
  await process_frame
  print("RESULT | Enemy integration | %d checks | %d failures" % [checks, failures])

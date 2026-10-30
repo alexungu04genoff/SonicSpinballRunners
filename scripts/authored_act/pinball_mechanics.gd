@@ -43,6 +43,7 @@ func _enemy_scoring_allowed() -> bool:
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_PAUSABLE
+ enemies.ball = ball
  if bind_ball_on_ready: ball.mechanics = self
 
 func _exit_tree() -> void:
@@ -132,7 +133,7 @@ func reset_motion() -> void:
     lane.side = 0
     lane.latched = false
 
-func leave_ramp() -> void:
+func leave_ramp(completed := false) -> void:
  var leaving_id: String = ramp.get("object_id", "")
  if is_instance_valid(ball) and not ramp.is_empty():
   ball.collision_layer = _saved_layer
@@ -145,7 +146,7 @@ func leave_ramp() -> void:
  speed = 0.0
  age = 0.0
  reset_motion()
- if not leaving_id.is_empty(): traversal_event.emit(&"elevated_rail", leaving_id, &"exited")
+ if not leaving_id.is_empty(): traversal_event.emit(&"elevated_rail", leaving_id, &"completed" if completed else &"exited")
 
 func tick(dt: float) -> void:
  if scoring_active: enemies.tick(dt)
@@ -275,8 +276,7 @@ func _activate_switch(item: Dictionary) -> void:
  item.active = true
  item.latched = true
  item.pulse = 0.25
- if int(item.properties.score_reward) > 0:
-  mechanic_score.emit(&"switch", item.object_id, int(item.properties.score_reward))
+ mechanic_score.emit(&"switch", item.object_id, int(item.properties.score_reward))
  for bank: Dictionary in banks:
   if bank.get("complete", false): continue
   var complete: bool = not bank.members.is_empty()
@@ -294,7 +294,7 @@ func _activate_switch(item: Dictionary) -> void:
 
 func complete_feature(kind: StringName, object_id: String, bonus: int) -> void:
  if not scoring_active: return
- if bonus > 0: mechanic_score.emit(kind, object_id, bonus)
+ mechanic_score.emit(kind, object_id, bonus)
  feature_completed.emit(kind, object_id, bonus)
 
 func request_diverter(item: Dictionary, action: String) -> void:
@@ -324,10 +324,12 @@ func _observe_travel(state: PhysicsDirectBodyState2D, start: Vector2, end: Vecto
    for i in item.lanes.size():
     if not Lanes.observe(item.lanes[i], start, end, item.posts[i], item.posts[i + 1], item.properties.post_radius, ball.radius): continue
     if item.complete: continue
+    var source := "%s:lane:%d" % [item.object_id, i]
+    traversal_event.emit(&"lane", source, &"used")
     var reward := int(item.properties.lane_reward)
     if reward > 0:
-     if item.properties.reward_type == "rings": mechanic_rings.emit(&"lane", item.object_id, reward)
-     else: mechanic_score.emit(&"lane", item.object_id, reward)
+     if item.properties.reward_type == "rings": mechanic_rings.emit(&"lane", source, reward)
+     else: mechanic_score.emit(&"lane", source, reward)
     if item.properties.completion_mode == "light_all" and item.lanes.all(func(lane): return lane.lit):
      item.complete = true
      item.completions += 1
@@ -462,7 +464,7 @@ func advance_ramp(state: PhysicsDirectBodyState2D, dt: float) -> void:
    # A moving flipper may temporarily cover the mouth; reverse along the rail.
    speed = -maxf(80.0, absf(speed)) if at_end else maxf(80.0, absf(speed))
    return
-  leave_ramp()
+  leave_ramp(at_end)
   reentry_time = 0.3
   state.linear_velocity = outgoing
   ball._previous_step_velocity = outgoing

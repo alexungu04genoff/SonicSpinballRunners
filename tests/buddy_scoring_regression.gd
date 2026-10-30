@@ -38,7 +38,6 @@ func _initialize() -> void:
  scoring.award_bonuses = build.modifiers()
  scoring.chain = 2
  scoring.multiplier = 2
- scoring.has_ring_link = true
  check(scoring.award_bumper(bumper) == 405 and scoring.last_award.normal_total == 300, "300 normal + 6 Hero + 24 Dark + 75 Knuckles = 405")
  check(scoring.last_award.buddy_bonuses == {"hero_chaos": 6, "dark_chaos": 24, "knuckles_omochao": 75}, "Every percentage contribution is independently attributable")
  build.record_score(scoring.last_award)
@@ -52,20 +51,21 @@ func _initialize() -> void:
  scoring.award_bonuses = build.modifiers()
  for kind: String in ["ring_rack", "switch_bank", "spinner_goal", "lane_set"]:
   check(scoring.award_mechanic(kind, "feature", 300) == 375, "Wizard applies only to typed completion: " + kind)
+ scoring.reset("Ordinary award exclusions")
  for kind: String in ["spinner_tick", "switch", "gate", "ring", "enemy"]:
+  scoring.reset("Independent ordinary event")
   check(scoring.award_mechanic(kind, "ordinary", 20) == 20, "Wizard excludes ordinary event: " + kind)
  check(scoring.award_mechanic(&"ring_rack", "silent", 0) == 0, "A zero-point source cannot manufacture a Buddy award")
  build.choose("dark_chao")
  build.virtual_rings_awarded.connect(func(amount, _id): virtual_rings += amount)
  scoring.award_bonuses = build.modifiers()
- var chain := scoring.chain
- var remaining := scoring.remaining
- check(scoring.award_mechanic(&"enemy", "badnik", 100) == 125 and scoring.chain == chain and scoring.remaining == remaining, "Dark Chao enemy score is fixed; no combo advancement or refresh")
+ scoring.reset("Enemy Buddy calculation")
+ check(scoring.award_mechanic(&"enemy", "badnik", 200) == 250 and scoring.chain == 1 and scoring.remaining == 3.0, "Dark Chao applies after the normal 200-point enemy builder")
  build.enemy_destroyed(&"future_badnik", "enemy_id", &"ability")
  check(virtual_rings == 1, "Dark Chao reacts to generic enemy types and sources")
  build.choose("dark_chao")
  scoring.award_bonuses = build.modifiers()
- check(scoring.award_mechanic(&"enemy", "badnik2", 100) == 150, "Dark Chao level two grants +50% enemy score")
+ check(scoring.award_mechanic(&"enemy", "badnik2", 200) == 600, "Dark Chao level two adds 50% after the enemy reaches x2")
  build.enemy_destroyed(&"buzz_bomber", "enemy2", &"contact")
  check(virtual_rings == 3, "Dark Chao level two grants two virtual Rings")
  build.choose("rc_ufo")

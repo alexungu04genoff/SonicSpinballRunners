@@ -84,3 +84,31 @@ static func actions(bank: Dictionary) -> Array:
  var result: Array = bank.get("actions", []).duplicate(true)
  for id: String in bank.gates: result.append({"object_id": id, "action": "open"})
  return result
+
+static func authoring_warnings(banks: Array, objects: Array) -> PackedStringArray:
+ # Semantic reminders follow schema validation; unusual designs remain legal.
+ var warnings := PackedStringArray()
+ var members := {}
+ var signatures := {}
+ for bank: Dictionary in banks:
+  for id: String in bank.members: members[id] = true
+  var links := actions(bank)
+  if float(bank.get("completion_bonus", 0.0)) == 0.0 and links.is_empty():
+   warnings.append("Bank %s has no completion score or routing action." % bank.bank_id)
+  var ordered_members: Array = bank.members.duplicate()
+  ordered_members.sort()
+  var ordered_links: Array = []
+  for link: Dictionary in links: ordered_links.append([link.object_id, link.action])
+  ordered_links.sort_custom(func(a, b): return str(a) < str(b))
+  var signature := JSON.stringify([ordered_members, ordered_links])
+  if signatures.has(signature):
+   warnings.append("Likely duplicate Banks %s and %s: identical targets and routing actions can award completion twice." % [signatures[signature], bank.bank_id])
+  else:
+   signatures[signature] = bank.bank_id
+ for index in objects.size():
+  var item: Dictionary = objects[index]
+  if item.type not in ["switch_target", "wall_switch"]: continue
+  var id := Objects.identity(item, index)
+  if not members.has(id) and float(Objects.properties(item).score_reward) == 0.0:
+   warnings.append("Switch %s has no Bank and awards 0 points; it only lights once." % id)
+ return warnings
