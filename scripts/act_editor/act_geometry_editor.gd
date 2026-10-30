@@ -2194,7 +2194,7 @@ func _refresh_mechanics_properties() -> void:
 		_mechanic_choice("Starting direction", "starting_direction", ["left", "right"], properties.starting_direction)
 		detail_label.text = "Shift-drag Buzz Bomber or its patrol line to resize. Alt frees snapping. Zero length is stationary."
 		var patrol_help := Label.new()
-		patrol_help.text = "Shift-drag Buzz or its line to resize the patrol. You can also drag either endpoint."
+		patrol_help.text = "Shift + wheel: widen / shorten patrol (10 px per end). Shift-drag Buzz or its line, or drag either endpoint."
 		patrol_help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		patrol_help.custom_minimum_size.x = 260
 		mechanics_properties.add_child(patrol_help)
@@ -2485,6 +2485,19 @@ func verify_document() -> void:
 	verify_dialog.popup_centered(Vector2i(720, 360))
 
 func _scale_preview(direction: float) -> void:
+	var active := _active_gameplay()
+	if active.get("type") == "buzz_bomber":
+		var props := Objects.properties(active)
+		var endpoints := Vector2(clampf(float(props.patrol_left) - direction * 10.0, -2000.0, 0.0), clampf(float(props.patrol_right) + direction * 10.0, 0.0, 2000.0))
+		if canvas.gameplay_brush.is_empty():
+			set_enemy_patrol(canvas.selected_gameplay_index, endpoints)
+		else:
+			props.patrol_left = endpoints.x
+			props.patrol_right = endpoints.y
+			active.properties = props
+			_refresh()
+		_set_status("Buzz patrol: %.1f px wide · Shift + wheel changes length; model size stays unchanged" % (endpoints.y - endpoints.x))
+		return
 	if canvas.gameplay_brush.is_empty(): return
 	var item: Dictionary = canvas.gameplay_brush
 	var key: String = {"one_way_gate": "width", "spinner": "width", "magnetic_field": "radius", "round_bumper": "scale", "triangle_bumper": "scale", "switch_target": "scale"}.get(item.type, "")

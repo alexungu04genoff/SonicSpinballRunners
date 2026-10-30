@@ -77,6 +77,21 @@ func run() -> void:
  check(editor.load_from(path) and editor.document.fingerprint() == fingerprint, "Enemy Save/Load preserves identity, properties and geometry")
  editor.set_enemy_patrol(0, Vector2.ZERO)
  check(editor.document.gameplay_objects[0].properties.patrol_right == 0, "Zero-length patrol authors a stationary enemy")
+ editor.canvas.select_gameplay(0)
+ var zoom_before: float = editor.canvas._cell_pixels
+ pointer(Vector2(200, 300), true, MOUSE_BUTTON_WHEEL_UP, true)
+ var wheel_props: Dictionary = editor.document.gameplay_objects[0].properties
+ check(wheel_props.patrol_left == -10 and wheel_props.patrol_right == 10 and wheel_props.scale == 1 and editor.canvas._cell_pixels == zoom_before, "Shift-wheel widens a selected patrol without changing model scale or zoom")
+ editor.undo()
+ check(editor.document.gameplay_objects[0].properties.patrol_left == 0 and editor.document.gameplay_objects[0].properties.patrol_right == 0, "One wheel notch is one Undo step")
+ editor.redo()
+ check(editor.document.gameplay_objects[0].properties.patrol_right == 10, "Redo restores the wheel patrol edit")
+ for i in 2: pointer(Vector2(200, 300), true, MOUSE_BUTTON_WHEEL_DOWN, true)
+ check(editor.document.gameplay_objects[0].properties.patrol_left == 0 and editor.document.gameplay_objects[0].properties.patrol_right == 0, "Wheel shortening stops at a stationary zero-length patrol")
+ editor.choose_gameplay("buzz_bomber")
+ var object_count: int = editor.document.gameplay_objects.size()
+ pointer(Vector2(400, 300), true, MOUSE_BUTTON_WHEEL_UP, true)
+ check(editor.canvas.gameplay_brush.properties.patrol_left == -70 and editor.canvas.gameplay_brush.properties.patrol_right == 70 and editor.document.gameplay_objects.size() == object_count, "Shift-wheel also adjusts the placement brush without placing an enemy")
  editor.free()
 
  game = load("res://scenes/playground.tscn").instantiate()

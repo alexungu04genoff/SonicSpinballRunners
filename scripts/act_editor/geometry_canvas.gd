@@ -1203,7 +1203,10 @@ func _gui_input(event: InputEvent) -> void:
     grab_focus()
    accept_event()
   elif event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
-   if event.shift_pressed and not gameplay_brush.is_empty() and gameplay_brush.type in ["one_way_gate", "spinner", "switch_target", "magnetic_field", "round_bumper", "triangle_bumper"]:
+   var selected_buzz: bool = selected_gameplay_index >= 0 and selected_gameplay_index < _gameplay_objects().size() and _gameplay_objects()[selected_gameplay_index].type == "buzz_bomber"
+   if event.shift_pressed and (gameplay_brush.get("type") == "buzz_bomber" or (gameplay_brush.is_empty() and selected_buzz)):
+    preview_scale_requested.emit(1.0 if event.button_index == MOUSE_BUTTON_WHEEL_UP else -1.0)
+   elif event.shift_pressed and not gameplay_brush.is_empty() and gameplay_brush.type in ["one_way_gate", "spinner", "switch_target", "magnetic_field", "round_bumper", "triangle_bumper"]:
     preview_scale_requested.emit(1.0 if event.button_index == MOUSE_BUTTON_WHEEL_UP else -1.0)
    else:
     _zoom_at(event.position, 1.12 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0 / 1.12)
