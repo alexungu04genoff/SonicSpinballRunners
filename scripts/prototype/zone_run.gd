@@ -31,6 +31,10 @@ var hint: Label
 var score_overlay: Control
 var _ring_award_position := Vector2.INF
 var goal_pending := false
+var combo_glow: Node
+var fps_label: Label
+var fps_update := 0.0
+var telemetry := preload("res://scripts/prototype/run_telemetry.gd").new()
 
 func _ready() -> void:
  buddies.virtual_rings_awarded.connect(func(amount: int, _id: String): award_virtual_rings(amount))
@@ -38,6 +42,9 @@ func _ready() -> void:
  scorecraft_config.multiplier_cap = 4
  scorecraft_config.tiered_decay = true
  super._ready()
+ combo_glow = preload("res://scripts/prototype/combo_glow.gd").new()
+ combo_glow.game = self
+ add_child(combo_glow)
 
 func _add_scoring_hardware(runtime: Dictionary, document: Resource, offset: Vector2, visual_parent: Node3D, _owner_id: String) -> void:
  var goal := preload("res://scripts/prototype/goal_ring.gd").new()
@@ -53,6 +60,7 @@ func _add_scoring_hardware(runtime: Dictionary, document: Resource, offset: Vect
 
 func _sync_resident() -> void:
  super._sync_resident()
+ if is_instance_valid(combo_glow): combo_glow.rebuild()
  if is_instance_valid(score_overlay):
   for label: Node in presentation.find_children("*", "Label3D", true, false):
    if not character.is_ancestor_of(label): score_overlay.track_label(label)
@@ -123,6 +131,8 @@ func _begin_act(act: RefCounted, initial: bool) -> void:
  scorecraft.award_bonuses = buddies.modifiers()
  tuning.set_temporary("run_buddies", buddies.physics_modifier())
  act_started_at = elapsed
+ telemetry.begin_act(elapsed)
+ if exit_unlocked: telemetry.target_ready(elapsed, act_score, 0)
  act_start_ball = ball_number
  active.runtime.goal_ring.set_unlocked(exit_unlocked)
  if not initial: status_message = "ACT %d · NEW SCORE TARGET %d" % [active_sequence + 1, act_score_target]
@@ -179,9 +189,12 @@ func _transfer_arrived() -> void:
 func _record_act(cleared: bool) -> void:
  results.append({"act": active_sequence + 1, "zone": active.plan.zone + 1, "zone_act": active.plan.act + 1, "theme": active.plan.theme, "source": source_paths[active.plan.id], "title": act_title(active), "cleared": cleared, "score": act_score, "target": act_score_target, "seconds": elapsed - act_started_at, "drains": ball_number - act_start_ball, "categories": act_score_breakdown.duplicate(), "buddy_contributions": act_buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "buddy_state": buddies.state(), "normal_score": act_score - Buddies.total(act_buddy_contributions)})
 
+ results.back()["telemetry"] = telemetry.finish_act(results.back(), elapsed)
+
 func _observe_authored_motion(start: Vector2, finish: Vector2) -> void:
  if finished or drafting or is_instance_valid(transfer) or not exit_unlocked: return
  if not active.runtime.goal_ring.crossed(start, finish, ball.radius): return
+ telemetry.goal_touched(elapsed)
  if _has_next_act():
   if not _next_ready():
    goal_pending = true
@@ -243,6 +256,9 @@ func _on_score_awarded(details: Dictionary) -> void:
  status_message = status_message.replace("EXIT OPEN", "GOAL READY")
  buddies.record_score(details)
 
+ if exit_unlocked:
+  telemetry.target_ready(elapsed, act_score, Buddies.total(act_buddy_contributions))
+
 func _award_position(details: Dictionary) -> Vector2:
  if _ring_award_position.is_finite(): return _ring_award_position
  var target_id := int(details.get("target_id", 0))
@@ -302,6 +318,10 @@ func prepare_to_close() -> void:
 
 func _process(delta: float) -> void:
  super._process(delta)
+ fps_update -= delta
+ if is_instance_valid(fps_label) and fps_update <= 0.0:
+  fps_label.text = "%d FPS" % Engine.get_frames_per_second()
+  fps_update = 0.25
  if not started or closing: return
  if goal_pending and _next_ready():
   goal_pending = false
@@ -325,6 +345,20 @@ func _build_hud() -> void:
  score_overlay = preload("res://scripts/prototype/score_overlay.gd").new()
  score_overlay.game = self
  hud.add_child(score_overlay)
+ fps_label = Label.new()
+ fps_label.name = "FPSCounter"
+ fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+ fps_label.add_theme_font_size_override("font_size", 16)
+ fps_label.add_theme_color_override("font_shadow_color", Color.BLACK)
+ fps_label.add_theme_constant_override("shadow_offset_x", 1)
+ fps_label.add_theme_constant_override("shadow_offset_y", 1)
+ fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+ hud.add_child(fps_label)
+ fps_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+ fps_label.offset_left = -120
+ fps_label.offset_right = -18
+ fps_label.offset_top = 18
+ fps_label.offset_bottom = 42
  var backing := PanelContainer.new()
  backing.position = Vector2(20, 18)
  var style := StyleBoxFlat.new()

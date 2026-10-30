@@ -75,6 +75,10 @@ Patrol defaults: **65 px/s**, **0.65 s** initial/end-point hover, then horizonta
 
 Regression entry points: `buddy_scoring_regression.gd`, `ring_rack_regression.gd`, `scoring_authoring_regression.gd`, `enemy_regression.gd`, `enemy_stream_regression.gd`, plus existing Goal Ring, Scorecraft, physics, character and prototype run/budget/feedback checks. The enemy checks exercise actual editor pointer gestures, exact persistence, real Ball contacts (including an isolated 12,000 px/s shot), checkpoint death persistence and the run's generic Buddy event adapter.
 
+Verified with Godot 4.7.2: Buddy logic/art (70 checks), ring pacing/safety (25), scoring authoring/migration (46), enemy editor/contact/abilities (34), Scorecraft (29), physics (23), four characters (43), Goal Rings (23) and existing Endless scoring/retirement (30) pass. After integration with the concurrent glow/telemetry milestone, rendered six-Act session (135), budget/failure/Practice (57), feedback/glow (25) and telemetry (12) checks pass. The actual ANGLE renderer was used for enemy contacts, streamed enemy bindings, drafts and results; portraits, patrol handles and the model were visually inspected. These are scripted real-game checks, not a claim of human playtest balance. Results and copied telemetry retain Buddy counters and Chip rescue state.
+
+The enemy fixture was baked for Green Hill and Chemical Plant. Its rendered, disk-loaded streaming test passed 16 checks with zero runtime geometry construction, including live model bindings, inactive ownership, consumed-rescue telemetry and cleanup.
+
 Run `Bake Prototype.cmd` after source changes; prior derived bakes are invalidated by format/pipeline fingerprints. Bakes remain generated local data, not authored source.
 
 Human playtest checklist: judge top-bounce height and bottom damping; judge patrol readability/wing motion at follow-camera distance; judge ring downtime and Buddy draft/card readability. Automated checks do not establish feel or balance.

@@ -69,8 +69,11 @@ func run() -> void:
  check(not game._spend_ball() and game.finished, "A second final-ball loss ends the run; Chip cannot repeat")
  var summary: Dictionary = game.results.back()
  check(summary.buddy_state.rescues_used.chip == 1 and summary.normal_score + Run.Buddies.total(summary.buddy_contributions) == summary.score, "Results preserve Chip's consumed state and exact contribution reconciliation")
+ check(summary.telemetry.buddy_state.rescues_used.chip == 1, "Copyable Act telemetry preserves the consumed rescue state")
+ var retired_mechanics: Node = neighbor.runtime.mechanics
  await game.prepare_to_close()
  game.free()
  await process_frame
+ check(not is_instance_valid(retired_mechanics) and second.targets().is_empty(), "Closing streaming frees enemy mechanics and leaves no live target nodes")
  print("RESULT | Enemy streaming | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)
