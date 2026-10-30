@@ -1,5 +1,7 @@
 # Two-Zone playable prototype
 
+The prototype camera uses zoom 1.3 and a vertical target 55% down the screen. The compact HUD uses 18/16-point headings/body text and a 35%-opaque backing; control instructions remain in the menu instead of covering gameplay. Window resizing and F11 fullscreen expand to the display aspect ratio, including ultrawide, instead of letterboxing the original canvas. Rendered checks covered 1600×900, 1920×810 and native 1920×1200 fullscreen on 2026-10-30.
+
 Run **Sonic Spinball Runners.exe** from the Windows build. No Godot installation or repository is required for that build. In the source checkout, run **Play Prototype.cmd** with Godot 4.7.2 installed; it prepares missing bakes on first launch. Run **Bake Prototype.cmd** after changing the Acts or presentation sources.
 
 Choose Sonic, Tails, Knuckles or Shadow, then start the run. **Green Hill** contains three Acts with provisional targets of **1,000, 1,500 and 2,000**. **Chemical Plant** follows with three more Acts targeting **2,500, 3,000 and 3,500**. Reaching a target opens that Act's exit; you still have to pass through it. Activating the next Act resets local score while preserving cumulative score and Buddies. The sixth exit ends the run and shows results for both Zones.

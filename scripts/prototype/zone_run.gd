@@ -22,6 +22,11 @@ var source_paths: Array = []
 var run_plan: Array[Dictionary] = []
 var hint: Label
 
+func _build_presentation() -> void:
+ super._build_presentation()
+ presentation.camera_settings.screen_target_y = 0.55
+ presentation.set_camera_value("zoom", 1.3)
+
 func _source_paths() -> Array:
  if source_paths.is_empty(): source_paths = RunPlan.source_paths()
  return source_paths
@@ -171,12 +176,15 @@ func _process(delta: float) -> void:
  super._process(delta)
  if not started or closing: return
  heading.text = progress_text() + "\n" + act_title(active)
- detail.text = "ACT SCORE   %s\nTOTAL SCORE   %d     COMBO ×%d\nBALLS LEFT   %s\n%s SPECIAL   %s\n%s\nBUDDIES   %s" % [act_score_text(), score, scorecraft.multiplier, "Unlimited · Practice" if practice_mode else "%d / %d" % [balls_remaining, BALLS_PER_ACT], character_id.to_upper(), "READY" if special_meter >= 100.0 else "%d%%" % int(special_meter), scoring_feedback_text(), buddies.summary()]
+ detail.text = "ACT   %s\nTOTAL   %d     COMBO ×%d\nBALLS   %s     SPECIAL   %s" % [act_score_text(), score, scorecraft.multiplier, "Unlimited" if practice_mode else "%d / %d" % [balls_remaining, BALLS_PER_ACT], "READY" if special_meter >= 100.0 else "%d%%" % int(special_meter)]
+ if not buddies.levels.is_empty(): detail.text += "\n" + buddies.summary()
+ if not scoring_feedback_text().is_empty(): detail.text += "\n" + scoring_feedback_text()
  var bonus := Buddies.total(scorecraft.last_award.get("buddy_bonuses", {}))
  if bonus > 0 and scorecraft.feedback_remaining > 0.0: detail.text += "\nBuddy bonus included: +%d" % bonus
- hint.text = "Enter / X: launch" if ball.serve_pending else ("EXIT OPEN · Reach the lit exit" if exit_unlocked else "Earn %d more points to open the exit" % maxi(0, act_score_target - act_score))
- if respawn_time >= 0.0: hint.text = "BALL LOST · Checkpoint retry · Your score is safe"
+ hint.text = ""
+ if respawn_time >= 0.0: hint.text = "BALL LOST · Retrying…"
  if loading_boundary: hint.text = "Preparing the next Act…"
+ hint.visible = not hint.text.is_empty()
 
 func _build_hud() -> void:
  hud = CanvasLayer.new()
@@ -185,26 +193,24 @@ func _build_hud() -> void:
  var backing := PanelContainer.new()
  backing.position = Vector2(20, 18)
  var style := StyleBoxFlat.new()
- style.bg_color = Color(0.025, 0.055, 0.09, 0.9)
- style.set_content_margin_all(12)
+ style.bg_color = Color(0.025, 0.055, 0.09, 0.35)
+ style.set_content_margin_all(8)
  style.set_corner_radius_all(8)
  backing.add_theme_stylebox_override("panel", style)
  hud.add_child(backing)
  var stack := VBoxContainer.new()
  backing.add_child(stack)
  heading = Label.new()
- heading.add_theme_font_size_override("font_size", 23)
+ heading.add_theme_font_size_override("font_size", 18)
  stack.add_child(heading)
  detail = Label.new()
- detail.add_theme_font_size_override("font_size", 20)
+ detail.add_theme_font_size_override("font_size", 16)
  stack.add_child(detail)
  hint = Label.new()
+ hint.add_theme_font_size_override("font_size", 14)
  hint.add_theme_color_override("font_color", Color("ffe07a"))
  stack.add_child(hint)
- var help := Label.new()
- help.text = "Q / E: flippers · Arrows: steer · Space: special · Esc: pause\nR: retry%s" % ("" if practice_mode else " (uses one ball)")
- stack.add_child(help)
- _button("Pause / menu", toggle_pause, stack)
+ _button("Pause / menu", toggle_pause, stack).add_theme_font_size_override("font_size", 14)
  diagnostics = Label.new()
  diagnostics.hide()
  stack.add_child(diagnostics)

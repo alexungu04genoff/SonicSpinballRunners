@@ -22,6 +22,7 @@ var last_summary: Dictionary = {}
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
+ get_window().content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND
  get_tree().auto_accept_quit = false
  get_tree().root.close_requested.connect(_quit)
  var settings := ConfigFile.new()
