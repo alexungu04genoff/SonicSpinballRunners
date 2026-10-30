@@ -1152,7 +1152,8 @@ func _gui_input(event: InputEvent) -> void:
    var distance := 1.0 if event.alt_pressed else _local_cell_size()
    var value: Variant = marker_value(selected_marker)
    if selected_marker in ["spawn", "goal"]:
-    _request_marker(selected_marker, value + direction * distance)
+    var moved: Vector2 = value + direction * distance
+    _request_marker(selected_marker, _marker_position_value("goal", moved, event.alt_pressed) if selected_marker == "goal" else moved)
    elif direction.y != 0.0:
     _request_marker(selected_marker, float(value) + direction.y * distance)
   elif not event.echo and selected_gameplay_index >= 0 and selected_gameplay_index < _gameplay_objects().size():
@@ -1468,6 +1469,22 @@ func _update_drag(pointer: Vector2, free_move: bool = false) -> void:
 func _marker_position_value(kind: String, position: Vector2, free_move: bool) -> Variant:
  if kind == "activation":
   return float(position.y) if free_move else roundf(position.y / _local_cell_size()) * _local_cell_size()
+ if kind == "goal" and not free_move:
+  # Shared edges have one integer coordinate and one half-cell coordinate.
+  # Exclude the outer border: it does not separate two cells.
+  var cell := _local_cell_size()
+  var grid: Vector2i = document.grid_size
+  var point := position / cell
+  var candidates: Array[Vector2] = []
+  if grid.x > 1:
+   candidates.append(Vector2(clampf(roundf(point.x), 1, grid.x - 1), clampf(floorf(point.y) + 0.5, 0.5, grid.y - 0.5)) * cell)
+  if grid.y > 1:
+   candidates.append(Vector2(clampf(floorf(point.x) + 0.5, 0.5, grid.x - 0.5), clampf(roundf(point.y), 1, grid.y - 1)) * cell)
+  if candidates.is_empty(): return Vector2.ONE * cell * 0.5
+  var nearest := candidates[0]
+  for candidate: Vector2 in candidates:
+   if candidate.distance_squared_to(position) < nearest.distance_squared_to(position): nearest = candidate
+  return nearest
  return legal_gameplay_position(position, free_move)
 
 
@@ -1514,7 +1531,7 @@ func _update_marker_drag(pointer: Vector2, free_move: bool, force: bool = false)
   var y := float(_marker_drag_start_value) + delta.y
   _marker_drag_value = y if free_move else roundf(y / _local_cell_size()) * _local_cell_size()
  else:
-  _marker_drag_value = legal_gameplay_position(_marker_drag_start_value + delta, free_move)
+  _marker_drag_value = _marker_position_value(_marker_drag_kind, _marker_drag_start_value + delta, free_move)
  _set_marker_status(_marker_drag_kind, _marker_drag_value)
  queue_redraw()
 

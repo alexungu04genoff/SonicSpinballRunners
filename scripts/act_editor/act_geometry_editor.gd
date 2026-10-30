@@ -374,7 +374,7 @@ func _build_ui() -> void:
 	marker_summary.add_theme_color_override("font_color", Color("9bdedb"))
 	marker_summary.add_theme_font_size_override("font_size", 13)
 	marker_list.add_child(marker_summary)
-	_button(marker_list, "goal", "Place / move goal ring", func(): choose_marker("goal"), "Required goal. Defaults to spawn; drag to move, Delete restores the default.")
+	_button(marker_list, "goal", "Place / move goal ring", func(): choose_marker("goal"), "One cell wide by default. Snaps to the midpoint of a shared cell edge; Alt allows free placement. Delete restores the default.")
 	goal_size_field = SpinBox.new()
 	goal_size_field.min_value = 0.25
 	goal_size_field.max_value = 8.0
@@ -1234,6 +1234,10 @@ func choose_marker(kind: String) -> void:
 		return
 	canvas.grab_focus()
 	canvas.set_marker_tool(kind)
+	if kind == "goal":
+		_set_status("Place a one-cell goal on the shared edge between two cells. Drag to move; Alt allows free placement.")
+		_refresh()
+		return
 	_set_status("Click inside the Act to place %s. Snap is on; hold Alt for fine position. The red gutter is outside the Act." % {"activation": "the Activation Trigger", "spawn": "the Spawn Point", "goal": "the Goal Ring"}[kind])
 	_refresh()
 
@@ -1898,7 +1902,7 @@ func _refresh() -> void:
 		detail_label.text = "Inside terrain bounds only · grid snap / Alt free position · red gutter is system-owned"
 	elif canvas.selected_marker == "goal":
 		mode_label.text = "SELECTED · GOAL RING"
-		detail_label.text = "Position %s · Diameter %.2f cells · Delete restores default" % [document.goal_center(), document.goal_diameter_cells]
+		detail_label.text = "Position %s · Diameter %.2f cells · Shared-edge snap / Alt free · Delete restores default" % [document.goal_center(), document.goal_diameter_cells]
 	elif not canvas.selected_marker.is_empty():
 		mode_label.text = "SELECTED  ·  " + ("Activation Trigger" if canvas.selected_marker == "activation" else "Spawn Point")
 		detail_label.text = ("Y %s px · Full Act width · Future upward crossing activates the checkpoint" % var_to_str(document.activation_y) if canvas.selected_marker == "activation" else "Position %s px · Future launch / respawn point" % document.spawn_position) + " · Delete removes"
