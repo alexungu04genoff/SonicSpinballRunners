@@ -21,19 +21,26 @@ var practice_best_seconds := 0.0
 var settings_path := SETTINGS_PATH
 var last_summary: Dictionary = {}
 var copy_status: Label
+var available_act_paths: Array = []
+var run_configuration: RefCounted
+var setup_menu: VBoxContainer
+var start_button: Button
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
  get_window().content_scale_aspect = Window.CONTENT_SCALE_ASPECT_EXPAND
  get_tree().auto_accept_quit = false
  get_tree().root.close_requested.connect(_quit)
+ available_act_paths = Run.RunPlan.source_paths()
+ run_configuration = Run.RunPlan.Configuration.new(available_act_paths)
  var settings := ConfigFile.new()
  if settings.load(settings_path) == OK:
+  run_configuration.read_preferences(settings, available_act_paths)
   var saved := str(settings.get_value("player", "character", "sonic"))
   if CharacterSpecials.CHARACTERS.has(saved): selected_character = saved
   sound_enabled = bool(settings.get_value("player", "sound", true))
   practice_mode = bool(settings.get_value("player", "practice", false))
-  # The shuffled six-Act course has separate records from the earlier prototype.
+  # Retain existing completion records across run setups and course versions.
   practice_best_score = maxi(0, int(settings.get_value(PRACTICE_RECORDS, "score", 0)))
   practice_best_seconds = maxf(0.0, float(settings.get_value(PRACTICE_RECORDS, "seconds", 0.0)))
   best_score = maxi(0, int(settings.get_value(CHALLENGE_RECORDS, "score", 0)))
@@ -46,6 +53,7 @@ func _ready() -> void:
 func _save_settings() -> void:
  var settings := ConfigFile.new()
  settings.load(settings_path) # Preserve records from previous course versions.
+ run_configuration.write_preferences(settings, available_act_paths)
  settings.set_value("player", "character", selected_character)
  settings.set_value("player", "sound", sound_enabled)
  settings.set_value("player", "practice", practice_mode)
@@ -107,9 +115,8 @@ func _action(parent: Node, text: String, callback: Callable, focus := false) -> 
 
 func _show_menu() -> void:
  state = "menu"
- var stack := _panel("SONIC SPINBALL RUNNERS", "TWO ZONES · SIX SHUFFLED ACTS")
- _label(stack, "Green Hill, then Chemical Plant. Three balls per Act.\nEarn the target, reach the exit, then choose a Buddy.\nEach run shuffles the authored Acts without repeats.")
- _label(stack, "Green Hill: 1,000 / 1,500 / 2,000\nChemical Plant: 2,500 / 3,000 / 3,500", 19, Color("8fe9b1"))
+ var stack := _panel("SONIC SPINBALL RUNNERS", "PLAY PROTOTYPE")
+ _label(stack, "Earn each Act's target, touch its Goal Ring, then choose a Buddy.\nThree balls per Act in Challenge; unlimited retries in Practice.", 16)
  var characters := OptionButton.new()
  for id: String in CharacterSpecials.CHARACTERS:
   characters.add_item(id.capitalize())
@@ -120,6 +127,7 @@ func _show_menu() -> void:
   _save_settings()
  )
  stack.add_child(characters)
+ characters.call_deferred("grab_focus")
  var practice := CheckButton.new()
  practice.text = "Practice · Unlimited retries · Separate records"
  practice.button_pressed = practice_mode
@@ -130,19 +138,29 @@ func _show_menu() -> void:
  sound.button_pressed = sound_enabled
  sound.toggled.connect(func(value: bool): sound_enabled = value; _save_settings())
  stack.add_child(sound)
- if best_score > 0: _label(stack, "Challenge best: %d · Fastest clear: %s" % [best_score, _time_text(best_seconds)])
- if practice_best_score > 0: _label(stack, "Practice best: %d" % practice_best_score, 16)
- _action(stack, "Start run", start_run, true)
+ if best_score > 0: _label(stack, "Challenge best (all setups): %d · Fastest clear: %s" % [best_score, _time_text(best_seconds)])
+ if practice_best_score > 0: _label(stack, "Practice best (all setups): %d" % practice_best_score, 16)
+ start_button = _action(stack, "Start run", start_run)
+ setup_menu = preload("res://scripts/prototype/run_setup_menu.gd").new()
+ stack.add_child(setup_menu)
+ stack.move_child(setup_menu, start_button.get_index())
+ setup_menu.changed.connect(_save_settings)
+ setup_menu.configure(run_configuration, available_act_paths, start_button)
  _label(stack, "Q / E or LB / RB: flippers     Arrows or stick: steer\nEnter / X: launch     Space / A: special     Esc / Menu: pause\nR / Back: retry (uses a ball in Challenge)     F11: fullscreen", 16)
  _action(stack, "Quit", _quit)
 
 func start_run() -> void:
  if transitioning: return
+ if state == "menu" and is_instance_valid(start_button) and start_button.disabled: return
+ if not run_configuration.validation_error().is_empty(): return
  transitioning = true
  state = "loading"
  _panel("PREPARING RUN", "Loading the authored Acts…")
  await _close_run()
  game = Run.new()
+ game.run_configuration = Run.RunPlan.Configuration.new(run_configuration.selected_act_paths)
+ game.run_configuration.zone_count = run_configuration.zone_count
+ game.run_configuration.selected_theme_ids = run_configuration.selected_theme_ids.duplicate()
  game.character_id = selected_character
  game.practice_mode = practice_mode
  game.completed.connect(_on_completed)
@@ -235,7 +253,7 @@ func _on_completed(summary: Dictionary) -> void:
    if best_seconds <= 0.0 or float(summary.seconds) < best_seconds: best_seconds = float(summary.seconds)
  _save_settings()
  state = "results"
- var stack := _panel("TWO ZONES COMPLETE" if summary.won else "RUN ENDED · OUT OF BALLS", "%s · %d POINTS · %s · %d BALLS LOST\nRun seed: %d" % ["PRACTICE" if summary.practice else "CHALLENGE", summary.score, _time_text(summary.seconds), summary.drains, summary.seed])
+ var stack := _panel("RUN COMPLETE" if summary.won else "RUN ENDED · OUT OF BALLS", "%s · %d POINTS · %s · %d BALLS LOST\nRun seed: %d" % ["PRACTICE" if summary.practice else "CHALLENGE", summary.score, _time_text(summary.seconds), summary.drains, summary.seed])
  stack.add_theme_constant_override("separation", 7)
  var scroll := ScrollContainer.new()
  scroll.custom_minimum_size = Vector2(600, minf(180.0, get_viewport_rect().size.y * 0.21))
@@ -259,7 +277,7 @@ func _on_completed(summary: Dictionary) -> void:
   state_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
   state_label.custom_minimum_size.x = 610
   _label(stack, "Buddy virtual Rings: %d · Emergency rescues: %d" % [summary.buddy_state.run.get("virtual_rings", 0), summary.buddy_state.run.get("rescues", 0)], 16)
- _label(stack, "%s best: %d" % ["Practice" if summary.practice else "Challenge", practice_best_score if summary.practice else best_score], 18, Color("8fe9b1"))
+ _label(stack, "%s best (all setups): %d" % ["Practice" if summary.practice else "Challenge", practice_best_score if summary.practice else best_score], 18, Color("8fe9b1"))
  _action(stack, "Copy run data", _copy_run_data)
  copy_status = _label(stack, "", 14, Color("8fe9b1"))
  copy_status.hide()

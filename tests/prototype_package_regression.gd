@@ -10,7 +10,7 @@ func _initialize() -> void:
  check(ProjectSettings.get_setting("application/run/main_scene") == "res://scenes/prototype_run.tscn", "Package starts at the player menu")
  var paths := Run.RunPlan.source_paths()
  check(paths.size() >= Run.RunPlan.ACTS_PER_ZONE, "Packaged authored folder contains a playable authored pool")
- for theme_id: String in Run.RunPlan.THEMES:
+ for theme_id: String in Run.RunPlan.Configuration.Registry.IDS:
   var fingerprint := Bake.pipeline_hash(theme_id)
   var theme = load(Bake.theme_path(theme_id))
   check(theme is Bake and theme.matches_pipeline(theme_id, fingerprint), "Packaged theme matches its source assets and pipeline: " + theme_id)

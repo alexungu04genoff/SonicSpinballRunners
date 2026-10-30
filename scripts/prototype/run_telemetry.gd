@@ -113,7 +113,7 @@ func finish_act(row: Dictionary, ended_at: float) -> Dictionary:
  return {
   "zone": row.zone, "act": row.zone_act, "run_act": row.act,
   "title": row.title, "source": row.source, "cleared": row.cleared,
-  "target": row.target,
+  "target": row.target, "theme": row.get("theme", ""),
   "act_start_time_seconds": started_at, "target_ready_time_seconds": target_at,
   "goal_touched_time_seconds": goal_at, "act_end_time_seconds": end,
   "time_to_target_seconds": until_target,
@@ -147,6 +147,9 @@ static func export_run(summary: Dictionary) -> Dictionary:
  var acts: Array = []
  for row: Dictionary in summary.acts: acts.append(row.telemetry.duplicate(true))
  return {"telemetry_format_version": 2, "run_seed": summary.seed,
+  "run_configuration": summary.get("run_configuration", {}).duplicate(true),
+  "configuration_fingerprint": summary.get("configuration_fingerprint", ""),
+  "course": summary.get("course", []).duplicate(true),
   "mode": "practice" if summary.practice else "challenge", "character": summary.character,
   "won": summary.won, "total_score": summary.score, "normal_score": summary.normal_score,
   "buddy_score": buddy_score, "total_time_seconds": summary.seconds,

@@ -60,6 +60,7 @@ func run() -> void:
  session.selected_character = "tails"
  session.sound_enabled = false
  session.practice_mode = false
+ while session.setup_menu.checking: await process_frame
  press("Start run")
  check(await await_run(), "Menu starts the real streamed six-Act run")
  if not session.game.started:
@@ -88,7 +89,7 @@ func run() -> void:
   var until := Time.get_ticks_msec() + 180000
   while resident_at(index) == null and Time.get_ticks_msec() < until: await process_frame
   check(game.active_sequence == index and game.act_score == 0 and not game.exit_unlocked, "Act %d starts a fresh local target" % (index + 1))
-  check(game.active.plan.zone == index / 3 and game.active.plan.theme == Session.Run.RunPlan.THEMES[index / 3], "Act %d uses its planned Zone and theme" % (index + 1))
+  check(game.active.plan.zone == index / 3 and game.active.plan.theme == game.run_plan[index].theme, "Act %d uses its planned Zone and theme" % (index + 1))
   check(game.active.runtime.has("goal_ring") and not game.active.runtime.goal_ring.unlocked and game.active.document.score_target == 0, "Run-owned target locks the mandatory goal without editing the source Act")
   check(game.active.runtime.root.find_children("ActScoreExit", "", true, false).is_empty(), "Prototype connector has no blocking score wall")
   var warning: Node3D = game.active.runtime.exit_warning
@@ -165,6 +166,11 @@ func run() -> void:
  var copied: String = session.run_data_json()
  var data = JSON.parse_string(copied)
  check(data is Dictionary and data.won and data.acts.size() == 6 and data.total_score == session.last_summary.score, "Successful run exports all six Acts as plain JSON")
+ check(data.run_configuration == JSON.parse_string(JSON.stringify(game.effective_configuration().snapshot())) and data.configuration_fingerprint == game.effective_configuration().fingerprint() and data.course == JSON.parse_string(JSON.stringify(game.course_snapshot())), "Copied JSON includes effective configuration, fingerprint and full course")
+ var identities_match := true
+ for i in data.acts.size():
+  identities_match = identities_match and data.acts[i].theme == data.course[i].theme and data.acts[i].source == data.course[i].source and data.acts[i].target == data.course[i].target
+ check(identities_match, "Each telemetry Act retains actual theme, source and target")
  press("Copy run data")
  check(session.copy_status.visible and session.copy_status.text == "Run data copied", "Copy action confirms telemetry export")
  if DisplayServer.get_name() != "headless":
@@ -193,6 +199,7 @@ func run() -> void:
  press("Return to menu")
  await await_transition()
  check(session.state == "menu" and session.game == null and not paused, "Return to menu closes the run and restores menu input")
+ while session.setup_menu.checking: await process_frame
  press("Start run")
  await session.return_to_menu()
  check(session.state == "menu" and session.game == null, "Menu return safely cancels an unfinished startup")

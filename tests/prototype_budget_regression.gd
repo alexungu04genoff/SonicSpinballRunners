@@ -13,6 +13,7 @@ func check(value: bool, label: String) -> void:
 
 func start(practice: bool) -> Node:
  session.practice_mode = practice
+ while is_instance_valid(session.setup_menu) and session.setup_menu.checking: await process_frame
  await session.start_run()
  var deadline := Time.get_ticks_msec() + 180000
  while not session.game.started and session.state != "error" and Time.get_ticks_msec() < deadline: await process_frame

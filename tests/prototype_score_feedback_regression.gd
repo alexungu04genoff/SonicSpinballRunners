@@ -24,6 +24,7 @@ func run() -> void:
  root.add_child(session)
  session.selected_character = "sonic"
  session.sound_enabled = false
+ while is_instance_valid(session.setup_menu) and session.setup_menu.checking: await process_frame
  await session.start_run()
  var deadline := Time.get_ticks_msec() + 180000
  while not session.game.started and session.state != "error" and Time.get_ticks_msec() < deadline: await process_frame

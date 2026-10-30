@@ -4,14 +4,18 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 if (-not (Test-Path -LiteralPath $GodotPath -PathType Leaf)) { throw 'Godot 4 was not found. Pass -GodotPath with its executable path.' }
 $acts = @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'data\acts\Authored') -Filter '*.tres' -File)
-if ($acts.Count -lt 3) { throw 'The two-Zone prototype requires at least three Acts in data\acts\Authored.' }
+if ($acts.Count -lt 3) { throw 'The prototype requires at least three Acts in data\acts\Authored.' }
+$registry = Get-Content -LiteralPath (Join-Path $projectRoot 'scripts\themes\theme_registry.gd') -Raw
+$ids = [regex]::Match($registry, '(?m)^const IDS := \[(.+)\]').Groups[1].Value
+$themes = @([regex]::Matches($ids, '"([^"]+)"') | ForEach-Object { $_.Groups[1].Value })
+if (-not $themes.Count) { throw 'No production themes found in the theme registry.' }
 $missing = @(foreach ($act in $acts) {
-    foreach ($theme in @('green_hill', 'chemical_plant')) {
+    foreach ($theme in $themes) {
         $baked = Join-Path $act.DirectoryName ($act.BaseName + ".bake\$theme.res")
         if (-not (Test-Path -LiteralPath $baked) -or (Get-Item -LiteralPath $baked).LastWriteTimeUtc -lt $act.LastWriteTimeUtc) { $baked }
     }
 })
-$missing += @(foreach ($theme in @('green_hill', 'chemical_plant')) {
+$missing += @(foreach ($theme in $themes) {
     $baked = Join-Path $projectRoot "data\endless\themes.bake\$theme.res"
     if (-not (Test-Path -LiteralPath $baked)) { $baked }
 })

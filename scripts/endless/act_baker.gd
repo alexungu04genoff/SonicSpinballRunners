@@ -72,7 +72,6 @@ func bake(paths: Array) -> void:
  library.progress.connect(func(message: String): status.text = message)
  library.prepare(self, paths, false)
  var themes: Array = Registry.IDS.duplicate()
- if "--prototype" in OS.get_cmdline_user_args(): themes = PrototypePlan.THEMES.duplicate()
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--theme="): themes = [argument.trim_prefix("--theme=")]
  progress.max_value = paths.size() * themes.size()

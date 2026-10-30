@@ -27,6 +27,8 @@ var results: Array[Dictionary] = []
 var _planned := false
 var source_paths: Array = []
 var run_plan: Array[Dictionary] = []
+var run_configuration: RefCounted
+
 var hint: Label
 var score_overlay: Control
 var _ring_award_position := Vector2.INF
@@ -35,6 +37,17 @@ var combo_glow: Node
 var fps_label: Label
 var fps_update := 0.0
 var telemetry := preload("res://scripts/prototype/run_telemetry.gd").new()
+
+func effective_configuration() -> RefCounted:
+ if run_configuration == null: run_configuration = RunPlan.Configuration.new(source_paths if not source_paths.is_empty() else RunPlan.source_paths())
+ return run_configuration
+
+func course_snapshot() -> Array:
+ var course: Array = []
+ for entry: Dictionary in run_plan:
+  course.append({"zone": entry.zone + 1, "act": entry.act + 1, "theme": entry.theme,
+   "source": source_paths[entry.id], "target": RunPlan.target(entry.sequence)})
+ return course
 
 func _ready() -> void:
  buddies.virtual_rings_awarded.connect(func(amount: int, _id: String): award_virtual_rings(amount))
@@ -79,32 +92,33 @@ func _build_presentation() -> void:
  character.marker.add_child(meter)
 
 func _source_paths() -> Array:
- if source_paths.is_empty(): source_paths = RunPlan.source_paths()
+ if source_paths.is_empty(): source_paths = effective_configuration().selected_act_paths.duplicate()
  return source_paths
 
 func _default_run_seed() -> int:
  return randi()
 
 func _pool_error(documents: Array) -> String:
- return RunPlan.pool_error(documents)
+ var error: String = effective_configuration().validation_error()
+ return error if not error.is_empty() else RunPlan.pool_error(documents)
 
 func _next_planned_zone(documents: Array) -> Array[Dictionary]:
  if _planned: return []
  _planned = true
- run_plan = RunPlan.build(documents, run_seed)
+ run_plan = RunPlan.build(documents, run_seed, effective_configuration())
  return run_plan.duplicate(true)
 
 func _has_next_act() -> bool:
- return active_sequence + 1 < RunPlan.ACT_COUNT
+ return active_sequence + 1 < run_plan.size()
 
 func _score_target_for(_document: Resource, owner_id: String) -> int:
- return RunPlan.TARGETS[clampi(owner_id.get_slice(":", 1).to_int(), 0, RunPlan.ACT_COUNT - 1)]
+ return RunPlan.target(owner_id.get_slice(":", 1).to_int())
 
 func act_title(act: RefCounted) -> String:
  return str(source_paths[act.plan.id]).get_file().get_basename()
 
 func progress_text() -> String:
- return "ZONE %d / %d · %s · ACT %d / %d" % [active.plan.zone + 1, RunPlan.THEMES.size(), library.themes[active.plan.theme].display_name.to_upper(), active.plan.act + 1, RunPlan.ACTS_PER_ZONE]
+ return "ZONE %d / %d · %s · ACT %d / %d" % [active.plan.zone + 1, effective_configuration().zone_count, library.themes[active.plan.theme].display_name.to_upper(), active.plan.act + 1, RunPlan.ACTS_PER_ZONE]
 
 func act_score_text() -> String:
  return super.act_score_text().replace("EXIT OPEN", "GOAL READY")
@@ -227,7 +241,7 @@ func _finish_run(won: bool) -> void:
  ball.freeze = true
  controls.input_blocked = true
  get_tree().paused = true
- completed.emit({"won": won, "practice": practice_mode, "seed": run_seed, "score": score, "normal_score": score - Buddies.total(buddy_contributions), "buddy_contributions": buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "buddy_state": buddies.state(), "seconds": elapsed, "drains": ball_number - 1, "character": character_id, "acts": results.duplicate(true)})
+ completed.emit({"run_configuration": effective_configuration().snapshot(), "configuration_fingerprint": effective_configuration().fingerprint(), "course": course_snapshot(), "won": won, "practice": practice_mode, "seed": run_seed, "score": score, "normal_score": score - Buddies.total(buddy_contributions), "buddy_contributions": buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "buddy_state": buddies.state(), "seconds": elapsed, "drains": ball_number - 1, "character": character_id, "acts": results.duplicate(true)})
 
 func _on_ball_drained() -> void:
  if finished or closing or drafting or is_instance_valid(transfer) or respawn_time >= 0.0: return
