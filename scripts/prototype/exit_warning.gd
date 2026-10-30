@@ -1,6 +1,10 @@
 extends Node3D
 ## Flat, collisionless warnings below the active Act's entry / cleared Act's exit.
+var pulse_phase := 0.0
+var sign_materials: Array[StandardMaterial3D] = []
+
 func configure(document: Resource, offset: Vector2) -> void:
+ process_mode = Node.PROCESS_MODE_PAUSABLE
  name = "ClearedExitWarning"
  visible = false
  var cell := float(document.cell_size)
@@ -10,6 +14,7 @@ func configure(document: Resource, offset: Vector2) -> void:
  position = TablePresentation.map_point(center, 0.025)
  var material := StandardMaterial3D.new()
  material.albedo_color = Color("171b20")
+ material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
  material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
  material.cull_mode = BaseMaterial3D.CULL_DISABLED
  var mesh := ImmediateMesh.new()
@@ -27,6 +32,8 @@ func configure(document: Resource, offset: Vector2) -> void:
  mesh.surface_end()
  var yellow := material.duplicate() as StandardMaterial3D
  yellow.albedo_color = Color("ffd43b")
+ sign_materials = [material, yellow]
+ _set_opacity(0.40)
  mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES, yellow)
  for index in 3:
   var x := (index - 1) * width * 0.28 * TablePresentation.SCALE
@@ -50,3 +57,12 @@ func _quad(mesh: ImmediateMesh, x: float, top: float, bottom: float, width: floa
  var c := Vector3(x + width * 0.5, 0.002, bottom)
  var d := Vector3(x - width * 0.5, 0.002, bottom)
  for vertex: Vector3 in [a, b, c, a, c, d]: mesh.surface_add_vertex(vertex)
+
+func _process(delta: float) -> void:
+ if not is_visible_in_tree(): return
+ pulse_phase = fposmod(pulse_phase + delta * TAU / 2.4, TAU)
+ _set_opacity(0.40 + 0.05 * sin(pulse_phase))
+
+func _set_opacity(value: float) -> void:
+ for material: StandardMaterial3D in sign_materials:
+  material.albedo_color.a = value

@@ -56,6 +56,7 @@ func run() -> void:
  check(not game.scorecraft.bumper_can_build_multiplier(bumpers[0]), "Used bumper stops glowing until the chain resets")
  check(game.combo_glow.targets.any(func(target): return target.has("body") and target.body.get_ref() == bumpers[0] and not target.lit), "Used bumper overlay is removed")
  check(game.scorecraft.rings_can_build_multiplier(), "Rings become eligible after a fresh bumper")
+ check(game.combo_glow.targets.all(func(target): return target.has("body")) and game.presentation.ring_visuals.all(func(mesh): return mesh.material_overlay != game.combo_glow.glow), "Combo-eligible rings never receive eligibility glow")
  game._on_bumper_hit(bumpers[1])
  await frames()
  check(overlay.displayed_multiplier == 2, "A second distinct bumper updates the ball indicator to x2")

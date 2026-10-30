@@ -25,21 +25,13 @@ func rebuild() -> void:
   for mesh: MeshInstance3D in nodes:
    meshes.append({"ref": weakref(mesh), "original": mesh.material_overlay})
   targets.append({"body": weakref(item.body), "meshes": meshes, "lit": false})
- for index in mini(game.presentation.ring_visuals.size(), game.ring_field.rings.size()):
-  var ring: Dictionary = game.ring_field.rings[index]
-  if ring.rack.owner_id != game.ring_field.active_owner_id: continue
-  var mesh: MeshInstance3D = game.presentation.ring_visuals[index]
-  targets.append({"ring": index, "meshes": [{"ref": weakref(mesh), "original": mesh.material_overlay}], "lit": false})
 
 func _process(_delta: float) -> void:
  var available: bool = game.started and not game.closing and not game.finished and not game.drafting and not is_instance_valid(game.transfer)
  for target: Dictionary in targets:
   var lit := false
   if available:
-   if target.has("body"):
-    lit = game.scorecraft.bumper_can_build_multiplier(target.body.get_ref())
-   elif target.ring < game.ring_field.rings.size():
-    lit = game.ring_field.rings[target.ring].active and game.scorecraft.rings_can_build_multiplier()
+   lit = game.scorecraft.bumper_can_build_multiplier(target.body.get_ref())
   if lit == target.lit: continue
   target.lit = lit
   for record: Dictionary in target.meshes:
