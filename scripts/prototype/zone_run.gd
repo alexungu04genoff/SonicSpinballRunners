@@ -25,6 +25,8 @@ var _planned := false
 var source_paths: Array = []
 var run_plan: Array[Dictionary] = []
 var hint: Label
+var score_overlay: Control
+var _ring_award_position := Vector2.INF
 
 func _build_presentation() -> void:
  super._build_presentation()
@@ -184,10 +186,23 @@ func _on_retry_requested() -> void:
 func _on_score_awarded(details: Dictionary) -> void:
  if finished or closing or drafting or is_instance_valid(transfer): return
  super._on_score_awarded(details)
+ if is_instance_valid(score_overlay): score_overlay.add_award(details, _award_position(details))
  for id: String in details.get("buddy_bonuses", {}):
   var bonus := int(details.buddy_bonuses[id])
   buddy_contributions[id] = int(buddy_contributions.get(id, 0)) + bonus
   act_buddy_contributions[id] = int(act_buddy_contributions.get(id, 0)) + bonus
+
+func _award_position(details: Dictionary) -> Vector2:
+ if _ring_award_position.is_finite(): return _ring_award_position
+ var target_id := int(details.get("target_id", 0))
+ if target_id != 0 and is_instance_id_valid(target_id):
+  var target := instance_from_id(target_id) as Node2D
+  if target != null: return target.global_position
+ if active != null:
+  var object_id := str(details.get("object_id", "")).trim_prefix(active_scoring_id + ":")
+  var item: Dictionary = active.runtime.mechanics.by_id.get(object_id, {})
+  if item.has("position"): return item.position
+ return ball.position
 
 func _accept_scoring(owner_id: String = "") -> bool:
  return not finished and not closing and not drafting and not is_instance_valid(transfer) and super._accept_scoring(owner_id)
@@ -196,7 +211,10 @@ func scoring_target_eligible(body: Node2D) -> bool:
  return not finished and not closing and not drafting and not is_instance_valid(transfer) and super.scoring_target_eligible(body)
 
 func _on_ring_collected(where: Vector2, source: String = "", multiplier: int = 1) -> void:
- if not finished and not closing and not drafting and not is_instance_valid(transfer): super._on_ring_collected(where, source, multiplier)
+ if not finished and not closing and not drafting and not is_instance_valid(transfer):
+  _ring_award_position = where
+  super._on_ring_collected(where, source, multiplier)
+  _ring_award_position = Vector2.INF
 
 func toggle_tour() -> void:
  pass # A camera tour cannot advance a player run.
@@ -243,6 +261,9 @@ func _build_hud() -> void:
  hud = CanvasLayer.new()
  hud.layer = 20
  add_child(hud)
+ score_overlay = preload("res://scripts/prototype/score_overlay.gd").new()
+ score_overlay.game = self
+ hud.add_child(score_overlay)
  var backing := PanelContainer.new()
  backing.position = Vector2(20, 18)
  var style := StyleBoxFlat.new()

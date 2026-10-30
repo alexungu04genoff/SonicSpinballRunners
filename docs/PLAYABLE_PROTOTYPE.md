@@ -1,5 +1,9 @@
 # Two-Zone playable prototype
 
+The ball carries a small live ×1/×2/×3 combo indicator. Accepted scoring hits show brief floating point totals at the bumper, ring pickup or authored mechanic, with ball position as the fallback for aggregate feature awards. Totals already include special and Buddy bonuses; fixed feature awards retain their existing scoring rules. Nearby rapid awards of the same kind combine their exact totals, and at most 12 popups remain visible for less than a second. Pause hides and freezes this feedback; Act transfers, drains and results clear it. This screen-space overlay does not affect physics, scoring calculations, baked geometry or input.
+
+Score feedback verified on 2026-10-30: 15/15 rendered feedback checks, 113/113 packaged session checks, 40/40 package checks, 29/29 existing Scorecraft checks and 13/13 Buddy scoring checks. Captures at 1280×720 and 1920×810 confirm the overlay stays aligned with the ball and scoring positions. Text size, popup density and fade timing remain human playtest tuning.
+
 Protected transfers verified on 2026-10-30: rendered source and packaged sessions passed 113/113 checks; drain/retry suites passed 54/54, including a real drain-zone crossing, automatic relaunch, pause and cancellation. The refreshed Windows package passed 40/40 bake checks across all 12 Act/theme variants. Rendered hover, shrink and reappearance captures were reviewed. Normal play loaded baked geometry without runtime rebuilds; existing GPU warm-up stalls remain possible.
 
 Menu panels hide immediately and use deferred deletion so button signal emitters survive their callbacks. The session regression now triggers the actual Start, Resume, Buddy, Play again, Restart and Return to menu signals; the rendered source run passed 108 checks with no engine errors on 2026-10-30. Earlier direct transition calls did not cover the panel-deletion crash.
