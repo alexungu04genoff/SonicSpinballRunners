@@ -91,6 +91,13 @@ func run() -> void:
   check(game.active_sequence == index and game.act_score == 0 and not game.exit_unlocked, "Act %d starts a fresh local target" % (index + 1))
   check(game.active.plan.zone == index / 3 and game.active.plan.theme == Session.Run.RunPlan.THEMES[index / 3], "Act %d uses its planned Zone and theme" % (index + 1))
   check(game.active.runtime.has("goal_ring") and not game.active.runtime.goal_ring.unlocked and game.active.document.score_target == 0, "Run-owned target locks the mandatory goal without editing the source Act")
+  check(game.active.runtime.root.find_children("ActScoreExit", "", true, false).is_empty(), "Prototype connector has no blocking score wall")
+  var warning: Node3D = game.active.runtime.exit_warning
+  check(warning.visible == (index > 0) and warning.find_children("*", "CollisionObject2D", true, false).is_empty(), "Cleared seam warning appears only after advancement and has no collisions")
+  check(warning.position.z > TablePresentation.map_point(game.active.plan.offset + game.active.document.terrain_bounds().end).z, "Warning sits below the cleared connector, outside the new Act")
+  if index == 1 and "--capture-seam" in OS.get_cmdline_user_args():
+   await RenderingServer.frame_post_draw
+   root.get_texture().get_image().save_png("res://test-results/cleared-seam.png")
   var next: RefCounted = resident_at(index + 1)
   if index < Session.Run.RunPlan.ACT_COUNT - 1:
    until = Time.get_ticks_msec() + 180000

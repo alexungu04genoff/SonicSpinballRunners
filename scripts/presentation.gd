@@ -44,6 +44,7 @@ var flipper_visuals: Array[Node3D] = []
 var flipper_retracted_visuals: Array[Node3D] = []
 var ring_visuals: Array[MeshInstance3D] = []
 var ring_pickups: Dictionary = {}
+var ring_spin_phase := 0.0
 var physics_overlay: Node3D
 var construction_grid_overlay: Node3D
 var bumper_visuals: Dictionary = {}
@@ -563,7 +564,14 @@ func clear_ring_pickups() -> void:
   ring_visuals[i].position = map_point(ring_field.rings[i].position, ring_height())
   ring_visuals[i].scale = Vector3.ONE
 
+func _spin_rings(delta: float) -> void:
+ # Presentation only: authored pickup positions and collection radii never move.
+ ring_spin_phase = fposmod(ring_spin_phase + delta * TAU * 0.75, TAU)
+ for visual: MeshInstance3D in ring_visuals:
+  visual.rotation = Vector3(PI * 0.5, ring_spin_phase, 0)
+
 func _update_ring_visuals(delta: float) -> void:
+ _spin_rings(delta)
  for i in ring_visuals.size():
   var visual := ring_visuals[i]
   if ring_pickups.has(i):

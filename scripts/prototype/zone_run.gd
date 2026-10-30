@@ -41,11 +41,11 @@ func _add_scoring_hardware(runtime: Dictionary, document: Resource, offset: Vect
  goal.configure(document, offset)
  runtime["goal_ring"] = goal
  runtime.root.tree_exiting.connect(goal.queue_free)
- # Keep the ball in this Act; only the goal may advance the finite run.
- var barrier := ScoreExit.new()
- runtime.root.add_child(barrier)
- barrier.configure(document, offset, visual_parent, true)
- barrier.label.text = "USE GOAL RING"
+ var warning := preload("res://scripts/prototype/exit_warning.gd").new()
+ visual_parent.add_child(warning)
+ warning.configure(document, offset)
+ runtime["exit_warning"] = warning
+ runtime.root.tree_exiting.connect(warning.queue_free)
 
 func _sync_resident() -> void:
  super._sync_resident()
@@ -112,6 +112,7 @@ func _activate(act: RefCounted, initial := false) -> void:
 
 func _begin_act(act: RefCounted, initial: bool) -> void:
  super._activate(act, initial)
+ active.runtime.exit_warning.visible = not initial
  balls_remaining = BALLS_PER_ACT
  act_buddy_contributions.clear()
  scorecraft.award_bonuses = buddies.modifiers()

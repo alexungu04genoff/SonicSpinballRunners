@@ -42,6 +42,7 @@ func clear_ring_pickups() -> void:
   ring_visuals[i].scale = Vector3.ONE
 
 func _update_ring_visuals(delta: float) -> void:
+ _spin_rings(delta)
  for i in ring_visuals.size():
   var visual := ring_visuals[i]
   if ring_pickups.has(i):
