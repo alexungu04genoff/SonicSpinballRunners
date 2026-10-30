@@ -120,6 +120,7 @@ func run() -> void:
    game.ball._teleport_pending = false
   if index < Session.Run.RunPlan.ACT_COUNT - 1:
    var at: Vector2 = next.plan.offset + Vector2(next.document.spawn_position.x, next.document.activation_y)
+   game.ball.position = at - Vector2.DOWN * 2
    game._observe_authored_motion(at + Vector2.DOWN * 2, at - Vector2.DOWN * 2)
    check(game.drafting and session.state == "draft" and paused and game.active_sequence == index, "Physical Act clear pauses for a mandatory Buddy choice")
    check(not game.buddies.offers().is_empty() and not game.choose_buddy("unknown"), "Draft offers available upgrades and rejects an invalid ID")
@@ -128,12 +129,19 @@ func run() -> void:
    game.toggle_pause()
    check(paused and game.score == before_draft, "Draft cannot be skipped with pause or score while awaiting a choice")
    await capture("draft")
-   var before_choice: Vector2 = game.ball.position
-   var velocity_before_choice: Vector2 = game.ball.linear_velocity
    var chosen: String = choices[index]
    var previous_level: int = game.buddies.levels.get(chosen, 0)
    press(str(Session.Run.Buddies.CATALOG[chosen].name))
-   check(not paused and game.active_sequence == index + 1 and game.balls_remaining == 3 and game.ball.position == before_choice and game.ball.linear_velocity == velocity_before_choice, "Buddy choice starts a fresh three-ball Act without changing position or velocity")
+   check(not paused and game.active_sequence == index + 1 and game.balls_remaining == 3 and is_instance_valid(game.transfer) and game.ball.freeze and game.ball.linear_velocity == Vector2.ZERO, "Buddy choice starts a protected transfer with a fresh three-ball budget")
+   if index == 0 and "--capture" in OS.get_cmdline_user_args():
+    while is_instance_valid(game.transfer) and game.transfer.elapsed < 0.55: await process_frame
+    await capture("act-transfer")
+   var transfer_deadline := Time.get_ticks_msec() + 10000
+   while is_instance_valid(game.transfer) and Time.get_ticks_msec() < transfer_deadline: await process_frame
+   check(not is_instance_valid(game.transfer) and game.ball.position.distance_to(game.active.spawn()) < 1.0 and not game.controls.input_blocked, "Act transfer arrives at the authored spawn and releases controls")
+   game.ball.freeze = true
+   game.ball.serve_pending = false
+   game.ball._teleport_pending = false
    check(game.buddies.levels[chosen] == previous_level + 1 and not game.choose_buddy("bumper_coach"), "Buddy choice upgrades once and cannot be submitted twice")
    if index == 2:
     check(not game.finished and game.active.plan.zone == 1 and game.active_sequence == 3 and game.buddies.levels.ring_scout == 2, "The Zone boundary preserves the build and continues into Chemical Plant")

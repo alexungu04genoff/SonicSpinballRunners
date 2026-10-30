@@ -5,6 +5,10 @@ signal draft_started(act_result: Dictionary, offers: Array[Dictionary])
 const Buddies = preload("res://scripts/prototype/buddies.gd")
 const RunPlan = preload("res://scripts/prototype/run_plan.gd")
 const BALLS_PER_ACT := 3
+const SpawnTransfer = preload("res://scripts/prototype/spawn_transfer.gd")
+var transfer: Node
+var _ball_layer := 0
+var _ball_mask := 0
 var finished := false
 var practice_mode := false
 var balls_remaining := BALLS_PER_ACT
@@ -57,6 +61,7 @@ func progress_text() -> String:
 
 func _physics_process(delta: float) -> void:
  if closing or finished or not started or get_tree().paused: return
+ if is_instance_valid(transfer): return
  if not ball.serve_pending: elapsed += delta
  super._physics_process(delta)
 
@@ -87,15 +92,52 @@ func choose_buddy(id: String) -> bool:
  _begin_act(pending_act, false)
  pending_act = null
  drafting = false
- controls.input_blocked = false
  get_tree().paused = false
+ _start_transfer(false)
  return true
+
+func _start_transfer(drained: bool) -> void:
+ controls.input_blocked = true
+ ring_field.scoring_enabled = false
+ for act: RefCounted in resident: act.runtime.mechanics.scoring_active = false
+ respawn_time = -1.0
+ auto_launch_time = -1.0
+ specials.reset(false, "Checkpoint transfer")
+ scorecraft.reset("Checkpoint transfer", true)
+ presentation.clear_ring_pickups()
+ ball.teleport_to(ball.position, Vector2.ZERO, true)
+ ball.linear_velocity = Vector2.ZERO
+ ball.angular_velocity = 0.0
+ ball.freeze = true
+ _ball_layer = ball.collision_layer
+ _ball_mask = ball.collision_mask
+ ball.collision_layer = 0
+ ball.collision_mask = 0
+ transfer = SpawnTransfer.new()
+ add_child(transfer)
+ transfer.arrived.connect(_transfer_arrived)
+ transfer.begin(self, ball.serve_position, drained)
+
+func _transfer_arrived() -> void:
+ transfer = null
+ if closing or finished: return
+ ball.teleport_to(ball.serve_position, Vector2.ZERO, true)
+ previous_goal_position = ball.serve_position
+ _goal_motion_ready = false
+ ring_field.previous_ball_position = ball.serve_position
+ ball.collision_layer = _ball_layer
+ ball.collision_mask = _ball_mask
+ ball.freeze = false
+ ring_field.scoring_enabled = true
+ active.runtime.mechanics.scoring_active = true
+ controls.input_blocked = false
+ auto_launch_time = 0.35
 
 func _record_act(cleared: bool) -> void:
  results.append({"act": active_sequence + 1, "zone": active.plan.zone + 1, "zone_act": active.plan.act + 1, "theme": active.plan.theme, "source": source_paths[active.plan.id], "title": act_title(active), "cleared": cleared, "score": act_score, "target": act_score_target, "seconds": elapsed - act_started_at, "drains": ball_number - act_start_ball, "categories": act_score_breakdown.duplicate(), "buddy_contributions": act_buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "normal_score": act_score - Buddies.total(act_buddy_contributions)})
 
 func _observe_authored_motion(start: Vector2, finish: Vector2) -> void:
- if finished or drafting or not exit_unlocked: return
+ if finished or drafting or is_instance_valid(transfer) or not exit_unlocked: return
  if _has_next_act():
   super._observe_authored_motion(start, finish)
   return
@@ -119,9 +161,12 @@ func _finish_run(won: bool) -> void:
  completed.emit({"won": won, "practice": practice_mode, "seed": run_seed, "score": score, "normal_score": score - Buddies.total(buddy_contributions), "buddy_contributions": buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "seconds": elapsed, "drains": ball_number - 1, "character": character_id, "acts": results.duplicate(true)})
 
 func _on_ball_drained() -> void:
- if finished or closing or drafting or respawn_time >= 0.0: return
+ if finished or closing or drafting or is_instance_valid(transfer) or respawn_time >= 0.0: return
  super._on_ball_drained()
- _spend_ball()
+ ball.linear_velocity = Vector2.ZERO
+ ball.angular_velocity = 0.0
+ ball.freeze = true
+ if _spend_ball(): _start_transfer(true)
 
 func _spend_ball() -> bool:
  if practice_mode: return true
@@ -131,13 +176,13 @@ func _spend_ball() -> bool:
  return false
 
 func _on_retry_requested() -> void:
- if not started or finished or closing or drafting or get_tree().paused: return
+ if not started or finished or closing or drafting or is_instance_valid(transfer) or get_tree().paused: return
  if ball.serve_pending or ball._teleport_pending or respawn_time >= 0.0: return
  ball_number += 1
- if _spend_ball(): super.reset_ball(true)
+ if _spend_ball(): _start_transfer(true)
 
 func _on_score_awarded(details: Dictionary) -> void:
- if finished or closing or drafting: return
+ if finished or closing or drafting or is_instance_valid(transfer): return
  super._on_score_awarded(details)
  for id: String in details.get("buddy_bonuses", {}):
   var bonus := int(details.buddy_bonuses[id])
@@ -145,13 +190,13 @@ func _on_score_awarded(details: Dictionary) -> void:
   act_buddy_contributions[id] = int(act_buddy_contributions.get(id, 0)) + bonus
 
 func _accept_scoring(owner_id: String = "") -> bool:
- return not finished and not closing and not drafting and super._accept_scoring(owner_id)
+ return not finished and not closing and not drafting and not is_instance_valid(transfer) and super._accept_scoring(owner_id)
 
 func scoring_target_eligible(body: Node2D) -> bool:
- return not finished and not closing and not drafting and super.scoring_target_eligible(body)
+ return not finished and not closing and not drafting and not is_instance_valid(transfer) and super.scoring_target_eligible(body)
 
 func _on_ring_collected(where: Vector2, source: String = "", multiplier: int = 1) -> void:
- if not finished and not closing and not drafting: super._on_ring_collected(where, source, multiplier)
+ if not finished and not closing and not drafting and not is_instance_valid(transfer): super._on_ring_collected(where, source, multiplier)
 
 func toggle_tour() -> void:
  pass # A camera tour cannot advance a player run.
@@ -164,13 +209,20 @@ func _unhandled_key_input(event: InputEvent) -> void:
   diagnostics.visible = not diagnostics.visible
 
 func reset_ball(relaunch := false) -> void:
- if not finished and not closing and not drafting: super.reset_ball(relaunch)
+ if not finished and not closing and not drafting and not is_instance_valid(transfer): super.reset_ball(relaunch)
 
 func launch_ball() -> void:
- if not finished and not closing and not drafting: super.launch_ball()
+ if not finished and not closing and not drafting and not is_instance_valid(transfer): super.launch_ball()
 
 func toggle_pause() -> void:
  if not finished and not closing and not drafting: super.toggle_pause()
+
+func prepare_to_close() -> void:
+ if is_instance_valid(transfer):
+  transfer.set_process(false)
+  transfer.queue_free()
+  transfer = null
+ await super.prepare_to_close()
 
 func _process(delta: float) -> void:
  super._process(delta)
@@ -182,6 +234,7 @@ func _process(delta: float) -> void:
  var bonus := Buddies.total(scorecraft.last_award.get("buddy_bonuses", {}))
  if bonus > 0 and scorecraft.feedback_remaining > 0.0: detail.text += "\nBuddy bonus included: +%d" % bonus
  hint.text = ""
+ if is_instance_valid(transfer): hint.text = "Returning to spawn…" if transfer.drain else "Next Act…"
  if respawn_time >= 0.0: hint.text = "BALL LOST · Retrying…"
  if loading_boundary: hint.text = "Preparing the next Act…"
  hint.visible = not hint.text.is_empty()

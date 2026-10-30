@@ -1,5 +1,7 @@
 # Two-Zone playable prototype
 
+Protected transfers verified on 2026-10-30: rendered source and packaged sessions passed 113/113 checks; drain/retry suites passed 54/54, including a real drain-zone crossing, automatic relaunch, pause and cancellation. The refreshed Windows package passed 40/40 bake checks across all 12 Act/theme variants. Rendered hover, shrink and reappearance captures were reviewed. Normal play loaded baked geometry without runtime rebuilds; existing GPU warm-up stalls remain possible.
+
 Menu panels hide immediately and use deferred deletion so button signal emitters survive their callbacks. The session regression now triggers the actual Start, Resume, Buddy, Play again, Restart and Return to menu signals; the rendered source run passed 108 checks with no engine errors on 2026-10-30. Earlier direct transition calls did not cover the panel-deletion crash.
 
 The prototype camera uses zoom 1.3 and a vertical target 55% down the screen. The compact HUD uses 18/16-point headings/body text and a 35%-opaque backing; control instructions remain in the menu instead of covering gameplay. Window resizing and F11 fullscreen expand to the display aspect ratio, including ultrawide, instead of letterboxing the original canvas. Rendered checks covered 1600×900, 1920×810 and native 1920×1200 fullscreen on 2026-10-30.
@@ -12,7 +14,7 @@ Every start, replay or restart draws a fresh random order from the `.tres` files
 
 Challenge starts every Act with **three balls, including the ball in play**. Drains and manual retries spend one ball while preserving earned points, open score exits and the acquired build. Losing the third ball ends the run. Clearing an Act refreshes the next Act's budget to three. Retrying before launch or during an existing respawn cannot consume another ball. Practice mode keeps unlimited retries and separate records. Restarting clears all score, Buddy and budget progress.
 
-After physically clearing each nonfinal Act, choose a Buddy, for five drafts in a complete run. Gameplay pauses for the choice and resumes the same ball position and velocity, including at the Zone boundary. The catalogue remains small so the prototype can test distinct scoring routes:
+After physically clearing each nonfinal Act, choose a Buddy, for five drafts in a complete run. Gameplay pauses for the choice, then Sonic floats smoothly to the next Act's authored spawn over 1.25 seconds, including at the Zone boundary. The catalogue remains small so the prototype can test distinct scoring routes:
 
 | Buddy | Level 1 bonus | Level 2 bonus |
 | --- | --- | --- |
@@ -21,6 +23,8 @@ After physically clearing each nonfinal Act, choose a Buddy, for five drafts in 
 | Feature Fox | +250 per completed rack, switch bank, spinner goal or lane set | +500 per completion |
 
 Picking an owned Buddy upgrades it to level two; fully upgraded Buddies leave the available choices. At least one choice remains through all five drafts. Bonuses are flat additions after existing combo/special scoring and do not add combo links, timer refreshes or special charge. They never pay for zero-point sources or ordinary spinner ticks. The HUD shows the current build and included Buddy bonus; success and failure results show each Buddy's contribution, a scrollable Act breakdown and ordinary scoring. Amounts and the three-ball budget are provisional. Shops, bosses, more Buddy effects and permanent progression remain future work.
+
+At the bottom of the drain zone, the ball stops immediately, shrinks away, and grows back at the current spawn. Manual retries use the same animation. During either transfer, the ball cannot collide, score or accept gameplay input. Arrival restores those systems and launches from rest after 0.35 seconds. Pause freezes the transfer; returning to the menu or restarting safely cancels it. A final Challenge loss stops the ball and shows results without another respawn. Transfer timing and camera feel still need human playtesting.
 
 | Action | Keyboard | Controller |
 | --- | --- | --- |
