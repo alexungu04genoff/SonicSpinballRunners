@@ -7,6 +7,13 @@ func reset() -> void:
  for runtime: Node in runtimes: runtime.reset()
  rail_owner = null
 
+func reset_for_retry() -> void:
+ for runtime: Node in runtimes:
+  if runtime.scoring_active: runtime.reset_for_retry()
+ if is_instance_valid(rail_owner) and not rail_owner.scoring_active:
+  rail_owner.leave_ramp()
+ rail_owner = null
+
 func tick(delta: float) -> void:
  for runtime: Node in runtimes: runtime.tick(delta)
 

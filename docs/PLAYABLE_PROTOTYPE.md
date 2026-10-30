@@ -1,5 +1,7 @@
 # Two-Zone playable prototype
 
+Ball loss and manual retry are soft checkpoints: switch/bank progress, opened gates, diverter routing, spinner goals, lane lights, defeated enemies, ring timers, score and telemetry survive. Ball/contact/rail state, spinner motion, combo and transient abilities reset. Existing objective timers pause during the protected transfer and serve wait; they resume afterward without restarting. Fresh Act instances and new runs start from authored initial state.
+
 Buzz Bombers turn smoothly toward patrol direction in roughly a quarter-second. Turning only animates their model and freezes with the existing animation clock; collision and patrol behavior remain unchanged.
 
 Results include **Copy run data**, which copies readable version-1 JSON for successful and failed runs. Each Act retains its first target-ready time and score/Buddy snapshots, physical goal-touch time, final score, lost balls, and useful rates. Unreached target/goal fields and zero-denominator rates are `null`. Timestamps are seconds on the existing run elapsed clock: pause, drafts, protected transfers and serve waits do not advance it. Goal touch is latched before any next-Act loading wait. Raw fields remain alongside derived rates; the results list shows target time and goal delay without displaying the JSON. Data stays local until you copy and share it.

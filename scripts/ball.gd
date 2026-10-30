@@ -65,7 +65,7 @@ func _ready() -> void:
 
 func teleport_to(where: Vector2, velocity: Vector2 = Vector2.ZERO, waiting: bool = false) -> void:
  # Reset/serve and explicit rail constraints own full velocity replacement.
- if is_instance_valid(mechanics): mechanics.reset()
+ if is_instance_valid(mechanics): mechanics.reset_for_retry()
  _teleport_position = where
  _teleport_velocity = velocity
  _teleport_pending = true
@@ -149,7 +149,7 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
   _previous_step_velocity = _teleport_velocity
   _teleport_pending = false
  if is_instance_valid(mechanics):
-  mechanics.tick(state.step)
+  if not serve_pending: mechanics.tick(state.step)
   if on_ramp:
    _flipper_strike.clear()
    mechanics.advance_ramp(state, state.step)

@@ -111,6 +111,17 @@ func reset() -> void:
   bank["complete"] = false
   bank["reset_remaining"] = 0.0
 
+func reset_for_retry() -> void:
+ # Objective state and authored timers belong to the Act, not the lost ball.
+ leave_ramp()
+ reentry_time = 0.0
+ for item: Dictionary in items:
+  item.latched = false
+  item.passing = false
+  if item.type == "spinner": item.spin = 0.0
+ # Keep pending diverter commands: they represent earned routing changes and
+ # will apply through the usual clearance check after the ball leaves spawn.
+
 func reset_motion() -> void:
  _travel_origin = null
  enemies.reset_motion()

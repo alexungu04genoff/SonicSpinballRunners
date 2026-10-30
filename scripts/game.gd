@@ -581,7 +581,7 @@ func _on_ball_drained() -> void:
  ball_number += 1
  respawn_time = 0.65
  ring_field.scoring_enabled = false
- if is_instance_valid(ball.mechanics): ball.mechanics.reset()
+ if is_instance_valid(ball.mechanics): ball.mechanics.reset_for_retry()
  specials.reset(false, "Drain")
  scorecraft.reset("Drain", true)
  presentation.clear_ring_pickups()

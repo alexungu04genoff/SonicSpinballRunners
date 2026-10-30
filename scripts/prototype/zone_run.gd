@@ -150,6 +150,7 @@ func choose_buddy(id: String) -> bool:
  return true
 
 func _start_transfer(drained: bool) -> void:
+ if is_instance_valid(ball.mechanics): ball.mechanics.reset_for_retry()
  controls.input_blocked = true
  ring_field.scoring_enabled = false
  for act: RefCounted in resident: act.runtime.mechanics.scoring_active = false
