@@ -3,8 +3,8 @@ extends "res://scripts/endless/endless_game.gd"
 signal completed(summary: Dictionary)
 signal draft_started(act_result: Dictionary, offers: Array[Dictionary])
 const Buddies = preload("res://scripts/prototype/buddies.gd")
+const RunPlan = preload("res://scripts/prototype/run_plan.gd")
 const BALLS_PER_ACT := 3
-const ACTS := ["res://data/prototype/classic_pinball.tres", "res://data/prototype/switch_spinner.tres", "res://data/prototype/speedway_lane.tres"]
 var finished := false
 var practice_mode := false
 var balls_remaining := BALLS_PER_ACT
@@ -18,26 +18,37 @@ var act_started_at := 0.0
 var act_start_ball := 1
 var results: Array[Dictionary] = []
 var _planned := false
+var source_paths: Array = []
+var run_plan: Array[Dictionary] = []
 var hint: Label
 
 func _source_paths() -> Array:
- return ACTS
+ if source_paths.is_empty(): source_paths = RunPlan.source_paths()
+ return source_paths
+
+func _default_run_seed() -> int:
+ return randi()
+
+func _pool_error(documents: Array) -> String:
+ return RunPlan.pool_error(documents)
 
 func _next_planned_zone(documents: Array) -> Array[Dictionary]:
  if _planned: return []
  _planned = true
- var entries: Array[Dictionary] = []
- var offset := Vector2.ZERO
- for index in documents.size():
-  if index > 0: offset = Plan.aligned_offset(documents[index - 1], offset, documents[index])
-  entries.append({"sequence": index, "zone": 0, "act": index, "id": index, "theme": "green_hill", "offset": offset})
- return entries
+ run_plan = RunPlan.build(documents, run_seed)
+ return run_plan.duplicate(true)
 
 func _has_next_act() -> bool:
- return active_sequence + 1 < ACTS.size()
+ return active_sequence + 1 < RunPlan.ACT_COUNT
 
-func _prefetch_next_theme() -> void:
- pass # This prototype is one authored Zone.
+func _score_target_for(_document: Resource, owner_id: String) -> int:
+ return RunPlan.TARGETS[clampi(owner_id.get_slice(":", 1).to_int(), 0, RunPlan.ACT_COUNT - 1)]
+
+func act_title(act: RefCounted) -> String:
+ return str(source_paths[act.plan.id]).get_file().get_basename()
+
+func progress_text() -> String:
+ return "ZONE %d / %d · %s · ACT %d / %d" % [active.plan.zone + 1, RunPlan.THEMES.size(), library.themes[active.plan.theme].display_name.to_upper(), active.plan.act + 1, RunPlan.ACTS_PER_ZONE]
 
 func _physics_process(delta: float) -> void:
  if closing or finished or not started or get_tree().paused: return
@@ -76,7 +87,7 @@ func choose_buddy(id: String) -> bool:
  return true
 
 func _record_act(cleared: bool) -> void:
- results.append({"act": active_sequence + 1, "title": active.document.title.trim_prefix("Scoring - "), "cleared": cleared, "score": act_score, "target": act_score_target, "seconds": elapsed - act_started_at, "drains": ball_number - act_start_ball, "categories": act_score_breakdown.duplicate(), "buddy_contributions": act_buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "normal_score": act_score - Buddies.total(act_buddy_contributions)})
+ results.append({"act": active_sequence + 1, "zone": active.plan.zone + 1, "zone_act": active.plan.act + 1, "theme": active.plan.theme, "source": source_paths[active.plan.id], "title": act_title(active), "cleared": cleared, "score": act_score, "target": act_score_target, "seconds": elapsed - act_started_at, "drains": ball_number - act_start_ball, "categories": act_score_breakdown.duplicate(), "buddy_contributions": act_buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "normal_score": act_score - Buddies.total(act_buddy_contributions)})
 
 func _observe_authored_motion(start: Vector2, finish: Vector2) -> void:
  if finished or drafting or not exit_unlocked: return
@@ -100,7 +111,7 @@ func _finish_run(won: bool) -> void:
  ball.freeze = true
  controls.input_blocked = true
  get_tree().paused = true
- completed.emit({"won": won, "practice": practice_mode, "score": score, "normal_score": score - Buddies.total(buddy_contributions), "buddy_contributions": buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "seconds": elapsed, "drains": ball_number - 1, "character": character_id, "acts": results.duplicate(true)})
+ completed.emit({"won": won, "practice": practice_mode, "seed": run_seed, "score": score, "normal_score": score - Buddies.total(buddy_contributions), "buddy_contributions": buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "seconds": elapsed, "drains": ball_number - 1, "character": character_id, "acts": results.duplicate(true)})
 
 func _on_ball_drained() -> void:
  if finished or closing or drafting or respawn_time >= 0.0: return
@@ -159,7 +170,7 @@ func toggle_pause() -> void:
 func _process(delta: float) -> void:
  super._process(delta)
  if not started or closing: return
- heading.text = "ACT %d / 3 · %s" % [active_sequence + 1, active.document.title.trim_prefix("Scoring - ").to_upper()]
+ heading.text = progress_text() + "\n" + act_title(active)
  detail.text = "ACT SCORE   %s\nTOTAL SCORE   %d     COMBO ×%d\nBALLS LEFT   %s\n%s SPECIAL   %s\n%s\nBUDDIES   %s" % [act_score_text(), score, scorecraft.multiplier, "Unlimited · Practice" if practice_mode else "%d / %d" % [balls_remaining, BALLS_PER_ACT], character_id.to_upper(), "READY" if special_meter >= 100.0 else "%d%%" % int(special_meter), scoring_feedback_text(), buddies.summary()]
  var bonus := Buddies.total(scorecraft.last_award.get("buddy_bonuses", {}))
  if bonus > 0 and scorecraft.feedback_remaining > 0.0: detail.text += "\nBuddy bonus included: +%d" % bonus

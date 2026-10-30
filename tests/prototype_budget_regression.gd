@@ -31,7 +31,12 @@ func live_ball(game: Node) -> void:
 func run() -> void:
  session = Session.new()
  session.settings_path = "user://buddy-budget-regression.cfg"
+ var legacy := ConfigFile.new()
+ legacy.set_value("challenge_records", "score", 2468)
+ legacy.set_value("records", "score", 9999)
+ legacy.save(session.settings_path)
  root.add_child(session)
+ check(session.best_score == 0 and session.practice_best_score == 0, "Old three-Act records do not become two-Zone completion records")
  session.sound_enabled = false
  var previous_best: int = session.best_score
  var game: Node = await start(false)
@@ -66,6 +71,8 @@ func run() -> void:
  check(session.last_summary.acts.size() == 2 and session.last_summary.acts[0].cleared and not session.last_summary.acts[1].cleared, "Failure retains cleared Acts and includes the unfinished Act")
  check(session.last_summary.score == 1350 and session.last_summary.normal_score == 1100 and session.last_summary.buddy_contributions.feature_fox == 250, "Build-aware results reconcile base scoring plus Buddy contributions")
  check(session.best_score == previous_best, "A failed run cannot replace completed-run records")
+ legacy.load(session.settings_path)
+ check(legacy.get_value("challenge_records", "score", 0) == 2468 and legacy.get_value("records", "score", 0) == 9999, "Saving the new course preserves earlier Challenge and Practice records")
  game.controls.reset_requested.emit()
  game.active.runtime.mechanics.complete_feature(&"switch_bank", "late", 500)
  check(game.score == 1350 and game.balls_remaining == 0, "Failure rejects retries and late rewards")

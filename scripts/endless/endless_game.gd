@@ -60,9 +60,15 @@ func _next_planned_zone(documents: Array) -> Array[Dictionary]:
 func _has_next_act() -> bool:
  return true
 
+func _default_run_seed() -> int:
+ return 18
+
+func _pool_error(documents: Array) -> String:
+ return Plan.pool_error(documents)
+
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
- run_seed = 18
+ run_seed = _default_run_seed()
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--seed="): run_seed = int(argument.trim_prefix("--seed="))
  var documents: Array = []
@@ -73,6 +79,11 @@ func _ready() -> void:
    _startup_error(loaded.error)
    return
   documents.append(loaded.document)
+ var pool_error := _pool_error(documents)
+ if not pool_error.is_empty():
+  _build_hud()
+  _startup_error(pool_error)
+  return
  planner = Plan.new(run_seed)
  pending.assign(_next_planned_zone(documents))
  next_zone_to_plan = 1
@@ -622,6 +633,7 @@ func _button(label: String, action: Callable, parent: Node) -> Button:
  return button
 
 func _startup_error(message: String) -> void:
+ last_source_error = message
  _startup_message = "Endless mode could not start:\n" + message
  loading_label.text = _startup_message
  push_error(message)

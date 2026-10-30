@@ -3,6 +3,7 @@ extends Control
 const Builder = preload("res://scripts/endless/template_builder.gd")
 const Plan = preload("res://scripts/endless/endless_plan.gd")
 const Registry = preload("res://scripts/themes/theme_registry.gd")
+const PrototypePlan = preload("res://scripts/prototype/run_plan.gd")
 var ball: PlaygroundBall
 var tuning: PhysicsTuning
 var controls: PlaygroundInput
@@ -33,6 +34,12 @@ func _ready() -> void:
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--act="): paths.append(argument.trim_prefix("--act="))
  if "--pool" in OS.get_cmdline_user_args(): paths = Plan.PATHS.duplicate()
+ if "--prototype" in OS.get_cmdline_user_args():
+  paths = PrototypePlan.source_paths()
+  if paths.size() < PrototypePlan.ACT_COUNT:
+   push_error("Prototype baking requires at least six Acts in data/acts/Authored.")
+   get_tree().quit(1)
+   return
  if paths.is_empty():
   var dialog := FileDialog.new()
   dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
@@ -65,6 +72,7 @@ func bake(paths: Array) -> void:
  library.progress.connect(func(message: String): status.text = message)
  library.prepare(self, paths, false)
  var themes: Array = Registry.IDS.duplicate()
+ if "--prototype" in OS.get_cmdline_user_args(): themes = PrototypePlan.THEMES.duplicate()
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--theme="): themes = [argument.trim_prefix("--theme=")]
  progress.max_value = paths.size() * themes.size()

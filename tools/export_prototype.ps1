@@ -64,8 +64,7 @@ try {
     $common = @('--headless', '--path', ('"{0}"' -f $build))
     Invoke-BuildStep 'import' ($common + @('--import'))
     # Bake the snapshot itself so artwork and pipeline fingerprints cannot race edits in the checkout.
-    $bake = $common + @('res://scenes/act_baker.tscn', '--', '--theme=green_hill')
-    foreach ($act in @('classic_pinball', 'switch_spinner', 'speedway_lane')) { $bake += "--act=res://data/prototype/$act.tres" }
+    $bake = $common + @('res://scenes/act_baker.tscn', '--', '--prototype')
     Invoke-BuildStep 'bake' $bake
     Invoke-BuildStep 'import-bakes' ($common + @('--import'))
     Invoke-BuildStep 'export' ($common + @('--export-release', 'Prototype', ('"{0}"' -f (Join-Path $output 'Sonic Spinball Runners.exe'))))

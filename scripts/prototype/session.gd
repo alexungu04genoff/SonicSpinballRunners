@@ -3,6 +3,8 @@ extends Control
 const Run = preload("res://scripts/prototype/zone_run.gd")
 const Sounds = preload("res://scripts/prototype/score_sounds.gd")
 const SETTINGS_PATH := "user://prototype_settings.cfg"
+const CHALLENGE_RECORDS := "two_zone_challenge_records"
+const PRACTICE_RECORDS := "two_zone_practice_records"
 var game: Node
 var overlay: CanvasLayer
 var overlay_root: Control
@@ -28,11 +30,11 @@ func _ready() -> void:
   if CharacterSpecials.CHARACTERS.has(saved): selected_character = saved
   sound_enabled = bool(settings.get_value("player", "sound", true))
   practice_mode = bool(settings.get_value("player", "practice", false))
-  # Earlier prototype records had unlimited retries and belong to Practice.
-  practice_best_score = maxi(0, int(settings.get_value("records", "score", 0)))
-  practice_best_seconds = maxf(0.0, float(settings.get_value("records", "seconds", 0.0)))
-  best_score = maxi(0, int(settings.get_value("challenge_records", "score", 0)))
-  best_seconds = maxf(0.0, float(settings.get_value("challenge_records", "seconds", 0.0)))
+  # The shuffled six-Act course has separate records from the earlier prototype.
+  practice_best_score = maxi(0, int(settings.get_value(PRACTICE_RECORDS, "score", 0)))
+  practice_best_seconds = maxf(0.0, float(settings.get_value(PRACTICE_RECORDS, "seconds", 0.0)))
+  best_score = maxi(0, int(settings.get_value(CHALLENGE_RECORDS, "score", 0)))
+  best_seconds = maxf(0.0, float(settings.get_value(CHALLENGE_RECORDS, "seconds", 0.0)))
  overlay = CanvasLayer.new()
  overlay.layer = 40
  add_child(overlay)
@@ -40,13 +42,14 @@ func _ready() -> void:
 
 func _save_settings() -> void:
  var settings := ConfigFile.new()
+ settings.load(settings_path) # Preserve records from previous course versions.
  settings.set_value("player", "character", selected_character)
  settings.set_value("player", "sound", sound_enabled)
  settings.set_value("player", "practice", practice_mode)
- settings.set_value("records", "score", practice_best_score)
- settings.set_value("records", "seconds", practice_best_seconds)
- settings.set_value("challenge_records", "score", best_score)
- settings.set_value("challenge_records", "seconds", best_seconds)
+ settings.set_value(PRACTICE_RECORDS, "score", practice_best_score)
+ settings.set_value(PRACTICE_RECORDS, "seconds", practice_best_seconds)
+ settings.set_value(CHALLENGE_RECORDS, "score", best_score)
+ settings.set_value(CHALLENGE_RECORDS, "seconds", best_seconds)
  if settings.save(settings_path) != OK: push_warning("Could not save prototype preferences.")
 
 func _panel(title: String, subtitle: String) -> VBoxContainer:
@@ -92,9 +95,9 @@ func _action(parent: Node, text: String, callback: Callable, focus := false) -> 
 
 func _show_menu() -> void:
  state = "menu"
- var stack := _panel("SONIC SPINBALL RUNNERS", "ONE ZONE · THREE ACTS")
- _label(stack, "Three balls per Act. Earn the target, then reach its exit.\nChoose a Buddy after Acts 1 and 2. Retries keep your points.")
- _label(stack, "Act 1: 1,000     Act 2: 1,500     Act 3: 2,000", 19, Color("8fe9b1"))
+ var stack := _panel("SONIC SPINBALL RUNNERS", "TWO ZONES · SIX SHUFFLED ACTS")
+ _label(stack, "Green Hill, then Chemical Plant. Three balls per Act.\nEarn the target, reach the exit, then choose a Buddy.\nEach run shuffles the authored Acts without repeats.")
+ _label(stack, "Green Hill: 1,000 / 1,500 / 2,000\nChemical Plant: 2,500 / 3,000 / 3,500", 19, Color("8fe9b1"))
  var characters := OptionButton.new()
  for id: String in CharacterSpecials.CHARACTERS:
   characters.add_item(id.capitalize())
@@ -159,7 +162,7 @@ func return_to_menu() -> void:
 
 func _show_pause() -> void:
  state = "paused"
- var stack := _panel("PAUSED", "Act %d / 3 · %s\nTotal score: %d" % [game.active_sequence + 1, game.act_score_text(), game.score])
+ var stack := _panel("PAUSED", "%s\n%s · Total score: %d · Seed: %d" % [game.progress_text(), game.act_score_text(), game.score, game.run_seed])
  _action(stack, "Resume", func(): game.toggle_pause(), true)
  _action(stack, "Restart run", start_run)
  _action(stack, "Return to menu", return_to_menu)
@@ -167,13 +170,15 @@ func _show_pause() -> void:
 
 func _on_draft_started(act_result: Dictionary, offers: Array[Dictionary]) -> void:
  state = "draft"
- var stack := _panel("ACT %d CLEARED · CHOOSE A BUDDY" % act_result.act, "%d / %d points · %d balls lost\nNext Act starts with %s." % [act_result.score, act_result.target, act_result.drains, "unlimited retries" if game.practice_mode else "three balls"])
+ var next: Dictionary = game.pending_act.plan
+ var next_theme: String = game.library.themes[next.theme].display_name
+ var stack := _panel("CHOOSE A BUDDY", "Zone %d · Act %d cleared · %s\n%d / %d points · %d balls lost\nNext: %s · Act %d · %s" % [act_result.zone, act_result.zone_act, act_result.title, act_result.score, act_result.target, act_result.drains, next_theme, next.act + 1, "unlimited retries" if game.practice_mode else "three balls"])
  _label(stack, "Buddies last for this run. Pick the same Buddy to upgrade it.", 16)
  _label(stack, game.buddies.summary(), 17, Color("8fe9b1"))
  for i in offers.size():
   var offer: Dictionary = offers[i]
   var button := _action(stack, "%s · Level %d\n%s" % [offer.name, offer.level, offer.description], _choose_buddy.bind(str(offer.id)), i == 0)
-  button.custom_minimum_size.y = 88
+  button.custom_minimum_size.y = 110
  _action(stack, "Return to menu", return_to_menu)
 
 func _choose_buddy(id: String) -> void:
@@ -192,9 +197,17 @@ func _on_completed(summary: Dictionary) -> void:
    if best_seconds <= 0.0 or float(summary.seconds) < best_seconds: best_seconds = float(summary.seconds)
  _save_settings()
  state = "results"
- var stack := _panel("ZONE COMPLETE" if summary.won else "RUN ENDED · OUT OF BALLS", "%s · %d POINTS · %s · %d BALLS LOST" % ["PRACTICE" if summary.practice else "CHALLENGE", summary.score, _time_text(summary.seconds), summary.drains])
+ var stack := _panel("TWO ZONES COMPLETE" if summary.won else "RUN ENDED · OUT OF BALLS", "%s · %d POINTS · %s · %d BALLS LOST\nRun seed: %d" % ["PRACTICE" if summary.practice else "CHALLENGE", summary.score, _time_text(summary.seconds), summary.drains, summary.seed])
+ var scroll := ScrollContainer.new()
+ scroll.custom_minimum_size = Vector2(600, 220)
+ scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+ stack.add_child(scroll)
+ var act_rows := VBoxContainer.new()
+ act_rows.add_theme_constant_override("separation", 12)
+ act_rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ scroll.add_child(act_rows)
  for act: Dictionary in summary.acts:
-  _label(stack, "ACT %d · %s%s\n%d / %d points · %s · %d balls lost · Buddies +%d" % [act.act, act.title, " · NOT CLEARED" if not act.cleared else "", act.score, act.target, _time_text(act.seconds), act.drains, Run.Buddies.total(act.buddy_contributions)])
+  _label(act_rows, "ZONE %d · ACT %d · %s%s\n%d / %d points · %s · %d balls lost · Buddies +%d" % [act.zone, act.zone_act, act.title, " · NOT CLEARED" if not act.cleared else "", act.score, act.target, _time_text(act.seconds), act.drains, Run.Buddies.total(act.buddy_contributions)], 16)
  _label(stack, "Scoring: %d base / combo / special + %d from Buddies" % [summary.normal_score, Run.Buddies.total(summary.buddy_contributions)], 17)
  for id: String in summary.buddies:
   _label(stack, "%s Lv.%d: +%d points" % [Run.Buddies.CATALOG[id].name, summary.buddies[id], int(summary.buddy_contributions.get(id, 0))], 17, Color("8fe9b1"))

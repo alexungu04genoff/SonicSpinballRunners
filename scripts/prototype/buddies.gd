@@ -3,7 +3,7 @@ extends RefCounted
 const CATALOG := {
  "ring_scout": {"name": "Ring Scout", "points": 10, "kinds": ["ring"], "trigger": "each ring collected"},
  "bumper_coach": {"name": "Bumper Coach", "points": 75, "kinds": ["bumper"], "trigger": "each bumper award"},
- "feature_fox": {"name": "Feature Fox", "points": 250, "kinds": ["ring_rack", "switch_bank", "spinner_goal", "lane_set"], "trigger": "each completed rack, bank, spinner goal or lane set"}
+ "feature_fox": {"name": "Feature Fox", "points": 250, "kinds": ["ring_rack", "switch_bank", "spinner_goal", "lane_set"], "trigger": "each completed rack, bank,\nspinner goal or lane set"}
 }
 var levels: Dictionary = {}
 

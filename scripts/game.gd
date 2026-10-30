@@ -396,13 +396,16 @@ func _wire_scoring_runtime(runtime: Dictionary, owner_id: String) -> void:
   item.body.set_meta("scoring_owner", owner_id)
   item.body.set_meta("scoring_source", owner_id + ":" + str(item.get("object_id", "object_%d" % index)))
 
+func _score_target_for(document: Resource, _owner_id: String) -> int:
+ return int(document.score_target)
+
 func _add_scoring_hardware(runtime: Dictionary, document: Resource, offset: Vector2, visual_parent: Node3D, owner_id: String) -> void:
  var visuals := Node3D.new()
  visuals.name = "ActScoringFeedback"
  visuals.set_meta("keep_on_playfield_rebuild", true)
  visual_parent.add_child(visuals)
  runtime.root.tree_exiting.connect(visuals.queue_free)
- if int(document.score_target) > 0 and int(document.exit_width) > 0:
+ if _score_target_for(document, owner_id) > 0 and int(document.exit_width) > 0:
   var barrier := ScoreExit.new()
   runtime.root.add_child(barrier)
   barrier.configure(document, offset, visuals, scored_progression_enabled)
@@ -421,7 +424,7 @@ func _activate_scoring_context(document: Resource, runtime: Dictionary, owner_id
  ring_field.active_owner_id = owner_id
  ring_field.scoring_enabled = true
  ring_field.previous_ball_position = ball.position
- act_score_target = int(document.score_target) if scored_progression_enabled else 0
+ act_score_target = _score_target_for(document, owner_id) if scored_progression_enabled else 0
  exit_unlocked = act_score_target <= 0
  _score_exit = runtime.get("score_exit")
  if is_instance_valid(_score_exit): _score_exit.set_unlocked(exit_unlocked)
