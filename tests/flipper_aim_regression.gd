@@ -19,11 +19,13 @@ func check(condition: bool, label: String) -> void:
   failures += 1
   push_error("FAIL | " + label)
 
-func trial(side: float, fraction: float, trigger: float, mode: String = "timed", chao: String = "none", physical_scale: float = 1.0) -> Dictionary:
+func trial(side: float, fraction: float, trigger: float, mode: String = "timed", power_scale: float = 1.0, physical_scale: float = 1.0) -> Dictionary:
  var world := Node2D.new()
  root.add_child(world)
  var tuning := PhysicsTuning.new()
- tuning.equip_chao(chao)
+ var modifier := PhysicsModifier.new()
+ modifier.multipliers = {"flipper_launch_strength": power_scale, "flipper_upward_speed_limit": power_scale}
+ tuning.set_temporary("power_test", modifier)
  world.add_child(tuning)
  var controls := PlaygroundInput.new()
  controls.virtual_enabled = true
@@ -54,7 +56,7 @@ func trial(side: float, fraction: float, trigger: float, mode: String = "timed",
  ball.position = start
  world.add_child(ball)
  ball.teleport_to(start, velocity)
- var result := {"side": side, "fraction": fraction, "trigger": trigger, "mode": mode, "chao": chao, "press_tick": -1, "shots": 0, "impulse": Vector2.ZERO, "contact_fraction": -1.0, "angle": 0.0, "rise": 0.0, "velocity": Vector2.ZERO, "passed_below": false}
+ var result := {"side": side, "fraction": fraction, "trigger": trigger, "mode": mode, "power_scale": power_scale, "press_tick": -1, "shots": 0, "impulse": Vector2.ZERO, "contact_fraction": -1.0, "angle": 0.0, "rise": 0.0, "velocity": Vector2.ZERO, "passed_below": false}
  paddle.shot_fired.connect(func(_contact: Vector2, impulse: Vector2, contact_fraction: float) -> void:
   result.shots += 1
   result.impulse = impulse
@@ -117,10 +119,10 @@ func run() -> void:
  for mode: String in ["none", "early", "hold", "released", "underside"]:
   var miss := await trial(1.0, 0.65, 43.0, mode)
   check(miss.shots == 0 and miss.passed_below, "No powered recovery from %s; the ball remains free to fall" % mode)
- var spring := await trial(1.0, 0.65, 43.0, "timed", "spring")
- check(spring.shots == 1 and spring.velocity.length() > samples[2].velocity.length(), "Spring Chao increases the assisted shot without requiring additive impulse scaling")
+ var spring := await trial(1.0, 0.65, 43.0, "timed", 1.35)
+ check(spring.shots == 1 and spring.velocity.length() > samples[2].velocity.length(), "A power modifier increases the assisted shot without requiring additive impulse scaling")
  for side: float in [1.0, -1.0]:
-  var compact := await trial(side, 0.65, 43.0, "timed", "none", 0.5)
+  var compact := await trial(side, 0.65, 43.0, "timed", 1.0, 0.5)
   var gravity := float(ProjectSettings.get_setting("physics/2d/default_gravity")) * PhysicsTuning.BALANCED.gravity_scale
   var compact_height := pow(PhysicsTuning.BALANCED.flipper_upward_speed_limit, 2) * 0.5 / (2.0 * gravity)
   check(compact.shots == 1 and compact.rise > 80.0 and compact.rise < compact_height + 50.0, "Compact authored-scale flipper retains a useful shot without full-Act launch height")

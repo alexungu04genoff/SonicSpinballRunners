@@ -5,7 +5,6 @@ param(
     [string]$GraphicsBackend = 'Angle',
     [ValidateSet('Sonic', 'Tails', 'Knuckles', 'Shadow')]
     [string]$Character = 'Sonic',
-    [switch]$NoModel,
     [ValidateSet('gameplay', 'overview', 'idle', 'jump', 'trick', 'roll', 'reel', 'homing', 'impact', 'fly')]
     [string]$Capture,
     [switch]$Sequence,
@@ -105,7 +104,6 @@ Write-Host "Graphics backend: $GraphicsBackend ($renderingDriver)"
 Write-Host "Game log: $gameLog"
 $launchArguments = @('--path', $repoRoot, '--rendering-method', 'gl_compatibility', '--rendering-driver', $renderingDriver, '--log-file', $gameLog, $scenePath)
 $userArguments = @("--character=$($Character.ToLowerInvariant())")
-if ($NoModel) { $userArguments += '--no-model' }
 if ($Capture) {
     $launchArguments = @('--fixed-fps', '60') + $launchArguments
     $userArguments += @("--capture=$Capture", "--capture-frames=$CaptureFrames")

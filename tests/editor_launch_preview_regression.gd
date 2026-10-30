@@ -27,11 +27,11 @@ func run() -> void:
   check(absf(traced[0].y - traced[-1].y) < 0.001, "Predicted range returns to original contact height: " + shot.label)
  var usual := find_catch(left, "Typical")
  check(not usual.is_empty() and usual.velocity.x > 0.0 and usual.velocity.y < 0.0, "Typical left catch travels up and into the table")
- var spring_stats := PhysicsTuning.resolve(PhysicsTuning.BALANCED, {}, [PhysicsTuning.CHAO.spring.modifier])
+ var spring_stats := PhysicsTuning.resolve(PhysicsTuning.BALANCED, {}, [power_modifier()])
  var before := spring_stats.duplicate(true)
  var boosted := await catches(probe, placement, spring_stats)
  var boosted_usual := find_catch(boosted, "Typical")
- check(not boosted_usual.is_empty() and boosted_usual.velocity.y < usual.get("velocity", Vector2.ZERO).y, "Chao boost affects the real preview catch")
+ check(not boosted_usual.is_empty() and boosted_usual.velocity.y < usual.get("velocity", Vector2.ZERO).y, "Modifier boost affects the real preview catch")
  check(spring_stats == before, "Preview never changes resolved gameplay stats")
  var generation: int = probe._generation
  placement.position += Vector2(125, -40)
@@ -239,9 +239,9 @@ func check_spawn_catches(probe: Node) -> void:
  await spawn_catch(probe, doc, 1.0)
  check(probe._generation > generation, "Moving spawn invalidates the cached drop")
  doc = spawn_fixture()
- var boost := PhysicsTuning.resolve(PhysicsTuning.BALANCED, {}, [PhysicsTuning.CHAO.spring.modifier])
+ var boost := PhysicsTuning.resolve(PhysicsTuning.BALANCED, {}, [power_modifier()])
  var boosted := await spawn_catch(probe, doc, 0.9, boost)
- check(not boosted.is_empty() and not outer.is_empty() and boosted[0].velocity.length() > outer[0].velocity.length(), "Spawn catch consumes resolved Chao stats")
+ check(not boosted.is_empty() and not outer.is_empty() and boosted[0].velocity.length() > outer[0].velocity.length(), "Spawn catch consumes resolved modifier stats")
  var missed := await spawn_catch(probe, doc, 0.1)
  check(missed.is_empty() and probe.status.contains("not reached"), "An unreachable heel target cannot invent a shot farther out")
  doc.placements = [{"shape_id": "rectangle_1x1", "base_size": Vector2i(1, 1), "anchor": Vector2i(3, 11), "quarter_turns": 0, "flip_h": false, "flip_v": false}]
@@ -251,3 +251,8 @@ func check_spawn_catches(probe: Node) -> void:
  doc.spawn_position = null
  await spawn_catch(probe, doc, 0.9)
  check(probe.shots.is_empty() and probe.status.contains("Set a Spawn"), "Unset spawn shows a reminder instead of a synthetic drop")
+
+func power_modifier() -> PhysicsModifier:
+ var modifier := PhysicsModifier.new()
+ modifier.multipliers = {"flipper_launch_strength": 1.35, "flipper_upward_speed_limit": 1.35}
+ return modifier

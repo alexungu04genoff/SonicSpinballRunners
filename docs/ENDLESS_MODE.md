@@ -1,6 +1,6 @@
 # Endless authored-Act experiment
 
-Open **Play Endless.cmd**. The supported modes are standalone authored Act play and seamless Endless streaming. F5 and **Play Act.cmd** start the authored player; the procedural alpha modes are retired.
+Open **Play Endless.cmd** after **Bake Endless.cmd** for the separate graphics, theme and streaming stress test. The main roguelite run is **Play Prototype.cmd**; F5 and **Play Act.cmd** start the standalone authored player. The procedural alpha modes are retired.
 
 The trial uses seven checked-in snapshots in `data/endless/`: **Second Simple**, **Third Complex**, **First Try Smooth Decor**, **RampMania**, **Reverse C Spring**, **Secret Entry** and **SpringUp**. Each Zone selects three distinct shuffled Acts from this pool under one theme. Adjacent Acts do not repeat across a Zone boundary. Themes use a shuffled bag without adjacent repeats. There are no score gates or limited lives. Shared ball physics, controls, profiles, mechanics and characters remain authoritative.
 

@@ -70,7 +70,9 @@ func run() -> void:
  game.ring_field.collection_bounds = Rect2()
  game.ring_field.rings.clear()
  game.specials.select_character("knuckles")
- game.tuning.equip_chao("ice")
+ var control_modifier := PhysicsModifier.new()
+ control_modifier.multipliers = {"steering_acceleration": 1.5, "counter_steering_deceleration": 1.75, "max_steering_speed": 1.25}
+ game.tuning.set_temporary("control_test", control_modifier)
  var baseline: Dictionary = game.tuning.effective.duplicate()
  var box := RectangleShape2D.new()
  box.size = Vector2(25, 1600)
@@ -94,7 +96,7 @@ func run() -> void:
  var area_count := areas.size()
  var start_y: float = game.ball.position.y
  check(game.specials.activate() and game.special_meter == 0, "Knuckles launches a paid lateral glide")
- check(game.tuning.effective.gravity_scale == baseline.gravity_scale and game.tuning._temporary.size() == 1, "Glide keeps gravity and combines once with Ice through the resolver")
+ check(game.tuning.effective.gravity_scale == baseline.gravity_scale and game.tuning._temporary.size() == 2 and game.tuning._temporary.has(CharacterSpecials.GLIDE_KEY), "Glide keeps gravity and combines once with the independent control modifier")
  var remaining: float = game.specials.glide_remaining
  paused = true
  await frames(8)
@@ -161,14 +163,14 @@ func run() -> void:
  area_count = areas.size()
  game.specials.activate()
  await frames(110)
- check(endings.back() == "Expired" and areas.size() == area_count and game.tuning._temporary.is_empty(), "Missed glide expires safely without targets or leftover effects")
+ check(endings.back() == "Expired" and areas.size() == area_count and (game.tuning._temporary.size() == 1 and game.tuning._temporary.has("control_test")), "Missed glide expires safely without targets or leftover effects")
  for reason: String in ["Drain", "Reset", "Character changed", "New run"]:
   await place(Vector2(2000, 3000))
   game.special_meter = 100
   game.specials.activate()
   game.specials.charge(17)
   game.specials.reset(false, reason)
-  check(game.specials.glide_remaining == 0 and game.tuning._temporary.is_empty() and game.special_meter == 17, "Glide cancellation clears state without checkpoint refill: " + reason)
+  check(game.specials.glide_remaining == 0 and (game.tuning._temporary.size() == 1 and game.tuning._temporary.has("control_test")) and game.special_meter == 17, "Glide cancellation clears state without checkpoint refill: " + reason)
  # Temporary state survives a preview pause, but cannot carry into a new Act.
  await place(Vector2(2000, 3000))
  game.special_meter = 100
@@ -176,9 +178,9 @@ func run() -> void:
  paused = true
  remaining = game.specials.glide_remaining
  await frames(10)
- check(game.specials.glide_remaining == remaining, "Chao preview freezes glide duration")
+ check(game.specials.glide_remaining == remaining, "Pause freezes glide duration")
  game.specials.act_advanced()
- check(game.specials.glide_remaining == 0 and game.tuning._temporary.is_empty(), "Act advance clears glide while keeping earned meter")
+ check(game.specials.glide_remaining == 0 and (game.tuning._temporary.size() == 1 and game.tuning._temporary.has("control_test")), "Act advance clears glide while keeping earned meter")
  paused = false
  # Free all fixture bodies before Act replay replaces their descriptor owners.
  for body: Node in [target_body, second, far, wall]:
@@ -189,19 +191,17 @@ func run() -> void:
  for id: String in ["knuckles", "shadow"]:
   paused = true
   ui.character_selector.select(CharacterSpecials.CHARACTER_IDS.find(id))
-  ui.chao_lab.refresh()
-  check(ui.chao_lab.heading.text.contains(id.capitalize()), "Pending Chao preview follows " + id)
   check(ui.start_run(), "Act replay accepts %s" % id)
   await frames(8)
-  check(game.character_id == id and game.special_meter == 0 and game.tuning._temporary.is_empty() and not game.character.model_available, "Fresh %s state and spin-ball presentation" % id)
+  check(game.character_id == id and game.special_meter == 0 and (game.tuning._temporary.size() == 1 and game.tuning._temporary.has("control_test")) and game.character.spin_root.visible, "Fresh %s state and spin-ball presentation" % id)
   check(game.debug_panel.profiles.selected == PhysicsTuning.PROFILES.find(game.tuning.base), "Physics Lab identifies the selected character profile")
-  check(game.tuning.chao_id == "ice", "Character change retains session Chao")
+  check(game.tuning._temporary.get("control_test") == control_modifier, "Character change retains independent modifiers")
   paused = false
  game.set_physics_process(true)
  game.ring_field.set_physics_process(true)
  game.ball.teleport_to(Vector2(game.playfield.spawn.x, game.playfield.bounds.end.y - 10), Vector2(0, 400))
  await frames(8)
- check(game.respawn_time > 0 and game.specials.glide_remaining == 0 and game.tuning._temporary.is_empty(), "Authored drain clears glide and queues normal retry")
+ check(game.respawn_time > 0 and game.specials.glide_remaining == 0 and (game.tuning._temporary.size() == 1 and game.tuning._temporary.has("control_test")), "Authored drain clears glide and queues normal retry")
  game.free()
  await frames(3)
  print("RESULT | Four characters | %d checks | %d failures" % [checks, failures])

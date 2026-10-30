@@ -41,7 +41,7 @@ const ActDocument = preload("res://scripts/act_editor/act_geometry.gd")
 const ActCompiler = preload("res://scripts/authored_act/act_runtime_compiler.gd")
 const ActLifecycle = preload("res://scripts/authored_act/act_lifecycle.gd")
 var playfield: PlayfieldData
-var authored_act_path := "res://data/endless/second_simple.tres"
+var authored_act_path := "res://data/acts/Authored/First Try Smooth Decor.tres"
 var authored_document: Resource
 var authored_runtime: Dictionary = {}
 var authored_timings: Dictionary = {}
@@ -231,9 +231,6 @@ func _source_settings_valid(settings: Dictionary) -> bool:
  if not CharacterSpecials.CHARACTERS.has(settings.get("character", character_id)):
   status_message = "Unknown character; current run preserved."
   return false
- if settings.has("chao") and not PhysicsTuning.CHAO.has(settings.chao):
-  status_message = "Unknown Chao; current run preserved."
-  return false
  return true
 
 func request_authored_act(path: String, settings: Dictionary = {}) -> bool:
@@ -301,8 +298,6 @@ func _replace_playfield(prepared: Dictionary, settings: Dictionary) -> void:
  _wire_scoring_runtime(authored_runtime, active_scoring_id)
  flippers.assign(authored_runtime.flippers)
  playfield = Playfield.from_authored(authored_document, authored_runtime)
- if settings.has("chao"):
-  tuning.equip_chao(settings.chao)
  ball.serve_position = playfield.spawn
  ball.teleport_to(ball.serve_position, Vector2.ZERO, true)
  _apply_tuning()

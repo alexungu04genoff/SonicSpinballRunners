@@ -1,6 +1,6 @@
 # Adventure Buddies, ring pacing and Buzz Bomber
 
-Implemented milestone, 2026-10-30. The finite run uses the eleven **Sonic Runners Adventure** Buddy identities. Effects below are adaptations for this pinball game, not claims about the mobile game's mechanics or rarity. Chao Lab remains a separate physics experiment. Authoritative 2D physics, collisionless 3D presentation, Scorecraft, physical Goal Ring progression and existing standalone/Endless rules remain intact.
+Implemented milestone, 2026-10-30. The finite run uses the eleven **Sonic Runners Adventure** Buddy identities. Effects below are adaptations for this pinball game, not claims about the mobile game's mechanics or rarity. The unrelated Ice/Spring/Magnet Chao Lab was retired during repository cleanup; these Buddies and the generic physics modifier foundation remain supported. Authoritative 2D physics, collisionless 3D presentation, Scorecraft, physical Goal Ring progression and existing standalone/Endless rules remain intact.
 
 ## Ring pacing and migration
 

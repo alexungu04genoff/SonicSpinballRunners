@@ -3,8 +3,6 @@ extends Control
 var game: Node
 var character_selector: OptionButton
 var start_button: Button
-var chao_button: Button
-var chao_lab: ChaoLabPanel
 var character_panel: CharacterPanel
 var hint: Label
 
@@ -22,13 +20,7 @@ func _ready() -> void:
  character_selector.item_selected.connect(func(_index: int): character_selector.release_focus())
  row.add_child(character_selector)
  start_button = _button(row, "Replay Act", func(): start_run())
- start_button.tooltip_text = "Reload this saved Act with the selected character and Chao. Score and rings reset; physics tuning stays."
- chao_lab = ChaoLabPanel.new()
- chao_lab.game = game
- chao_lab.start_run = start_run
- chao_lab.next_character = func(): return CharacterSpecials.CHARACTER_IDS[character_selector.selected]
- add_child(chao_lab)
- chao_button = _button(row, "Chao: None", chao_lab.open_lab)
+ start_button.tooltip_text = "Reload this saved Act with the selected character. Score and rings reset; physics tuning stays."
  hint = Label.new()
  row.add_child(hint)
  character_panel = CharacterPanel.new()
@@ -47,16 +39,12 @@ func _button(parent: Node, text: String, action: Callable) -> Button:
  parent.add_child(button)
  return button
 
-func start_run(chao_id: String = "") -> bool:
+func start_run() -> bool:
  var settings := {"character": CharacterSpecials.CHARACTER_IDS[character_selector.selected]}
- if not chao_id.is_empty(): settings.chao = chao_id
  return game.request_replay(settings)
 
 func _process(_delta: float) -> void:
  var available: bool = game.can_reload_act()
  start_button.disabled = not available
  character_selector.disabled = not available
- chao_button.disabled = not available
- chao_button.text = "Chao: %s · Lab" % PhysicsTuning.CHAO[game.tuning.chao_id].name.trim_suffix(" Chao")
- chao_button.modulate = PhysicsTuning.CHAO[game.tuning.chao_id].color
  hint.text = "Resets the Act" if available else "Pause to edit"

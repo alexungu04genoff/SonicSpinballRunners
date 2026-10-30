@@ -1,14 +1,14 @@
 # Green Hill Visual Lab
 
-**Current presentation (2026-10-24):** Sonic, Tails, Knuckles and Shadow always remain in their character-colored ball form, including jumps, impacts, specials and character study. State transitions, special effects and authoritative 2D gameplay remain intact. Local character models are not loaded; the existing Blender pipeline and pose hooks are retained for later work with a 3D modeler. Older model previews and verification records below describe the previous presentation.
+**Current presentation (2026-10-30):** Sonic, Tails, Knuckles and Shadow remain in character-colored ball form. The disabled imported-model loader, Blender preparation scripts and rig-only orientation probe were retired during repository cleanup. Ball spin, motion trails, reaction states, Special effects, character study, camera and authoritative 2D gameplay remain. Asset provenance below is historical context, not a runtime dependency.
 
-The main authored Act player wraps the shared 2D physics engine in collisionless 3D presentation. **Play Act.cmd** and **Play Green Hill.cmd** open it; the default Act is Second Simple. The former generated Free Play, Score Attack and score-gated Green Hill Zone have been removed. Endless uses authored Acts and has its own **Play Endless.cmd** launcher.
+The main authored Act player wraps the shared 2D physics engine in collisionless 3D presentation. **Play Act.cmd** opens it; the default Act is First Try Smooth Decor. The older Play Green Hill launcher is retained for local art-review work. The former generated Free Play, Score Attack and score-gated Green Hill Zone have been removed. Endless uses authored Acts and has its own **Play Endless.cmd** launcher.
 
 ## Launch
 
 Use **Load Act…** for a saved `.tres`, **Reload Act** or F5 after editing, and **Replay Act** for a fresh run. The ball, engine, camera and presentation preferences persist across Act reloads. Invalid saves leave the active Act intact. See [authored play](../../docs/PLAYFIELD_SOURCES.md) and [Endless](../../docs/ENDLESS_MODE.md).
 
-**Chao Lab:** choose Ice, Spring or Magnet at serve or pause, then equip into a fresh run on the same Act. Replay and drains retain the selection; Practice replaces the same slot. Character selection, scoring feedback, specials and physics controls remain shared. There are no score requirements or generated modes.
+The old Ice/Spring/Magnet/Practice Chao Lab is retired. Character selection, scoring feedback, Specials and session physics controls remain shared. Prototype uses the current eleven-entry SRA Buddy system.
 
 Alternatively, run PowerShell from this worktree's repository root:
 
@@ -43,8 +43,6 @@ Discovered tools: **Godot 4.7.2 stable**, **Blender 5.2.3 LTS**. The launcher al
 | F4 | Cycle OFF, PIXEL / DITHER, N64-ish, CRT and VHS; custom stacks return to OFF |
 | Retro... / Shift+F4 | Open live effect checkboxes and tuning sliders; F1 also has a multiselect menu. HUD stays crisp |
 | O / Overview button | Toggle full-course overview and ball-follow camera |
-| Normal 18 / Normal 23 | Build the requested catalogue layout while paused or at serve |
-| Grid base / Grid variant | Switch middle type, preserving current seed and difficulty, while paused or at serve |
 | C / Character close-up | Enter or leave the optional paused study pedestal |
 | 1–4 in character study | Preview rolling, idle, jump and trick |
 | 5 in character study | Preview Sonic homing or Tails flight |
@@ -52,9 +50,9 @@ Discovered tools: **Godot 4.7.2 stable**, **Blender 5.2.3 LTS**. The launcher al
 
 **Character selection:** choose Sonic, Tails, Knuckles or Shadow, then **Replay Act**. Rings and bumper contacts charge the meter. Specials use the authoritative 2D targets and collision rules. Presentation remains cosmetic.
 
-Optional launch arguments include `-Character Tails`, `-NoModel` and `-ImportOnly`. Direct Godot launches accept `-- --character=tails --act res://data/acts/scale_comparison.tres`. F5 in the Godot editor starts the authored player; F5 inside the game reloads the current Act.
+Optional launch arguments include `-Character Tails` and `-ImportOnly`. Direct Godot launches accept `-- --character=tails --act res://data/acts/scale_comparison.tres`. F5 in the Godot editor starts the authored player; F5 inside the game reloads the current Act.
 
-The remaining sections record earlier art/model experiments and their historical checks. References to generated layouts, retired modes or old model poses are not current gameplay instructions.
+The remaining sections are an archive of retired art/model experiments and their historical checks. Preparation scripts and the imported-model runtime described here no longer exist; do not follow these old commands as setup instructions. References to generated layouts, retired modes or old model poses are not current gameplay instructions.
 
 ## Table-relative character orientation
 

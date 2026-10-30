@@ -20,7 +20,6 @@ var score_label: Label
 var message_label: Label
 var pause_label: Label
 var act_controls: Control
-var practice_toggle: CheckButton
 var values: RichTextLabel
 var spinboxes: Dictionary = {}
 var _refreshing: bool = false
@@ -99,17 +98,6 @@ func _ready() -> void:
   steering_presets.release_focus()
  )
  stack.add_child(steering_presets)
- var modifier := CheckButton.new()
- practice_toggle = modifier
- modifier.text = "Practice Chao (replaces equipped Chao)"
- modifier.tooltip_text = "Legacy test: +25% steering acceleration / +15% flip. Starts a fresh run; never stacks with Chao Lab."
- modifier.add_theme_font_size_override("font_size", 13)
- modifier.toggled.connect(func(enabled: bool):
-  game.request_replay({"chao": "practice" if enabled else "none"})
-  modifier.set_pressed_no_signal(tuning.modifier_enabled)
-  modifier.release_focus()
- )
- stack.add_child(modifier)
  var buttons := HBoxContainer.new()
  stack.add_child(buttons)
  _button(buttons, "Roll in", func(): game.launch_ball())
@@ -202,7 +190,7 @@ func _ready() -> void:
   spin.get_line_edit().text_submitted.connect(func(_text: String): spin.get_line_edit().release_focus())
   camera_controls.add_child(spin)
   camera_fields[key] = spin
- _label(fields, "Base values + session edits (before Chao)", 13)
+ _label(fields, "Base values + session edits (before modifiers)", 13)
  for key: String in PhysicsProfile.FIELDS:
   var spec: Array = PhysicsProfile.FIELDS[key]
   _label(fields, "%s  [%s]" % [spec[3], spec[4]], 12)
@@ -297,7 +285,6 @@ func refresh_fields() -> void:
 
 func refresh_effective() -> void:
  profiles.select(PhysicsTuning.PROFILES.find(tuning.base))
- practice_toggle.set_pressed_no_signal(tuning.modifier_enabled)
  if not is_instance_valid(values):
   return
  var text: String = ""
@@ -315,7 +302,6 @@ func refresh_effective() -> void:
    break
 
 func _process(delta: float) -> void:
- practice_toggle.disabled = not game.can_reload_act()
  var focus: Control = get_viewport().gui_get_focus_owner()
  var source_modal: bool = game.has_method("is_source_picker_open") and game.is_source_picker_open()
  game.controls.input_blocked = focus is LineEdit or source_modal

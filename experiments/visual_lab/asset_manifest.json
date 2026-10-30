@@ -1,5 +1,7 @@
 {
   "schema_version": 1,
+  "archived_on": "2026-10-30",
+  "current_use": "Historical provenance only. Imported-model loading and preparation scripts are retired; ball-form presentation has no model dependency.",
   "experiment": "Green Hill Visual Lab",
   "branch": "experiment/green-hill-visual-lab",
   "base_commit": "a099f340bf7d54ce779fc37375123adb73faf832",
@@ -41,7 +43,7 @@
       "credit_note": "Different author/contributor strings are preserved as observed; no equivalence is assumed.",
       "original_rights_holder": "SEGA / Sonic Team",
       "status": "downloaded and used locally",
-      "runtime_dependency": true,
+      "runtime_dependency": false,
       "archive_path": "local/sonic.zip",
       "archive_sha256": "4DE42CC9627DAEA795F6E4EDCB77A2BB5E44A11AED10C8968B977BB18E9DB2E8",
       "extraction_root": "local/source/sonic/",
@@ -97,7 +99,7 @@
       "original_rights_holder": "SEGA / Sonic Team",
       "inspected_on": "2026-10-23",
       "status": "downloaded with explicit user approval and used locally",
-      "runtime_dependency": true,
+      "runtime_dependency": false,
       "archive_path": "local/tails.zip",
       "archive_sha256": "D81CA4D80D6B9D9C109933F578DEF4E59E9C2BE9EEED95A9969C22F422055F43",
       "extraction_root": "local/source/tails/",
@@ -225,7 +227,7 @@
       ]
     }
   },
-  "preparation": {
+  "historical_preparation": {
     "script": "tools/prepare_character.py",
     "blender_version": "5.2.3 LTS",
     "godot_version": "4.7.2 stable",

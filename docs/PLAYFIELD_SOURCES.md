@@ -1,15 +1,15 @@
-# Authored Act play and Endless
+# Authored Act play, Prototype and Endless
 
-The game has two play modes: a saved authored Act, and Endless assembled from saved Acts. The alpha's random table generator, generated chunk recipes, Score Attack and score-gated Green Hill Zone have been retired. Historical design and verification documents may still describe those prototypes.
+Standalone Play Act supports level authoring; Prototype is the configurable roguelite run; Endless is the separate graphics/streaming stress test. Gameplay flows through Act Geometry Editor → Play Act → Bake Prototype → Play Prototype. Graphics work flows through Bake Endless → Play Endless. The alpha's random table generator, generated chunk recipes, Score Attack and score-gated Green Hill Zone have been retired. Historical design and verification documents may still describe those prototypes.
 
 ## Launch and reload
 
-1. Open **Play Act.cmd** (or the existing **Play Green Hill.cmd** alias). The default is Second Simple.
+1. Open **Play Act.cmd**. The default is First Try Smooth Decor from the production authored pool.
 2. Choose **Load Act…** to open a saved `.tres` containing a Spawn point. The picker pauses play and restores the previous pause state.
 3. Press Enter / gamepad X to release the ball; Q/E or LB/RB operate flippers, arrows/stick steer, and Space/A activates the selected special.
 4. Save changes in the Act Editor, then choose **Reload Act** or press F5. Invalid saves preserve the current playable Act.
 
-Reload rebuilds authored terrain, objects, rings, decor and presentation, then resets to Spawn. Theme, retro filters, camera tuning, follow/overview choice, fullscreen state and the previous pause state persist. **Replay Act** uses the same saved file. Character selection, Chao Lab, Scorecraft and F1 tuning remain available. Scores are optional feedback, without a target or gate.
+Reload rebuilds authored terrain, objects, rings, decor and presentation, then resets to Spawn. Theme, retro filters, camera tuning, follow/overview choice, fullscreen state and the previous pause state persist. **Replay Act** uses the same saved file. Character selection, Scorecraft and F1 tuning remain available. The old Chao Lab is retired; Prototype uses the current Adventure Buddy system. Scores in standalone play are optional feedback, without a target or gate.
 
 For a specific Act, launch `experiments/visual_lab/visual_lab.tscn` with `-- --act res://data/acts/scale_comparison.tres`. Missing files or Spawn points report an error; no generated substitute is created.
 
@@ -36,7 +36,7 @@ Character abilities query this contract instead of iterating generated chunks. S
 
 ## Physics, dimensions and presentation
 
-Shared `PhysicsTuning`, ball integration, flipper strikes and bumper collision response remain authoritative. Gravity, mass, steering, counter-steering, launch impulses, special behavior and modifier resolution use the same units and defaults in both play modes. Geometry may legitimately change the resulting trajectory.
+Shared `PhysicsTuning`, ball integration, flipper strikes and bumper collision response remain authoritative. Gravity, mass, steering, counter-steering, launch impulses, special behavior and modifier resolution use the same units and defaults across the play modes. Geometry may legitimately change the resulting trajectory.
 
 Authored dimensions continue to come from `scripts/act_dimensions.gd`: ball radius 0.14 cell, round bumper radius 0.25 cell, sling height 0.6 cell, flipper centerline 0.65 cell and capsule radius 0.05 cell, ring radius 0.09 cell. Only object dimensions follow cell size; saved centers, pivots, rotations and terrain footprints remain exact. Changing cell size does not normalize traversal time or retune gravity.
 
@@ -62,6 +62,6 @@ Spawn is the serve/reset location. The bottom of the one-cell red gutter is the 
 
 - `tests/authored_main_game_regression.gd` checks same-instance ownership, actual Act/picker controls, run resets, authored replay, failure preservation, no-generator authored startup, camera persistence, rings/scoring/meter, all four specials and lifecycle behavior. Run with ANGLE for framebuffer captures or `--headless` for logic checks.
 - `tests/authored_source_physics_regression.gd` compares fresh and baked authored collisions, steering, strikes, rebounds, pickups and serve behavior across all four characters.
-- Character, Chao, Scorecraft, ring, presentation and Endless regressions cover the shared engine. Retired generator/Score Attack/old Zone tests were removed with those features.
+- Character, generic modifier, SRA Buddy, Scorecraft, ring, presentation and Endless regressions cover the shared engine. Retired generator/Score Attack/old Zone tests were removed with those features.
 
 Human playtesting still owns flipper timing, camera comfort and layout quality. Unlimited-duration Endless coordinate rebasing and production packaging remain future work.

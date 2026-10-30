@@ -428,7 +428,6 @@ func _load_selected_act(path: String) -> void:
 
 func reload_authored_act() -> void:
  if authored_act_path.is_empty() or loading_act or close_view or is_source_picker_open(): return
- if debug_panel.act_controls.chao_lab.visible: return
  # The shared source loader validates and compiles before replacing the live Act.
  # Pause even during live play, then restore the caller's pause and view state.
  _begin_source_switch()
@@ -476,8 +475,8 @@ func _input(event: InputEvent) -> void:
    get_viewport().set_input_as_handled()
 
 func toggle_fullscreen() -> void:
- # Modal source/Chao editors own pause and focus until dismissed.
- if is_source_picker_open() or debug_panel.act_controls.chao_lab.visible:
+ # The modal source picker owns pause and focus until dismissed.
+ if is_source_picker_open():
   return
  var window := get_window()
  var challenge: Control = debug_panel.act_controls
@@ -625,14 +624,10 @@ func _process(_delta: float) -> void:
  score_header_lab.text = "ACT SCORE / TARGET"
  score_label_lab.add_theme_font_size_override("font_size", 18)
  score_feedback_lab.text = scoring_feedback_text()
- status_label.text = "Authored Act · %s" % authored_document.title
- status_label.tooltip_text = character.model_status
- if character.BALL_FORM_ONLY:
-  status_label.text += " · Ball form"
- elif not character.model_available:
-  status_label.text += " · Spin-ball fallback"
+ status_label.text = "Authored Act · %s · Ball form" % authored_document.title
+ status_label.tooltip_text = character.character_id.capitalize() + " · Ball form"
  load_act_button.disabled = loading_act or close_view or is_source_picker_open()
- reload_act_button.disabled = load_act_button.disabled or authored_act_path.is_empty() or debug_panel.act_controls.chao_lab.visible
+ reload_act_button.disabled = load_act_button.disabled or authored_act_path.is_empty()
  theme_selector.disabled = loading_act or close_view or is_source_picker_open()
  source_note.text = last_source_error if not last_source_error.is_empty() else authored_act_path.get_file()
  source_note.tooltip_text = last_source_error if not last_source_error.is_empty() else authored_act_path

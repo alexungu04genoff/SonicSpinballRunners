@@ -57,7 +57,7 @@ func snapshot() -> Dictionary:
   "terrain and gameplay bodies": instance_ids(game.playfield.terrain_bodies) + instance_ids(game.playfield.bumpers) + instance_ids(game.flippers),
   "ball state": [game.ball.global_transform, game.ball.linear_velocity, game.ball.angular_velocity, game.ball.serve_pending, game.ball.release_pending],
   "scoring and rings": [game.score, game.rings_collected, game.special_meter, game.ball_number, game.ring_field.rings.duplicate(true), game.scorecraft.chain, game.scorecraft.multiplier, game.scorecraft.remaining, game.scorecraft.last_award.duplicate(true)],
-  "character and tuning": [game.character_id, game.specials.character_id, game.specials.definition.get_instance_id(), game.tuning.base.get_instance_id(), game.tuning.effective.duplicate(true), game.tuning.overrides.duplicate(true), game.tuning.build_ids],
+  "character and tuning": [game.character_id, game.specials.character_id, game.specials.definition.get_instance_id(), game.tuning.base.get_instance_id(), game.tuning.effective.duplicate(true), game.tuning.overrides.duplicate(true), game.tuning._temporary.duplicate()],
   "camera": [camera.global_transform, camera.projection, camera.fov, camera.size, camera.near, camera.far, presentation.camera_focus, presentation.camera_target, presentation.camera_settings.duplicate(true), presentation.camera_preset, presentation.camera_follow_enabled],
   "lifecycle": [game.playfield.source, game.authored_document.fingerprint(), game.authored_activation_count, game.authored_exit_count, game.respawn_time, game.auto_launch_time, game.ring_reset_time],
   "authored document": game.authored_document.fingerprint() if game.authored_document != null else "",
@@ -111,7 +111,9 @@ func check_visuals(theme_id: String, label: String) -> void:
 func seed_live_state() -> void:
  game.specials.select_character("tails")
  game.tuning.set_value("steering_acceleration", 2317.0)
- game.tuning.equip_chao("ice")
+ var modifier := PhysicsModifier.new()
+ modifier.multipliers = {"steering_acceleration": 1.5}
+ game.tuning.set_temporary("theme_test", modifier)
  game.scorecraft.award_bumper(game.playfield.bumpers[0])
  game.presentation.flash_bumper(game.playfield.bumpers[0])
  if not game.ring_field.rings.is_empty(): game.ring_field.claim_ring(0)

@@ -6,7 +6,7 @@ const Profile = preload("res://data/balanced.tres")
 
 static func shots(item: Dictionary, cell_size: float, resolved_stats: Dictionary = {}) -> Array[Dictionary]:
  # The editor defaults to base Sonic; callers can supply the same resolved
- # character/Chao stats used by gameplay without duplicating response formulas.
+ # character/modifier stats used by gameplay without duplicating response formulas.
  var stats := PhysicsTuning.resolve(Profile, {}, []) if resolved_stats.is_empty() else resolved_stats
  var result: Array[Dictionary] = []
  var type: String = item.get("type", "")

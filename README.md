@@ -1,43 +1,54 @@
 # Sonic Spinball Runners
 
-Godot 4 / GDScript pinball with authored Acts and seamless Endless streaming. An invisible 2D ball owns collisions; collisionless 3D scenery, character visuals and shaders follow it. Windows is the current target.
+Sonic momentum, pinball physics and a configurable roguelite run, built with Godot 4 / GDScript for Windows. An invisible 2D ball owns collisions; collisionless 3D scenery, characters and effects follow it.
 
-## Play
+## Two workflows
 
-- **Play Act.cmd** or Godot **F5** opens the themed authored player, initially **Second Simple**. Use **Load Act…** for another saved `.tres`, then **F5 / Reload Act** after saving editor changes. A failed reload preserves the active world.
-- **Play Endless.cmd** streams seven authored Acts: **Second Simple**, **Third Complex**, **First Try Smooth Decor**, **RampMania**, **Reverse C Spring**, **Secret Entry** and **SpringUp**. Each Zone selects three distinct shuffled Acts; the next Zone uses another theme. Acts connect physically, backgrounds overlap and lighting blends. No score gates.
-- **Act Geometry Editor.cmd** opens the editor. Terrain, gameplay objects, decor, ring trails and markers share undo/redo and exact saved geometry. Verify checks the authored runtime; it does not guarantee reachability.
-- **Bake Endless.cmd** builds all 56 Act/theme variants offline, with simplified curves, shared assets, spatial batches and flat surface materials for this trial. Re-bake after changing an Act, referenced art or the bake pipeline. Normal Endless startup loads valid bakes and does not silently regenerate them.
-- Version-6 bakes also record successful physics validation. Endless reuses it only for matching sources and pipelines, shares source documents at startup, and keeps construction in the offline builder.
+- **Gameplay:** Act Geometry Editor → Play Act → Bake Prototype → Play Prototype.
+- **Graphics and performance:** theme/graphics work → Bake Endless → Play Endless.
 
-**Play Green Hill.cmd** remains an existing art-review launcher. **Authored Act Playtest.cmd** remains a diagnostic view of a saved Act. Both use authored geometry.
+**Play Prototype.cmd** opens the main game: choose Sonic, Tails, Knuckles or Shadow, Challenge or Practice, 1–7 Zones, and the Act/theme pools. Each Zone has three distinct authored Acts. A seed reproduces the course. Reach each score target, touch its Goal Ring, choose an SRA Buddy and continue. Challenge has finite Balls; Practice has unlimited retries. Soft retries preserve Act objectives and earned score. Results automatically archive telemetry v2 and optional Run feel notes locally, with Copy run data and Open telemetry folder controls. See [Prototype](docs/PLAYABLE_PROTOTYPE.md).
 
-Controls: **Enter** launches; **Q/E** flip; **arrows** steer; **Space** uses the selected character's special; **R** retries; **Escape** pauses. In the authored player, **O** switches overview/follow, **F1** opens physics tools and **F11** enters Player View. **F4 / Shift+F4** control the N64-ish/VHS/CRT filters. The HUD stays outside world shaders.
+**Act Geometry Editor.cmd** authors terrain, gameplay objects, decor, ring trails, Spawn, Goal and connectors with undo/redo. Save, load and Verify share the runtime geometry rules; Verify does not guarantee reachability. **Play Act.cmd** (or Godot F5) opens the themed standalone player, initially **First Try Smooth Decor**. Load Act selects another `.tres`; Reload Act / F5 reloads a saved edit while preserving camera and session settings. A rejected reload preserves the active world.
 
-Endless also has **T** for a camera tour with the ball parked, **N** for a diagnostic boundary jump and **F3** for streaming statistics. The tour tests scenery transitions without pushing the ball into geometry. See [Endless mode](docs/ENDLESS_MODE.md) for loading limits, bake files and current performance measurements.
+**Bake Prototype.cmd** prepares all five production Acts in all eight themes: 40 variants. Committed `.tres` files in `data/acts/Authored` are production content discovered by run setup:
 
-## Authored gameplay
+- First Try Smooth Decor
+- RampMania
+- Reverse C Spring
+- Secret Entry
+- SpringUp
 
-Sonic, Tails, Knuckles and Shadow use shared physics profiles and centralized modifiers. Their ball-form presentation, specials, ring collection, Scorecraft and optional session Chao remain available. Act reloads preserve the engine, camera and explicit development settings while resetting the run.
+**Bake Endless.cmd** prepares the separate seven-Act stress pool in `data/endless` across all eight themes: 56 variants. **Play Endless.cmd** streams three shuffled Acts per Zone with no score gates and unlimited checkpoint retries. It keeps the historical Second Simple and Third Complex snapshots as useful streaming fixtures. Its tour, warm-up, caches and profiler support graphics work. See [Endless](docs/ENDLESS_MODE.md).
 
-The editor supports terrain stamps and composites, flippers, bumpers, one-way gates, switch banks, springs, spinners, magnetic fields, elevated rails, decor and ring patterns. Saved collision geometry remains authoritative. Art and visual detail reductions never alter physics.
+Two specialist launchers remain deliberately: **Authored Act Playtest.cmd** exposes the diagnostic 2D/3D player used by editor tests; **Play Green Hill.cmd** is retained for ongoing local art-review work. Use the six workflow launchers above for ordinary development.
 
-Eight presentation themes share the same authored data: Green Hill, Chemical Plant, Rooftop Run, Casino Night, Sky Sanctuary, Ice Cap, Lava Reef and Aquarium Park. Theme shaders and animated props remain enabled during gameplay.
+## Controls
 
-The procedural alpha was retired on 2026-10-26 at the user's request. Its random table generator, chunk/grid catalogues, connector assembly, Score Attack and old score-gated Zone progression are removed. Earlier design and art documents retain historical measurements; their generated-mode instructions no longer describe current play. Editor previews and offline baking still construct meshes from authored data.
+| Action | Prototype keyboard | Controller |
+| --- | --- | --- |
+| Flippers | Q / E | LB / RB |
+| Steer | Arrow keys | Left stick |
+| Launch | X | X |
+| Special | Space | A |
+| Retry | R | Back / View |
+| Pause / resume | Enter or Escape | Menu / Start |
+| Fullscreen | F11 | — |
 
-## Development and checks
+Standalone Play Act and Endless retain **Enter** to launch and **Escape** to pause. Play Act also has **O** for overview/follow, **F1** for physics tools and **F11** for Player View. **F4 / Shift+F4** control post-processing. Endless has **T** for its camera tour, **N** for a diagnostic boundary jump and **F3** for streaming statistics.
 
-Open `project.godot` with Godot 4.7.2. Windows launchers use Compatibility / ANGLE by default. No external character model is required. Keep source Acts and imported art in Git; ignored `.bake` files are derived locally and must be included when packaging a verified build.
+## Shared systems
 
-Run lightweight checks with `godot --headless --path . --script res://tests/<test>.gd`. Useful entry points:
+Characters, Adventure Buddies and temporary abilities use shared physics profiles and centralized modifiers. The old Ice/Spring/Magnet/Practice Chao Lab is retired; the eleven current SRA Buddies and their portraits remain. The procedural alpha, generated Free Play, Score Attack and old score-gated Green Hill progression are also retired. Historical documentation records those experiments.
 
-- `profile_regression.gd`, `physics_regression.gd`: shared tuning, steering, authored input and collisionless presentation.
-- `authored_main_game_regression.gd`, `act_reload_workflow.gd`: Act replacement, four character abilities, scoring, camera and failed reload preservation.
-- `authored_source_physics_regression.gd`, `geometry_bake_regression.gd`: baked versus freshly compiled collisions and serialization.
-- `endless_regression.gd`, `endless_cache_regression.gd`, `endless_detail_regression.gd`: ordering/seams, cache sharing and visual detail limits.
-- `endless_batch_regression.gd`, `endless_border_regression.gd`: spatial instance buffers, animation bindings and low-triangle trim.
-- `endless_scene_smoke.gd -- --require-bakes`: rendered startup and transitions; use Compatibility / ANGLE without `--headless` to exercise shaders.
-- `endless_stream_profile.gd`: continuous camera tour with frame, resource, render, memory and draw-call diagnostics.
+Eight production themes share authored geometry: Green Hill, Chemical Plant, Rooftop Run, Casino Night, Sky Sanctuary, Ice Cap, Lava Reef and Aquarium Park. Ball forms, motion trails, Specials, cameras and theme switching require no imported character model. Art changes never own collision.
 
-[Living game design](docs/GAME_DESIGN.md) · [Act editor](docs/ACT_GEOMETRY_EDITOR.md) · [Authored gimmicks](docs/AUTHORED_GIMMICKS.md) · [Authored runtime](docs/PLAYFIELD_SOURCES.md) · [Endless](docs/ENDLESS_MODE.md)
+## Build and checks
+
+Use Godot **4.7.2**. Windows launchers default to Compatibility / ANGLE. Keep authored sources and current art in Git; `.bake` sidecars and `test-results/` are ignored. Re-bake after source, art or pipeline changes. Normal streaming validates existing bakes instead of silently rebuilding them during play.
+
+`tools/export_prototype.ps1 -WindowsTemplate <matching-local-Windows-release-template>` snapshots the working source, imports and bakes it, exports a standalone embedded EXE, verifies packaged resources and creates a ZIP under `test-results/prototype-build/`. It does not download assets or publish a release.
+
+Run focused checks with `godot --headless --path . --script res://tests/<test>.gd` after importing the project. Useful checks include profiles/physics, `scorecraft_regression`, `buddy_scoring_regression`, `enemy_regression`, `authored_main_game_regression`, `geometry_bake_regression`, `prototype_plan_regression`, `prototype_setup_regression`, `prototype_archive_regression` and `endless_regression`. Rendered `endless_scene_smoke.gd -- --require-bakes` and `endless_stream_profile.gd` exercise actual graphics and transitions; use Compatibility / ANGLE without `--headless`.
+
+[Shared project brain](docs/PROJECT_BRAIN.md) · [Living design](docs/GAME_DESIGN.md) · [Act editor](docs/ACT_GEOMETRY_EDITOR.md) · [Authored runtime](docs/PLAYFIELD_SOURCES.md) · [Scoring](docs/ACT_SCORING.md)

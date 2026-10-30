@@ -31,7 +31,7 @@ func _initialize() -> void:
    check(PlaygroundFlipper.assisted_velocity(rebound, normal, fraction, stats).is_equal_approx(rebound), "Native rebound does not receive a second full kick")
  check(is_equal_approx(PlaygroundFlipper.launch_normal_speed(0.0, stats), 68.0), "Hinge assist is 20 percent, not 77 percent")
  check(is_equal_approx(PlaygroundFlipper.launch_normal_speed(1.0, stats), 340.0), "Tip retains resolved profile power")
- var boosted := PhysicsTuning.resolve(PhysicsTuning.BALANCED, {}, [PhysicsTuning.CHAO.spring.modifier])
+ var boosted := PhysicsTuning.resolve(PhysicsTuning.BALANCED, {}, [power_modifier()])
  check(is_equal_approx(PlaygroundFlipper.launch_normal_speed(0.6, boosted) / PlaygroundFlipper.launch_normal_speed(0.6, stats), 1.35), "Central modifier resolution applies once to assist target")
  var normal := left.strike_direction(0.5)
  var offset := 1.2
@@ -101,3 +101,8 @@ func run_trials() -> void:
  # power ordering and the shared speed cap on each hand independently instead.
  print("CONTACT RESPONSE | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)
+
+func power_modifier() -> PhysicsModifier:
+ var modifier := PhysicsModifier.new()
+ modifier.multipliers = {"flipper_launch_strength": 1.35, "flipper_upward_speed_limit": 1.35}
+ return modifier

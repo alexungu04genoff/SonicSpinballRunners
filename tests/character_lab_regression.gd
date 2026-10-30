@@ -95,7 +95,9 @@ func run() -> void:
   check(homing_events == ["start", "end:" + reason], "Cancellation emits once with reason: " + reason)
  game.specials.select_character("tails")
  game.character_id = "tails"
- game.tuning.equip_chao("ice")
+ var control_modifier := PhysicsModifier.new()
+ control_modifier.multipliers = {"steering_acceleration": 1.5, "counter_steering_deceleration": 1.75, "max_steering_speed": 1.25}
+ game.tuning.set_temporary("control_test", control_modifier)
  var ordinary: Dictionary = game.tuning.effective.duplicate()
  await place(Vector2(3000, 2000), Vector2(0, 600))
  var ordinary_start: float = game.ball.position.y
@@ -105,10 +107,9 @@ func run() -> void:
  game.special_meter = 100
  var flight_start: float = game.ball.position.y
  check(game.specials.activate() and game.special_meter == 0, "Tail Flight consumes full charge")
- check(game.tuning.effective.gravity_scale < ordinary.gravity_scale and game.tuning.effective.max_steering_speed > ordinary.max_steering_speed, "Flight combines with Ice through the shared stat resolver")
- game.tuning.modifier_enabled = true
- check(game.tuning.build_ids == ["practice"] and game.tuning._temporary.size() == 1 and game.tuning.effective.gravity_scale < ordinary.gravity_scale, "Practice toggle replaces Chao without stacking or removing flight")
- game.tuning.equip_chao("ice")
+ check(game.tuning.effective.gravity_scale < ordinary.gravity_scale and game.tuning.effective.max_steering_speed > ordinary.max_steering_speed, "Flight combines with a control modifier through the shared stat resolver")
+ game.tuning.set_temporary("control_test", control_modifier)
+ check(game.tuning._temporary.size() == 2 and game.tuning.effective.gravity_scale < ordinary.gravity_scale, "Refreshing a control modifier preserves the independent flight effect")
  await frames(45)
  var flight_drop: float = game.ball.position.y - flight_start
  print("FLIGHT RECOVERY | ordinary_drop=", ordinary_drop, " flight_drop=", flight_drop)
@@ -122,28 +123,26 @@ func run() -> void:
  var fading: float = game.tuning.effective.gravity_scale
  check(fading > ordinary.gravity_scale * 0.25 and fading < ordinary.gravity_scale, "Gravity smoothly restores during the final flight fraction")
  await frames(35)
- check(game.tuning.effective == ordinary and game.tuning._temporary.is_empty(), "Expiration removes the temporary modifier and preserves Ice")
+ check(game.tuning.effective == ordinary and game.tuning._temporary.size() == 1 and game.tuning._temporary.has("control_test"), "Expiration removes the temporary modifier and preserves the control modifier")
  game.special_meter = 100
  check(game.specials.activate(), "Flight can activate again after recharge")
  game.specials.charge(12)
  game.reset_ball()
- check(game.specials.flight_remaining == 0 and game.special_meter == 12 and game.tuning.effective == ordinary, "Reset ends flight without refilling meter or losing Chao")
+ check(game.specials.flight_remaining == 0 and game.special_meter == 12 and game.tuning.effective == ordinary, "Reset ends flight without refilling meter or losing the control modifier")
  await frames(5)
  game.specials.select_character("sonic")
  game.character_id = "sonic"
- check(game.tuning.base == PhysicsTuning.BALANCED and game.tuning.chao_id == "ice" and game.special_meter == 0, "Character change restores starting profile, retains equipped Chao and clears meter")
+ check(game.tuning.base == PhysicsTuning.BALANCED and game.tuning._temporary.get("control_test") == control_modifier and game.special_meter == 0, "Character change restores starting profile, retains independent modifiers and clears meter")
  target_body.free()
  wall.free()
  # Exercise the same UI entry points used by players, including replay.
  var ui: Control = game.debug_panel.act_controls
  ui.character_selector.select(1)
- ui.chao_lab.refresh()
- check(ui.chao_lab.heading.text.contains("Tails") and ui.chao_lab.cards.ice.stats.text.contains("135") and game.tuning.base == PhysicsTuning.BALANCED, "Chao preview uses pending Tails profile without changing the current run")
  paused = true
  ui.character_selector.select(1)
  check(ui.start_run(), "UI replays the Act as Tails")
  await frames(8)
- check(game.character_id == "tails" and game.specials.character_id == "tails" and game.special_meter == 0 and game.tuning._temporary.is_empty(), "Fresh character state on Act replay")
+ check(game.character_id == "tails" and game.specials.character_id == "tails" and game.special_meter == 0 and game.tuning._temporary.size() == 1 and game.tuning._temporary.has("control_test"), "Fresh character state on Act replay")
  check(game.debug_panel.spinboxes.steering_acceleration.value == 2400, "Editable physics fields show Tails baseline")
  paused = false
  game.set_physics_process(true)
@@ -154,7 +153,7 @@ func run() -> void:
  await frames(3)
  game.specials.activate()
  await frames(8)
- check(game.respawn_time > 0 and game.specials.flight_remaining == 0 and game.tuning._temporary.is_empty(), "Authored drain ends flight and queues retry")
+ check(game.respawn_time > 0 and game.specials.flight_remaining == 0 and game.tuning._temporary.size() == 1 and game.tuning._temporary.has("control_test"), "Authored drain ends flight and queues retry")
  paused = true
  check(game.request_replay(), "Authored replay is accepted")
  await frames(8)

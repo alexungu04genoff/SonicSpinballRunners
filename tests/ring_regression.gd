@@ -86,11 +86,11 @@ func run() -> void:
  prepare(PackedVector2Array([Vector2(2040, 500)]), 0)
  field._physics_process(1.0 / 120.0)
  var initially_active: bool = field.rings[0].active
- var magnet_chao := PhysicsModifier.new()
- magnet_chao.additions = {"ring_magnet_radius": 25.0}
- game.tuning.effective = PhysicsTuning.resolve(PhysicsTuning.BALANCED, {"ring_magnet_radius": 25.0}, [magnet_chao])
+ var magnet_modifier := PhysicsModifier.new()
+ magnet_modifier.additions = {"ring_magnet_radius": 25.0}
+ game.tuning.effective = PhysicsTuning.resolve(PhysicsTuning.BALANCED, {"ring_magnet_radius": 25.0}, [magnet_modifier])
  field._physics_process(1.0 / 120.0)
- check(initially_active and not field.rings[0].active and PhysicsTuning.BALANCED.ring_magnet_radius == 25.0, "Live resolved radius and future Chao additions affect pickup without mutating the base")
+ check(initially_active and not field.rings[0].active and PhysicsTuning.BALANCED.ring_magnet_radius == 25.0, "Live resolved radius and generic modifier additions affect pickup without mutating the base")
 
  prepare(PackedVector2Array([Vector2(2100, 500)]))
  game.ball.serve_pending = true
