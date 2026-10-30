@@ -1,0 +1,208 @@
+# Rendering and streaming performance — 2026-10-30
+
+This pass starts at `77ecd3ff536fd5b8f868bc7994ef2eeb3debac71`. The working tree includes pre-existing local art changes; those are preserved separately from the optimization changes. Local measurements, logs and screenshots are under ignored `test-results/performance-20261030/`.
+
+The first measured improvement combines rigid mesh pieces within individual Bumpers and flippers. In alternating RampMania runs, it reduces the typical frame time by **11.1%** and draw calls by **17.2%**, while preserving source triangles, materials and actor animation roots. The larger remaining steady cost is repeated rendering of many small shadow-casting objects. Streaming and severe first-use preparation stalls are measured separately below.
+
+## Measurement method and limits
+
+- Godot 4.7.2 Compatibility renderer, ANGLE / Direct3D 11, NVIDIA RTX 4060; driver `32.0.16.1664`.
+- Window: 1280×900. Existing internal world sizes: 673×363 for standalone Play Act, 673×473 for Prototype and Endless. The existing retro presentation remains enabled.
+- VSync and the frame cap are disabled for stationary measurements. Authoritative physics remains at **120 Hz**.
+- Seed 18, served Ball, no player input. Each process waits for preparation to settle, then records three blocks of 600 frames. Each block has another 120-frame settling interval.
+- Standalone workload: RampMania / Green Hill. Prototype: one Green Hill Zone, with Reverse C Spring, Secret Entry and RampMania in the seeded order. Endless: its seed-18 opening view in Sky Sanctuary.
+- Stationary streams settle with three resident Acts in Prototype and six in Endless. These samples deliberately include the existing lookahead population; they are not measurements of one isolated mesh or a complete played run.
+- GPU timer values are zero on this backend. Do not interpret those zeros as free GPU work. The reported per-viewport shadow-draw counter also remains zero even when disabling shadows removes thousands of total draws; total counters and controlled toggles are more useful here.
+- Rendered object/primitive counters include render passes and views. They are different from scene node counts and unique source triangles. Inventory counts also include stored, hidden and offscreen geometry.
+- Each table's median, p95 and p99 is the **median of the relevant block statistics**, not a percentile recomputed from pooled frames. Worst frame is the largest reported block maximum.
+- Driver caches, operating-system scheduling and thermal state are not fully controlled. Repeated alternating runs support the retained change; short diagnostic ablations identify suspects rather than proving independent additive savings.
+
+The cleanup figures in `PROJECT_BRAIN.md` used a different settling/frame-pacing procedure. They remain historical clues and must not be compared directly with this pass's uncapped steady-state numbers.
+
+## Initial steady-state measurements
+
+These are the first three baseline blocks in `act-before.json`, `prototype-before.json` and `endless-before.json`.
+
+| Workload | Median ms | p95 ms | p99 ms | Worst ms | Draws | Rendered objects | Rendered primitives |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| RampMania / Green Hill | 12.297 | 18.276 | 21.551 | 29.705 | 1,850 | 2,482 | 430,256 |
+| Prototype opening view | 16.541 | 25.086 | 30.513 | 34.553 | 3,756 | 3,852 | 593,186 |
+| Endless opening view | 12.514 | 18.605 | 21.746 | 90.230 | 2,855 | 3,121 | 398,093 |
+
+Typical recorded physics time is approximately 0.29 ms, 0.52 ms and 0.69 ms respectively. These samples do not identify physics as the main cost. Render CPU time is approximately 10.19 ms, 13.26 ms and 9.64 ms; its measurement scope differs from whole-frame time, so the counters should not be added together.
+
+### Draw-call ablations
+
+Each ablation hides one visual category and disables its shadow casting, then restores it. Physics and gameplay state are unchanged. Draw reductions below are relative to the first baseline block; category and shadow effects overlap.
+
+| Visual category disabled | RampMania draws removed | Prototype draws removed | Endless draws removed |
+|---|---:|---:|---:|
+| Rings | 302 | 253 | 127 |
+| Mechanics, including Bumpers and flippers | 1,277 | 2,031 | 1,348 |
+| Background/scenery | 134 | 24 | 34 |
+| Other geometry | 9 | 1,437 | 1,325 |
+| Post-processing passes | 3 | 4 | 3 |
+| Directional shadows | 1,622 | 3,366 | 2,493 |
+
+Mechanics are a substantial submission cost. Disabling shadows reduces RampMania from 1,850 to 228 draws, Prototype from 3,756 to 390, and Endless from 2,855 to 362. Their corresponding diagnostic medians are 6.483, 9.019 and 8.301 ms. Removing shadows visibly changes presentation, so this is evidence about cost, not a quality-preserving optimization.
+
+The category classifier is more precise for freshly built standalone scenes than for baked streamed records. In the latter, terrain/border/decor meshes can fall into `other` after capture; a zero result for those named categories does not establish that they are free. In standalone RampMania, removing visible terrain saves 66 draws and removing borders saves four. No authored decor from that category contributes in the sampled view.
+
+## Retained change: combine pieces within each hardware actor
+
+`scripts/pinball_mesh_batch.gd` combines compatible rigid pieces after each round Bumper, triangle Bumper or flipper is built. It keeps the existing actor root, so animation, hit reactions, orientation, visual bindings and physics ownership remain unchanged. It does not combine separate actors into a large level-wide mesh.
+
+Groups require the same material instance, vertex attributes and relevant render state, including shadow casting and layers. Rotated/scaled leaves, hidden leaves, child hierarchies, transparent materials, unknown shaders and other unsupported cases remain separate. Indices, winding, vertices, normals, tangents, colors and both UV channels are retained. The bake path applies the existing primitive-detail policy before conversion; standalone detail stays unchanged.
+
+| Representative actor | Draw surfaces before | Draw surfaces after | Source triangle change |
+|---|---:|---:|---:|
+| Round Bumper | 15 | 6 | 0 |
+| Triangle Bumper | 10 | 5 | 0 |
+| Flipper | 21 | 6 | 0 |
+
+The actual-actor probe found no missing or extra triangles in either standalone or bake geometry. PrimitiveMesh-to-ArrayMesh direction packing introduces differences below `0.0001`; positions, triangle membership, UVs and materials remain unchanged. The focused regression also checks source-resource immutability, actor transforms, unsupported-case preservation and repeated combining.
+
+### Alternating RampMania comparison
+
+Evidence: `act-unbatched-1.json`, `act-batched-1.json`, `act-unbatched-2.json`, `act-batched-2.json`. Both conditions use the same current source, scene, camera, art, shadows and resolution; the diagnostic switch changes only hardware combining. Each condition contains six 600-frame blocks across two processes.
+
+| Metric | Unbatched | Batched | Change |
+|---|---:|---:|---:|
+| Typical frame time | 11.983 ms | 10.657 ms | −11.1% |
+| Block p95 | 17.824 ms | 15.142 ms | −15.0% |
+| Block p99 | 20.907 ms | 18.738 ms | −10.4% |
+| Worst recorded frame | 26.021 ms | 22.716 ms | −12.7% |
+| Render CPU time | 9.905 ms | 8.587 ms | −13.3% |
+| Draw calls | 1,850 | 1,532 | −318 / −17.2% |
+| Rendered objects | 2,482 | 2,164 | −318 / −12.8% |
+| Scene nodes | 1,526 | 1,418 | −108 |
+| Rendered primitives | 430,256 | 436,320 | +1.4% |
+
+The slightly higher rendered primitive count is consistent with coarser culling of combined bounds. It does not represent additional source triangles. The lower submission cost outweighs that increase in this workload.
+
+Matched local captures are `act-unbatched-1-baseline-1.png` / `act-batched-1-baseline-1.png`, and `gallery-before.png` / `gallery-after.png`. The eight-theme hardware gallery retains silhouettes, palette slots, markings and geometry. An RGB comparison of the 1493×1050 gallery found only four changed pixels, each with a maximum channel difference of 1/255 (`gallery-difference.json`). Animated scenery and frame-dependent effects can differ between gameplay captures; screenshots support visual fidelity rather than proving gameplay equivalence.
+
+### Prototype and Endless after rebaking
+
+Evidence: `prototype-before.json` / `prototype-after.json` and `endless-before.json` / `endless-after.json`, using the first three baseline blocks in each file. Both modes were rebaked before measuring the changed hardware. Resident counts remain three for Prototype and six for Endless.
+
+| Workload and version | Median ms | p95 ms | p99 ms | Worst ms | Draws | Rendered objects | Rendered primitives | Scene nodes |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Prototype before | 16.541 | 25.086 | 30.513 | 34.553 | 3,756 | 3,852 | 593,186 | 4,433 |
+| Prototype after | 15.430 | 21.138 | 25.459 | 32.344 | 3,070 | 3,166 | 594,530 | 4,125 |
+| Endless before | 12.514 | 18.605 | 21.746 | 90.230 | 2,855 | 3,121 | 398,093 | 7,567 |
+| Endless after | 11.664 | 18.788 | 20.870 | 32.054 | 1,991 | 2,257 | 398,477 | 6,907 |
+
+Prototype removes 686 draws (18.3%) and 308 scene nodes. Endless removes 864 draws (30.3%) and 660 scene nodes. Recorded typical frame times fall by 6.7% and 6.8%, respectively. These are sequential before/after measurements, not alternating runs like the standalone comparison, so the timing attribution is less certain. In particular, Endless p95 is essentially unchanged; the lower maximum does not prove first-use stalls are solved.
+
+Visual inspection of `prototype-before-baseline-1.png` / `prototype-after-baseline-1.png` and the corresponding Endless captures found matching framing, silhouettes and materials. Differences are limited to Ring/enemy animation and CRT phase. The original before reports did not serialize camera transforms; the after reports do. Matching screenshots and resident counts support the comparison, but do not replace that missing numerical camera record.
+
+## Investigated alternatives
+
+### Rings
+
+RampMania stores 82 Ring meshes / 20,992 source triangles. Removing their rendering saves 302 draws in the sampled view, with a diagnostic median of 10.930 ms versus the initial 12.297 ms typical baseline. Rings are therefore a real contributor, but mechanics provide a larger total submission opportunity.
+
+Resting-Ring MultiMesh batching would also need to preserve per-Ring collection, attraction, reset and streamed bindings. This pass takes the simpler hardware improvement first. Rings retain their existing behavior and presentation.
+
+### Border tessellation and static batching
+
+RampMania's standalone inventory contains nine border mesh nodes / 25,240 source triangles, but hiding visible borders removes only four draws and 17,324 rendered primitives. Its diagnostic median, 11.868 ms, is within the variation of the initial baseline blocks. The earlier 4,782-triangle border is a valid geometry observation, not sufficient evidence that border tessellation dominates frame time.
+
+The earlier RampMania recipe's 492 source mesh records and zero static batches do not indicate a broken batcher. `static_batches.gd` deliberately protects flippers, retracted flippers, Rings, Bumpers and animation roots, including their descendants. Eligible static meshes must have a single surface and share the same mesh resource identity; at least three compatible instances must occur in a two-metre cell. Unique terrain and independently generated pieces often fail those criteria.
+
+Hardware roots still need individual animation. Combining rigid children inside those roots addresses an opportunity that the level-wide static batcher correctly excluded. The border builder also handles concave contours and holes; its simpler baked fast path requires validated compatible contours. This change retains both border detail and authored collision geometry.
+
+### Shadow resolution
+
+The default 8192 atlas was compared with 4096 and 2048 using matched captures. All three retain the same draw counts. The exploratory medians do not show a consistent resolution benefit across workloads:
+
+| Workload | Initial 8192 typical ms | 4096 trial ms | 2048 trial ms |
+|---|---:|---:|---:|
+| RampMania | 12.297 | 14.472 | 11.975 |
+| Prototype | 16.541 | 16.024 | 15.772 |
+| Endless | 12.514 | 12.309 | 15.414 |
+
+These single trial phases are insufficient evidence for lowering the default. The much larger no-shadow difference points toward caster/pass submission cost as well as potential raster work. Matched `*-shadow-4096.png`, `*-shadow-2048.png` and `*-without-shadows.png` captures remain local for quality review. No default shadow quality reduction is part of the hardware change.
+
+### Shaders, transparency and post-processing
+
+Disabling post-processing removes only three or four draws; timing varies by workload and does not explain the thousands of submissions. Scenery is not uniformly expensive: its contribution depends on the active theme and view. These measurements do not isolate water, glass, clouds or lava sufficiently to declare any specific shader cheap or expensive. Dedicated theme/material comparisons remain useful follow-up work.
+
+Source inspection narrows the next experiments:
+
+- Aquarium water is opaque procedural shading; `aquarium_water.gdshader` does not write `ALPHA` or sample the screen. The separate `aquarium_glass.gdshader` does write alpha. Background water and glass instances have shadow casting disabled. Transparent glass overlap is a possible overdraw target, not evidence that the entire lagoon pays that cost.
+- Sky Sanctuary's cloud deck uses three value-noise layers, and its cloud-bank spheres use analytic normal-based shading. Both cloud shaders are unshaded and opaque; neither ray marches a volume or samples the screen. Cloud instances are shadowless and the banks are batched.
+- Lava's molten surface uses procedural noise and emission without alpha. Screen-sampling transparent heat distortion is a separate shader, enabled only by the existing `--lava-heat-haze` option. It is not part of the default path. Lava's local fill lights are also shadowless.
+- The default N64/VHS/CRT stack creates three full-world passes and three explicit back-buffer copies before upscaling; HUD rendering stays separate. The source shaders contain 2, 16 and 8 texture calls respectively, although the compiler may merge reads. The ablation hides only those passes and retains the world resolution, avoiding the resolution change caused by switching the whole preset off.
+
+These are implementation facts from the theme generators and shaders, not shader timing results. Pixel coverage, overlap and first-use shader preparation still require measured comparisons before changing them.
+
+### Render scale
+
+A 75% world-resolution trial leaves RampMania draw counts unchanged and gives no compelling isolated win. The initial streamed scale trials are **not valid matched comparisons**: resizing changed the camera/culling workload, and the later baseline-return phase retained increased draw counts (Prototype 3,756 to 4,258; Endless 2,855 to 4,280).
+
+The corrected Prototype trial in `prototype-after.json` freezes camera pose and far plane. At 505×355 it records 15.150 ms / 3,069 draws; the following 673×473 baseline records 15.161 ms / 3,070 draws. That is no meaningful demonstrated improvement. The old streamed scale timings remain invalid, and neither trial justifies changing the default or adding a Performance preset in this pass.
+
+## Loading and transitions
+
+The continuous Endless tour uses seed 18, speed 400 and target sequence 6. It measures movement through multiple Acts/themes, including preparation and boundary waits, separately from the stationary probe.
+
+| Pre-change tour | Median ms | p95 ms | p99 ms | Worst ms | Boundary wait ms | Runtime rebuilds |
+|---|---:|---:|---:|---:|---:|---:|
+| First recorded run | 16.976 | 274.199 | 429.351 | 6,233.200 | 3,868.761 | 0 |
+| Repeat 2 | 17.385 | 77.827 | 175.768 | 314.194 | 3,223.244 | 0 |
+| Repeat 3 | 16.799 | 71.983 | 143.505 | 226.754 | 3,249.615 | 0 |
+
+The first run's extreme tail is retained as evidence of first-use/environment variability; it is not silently averaged into a steady-state improvement claim. Warm repeats still show substantial stalls. Zero runtime geometry rebuilds does not mean zero resource, instantiation, upload, shader-preparation or warm-up work.
+
+### One-Act resource prefetch experiment
+
+**Rejected and reverted.** The experiment overlapped one upcoming Act's threaded disk request with the current graphics preparation worker. It kept validation and cache reservations intact, but three alternating pairs did not establish a useful rendering or boundary-wait benefit.
+
+Evidence: `prefetch-off-1.json` through `prefetch-on-3.json`. Each pair uses the same baked hardware, tour and renderer. Active-frame p99 excludes frames spent waiting at an Act boundary; it does not exclude ongoing background preparation.
+
+| Pair | Wait off ms | Wait on ms | Median off ms | Median on ms | Active p99 off ms | Active p99 on ms |
+|---|---:|---:|---:|---:|---:|---:|
+| 1 | 0.000 | 42.147 | 16.656 | 16.888 | 94.959 | 117.703 |
+| 2 | 218.218 | 55.194 | 16.634 | 16.992 | 96.337 | 101.340 |
+| 3 | 288.226 | 635.951 | 16.995 | 17.866 | 111.857 | 95.272 |
+
+Prefetch reduced the measured time awaiting already-requested resources from approximately 516 ms to 0.15 ms. It moved that loading earlier rather than eliminating the work. Boundary waits varied, typical frame times did not improve, and active-frame tails did not consistently improve. The added scheduling and reservation state therefore did not earn its complexity. Final code has no Act-prefetch option or diagnostic switch.
+
+The `off` runs measure the retained hardware-batching candidate with normal streaming. Their median boundary wait is 218.218 ms, versus 3,249.615 ms across the original three pre-change tours; all six runs reached sequence 6 without runtime geometry rebuilds. This is a limited sequential before/after observation: source/node counts changed, caches are uncontrolled, and the earlier first-use outlier remains relevant. It does not prove a 93% universal loading improvement or the elimination of transition stalls.
+
+After reverting prefetch and rebuilding all 96 variants, `final-tour.json` again completed sequence 6 with zero rebuilds. It recorded median 16.159 ms, p95 63.931 ms, p99 183.130 ms, worst 332.369 ms and **1,395.991 ms boundary wait**. Active-frame p99 was also 183.130 ms. This final confirmation is materially worse than the earlier candidate's boundary-wait median, demonstrating why the warm-tour result must not be generalized. The retained optimization is supported most strongly by its reduced submissions and alternating stationary measurement.
+
+The tour's existing success criterion requires zero boundary waits. Among the alternating pairs, only `prefetch-off-1` meets it; completed tours with nonzero waits, including the final confirmation, still return a failing profiler status. The zero-wait performance target remains unmet.
+
+### Cold theme preparation remains a major bottleneck
+
+The first full-session integration run exposed Chemical Plant's 30-node material-probe warm-up taking **41,822 ms**, within 42,743 ms total theme preparation. Individual frames reached roughly 5–7 seconds. The later 27-transition integration tour also recorded a 5,787 ms maximum frame while first-use themes warmed. These are separate cold-preparation observations, not the settled view or six-transition benchmark. The logs identify graphics warm-up as the slow stage; the precise shader/driver contribution is an inference because this backend supplies no usable GPU timings. No evidence isolates these stalls as a new regression from batching.
+
+This is the highest-priority loading investigation left by the pass: probe/material variant count, first-use compilation, upload work and warm-up granularity. A faster settled view does not make these stalls acceptable or solved.
+
+## Verification status
+
+Headless checks passed for physics profiles, Scorecraft, SRA Buddy scoring, enemies (45 checks), geometry bake equivalence (2,842), presentation (18), all eight themes (675), warm manifests, warmed-node reuse, retirement, mesh batching (14), and authored Green Hill playback (80). After reverting prefetch, the retained cache suite passed **28/28 checks** in both the live tree and a clean checkout containing only HEAD plus this pass's changes. The clean checkout also imported successfully, passed batching and authored-playback checks, and parsed `render_cost_profile.gd` with `--check-only`. These changes do not require the unrelated local art edits.
+
+The authored playback test contained obsolete implementation assumptions: it expected the first Bumper child to be a `CylinderMesh`, and expected an old `raised_turf` shader parameter. The test now checks the complete rendered Bumper footprint/radius/center and the current terrain texture/material contract. These checks retain the intended geometry and presentation guarantees without requiring a particular mesh class or retired shader flag.
+
+Final-code bakes completed for all 40 production and 56 Endless variants. The rendered full Prototype session passed **143 checks**, including Buddy drafts, results, replay, restart and interrupted-startup cleanup. Rendered 1- and 7-Zone runs passed **74 checks**. The rendered 27-transition Endless smoke test passed **260 checks**, visited all published Acts, verified valid bakes and cache/theme/retirement bounds, and reached at most six resident Acts. The final continuous tour completed with zero rebuilds but failed the zero-wait target described above.
+
+The initial full-session test used a ten-second wall deadline for a 1.25-second process-driven transfer, then continued after timeout and crashed on an absent score award. [Godot clamps process delta during long frames](https://docs.godotengine.org/en/stable/classes/class_node.html#class-node-private-method-process), so first-use graphics stalls can exhaust wall time before the animation receives enough simulation time. The test now allows 2.25 seconds of unpaused process time, retains a 180-second loading watchdog, preserves exact spawn/control-release assertions, and exits cleanly with diagnostics on failure. No transfer runtime or scoring behavior was changed. The corrected full-session rerun passed all 143 checks.
+
+All pre-existing tracked files outside this pass's owned edits were checked against their starting SHA256 values. Existing art changes remain unstaged and separate. Manual playtesting still owns flipper feel, camera readability and polish; these automated checks do not replace that judgment.
+
+## Reproduction and remaining work
+
+Use the existing bake launchers after source changes affecting recipe fingerprints. Set `$godot` to the local Godot 4.7.2 executable and run graphical probes sequentially:
+
+```powershell
+& $godot --path . --rendering-method gl_compatibility --rendering-driver opengl3_angle --script res://tests/render_cost_profile.gd -- --profile-mode=act --profile-output=res://test-results/act-batched.json
+& $godot --path . --rendering-method gl_compatibility --rendering-driver opengl3_angle --script res://tests/render_cost_profile.gd -- --profile-mode=act --profile-unbatched --profile-output=res://test-results/act-unbatched.json
+& $godot --path . --rendering-method gl_compatibility --rendering-driver opengl3_angle --script res://tests/render_cost_profile.gd -- --seed=18 --profile-mode=prototype --profile-ablations --profile-output=res://test-results/prototype-cost.json
+& $godot --path . --rendering-method gl_compatibility --rendering-driver opengl3_angle --script res://tests/endless_stream_profile.gd -- --seed=18 --profile-stages --profile-speed=400 --profile-target=6 --profile-unlimited --profile-output=res://test-results/endless-tour.json
+```
+
+Next investigations should prioritize shadow-caster submissions, remaining mechanic pieces, streamed background overlap and first-use preparation stalls. Consider Ring batching only with equivalent lifecycle tests and measured benefit. Preserve 120 Hz physics, existing scoring/Buddies, all Acts/themes and current default visual quality while comparing changes.

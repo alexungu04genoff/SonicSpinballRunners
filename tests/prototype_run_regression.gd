@@ -116,6 +116,12 @@ func run() -> void:
   await sample_play_time()
   var target: int = game.act_score_target
   game.active.runtime.mechanics.mechanic_score.emit(&"wall_switch", "integration_award", target)
+  if not game.scorecraft.last_award.has("total"):
+   check(false, "Controlled integration award reaches Scorecraft after transfer")
+   await session.return_to_menu()
+   session.free()
+   quit(1)
+   return
   total += int(game.scorecraft.last_award.total)
   check(game.score == total and game.act_score >= target and game.exit_unlocked, "Act %d threshold uses local points and preserves cumulative score" % (index + 1))
   await sample_play_time()
@@ -146,9 +152,27 @@ func run() -> void:
    if index == 0 and "--capture" in OS.get_cmdline_user_args():
     while is_instance_valid(game.transfer) and game.transfer.elapsed < 0.55: await process_frame
     await capture("act-transfer")
-   var transfer_deadline := Time.get_ticks_msec() + 10000
-   while is_instance_valid(game.transfer) and Time.get_ticks_msec() < transfer_deadline: await process_frame
-   check(not is_instance_valid(game.transfer) and game.ball.position.distance_to(game.active.spawn()) < 1.0 and not game.controls.input_blocked, "Act transfer arrives at the authored spawn and releases controls")
+   var transfer_started := Time.get_ticks_msec()
+   var transfer_deadline := transfer_started + 180000
+   var active_seconds := 0.0
+   # Transfer advances on process delta, which Godot clamps during shader stalls.
+   # Check its simulation-time allowance separately from the loading watchdog.
+   var transfer_budget: float = Session.Run.SpawnTransfer.DURATION + 1.0
+   while is_instance_valid(game.transfer) and active_seconds < transfer_budget and Time.get_ticks_msec() < transfer_deadline:
+    await process_frame
+    if not paused: active_seconds += root.get_process_delta_time()
+   var arrived: bool = not is_instance_valid(game.transfer) and game.ball.position.distance_to(game.active.spawn()) < 1.0 and not game.controls.input_blocked
+   if not arrived:
+    print("PROTOTYPE_TRANSFER_FAILED | ", JSON.stringify({"act": index + 2, "wall_ms": Time.get_ticks_msec() - transfer_started,
+     "active_seconds": active_seconds, "transfer_elapsed": game.transfer.elapsed if is_instance_valid(game.transfer) else -1.0,
+     "paused": paused, "loading_boundary": game.loading_boundary, "library_stage": game.library.profile_stage,
+     "library_error": game.library.error, "spawn_distance": game.ball.position.distance_to(game.active.spawn()), "controls_blocked": game.controls.input_blocked}))
+   check(arrived, "Act transfer arrives at the authored spawn and releases controls")
+   if not arrived:
+    await session.return_to_menu()
+    session.free()
+    quit(1)
+    return
    game.ball.freeze = true
    game.ball.serve_pending = false
    game.ball._teleport_pending = false

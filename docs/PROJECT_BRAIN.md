@@ -12,6 +12,8 @@ Read this whole message as:
 
 Nothing here is sacred. Good new ideas are allowed to mutate old ones. The labels help distinguish current implementation from archaeology, but this project is supposed to stay playful.
 
+Treat this file as a **shared memory and conversation starter**, not a constitution carved into Angel Island. When it says a direction is current, that helps us avoid accidentally reviving retired systems; it does not mean every current number or design is untouchable. New repo evidence, playtesting, telemetry and genuinely better ideas are always welcome.
+
 ## What to say after Alex pastes this
 
 Do **not** summarize the project back to Alex.
@@ -198,6 +200,32 @@ Use it when useful for:
 - recent information.
 
 Research supports the three bros. It does not replace taste, playtesting or jokes.
+
+### Images should earn their seat at the table
+
+There is no need to decorate a mechanical or balance discussion with random images just because image search exists.
+
+For scoring, Buddy balance, architecture or telemetry, text is usually enough.
+
+Images are most useful when we are discussing:
+
+- visual identity;
+- theme direction;
+- a canonical character/Buddy appearance;
+- level composition;
+- texture or material references;
+- choosing temporary artwork.
+
+When images genuinely help, prefer:
+
+1. official Sonic / SEGA material;
+2. the actual relevant game or asset;
+3. Sonic Wiki Zone or the project’s recorded source manifest;
+4. a clearly identified fan work when the fan interpretation itself is relevant.
+
+Try not to fill an answer with unrelated fan renders, generic icon packs, toy listings, download sites or random thumbnails that merely contain approximately one Chao-shaped object.
+
+One useful, verified reference beats ten noisy images doing a Sonic-themed hostage situation on the page.
 
 ## “Bro” means Codex
 
@@ -1646,22 +1674,32 @@ Can:
 
 ## Virtual Ring
 
-May increase Ring/resource count.
+At the current repository snapshot, virtual Rings are **counter-only**. `Game.award_virtual_rings()` changes only `rings_collected`; the Buddy adapter records its virtual-Ring counters separately. See [game.gd](../scripts/game.gd) and [buddies.gd](../scripts/prototype/buddies.gd).
 
-Must not:
+They increase the run’s Ring count and appear in telemetry, but they currently do not:
 
 - score like a physical pickup;
 - charge Special;
 - advance Ring Link;
-- progress Bonus Rack;
+- progress a Bonus Rack or ordinary Ring pattern;
+- protect the player;
+- directly unlock progression;
 - recursively trigger RC UFO.
 
-Otherwise four Rings become five Rings, five become six, and eventually we have Ring mitosis.
+That current implementation detail matters when evaluating Buddies:
+
+- RC UFO’s reward may look active in telemetry while having little immediate gameplay consequence;
+- the virtual-Ring half of Dark Chao may also feel quieter than its description suggests;
+- those effects could become more meaningful later if total Ring count gains another use.
+
+This is a useful **playtest question**, not an automatic verdict that those Buddies are bad.
+
+And yes, the no-recursion rule stays: otherwise four Rings become five Rings, five become six, and eventually we have Ring mitosis.
 
 
 # GOOD FUTURE BUDDY DESIGN
 
-A new Buddy should ideally make Alex think:
+A strong Buddy often makes Alex think:
 
 > I should play differently with this build.
 
@@ -1680,7 +1718,7 @@ Possible archetypes:
 - combo preservation;
 - Ball economy.
 
-Avoid creating a catalogue that is just:
+A whole catalogue made only from:
 
 ```text
 +5%
@@ -1689,7 +1727,35 @@ Avoid creating a catalogue that is just:
 +15%
 ```
 
-That is not a Buddy system. That is Microsoft Excel wearing Chao ears.
+would be Microsoft Excel wearing Chao ears.
+
+But **simple is allowed**.
+
+Not every Buddy needs:
+
+- a unique meter;
+- a triggered minigame;
+- a special camera shot;
+- six lines of rules text;
+- its own graduate program.
+
+A simple effect is good when it creates a clear draft choice, fills a useful roster role or keeps the pool readable. Judge a Buddy separately on:
+
+- strength;
+- clarity;
+- playstyle impact;
+- visibility to the player;
+- overlap with other Buddies.
+
+A short description is not automatically a design failure.
+
+Lv2 upgrades can use a mix of approaches:
+
+- some Buddies simply improve the Lv1 value;
+- some identity-heavy Buddies may gain a new twist at Lv2;
+- one-shots may have no upgrade at all.
+
+The roster will probably feel better if a few Lv2 upgrades genuinely transform the effect, but forcing every Buddy to evolve into a new subsystem would be equally silly.
 
 When brainstorming a Buddy, consider:
 
@@ -1707,6 +1773,88 @@ When brainstorming a Buddy, consider:
 - abuse;
 - telemetry.
 
+## Brainstorm freely, implement carefully
+
+Combo Economy V1, enemy respawns and telemetry v2 are relatively fresh systems.
+
+It is completely fine to invent bold Buddy reworks, but present them as **candidate designs** unless we have enough evidence to call for implementation.
+
+Before booking half the roster for surgery, useful evidence includes:
+
+- several real runs;
+- how often the Buddy is drafted;
+- whether its effect ever triggers;
+- score contribution;
+- whether it changes route choices;
+- whether the player notices it;
+- whether it overlaps another Buddy;
+- subjective Run Feel notes.
+
+A good brainstorm can end with:
+
+> This is worth testing later.
+
+It does not always need to end with:
+
+> Bro, replace four production systems by lunchtime.
+
+
+
+# CURRENT BUDDY EVALUATION QUESTIONS — NOT VERDICTS
+
+The implemented roster has a few obvious discussion targets, but these are **questions for playtesting**, not an instruction to immediately rework them. Effect values come from [buddy_catalog.gd](../scripts/prototype/buddy_catalog.gd); claims about strength, visibility or routing impact below are design inferences to test.
+
+## Hero Chaos
+
+Its current universal +2% / +4% score effect is the clearest identity question because it is safe, quiet and mechanically plain.
+
+That may mean:
+
+- it needs stronger numbers;
+- Lv2 needs a small twist;
+- it fills a useful simple-generalist role;
+- or it is genuinely the first rework candidate.
+
+A permanent longer combo window is not automatically the answer. Global combo-window changes affect the value of Rails, Springs, Dash Panels, Switches and route spacing across the whole game.
+
+## RC UFO
+
+Its current cadence triggers correctly, but the reward is virtual Rings, and virtual Rings are currently counter-only.
+
+That makes RC UFO the clearest **practical-impact** question in the roster.
+
+Interesting future directions could connect it to Ring Links, combo grace or another real Ring-count resource, but those remain candidate ideas rather than settled changes.
+
+## Dark Chao
+
+The enemy-score half has a clear playstyle role.
+
+The virtual-Ring half may be quiet for the same reason as RC UFO.
+
+Evaluate those halves separately rather than calling the whole Buddy weak or strong from one number.
+
+## Knuckles Omochao
+
+A simple Bumper score bonus already has real routing impact because fresh Bumpers are combo Builders and Sonic can cash them out with Homing.
+
+Its short description alone is not evidence that it needs another effect. Additional Special charge could create a powerful feedback loop and deserves evidence first.
+
+## Yacker
+
+Magnet radius already changes which Ring trails are reachable and how safely Ring Links can be completed.
+
+That is genuine playstyle impact even without a second triggered effect. If it feels weak, improve the magnet fantasy before stapling on an unrelated steering buff.
+
+## Chip, Dark Chaos, Wizard Chao and RC Tornado
+
+These are good reminders that simple effects can still create clear draft decisions:
+
+- dramatic rescue;
+- risk/reward;
+- objective specialization;
+- immediate one-shot survival.
+
+Not every Buddy needs to become a tiny expansion pack.
 
 # OLD CHAO LAB
 
@@ -2695,17 +2843,29 @@ When the next message gives the actual topic:
 3. Point out what may fail.
 4. Connect it to current systems.
 5. Offer variants.
-6. Recommend a direction.
+6. Recommend a direction when one stands out.
 7. Keep current implementation separate from new proposals.
 8. Stay playful.
 
-Do not immediately produce a Codex prompt unless asked.
+A useful answer can be opinionated without pretending every opinion is settled design.
+
+Try to distinguish between:
+
+- **current behavior**;
+- **an inference from current behavior**;
+- **a fun candidate idea**;
+- **something worth playtesting**;
+- **something ready for bro to implement**.
+
+That distinction matters more than formal labels or ceremonial wording.
+
+There is no need to immediately produce a Codex prompt unless Alex asks for one.
 
 If the conversation says:
 
 > Let’s brainstorm
 
-brainstorm.
+brainstorm, joke, challenge ideas and let the design breathe.
 
 If the conversation says:
 
@@ -2713,6 +2873,42 @@ If the conversation says:
 
 then write the implementation prompt.
 
+Not every good idea has to leave the chat wearing a hard hat on the same day.
+
+
+
+# RESEARCH, SOURCES AND CONFIDENCE WITHOUT KILLING THE VIBE
+
+We do not need academic citations for every joke or original design idea.
+
+But when a claim depends on something factual, it helps to be clear about where it came from:
+
+- current repository code;
+- current project docs;
+- telemetry;
+- Sonic canon / an external source;
+- inference;
+- original design proposal.
+
+Examples:
+
+> RC UFO awards virtual Rings, and virtual Rings currently update a counter without scoring, charging Special or advancing Ring Links.
+
+That is a repository-backed implementation observation.
+
+> That reward may have little practical impact during a run.
+
+That is an inference worth checking against playtesting and Run Feel notes.
+
+> RC UFO should make Ring Links easier.
+
+That is a design proposal.
+
+All three are useful, but they are not the same kind of statement.
+
+Browse or inspect the repo when the distinction materially matters. There is no need to browse merely to garnish an answer with links and thumbnails.
+
+The goal is trustworthy conversation, not turning every Buddy brainstorm into a court filing.
 
 # WRITING PROMPTS FOR BRO / CODEX
 
@@ -2784,6 +2980,8 @@ Broadly:
    - characters;
    - themes.
 
+Combo Economy V1 and telemetry v2 were built so we can learn from actual runs. Fresh systems deserve a little time to produce evidence before every number and Buddy gets redesigned from vibes alone.
+
 The game already has plenty of mechanics.
 
 Often the best next move is to deepen what exists rather than add Mechanic #48.
@@ -2853,7 +3051,7 @@ The six ordinary workflow launchers remain the front door. Two specialist except
 
 All eight themes, SRA portraits, retro assets, fixtures, authoritative physics, Scorecraft V1, streaming infrastructure and run telemetry remain supported. No scoring or physics retuning, shader rewrite, shadow change or Ring batching happened in this milestone.
 
-The initial local tree also contained substantial uncommitted art work. Playtest snapshots include that art; cleanup commits preserve its separate ownership. Starting HEAD was `41a3262`. The final historical snapshot below intentionally describes the older state.
+The initial local tree also contained substantial uncommitted art work. Playtest snapshots include that art; cleanup commits preserve its separate ownership. Starting HEAD was `41a3262`; cleanup was committed and pushed as `77ecd3f`. The snapshot section below separates that current cleanup state from the older history.
 
 A small local before baseline uses seed 18, a one-Zone Green Hill Prototype course (RampMania / Reverse C Spring / Secret Entry), plus a standalone RampMania view. Both sample 600 rendered frames at serve on RTX 4060 / ANGLE at 1280×900; driver caches are uncontrolled. Prototype: median 33.245 ms, p95 34.247 ms, p99 36.691 ms, 3,756 median draws. RampMania: median 16.863 ms, p95 31.622 ms, p99 33.756 ms, 1,852 median draws. These are view samples, not complete-run promises. The pre-cleanup Endless tour rejected stale local bakes safely; raw logs and JSON are under ignored `test-results/repository-cleanup`.
 
@@ -2866,13 +3064,51 @@ Known diagnostic wrinkles: headless streaming produced dummy-renderer errors, so
 Future profiling should separate steady submission/shadow/overdraw cost from first-use preparation stalls. Ring submissions, unbatched static geometry, border density and 8192 shadows remain suspects, not verdicts.
 
 
+# FIRST PERFORMANCE PASS — 2026-10-30
+
+The first measured win is fewer submissions for the same pinball hardware. Rigid pieces inside each Bumper and flipper now share compatible mesh surfaces; the animated actor root, source triangles, palette materials and authoritative 2D physics stay intact. Bake conversion retains the existing primitive-detail policy. No Sonic Dorito was required.
+
+Controlled local samples on RTX 4060 / ANGLE, with VSync disabled and physics still at 120 Hz:
+
+- Alternating RampMania runs: typical frame time **11.983 → 10.657 ms**, draws **1,850 → 1,532**.
+- Prototype's settled opening view: **16.541 → 15.430 ms**, draws **3,756 → 3,070**.
+- Endless's settled opening view: **12.514 → 11.664 ms**, draws **2,855 → 1,991**.
+
+The last two comparisons are sequential before/after samples, not alternating trials. These numbers describe fixed views, not guaranteed whole-run FPS. The older cleanup timings used different frame pacing and must not be presented as the optimization's starting benchmark.
+
+The big suspect is many small mechanic submissions multiplied by shadow passes. The 8192/4096/2048 atlas trials did not show a consistent reason to lower default quality. A matched 75% render-scale trial also bought essentially nothing in this workload. Rings cost real draws, but their attraction/pickup lifecycle makes batching a larger job than combining rigid hardware. Visible borders were a small submission cost here. All eight themes, shaders, default scale and shadow quality remain supported and unchanged by this pass.
+
+An extra one-Act disk-prefetch experiment was measured and **reverted**. It made the resource-wait counter look lovely, but frame and boundary results were inconsistent. The experiment is not a supported runtime feature. The retained hardware change also reduced observed six-transition boundary waits, though preparation spikes remain and cache conditions limit that comparison.
+
+Do not mistake that for solved streaming. The final six-transition check still waited about 1.40 seconds, and a first-use Chemical Plant material-probe warm-up took about 42 seconds in the longer session test. Cold graphics preparation is a major remaining problem; the zero-boundary-wait target is still unmet. Those stalls are separate from the steady-view gains above.
+
+See [PERFORMANCE.md](PERFORMANCE.md) for methods, full percentiles/counters, visual comparisons, the rejected experiment, validation and remaining work. Raw local evidence is under ignored `test-results/performance-20261030/`. Existing ArtBro edits remain separately owned; local captures include them.
+
 # REPOSITORY SNAPSHOT AND COMMIT HISTORY — KEEP THIS LAST
 
-This shared context was written against:
+## Current repository context — cleanup and first performance pass, 2026-10-30
+
+`main @ 77ecd3ff536fd5b8f868bc7994ef2eeb3debac71`
+
+This is the verified cleanup base for the v2 merge and performance pass recorded in this revision. The sections above describe the newer hardware optimization and its evidence; use `git log -1` for the exact current commit. Current source or later verified commits still win over this save file.
+
+- Repository cleanup is complete: old Chao Lab, unused `data/prototype` snapshots and disabled imported-model preparation/loading code are retired.
+- The production pool contains exactly First Try Smooth Decor, RampMania, Reverse C Spring, Secret Entry and SpringUp. Production Second Simple is gone; its separate Endless stress fixture remains.
+- Generic PhysicsModifier resolution, current SRA Buddies, character Specials, Scorecraft V1, 120 Hz authoritative 2D physics and all eight themes remain supported.
+- Prototype supports 1–7 Zones, selected Act/theme pools, finite Balls, Buddy drafts, telemetry v2, automatic archives and Run Feel notes. Endless remains the separate streaming/performance workflow.
+- Virtual Rings are currently counter-only. No scoring or Buddy redesign was made during cleanup or the v2 brain merge.
+- Existing local art work remains separate and uncommitted. The frozen pre-/post-cleanup playtest builds include that work; a commit SHA alone does not describe those local visuals.
+- The first graphics/performance pass combines rigid pinball hardware, preserves visual quality and adds repeatable profiling. Loading/preparation spikes and shadow-caster submissions remain useful next investigations; scoring/Buddy balance surgery still waits for playtest evidence.
+
+## Historical snapshot — before cleanup, superseded
+
+The original shared context was written against:
 
 `main @ 41a3262260870a8fd2ce164c1e83fb4fbb1665a1`
 
-At this snapshot:
+The statements below describe that older commit only. In particular, the Second Simple and Chao Lab bullets are historical; they do not describe the current repository.
+
+At that historical snapshot:
 
 - Combo/Scoring Economy V1 is implemented.
 - Physical Rings are 15 base points.
@@ -2892,6 +3128,11 @@ At this snapshot:
 Newer repository evidence or a newer implementation report wins over this snapshot.
 
 ## Recent relevant commits
+
+**2026-10-30 — `77ecd3f`**\
+`Retire legacy Chao and model systems and refresh project context`
+
+Completed repository cleanup, preserved current gameplay/presentation systems, added this shared brain and refreshed the two supported workflows. See the cleanup section for preserved exceptions and verification results.
 
 **2026-10-30 — `41a3262`**\
 `Archive Prototype runs with editable run feel and Enter pause`

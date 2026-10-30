@@ -1,6 +1,7 @@
 extends SceneTree
 ## Production model builders at close range, across every stage palette.
 const Models = preload("res://scripts/pinball_models.gd")
+const Themes = preload("res://scripts/themes/theme_registry.gd")
 
 func _initialize() -> void:
  call_deferred("run")
@@ -25,12 +26,11 @@ func run() -> void:
  var camera := Camera3D.new()
  p.add_child(camera)
  camera.position = Vector3(4.2, 11, 9.2)
- camera.look_at(Vector3(4.2, 0, 3.0))
+ camera.look_at(Vector3(4.2, 0, 3.7))
  camera.projection = Camera3D.PROJECTION_ORTHOGONAL
- camera.size = 10.7
+ camera.size = 12.5
  var index := 0
- for theme: String in Models.PALETTES:
-  if theme == "default": continue
+ for theme: String in Themes.IDS:
   var panel := Node3D.new()
   p.add_child(panel)
   panel.position = Vector3((index % 3) * 3.2 + 0.5, 0, (index / 3) * 3.7)
@@ -59,6 +59,6 @@ func run() -> void:
   await RenderingServer.frame_post_draw
   DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results/pinball-models"))
   root.get_texture().get_image().save_png("res://test-results/pinball-models/gallery.png")
- print("RESULT | Pinball model palette gallery | 6 themes built")
+ print("RESULT | Pinball model palette gallery | %d themes built" % index)
  p.free()
  quit()

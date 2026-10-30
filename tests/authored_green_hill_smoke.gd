@@ -129,8 +129,21 @@ func check_shared_dimensions(cell_size: float) -> void:
 	var sling: Dictionary = game.runtime.objects[1]
 	check(sling.points == Objects.local_points(document.gameplay_objects[1], cell_size) and sling.body.get_child(0).polygon == sling.points, "Editor and physical sling use the same compact polygon about the same anchor")
 	var circle_visual: Node3D = game.green_hill.bumper_visuals[circle.body.get_instance_id()]
-	var circle_mesh: CylinderMesh = circle_visual.get_child(0).mesh
-	check(is_equal_approx(circle_mesh.top_radius, circle.radius * TablePresentation.SCALE) and is_equal_approx(circle_mesh.bottom_radius, circle.radius * TablePresentation.SCALE) and TablePresentation.unmap_point(circle_visual.global_position).distance_to(circle.position) < 0.001, "Actual Green Hill bumper mesh keeps the shared radius and exact center")
+	# Measure the complete footprint, whether hardware uses primitives or merged
+	# meshes. The first decorative base alone is narrower than the physical rim.
+	var circle_bounds := Rect2(circle.position, Vector2.ZERO)
+	var rendered_radius := 0.0
+	var circle_vertices := 0
+	for mesh_node: MeshInstance3D in circle_visual.find_children("*", "MeshInstance3D", true, false):
+		for surface in mesh_node.mesh.get_surface_count():
+			var vertices: PackedVector3Array = mesh_node.mesh.surface_get_arrays(surface)[Mesh.ARRAY_VERTEX]
+			for vertex in vertices:
+				var actual := TablePresentation.unmap_point(mesh_node.to_global(vertex))
+				circle_bounds = circle_bounds.expand(actual)
+				rendered_radius = maxf(rendered_radius, actual.distance_to(circle.position))
+				circle_vertices += 1
+	var expected_bounds := Rect2(circle.position - Vector2.ONE * circle.radius, Vector2.ONE * circle.radius * 2.0)
+	check(circle_vertices > 0 and absf(rendered_radius - circle.radius) < 0.001 and circle_bounds.position.distance_to(expected_bounds.position) < 0.001 and circle_bounds.end.distance_to(expected_bounds.end) < 0.001 and TablePresentation.unmap_point(circle_visual.global_position).distance_to(circle.position) < 0.001, "Actual Green Hill bumper mesh keeps the shared radius and exact center")
 	var sling_visual: Node3D = game.green_hill.bumper_visuals[sling.body.get_instance_id()]
 	var sling_mesh: MeshInstance3D = sling_visual.get_child(0)
 	var matching_sling := true
@@ -223,7 +236,9 @@ func check_catalogue_meshes() -> void:
 		var side: Material = node.mesh.surface_get_material(1)
 		wall_style = wall_style and top is ShaderMaterial and side is ShaderMaterial
 		if top is ShaderMaterial and side is ShaderMaterial:
-			wall_style = wall_style and top == game.green_hill.terrain_top_material() and side == game.green_hill.terrain_side_material() and top.get_shader_parameter("raised_turf") == true
+			wall_style = wall_style and top == game.green_hill.terrain_top_material() and side == game.green_hill.terrain_side_material()
+			wall_style = wall_style and top.get_shader_parameter("surface_texture") is Texture2D and top.get_shader_parameter("world_mapping") == true
+			wall_style = wall_style and side.get_shader_parameter("soil_texture") is Texture2D and side.get_shader_parameter("fringe_texture") is Texture2D
 		# Surface zero is the blocking silhouette's cap; exclude its vertical sides
 		# and the separate traversable floor from projected coverage measurements.
 		for surface in 1:

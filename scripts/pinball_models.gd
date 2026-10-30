@@ -1,6 +1,7 @@
 extends RefCounted
 ## Collisionless Sonic-inspired hardware. All colours are replaceable palette slots.
 const SURFACE = preload("res://scripts/pinball_surface.gdshader")
+const MeshBatch = preload("res://scripts/pinball_mesh_batch.gd")
 const PALETTES := {
  "default": ["dc3546", "164ea1", "ffd45b", "f5f4df", "42ce89", "182b42"],
  "green_hill": ["e54a42", "246fc5", "ffcf50", "fff4dd", "48d293", "243e49"],
@@ -45,6 +46,7 @@ static func round_bumper(p, parent: Node3D, radius: float, height_scale: float, 
   var angle := i * TAU / 8.0
   var bolt: MeshInstance3D = p.mesh_node(p.cylinder(radius * 0.035, 0.008 * height_scale), m.mark, Vector3(cos(angle) * radius * 0.81, 0.39 * height_scale, sin(angle) * radius * 0.81), parent)
   bolt.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+ MeshBatch.combine(parent, p.has_method("stream_checkpoint"))
 
 static func triangle_bumper(p, parent: Node3D, points: PackedVector2Array, height: float, m: Dictionary) -> void:
  p.mesh_node(p._prism(points, height * 0.65, m.base, m.rubber), null, Vector3.ZERO, parent)
@@ -58,6 +60,7 @@ static func triangle_bumper(p, parent: Node3D, points: PackedVector2Array, heigh
  var mark := PackedVector2Array()
  for point in points: mark.append(center + (point - center) * 0.35)
  p.mesh_node(p._prism(mark, height * 0.025, m.mark, m.mark), null, Vector3(0, height * 1.025, 0), parent)
+ MeshBatch.combine(parent, p.has_method("stream_checkpoint"))
 
 static func flipper(p, parent: Node3D, length: float, radius: float, h: float, m: Dictionary) -> void:
  parent.name = "StripedFlipper"
@@ -73,3 +76,4 @@ static func flipper(p, parent: Node3D, length: float, radius: float, h: float, m
   var r: float = radius * 0.55 / p.SCALE
   var chevron := PackedVector2Array([Vector2(x - r * 0.6, -r), Vector2(x, -r), Vector2(x + r * 0.8, 0), Vector2(x, r), Vector2(x - r * 0.6, r), Vector2(x + r * 0.2, 0)])
   p.mesh_node(p._prism(chevron, 0.004 * h, m.mark, m.mark), null, Vector3(0, 0.263 * h, 0), parent)
+ MeshBatch.combine(parent, p.has_method("stream_checkpoint"))

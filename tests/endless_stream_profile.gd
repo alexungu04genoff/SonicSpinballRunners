@@ -15,10 +15,15 @@ func run() -> void:
  var output := "res://test-results/endless-stream-profile.json"
  var target := 6
  var speed := 100.0
+ var unlimited := false
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--profile-output="): output = argument.trim_prefix("--profile-output=")
   if argument.begins_with("--profile-target="): target = int(argument.trim_prefix("--profile-target="))
   if argument.begins_with("--profile-speed="): speed = float(argument.trim_prefix("--profile-speed="))
+  if argument == "--profile-unlimited": unlimited = true
+ if unlimited and DisplayServer.get_name() != "headless":
+  Engine.max_fps = 0
+  DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
  game = Game.new()
  var initialize_at := Time.get_ticks_msec()
  root.add_child(game)
@@ -90,6 +95,12 @@ func run() -> void:
   "draw_calls_median": draws[draws.size() / 2], "draw_calls_p95": draws[int(draws.size() * 0.95)],
   "cpu_max_ms": game.library.profile_max_cpu_ms, "threaded_resource_wall_ms": game.library.profile_resource_wait_ms,
   "worst_frames": worst.slice(0, 8)}
+ summary["seed"] = game.run_seed
+ summary["window_size"] = [root.size.x, root.size.y]
+ summary["physics_ticks"] = Engine.physics_ticks_per_second
+ summary["vsync"] = DisplayServer.window_get_vsync_mode() if DisplayServer.get_name() != "headless" else -1
+ summary["active_frames"] = _frame_summary(rows.filter(func(row: Dictionary): return not row.waiting))
+ summary["waiting_frames"] = _frame_summary(rows.filter(func(row: Dictionary): return row.waiting))
  print("ENDLESS_PROFILE | ", JSON.stringify(summary))
  DirAccess.make_dir_recursive_absolute(output.get_base_dir())
  var file := FileAccess.open(output, FileAccess.WRITE)
@@ -109,3 +120,10 @@ func _pre_draw() -> void:
 
 func _post_draw() -> void:
  render_wall_ms = (Time.get_ticks_usec() - render_started) / 1000.0
+
+func _frame_summary(samples: Array) -> Dictionary:
+ if samples.is_empty(): return {"count": 0}
+ var times: Array = samples.map(func(row: Dictionary): return row.frame_ms)
+ times.sort()
+ return {"count": times.size(), "median_ms": times[times.size() / 2],
+  "p95_ms": times[int(times.size() * 0.95)], "p99_ms": times[int(times.size() * 0.99)], "max_ms": times[-1]}
