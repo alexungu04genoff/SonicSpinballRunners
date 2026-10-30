@@ -64,13 +64,20 @@ func run() -> void:
  await finish_transfer(game)
  game.active.runtime.mechanics.complete_feature(&"switch_bank", "clear", 1000)
  var next: RefCounted = game.resident[1]
+ # Find a reproducible draft seed that offers the completion Buddy under test.
+ for draft_seed in 100:
+  var probe := Session.Run.Buddies.new()
+  probe.run_seed = draft_seed
+  if probe.offers().any(func(offer): return offer.id == "wizard_chao"):
+   game.buddies.run_seed = draft_seed
+   break
  var at: Vector2 = game.active.runtime.goal_ring.center
  game._observe_authored_motion(at + Vector2.DOWN, at - Vector2.DOWN)
- session._choose_buddy("feature_fox")
+ session._choose_buddy("wizard_chao")
  check(game.balls_remaining == 3 and game.active_sequence == 1, "Clearing an Act refreshes the budget to three balls")
  await finish_transfer(game)
  game.active.runtime.mechanics.complete_feature(&"switch_bank", "feature", 100)
- check(game.act_score == 350 and game.buddy_contributions.feature_fox == 250, "An acquired Buddy feeds both score ledgers and contribution tracking")
+ check(game.act_score == 125 and game.buddy_contributions.wizard_chao == 25, "An acquired Buddy feeds both score ledgers and contribution tracking")
  for lost in 3:
   game.ball.position = Vector2(game.ball.serve_position.x, game.active.document.red_gutter_bounds().end.y + game.active.plan.offset.y)
   game.ball.linear_velocity = Vector2(300, 800)
@@ -83,7 +90,7 @@ func run() -> void:
   if lost < 2:
    check(game.ball.collision_layer == 0 and game.ball.collision_mask == 0 and game.controls.input_blocked, "Drain transfer disables collisions and input")
    game.active.runtime.mechanics.complete_feature(&"switch_bank", "during_transfer", 900)
-   check(game.act_score == 350 and not game.ring_field.scoring_enabled, "Transfer cannot earn feature or ring points")
+   check(game.act_score == 125 and not game.ring_field.scoring_enabled, "Transfer cannot earn feature or ring points")
    if lost == 0:
     while game.transfer.elapsed < 0.18: await process_frame
     check(game.transfer.proxy.scale.x < 1.0 and game.transfer.proxy.scale.x > 0.0 and not game.character.visible, "Drain displays a shrinking ball without a duplicate character")
@@ -97,17 +104,17 @@ func run() -> void:
     while is_instance_valid(game.transfer) and game.transfer.elapsed < 0.95: await process_frame
     await capture("return")
    await finish_transfer(game)
-   check(game.act_score == 350 and game.scorecraft.award_bonuses.has("feature_fox"), "Checkpoint retains score and the acquired build")
+   check(game.act_score == 125 and game.scorecraft.award_bonuses.has("wizard_chao"), "Checkpoint retains score and the acquired build")
  check(not is_instance_valid(game.transfer), "Final Challenge drain does not start another respawn")
  check(game.finished and session.state == "results" and not session.last_summary.won and paused, "The third lost ball ends Challenge in a failure result")
  check(session.last_summary.acts.size() == 2 and session.last_summary.acts[0].cleared and not session.last_summary.acts[1].cleared, "Failure retains cleared Acts and includes the unfinished Act")
- check(session.last_summary.score == 1350 and session.last_summary.normal_score == 1100 and session.last_summary.buddy_contributions.feature_fox == 250, "Build-aware results reconcile base scoring plus Buddy contributions")
+ check(session.last_summary.score == 1125 and session.last_summary.normal_score == 1100 and session.last_summary.buddy_contributions.wizard_chao == 25, "Build-aware results reconcile base scoring plus Buddy contributions")
  check(session.best_score == previous_best, "A failed run cannot replace completed-run records")
  legacy.load(session.settings_path)
  check(legacy.get_value("challenge_records", "score", 0) == 2468 and legacy.get_value("records", "score", 0) == 9999, "Saving the new course preserves earlier Challenge and Practice records")
  game.controls.reset_requested.emit()
  game.active.runtime.mechanics.complete_feature(&"switch_bank", "late", 500)
- check(game.score == 1350 and game.balls_remaining == 0, "Failure rejects retries and late rewards")
+ check(game.score == 1125 and game.balls_remaining == 0, "Failure rejects retries and late rewards")
  if "--capture" in OS.get_cmdline_user_args() and DisplayServer.get_name() != "headless":
   for i in 5: await process_frame
   await RenderingServer.frame_post_draw

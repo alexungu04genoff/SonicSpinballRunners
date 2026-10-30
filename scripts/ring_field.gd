@@ -9,6 +9,8 @@ signal feature_completed(kind: StringName, object_id: String, bonus: int)
 signal rack_completed(position: Vector2, object_id: String)
 const RingTrails = preload("res://scripts/act_editor/ring_trails.gd")
 const CONTACT_RADIUS := PlaygroundBall.RADIUS + 12.0
+const RESPAWN_SAFETY_DISTANCE := 128.0
+const RESPAWN_FADE_SECONDS := 0.35
 ## Per-instance geometry; ordinary tables retain their original 12 px ring contact.
 var ring_radius := 12.0
 var rings: Array[Dictionary] = []
@@ -29,13 +31,17 @@ static func pattern_records(trails: Array, owner_id: String, offset := Vector2.Z
   var points := RingTrails.positions(trail)
   var source_id := owner_id + ":" + RingTrails.pattern_id(trail, index)
   var rack := _new_rack(source_id, owner_id, points.size(), RingTrails.scoring_settings(trail))
+  if not points.is_empty():
+   var bounds := Rect2(points[0] + offset, Vector2.ZERO)
+   for point: Vector2 in points: bounds = bounds.expand(point + offset)
+   rack["bounds"] = bounds
   for point_index in points.size():
    var at: Vector2 = points[point_index] + offset
    result.append({"home": at, "position": at, "active": true, "rack": rack, "source_id": "%s:ring_%d" % [source_id, point_index]})
  return result
 
 static func _new_rack(source_id: String, owner_id: String, total: int, settings: Dictionary) -> Dictionary:
- return {"id": source_id, "owner_id": owner_id, "total": total, "remaining": total, "timeout_remaining": -1.0, "respawn_remaining": -1.0, "settings": settings}
+ return {"id": source_id, "owner_id": owner_id, "total": total, "remaining": total, "timeout_remaining": -1.0, "respawn_remaining": -1.0, "ready": false, "fade": 0.0, "settings": settings}
 
 func ring_eligible(ring: Dictionary) -> bool:
  if not scoring_enabled: return false
@@ -47,6 +53,7 @@ func add_ring(at: Vector2) -> void:
  # Legacy callers create ordinary single-ring patterns, never implicit +500 racks.
  var source_id := "%s:ring_pattern_%d" % [active_owner_id, rings.size()]
  var rack := _new_rack(source_id, active_owner_id, 1, RingTrails.scoring_settings({}))
+ rack["bounds"] = Rect2(at, Vector2.ZERO)
  rings.append({"home": at, "position": at, "active": true, "rack": rack, "source_id": source_id + ":ring_0"})
 
 func add_pattern(trail: Dictionary, source_id: String, owner_id := "", offset := Vector2.ZERO) -> void:
@@ -67,11 +74,26 @@ static func _reset_rack_state(rack: Dictionary) -> void:
  rack.remaining = rack.total
  rack.timeout_remaining = -1.0
  rack.respawn_remaining = -1.0
+ rack.ready = false
+ rack.fade = 0.0
+
+func _safe_to_respawn(rack: Dictionary) -> bool:
+ if not is_instance_valid(ball): return true
+ var region: Rect2 = rack.bounds.grow(RESPAWN_SAFETY_DISTANCE + ball.radius + ring_radius)
+ if region.has_point(ball.position) or region.has_point(previous_ball_position): return false
+ var corners := [region.position, Vector2(region.end.x, region.position.y), region.end, Vector2(region.position.x, region.end.y)]
+ for i in 4:
+  if Geometry2D.segment_intersects_segment(previous_ball_position, ball.position, corners[i], corners[(i + 1) % 4]) != null: return false
+ return true
+
+static func visibility_alpha(ring: Dictionary) -> float:
+ if ring.active: return 1.0
+ return float(ring.rack.fade) / RESPAWN_FADE_SECONDS if ring.has("rack") and ring.rack.ready else 0.0
 
 func advance_racks(delta: float) -> void:
  if not scoring_enabled or delta <= 0.0: return
  var visited: Dictionary = {}
- var expired_racks: Dictionary = {}
+ var changed := false
  for ring: Dictionary in rings:
   if not ring_eligible(ring) or not ring.has("rack"): continue
   var rack: Dictionary = ring.rack
@@ -79,6 +101,19 @@ func advance_racks(delta: float) -> void:
   if visited.has(id): continue
   visited[id] = true
   var expired := false
+  if rack.ready:
+   if not _safe_to_respawn(rack):
+    rack.fade = 0.0
+    continue
+   rack.fade = minf(RESPAWN_FADE_SECONDS, rack.fade + delta)
+   if rack.fade < RESPAWN_FADE_SECONDS: continue
+   _reset_rack_state(rack)
+   for member: Dictionary in rings:
+    if member.has("rack") and member.rack.id == id:
+     member.position = member.home
+     member.active = true
+   changed = true
+   continue
   if rack.respawn_remaining >= 0.0:
    rack.respawn_remaining = maxf(0.0, rack.respawn_remaining - delta)
    expired = rack.respawn_remaining <= 0.0
@@ -86,14 +121,14 @@ func advance_racks(delta: float) -> void:
    rack.timeout_remaining = maxf(0.0, rack.timeout_remaining - delta)
    expired = rack.timeout_remaining <= 0.0
   if not expired: continue
-  expired_racks[id] = true
-  _reset_rack_state(rack)
- if expired_racks.is_empty(): return
- for ring: Dictionary in rings:
-  if ring.has("rack") and expired_racks.has(ring.rack.id) and ring_eligible(ring):
-   ring.position = ring.home
-   ring.active = true
- rack_reset.emit()
+  rack.ready = true
+  rack.fade = 0.0
+  # Hide the entire failed attempt, including its uncollected rings. Waiting and
+  # fading are non-collectible states; safety is rechecked throughout the fade.
+  for member: Dictionary in rings:
+   if member.has("rack") and member.rack.id == id: member.active = false
+  changed = true
+ if changed: rack_reset.emit()
 
 func claim_ring(index: int, source: String = "", multiplier: int = 1) -> bool:
  if index < 0 or index >= rings.size():

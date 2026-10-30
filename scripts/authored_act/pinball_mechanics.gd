@@ -3,6 +3,7 @@ extends Node
 signal mechanic_score(kind: StringName, object_id: String, points: int)
 signal mechanic_rings(kind: StringName, object_id: String, amount: int)
 signal feature_completed(kind: StringName, object_id: String, bonus: int)
+signal enemy_destroyed(enemy_type: StringName, object_id: String, base_points: int, source: StringName)
 ## Movement events describe actual launches and rail ownership, independently of rewards.
 signal traversal_event(kind: StringName, object_id: String, phase: StringName)
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
@@ -10,6 +11,9 @@ const RailPath = preload("res://scripts/authored_act/rail_path.gd")
 const Contact = preload("res://scripts/authored_act/gimmick_geometry.gd")
 const Lanes = preload("res://scripts/authored_act/passing_lanes.gd")
 const Banks = preload("res://scripts/act_editor/switch_banks.gd")
+const Enemies = preload("res://scripts/enemies/enemy_runtime.gd")
+var enemies := Enemies.new()
+var scoring_allowed: Callable
 const MAX_FIELD_ACCELERATION := 600.0
 const MAX_TICKS_PER_STEP := 2
 var ball: PlaygroundBall
@@ -28,6 +32,13 @@ var reentry_time := 0.0
 var _saved_layer := 2
 var _saved_mask := 1
 var _travel_origin: Variant = null
+
+func _init() -> void:
+ enemies.enemy_destroyed.connect(func(type: StringName, id: String, points: int, source: StringName): enemy_destroyed.emit(type, id, points, source))
+ enemies.destruction_allowed = _enemy_scoring_allowed
+
+func _enemy_scoring_allowed() -> bool:
+ return scoring_active and is_instance_valid(ball) and not ball.serve_pending and not ball._teleport_pending and (not scoring_allowed.is_valid() or scoring_allowed.call())
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -50,6 +61,7 @@ func add_object(placement: Dictionary, descriptor: Dictionary) -> void:
  item["passing"] = false
  item["pulse"] = 0.0
  item["launch_count"] = 0
+ if Enemies.is_enemy(item.type): enemies.add(item)
  if item.type == "spinner":
   item["goal_ticks"] = 0
   item["completions"] = 0
@@ -101,6 +113,7 @@ func reset() -> void:
 
 func reset_motion() -> void:
  _travel_origin = null
+ enemies.reset_motion()
  for item: Dictionary in items:
   if item.type == "lane_barrier":
    for lane: Dictionary in item.lanes:
@@ -123,6 +136,7 @@ func leave_ramp() -> void:
  if not leaving_id.is_empty(): traversal_event.emit(&"elevated_rail", leaving_id, &"exited")
 
 func tick(dt: float) -> void:
+ if scoring_active: enemies.tick(dt)
  reentry_time = maxf(0.0, reentry_time - dt)
  var budget := MAX_TICKS_PER_STEP
  for bank: Dictionary in banks:
@@ -190,7 +204,9 @@ static func crossing_fraction(start: Vector2, end: Vector2, center: Vector2, for
 func observe_actual_motion(state: PhysicsDirectBodyState2D) -> void:
  # Reward only actual travel since the last integration, never a speculative shot
  # that the ball's conservative terrain sweep might rebound before completing.
- if _travel_origin != null: _observe_travel(state, _travel_origin, state.transform.origin)
+ if _travel_origin != null:
+  if not ball.on_ramp: enemies.observe(state, _travel_origin, ball.radius)
+  _observe_travel(state, _travel_origin, state.transform.origin)
  _travel_origin = state.transform.origin
 
 func observe_motion(state: PhysicsDirectBodyState2D, sample_travel := true) -> bool:

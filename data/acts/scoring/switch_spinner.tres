@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1")
-format_version = 15
+format_version = 17
 library_version = 2
 title = "Scoring - Switch and Spinner"
 grid_size = Vector2i(12, 20)
@@ -65,8 +65,8 @@ gameplay_objects = [
 {"type": "spinner", "object_id": "spinner_goal", "position": Vector2(300, 670), "rotation_degrees": 0.0, "properties": {"width": 80.0, "tick_score": 5.0, "completion_enabled": true, "target_ticks": 10.0, "completion_bonus": 300.0}}
 ]
 switch_banks = [{"bank_id": "repeat_bank", "label": "Repeatable Switch Bank", "members": ["floor_blue", "floor_red"], "gates": ["bank_gate"], "completion_bonus": 500.0, "reset_delay": 0.75}]
-ring_trails = [{"pattern_id": "lower_rack", "start": Vector2(200, 750), "end": Vector2(360, 750), "spacing": 25.0, "bonus_rack": true, "completion_bonus": 500, "timeout": 12.0, "respawn_delay": 1.0},
-{"pattern_id": "upper_trail", "start": Vector2(120, 210), "end": Vector2(120, 50), "spacing": 25.0, "bonus_rack": false, "timeout": 12.0, "respawn_delay": 1.0}]
+ring_trails = [{"pattern_id": "lower_rack", "start": Vector2(200, 750), "end": Vector2(360, 750), "spacing": 25.0, "bonus_rack": true, "completion_bonus": 500, "timeout": 12.0, "respawn_delay": 11.0},
+{"pattern_id": "upper_trail", "start": Vector2(120, 210), "end": Vector2(120, 50), "spacing": 25.0, "bonus_rack": false, "timeout": 25.0, "respawn_delay": 18.0}]
 entry_start_x = 5
 entry_width = 2
 exit_start_x = 2

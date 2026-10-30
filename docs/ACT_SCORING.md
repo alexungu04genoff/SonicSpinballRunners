@@ -16,12 +16,13 @@ Old Acts have no target and remain ungated. Pass `--free-play` after Godot's `--
 
 Select a ring line or ellipse in the **Rings** tab. Its scoring controls also set the next pattern's brush settings:
 
-| Setting | Default | Supported range |
-| --- | --- | --- |
-| Bonus Rack | Disabled | On / off |
-| Completion bonus | 500 points | Integer 0–100,000 |
-| Timeout | 12 seconds | 0.1–300 seconds |
-| Respawn delay | 1 second | 0.1–60 seconds |
+| Setting | Ordinary pattern | Bonus Rack | Supported range |
+| --- | --- | --- | --- |
+| Completion bonus | None | 500 points | Integer 0–100,000 |
+| Timeout | 25 seconds | 12 seconds | 0.1–300 seconds |
+| Respawn delay | 18 seconds | 11 seconds | 0.1–60 seconds |
+
+Bonus Rack defaults off. Toggling it updates the brush's default timers but preserves bespoke timing. These remain one shared pattern/rack implementation, separate from Switch Banks.
 
 The first physical pickup starts that pattern's timeout. Later pickups do not extend it. Clearing the whole pattern before timeout awards its configured bonus once if **Bonus Rack** is enabled, then respawns after the delay. An incomplete timeout restores that pattern without a bonus. Ordinary patterns also respawn, but have no completion reward. An ordinary single ring therefore never implicitly earns a 500-point bonus; enabling a one-ring Bonus Rack is an explicit author choice.
 
@@ -29,7 +30,9 @@ Patterns remain independent even when their rings overlap. New patterns receive 
 
 Rack progress and clocks survive checkpoint retries, pausing while collection is disabled, serving, teleporting, or the owner is inactive. Eligible rail travel counts toward rack timeout, even while lower-table collection is unavailable. Retiring an Act retires its rack state. A rack respawn does not reset Scorecraft. Direct, magnet and character area collection claim the same physical rings.
 
-Lane Barrier ring rewards are virtual ring-counter additions. They neither claim physical rings nor complete racks, and they do not grant physical-pickup special charge.
+Expired patterns wait outside their bounds expanded by 128 px plus Ball and Ring radii, checking the Ball's last sweep too. They fade in over 0.35 seconds before becoming collectible. Returning during the fade restarts the safety wait. Inactive owners cannot advance timers, fade or activation.
+
+Lane Barrier and Buddy ring rewards use the same explicit `award_virtual_rings` counter-only path. They neither claim physical rings nor complete racks, grant Special charge, or recursively trigger physical-Ring Buddy effects.
 
 ## Repeatable optional features
 
@@ -68,7 +71,7 @@ These targets, spring strengths and shot routes are provisional playtest values.
 
 ## Persistence and verification
 
-Act format 15 adds the optional Act target, pattern scoring fields and Spinner Goal properties. Formats 2–14 migrate in memory and write format 15 only on explicit save. Old switch rewards, bank rewards/reset values and spinner tick values remain exact. Missing rack bonuses default off. Stable pattern IDs and every authored scoring setting participate in fingerprints; numeric rack timers use the existing exact-byte persistence path. The format and runtime changes invalidate prior derived Endless bakes; run **Bake Endless.cmd** before using them.
+Act format 17 includes the optional Act target, pattern scoring fields, Spinner Goals and authored Goal Ring. Older formats migrate in memory and write format 17 only on explicit save. Format-15/16 ring recipes with the historical one-second delay and default 12-second timeout / 500-point reward migrate to the new ordinary/Bonus Rack defaults; a bespoke timeout or reward preserves the explicit recipe. Format 17 preserves intentional one-second values. Missing fields inherit current defaults. Old switch rewards, bank rewards/reset values and spinner tick values remain exact. Stable pattern IDs and every authored scoring setting participate in fingerprints; numeric rack timers use the existing exact-byte persistence path. Rebuild derived bakes with **Bake Endless.cmd**, or **Bake Prototype.cmd** for the finite run. See [the milestone specification](ADVENTURE_BUDDIES_AND_BUZZ.md) for exact migration and Buddy/enemy behavior.
 
 `tests/scoring_authoring_regression.gd` exercises the real editor's target/rack/spinner/bank controls, undo/redo, invalid values, Save/Reload, format-14 compatibility, unchanged source files and production compilation of all three examples. Runtime coverage lives alongside existing Scorecraft, ring, mechanic, main-game and Endless regression checks.
 

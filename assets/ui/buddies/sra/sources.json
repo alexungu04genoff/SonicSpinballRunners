@@ -1,0 +1,101 @@
+{
+  "chip": {
+    "buddy": "Chip",
+    "source_game": "Sonic Runners Adventure",
+    "source_page": "https://sonic.fandom.com/wiki/Sonic_Runners_Adventure#Buddies",
+    "asset_url": "https://static.wikia.nocookie.net/sonic/images/1/1f/SRA-Chip.png/revision/latest?cb=20181227013025&format=original",
+    "local_path": "assets/ui/buddies/sra/chip.png",
+    "status": "downloaded",
+    "sha256": "5c43f009f59ffed40254641ee7510fa13ca36045d770d984b8863c3008a25724"
+  },
+  "dark_chao": {
+    "buddy": "Dark Chao",
+    "source_game": "Sonic Runners Adventure",
+    "source_page": "https://sonic.fandom.com/wiki/Sonic_Runners_Adventure#Buddies",
+    "asset_url": "https://static.wikia.nocookie.net/sonic/images/5/5c/SRA-DarkChao.png/revision/latest?cb=20181227011125&format=original",
+    "local_path": "assets/ui/buddies/sra/dark_chao.png",
+    "status": "downloaded",
+    "sha256": "3cb30edb1319267b793c51863a6fe5f3096dd294e06daa65f30c2fe32329386c"
+  },
+  "dark_chaos": {
+    "buddy": "Dark Chaos",
+    "source_game": "Sonic Runners Adventure",
+    "source_page": "https://sonic.fandom.com/wiki/Sonic_Runners_Adventure#Buddies",
+    "asset_url": "https://static.wikia.nocookie.net/sonic/images/6/6c/SRA-DarkChaos.png/revision/latest?cb=20170617152024&format=original",
+    "local_path": "assets/ui/buddies/sra/dark_chaos.png",
+    "status": "downloaded",
+    "sha256": "59b9ccc699d667b256596cc7372af7487e793870f10f9a5dde2a99440dc9330d"
+  },
+  "hero_chaos": {
+    "buddy": "Hero Chaos",
+    "source_game": "Sonic Runners Adventure",
+    "source_page": "https://sonic.fandom.com/wiki/Sonic_Runners_Adventure#Buddies",
+    "asset_url": "https://static.wikia.nocookie.net/sonic/images/7/73/SRA-HeroChaos.png/revision/latest?cb=20170617110854&format=original",
+    "local_path": "assets/ui/buddies/sra/hero_chaos.png",
+    "status": "downloaded",
+    "sha256": "bcf402089db8f520d8962613671d8acb87a9a741c834865b30022f0c1aa63760"
+  },
+  "knuckles_omochao": {
+    "buddy": "Knuckles Omochao",
+    "source_game": "Sonic Runners Adventure",
+    "source_page": "https://sonic.fandom.com/wiki/Sonic_Runners_Adventure#Buddies",
+    "asset_url": "https://static.wikia.nocookie.net/sonic/images/e/e3/SRA-KnucklesOmochao.png/revision/latest?cb=20170616173740&format=original",
+    "local_path": "assets/ui/buddies/sra/knuckles_omochao.png",
+    "status": "downloaded",
+    "sha256": "acd12bf0a25c9295eb94d875fe9108e9ff0a789a2aba6449bbe2734e71af3a8c"
+  },
+  "rc_tornado": {
+    "buddy": "RC Tornado",
+    "source_game": "Sonic Runners Adventure",
+    "source_page": "https://sonic.fandom.com/wiki/Sonic_Runners_Adventure#Buddies",
+    "asset_url": "https://static.wikia.nocookie.net/sonic/images/e/ea/SRA-RCTornado.png/revision/latest?cb=20170617150127&format=original",
+    "local_path": "assets/ui/buddies/sra/rc_tornado.png",
+    "status": "downloaded",
+    "sha256": "84bfb4b8a6576a5543c8fcc976991078e1ef23d2f3b5a626a6c7f8bd99780ab2"
+  },
+  "rc_ufo": {
+    "buddy": "RC UFO",
+    "source_game": "Sonic Runners Adventure",
+    "source_page": "https://sonic.fandom.com/wiki/Sonic_Runners_Adventure#Buddies",
+    "asset_url": "https://static.wikia.nocookie.net/sonic/images/f/f7/SRA-RCTornadoUFO.png/revision/latest?cb=20170617154525&format=original",
+    "local_path": "assets/ui/buddies/sra/rc_ufo.png",
+    "status": "downloaded",
+    "sha256": "633fde7062305367eda0f811d22e2664892a9b31d6cfd4ee97098adce56bc8fb"
+  },
+  "sonic_omochao": {
+    "buddy": "Sonic Omochao",
+    "source_game": "Sonic Runners Adventure",
+    "source_page": "https://sonic.fandom.com/wiki/Sonic_Runners_Adventure#Buddies",
+    "asset_url": "https://static.wikia.nocookie.net/sonic/images/2/2d/SRA-SonicOmochao.png/revision/latest?cb=20170616173753&format=original",
+    "local_path": "assets/ui/buddies/sra/sonic_omochao.png",
+    "status": "downloaded",
+    "sha256": "23b9743969d464e9bda83a30d0267472b388791db03b864db37dc028a9b0fb87"
+  },
+  "tails_omochao": {
+    "buddy": "Tails Omochao",
+    "source_game": "Sonic Runners Adventure",
+    "source_page": "https://sonic.fandom.com/wiki/Sonic_Runners_Adventure#Buddies",
+    "asset_url": "https://static.wikia.nocookie.net/sonic/images/0/02/SRA-TailsOmochao.png/revision/latest?cb=20170616173809&format=original",
+    "local_path": "assets/ui/buddies/sra/tails_omochao.png",
+    "status": "downloaded",
+    "sha256": "7aeb2fde470e22272d715a7163ed03f460f50ea20877eae469cbb916bf1f9852"
+  },
+  "wizard_chao": {
+    "buddy": "Wizard Chao",
+    "source_game": "Sonic Runners Adventure",
+    "source_page": "https://sonic.fandom.com/wiki/Sonic_Runners_Adventure#Buddies",
+    "asset_url": "https://static.wikia.nocookie.net/sonic/images/c/ce/SRA-WizardChao.png/revision/latest?cb=20170617213815&format=original",
+    "local_path": "assets/ui/buddies/sra/wizard_chao.png",
+    "status": "downloaded",
+    "sha256": "e2e80315dae5de6ea7c219b9aa0240ff3755418459c039adc916f8178f0335c1"
+  },
+  "yacker": {
+    "buddy": "Yacker",
+    "source_game": "Sonic Runners Adventure",
+    "source_page": "https://sonic.fandom.com/wiki/Sonic_Runners_Adventure#Buddies",
+    "asset_url": "https://static.wikia.nocookie.net/sonic/images/a/a1/SRA-Yacker.png/revision/latest?cb=20170617110841&format=original",
+    "local_path": "assets/ui/buddies/sra/yacker.png",
+    "status": "downloaded",
+    "sha256": "be2f97d1a1d95ed04ab935a4147164a1911bbb26c62c7ee8bd92cc2cdfd416a8"
+  }
+}

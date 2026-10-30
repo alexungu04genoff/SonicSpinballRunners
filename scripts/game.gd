@@ -391,10 +391,14 @@ func _wire_scoring_runtime(runtime: Dictionary, owner_id: String) -> void:
  mechanics.mechanic_rings.connect(_on_mechanic_rings.bind(owner_id))
  mechanics.feature_completed.connect(_on_feature_completed.bind(owner_id))
  mechanics.traversal_event.connect(_on_traversal_event.bind(owner_id))
+ mechanics.enemy_destroyed.connect(_on_enemy_destroyed.bind(owner_id))
+ mechanics.scoring_allowed = _accept_scoring.bind(owner_id)
+ mechanics.enemies.owner_act = owner_id
  for index in runtime.objects.size():
   var item: Dictionary = runtime.objects[index]
   item.body.set_meta("scoring_owner", owner_id)
   item.body.set_meta("scoring_source", owner_id + ":" + str(item.get("object_id", "object_%d" % index)))
+  mechanics.enemies.bind_body(str(item.object_id), item.body)
 
 func _score_target_for(document: Resource, _owner_id: String) -> int:
  return int(document.score_target)
@@ -468,8 +472,26 @@ func _on_mechanic_score(kind: StringName, object_id: String, points: int, owner_
 
 func _on_mechanic_rings(_kind: StringName, _object_id: String, amount: int, owner_id: String = "") -> void:
  if not _accept_scoring(owner_id): return
- rings_collected += maxi(0, amount)
+ award_virtual_rings(amount)
  status_message = "LANE REWARD  +%d RINGS" % amount
+
+func award_virtual_rings(amount: int) -> void:
+ # Counter only: never emit a pickup, run Scorecraft, charge Special, or recurse.
+ rings_collected += maxi(0, amount)
+
+func _on_enemy_destroyed(_enemy_type: StringName, object_id: String, points: int, _source: StringName, owner_id: String = "") -> void:
+ if not _accept_scoring(owner_id): return
+ scorecraft.award_mechanic(&"enemy", owner_id + ":" + object_id, points)
+ if is_instance_valid(specials.pending_target) and str(specials.pending_target.get_meta("scoring_source", "")) == owner_id + ":" + object_id:
+  specials.clear_homing("Enemy destroyed")
+
+func enemy_targets() -> Array[Node2D]:
+ if authored_runtime.is_empty() or not _accept_scoring(): return []
+ return authored_runtime.mechanics.enemies.targets()
+
+func destroy_enemy_target(body: Node2D, source: StringName) -> bool:
+ if not is_instance_valid(body) or not body.has_meta("enemy_id") or not _accept_scoring(str(body.get_meta("scoring_owner", ""))): return false
+ return authored_runtime.mechanics.enemies.destroy(str(body.get_meta("enemy_id")), source)
 
 func _on_feature_completed(kind: StringName, _object_id: String, bonus: int, owner_id: String = "") -> void:
  if not _accept_scoring(owner_id): return

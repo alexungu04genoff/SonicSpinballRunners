@@ -94,8 +94,10 @@ func _award(kind: String, base: int, applied: int, bonus: int, eligible: bool, t
  var buddy_bonuses := {}
  for id: String in award_bonuses:
   var modifier: Dictionary = award_bonuses[id]
-  if kind not in modifier.kinds: continue
-  var extra := clampi(int(modifier.points), 0, 100000)
+  if kind not in modifier.kinds and "*" not in modifier.kinds: continue
+  # Each contribution uses the completed normal award, never another Buddy's
+  # contribution. Round each positive contribution to the nearest whole point.
+  var extra := maxi(0, roundi(normal_total * float(modifier.get("percent", 0.0))) + clampi(int(modifier.get("points", 0)), 0, 100000))
   if extra <= 0: continue
   buddy_bonuses[id] = extra
   amount += extra

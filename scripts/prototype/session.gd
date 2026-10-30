@@ -63,9 +63,14 @@ func _panel(title: String, subtitle: String) -> VBoxContainer:
  overlay_root.color = Color(0.025, 0.045, 0.075, 0.96)
  overlay_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  overlay.add_child(overlay_root)
+ var scroll := ScrollContainer.new()
+ scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+ scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+ overlay_root.add_child(scroll)
  var center := CenterContainer.new()
- center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
- overlay_root.add_child(center)
+ center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ center.size_flags_vertical = Control.SIZE_EXPAND_FILL
+ scroll.add_child(center)
  var card := PanelContainer.new()
  card.custom_minimum_size.x = 600
  var style := StyleBoxFlat.new()
@@ -177,13 +182,39 @@ func _on_draft_started(act_result: Dictionary, offers: Array[Dictionary]) -> voi
  state = "draft"
  var next: Dictionary = game.pending_act.plan
  var next_theme: String = game.library.themes[next.theme].display_name
- var stack := _panel("CHOOSE A BUDDY", "Zone %d · Act %d cleared · %s\n%d / %d points · %d balls lost\nNext: %s · Act %d · %s" % [act_result.zone, act_result.zone_act, act_result.title, act_result.score, act_result.target, act_result.drains, next_theme, next.act + 1, "unlimited retries" if game.practice_mode else "three balls"])
- _label(stack, "Buddies last for this run. Pick the same Buddy to upgrade it.", 16)
- _label(stack, game.buddies.summary(), 17, Color("8fe9b1"))
+ var stack := _panel("CHOOSE A BUDDY", "Zone %d · Act %d cleared · %s\n%d / %d points · %d balls lost\nNext: %s · Act %d · %s" % [act_result.zone, act_result.zone_act, act_result.title, act_result.score, act_result.target, act_result.drains, next_theme, next.act + 1, "unlimited retries" if game.practice_mode else "base 3 balls + Buddy effects"])
+ _label(stack, "Adventure Buddies · %d / 5 persistent slots · Effects adapted for pinball" % game.buddies.persistent_slots(), 16)
+ var owned := _label(stack, game.buddies.summary(), 16, Color("8fe9b1"))
+ owned.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ owned.custom_minimum_size.x = 610
  for i in offers.size():
   var offer: Dictionary = offers[i]
-  var button := _action(stack, "%s · Level %d\n%s" % [offer.name, offer.level, offer.description], _choose_buddy.bind(str(offer.id)), i == 0)
-  button.custom_minimum_size.y = 110
+  var button := _action(stack, "", _choose_buddy.bind(str(offer.id)), i == 0)
+  button.name = "Buddy_" + str(offer.id)
+  button.tooltip_text = "%s · %s" % [offer.name, "Upgrade acquired Buddy" if offer.acquired else "Acquire Buddy"]
+  button.custom_minimum_size = Vector2(640, 116)
+  var row := HBoxContainer.new()
+  row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  row.offset_left = 14
+  row.offset_right = -14
+  row.add_theme_constant_override("separation", 18)
+  button.add_child(row)
+  var portrait := TextureRect.new()
+  portrait.custom_minimum_size = Vector2(92, 104)
+  portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+  portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+  portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  if ResourceLoader.exists(offer.art_path): portrait.texture = load(offer.art_path)
+  row.add_child(portrait)
+  var copy := VBoxContainer.new()
+  copy.alignment = BoxContainer.ALIGNMENT_CENTER
+  copy.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  row.add_child(copy)
+  _label(copy, "%s · %s" % [offer.name, "One-shot" if offer.consumable else "Level %d" % offer.level], 21, Color("ffe07a")).mouse_filter = Control.MOUSE_FILTER_IGNORE
+  _label(copy, offer.description, 16).mouse_filter = Control.MOUSE_FILTER_IGNORE
+  _label(copy, "ACQUIRED · Upgrade" if offer.acquired else ("ACQUIRE · No slot needed" if offer.consumable else "ACQUIRE · 1 persistent slot"), 13, Color("8fe9b1")).mouse_filter = Control.MOUSE_FILTER_IGNORE
+ if offers.is_empty(): _action(stack, "All available Buddies maxed · Continue", _choose_buddy.bind(""), true)
  _action(stack, "Return to menu", return_to_menu)
 
 func _choose_buddy(id: String) -> void:
@@ -215,7 +246,13 @@ func _on_completed(summary: Dictionary) -> void:
   _label(act_rows, "ZONE %d · ACT %d · %s%s\n%d / %d points · %s · %d balls lost · Buddies +%d" % [act.zone, act.zone_act, act.title, " · NOT CLEARED" if not act.cleared else "", act.score, act.target, _time_text(act.seconds), act.drains, Run.Buddies.total(act.buddy_contributions)], 16)
  _label(stack, "Scoring: %d base / combo / special + %d from Buddies" % [summary.normal_score, Run.Buddies.total(summary.buddy_contributions)], 17)
  for id: String in summary.buddies:
-  _label(stack, "%s Lv.%d: +%d points" % [Run.Buddies.CATALOG[id].name, summary.buddies[id], int(summary.buddy_contributions.get(id, 0))], 17, Color("8fe9b1"))
+  var level := " · One-shot" if not Run.Buddies.CATALOG[id].persistent else " Lv.%d" % summary.buddies[id]
+  _label(act_rows, "%s%s: +%d points" % [Run.Buddies.CATALOG[id].name, level, int(summary.buddy_contributions.get(id, 0))], 17, Color("8fe9b1"))
+ if summary.has("buddy_state"):
+  var state_label := _label(stack, summary.buddy_state.summary, 15)
+  state_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+  state_label.custom_minimum_size.x = 610
+  _label(stack, "Buddy virtual Rings: %d · Emergency rescues: %d" % [summary.buddy_state.run.get("virtual_rings", 0), summary.buddy_state.run.get("rescues", 0)], 16)
  _label(stack, "%s best: %d" % ["Practice" if summary.practice else "Challenge", practice_best_score if summary.practice else best_score], 18, Color("8fe9b1"))
  _action(stack, "Play again", start_run, true)
  _action(stack, "Return to menu", return_to_menu)

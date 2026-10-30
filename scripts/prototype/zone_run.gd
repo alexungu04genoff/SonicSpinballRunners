@@ -12,11 +12,14 @@ var _ball_mask := 0
 var finished := false
 var practice_mode := false
 var balls_remaining := BALLS_PER_ACT
+var starting_balls := BALLS_PER_ACT
 var drafting := false
 var pending_act: RefCounted
 var buddies := Buddies.new()
-var buddy_contributions: Dictionary = {}
-var act_buddy_contributions: Dictionary = {}
+var buddy_contributions: Dictionary:
+ get: return buddies.contributions
+var act_buddy_contributions: Dictionary:
+ get: return buddies.act_contributions
 var elapsed := 0.0
 var act_started_at := 0.0
 var act_start_ball := 1
@@ -30,6 +33,7 @@ var _ring_award_position := Vector2.INF
 var goal_pending := false
 
 func _ready() -> void:
+ buddies.virtual_rings_awarded.connect(func(amount: int, _id: String): award_virtual_rings(amount))
  scorecraft_config = scorecraft_config.duplicate()
  scorecraft_config.multiplier_cap = 4
  scorecraft_config.tiered_decay = true
@@ -113,9 +117,11 @@ func _activate(act: RefCounted, initial := false) -> void:
 func _begin_act(act: RefCounted, initial: bool) -> void:
  super._activate(act, initial)
  active.runtime.exit_warning.visible = not initial
- balls_remaining = BALLS_PER_ACT
- act_buddy_contributions.clear()
+ buddies.run_seed = run_seed
+ starting_balls = buddies.begin_act(BALLS_PER_ACT, practice_mode, int(act.plan.zone))
+ balls_remaining = starting_balls
  scorecraft.award_bonuses = buddies.modifiers()
+ tuning.set_temporary("run_buddies", buddies.physics_modifier())
  act_started_at = elapsed
  act_start_ball = ball_number
  active.runtime.goal_ring.set_unlocked(exit_unlocked)
@@ -123,7 +129,9 @@ func _begin_act(act: RefCounted, initial: bool) -> void:
 
 func choose_buddy(id: String) -> bool:
  if not drafting or finished or closing or pending_act == null: return false
- if not buddies.choose(id): return false
+ if id.is_empty():
+  if not buddies.offers().is_empty(): return false
+ elif not buddies.choose(id): return false
  _begin_act(pending_act, false)
  pending_act = null
  drafting = false
@@ -169,7 +177,7 @@ func _transfer_arrived() -> void:
  auto_launch_time = 0.35
 
 func _record_act(cleared: bool) -> void:
- results.append({"act": active_sequence + 1, "zone": active.plan.zone + 1, "zone_act": active.plan.act + 1, "theme": active.plan.theme, "source": source_paths[active.plan.id], "title": act_title(active), "cleared": cleared, "score": act_score, "target": act_score_target, "seconds": elapsed - act_started_at, "drains": ball_number - act_start_ball, "categories": act_score_breakdown.duplicate(), "buddy_contributions": act_buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "normal_score": act_score - Buddies.total(act_buddy_contributions)})
+ results.append({"act": active_sequence + 1, "zone": active.plan.zone + 1, "zone_act": active.plan.act + 1, "theme": active.plan.theme, "source": source_paths[active.plan.id], "title": act_title(active), "cleared": cleared, "score": act_score, "target": act_score_target, "seconds": elapsed - act_started_at, "drains": ball_number - act_start_ball, "categories": act_score_breakdown.duplicate(), "buddy_contributions": act_buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "buddy_state": buddies.state(), "normal_score": act_score - Buddies.total(act_buddy_contributions)})
 
 func _observe_authored_motion(start: Vector2, finish: Vector2) -> void:
  if finished or drafting or is_instance_valid(transfer) or not exit_unlocked: return
@@ -200,7 +208,7 @@ func _finish_run(won: bool) -> void:
  ball.freeze = true
  controls.input_blocked = true
  get_tree().paused = true
- completed.emit({"won": won, "practice": practice_mode, "seed": run_seed, "score": score, "normal_score": score - Buddies.total(buddy_contributions), "buddy_contributions": buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "seconds": elapsed, "drains": ball_number - 1, "character": character_id, "acts": results.duplicate(true)})
+ completed.emit({"won": won, "practice": practice_mode, "seed": run_seed, "score": score, "normal_score": score - Buddies.total(buddy_contributions), "buddy_contributions": buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "buddy_state": buddies.state(), "seconds": elapsed, "drains": ball_number - 1, "character": character_id, "acts": results.duplicate(true)})
 
 func _on_ball_drained() -> void:
  if finished or closing or drafting or is_instance_valid(transfer) or respawn_time >= 0.0: return
@@ -214,6 +222,10 @@ func _spend_ball() -> bool:
  if practice_mode: return true
  balls_remaining -= 1
  if balls_remaining > 0: return true
+ if buddies.rescue():
+  balls_remaining = 1
+  status_message = "CHIP RESCUE · Emergency Ball"
+  return true
  _finish_run(false)
  return false
 
@@ -229,10 +241,7 @@ func _on_score_awarded(details: Dictionary) -> void:
  active.runtime.goal_ring.set_unlocked(exit_unlocked)
  if is_instance_valid(score_overlay): score_overlay.add_award(details, _award_position(details))
  status_message = status_message.replace("EXIT OPEN", "GOAL READY")
- for id: String in details.get("buddy_bonuses", {}):
-  var bonus := int(details.buddy_bonuses[id])
-  buddy_contributions[id] = int(buddy_contributions.get(id, 0)) + bonus
-  act_buddy_contributions[id] = int(act_buddy_contributions.get(id, 0)) + bonus
+ buddies.record_score(details)
 
 func _award_position(details: Dictionary) -> Vector2:
  if _ring_award_position.is_finite(): return _ring_award_position
@@ -253,10 +262,16 @@ func scoring_target_eligible(body: Node2D) -> bool:
  return not finished and not closing and not drafting and not is_instance_valid(transfer) and super.scoring_target_eligible(body)
 
 func _on_ring_collected(where: Vector2, source: String = "", multiplier: int = 1) -> void:
- if not finished and not closing and not drafting and not is_instance_valid(transfer):
+ if _accept_scoring():
   _ring_award_position = where
   super._on_ring_collected(where, source, multiplier)
+  buddies.physical_ring_collected()
   _ring_award_position = Vector2.INF
+
+func _on_enemy_destroyed(enemy_type: StringName, object_id: String, points: int, source: StringName, owner_id: String = "") -> void:
+ if not _accept_scoring(owner_id): return
+ super._on_enemy_destroyed(enemy_type, object_id, points, source, owner_id)
+ buddies.enemy_destroyed(enemy_type, object_id, source)
 
 func toggle_tour() -> void:
  pass # A camera tour cannot advance a player run.
@@ -278,6 +293,7 @@ func toggle_pause() -> void:
  if not finished and not closing and not drafting: super.toggle_pause()
 
 func prepare_to_close() -> void:
+ if is_instance_valid(tuning): tuning.clear_temporary("run_buddies")
  if is_instance_valid(transfer):
   transfer.set_process(false)
   transfer.queue_free()
@@ -291,7 +307,7 @@ func _process(delta: float) -> void:
   goal_pending = false
   _observe_authored_motion(active.runtime.goal_ring.center, active.runtime.goal_ring.center)
  heading.text = progress_text() + "\n" + act_title(active)
- detail.text = "ACT   %s\nTOTAL   %d%s\nBALLS   %s     SPECIAL   %s" % [act_score_text(), score, "     COMBO ×%d" % scorecraft.multiplier if scorecraft.multiplier >= 2 else "", "Unlimited" if practice_mode else "%d / %d" % [balls_remaining, BALLS_PER_ACT], "READY" if special_meter >= 100.0 else "%d%%" % int(special_meter)]
+ detail.text = "ACT   %s\nTOTAL   %d%s\nBALLS   %s     SPECIAL   %s" % [act_score_text(), score, "     COMBO ×%d" % scorecraft.multiplier if scorecraft.multiplier >= 2 else "", "Unlimited" if practice_mode else "%d / %d" % [balls_remaining, starting_balls], "READY" if special_meter >= 100.0 else "%d%%" % int(special_meter)]
  if not buddies.levels.is_empty(): detail.text += "\n" + buddies.summary()
  if not scoring_feedback_text().is_empty(): detail.text += "\n" + scoring_feedback_text()
  var bonus := Buddies.total(scorecraft.last_award.get("buddy_bonuses", {}))
@@ -324,6 +340,8 @@ func _build_hud() -> void:
  stack.add_child(heading)
  detail = Label.new()
  detail.add_theme_font_size_override("font_size", 16)
+ detail.custom_minimum_size.x = 350
+ detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  stack.add_child(detail)
  hint = Label.new()
  hint.add_theme_font_size_override("font_size", 14)

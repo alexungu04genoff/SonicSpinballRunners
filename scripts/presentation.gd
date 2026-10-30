@@ -554,6 +554,7 @@ func _on_ring_claimed(index: int) -> void:
  visual.position = map_point(ring_field.rings[index].position, ring_height())
  visual.scale = Vector3.ONE
  visual.visible = true
+ visual.transparency = 0.0
  ring_pickups[index] = {"start": visual.position, "elapsed": 0.0}
 
 func clear_ring_pickups() -> void:
@@ -586,7 +587,9 @@ func _update_ring_visuals(delta: float) -> void:
     visual.visible = false
     ring_pickups.erase(i)
   else:
-   visual.visible = ring_field.rings[i].active
+   var alpha := RingField.visibility_alpha(ring_field.rings[i])
+   visual.visible = alpha > 0.0
+   visual.transparency = 1.0 - alpha
    if visual.visible:
     visual.position = map_point(ring_field.rings[i].position, ring_height())
     visual.scale = Vector3.ONE

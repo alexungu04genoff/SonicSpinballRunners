@@ -2,10 +2,12 @@ extends Node3D
 ## Collisionless pinball visuals; theme materials never alter the shared rail geometry.
 const RailPath = preload("res://scripts/authored_act/rail_path.gd")
 const Gimmicks = preload("res://scripts/authored_act/gimmick_models.gd")
+const BuzzModel = preload("res://scripts/enemies/buzz_bomber_model.gd")
 var table: TablePresentation
 var spinners: Array[Dictionary] = []
 var fields: Array[Dictionary] = []
 var gimmicks: Array[Dictionary] = []
+var enemies: Array[Dictionary] = []
 var elapsed := 0.0
 
 func build(presenter: TablePresentation, runtime: Dictionary) -> void:
@@ -16,6 +18,7 @@ func build(presenter: TablePresentation, runtime: Dictionary) -> void:
   if not descriptor.has("mechanic"): continue
   var item: Dictionary = descriptor.mechanic
   match item.type:
+   "buzz_bomber": enemies.append(BuzzModel.build(table, self, item))
    "spinner": _spinner(item)
    "magnetic_field": _field(item)
    "elevated_rail": await _rail(item)
@@ -227,6 +230,7 @@ func _pipe_section(surface: SurfaceTool, path: Dictionary, width: float, peak: f
 
 func _process(delta: float) -> void:
  elapsed += delta
+ for entry: Dictionary in enemies: BuzzModel.update(entry, elapsed)
  for entry: Dictionary in gimmicks: Gimmicks.update(entry)
  for entry: Dictionary in spinners: entry.paddle.rotation.x = float(entry.item.angle)
  for field: Dictionary in fields:

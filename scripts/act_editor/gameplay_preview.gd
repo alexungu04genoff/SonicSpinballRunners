@@ -17,6 +17,9 @@ static func draw_object(target: CanvasItem, placement: Dictionary, anchor: Vecto
  var definition: Dictionary = Objects.get_definition(str(placement.get("type", "")))
  if definition.is_empty():
   return
+ if placement.type == "buzz_bomber":
+  _draw_enemy(target, placement, anchor, scale_factor, selected, ghost, annotations)
+  return
  var points := rotated_points(placement, cell_size)
  for index in points.size():
   points[index] = anchor + points[index] * scale_factor
@@ -54,6 +57,27 @@ static func draw_object(target: CanvasItem, placement: Dictionary, anchor: Vecto
   var font := ThemeDB.fallback_font
   target.draw_string(font, anchor + Vector2(-4, -12), hand, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(color, opacity))
 
+
+static func _draw_enemy(target: CanvasItem, placement: Dictionary, anchor: Vector2, scale_factor: float, selected: bool, ghost: bool, annotations: bool) -> void:
+ var props := Objects.properties(placement)
+ var size_value := float(props.scale) * scale_factor
+ var color := Color("ffe074") if selected else Color("5bafff")
+ if ghost: color.a = 0.55
+ if annotations:
+  var left := anchor + Vector2(float(props.patrol_left), 0) * scale_factor
+  var right := anchor + Vector2(float(props.patrol_right), 0) * scale_factor
+  target.draw_line(left, right, Color("ffe074"), 2.0, true)
+  for endpoint: Vector2 in [left, right]:
+   target.draw_rect(Rect2(endpoint - Vector2.ONE * 5, Vector2.ONE * 10), Color("ffe074"), selected)
+ var outline := PackedVector2Array()
+ for i in 33: outline.append(anchor + Vector2(cos(TAU * i / 32) * 26, sin(TAU * i / 32) * 12) * size_value)
+ target.draw_colored_polygon(outline, Color("e7b52f"))
+ target.draw_polyline(outline, color, 2.0, true)
+ for x in [-8, 2, 12]: target.draw_line(anchor + Vector2(x, -10) * size_value, anchor + Vector2(x, 10) * size_value, Color("172c48"), maxf(1.0, size_value * 4), true)
+ var facing := -1.0 if props.starting_direction == "left" else 1.0
+ target.draw_circle(anchor + Vector2(facing * 21, -2) * size_value, maxf(2, 8 * size_value), color)
+ for side in [-1, 1]:
+  target.draw_line(anchor, anchor + Vector2(-5, side * 25) * size_value, Color("beeaff"), maxf(2, 6 * size_value), true)
 
 static func _draw_swing(target: CanvasItem, placement: Dictionary, anchor: Vector2, cell_pixels: float, color: Color) -> void:
  var rest := deg_to_rad(float(placement.rotation_degrees))

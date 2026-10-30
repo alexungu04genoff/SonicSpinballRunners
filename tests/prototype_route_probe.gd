@@ -7,11 +7,11 @@ func _initialize() -> void: call_deferred("run")
 
 func run() -> void:
  game = Run.new()
- var buddy := "bumper_coach"
+ var buddy := "knuckles_omochao"
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--buddy="): buddy = argument.trim_prefix("--buddy=")
  game.draft_started.connect(func(_act: Dictionary, offers: Array[Dictionary]):
-  var choice: String = offers[0].id
+  var choice: String = "" if offers.is_empty() else offers[0].id
   for offer: Dictionary in offers:
    if offer.id == buddy: choice = buddy
   game.call_deferred("choose_buddy", choice)

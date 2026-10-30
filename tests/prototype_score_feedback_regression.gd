@@ -59,18 +59,19 @@ func run() -> void:
  check(overlay.displayed_multiplier == 3, "A completed ring link updates the ball indicator to x3")
  var ring_popup: Dictionary = overlay.popups.back()
  check(ring_popup.kind == "ring" and ring_popup.total == 175 and ring_popup.at == ring_position, "Rapid ring pickups combine exact 50 + 50 + 75 awards at their pickup position")
- game.buddies.choose("feature_fox")
+ game.buddies.choose("wizard_chao")
  game.scorecraft.award_bonuses = game.buddies.modifiers()
  game.active.runtime.mechanics.complete_feature(&"switch_bank", "feedback_fixture", 100)
- check(overlay.popups.back().total == 350, "Feature popup includes its flat Buddy bonus exactly once")
+ check(overlay.popups.back().total == 125, "Feature popup includes its percentage Buddy bonus exactly once")
  var shown := 0
  for popup: Dictionary in overlay.popups: shown += int(popup.total)
- check(shown == game.score and game.score == 825, "Visible popup totals reconcile with the actual score ledger")
+ check(shown == game.score and game.score == 600, "Visible popup totals reconcile with the actual score ledger")
  await capture("x3")
  var extra_bumper := Node2D.new()
  game.world.add_child(extra_bumper)
  extra_bumper.position = game.ball.position
  game.scorecraft.award_bumper(extra_bumper)
+ game.scorecraft.award_mechanic(&"switch", "goal-readiness", 1)
  await frames()
  check(overlay.displayed_multiplier == 4 and game.active.runtime.goal_ring.unlocked, "A fresh hit earns red x4 and meeting the target unlocks the goal")
  game.scorecraft.remaining = game.scorecraft.config.combo_window * 0.5

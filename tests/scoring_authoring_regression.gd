@@ -26,7 +26,9 @@ func run() -> void:
  editor.canvas.select_ring(0)
  var id: String = editor.document.ring_trails[0].pattern_id
  check(not Rings.scoring_settings(editor.document.ring_trails[0]).bonus_rack, "Ordinary patterns start without rack bonuses")
+ check(editor.document.ring_trails[0].timeout == 25.0 and editor.document.ring_trails[0].respawn_delay == 18.0, "New ordinary editor patterns use 25/18-second pacing")
  editor.ring_bonus_field.button_pressed = true
+ check(editor.document.ring_trails[0].timeout == 12.0 and editor.document.ring_trails[0].respawn_delay == 11.0, "Switching to Bonus Rack uses 12/11-second defaults")
  editor._change_ring_scoring("completion_bonus", 750)
  editor._change_ring_scoring("timeout", 12.123456789012345)
  editor._change_ring_scoring("respawn_delay", 1.123456789012345)
@@ -85,6 +87,24 @@ func run() -> void:
   check(loaded.document.gameplay_objects[0].properties.score_reward == 25.0 and loaded.document.gameplay_objects[1].properties.tick_score == 7.0, "Migration preserves explicit legacy switch and spinner rewards")
   check(loaded.document.switch_banks[0].completion_bonus == 123.0 and loaded.document.switch_banks[0].reset_delay == 0.0, "Migration preserves explicit legacy bank rewards and one-shot reset settings")
  check(FileAccess.get_file_as_bytes(LEGACY_PATH) == original, "Migration does not rewrite authored source files")
+ for version: int in [15, 16, 17]:
+  var pacing := ActData.new()
+  pacing.format_version = version
+  pacing.ring_trails = []
+  for bonus: bool in [false, true]:
+   pacing.ring_trails.append({"start": Vector2(10, 10), "end": Vector2(10, 10), "spacing": 20.0, "bonus_rack": bonus, "completion_bonus": 500, "timeout": 12.0, "respawn_delay": 1.0})
+  var bespoke: Dictionary = pacing.ring_trails[0].duplicate()
+  bespoke.timeout = 9.5
+  pacing.ring_trails.append(bespoke)
+  pacing.ring_trails.append({"start": Vector2(30, 30), "end": Vector2(30, 30), "spacing": 20.0})
+  ResourceSaver.save(pacing, LEGACY_PATH)
+  var migrated := ActData.load_document(LEGACY_PATH)
+  check(migrated.document != null, "Ring timing format %d loads" % version)
+  if migrated.document == null: continue
+  var trails: Array = migrated.document.ring_trails
+  check(trails[0].respawn_delay == (18.0 if version < 17 else 1.0) and trails[1].respawn_delay == (11.0 if version < 17 else 1.0), "Only legacy generated one-second defaults migrate")
+  check(trails[2].timeout == 9.5 and trails[2].respawn_delay == 1.0, "Evidence of bespoke author timing preserves explicit values")
+  check(Rings.scoring_settings(trails[3]).timeout == 25.0 and Rings.scoring_settings(trails[3]).respawn_delay == 18.0, "Missing scoring fields inherit new ordinary defaults")
  var world := Node2D.new()
  root.add_child(world)
  var tuning := PhysicsTuning.new()

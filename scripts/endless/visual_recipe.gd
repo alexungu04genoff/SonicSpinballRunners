@@ -44,7 +44,7 @@ func capture(node: Node, parent := -1, recursive := true) -> void:
  records.append(record)
  if node.get_script() == MechanicsVisual:
   animations.append({"index": index, "script": MechanicsVisual,
-   "values": {"spinners": node.spinners, "fields": node.fields, "gimmicks": node.gimmicks}})
+   "values": {"spinners": node.spinners, "fields": node.fields, "gimmicks": node.gimmicks, "enemies": node.enemies}})
  elif node.get_script() == Flicky:
   animations.append({"index": index, "script": Flicky,
    "values": {"phase": node.phase, "pose": node.pose, "head": node.head, "wings": node.wings}})

@@ -115,7 +115,7 @@ static func _compile(document: Resource, tuning: PhysicsTuning, controls: Playgr
   var descriptor := placement.duplicate(true)
   var body: Node2D
   match placement.type:
-   "spinner", "magnetic_field", "elevated_rail", "one_way_gate", "switch_target", "wall_switch", "spring", "lane_barrier", "diverter", "dash_panel":
+   "spinner", "magnetic_field", "elevated_rail", "one_way_gate", "switch_target", "wall_switch", "spring", "lane_barrier", "diverter", "dash_panel", "buzz_bomber":
     body = lane_barrier_body(placement, wall_material) if placement.type == "lane_barrier" else Node2D.new()
     body.position = placement.position
     body.rotation_degrees = placement.rotation_degrees

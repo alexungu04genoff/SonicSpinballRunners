@@ -1,0 +1,70 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=3]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+format_version = 17
+library_version = 2
+title = "Buzz Bomber - Contact Playground"
+grid_size = Vector2i(12, 20)
+score_target = 0
+placements = [{
+"anchor": Vector2i(0, 0),
+"base_size": Vector2i(1, 20),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray(35, 0, 0, 0, 4, 0, 0, 0, 205, 204, 204, 62, 0, 0, 0, 0, 154, 153, 25, 63, 0, 0, 0, 0, 154, 153, 25, 63, 0, 0, 160, 65, 205, 204, 204, 62, 0, 0, 160, 65),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0)
+}, {
+"anchor": Vector2i(11, 0),
+"base_size": Vector2i(1, 20),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray(35, 0, 0, 0, 4, 0, 0, 0, 205, 204, 204, 62, 0, 0, 0, 0, 154, 153, 25, 63, 0, 0, 0, 0, 154, 153, 25, 63, 0, 0, 160, 65, 205, 204, 204, 62, 0, 0, 160, 65),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0)
+}, {
+"anchor": Vector2i(0, 17),
+"base_size": Vector2i(5, 3),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray(35, 0, 0, 0, 4, 0, 0, 0, 205, 204, 204, 62, 0, 0, 0, 0, 0, 0, 160, 64, 154, 153, 153, 63, 0, 0, 160, 64, 154, 153, 217, 63, 205, 204, 204, 62, 0, 0, 64, 64),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0)
+}, {
+"anchor": Vector2i(7, 17),
+"base_size": Vector2i(5, 3),
+"composite_version": 1,
+"flip_h": true,
+"flip_v": false,
+"outline": PackedByteArray(35, 0, 0, 0, 4, 0, 0, 0, 205, 204, 204, 62, 0, 0, 0, 0, 0, 0, 160, 64, 154, 153, 153, 63, 0, 0, 160, 64, 154, 153, 217, 63, 205, 204, 204, 62, 0, 0, 64, 64),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0)
+}]
+gameplay_objects = [
+{"type": "left_flipper", "object_id": "left", "position": Vector2(260, 900), "rotation_degrees": 18.3346494441863, "properties": {}},
+{"type": "right_flipper", "object_id": "right", "position": Vector2(340, 900), "rotation_degrees": 161.665350555814, "properties": {}},
+{"type": "spring", "object_id": "test_launch", "position": Vector2(300, 850), "rotation_degrees": 0.0, "properties": {"launch_strength": 620.0, "width": 40.0, "color": "red"}},
+{"type": "buzz_bomber", "object_id": "easy_top", "position": Vector2(180, 400), "rotation_degrees": 0.0, "properties": {"scale": 1.0, "patrol_left": 0.0, "patrol_right": 0.0, "patrol_speed": 65.0, "starting_direction": "right"}},
+{"type": "buzz_bomber", "object_id": "side_target", "position": Vector2(420, 550), "rotation_degrees": 0.0, "properties": {"scale": 1.0, "patrol_left": 0.0, "patrol_right": 0.0, "patrol_speed": 65.0, "starting_direction": "left"}},
+{"type": "buzz_bomber", "object_id": "bottom_target", "position": Vector2(300, 700), "rotation_degrees": 0.0, "properties": {"scale": 1.0, "patrol_left": 0.0, "patrol_right": 0.0, "patrol_speed": 65.0, "starting_direction": "right"}},
+{"type": "buzz_bomber", "object_id": "patrol_target", "position": Vector2(300, 250), "rotation_degrees": 0.0, "properties": {"scale": 1.0, "patrol_left": -90.0, "patrol_right": 90.0, "patrol_speed": 65.0, "starting_direction": "right"}}
+]
+ring_trails = [{"pattern_id": "lower_rack", "start": Vector2(120, 500), "end": Vector2(240, 500), "spacing": 25.0, "bonus_rack": true, "completion_bonus": 500, "timeout": 12.0, "respawn_delay": 11.0},
+{"pattern_id": "upper_trail", "start": Vector2(120, 210), "end": Vector2(120, 50), "spacing": 25.0, "bonus_rack": false, "timeout": 25.0, "respawn_delay": 18.0}]
+entry_start_x = 5
+entry_width = 2
+exit_start_x = 2
+exit_width = 2
+activation_y = 800.0
+spawn_position = Vector2(180, 330)
+goal_position = Vector2(300, 100)

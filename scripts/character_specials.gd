@@ -90,6 +90,14 @@ func find_target() -> Node2D:
   if PhysicsServer2D.body_test_motion(game.ball.get_rid(), query, hit) and hit.get_collider() == candidate:
    best_distance = distance
    nearest = candidate
+ for candidate: Node2D in game.enemy_targets():
+  var distance: float = game.ball.position.distance_to(candidate.global_position)
+  if distance < game.ball.radius or distance > best_distance: continue
+  query.motion = candidate.global_position - game.ball.position
+  # Enemies are sensors, so a clear full-ball sweep has no native collision.
+  if not PhysicsServer2D.body_test_motion(game.ball.get_rid(), query, hit):
+   best_distance = distance
+   nearest = candidate
  return nearest
 
 func _set_target(value: Node2D) -> void:
@@ -118,7 +126,7 @@ func activate() -> bool:
   pending_target = target
   homing_remaining = definition.hit_window
   homing_direction = offset.normalized()
-  feedback = "HOMING ATTACK — hit the marked bumper!"
+  feedback = "HOMING ATTACK — hit the marked target!"
   homing_started.emit(pending_target, homing_direction)
  elif definition.ability == 1:
   flight_remaining = definition.flight_duration
@@ -229,6 +237,12 @@ func _release_area(source: String, origin: Vector2) -> void:
   if game.activate_area_target(body, source, multiplier):
    count += 1
    area_target_activated.emit(source, body, multiplier)
+ for body: Node2D in game.enemy_targets():
+  if not _area_contains(source, origin, body.global_position): continue
+  if source == "shockwave" and not _wave_visible(origin, body.global_position): continue
+  if game.destroy_enemy_target(body, StringName(source)):
+   count += 1
+   area_target_activated.emit(source, body, 1)
  for index in game.ring_field.rings.size():
   var ring: Dictionary = game.ring_field.rings[index]
   if not ring.active or not game.ring_field.ring_eligible(ring) or not _area_contains(source, origin, ring.home):

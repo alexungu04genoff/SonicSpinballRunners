@@ -5,7 +5,16 @@ const MAX_RINGS := 4096
 const SCORING_KEYS := ["pattern_id", "bonus_rack", "completion_bonus", "timeout", "respawn_delay"]
 
 static func scoring_settings(trail: Dictionary) -> Dictionary:
- return {"bonus_rack": bool(trail.get("bonus_rack", false)), "completion_bonus": int(trail.get("completion_bonus", 500)), "timeout": float(trail.get("timeout", 12.0)), "respawn_delay": float(trail.get("respawn_delay", 1.0))}
+ var bonus := bool(trail.get("bonus_rack", false))
+ return {"bonus_rack": bonus, "completion_bonus": int(trail.get("completion_bonus", 500)) if bonus else 0, "timeout": float(trail.get("timeout", 12.0 if bonus else 25.0)), "respawn_delay": float(trail.get("respawn_delay", 11.0 if bonus else 18.0))}
+
+static func migrate_legacy_timing(trail: Dictionary) -> void:
+ # Formats 15/16 generated this exact default signature. A changed timeout or
+ # reward is evidence of author tuning: preserve the entire explicit recipe.
+ if trail.get("respawn_delay") != 1.0 or trail.get("timeout", 12.0) != 12.0 or trail.get("completion_bonus", 500) != 500: return
+ var bonus := bool(trail.get("bonus_rack", false))
+ trail.respawn_delay = 11.0 if bonus else 18.0
+ trail.timeout = 12.0 if bonus else 25.0
 
 static func pattern_id(trail: Dictionary, index: int) -> String:
  return str(trail.get("pattern_id", "ring_pattern_%d" % index))

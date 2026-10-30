@@ -1,7 +1,7 @@
 class_name ActGeometry
 extends Resource
 ## A single Act's terrain, connectors, gameplay objects and lifecycle authoring data.
-const FORMAT_VERSION := 16
+const FORMAT_VERSION := 17
 const MAX_SCORE_TARGET := 100000000
 ## The system gutter is outside terrain bounds and is never a thirteenth terrain row.
 const RED_GUTTER_CELLS := 1
@@ -420,7 +420,8 @@ static func load_document(path: String) -> Dictionary:
   return {"document": null, "error": "This Act file is missing its required format or terrain library version."}
  if typeof(loaded.format_version) == TYPE_INT and loaded.format_version < 16 and (loaded.goal_position != null or loaded.goal_diameter_cells != 1.0):
   return {"document": null, "error": "Authored goal settings require Act format 16."}
- if typeof(loaded.format_version) == TYPE_INT and loaded.format_version == 15: loaded.format_version = FORMAT_VERSION
+ var source_version: Variant = loaded.format_version
+ if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [15, 16]: loaded.format_version = FORMAT_VERSION
  if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
   if typeof(loaded.score_target) != TYPE_INT or loaded.score_target != 0:
    return {"document": null, "error": "Act score targets require Act format 15."}
@@ -497,6 +498,7 @@ static func load_document(path: String) -> Dictionary:
      var decoded: Variant = _decode_numeric_payload(trail[key])
      if decoded == null: return {"document": null, "error": "Ring pattern: invalid stored " + key}
      trail[key] = decoded
+   if source_version in [15, 16]: RINGS.migrate_legacy_timing(trail)
  if typeof(loaded.decor_slots) == TYPE_ARRAY:
   for slot: Variant in loaded.decor_slots:
    if not slot is Dictionary: continue

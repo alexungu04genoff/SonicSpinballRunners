@@ -22,6 +22,7 @@ static func definitions() -> Array[Dictionary]:
   {"id": "lane_barrier", "label": "Lane Barrier", "color": Color("66efd1")},
   {"id": "diverter", "label": "Diverter", "color": Color("f3b669")},
   {"id": "dash_panel", "label": "Dash Panel", "color": Color("56eaff")},
+  {"id": "buzz_bomber", "label": "Enemy · Buzz Bomber", "color": Color("ffd548")},
  ]
 
 static func get_definition(id: String) -> Dictionary:
@@ -45,6 +46,10 @@ static func local_points(placement: Dictionary, cell_size: float) -> PackedVecto
  # The sling keeps its origin relative to the original silhouette, without re-centering.
  var points := PackedVector2Array()
  match placement.get("type", ""):
+  "buzz_bomber":
+   var size_value := float(properties(placement).scale)
+   for step in 32:
+    points.append(Vector2(cos(TAU * step / 32.0) * 26.0, sin(TAU * step / 32.0) * 12.0) * size_value)
   "spring":
    for step in 48:
     points.append(Vector2.from_angle(TAU * step / 48.0) * float(properties(placement).width) * 0.5)
@@ -103,6 +108,7 @@ static func new_id() -> String:
 
 static func defaults(type: String) -> Dictionary:
  match type:
+  "buzz_bomber": return {"scale": 1.0, "patrol_speed": 65.0, "starting_direction": "right", "patrol_left": -60.0, "patrol_right": 60.0}
   "round_bumper", "triangle_bumper": return {"scale": 1.0}
   "one_way_gate": return {"width": 80.0, "initial_state": "closed", "visual_mode": "auto"}
   "switch_target", "wall_switch": return {"scale": 1.0, "color": "blue", "label": "", "score_reward": 0.0}
@@ -122,6 +128,7 @@ static func properties(placement: Dictionary) -> Dictionary:
 
 static func property_limits(type: String) -> Dictionary:
  match type:
+  "buzz_bomber": return {"scale": [0.35, 2.5], "patrol_speed": [0.0, 400.0], "patrol_left": [-2000.0, 0.0], "patrol_right": [0.0, 2000.0]}
   "round_bumper", "triangle_bumper": return {"scale": [0.35, 2.5]}
   "one_way_gate": return {"width": [20.0, 500.0]}
   "switch_target", "wall_switch": return {"scale": [0.35, 2.5], "score_reward": [0.0, 1000.0]}
@@ -154,6 +161,8 @@ static func property_errors(placement: Dictionary) -> PackedStringArray:
     errors.append("Spinner target ticks must be a whole number.")
   elif key == "completion_enabled" and typeof(values[key]) != TYPE_BOOL:
    errors.append("Completion enabled must be a boolean.")
+  elif key == "starting_direction" and values[key] not in ["left", "right"]:
+   errors.append("Starting direction must be left or right.")
   elif key == "mode" and values[key] not in ["attract", "repel"]:
    errors.append("mode must be attract or repel.")
   elif key == "initial_state" and values[key] not in (["a", "b"] if placement.type == "diverter" else ["closed", "open"]):

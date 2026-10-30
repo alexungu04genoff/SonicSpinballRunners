@@ -71,7 +71,7 @@ var ring_rotation_field: SpinBox
 var ring_ellipse_settings: VBoxContainer
 var ring_bonus_field: CheckBox
 var ring_scoring_fields: Dictionary = {}
-var ring_scoring_defaults := {"bonus_rack": false, "completion_bonus": 500, "timeout": 12.0, "respawn_delay": 1.0}
+var ring_scoring_defaults := {"bonus_rack": false, "completion_bonus": 500, "timeout": 25.0, "respawn_delay": 18.0}
 var bank_controls: VBoxContainer
 var selected_bank_id := ""
 var composite_bar: HFlowContainer
@@ -628,6 +628,7 @@ func _build_ui() -> void:
 	mechanics_properties.add_theme_constant_override("h_separation", 10)
 	inspector.add_child(mechanics_properties)
 	canvas.rail_points_changed.connect(set_rail_points)
+	canvas.patrol_changed.connect(set_enemy_patrol)
 	detail_label = Label.new()
 	detail_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	detail_label.add_theme_color_override("font_color", Color("b5c8d6"))
@@ -1050,13 +1051,22 @@ func set_ring_trail(index: int, trail: Dictionary) -> void:
 
 func _change_ring_scoring(key: String, value: Variant) -> void:
 	if _refreshing: return
+	var previous := ring_scoring_defaults.duplicate()
 	ring_scoring_defaults[key] = value
+	if key == "bonus_rack": _switch_ring_defaults(ring_scoring_defaults, bool(previous.bonus_rack), bool(value))
 	if canvas.selected_ring_index >= 0:
 		var trail: Dictionary = document.ring_trails[canvas.selected_ring_index].duplicate(true)
+		if key == "bonus_rack": _switch_ring_defaults(trail, bool(trail.get("bonus_rack", false)), bool(value))
 		trail[key] = value
 		set_ring_trail(canvas.selected_ring_index, trail)
 	else:
 		_refresh()
+
+func _switch_ring_defaults(trail: Dictionary, was_bonus: bool, bonus: bool) -> void:
+	var old := Rings.scoring_settings({"bonus_rack": was_bonus})
+	var fresh := Rings.scoring_settings({"bonus_rack": bonus})
+	for key: String in ["timeout", "respawn_delay"]:
+		if not trail.has(key) or trail[key] == old[key]: trail[key] = fresh[key]
 
 func _apply_scoring_fields() -> void:
 	if score_target_field.get_line_edit().has_focus(): score_target_field.apply()
@@ -1358,6 +1368,7 @@ func _active_gameplay() -> Dictionary:
 
 func set_gameplay_angle(value: float) -> void:
 	var placement := _active_gameplay()
+	if placement.get("type") == "buzz_bomber": return # Horizontal patrol and silhouette in v1.
 	if placement.is_empty() or not is_finite(value) or placement.rotation_degrees == value:
 		return
 	canvas.cancel_gesture()
@@ -1882,6 +1893,9 @@ func _refresh() -> void:
 	buttons.rotate.disabled = (active.is_empty() and angled.is_empty()) or _terrain_selection().size() > 1
 	buttons.rotate.text = "Rotate +15°" if not angled.is_empty() else "Rotate +90°"
 	angle_field.editable = not angled.is_empty() or not _active_terrain().is_empty()
+	if gameplay.get("type", "") == "buzz_bomber":
+		angle_field.editable = false
+		buttons.rotate.disabled = true
 	buttons.angle_minus.disabled = not angle_field.editable
 	buttons.angle_plus.disabled = not angle_field.editable
 	_angle_display_text = var_to_str(angled.rotation_degrees) if not angled.is_empty() else (var_to_str(Shapes.angle_degrees(active)) if angle_field.editable else "")
@@ -2093,6 +2107,21 @@ func set_gameplay_property(key: String, value: Variant) -> void:
 func set_rail_points(points: PackedVector2Array) -> void:
 	set_gameplay_property("points", points)
 
+func set_enemy_patrol(index: int, endpoints: Vector2) -> void:
+	if index < 0 or index >= document.gameplay_objects.size(): return
+	var item: Dictionary = document.gameplay_objects[index]
+	if item.type != "buzz_bomber": return
+	var props := Objects.properties(item)
+	if props.patrol_left == endpoints.x and props.patrol_right == endpoints.y: return
+	var edited := item.duplicate(true)
+	props.patrol_left = endpoints.x
+	props.patrol_right = endpoints.y
+	edited.properties = props
+	if not Objects.property_errors(edited).is_empty(): return
+	_record_edit()
+	document.gameplay_objects[index] = edited
+	_refresh()
+
 func _refresh_mechanics_properties() -> void:
 	if mechanics_properties == null: return
 	for child in mechanics_properties.get_children():
@@ -2159,7 +2188,16 @@ func _refresh_mechanics_properties() -> void:
 	identity.add_theme_font_size_override("font_size", 11)
 	mechanics_properties.add_child(identity)
 	for key: String in Objects.property_limits(item.type):
+		if key in ["patrol_left", "patrol_right"]: continue
 		_mechanic_number(key.replace("_", " ").capitalize(), float(properties[key]), func(value: float): set_gameplay_property(key, value))
+	if item.type == "buzz_bomber":
+		_mechanic_choice("Starting direction", "starting_direction", ["left", "right"], properties.starting_direction)
+		detail_label.text = "Horizontal patrol: Shift-drag when placing; select to drag endpoint handles. Alt frees snapping. Zero length is stationary."
+		var stationary := Button.new()
+		stationary.text = "Stationary (zero patrol)"
+		stationary.disabled = not canvas.gameplay_brush.is_empty()
+		stationary.pressed.connect(func(): set_enemy_patrol(canvas.selected_gameplay_index, Vector2.ZERO))
+		mechanics_properties.add_child(stationary)
 	if item.type == "spinner":
 		var completion := CheckBox.new()
 		completion.text = "Enable completion bonus"

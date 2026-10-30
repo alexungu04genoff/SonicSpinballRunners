@@ -15,7 +15,7 @@ func run() -> void:
  editor.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  for frame in 3: await process_frame
  check(editor.load_from("res://data/endless/second_simple.tres"), "Legacy authored Act loads in editor")
- check(editor.document.format_version == 16 and editor.document.goal_center() == editor.document.spawn_position and editor.document.goal_diameter_cells == 1.0, "Every legacy Act gets a cell-sized goal at its spawn")
+ check(editor.document.format_version == ActGeometry.FORMAT_VERSION and editor.document.goal_center() == editor.document.spawn_position and editor.document.goal_diameter_cells == 1.0, "Every legacy Act gets a cell-sized goal at its spawn")
  check(editor.canvas._marker_position_value("goal", Vector2(103, 127), false) == Vector2(100, 125), "Goal placement snaps to the shared vertical edge of two cells")
  check(editor.canvas._marker_position_value("goal", Vector2(127, 103), false) == Vector2(125, 100), "Goal placement snaps to the shared horizontal edge of two cells")
  check(editor.canvas._marker_position_value("goal", Vector2(127, 103), true) == Vector2(127, 103), "Alt preserves precise free goal placement")

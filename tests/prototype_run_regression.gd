@@ -19,7 +19,7 @@ func frames(count := 3) -> void:
 func press(label: String) -> void:
  var button: Button
  for candidate: Node in session.overlay_root.find_children("*", "Button", true, false):
-  if candidate.text.begins_with(label): button = candidate; break
+  if candidate.text.begins_with(label) or candidate.tooltip_text.begins_with(label): button = candidate; break
  check(button != null, "Visible action exists: " + label)
  if button == null: return
  var old_panel: Control = session.overlay_root
@@ -84,7 +84,6 @@ func run() -> void:
  # rack ring while the deliberately frozen ball waits through rendered frames.
  game.ring_field.set_physics_process(false)
  var total := 0
- var choices := ["ring_scout", "ring_scout", "bumper_coach", "bumper_coach", "feature_fox"]
  for index in Session.Run.RunPlan.ACT_COUNT:
   var until := Time.get_ticks_msec() + 180000
   while resident_at(index) == null and Time.get_ticks_msec() < until: await process_frame
@@ -114,15 +113,15 @@ func run() -> void:
    check(game.active_sequence == index, "Next Act cannot activate below the current target")
   var target: int = game.act_score_target
   game.active.runtime.mechanics.mechanic_score.emit(&"wall_switch", "integration_award", target)
-  total += target
-  check(game.score == total and game.act_score == target and game.exit_unlocked, "Act %d threshold uses local points and preserves cumulative score" % (index + 1))
+  total += int(game.scorecraft.last_award.total)
+  check(game.score == total and game.act_score >= target and game.exit_unlocked, "Act %d threshold uses local points and preserves cumulative score" % (index + 1))
   var position: Vector2 = game.ball.position
   await frames(2)
   check(game.ball.position == position and not game.finished, "Unlocking never teleports or completes a run")
   if index == 0:
    game.reset_ball(false)
    await frames()
-   check(game.score == total and game.act_score == target and game.exit_unlocked, "Checkpoint retry keeps legitimately earned points and open exit")
+   check(game.score == total and game.act_score >= target and game.exit_unlocked, "Checkpoint retry keeps legitimately earned points and open exit")
    game.ball.serve_pending = false
    game.ball._teleport_pending = false
   if index < Session.Run.RunPlan.ACT_COUNT - 1:
@@ -136,10 +135,10 @@ func run() -> void:
    game.toggle_pause()
    check(paused and game.score == before_draft, "Draft cannot be skipped with pause or score while awaiting a choice")
    await capture("draft")
-   var chosen: String = choices[index]
+   var chosen: String = game.buddies.offers()[0].id
    var previous_level: int = game.buddies.levels.get(chosen, 0)
    press(str(Session.Run.Buddies.CATALOG[chosen].name))
-   check(not paused and game.active_sequence == index + 1 and game.balls_remaining == 3 and is_instance_valid(game.transfer) and game.ball.freeze and game.ball.linear_velocity == Vector2.ZERO, "Buddy choice starts a protected transfer with a fresh three-ball budget")
+   check(not paused and game.active_sequence == index + 1 and game.balls_remaining == game.starting_balls and is_instance_valid(game.transfer) and game.ball.freeze and game.ball.linear_velocity == Vector2.ZERO, "Buddy choice starts a protected transfer with a fresh Buddy-adjusted budget")
    if index == 0 and "--capture" in OS.get_cmdline_user_args():
     while is_instance_valid(game.transfer) and game.transfer.elapsed < 0.55: await process_frame
     await capture("act-transfer")
@@ -149,9 +148,9 @@ func run() -> void:
    game.ball.freeze = true
    game.ball.serve_pending = false
    game.ball._teleport_pending = false
-   check(game.buddies.levels[chosen] == previous_level + 1 and not game.choose_buddy("bumper_coach"), "Buddy choice upgrades once and cannot be submitted twice")
+   check(game.buddies.levels[chosen] == previous_level + 1 and not game.choose_buddy(chosen), "Buddy choice upgrades once and cannot be submitted twice")
    if index == 2:
-    check(not game.finished and game.active.plan.zone == 1 and game.active_sequence == 3 and game.buddies.levels.ring_scout == 2, "The Zone boundary preserves the build and continues into Chemical Plant")
+    check(not game.finished and game.active.plan.zone == 1 and game.active_sequence == 3 and not game.buddies.levels.is_empty(), "The Zone boundary preserves the build and continues into Chemical Plant")
    # Move the frozen integration fixture to the new Act for camera/retirement checks.
    game.ball.position = game.active.spawn()
    if index == 2: await capture("zone-two")
@@ -161,7 +160,7 @@ func run() -> void:
    game._observe_authored_motion(at + Vector2.DOWN * 2, at - Vector2.DOWN * 2)
  check(game.finished and session.state == "results" and session.last_summary.acts.size() == 6, "Only the sixth physical exit produces the completed two-Zone result")
  await capture("results")
- check(session.last_summary.score == 13500 and game.results.size() == 6, "Results preserve all six separate Act awards exactly once")
+ check(session.last_summary.score == total and session.last_summary.normal_score == 13500 and game.results.size() == 6, "Results preserve all six separate Act awards exactly once")
  check(game.pending.is_empty() and not game.loading_boundary, "Final exit does not wait for an imaginary seventh Act")
  if "--no-bakes" not in OS.get_cmdline_user_args():
   check(game.library.fallback_builds == 0 and game.library.visual_bake_hits == 6 and game.library.theme_bake_hits == 2, "Both Zones use six disk Act variants and two baked themes without runtime construction")

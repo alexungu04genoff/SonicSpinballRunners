@@ -30,6 +30,11 @@ signal status_changed(message: String)
 const ActData = preload("res://scripts/act_editor/act_geometry.gd")
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 signal rail_points_changed(points: PackedVector2Array)
+signal patrol_changed(index: int, endpoints: Vector2)
+var _patrol_dragging := false
+var _patrol_index := -1
+var _patrol_side := ""
+var _patrol_preview: Dictionary = {}
 var rail_edit := false
 var _rail_draft: Dictionary = {}
 var _rail_drag := -1
@@ -447,6 +452,8 @@ func fit_view() -> void:
 
 
 func cancel_gesture() -> void:
+ _patrol_dragging = false
+ _patrol_preview = {}
  _rail_draft = {}
  _rail_drag = -1
  _decor_drag_index = -1
@@ -886,6 +893,7 @@ func _draw_gameplay_objects() -> void:
  var scale_factor := _cell_pixels / _local_cell_size()
  for index in objects.size():
   var placement: Dictionary = objects[index]
+  if _patrol_dragging and index == _patrol_index: placement = _patrol_preview
   var point: Vector2 = placement.position
   if index == _gameplay_drag_index and _gameplay_drag_moved:
    point = _gameplay_drag_position
@@ -895,14 +903,17 @@ func _draw_gameplay_objects() -> void:
   var placement: Dictionary = objects[selected_gameplay_index]
   var point: Vector2 = _gameplay_drag_position if selected_gameplay_index == _gameplay_drag_index and _gameplay_drag_moved else placement.position
   var shown := placement.duplicate(true)
+  if _patrol_dragging and selected_gameplay_index == _patrol_index: shown = _patrol_preview.duplicate(true)
   shown.position = point
   _draw_launch_range(shown)
   if _rail_drag >= 0: shown.properties.points = _rail_preview
   ObjectPreview.draw_object(self, shown, local_pixels_to_screen(point), scale_factor, _local_cell_size(), true)
  if not _rail_draft.is_empty():
   ObjectPreview.draw_object(self, _rail_draft, local_pixels_to_screen(_rail_draft.position), scale_factor, _local_cell_size(), true, true)
+ if _patrol_dragging and _patrol_index < 0:
+  ObjectPreview.draw_object(self, _patrol_preview, local_pixels_to_screen(_patrol_preview.position), scale_factor, _local_cell_size(), true, true)
  var active_brush := _drop_gameplay_brush if not _drop_gameplay_brush.is_empty() else gameplay_brush
- if _rail_draft.is_empty() and (_hovering or not _drop_gameplay_brush.is_empty()) and _inside_grid(_cursor_position) and _valid_gameplay_stamp(active_brush):
+ if not _patrol_dragging and _rail_draft.is_empty() and (_hovering or not _drop_gameplay_brush.is_empty()) and _inside_grid(_cursor_position) and _valid_gameplay_stamp(active_brush):
   var point := legal_gameplay_position(screen_to_local_pixels(_cursor_position), _alt_held)
   ObjectPreview.draw_object(self, active_brush, local_pixels_to_screen(point), scale_factor, _local_cell_size(), false, true)
   if active_brush.type == "spring":
@@ -1099,6 +1110,9 @@ func _input(event: InputEvent) -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
+ if _patrol_input(event):
+  accept_event()
+  return
  if _rail_input(event):
   accept_event()
   return
@@ -1879,6 +1893,62 @@ func _rail_input(event: InputEvent) -> bool:
   queue_redraw()
   return true
  return false
+
+func _patrol_input(event: InputEvent) -> bool:
+ if document == null or preview_active: return false
+ if _patrol_dragging:
+  if (event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE) or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT):
+   cancel_gesture()
+   queue_redraw()
+   return true
+  if event is InputEventMouseMotion or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed):
+   var x := legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed).x - float(_patrol_preview.position.x)
+   if _patrol_index < 0:
+    _patrol_preview.properties.patrol_left = clampf(x, -2000, 0)
+    _patrol_preview.properties.patrol_right = clampf(x, 0, 2000)
+   elif _patrol_side == "left": _patrol_preview.properties.patrol_left = clampf(x, -2000, 0)
+   else: _patrol_preview.properties.patrol_right = clampf(x, 0, 2000)
+   if event is InputEventMouseButton:
+    var edited := _patrol_preview.duplicate(true)
+    var index := _patrol_index
+    _patrol_dragging = false
+    _patrol_preview = {}
+    if index < 0:
+     gameplay_placement_requested.emit(edited)
+    else:
+     patrol_changed.emit(index, Vector2(edited.properties.patrol_left, edited.properties.patrol_right))
+   queue_redraw()
+   return true
+  return false
+ if not event is InputEventMouseButton or not event.pressed or event.button_index != MOUSE_BUTTON_LEFT: return false
+ if gameplay_brush.get("type") == "buzz_bomber" and event.shift_pressed and _inside_grid(event.position):
+  _patrol_index = -1
+  _patrol_preview = gameplay_brush.duplicate(true)
+  _patrol_preview.object_id = Objects.new_id()
+  _patrol_preview.position = legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed)
+  _patrol_preview.properties = Objects.properties(_patrol_preview)
+  _patrol_preview.properties.patrol_left = 0.0
+  _patrol_preview.properties.patrol_right = 0.0
+ elif gameplay_brush.is_empty() and selected_gameplay_index >= 0 and selected_gameplay_index < _gameplay_objects().size():
+  var item: Dictionary = _gameplay_objects()[selected_gameplay_index]
+  if item.type != "buzz_bomber": return false
+  var props := Objects.properties(item)
+  _patrol_side = ""
+  for side: String in ["left", "right"]:
+   var endpoint := local_pixels_to_screen(Vector2(item.position) + Vector2(props["patrol_" + side], 0))
+   if endpoint.distance_to(event.position) <= 10: _patrol_side = side
+  if _patrol_side.is_empty() and event.shift_pressed and local_pixels_to_screen(item.position).distance_to(event.position) < 30:
+   _patrol_side = "right" if screen_to_local_pixels(event.position).x >= item.position.x else "left"
+  if _patrol_side.is_empty(): return false
+  _patrol_index = selected_gameplay_index
+  _patrol_preview = item.duplicate(true)
+  _patrol_preview.properties = props
+ else: return false
+ _patrol_dragging = true
+ grab_focus()
+ _set_status("Buzz Bomber patrol: drag horizontally. Alt frees snapping; Esc cancels. Zero length is stationary.")
+ queue_redraw()
+ return true
 
 func _draw_launch_range(item: Dictionary) -> void:
  if item.get("type") not in ["left_flipper", "right_flipper", "round_bumper", "triangle_bumper"]: return

@@ -17,7 +17,7 @@ func check(ok: bool, label: String) -> void:
   push_error("FAIL | " + label)
 
 func pattern(id: String, bonus := false) -> Dictionary:
- return {"pattern_id": id, "start": Vector2(100, 100), "end": Vector2(140, 100), "spacing": 20.0, "bonus_rack": bonus, "completion_bonus": 500, "timeout": 12.0, "respawn_delay": 1.0}
+ return {"pattern_id": id, "start": Vector2(100, 100), "end": Vector2(140, 100), "spacing": 20.0, "bonus_rack": bonus, "completion_bonus": 500}
 
 func run() -> void:
  game = load("res://scenes/playground.tscn").instantiate()
@@ -33,6 +33,7 @@ func run() -> void:
  game.ball.position = Vector2(2000, 500)
  field = game.ring_field
  field.set_physics_process(false)
+ field.previous_ball_position = game.ball.position
  field.pickup_claimed.disconnect(game.presentation._on_ring_claimed)
  field.rack_reset.disconnect(game.presentation.clear_ring_pickups)
  field.feature_completed.connect(func(_kind: StringName, id: String, _bonus: int): completions.append(id))
@@ -46,8 +47,10 @@ func run() -> void:
  field.claim_ring(0)
  field.advance_racks(6.0)
  field.claim_ring(1)
- check(is_equal_approx(field.rings[0].rack.timeout_remaining, 6.0), "Later pickups do not extend the first-pickup timeout")
- field.advance_racks(6.0)
+ check(is_equal_approx(field.rings[0].rack.timeout_remaining, 19.0), "Later pickups do not extend the first-pickup timeout")
+ field.advance_racks(19.0)
+ check(field.rings[0].rack.ready and not field.claim_ring(2), "Expired partial pattern waits without collectible remnants")
+ field.advance_racks(0.35)
  check(field.rings[0].active and field.rings[1].active and field.rings[2].active and completions.is_empty() and game.score == 50, "Incomplete ordinary pattern fully respawns at timeout without a bonus")
 
  field.claim_ring(3)
@@ -55,13 +58,28 @@ func run() -> void:
  field.claim_ring(5)
  check(game.score == 650 and game.rings_collected == 5 and game.special_meter == 20 and completions == ["standalone:bonus"], "Contact and remote claims share one completion with fixed bonus and physical-only meter")
  check(not field.claim_ring(5) and completions.size() == 1, "Repeated claim cannot award the same completion twice")
- field.advance_racks(0.99)
+ field.advance_racks(1.0)
+ check(not field.rings[3].active, "Bonus Rack does not return after the historical one-second delay")
+ field.advance_racks(9.99)
  check(not field.rings[3].active and field.rings[0].active, "Completed pattern waits independently while another pattern stays available")
  field.advance_racks(0.02)
+ check(field.rings[3].rack.ready and not field.claim_ring(3), "Bonus Rack waits eleven seconds then enters safe reactivation")
+ game.ball.position = Vector2(120, 100)
+ field.advance_racks(2.0)
+ check(not field.rings[3].active and field.rings[3].rack.fade == 0.0, "Ready rack cannot respawn around the Ball")
+ game.ball.position = Vector2(2000, 500)
+ field.advance_racks(0.2)
+ check(not field.claim_ring(3) and RingField.visibility_alpha(field.rings[3]) > 0.0, "Fade is visible but not collectible")
+ game.ball.position = Vector2(120, 100)
+ field.advance_racks(0.2)
+ check(field.rings[3].rack.fade == 0.0, "Returning Ball cancels the fade before activation")
+ game.ball.position = Vector2(2000, 500)
+ field.advance_racks(0.35)
  check(field.rings[3].active and field.rings[4].active and field.rings[5].active and field.rings[3].rack.remaining == 3, "Completion delay rearms only its own complete pattern")
 
  field.claim_ring(3)
  field.advance_racks(12.0)
+ field.advance_racks(0.35)
  field.claim_ring(4)
  field.claim_ring(5)
  check(completions.size() == 1 and field.rings[3].active and field.rings[3].rack.remaining == 1, "Timeout discards partial progress and cannot create a phantom clear")
@@ -93,6 +111,13 @@ func run() -> void:
  var before_single: int = game.score
  field.claim_ring(0)
  check(game.score == before_single + 25 and completions.size() == 1, "Ordinary single ring never becomes an implicit +500 rack")
+ field.advance_racks(1.0)
+ check(not field.rings[0].active, "Ordinary full clear does not respawn after one second")
+ field.advance_racks(16.99)
+ check(not field.rings[0].rack.ready, "Ordinary full clear waits the full eighteen seconds")
+ field.advance_racks(0.02)
+ field.advance_racks(0.35)
+ check(field.rings[0].active, "Ordinary full clear safely restores after eighteen seconds plus fade")
  field.reset_rings()
  check(field.rings[0].active and field.rings[0].rack.timeout_remaining == -1.0 and field.rings[0].rack.respawn_remaining == -1.0, "Explicit lifecycle reset clears rack clocks and restores physical rings")
 
