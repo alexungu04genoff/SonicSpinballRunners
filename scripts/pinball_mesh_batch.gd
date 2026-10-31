@@ -8,6 +8,53 @@ const STATE := ["layers", "cast_shadow", "gi_mode", "extra_cull_margin", "lod_bi
  "ignore_occlusion_culling", "sorting_offset", "sorting_use_aabb_center"]
 ## In-process profiling switch; ordinary builders and offline exports leave it enabled.
 static var enabled := true
+static var shadow_batch_enabled := true
+
+static func combine_shadows(actor: Node3D) -> int:
+ if not shadow_batch_enabled: return 0
+ var groups := {}
+ for child: Node in actor.get_children():
+  if not _eligible(child) or child.cast_shadow != GeometryInstance3D.SHADOW_CASTING_SETTING_ON: continue
+  var source := child as MeshInstance3D
+  if source.mesh.get_surface_count() == 0: continue
+  var safe := true
+  for surface in source.mesh.get_surface_count():
+   if source.mesh is ArrayMesh and source.mesh.surface_get_primitive_type(surface) != Mesh.PRIMITIVE_TRIANGLES: safe = false
+   var material := source.get_active_material(surface)
+   # This shader has no vertex displacement, alpha, discard or changed culling.
+   # Preserve normals too: directional shadow normal bias uses them.
+   if not material is ShaderMaterial or material.shader != Surface or material.next_pass != null:
+    safe = false
+   var arrays := source.mesh.surface_get_arrays(surface)
+   if not _arrays_safe(arrays) or arrays[Mesh.ARRAY_NORMAL] == null or arrays[Mesh.ARRAY_NORMAL].size() != arrays[Mesh.ARRAY_VERTEX].size(): safe = false
+  if not safe: continue
+  var state := {}
+  for property: String in STATE: state[property] = source.get(property)
+  var key := str(state)
+  if not groups.has(key): groups[key] = {"sources": [], "state": state}
+  groups[key].sources.append(source)
+ var removed := 0
+ for group: Dictionary in groups.values():
+  if group.sources.size() < 2: continue
+  var arrays: Array = []
+  arrays.resize(Mesh.ARRAY_MAX)
+  arrays[Mesh.ARRAY_VERTEX] = PackedVector3Array()
+  arrays[Mesh.ARRAY_NORMAL] = PackedVector3Array()
+  arrays[Mesh.ARRAY_INDEX] = PackedInt32Array()
+  for source: MeshInstance3D in group.sources:
+   for surface in source.mesh.get_surface_count():
+    _append(arrays, source.mesh.surface_get_arrays(surface), source.position)
+  var mesh := ArrayMesh.new()
+  mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+  var caster := MeshInstance3D.new()
+  caster.name = "PinballShadow"
+  caster.mesh = mesh
+  for property: String in STATE: caster.set(property, group.state[property])
+  caster.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY
+  actor.add_child(caster)
+  for source: MeshInstance3D in group.sources: source.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+  removed += group.sources.size() - 1
+ return removed
 
 static func combine(actor: Node3D, baked := false) -> Dictionary:
  if not enabled: return {}

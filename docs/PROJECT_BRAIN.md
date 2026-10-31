@@ -3084,6 +3084,24 @@ Do not mistake that for solved streaming. The final six-transition check still w
 
 See [PERFORMANCE.md](PERFORMANCE.md) for methods, full percentiles/counters, visual comparisons, the rejected experiment, validation and remaining work. Raw local evidence is under ignored `test-results/performance-20261030/`. Existing ArtBro edits remain separately owned; local captures include them.
 
+# SECOND PERFORMANCE PASS — 2026-10-30/31
+
+The next boring win is shared shadow geometry. Bumpers and flippers still draw their original colored surfaces, but compatible rigid pieces now cast through one combined, shadow-only mesh. Same triangles, winding and normals; same animated root; same 2D physics. The all-eight-theme hardware shadow gallery is byte-identical before/after. No flatter Sonic universe required.
+
+Two alternating RampMania pairs on RTX 4060 / ANGLE recorded **1,532 → 1,373 draws**, median block frame time **12.049 → 11.265 ms**, and render CPU **9.794 → 8.985 ms**. These are this pass's matched fixed-view samples, not a whole-game FPS promise or a direct comparison with older window sizes. The extra shadow meshes trade some memory for fewer submissions.
+
+A fresh caster-only comparison recorded Prototype **3,069 → 2,777 draws** and **23.285 → 20.059 ms**. Endless saved **1,991 → 1,668 draws**, but did not demonstrate a frame-time gain in the fresh pair. Continuous tours still waited at boundaries; retained runs ranged roughly 2.3–3.2 seconds with zero rebuilds and unchanged resident counts. Do not sell this as solved streaming or a universal FPS increase. Cold final confirmation still took 113.6 seconds to become playable with a fresh application cache, versus 7.4 seconds on immediate repeat.
+
+Generated bake shaders now share content-addressed external resources across Acts/themes. Chemical Plant's three-Act sample had 18 Shader instances for only six source programs; sharing leaves six. Subsequent Act graphics warm-up fell from roughly 0.6 seconds each to 0.2 seconds. This helps repeated preparation, but cold compilation remains a crime scene.
+
+Fresh application shader caches exposed about **59 seconds of probe rendering**, compared with only **38 ms creating probe nodes**. Sharing measured about 57 seconds, nowhere near the hoped-for four seconds. A separate generic initial frame took around 24 seconds. Do not compare that entire fresh-process startup with the old 42-second Chemical Plant bucket from later in a session. Per-batch traces point to first-use render/compiler/driver work; ANGLE supplies no usable GPU compiler timings, so exact attribution remains inference.
+
+Skipping warm-up moved huge stalls into the first actual Acts. A more selective 23-probe plan barely helped and was reverted. Native OpenGL was much faster in a diagnostic, but the documented NVIDIA replay crash means ANGLE stays default. Two shadow cascades visibly blurred the ramp shadow; removing Ring shadows weakened their ground anchor. Neither ships. A short fixed shadow distance is promising in one camera but has not earned safe coverage across the game.
+
+Adjacent resident Acts still participate in foreground shadow passes. Zero-weight theme background viewports already stop rendering and processing; their key lights do not enable shadows. Future work should distinguish safe residency from camera/light visibility without reducing the streaming buffer or hiding a neighbor at a join.
+
+See [PERFORMANCE.md](PERFORMANCE.md) for the complete cold/steady/streaming measurements, rejected trials and verification. Raw evidence is under ignored `test-results/performance-pass2/`. Gameplay tuning, Scorecraft, Buddies, character Specials, authored geometry and the 120 Hz authoritative simulation remain unchanged. Existing local ArtBro work remains separately owned.
+
 # REPOSITORY SNAPSHOT AND COMMIT HISTORY — KEEP THIS LAST
 
 ## Current repository context — cleanup and first performance pass, 2026-10-30

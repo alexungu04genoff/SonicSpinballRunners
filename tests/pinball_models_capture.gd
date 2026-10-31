@@ -7,6 +7,11 @@ func _initialize() -> void:
  call_deferred("run")
 
 func run() -> void:
+ var output := "res://test-results/pinball-models/gallery.png"
+ var shadow_review := "--profile-shadows" in OS.get_cmdline_user_args()
+ Models.MeshBatch.shadow_batch_enabled = not "--profile-original-shadows" in OS.get_cmdline_user_args()
+ for argument: String in OS.get_cmdline_user_args():
+  if argument.begins_with("--profile-output="): output = argument.trim_prefix("--profile-output=")
  root.size = Vector2i(1500, 1050)
  var p := TablePresentation.new()
  p.set_process(false)
@@ -22,7 +27,14 @@ func run() -> void:
  var light := DirectionalLight3D.new()
  light.rotation_degrees = Vector3(-60, -25, 0)
  light.light_energy = 1.5
+ light.shadow_enabled = shadow_review
+ light.directional_shadow_max_distance = 40.0
  p.add_child(light)
+ if shadow_review:
+  var floor_mesh := BoxMesh.new()
+  floor_mesh.size = Vector3(20, 0.1, 20)
+  var floor_visual := p.mesh_node(floor_mesh, p.material(Color("778596")), Vector3(4, -0.06, 4))
+  floor_visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  var camera := Camera3D.new()
  p.add_child(camera)
  camera.position = Vector3(4.2, 11, 9.2)
@@ -57,8 +69,8 @@ func run() -> void:
  for i in 10: await process_frame
  if DisplayServer.get_name() != "headless":
   await RenderingServer.frame_post_draw
-  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results/pinball-models"))
-  root.get_texture().get_image().save_png("res://test-results/pinball-models/gallery.png")
+  DirAccess.make_dir_recursive_absolute(output.get_base_dir())
+  root.get_texture().get_image().save_png(output)
  print("RESULT | Pinball model palette gallery | %d themes built" % index)
  p.free()
  quit()

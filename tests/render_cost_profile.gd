@@ -7,6 +7,8 @@ var mode := "prototype"
 var output := "res://test-results/render-cost.json"
 var ablations := false
 var scale_trial := false
+var shadow_audit := false
+var shadow_distance := -1.0
 var samples := 600
 var geometry: Array[Dictionary] = []
 var views: Array[Viewport] = []
@@ -22,7 +24,10 @@ func run() -> void:
   if arg.begins_with("--profile-samples="): samples = maxi(120, int(arg.trim_prefix("--profile-samples=")))
   if arg == "--profile-ablations": ablations = true
   if arg == "--profile-scale-only": scale_trial = true
+  if arg == "--profile-shadow-audit": shadow_audit = true
+  if arg.begins_with("--profile-shadow-distance="): shadow_distance = float(arg.trim_prefix("--profile-shadow-distance="))
   if arg == "--profile-unbatched": HardwareBatch.enabled = false
+  if arg == "--profile-original-shadows": HardwareBatch.shadow_batch_enabled = false
  if not HardwareBatch.enabled and mode != "act":
   push_error("Unbatched A/B is available only for freshly constructed standalone Acts.")
   quit(1)
@@ -66,15 +71,48 @@ func run() -> void:
   quit(1)
   return
  var settled_at_ms := Time.get_ticks_msec() - start
+ if shadow_distance > 0.0: game.presentation._key_light.directional_shadow_max_distance = shadow_distance
  _inspect(root)
  var inventory := {}
  for item: Dictionary in geometry:
-  if not inventory.has(item.category): inventory[item.category] = {"nodes": 0, "triangles": 0}
+  if not inventory.has(item.category): inventory[item.category] = {"nodes": 0, "triangles": 0, "casters": 0}
   inventory[item.category].nodes += 1
   inventory[item.category].triangles += item.triangles
+  inventory[item.category].casters += int(item.shadow != GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
  var phases: Array[Dictionary] = []
  for index in 3:
   phases.append(await _sample("baseline-%d" % (index + 1), index == 0))
+ if shadow_audit:
+  # Category ablations measure stable submission counts, not timing tails.
+  var baseline_samples := samples
+  samples = mini(samples, 120)
+  for category: String in inventory:
+   if inventory[category].casters == 0: continue
+   for item: Dictionary in geometry:
+    if item.category == category: item.node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+   phases.append(await _sample("shadowless-" + category, true))
+   for item: Dictionary in geometry:
+    if item.category == category: item.node.cast_shadow = item.shadow
+  var light: DirectionalLight3D = game.presentation._key_light
+  var distance := light.directional_shadow_max_distance
+  var splits := light.directional_shadow_mode
+  for trial: float in [20.0, 12.0]:
+   light.directional_shadow_max_distance = trial
+   phases.append(await _sample("shadow-distance-%d" % trial, true))
+  light.directional_shadow_max_distance = distance
+  light.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+  phases.append(await _sample("shadow-two-splits", true))
+  light.directional_shadow_mode = splits
+  if mode != "act":
+   var visibility: Array[Dictionary] = []
+   for act: RefCounted in game.resident:
+    if act == game.active: continue
+    visibility.append({"node": act.visual, "visible": act.visual.visible})
+    act.visual.visible = false
+   phases.append(await _sample("active-act-only", true))
+   for state: Dictionary in visibility: state.node.visible = state.visible
+  samples = baseline_samples
+  phases.append(await _sample("baseline-return", true))
  if ablations:
   for category: String in ["rings", "mechanics", "borders", "terrain", "decor", "scenery", "other"]:
    _hide_category(category, true)
@@ -118,6 +156,7 @@ func run() -> void:
   "inventory": inventory, "phases": phases,
   "theme": game.theme_id if mode == "act" else game.active.plan.theme,
   "hardware_batching": HardwareBatch.enabled if mode == "act" else "baked",
+  "shadow_batching": HardwareBatch.shadow_batch_enabled if mode == "act" else "baked",
   "course": game.course_snapshot() if mode == "prototype" else [],
   "note": "Served ball; no input. Preparation settled before sampling. VSync disabled; 120 Hz physics unchanged. Inventory includes hidden/offscreen stored geometry; rendered counters are in phases. Ablation savings overlap and are not additive."}
  DirAccess.make_dir_recursive_absolute(output.get_base_dir())
@@ -163,6 +202,15 @@ func _category(node: Node) -> String:
   if "Border" in label: return "borders"
   if label == "AuthoredDecor": return "decor"
   if "Scenery" in label: return "scenery"
+  if shadow_audit:
+   if label.begins_with("BuzzBomber_"): return "enemies"
+   if label.begins_with("Spring_"): return "springs"
+   if label.begins_with("SwitchTarget_") or label.begins_with("WallSwitch_"): return "switches"
+   if label.begins_with("ElevatedRail_"): return "rails"
+   if ancestor == game.presentation.ball_visual or ancestor == game.character: return "ball"
+   if ancestor is Node3D:
+    if game.presentation.flipper_visuals.has(ancestor) or game.presentation.flipper_retracted_visuals.has(ancestor): return "flippers"
+    if game.presentation.bumper_visuals.values().has(ancestor): return "bumpers"
   if ancestor.get_script() == preload("res://scripts/authored_act/mechanics_presentation.gd"): return "mechanics"
   if ancestor is Node3D and (game.presentation.flipper_visuals.has(ancestor) or game.presentation.flipper_retracted_visuals.has(ancestor) or game.presentation.bumper_visuals.values().has(ancestor)): return "mechanics"
   if "Terrain" in label or "Floor" in label: return "terrain"
@@ -200,6 +248,7 @@ func _sample(label: String, capture := false) -> Dictionary:
   previous = now
  var result := {"phase": label, "sample_count": samples, "world_size": [game.view.size.x, game.view.size.y],
   "camera_transform": var_to_str(game.presentation.camera.transform), "camera_far": game.presentation.camera.far,
+  "shadow_distance": game.presentation._key_light.directional_shadow_max_distance,
   "resident_acts": 1 if mode == "act" else game.resident.size()}
  for key: String in rows[0]:
   var values := rows.map(func(row): return row[key])

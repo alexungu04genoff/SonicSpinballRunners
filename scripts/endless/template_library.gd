@@ -38,6 +38,9 @@ var last_theme_prepare_ms := 0.0
 var preparing_theme := ""
 var theme_attempts := {}
 var theme_materials := {}
+## Diagnostic switches are set by the profiling harness, never saved settings.
+var warm_probes_enabled := true
+var warm_instanced_probes := true
 var bake_status := "Not requested"
 var profile_stage := "idle"
 var profile_max_cpu_ms := {}
@@ -45,6 +48,8 @@ var profile_resource_wait_ms := 0.0
 var profile_enabled := "--profile-stages" in OS.get_cmdline_user_args()
 var profile_events: Array[Dictionary] = []
 var profile_cpu := {}
+var _warm_context := {}
+var _warm_batch: Array[Dictionary] = []
 var _fingerprints := {}
 var _fingerprint_jobs := {}
 var _primed_themes := {}
@@ -173,7 +178,7 @@ func _load_theme(theme_id: String, fingerprint: String) -> bool:
  # Tiny probes upload foreground textures and warm material/shadow features.
  # They contain no terrain, props, Act layout or collision data.
  var probes: Resource = background.preload_recipe
- if not probes.records.is_empty(): await _warm_recipe(probes, theme_id, "probes")
+ if warm_probes_enabled and not probes.records.is_empty(): await _warm_recipe(probes, theme_id, "probes")
  await _warm_recipe(background.visual_recipe, theme_id, "background")
  theme_bake_hits += 1
  return true
@@ -337,6 +342,8 @@ func _warm_recipe(recipe: Resource, theme_id: String, kind := "act", retain_vari
  for i in recipe.records.size():
   var node_started := Time.get_ticks_usec()
   recipe.instantiate_one(i, nodes, root)
+  if kind == "probes" and not warm_instanced_probes and nodes[-1] is MultiMeshInstance3D:
+   nodes[-1].set_meta("skip_warm_probe", true)
   signatures[nodes[-1].get_instance_id()] = recipe.records[i].warm_signatures
   _record_cpu("scene.node", node_started)
   if Time.get_ticks_usec() >= deadline:
@@ -345,6 +352,7 @@ func _warm_recipe(recipe: Resource, theme_id: String, kind := "act", retain_vari
  root.process_mode = Node.PROCESS_MODE_ALWAYS
  var instantiated_at := Time.get_ticks_usec()
  var details := {"theme": theme_id, "kind": kind, "nodes": nodes.size()}
+ _warm_context = details
  _record_event("warm.instantiate", started_at, details, instantiated_at)
  var feature_key := theme_id + (":background" if is_background else ":foreground")
  if not _warmed_features.has(feature_key): _warmed_features[feature_key] = {}
@@ -446,6 +454,7 @@ func _warm_pass(renderables: Array[Node], overlay: Node, warmed: Dictionary = {}
  var cold_limit := 1 if _game.get("started") == true else 4
  for node: GeometryInstance3D in renderables:
   var queue_started := Time.get_ticks_usec()
+  if node.has_meta("skip_warm_probe"): continue
   if overlay != null and (node == overlay or overlay.is_ancestor_of(node)): continue
   var original_layers: int = render_state.geometry[node.get_instance_id()].layers
   node.layers = original_layers if original_layers != 0 else 1
@@ -464,6 +473,16 @@ func _warm_pass(renderables: Array[Node], overlay: Node, warmed: Dictionary = {}
     warmed[signature] = true
     cold_features += 1
   batch.append(node)
+  if profile_enabled:
+   var description := {"name": str(node.name), "class": node.get_class(), "features": Array(signatures)}
+   var material: Material = node.material_override
+   if material == null and node is MeshInstance3D and node.mesh != null and node.mesh.get_surface_count() > 0:
+    material = node.get_active_material(0)
+   description.material = material.resource_path if material != null else "default"
+   if material is ShaderMaterial and material.shader != null:
+    description.shader = material.shader.resource_path
+    description.shader_source = material.shader.code.sha256_text()
+   _warm_batch.append(description)
   _record_cpu("graphics.queue", queue_started)
   # Colors and uniform values do not require a different shader. The previous
   # per-material-instance wait spent hundreds of frames on equivalent programs.
@@ -501,9 +520,19 @@ func _draw_frames(count := 2) -> void:
  var previous_stage := profile_stage
  profile_stage = "graphics.draw"
  for i in count:
+  var started_at := Time.get_ticks_usec()
   last_warm_frames += 1
   await get_tree().process_frame
+  var process_at := Time.get_ticks_usec()
   if DisplayServer.get_name() != "headless": await RenderingServer.frame_post_draw
+  if profile_enabled:
+   var details := _warm_context.duplicate()
+   details.batch = _warm_batch.duplicate()
+   details.process_wait_ms = (process_at - started_at) / 1000.0
+   details.post_draw_wait_ms = (Time.get_ticks_usec() - process_at) / 1000.0
+   details.draws = RenderingServer.viewport_get_render_info(_view.get_viewport_rid(), RenderingServer.VIEWPORT_RENDER_INFO_TYPE_VISIBLE, RenderingServer.VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME)
+   _record_event("warm.draw", started_at, details)
+ _warm_batch.clear()
  profile_stage = previous_stage
 
 func _dispose(root: Node) -> void:

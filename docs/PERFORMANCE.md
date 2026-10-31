@@ -206,3 +206,171 @@ Use the existing bake launchers after source changes affecting recipe fingerprin
 ```
 
 Next investigations should prioritize shadow-caster submissions, remaining mechanic pieces, streamed background overlap and first-use preparation stalls. Consider Ring batching only with equivalent lifecycle tests and measured benefit. Preserve 120 Hz physics, existing scoring/Buddies, all Acts/themes and current default visual quality while comparing changes.
+
+## Performance Pass 2 — cold preparation and shadow submissions
+
+Starting source: `75e1df0071a219727b03c5ce6ee56b57535fb5af`, with the existing local ArtBro changes preserved. Measurements below include those local visuals. They are comparisons within this pass, not interchangeable with Pass 1's different window/camera samples. Raw JSON, logs and captures are under ignored `test-results/performance-pass2/`.
+
+The retained changes are deliberately narrow:
+
+- Bumpers and flippers retain their visible colored surfaces and gain one combined shadow-only mesh per compatible render-state group. Original triangles, winding and normals are preserved, including the normals used by shadow normal bias. Only the known opaque, non-displacing pinball shader is eligible. Animated roots and authoritative 2D bodies are unchanged.
+- Generated bake shaders share an external, content-addressed resource across Act and theme files. This preserves source and uniforms while avoiding independently instantiated renderer programs for identical generated source. Existing external shaders already shared paths and are untouched.
+- Opt-in profiling records each warm draw batch, feature signatures, material/shader paths and source hashes, process-frame waits and post-draw waits. The theme startup probe counts actual resources and follows the normal Prototype startup/lookahead path. Shadow-only category ablations and resident counts remain available for later investigation.
+
+### Cold Chemical Plant: what the 42-second bucket contained
+
+Method: fresh Godot process, fresh isolated APPDATA shader cache for each cold trial, seed 18, one Chemical Plant Prototype Zone containing the same three Acts, ANGLE/D3D11 on RTX 4060, Godot 4.7.2. GPU runs were sequential. Driver/OS caches were not reset, so these are application-cache-cold observations, not controlled driver compiler benchmarks. The cache-cold startup includes an approximately 24-second initial frame before theme preparation; Pass 1's 42-second observation was later in a full session and excluded that work.
+
+The baseline has **347 material resources, 37 textures, 18 Shader resources but only six distinct custom shader sources**. Its 30 material probes have 28 warm feature signatures. Many material colors do not create new programs. Four generated sources are nevertheless embedded separately in multiple bake files. Sharing reduces the 18 Shader instances to six without removing shader source or material coverage.
+
+Matched shader-sharing experiment (original shadow casters in both; `chemical-full5.json` and `chemical-shared-full5.json`):
+
+| Stage | Embedded shaders ms | Shared shaders ms |
+|---|---:|---:|
+| Theme resource wait | 73.534 | 54.900 |
+| Probe scene instantiation | 38.307 | 21.570 |
+| Probe graphics warm-up | 59,227.019 | 57,483.129 |
+| Background graphics warm-up | 1,163.770 | 1,008.327 |
+| Total theme preparation, including load/retirement | 60,571.022 | 58,611.800 |
+| First Act graphics warm-up | 580.174 | 100.849 |
+| Second Act graphics warm-up | 608.600 | 204.171 |
+| Third Act graphics warm-up | 613.131 | 238.478 |
+| Ready for play, from game creation | 89,506.622 | 85,278.786 |
+| Settled after lookahead plus 180 frames | 94,408.124 | 89,324.479 |
+| Worst startup frame | 24,131.092 | 23,852.523 |
+
+The useful retained result is resource sharing and cheaper repeated Act preparation. The modest first-use difference is insufficient to claim that the minute-long theme stall is solved. Three resident Acts and zero runtime rebuilds were retained.
+
+Final-code confirmation after the workstation interruption was slower when application-cache-cold: **113,626 ms ready**, 118,218 ms settled, **75,268 ms total theme preparation**, 73,646 ms probe graphics, and a **32,542 ms worst startup frame**. The immediate repeat using that same cache recorded **7,407 ms ready**, 11,675 ms settled, 2,626 ms theme preparation, 2,197 ms probe graphics and a 965 ms worst frame. Both retain 30 probes, six Shader resources, three resident Acts and zero rebuilds (`chemical-final-cold.json`, `chemical-final-warm.json`). This confirms strong cache sensitivity and the unresolved first-use stall. It is not a matched replacement for the earlier shader-sharing pair or evidence of a 15-fold code optimization.
+
+The expensive probe batches take about 6.3–13.2 seconds each. They draw only a handful of boxes, including ordinary and instanced paths; several stalls have over 99% of their elapsed time between the process-frame signal and the post-draw signal. Instantiation takes tens of milliseconds, not tens of seconds. A batch using standard materials also stalls for 12.8 seconds: Chemical Plant's custom fragment code alone cannot explain the problem. The initial pinball-material batch also stalls before the process-frame signal, so the two wait columns are scheduling observations rather than a clean CPU/GPU partition.
+
+**Measured:** first-use render work dominates the probe bucket; resource/scene creation is much smaller; new generated Shader identities cause repeat preparation; cache/backend choice has a large effect. **Inference:** shader compilation/translation and driver synchronization are the main cause. This backend reports zero in the GPU-time counter and does not expose compiler timings, texture-upload timings or mesh-upload timings separately. Zero means unavailable here. Likewise, the per-viewport shadow-draw counter returns zero despite clearly measured shadow ablation savings; use total submissions and matched ablations, not that counter.
+
+[Godot's pipeline compilation guidance](https://docs.godotengine.org/en/4.6/tutorials/performance/pipeline_compilations.html) distinguishes renderer capabilities. The [GLES3 shader implementation](https://github.com/godotengine/godot/blob/master/drivers/gles3/shader_gles3.cpp) creates shader versions and default variants at first use. A legacy Compatibility visible warm-up cannot interrupt a single synchronous driver operation merely by reducing its node budget. The existing live warm-up already admits only one cold feature-bearing node at a time; changing that budget would not eliminate a multi-second individual operation.
+
+### Cold experiments rejected
+
+- **Skip all probes:** the theme bucket falls to 6.6 seconds, but first and second Act graphics warm-up become **33.38 seconds and 10.46 seconds**. Ready time remains 79.43 seconds. That moves stalls into actual Act preparation rather than removing them. Keep the normal coverage.
+- **Skip instanced probes:** 89.51 to 86.03 seconds ready with embedded shaders; first Act warm-up increases from 580 to 1,243 ms. With shared shaders it records 80.05 seconds instead of 85.28. This limited cold saving does not justify knowingly transferring first-use work into instanced scenery/Acts. The diagnostic switch remains opt-in only.
+- **Probe only observed render paths:** an offline union of actual ordinary/instanced/shadow paths reduced 30 probes to 23. Ready time was 84.52 seconds versus 85.28 with shared shaders and the original probe plan. Complexity did not earn its place; implementation and tests were reverted.
+- **Native OpenGL diagnostic:** the same 23-probe experiment recorded 29.04 seconds ready, 17.30 seconds theme preparation and a 6.44-second worst frame. This is strong backend sensitivity, not proof of a particular compiler function. Native OpenGL already has a documented NVIDIA `nvoglv64.dll` access violation in Zone replay (see VERIFICATION.md); ANGLE remains the default. A fast startup does not establish backend stability.
+- Early runs with overlapping GPU processes, a hidden rendering window or a missing console-wrapper target were discarded. They are not included in the reported comparisons. Windows's GUI executable can return control before the game ends; the correctly paired console wrapper was used for the valid sequential runs.
+
+### Shadow audit and retained batching
+
+RampMania's baseline uses **1,532 draws**. Disabling only each category's shadow casting gives these diagnostic totals; the visible objects remain present:
+
+| Category | Stored casters | Draws with its shadows disabled | Saved draws |
+|---|---:|---:|---:|
+| Rings | 82 | 1,251 | 281 |
+| Flippers | 45 | 1,430 | 102 |
+| Bumpers | 30 | 1,439 | 93 |
+| Rails/supports | 46 | 1,369 | 163 |
+| Springs | 27 | 1,433 | 99 |
+| Switches | 45 | 1,396 | 136 |
+| Enemies | 31 | 1,412 | 120 |
+| Other mechanics | 53 | 1,387 | 145 |
+| Terrain | 9 | 1,476 | 56 |
+| Scenery/decor | 76 | 1,401 | 131 |
+
+Inventory counts include stored, hidden and offscreen meshes. The initial standalone audit's Ball category captured the hidden generic sphere rather than the separate character adapter; its zero saving did not establish character cost. The harness now includes both presentation paths for the streamed audit. Background scenery in a separate streamed viewport has no shadow-enabled key light; standalone scenery is a different case. Do not add these ablations together or treat their exploratory timings as a controlled benchmark.
+
+Four cascades multiply small opaque surfaces. A Bumper's several palette materials need separate visible surfaces, but its depth silhouette does not need separate material submissions. Combining those caster triangles across colors reduces RampMania's eligible mechanic casters by 49 while retaining every shadow triangle. This adds 11 shadow-only nodes and duplicated mesh storage; it trades modest memory for fewer submissions. The combined bounds can admit some triangles that previously culled independently, so primitive counts need not decrease.
+
+All-eight-theme hardware gallery captures with a receiving floor are **byte-identical before and after** (`shadow-gallery-before.png`, `shadow-gallery-after.png`). Deterministic checks also compare visible and shadow triangles, winding and normals before/after, verify idempotence, and repeat the comparison after recipe capture/reload.
+
+Two alternating standalone pairs each contain three settled 600-frame blocks, 120 settling frames per block, VSync disabled and 120 Hz physics. Window is 1280×900, world viewport 673×363, same camera/seed/theme. Six-block medians and tail summaries are reported below; no claim of guaranteed whole-run FPS follows from a stationary view.
+
+| RampMania | Original casters | Combined casters |
+|---|---:|---:|
+| Median of block median frame ms | 12.049 | 11.265 |
+| Median of block p95 frame ms | 16.855 | 15.906 |
+| Median of block p99 frame ms | 20.359 | 19.025 |
+| Median draw calls | 1,532 | 1,373 |
+| Median rendered objects | 2,168 | 2,007 |
+| Median render CPU ms | 9.794 | 8.985 |
+| Median physics ms | 0.306 | 0.295 |
+
+This is a 10.4% submission reduction, 6.5% lower typical frame time and 8.3% lower render CPU in these alternating samples. Tail values are medians of block percentiles, not percentiles of a concatenated frame trace. The few fluctuating UI objects account for small object-count differences between repeats.
+
+Fixed shadow-distance and cascade experiments remain diagnostic. Distance 40 to 12 lowers the sampled RampMania view from 1,532 to 931 draws and looks similar at that camera. However, a fixed short distance has not established coverage for overview cameras, tall scenery and all authored shapes; do not ship that constant. Two cascades lower draws to 797 but visibly blur the ramp shadow, so that change is rejected. Ring-shadow removal visibly weakens the ground anchor; keep those casters. No atlas, physics or gameplay tuning changed.
+
+### Resident overlap
+
+Ready adjacent Acts are visible and shadow-capable while resident. Residency is needed for traversal safety, but rendering is a separate potential optimization. The current background implementation already disables a zero-weight, non-warming viewport and pauses its scenery processing; it does not keep all resident theme backgrounds rendering forever. During the intended crossfade, two backgrounds render. Theme backdrop key lights do not enable shadows.
+
+An active-Act-only diagnostic measures the cost of adjacent foreground Acts. It is not a safe lifecycle rule: neighboring geometry can be visible near a join, and offscreen objects can cast into the visible region. Keep streaming safety and current visibility behavior until camera- and light-aware bounds can conservatively establish when an Act contributes neither pixels nor shadows.
+
+| Settled view, original casters | All resident Acts drawn | Only active Act drawn | Resident Acts in both |
+|---|---:|---:|---:|
+| Prototype | 3,070 | 1,681 | 3 |
+| Endless | 1,991 | 1,316 | 6 |
+
+That is 45.2% and 33.9% fewer submissions in these opening views without unloading anything. The screenshots show no obvious lost foreground geometry there, but this does not establish correctness at joins or under moving light/camera coverage. No visibility gating ships in this pass. Disabling only background-scene casters saves **zero draws** in both modes, confirming the source inspection. Disabling character/Ball casters saves four and two draws respectively in these served-ball views; character shadows are not the large submission problem here. The streamed category inventory is coarser than the standalone inventory because it relies on surviving node ancestry and runtime bindings; its `other` bucket must not be attributed to one specific mechanic or terrain feature.
+
+### Streamed steady views and boundary waits
+
+The first sequential streamed pair crossed the workstation interruption. Prototype block medians were 20.431 → 22.504 ms, while Endless was 13.336 → 11.806 ms. Those mixed timings did not justify a speed claim. A fresh control comparison therefore rebuilt only the relevant variants with **shader sharing enabled in both cases**, changing only original versus combined shadow casters. The retained recipes were backed up, then restored byte-for-byte after the control; all 29 restored file hashes matched. No source changed between these runs.
+
+Fresh control/confirmation results (`*-control.json`, `*-confirm.json`), medians across three 600-frame blocks at 1280×900 / 673×473 world resolution:
+
+| View / casters | Frame median ms | Block p95 ms | Block p99 ms | Render CPU ms | Draws | Rendered objects | Resident Acts |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Prototype / original | 23.285 | 32.915 | 36.518 | 18.389 | 3,069 | 3,165 | 3 |
+| Prototype / combined | 20.059 | 28.718 | 31.986 | 15.851 | 2,777 | 2,873 | 3 |
+| Endless / original | 15.737 | 22.555 | 25.189 | 12.295 | 1,991 | 2,257 | 6 |
+| Endless / combined | 16.252 | 22.956 | 25.977 | 12.313 | 1,668 | 1,934 | 6 |
+
+Prototype's fresh pair shows approximately 13.9% lower median frame time and 13.8% lower render CPU. Endless consistently saves **323 draws (16.2%)**, but its fresh pair does **not** establish a timing gain: median frame time is 3.3% higher and measured render CPU is essentially unchanged. One-draw variations between Prototype blocks are UI/capture-time variation. Keep the distinction between fewer submissions and demonstrated faster frames. The uninterrupted alternating standalone pairs and the fresh Prototype comparison support retaining the conservative batching; do not promise an Endless FPS increase.
+
+All continuous tours below use seed 18, speed 400, target sequence 6, normal lookahead, VSync disabled and 120 Hz physics. Every run reaches sequence 6 with **zero runtime rebuilds and three resident Acts at peak**. The original and retained initial pairs straddle the interruption; the later control pair isolates shadow casters with shader sharing on both sides.
+
+| Continuous tour | Median ms | p95 ms | p99 ms | Worst ms | Boundary wait ms |
+|---|---:|---:|---:|---:|---:|
+| Initial original 1 | 16.815 | 35.448 | 97.760 | 108.350 | 1,478.869 |
+| Initial original 2 | 17.394 | 45.306 | 95.546 | 107.308 | 1,152.978 |
+| Initial retained 1 | 15.863 | 42.363 | 108.119 | 164.986 | 2,334.556 |
+| Initial retained 2 | 18.173 | 43.931 | 107.625 | 151.779 | 3,038.562 |
+| Fresh original-caster control 1 | 18.263 | 40.262 | 105.065 | 135.354 | 3,082.079 |
+| Fresh original-caster control 2 | 17.518 | 38.708 | 94.107 | 103.484 | 1,100.320 |
+| Fresh combined-caster confirmation 1 | 18.141 | 38.264 | 113.339 | 163.791 | 3,221.060 |
+| Fresh combined-caster confirmation 2 | 17.074 | 38.964 | 111.558 | 134.978 | 2,323.126 |
+
+**No streaming latency improvement is demonstrated.** Both retained pairs have worse boundary waits/tails than their corresponding original samples, and the original control itself varies from 1.10 to 3.08 seconds. This remains a material limitation, not a result to average away. All eight tours fail the profiler's existing zero-boundary-wait success criterion despite completing without rebuilds. There is no new prefetch, smaller resident buffer or relaxed readiness check hiding the waits. Extra shadow meshes add storage and warm-up work; the measured steady-view benefit must not be presented as a transition-loading win.
+
+Next optimization targets are a minimal first-use ANGLE/compiler/cache reproducer and conservative foreground Act/caster visibility bounds. The latter must account for offscreen casters projecting into the camera and for overview/transition cameras. Remaining rigid rails/supports, springs and switches are candidates only with equivalent geometry/animation tests. Static lighting remains exploratory; this pass does not justify a LightmapGI rewrite.
+
+### Reproducing Pass 2
+
+Use one correctly paired Godot console wrapper/executable and wait for each process to exit. Do not run GPU probes or CPU-heavy bakes beside timed probes. The examples assume `$godot` points to that console executable. Fresh APPDATA/LOCALAPPDATA directories isolate application caches and test telemetry from normal player data; do not delete the player's existing cache or telemetry.
+
+```powershell
+# Original-caster/embedded-shader diagnostic recipes; both pools must match.
+& $godot --headless --path . --script res://tests/performance_bake.gd -- --prototype --profile-original-shadows --profile-embedded-shaders
+& $godot --headless --path . --script res://tests/performance_bake.gd -- --pool --profile-original-shadows --profile-embedded-shaders
+
+# Restore the supported recipes after comparison.
+& $godot --headless --path . --script res://tests/performance_bake.gd -- --prototype
+& $godot --headless --path . --script res://tests/performance_bake.gd -- --pool
+
+# Cold startup in a fresh isolated application-cache directory; repeat unchanged for a cache-warm run.
+& $godot --path . --rendering-method gl_compatibility --rendering-driver opengl3_angle --script res://tests/theme_prepare_profile.gd -- --seed=18 --profile-stages --profile-theme=chemical_plant --profile-output=res://test-results/chemical-prepare.json
+
+# Same steady probe as Pass 1, with optional shadow-only diagnostics.
+& $godot --path . --rendering-method gl_compatibility --rendering-driver opengl3_angle --script res://tests/render_cost_profile.gd -- --seed=18 --profile-mode=prototype --profile-shadow-audit --profile-output=res://test-results/prototype-shadows.json
+```
+
+For standalone comparisons, `--profile-original-shadows` on `render_cost_profile.gd` disables only the new shadow combining; Pass 1's colored-surface batching stays enabled. Baked Prototype/Endless variants require the diagnostic rebake above. Shadow audits keep the three normal 600-frame steady blocks, use 120-frame ablation blocks for stable draw counts, then restore a full baseline block. The normal live scheduler, lookahead and safety rules remain active throughout the tour.
+
+### Pass 2 verification
+
+Headless checks passed for rigid mesh batching (14), shadow geometry and recipe equivalence (16), shared flat-shader resources (17 with local art; 16 without the optional art), warm manifests (30), bake cache behavior (28), warmed-node reuse (127), retirement (72), physics profiles, Scorecraft (29), SRA Buddy scoring (70), collision bake equivalence (2,842), all eight theme runtimes (675), and authored Green Hill playback (80). The empty-mesh guard leaves unsupported input untouched instead of creating an invalid shadow surface.
+
+A separate clean source tree containing HEAD plus only this pass's changes imported successfully and passed batching, shadow geometry, flat-shader, manifest, cache and authored-playback checks. All profiling scripts parsed there. These changes do not depend on uncommitted ArtBro files. The restricted-profile certificate-store warning is environmental; the first clean import also lacked an editor cache path, resolved by isolating LOCALAPPDATA as well as APPDATA.
+
+Final-code bakes completed for all **40 Prototype and 56 Endless variants**. The workstation interruption occurred during an offline bake, before the final timed GPU runs; bake duration is not used as performance evidence. Steady before/after streamed timings are sequential observations across that interruption, so the deterministic draw savings and uninterrupted alternating standalone pairs provide stronger evidence than a claimed universal timing percentage.
+
+Rendered full Prototype session checks passed **143/143**; rendered 1- and 7-Zone runs passed **74/74**. The `--require-bakes` Endless smoke passed **256/256** checks across 27 transitions, all published Acts and all eight themes, with zero runtime rebuilds. Its jump-driven sampling reached two resident Acts; the continuous tour and settled view use different sampling and are reported separately. Endless diagnostics still report ObjectDB shutdown warnings (10–11 instances in the final tour/smoke); shutdown ownership is not established as fixed by this pass. Their existing teardown waits for the active load before freeing the scene, while the player/session and startup profiler use the fuller `prepare_to_close` path.
+
+Matched standalone, Prototype and Endless screenshots show no meaningful lost shadows or changed geometry. Animated Rings/enemies and FPS labels differ with capture time. The hardware gallery's exact byte equality is the stronger fixed-pose image comparison. Human playtesting still owns flipper feel, camera readability and polish.

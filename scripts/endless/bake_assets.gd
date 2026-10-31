@@ -8,6 +8,7 @@ var flat_surfaces := FlatSurfaces.new()
 var visited := {}
 var error := ""
 var materials: Dictionary = {}
+static var share_generated_shaders := true
 
 func share(value: Variant) -> Variant:
  if value is Array:
@@ -25,7 +26,23 @@ func share(value: Variant) -> Variant:
    materials[resource.get_instance_id()] = resource
   visited[id] = resource
   if not resource.resource_path.is_empty() and not resource.resource_path.contains("::"): return resource
-  if resource is ImageTexture:
+  if resource is Shader and share_generated_shaders:
+   # Generated surface shaders otherwise become a new Shader resource in each
+   # Act and probe recipe. Share their renderer programs, not just their source.
+   var path := DIRECTORY.path_join("shader_" + resource.code.sha256_text() + ".res")
+   DirAccess.make_dir_recursive_absolute(DIRECTORY)
+   if not FileAccess.file_exists(path):
+    var result := ResourceSaver.save(resource, path, ResourceSaver.FLAG_COMPRESS)
+    if result != OK:
+     error = "Could not save shared bake shader: " + error_string(result)
+     return resource
+   var canonical: Resource = load(path)
+   if not canonical is Shader or canonical.code != resource.code:
+    error = "Invalid shared bake shader: " + path
+    return resource
+   visited[id] = canonical
+   return canonical
+  elif resource is ImageTexture:
    var image: Image = resource.get_image()
    if image == null or image.is_empty():
     error = "A bake texture has no image pixels. The bake cannot be saved."

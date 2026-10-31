@@ -39,6 +39,11 @@ func _initialize() -> void:
  check(ResourceSaver.save(flat, file) == OK, "Flat material saves to disk")
  var loaded: ShaderMaterial = ResourceLoader.load(file, "", ResourceLoader.CACHE_MODE_IGNORE)
  check(loaded.shader.code == flat.shader.code and loaded.get_shader_parameter("tint") == Color(0.2, 0.4, 0.6), "Disk round trip preserves shader and color")
+ check(loaded.shader == flat.shader and flat.shader.resource_path.begins_with(Assets.DIRECTORY), "Separate bake files reload one external generated shader")
+ var independent := Assets.new()
+ var another: ShaderMaterial = independent.share(source.duplicate())
+ check(another.shader == flat.shader, "Independent Act conversions resolve the same generated shader")
+ check(source.shader.resource_path.is_empty() and source.shader.code.contains(assets.FlatSurfaces.RELIEF_INCLUDE), "Sharing never externalizes or rewrites the editor source shader")
  var standard := StandardMaterial3D.new()
  standard.normal_enabled = true
  standard.heightmap_enabled = true
