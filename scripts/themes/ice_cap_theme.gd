@@ -50,43 +50,72 @@ func build_background(p: Node3D) -> void:
  var lake_mat := _shader(preload("res://scripts/themes/ice_lake.gdshader"))
  lake_mat.set_shader_parameter("center", Vector2(center.x, center.z))
  lake.material_override = lake_mat
+ _snow(root, center, width, length)
+
+func build_edges(p: Node3D) -> void:
+ var root := Node3D.new()
+ root.name = "LocalGlacier"
+ p.scenery_root.add_child(root)
+ var length: float = p.table_bounds.size.y * p.SCALE
  var landscape := Node3D.new()
  landscape.name = "WinterLandscape"
  root.add_child(landscape)
- # Remote faceted mountains frame open water. White caps occupy only the peaks.
- for i in 17:
+ # A pair of close ridge groups frames each Act. Shared vertex-color
+ # material and fewer silhouettes replace the ring of remote mountain pairs.
+ var mountain_material := StandardMaterial3D.new()
+ mountain_material.vertex_color_use_as_albedo = true
+ mountain_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+ mountain_material.roughness = 1.0
+ var ridges := [[-1, 0.82, 4.5, 2.4], [1, 0.24, 4.0, 2.2]]
+ for i in ridges.size():
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  var angle := TAU * float(i) / 17.0
-  var radius := 28.0 + (i % 3) * 5.0
-  var height := 6.0 + (i * 7 % 9) * 0.6
-  var at := center + Vector3(cos(angle) * (width * 0.5 + radius), -6.3, sin(angle) * (length * 0.5 + radius))
-  _mountain(landscape, at, height, 6.0 + (i % 4))
-  _mountain(landscape, at + Vector3(4.0, -0.2, 1.5), height * 0.62, 4.5)
- # Nearby floating ice shelves, small conifer groups, and one distant cavern.
- for i in 14:
+  var spec: Array = ridges[i]
+  var side: int = spec[0]
+  var y := lerpf(p.table_bounds.position.y, p.table_bounds.end.y, spec[1])
+  var radius: float = spec[3]
+  var half_span := radius * 0.67
+  var edge := scenery_side_edge(p, side, y, half_span / p.SCALE)
+  var at: Vector3 = p.map_point(Vector2(edge, y), -4.0) + Vector3(side * (radius + 0.8), 0, 0)
+  _mountain(landscape, at, spec[2], radius, mountain_material)
+ # Snow shelves and crystal pairs sit close to the local course envelope. Their
+ # tops remain below the playfield; alternating groups leave open frozen water.
+ for i in 2:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  var side := -1.0 if i % 2 == 0 else 1.0
-  var at := center + Vector3(side * (width * 0.5 + 4.0 + (i % 3) * 1.8), -5.9, (float(i / 2) - 3.0) * maxf(3.4, length * 0.22))
-  var floe: MeshInstance3D = _library.piece(landscape, "facet", "ice", at, Vector3(1.6 + (i % 2), 0.8, 1.1))
-  floe.rotation.y = i * 0.7
-  _library.piece(landscape, "sphere", "snow", at + Vector3.UP * 0.44, Vector3(1.5 + (i % 2), 0.13, 1.03))
+  var side := -1 if i % 2 == 0 else 1
+  var fraction := 0.78 if side < 0 else 0.25
+  var y := lerpf(p.table_bounds.position.y, p.table_bounds.end.y, fraction)
+  var edge := scenery_side_edge(p, side, y, 1.45 / p.SCALE)
+  var at: Vector3 = p.map_point(Vector2(edge, y), -2.1) + Vector3(side * 2.2, 0, 0)
+  _library.piece(landscape, "facet", "ice", at, Vector3(1.65, 0.9, 1.45))
+  _library.piece(landscape, "sphere", "snow", at + Vector3.UP * 0.49, Vector3(1.55, 0.13, 1.35))
   if i % 3 == 0:
-   _library.pine(landscape, at + Vector3.UP * 0.5, 2.4, 0.72)
-  elif i % 3 == 1:
-   _library.crystal(landscape, at + Vector3.UP * 0.5, 2.4, 0.45, -0.20, false)
- _library.arch(landscape, center + Vector3(-width * 0.5 - 7.0, -5.4, -length * 0.5 - 8.0), 6.8, 4.8, 2.3)
+   _library.pine(landscape, at + Vector3.UP * 0.55, 2.2, 0.70)
+  else:
+   _library.crystal(landscape, at + Vector3(-0.35, 0.55, -0.20), 2.5, 0.45, -0.14, false)
+   _library.crystal(landscape, at + Vector3(0.45, 0.55, 0.25), 1.6, 0.35, 0.18, false)
+ var arch_y := lerpf(p.table_bounds.position.y, p.table_bounds.end.y, 0.80)
+ var arch_edge := scenery_side_edge(p, -1, arch_y, 1.0 / p.SCALE)
+ _library.arch(landscape, p.map_point(Vector2(arch_edge, arch_y), -2.0) + Vector3(-3.0, 0, 0), 4.2, 3.6, 1.8)
  await _batch(landscape, p)
  var aurora := Node3D.new()
  aurora.name = "AuroraCurtains"
  root.add_child(aurora)
- for i in 3:
+ # Raised curtains follow the actual side contour rather than
+ # sitting beyond the nearby landscape. The existing Prototype foreground layer
+ # keeps the ball and playfield clear wherever the outer veil overlaps an edge.
+ var ribbon_span := maxf(5.0, length * 1.12)
+ for i in 2:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  var ribbon := make_aurora(i)
-  ribbon.position = center + Vector3(0, 11.0 + i * 3.0, -length * 0.5 - 30.0 - i * 5.0)
+  var side := -1 if i == 0 else 1
+  var y: float = p.table_bounds.get_center().y
+  var edge := scenery_side_edge(p, side, y)
+  var ribbon := make_aurora(i, p, ribbon_span, edge)
+  ribbon.position = p.map_point(Vector2(edge, y), 1.8) + Vector3(side * 0.30, 0, 0)
+  ribbon.rotation.y = PI * 0.5
+  ribbon.scale = Vector3(ribbon_span / 110.0, 0.22, 0.22)
   aurora.add_child(ribbon)
- _snow(root, center, width, length)
 
-func _mountain(root: Node3D, at: Vector3, height: float, radius: float) -> void:
+func _mountain(root: Node3D, at: Vector3, height: float, radius: float, mat: StandardMaterial3D) -> void:
  # Asymmetric ridge facets with irregular snowlines, rather than stacked cones.
  var surface := SurfaceTool.new()
  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -109,22 +138,31 @@ func _mountain(root: Node3D, at: Vector3, height: float, radius: float) -> void:
    surface.add_vertex(vertex)
  var mesh := MeshInstance3D.new()
  mesh.mesh = surface.commit()
- var mat := StandardMaterial3D.new()
- mat.vertex_color_use_as_albedo = true
- mat.cull_mode = BaseMaterial3D.CULL_DISABLED
- mat.roughness = 1.0
  mesh.material_override = mat
  root.add_child(mesh)
 
-func make_aurora(index: int) -> MeshInstance3D:
- var plane := PlaneMesh.new()
- plane.orientation = PlaneMesh.FACE_Z
- plane.size = Vector2(110, 27)
- plane.subdivide_width = 96
- plane.subdivide_depth = 8
+func make_aurora(index: int, p: Node3D, span: float, anchor_edge: float) -> MeshInstance3D:
+ # The same cheap shader rides a contour-shaped mesh. All shaping happens at
+ # bake time; there are no per-frame terrain queries or extra shader layers.
+ var surface := SurfaceTool.new()
+ surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+ var side := -1 if index == 0 else 1
+ var edges := PackedFloat32Array()
+ for column in 49:
+  var y: float = p.table_bounds.get_center().y + (column / 48.0 - 0.5) * span / p.SCALE
+  var sample_y := clampf(y, p.table_bounds.position.y + 0.01, p.table_bounds.end.y - 0.01)
+  edges.append(scenery_side_edge(p, side, sample_y))
+ for column in 48:
+  for row in 4:
+   for corner: Vector2 in [Vector2(0, 0), Vector2(1, 0), Vector2(0, 1), Vector2(1, 0), Vector2(1, 1), Vector2(0, 1)]:
+    var uv := Vector2((column + corner.x) / 48.0, (row + corner.y) / 4.0)
+    var edge := edges[column + int(corner.x)]
+    surface.set_uv(uv)
+    surface.set_normal(Vector3.FORWARD)
+    surface.add_vertex(Vector3((0.5 - uv.x) * 110.0, (0.5 - uv.y) * 27.0, (edge - anchor_edge) * p.SCALE / 0.22))
  var ribbon := MeshInstance3D.new()
  ribbon.name = "Curtain%d" % index
- ribbon.mesh = plane
+ ribbon.mesh = surface.commit()
  var mat := _shader(preload("res://scripts/themes/ice_aurora.gdshader"))
  mat.set_shader_parameter("phase", index * 2.1)
  mat.set_shader_parameter("strength", 0.68 - index * 0.13)

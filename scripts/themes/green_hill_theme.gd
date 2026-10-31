@@ -78,37 +78,82 @@ func configure_environment(p: Node3D) -> void:
    child.shadow_normal_bias = 2.0
 
 func build_edges(p: Node3D) -> void:
- var rows = maxi(3, int(p.table_bounds.size.y / 285.0))
- for row: int in rows:
+ # Two staggered headlands follow each Act's actual silhouette, with an ocean
+ # channel and one small flower island retaining the original scale variation.
+ var bounds: Rect2 = p.table_bounds
+ var width_scale := clampf(bounds.size.x / 600.0, 0.75, 1.35)
+ var sand := material(Color("dfc179"))
+ var decor := GreenHillDecor.new(p)
+ var headlands := [
+  {"name": "PalmHeadland", "side": -1, "at": 0.80, "span": 0.16, "width": 150.0},
+  {"name": "LoopPromontory", "side": 1, "at": 0.24, "span": 0.18, "width": 170.0},
+ ]
+ for i: int in headlands.size():
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  var y = p.table_bounds.position.y + 120.0 + row * 280.0
-  if y > p.table_bounds.end.y - 190.0:
-   continue
-  var edge = p._boundary_at_y(y)
-  if not is_finite(edge.x):
-   continue
-  for side: int in [-1, 1]:
-   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-   var base_x = edge.x if side < 0 else edge.y
-   var palm_here = (row + (1 if side > 0 else 0)) % 3 == 0
-   var x = base_x + side * (100.0 if palm_here else 70.0)
-   var center = Vector2(x, y + (25.0 if side > 0 else -25.0))
-   _small_island(p, center, 62.0 if palm_here else 44.0, row)
-   if palm_here:
-    _palm(p, TablePresentation.map_point(center), side, 1.0 + float(row % 2) * 0.13)
-    _flower(p, TablePresentation.map_point(center + Vector2(side * -18.0, 28.0)), 0.68)
-   else:
-    _flower(p, TablePresentation.map_point(center + Vector2(-12, 5)), 0.8 + float(row % 2) * 0.15)
-    _flower(p, TablePresentation.map_point(center + Vector2(16, -11)), 0.58)
-    _rock(p, TablePresentation.map_point(center + Vector2(15, 20)), 0.16 + float(row % 3) * 0.035)
+  var plan: Dictionary = headlands[i]
+  var side: int = plan.side
+  var radius := Vector2(float(plan.width) * width_scale, maxf(85.0, bounds.size.y * float(plan.span)))
+  var y := bounds.position.y + bounds.size.y * float(plan.at)
+  # Include the beach and the full longitudinal prop footprint at curved edges.
+  var edge := scenery_side_edge(p, side, y, radius.y * 1.12)
+  var center := Vector2(edge + side * (55.0 + radius.x), y)
+  var root := _coastal_landform(p, center, radius, i, side, sand)
+  root.name = plan.name
+  var near_shore := center + Vector2(-side * (radius.x - 55.0), radius.y * 0.36)
+  if i == 1:
+   # Reuse the existing collisionless landmark; this is scenery, not a new lane.
+   var loop: Node3D = decor.factory.call("turf_loop")
+   root.add_child(loop)
+   loop.position = TablePresentation.map_point(center + Vector2(-side * radius.x * 0.1, radius.y * 0.42), -1.4)
+   loop.scale = Vector3.ONE * 0.9
+   loop.rotation.y = -0.18
+  else:
+   _palm(p, TablePresentation.map_point(near_shore, -1.4), side, 0.95 if i == 0 else 0.85, root)
+  _flower(p, TablePresentation.map_point(near_shore + Vector2(side * 12.0, -radius.y * 0.42), -1.4), 0.85, root)
+ # Keep a few of the original small flower/rock islands for scale and variety,
+ # deliberately placed in the gaps instead of repeating them along every edge.
+ var islets := [Vector3(1, 0.72, 44)]
+ for i: int in islets.size():
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
+  var spec: Vector3 = islets[i]
+  var side := int(spec.x)
+  var y := bounds.position.y + bounds.size.y * spec.y
+  var edge := scenery_side_edge(p, side, y, spec.z + 20.0)
+  var center := Vector2(edge + side * (70.0 + spec.z), y)
+  _small_coastal_islet(p, center, spec.z, i)
+  _flower(p, TablePresentation.map_point(center + Vector2(-side * 12, -5), -0.8), 0.78)
+  _rock(p, TablePresentation.map_point(center + Vector2(side * 18, 16), -0.8), 0.22)
+ # Background landmarks do not need additional shadow submissions. Streamed
+ # backdrops also retain their existing non-shadow-casting directional light.
+ for visual: GeometryInstance3D in p.scenery_root.find_children("*", "GeometryInstance3D", true, false):
+  visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
-func _small_island(p: Node3D, center: Vector2, radius: float, variation: int) -> void:
- var points = PackedVector2Array()
+func _coastal_landform(p: Node3D, center: Vector2, radius: Vector2, variation: int, side: int, sand: Material) -> Node3D:
+ var root := Node3D.new()
+ p.scenery_root.add_child(root)
+ var shore: CylinderMesh = p.cylinder(radius.x * TablePresentation.SCALE * 1.10, 0.28)
+ shore.radial_segments = 12
+ var beach: MeshInstance3D = p.mesh_node(shore, sand, TablePresentation.map_point(center, -2.08), root)
+ beach.scale.z = radius.y / radius.x
+ var points := PackedVector2Array()
+ # An inward cove interrupts the long course-facing edge. Mirroring the cove
+ # keeps each shore open to the ocean instead of forming a second course wall.
+ var coast := PackedVector2Array([Vector2(1, 0.03), Vector2(0.82, 0.54), Vector2(0.32, 0.88), Vector2(-0.24, 0.96), Vector2(-0.72, 0.72), Vector2(-0.88, 0.34), Vector2(-0.55, 0.03), Vector2(-0.92, -0.32), Vector2(-0.68, -0.72), Vector2(-0.15, -1), Vector2(0.48, -0.84), Vector2(0.9, -0.44)])
+ for point: Vector2 in coast:
+  var skew := 0.10 if variation % 2 == 0 else -0.06
+  points.append(center + Vector2((point.x + point.y * skew) * radius.x * side, point.y * radius.y))
+ # A broad turf cap and checker cliff carry the silhouette without a ring of
+ # tiny edge cylinders. The low coast remains visibly separate from the course.
+ p._make_land(points, 0.9, root, -1.4, 0.0)
+ return root
+
+func _small_coastal_islet(p: Node3D, center: Vector2, radius: float, variation: int) -> void:
+ var points := PackedVector2Array()
  for i: int in 10:
-  var angle = float(i) * TAU / 10.0
-  var modulation = 0.92 + 0.08 * sin(float(i * 7 + variation))
+  var angle := float(i) * TAU / 10.0
+  var modulation := 0.92 + 0.08 * sin(float(i * 7 + variation))
   points.append(center + Vector2(cos(angle), sin(angle)) * radius * modulation)
- p._make_land(points, 1.0 + float(variation % 3) * 0.13, p.scenery_root)
+ p._make_land(points, 1.5, p.scenery_root, -0.8, 0.0)
 
 func _palm(p: Node3D, base: Vector3, side: int, size: float, target: Node3D = null) -> void:
  var palm = Node3D.new()
@@ -193,39 +238,38 @@ func build_background(p: Node3D) -> void:
  water.size = Vector2(150, 150)
  var ocean = material(Color("24afc0"))
  ocean.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
- p.mesh_node(water, ocean, TablePresentation.map_point(p.table_bounds.get_center(), -2.3), p.scenery_root)
+ p.mesh_node(water, ocean, TablePresentation.map_point(p.table_bounds.get_center(), -2.3), p.scenery_root).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  var sand = material(Color("dfc179"))
  var distant_green = material(Color("77b64c"))
  var distant_dark = material(Color("408e5c"))
  var distant_stone = material(Color("66949b"))
  var center = p.table_bounds.get_center() * TablePresentation.SCALE
- for side: int in [-1, 1]:
+ for i: int in 2:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  for i: int in 6:
-   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-   var position = Vector3(center.x + side * (12.0 + float(i % 2) * 4.0), -1.7, center.y - 23.0 + float(i) * 8.0)
-   var shore = p.cylinder(2.6 + float(i % 3) * 0.4, 0.5)
-   shore.radial_segments = 9
-   p.mesh_node(shore, sand, position, p.scenery_root)
-   var mound = p.cylinder(2.35 + float(i % 3) * 0.4, 1.2)
-   mound.top_radius = 1.5
-   mound.radial_segments = 9
-   p.mesh_node(mound, distant_green if i % 2 == 0 else distant_dark, position + Vector3.UP * 0.6, p.scenery_root)
-   var peak_height = 1.8 + float(i % 3) * 0.65
-   var peak = p.cylinder(0.95, peak_height)
-   peak.top_radius = 0.32
-   peak.radial_segments = 6
-   var rock_peak = p.mesh_node(peak, distant_stone, position + Vector3(0, 1.0 + peak_height * 0.5, 0), p.scenery_root)
-   rock_peak.rotation.z = side * 0.12
+  var side := -1 if i == 0 else 1
+  var position := Vector3(center.x + side * (p.table_bounds.size.x * TablePresentation.SCALE * 0.5 + 9.0), -1.7, (p.table_bounds.position.y + p.table_bounds.size.y * (0.22 if i == 0 else 0.73)) * TablePresentation.SCALE)
+  var shore = p.cylinder(2.4, 0.5)
+  shore.radial_segments = 9
+  p.mesh_node(shore, sand, position, p.scenery_root)
+  var mound = p.cylinder(2.1, 0.9)
+  mound.top_radius = 1.3
+  mound.radial_segments = 9
+  p.mesh_node(mound, distant_green if i == 0 else distant_dark, position + Vector3.UP * 0.6, p.scenery_root)
+  var peak_height := 1.5 if i == 0 else 2.0
+  var peak = p.cylinder(0.75, peak_height)
+  peak.top_radius = 0.24
+  peak.radial_segments = 6
+  var rock_peak = p.mesh_node(peak, distant_stone, position + Vector3(0, 1.0 + peak_height * 0.5, 0), p.scenery_root)
+  rock_peak.rotation.z = side * 0.12
  # Soft clouds and distant green peaks give the lower camera a readable horizon.
  var cloud_material = material(Color("f5ffff"))
  cloud_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
- for i: int in 7:
+ for i: int in 3:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var cloud = Node3D.new()
-  cloud.position = Vector3(center.x - 25.0 + float(i) * 8.0, 6.5 + float(i % 2) * 1.3, p.table_bounds.position.y * TablePresentation.SCALE - 17.0 - float(i % 3) * 4.0)
+  cloud.position = Vector3(center.x - 12.0 + float(i) * 12.0, 6.5 + float(i % 2) * 1.3, p.table_bounds.position.y * TablePresentation.SCALE - 7.0 - float(i % 3) * 4.0)
   p.scenery_root.add_child(cloud)
-  for j: int in 4:
+  for j: int in 3:
    if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    var puff = p.mesh_node(p.sphere(1.2 + float(j % 2) * 0.3), cloud_material, Vector3(float(j) * 1.1, float(j % 2) * 0.2, 0), cloud)
    puff.scale = Vector3(1.2, 0.58, 0.8)

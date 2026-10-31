@@ -496,6 +496,11 @@ func _retire_behind() -> void:
   hub.runtimes.erase(act.runtime.mechanics)
   _queue_retirement(act.root)
   _queue_retirement(act.visual)
+  if is_instance_valid(act.background_visual):
+   # Keep the retiring tree owned if shutdown interrupts gradual cleanup, but
+   # outside the Zone backdrop so retiring that layer cannot enqueue it twice.
+   act.background_visual.reparent(self, false)
+   _queue_retirement(act.background_visual)
   resident.remove_at(i)
   changed = true
  if changed: _sync_resident()

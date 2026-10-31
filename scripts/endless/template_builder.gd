@@ -68,7 +68,24 @@ func _build(theme_id: String, id: int) -> void:
   p.construction_grid_overlay, p.scenery_root]
  for child: Node in p.get_children():
   if child not in excluded: await _capture(recipe, child, p)
+ # Nearby framing belongs to the authored silhouette, not the synthetic Zone
+ # rectangle. Keep it in the Act recipe but render it in the existing backdrop.
+ p.stage = "local scenery"
+ p.table_bounds = documents[id].terrain_bounds()
+ await theme.build_edges(p)
+ await p._finish_borders()
+ for visual: GeometryInstance3D in p.scenery_root.find_children("*", "GeometryInstance3D", true, false):
+  visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+ var local_start := recipe.records.size()
+ for child: Node in p.scenery_root.get_children(): await _capture(recipe, child, p)
+ for index in range(local_start, recipe.records.size()): recipe.records[index]["background"] = true
  recipe.finish(p)
+ # Detach only the temporary authoring tree; its captured resources stay shared.
+ var local_scenery: Node3D = p.scenery_root
+ p.remove_child(local_scenery)
+ await _dispose(local_scenery)
+ p.scenery_root = Node3D.new()
+ p.add_child(p.scenery_root)
  var bumpers := {}
  for i in runtime.objects.size():
   var body: Node = runtime.objects[i].body
@@ -81,8 +98,6 @@ func _build(theme_id: String, id: int) -> void:
   p.authored_floor_outline = PackedVector2Array()
   p.stage = "background"
   await theme.build_background(p)
-  p.stage = "edges"
-  await theme.build_edges(p)
   await p._finish_borders()
   var background := Recipe.new()
   for child: Node in p.scenery_root.get_children(): await _capture(background, child, p)

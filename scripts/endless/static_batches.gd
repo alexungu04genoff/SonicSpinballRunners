@@ -62,8 +62,9 @@ func optimize(recipe: Resource) -> Dictionary:
   var center := bounds.get_center()
   var cell := Vector2i(floori(center.x / CELL_SIZE), floori(center.z / CELL_SIZE))
   var state := _render_state(node, common)
-  var key := str(mesh.get_instance_id()) + ":" + str(cell) + ":" + _digest(_value_key(state))
-  if not groups.has(key): groups[key] = {"indices": [], "cell": cell, "limit": limit, "state": state}
+  var background: bool = recipe.records[index].get("background", false)
+  var key := str(mesh.get_instance_id()) + ":" + str(cell) + ":" + str(background) + ":" + _digest(_value_key(state))
+  if not groups.has(key): groups[key] = {"indices": [], "cell": cell, "limit": limit, "state": state, "background": background}
   groups[key].indices.append(index)
  var removed := {}
  var additions: Array[Dictionary] = []
@@ -93,7 +94,7 @@ func optimize(recipe: Resource) -> Dictionary:
    batch.free()
    # The dummy renderer does not retain MultiMesh transforms. Store the CPU
    # buffer explicitly so headless offline baking never serializes identities.
-   additions.append({"scene": scene, "parent": -1, "instance_mesh": mesh, "instance_buffer": buffer, "instance_bounds": bounds})
+   additions.append({"scene": scene, "parent": -1, "instance_mesh": mesh, "instance_buffer": buffer, "instance_bounds": bounds, "background": group.background})
    instances += count
  # Prune only empty plain transforms without metadata or any external binding.
  # Retained nodes keep their original hierarchy and therefore their transforms.

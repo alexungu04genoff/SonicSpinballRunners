@@ -77,19 +77,6 @@ func build_background(p: Node3D) -> void:
  city.add_child(palace)
  palace.position = Vector3(center.x, -4.8, far_z)
  palace.scale = Vector3(2.7, 2.6, 2.2)
- for side: int in [-1, 1]:
-  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  for i in 3:
-   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-   var at := center + Vector3(side * (width * 0.5 + 3.0 + (i % 2) * 1.1), -4.7, (i - 1) * maxf(3.2, length * 0.42))
-   var tower: Node3D = _library.build_variant("star_lantern" if i != 1 else "reel_tower")
-   city.add_child(tower)
-   tower.position = at
-   tower.scale = Vector3.ONE * (2.2 if i != 1 else 2.5)
-   var palm: Node3D = _library.build_variant("neon_palm")
-   city.add_child(palm)
-   palm.position = at + Vector3(side * 1.5, 0, 0.9)
-   palm.scale = Vector3.ONE * 1.8
  await _batch_background(city, p)
  # Text is a single original sign, separate from the static primitive batches.
  var sign := Label3D.new()
@@ -127,9 +114,26 @@ func build_background(p: Node3D) -> void:
     part.material_override = _library.materials.aqua
   p.scenery_root.add_child(sconce)
 
-func build_edges(_p: Node3D) -> void:
- # The district already frames the table; keep the immediate lane edges quiet.
- pass
+func build_edges(p: Node3D) -> void:
+ # One landmark per side follows the local silhouette, including narrow bends.
+ # Keep the palace and distant skyline in the shared Zone background.
+ var local := Node3D.new()
+ local.name = "LocalCasinoLandmarks"
+ p.scenery_root.add_child(local)
+ for side: int in [-1, 1]:
+  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
+  var y := lerpf(p.table_bounds.position.y, p.table_bounds.end.y, 0.84 if side < 0 else 0.24)
+  var edge := scenery_side_edge(p, side, y, 65.0)
+  var at: Vector3 = p.map_point(Vector2(edge + side * 115.0, y), -2.1)
+  var tower: Node3D = _library.build_variant("star_lantern" if side < 0 else "reel_tower")
+  local.add_child(tower)
+  tower.position = at
+  tower.scale = Vector3.ONE * 1.65
+  var palm: Node3D = _library.build_variant("neon_palm")
+  local.add_child(palm)
+  palm.position = at + Vector3(side * 0.95, 0, 0.6)
+  palm.scale = Vector3.ONE * 1.3
+ await _batch_background(local, p)
 
 func ramp_materials() -> Dictionary:
  return {"deck": _texture_ramp(),

@@ -66,6 +66,32 @@ func build_background(_presentation: Node3D) -> void:
 func build_edges(_presentation: Node3D) -> void:
  pass
 
+func scenery_side_edge(p: Node3D, side: int, center_y: float, half_span_y: float = 0.0) -> float:
+ # All coordinates are Act pixels. Find the outermost floor edge across a prop's
+ # entire longitudinal footprint, including bends between its endpoints. This
+ # also accepts the rectangular outlines used by streamed background baking.
+ var bounds: Rect2 = p.table_bounds
+ var fallback: float = bounds.position.x if side < 0 else bounds.end.x
+ var outlines: Array = p._outlines
+ if p.authored_mode and not p.authored_floor_outline.is_empty():
+  outlines = [p.authored_floor_outline]
+ var low := maxf(bounds.position.y, center_y - half_span_y)
+ var high := minf(bounds.end.y, center_y + half_span_y)
+ if low > high: return fallback
+ var edge := INF if side < 0 else -INF
+ for outline: PackedVector2Array in outlines:
+  for i in outline.size():
+   var a := outline[i]
+   var b := outline[(i + 1) % outline.size()]
+   if a.y >= low and a.y <= high:
+    edge = minf(edge, a.x) if side < 0 else maxf(edge, a.x)
+   if is_equal_approx(a.y, b.y): continue
+   for y: float in [low, high]:
+    if y < minf(a.y, b.y) or y > maxf(a.y, b.y): continue
+    var x := lerpf(a.x, b.x, (y - a.y) / (b.y - a.y))
+    edge = minf(edge, x) if side < 0 else maxf(edge, x)
+ return edge if is_finite(edge) else fallback
+
 func create_decor(_presentation: Node3D) -> RefCounted:
  return null
 

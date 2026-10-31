@@ -142,21 +142,18 @@ func build_edges(p: Node3D) -> void:
  var terraces := Node3D.new()
  terraces.name = "ExteriorRoofGardens"
  p.scenery_root.add_child(terraces)
- # Four selected townhouses at most, even on long generated courses. Garden
- # props sit beside the houses, never through a pitched roof or window row.
- for i in 2:
+ # Two local facades per Act; far canals and skyline remain Zone-wide.
+ # Garden props sit beside the houses, never through a roof or window row.
+ for side: int in [-1, 1]:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  var y: float = p.table_bounds.position.y + (0.24 + i * 0.52) * p.table_bounds.size.y
-  var edge: Vector2 = p._boundary_at_y(y)
-  if not is_finite(edge.x): continue
-  for side: int in [-1, 1]:
-   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-   var at: Vector3 = p.map_point(Vector2((edge.x if side < 0 else edge.y) + side * 235.0, y), -4.56)
-   _library.box(terraces, "stone", at - Vector3.UP * 0.12, Vector3(2.1, 0.24, 2.1))
-   _house(terraces, at, Vector3(1.35, 3.21 + i * 0.20, 1.20), i)
-   var prop := _library.build_variant("hedge_planter") as Node3D
-   terraces.add_child(prop)
-   prop.position = at + Vector3(0, 0, 0.88)
+  var y := lerpf(p.table_bounds.position.y, p.table_bounds.end.y, 0.80 if side < 0 else 0.24)
+  var edge := scenery_side_edge(p, side, y, 105.0)
+  var at: Vector3 = p.map_point(Vector2(edge + side * 160.0, y), -4.56)
+  _library.box(terraces, "stone", at - Vector3.UP * 0.12, Vector3(2.1, 0.24, 2.1))
+  _house(terraces, at, Vector3(1.35, 3.21, 1.20), 0 if side < 0 else 1)
+  var prop := _library.build_variant("hedge_planter") as Node3D
+  terraces.add_child(prop)
+  prop.position = at + Vector3(0, 0, 0.88)
  await _batch_city(terraces, p)
 
 func _collect_meshes(node: Node3D, transform: Transform3D, batches: Dictionary) -> void:

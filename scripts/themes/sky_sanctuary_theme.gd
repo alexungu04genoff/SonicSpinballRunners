@@ -74,34 +74,58 @@ func build_background(p: Node3D) -> void:
    cloud.material_override = cloud_mat
    cloud.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  await _batch(clouds, p)
+ _orbital_silhouette(root, center + Vector3(-width * 0.5 - 11.0, 1.0, -length * 0.5 - 24.0))
+
+func build_edges(p: Node3D) -> void:
  var ruins := Node3D.new()
  ruins.name = "FloatingRuins"
- root.add_child(ruins)
- # Open sky between asymmetrical islands is as important as the stone silhouette.
- for i in 10:
+ p.scenery_root.add_child(ruins)
+ # Two broken vertical ruins follow each Act's local silhouette,
+ # with cloud gaps instead of platform-like patios alongside the playable deck.
+ # Side, longitudinal fraction, variant, scale, yaw, base height, half Z span, X clearance.
+ var landmarks := [
+  [-1, 0.80, "sanctuary_belfry", 1.6, -0.10, -3.0, 0.45, 1.5],
+  [1, 0.24, "sky_aqueduct", 1.5, PI * 0.5 - 0.10, -2.3, 1.8, 0.9],
+ ]
+ for i in landmarks.size():
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  var side := -1.0 if i % 2 == 0 else 1.0
-  var at := center + Vector3(side * (width * 0.5 + 4.5 + (i % 3) * 3.4), -4.8 - (i % 3) * 1.1, (float(i / 2) - 2.0) * maxf(5.2, length * 0.28))
+  var spec: Array = landmarks[i]
+  var side: int = spec[0]
+  var y := lerpf(p.table_bounds.position.y, p.table_bounds.end.y, spec[1])
+  var edge := scenery_side_edge(p, side, y, spec[6] / p.SCALE)
+  var at: Vector3 = p.map_point(Vector2(edge, y), spec[5]) + Vector3(side * spec[7], 0, 0)
   var island := Node3D.new()
   island.name = "FloatingRuin%d" % i
   island.position = at
-  island.rotation.y = -0.18 + i * 0.23
+  island.rotation.y = spec[4]
   ruins.add_child(island)
-  var variant: String = ["sanctuary_belfry", "sky_aqueduct", "broken_colonnade"][i % 3]
-  var prop: Node3D = _library.build_variant(variant)
+  var variant: String = spec[2]
+  var prop := _floating_fragment(variant)
   island.add_child(prop)
-  prop.scale = Vector3.ONE * (1.6 + (i % 3) * 0.35)
-  # Tapered broken undersides and detached masonry avoid modern building masses.
-  var underside: MeshInstance3D = _library.piece(island, "cone", "shadow", Vector3(0, -1.35, 0), Vector3(1.65, 2.7, 0.92))
-  underside.rotation.z = PI
-  _library.box(island, "stone", Vector3(0, -0.17, 0), Vector3(3.7, 0.34, 1.8))
-  for j in 3:
+  prop.scale = Vector3.ONE * float(spec[3])
+  # Detached narrow masonry signals a broken floating ruin, not a landing deck.
+  for j in 2:
    if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-   var fragment: MeshInstance3D = _library.box(island, "warm", Vector3(1.9 + j * 0.48, -0.8 - j * 0.62, 0.35), Vector3.ONE * (0.38 - j * 0.06))
+   var fragment: MeshInstance3D = _library.box(island, "warm", Vector3(side * (0.55 + j * 0.48), -0.8 - j * 0.62, 0.15), Vector3(0.25, 0.55, 0.25))
    fragment.rotation = Vector3(j * 0.3, j * 0.7, 0.25)
-  _atmosphere(island, 0.22 + (i % 3) * 0.10)
+  _atmosphere(island, 0.08)
  await _batch(ruins, p)
- _orbital_silhouette(root, center + Vector3(-width * 0.5 - 11.0, 1.0, -length * 0.5 - 24.0))
+
+func _floating_fragment(variant: String) -> Node3D:
+ # Reuse the existing masonry builders without the decor variants' broad bases.
+ var root := Node3D.new()
+ if variant == "sanctuary_belfry":
+  for side: int in [-1, 1]:
+   _library.column(root, Vector3(side * 0.35, 0, 0), 1.40, 0.16, true)
+  _library.box(root, "warm", Vector3(0, 1.53, 0), Vector3(1.22, 0.16, 0.34))
+  _library.arch(root, Vector3(0, 1.65, 0), 0.78, 0.75, 0.30, true)
+  _library.vine(root, Vector3(0.46, 1.52, 0.19), 1.10)
+ else:
+  for side: int in [-1, 1]:
+   _library.arch(root, Vector3(side * 0.72, 0, 0), 1.40, 1.1, 0.30, side > 0)
+  _library.box(root, "warm", Vector3(-0.45, 1.20, 0), Vector3(1.85, 0.14, 0.32))
+  _library.vine(root, Vector3(-0.95, 1.20, 0.19), 0.76)
+ return root
 
 func _atmosphere(node: Node3D, amount: float) -> void:
  if node is MeshInstance3D:

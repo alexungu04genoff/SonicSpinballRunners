@@ -80,24 +80,11 @@ func build_background(p: Node3D) -> void:
  var water := PlaneMesh.new()
  water.size = Vector2(180, 180)
  p.mesh_node(water, _shader(LIQUID), center + Vector3(0, -2.45, 0), root)
- var width: float = p.table_bounds.size.x * p.SCALE
- var length: float = p.table_bounds.size.y * p.SCALE
- # Towers sit beyond the table's lateral silhouette, with a lower reservoir gap.
- # Layers use deterministic dimensions and never consume the gameplay RNG.
- for side: int in [-1, 1]:
-  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  for i in 5:
-   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-   var base := center + Vector3(side * (width * 0.5 + 4.7 + float(i % 2) * 1.6), -2.0, -length * 0.55 + i * maxf(2.6, length * 0.27))
-   _silo(p, root, base, 1.1 + float(i % 2) * 0.2, 3.4 + float(i % 3) * 0.65, i)
-   if i < 4:
-    var finish := base + Vector3(0, 0, maxf(2.6, length * 0.27))
-    _pipe(p, root, base + Vector3(0, 0.8, 0), finish + Vector3(0, 0.8, 0), 0.19, _blue)
  # Far processing district: broad silhouettes, sparse strips, no noisy windows.
- for i in 9:
+ for i in 5:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var height := 3.5 + float((i * 7) % 5) * 0.65
-  var at := Vector3(center.x + (i - 4) * 3.0, -2.0, p.table_bounds.position.y * p.SCALE - 10.0 - (i % 2) * 3.0)
+  var at := Vector3(center.x + (i - 2) * 4.0, -2.0, p.table_bounds.position.y * p.SCALE - 7.0 - (i % 2) * 3.0)
   _box(p, root, at + Vector3(0, height * 0.5, 0), Vector3(1.6, height, 1.7), _dark)
   for row in 3:
    if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
@@ -107,20 +94,22 @@ func build_background(p: Node3D) -> void:
   _box(p, root, stack + Vector3(0, 1.35, 0), Vector3(0.17, 0.10, 0.17), _signal)
 
 func build_edges(p: Node3D) -> void:
- # A few external utility platforms echo authored slots without scattering onto
- # gameplay surfaces. Their anchors remain entirely outside the terrain bounds.
- var count := clampi(int(p.table_bounds.size.y / 260.0), 2, 8)
- for i in count:
+ # One tank and a short pipe run on each side follow the local bend. Long
+ # straight spines would recreate the invisible bounding-box gap on curved Acts.
+ var root: Node3D = p.scenery_root
+ for side: int in [-1, 1]:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  var y: float = p.table_bounds.position.y + (i + 0.5) * p.table_bounds.size.y / count
-  var edge: Vector2 = p._boundary_at_y(y)
-  if not is_finite(edge.x): continue
-  for side: int in [-1, 1]:
-   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-   var x: float = (edge.x if side < 0 else edge.y) + side * 165.0
-   var base: Vector3 = p.map_point(Vector2(x, y), -1.5)
-   _box(p, p.scenery_root, base, Vector3(1.1, 0.24, 1.05), _steel)
-   _silo(p, p.scenery_root, base + Vector3(0, 0.12, 0), 0.35, 1.25 + (i % 2) * 0.3, i)
+  var y := lerpf(p.table_bounds.position.y, p.table_bounds.end.y, 0.80 if side < 0 else 0.24)
+  var radius := 0.85
+  var edge := scenery_side_edge(p, side, y, radius * 1.08 / p.SCALE)
+  var base: Vector3 = p.map_point(Vector2(edge + side * (radius * 1.08 / p.SCALE + 35.0), y), -2.2)
+  _silo(p, root, base, radius, 3.1, 0 if side < 0 else 1)
+  var pipe_x := edge + side * 38.0
+  _pipe(p, root, p.map_point(Vector2(pipe_x, y - 65.0), -1.35), p.map_point(Vector2(pipe_x, y + 65.0), -1.35), 0.18, _blue)
+  _pipe(p, root, base + Vector3.UP * 0.85, p.map_point(Vector2(pipe_x, y), -1.35), 0.16, _steel)
+ # These external silhouettes do not need to cast into the playable lanes.
+ for mesh: GeometryInstance3D in p.scenery_root.find_children("*", "GeometryInstance3D", true, false):
+  mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 func build_study(p: Node3D, parent: Node3D, origin: Vector3) -> void:
  parent.position = origin

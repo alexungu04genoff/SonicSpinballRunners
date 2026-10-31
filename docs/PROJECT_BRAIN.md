@@ -3114,6 +3114,12 @@ The lab now saves atmosphere drafts too: procedural sky colors/blends, Lava's so
 
 Alex's smooth BadnikFramework example is useful architectural context: distance-limited activity, selective shadow casting and often one or zero directional shadow maps can explain why a visibly bigger scene need not cost more CPU. Its checked-in Mobile feature tag is not proof of the exported desktop renderer, and an occlusion checkbox is not measured occlusion benefit. No framework copy, gameplay-physics culling or language migration follows from that comparison. Prefer the Vulkan presentation/preparation decision before another large culling project. Full evidence and caveats live in [PERFORMANCE.md](PERFORMANCE.md); manual controls and saved-preset behavior are in [LIGHTING_LAB.md](LIGHTING_LAB.md).
 
+# LOCAL ENVIRONMENT FRAMING — 2026-10-31
+
+Alex approved close left/right edge views using the Prototype tilt and zoom as the scenery baseline. These are review pans, not a gameplay camera change. The big catch was the shared backdrop's synthetic 600×1800 rectangle: even a good boundary helper there cannot follow Reverse C's real curve. Local `build_edges()` scenery now bakes against each Act's actual outline and travels with that Act in the existing Zone background viewport. Far scenery stays shared. Version-7 recipes keep those records separate during batching and retire them with the Act; no live geometry rebuild or new viewport is involved.
+
+Green Hill has low coastal headlands plus small-island variety; Ice's aurora follows the course sides; Sky uses broken vertical ruins with cloud gaps instead of patios; Chemical has close tanks and short pipes. Casino landmarks and Rooftop facades also use local edges. Aquarium and Lava composition remain untouched. The small before/after edge samples are approximately neutral in draws/GPU time, not evidence of a universal FPS gain. Both bake pools need refreshing. Details and the agreed review setup are in [ENVIRONMENT_FRAMING.md](ENVIRONMENT_FRAMING.md).
+
 # REPOSITORY SNAPSHOT AND COMMIT HISTORY — KEEP THIS LAST
 
 ## Current repository context — cleanup and first performance pass, 2026-10-30

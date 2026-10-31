@@ -7,6 +7,7 @@ var document: Resource
 var runtime: Dictionary
 var root := Node2D.new()
 var visual := Node3D.new()
+var background_visual: Node3D
 var nodes: Array[Node] = []
 var prepared_nodes: Array[Node] = []
 var recipe: RefCounted
@@ -43,6 +44,13 @@ func initialize(owner_game: Node, entry: Dictionary, library: Node) -> void:
  root.process_mode = Node.PROCESS_MODE_DISABLED
  game.world.add_child(root)
  game.presentation.add_child(visual)
+ background_visual = Node3D.new()
+ background_visual.name = root.name + "LocalScenery"
+ var backdrop: Node3D = game.backgrounds[plan.zone].root
+ background_visual.position = visual.position - backdrop.position
+ background_visual.visible = false
+ background_visual.process_mode = Node.PROCESS_MODE_DISABLED
+ backdrop.add_child(background_visual)
  var mechanics := Mechanics.new()
  mechanics.ball = game.ball
  mechanics.bind_ball_on_ready = false
@@ -58,12 +66,13 @@ func step() -> void:
   1: _object_step()
   2:
    if index < recipe.records.size():
+    var target: Node = background_visual if recipe.records[index].get("background", false) else visual
     if prepared_nodes.is_empty():
-     recipe.instantiate_one(index, nodes, visual)
+     recipe.instantiate_one(index, nodes, target)
     else:
      var node: Node = prepared_nodes[index]
      var parent: int = recipe.records[index].parent
-     (visual if parent < 0 else nodes[parent]).add_child(node)
+     (target if parent < 0 else nodes[parent]).add_child(node)
      nodes.append(node)
     index += 1
    else:
@@ -75,6 +84,8 @@ func step() -> void:
    root.process_mode = Node.PROCESS_MODE_PAUSABLE
    visual.process_mode = Node.PROCESS_MODE_PAUSABLE
    visual.visible = true
+   background_visual.process_mode = Node.PROCESS_MODE_INHERIT
+   background_visual.visible = true
    ready = true
    phase = 4
 
