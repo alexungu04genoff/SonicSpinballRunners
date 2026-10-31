@@ -117,24 +117,28 @@ func build_background(p: Node3D) -> void:
   p.scenery_root.add_child(sconce)
 
 func build_edges(p: Node3D) -> void:
- # One landmark per side follows the local silhouette, including narrow bends.
- # Keep the palace and distant skyline in the shared Zone background.
+ # Bounded existing landmarks follow the local silhouette; palace/skyline stay shared.
  var local := Node3D.new()
  local.name = "LocalCasinoLandmarks"
  p.scenery_root.add_child(local)
- for side: int in [-1, 1]:
+ var layout := scenery_layout(p)
+ var variants := ["star_lantern", "reel_tower", "casino_pylon"]
+ for plan: Dictionary in layout.plans([{"side": -1, "at": 0.84}, {"side": 1, "at": 0.24}]):
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  var y := lerpf(p.table_bounds.position.y, p.table_bounds.end.y, 0.84 if side < 0 else 0.24)
-  var edge := scenery_side_edge(p, side, y, 65.0)
-  var at: Vector3 = p.map_point(Vector2(edge + side * 115.0, y), -2.1)
-  var tower: Node3D = _library.build_variant("star_lantern" if side < 0 else "reel_tower")
-  local.add_child(tower)
-  tower.position = at
-  tower.scale = Vector3.ONE * 1.65
-  var palm: Node3D = _library.build_variant("neon_palm")
-  local.add_child(palm)
-  palm.position = at + Vector3(side * 0.95, 0, 0.6)
-  palm.scale = Vector3.ONE * 1.3
+  var group := Node3D.new()
+  local.add_child(group)
+  var variant := layout.choice("landmark/" + str(plan.id), plan.id % 2, variants.size())
+  var tower: Node3D = _library.build_variant(variants[variant])
+  group.add_child(tower)
+  tower.scale = Vector3.ONE * layout.varied("scale/" + str(plan.id), 1.65, 0.12)
+  tower.rotation.y = layout.varied("yaw/" + str(plan.id), 0.0, 0.14)
+  if layout.density >= 0.75:
+   var palm: Node3D = _library.build_variant("neon_palm")
+   group.add_child(palm)
+   palm.position = Vector3(plan.side * 0.95, 0, 0.6)
+   palm.scale = Vector3.ONE * 1.3
+  if not layout.place_group(p, group, plan.side, plan.at, 45.0, -2.1): group.free()
+ p.scenery_group_count = layout.occupied.size()
  await _batch_background(local, p)
 
 func ramp_materials() -> Dictionary:

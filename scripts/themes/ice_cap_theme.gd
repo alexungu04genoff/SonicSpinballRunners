@@ -60,42 +60,33 @@ func build_edges(p: Node3D) -> void:
  var landscape := Node3D.new()
  landscape.name = "WinterLandscape"
  root.add_child(landscape)
- # A pair of close ridge groups frames each Act. Shared vertex-color
- # material and fewer silhouettes replace the ring of remote mountain pairs.
+ var layout := scenery_layout(p)
  var mountain_material := StandardMaterial3D.new()
  mountain_material.vertex_color_use_as_albedo = true
  mountain_material.cull_mode = BaseMaterial3D.CULL_DISABLED
  mountain_material.roughness = 1.0
- var ridges := [[-1, 0.82, 4.5, 2.4], [1, 0.24, 4.0, 2.2]]
- for i in ridges.size():
+ var plans := layout.plans([{"side": -1, "at": 0.80, "height": 4.5, "radius": 2.4}, {"side": 1, "at": 0.24, "height": 4.0, "radius": 2.2}])
+ for plan: Dictionary in plans:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  var spec: Array = ridges[i]
-  var side: int = spec[0]
-  var y := lerpf(p.table_bounds.position.y, p.table_bounds.end.y, spec[1])
-  var radius: float = spec[3]
-  var half_span := radius * 0.67
-  var edge := scenery_side_edge(p, side, y, half_span / p.SCALE)
-  var at: Vector3 = p.map_point(Vector2(edge, y), -4.0) + Vector3(side * (radius + 0.8), 0, 0)
-  _mountain(landscape, at, spec[2], radius, mountain_material)
- # Snow shelves and crystal pairs sit close to the local course envelope. Their
- # tops remain below the playfield; alternating groups leave open frozen water.
- for i in 2:
-  if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  var side := -1 if i % 2 == 0 else 1
-  var fraction := 0.78 if side < 0 else 0.25
-  var y := lerpf(p.table_bounds.position.y, p.table_bounds.end.y, fraction)
-  var edge := scenery_side_edge(p, side, y, 1.45 / p.SCALE)
-  var at: Vector3 = p.map_point(Vector2(edge, y), -2.1) + Vector3(side * 2.2, 0, 0)
-  _library.piece(landscape, "facet", "ice", at, Vector3(1.65, 0.9, 1.45))
-  _library.piece(landscape, "sphere", "snow", at + Vector3.UP * 0.49, Vector3(1.55, 0.13, 1.35))
-  if i % 3 == 0:
-   _library.pine(landscape, at + Vector3.UP * 0.55, 2.2, 0.70)
+  var group := Node3D.new()
+  landscape.add_child(group)
+  var side: int = plan.side
+  var radius := layout.varied("ridge radius/" + str(plan.id), plan.radius, 0.18)
+  _mountain(group, Vector3(side * (radius + 0.8), 0, 0), layout.varied("ridge height/" + str(plan.id), plan.height, 0.35), radius, mountain_material)
+  # Shelves stay below the course. Trees/crystals use the existing vocabulary.
+  var at := Vector3(side * 2.2, 1.9, 0)
+  _library.piece(group, "facet", "ice", at, Vector3(1.65, 0.9, 1.45))
+  _library.piece(group, "sphere", "snow", at + Vector3.UP * 0.49, Vector3(1.55, 0.13, 1.35))
+  if layout.choice("shelf/" + str(plan.id), plan.id % 2, 2) == 0:
+   _library.pine(group, at + Vector3.UP * 0.55, 2.2, 0.70)
   else:
-   _library.crystal(landscape, at + Vector3(-0.35, 0.55, -0.20), 2.5, 0.45, -0.14, false)
-   _library.crystal(landscape, at + Vector3(0.45, 0.55, 0.25), 1.6, 0.35, 0.18, false)
- var arch_y := lerpf(p.table_bounds.position.y, p.table_bounds.end.y, 0.80)
- var arch_edge := scenery_side_edge(p, -1, arch_y, 1.0 / p.SCALE)
- _library.arch(landscape, p.map_point(Vector2(arch_edge, arch_y), -2.0) + Vector3(-3.0, 0, 0), 4.2, 3.6, 1.8)
+   _library.crystal(group, at + Vector3(-0.35, 0.55, -0.20), 2.5, 0.45, -0.14, false)
+   if layout.density >= 0.75:
+    _library.crystal(group, at + Vector3(0.45, 0.55, 0.25), 1.6, 0.35, 0.18, false)
+  if plan.id == 0 and layout.density >= 1.0:
+   _library.arch(group, Vector3(side * 3.0, 2.0, 0), 4.2, 3.6, 1.8)
+  if not layout.place_group(p, group, side, plan.at, 55.0, -4.0): group.free()
+ p.scenery_group_count = layout.occupied.size() + 2
  await _batch(landscape, p)
  var aurora := Node3D.new()
  aurora.name = "AuroraCurtains"

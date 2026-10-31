@@ -4,6 +4,9 @@ extends TablePresentation
 const DecorSlots = preload("res://scripts/act_editor/decor_slots.gd")
 const GreenHillTheme = preload("res://scripts/themes/green_hill_theme.gd")
 const TerrainBorder = preload("res://scripts/themes/terrain_border.gd")
+const ScenerySettings = preload("res://scripts/themes/scenery_settings.gd")
+var scenery_settings := {"seed": 0, "density": 1.0}
+var scenery_group_count := 0
 var theme_definition: RefCounted
 ## Replace this skin with another DecorSkin to reuse an Act's generic slots.
 var decor_skin: RefCounted
@@ -28,6 +31,32 @@ const LAND_DEPTH := 1.45
 func _init() -> void:
  # Streaming injects an already cached theme before building any visual nodes.
  if not has_method("stream_checkpoint"): theme_definition = GreenHillTheme.new()
+
+func rebuild_playfield(playfield: RefCounted) -> void:
+ scenery_settings = ScenerySettings.read(playfield.document.resource_path, theme_definition.theme_id)
+ super.rebuild_playfield(playfield)
+
+func rebuild_local_scenery(values: Dictionary) -> void:
+ # Authoring preview replaces only disposable local background nodes. Shared
+ # far scenery, terrain, camera, ball, rings and gameplay runtime retain identity.
+ scenery_settings = values.duplicate()
+ for child: Node in scenery_root.get_children():
+  if child.get_meta("atmosphere_scenery", "") == "local":
+   scenery_root.remove_child(child)
+   child.free()
+ _build_local_scenery()
+ if theme_definition.has_method("combine_static_scenery"):
+  theme_definition.combine_static_scenery.call_deferred(self)
+
+func _build_local_scenery() -> void:
+ scenery_group_count = 0
+ theme_definition.build_edges(self)
+ for child: Node in scenery_root.get_children():
+  if child.has_meta("atmosphere_scenery"): continue
+  child.set_meta("atmosphere_scenery", "local")
+  if child is GeometryInstance3D: child.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+  for visual: GeometryInstance3D in child.find_children("*", "GeometryInstance3D", true, false):
+   visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 func _clear_playfield_geometry() -> void:
  super._clear_playfield_geometry()
@@ -203,9 +232,7 @@ func _finish_terrain_skin() -> void:
  theme_definition.configure_environment(self)
  theme_definition.build_background(self)
  for child: Node in scenery_root.get_children(): child.set_meta("atmosphere_scenery", "far")
- theme_definition.build_edges(self)
- for child: Node in scenery_root.get_children():
-  if not child.has_meta("atmosphere_scenery"): child.set_meta("atmosphere_scenery", "local")
+ _build_local_scenery()
  camera.far = maxf(camera.far, 180.0)
 
 func _floor_line(_a: Vector2, _b: Vector2, _mat: Material) -> void:

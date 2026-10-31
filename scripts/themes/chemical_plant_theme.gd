@@ -99,16 +99,21 @@ func build_edges(p: Node3D) -> void:
  # One tank and a short pipe run on each side follow the local bend. Long
  # straight spines would recreate the invisible bounding-box gap on curved Acts.
  var root: Node3D = p.scenery_root
- for side: int in [-1, 1]:
+ var layout := scenery_layout(p)
+ for plan: Dictionary in layout.plans([{"side": -1, "at": 0.80}, {"side": 1, "at": 0.24}]):
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  var y := lerpf(p.table_bounds.position.y, p.table_bounds.end.y, 0.80 if side < 0 else 0.24)
-  var radius := 0.85
-  var edge := scenery_side_edge(p, side, y, radius * 1.08 / p.SCALE)
+  var side: int = plan.side
+  var radius := layout.varied("radius/" + str(plan.id), 0.85, 0.10)
+  var span := maxf(radius * 1.08 / p.SCALE, 65.0 + 0.18 / p.SCALE)
+  var y := layout.fit(p.table_bounds, side, lerpf(p.table_bounds.position.y, p.table_bounds.end.y, plan.at), span)
+  if not is_finite(y): continue
+  var edge := scenery_side_edge(p, side, y, span)
   var base: Vector3 = p.map_point(Vector2(edge + side * (radius * 1.08 / p.SCALE + 35.0), y), -2.2)
-  _silo(p, root, base, radius, 3.1, 0 if side < 0 else 1)
+  _silo(p, root, base, radius, layout.varied("height/" + str(plan.id), 3.1, 0.35), layout.choice("tank/" + str(plan.id), plan.id % 2, 2))
   var pipe_x := edge + side * 38.0
   _pipe(p, root, p.map_point(Vector2(pipe_x, y - 65.0), -1.35), p.map_point(Vector2(pipe_x, y + 65.0), -1.35), 0.18, _blue)
   _pipe(p, root, base + Vector3.UP * 0.85, p.map_point(Vector2(pipe_x, y), -1.35), 0.16, _steel)
+ p.scenery_group_count = layout.occupied.size()
  # These external silhouettes do not need to cast into the playable lanes.
  for mesh: GeometryInstance3D in p.scenery_root.find_children("*", "GeometryInstance3D", true, false):
   mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

@@ -27,6 +27,7 @@ func run() -> void:
   var saved := Bake.new()
   saved.source_fingerprint = document.fingerprint()
   saved.theme_id = "green_hill"
+  saved.scenery_fingerprint = Bake.ScenerySettings.signature(path, saved.theme_id)
   saved.physics_validated = true
   saved.pipeline_fingerprint = Bake.pipeline_hash(saved.theme_id)
   for item: Dictionary in original.terrain:

@@ -3221,3 +3221,11 @@ Polished combo presentation and Buzz facing.
 `Add Shift-wheel patrol sizing for Buzz Bomber`
 
 Improved enemy patrol authoring.
+
+## Seed + density scenery authoring — 2026-10-31
+
+Lighting Lab gained a Scenery tab: pick Act/theme, Randomize or enter seed, choose Sparse through Very Dense, inspect the approved left/right gameplay views, save, then bake. This is the small art-direction layer before any future manual placement editor. No gizmos or production gameplay controls.
+
+One adjacent `.scenery.cfg` per Act holds compact per-theme inputs. Geometry stays independent; remember to copy that sidecar when an Act copy should inherit its scenery. Six themes use existing landmark vocabulary; Aquarium/Lava remain fixed. Dedicated per-role RNG streams never touch gameplay RNG. Three main groups maximum, conservative footprint/spacing checks, bounded accents, shadowless local scenery and no new lights. Ice aurora still follows the contour. Shared far scenery remains Zone-owned.
+
+Bake v8 adds a separate scenery receipt: a settings edit stales only that Act/theme visual recipe and leaves geometry validation reusable. Source changes still use the normal pipeline hash. Runtime has no new procedural work. See [Scenery authoring](SCENERY_AUTHORING.md) for ownership and checks.

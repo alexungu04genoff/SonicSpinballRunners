@@ -28,7 +28,7 @@ name="Prototype"
 platform="Windows Desktop"
 runnable=true
 export_filter="all_resources"
-include_filter="assets/**/*.png,scripts/**/*.gd,scripts/**/*.gdshader,scripts/**/*.gdshaderinc"
+include_filter="assets/**/*.png,scripts/**/*.gd,scripts/**/*.gdshader,scripts/**/*.gdshaderinc,data/**/*.scenery.cfg"
 exclude_filter="addons/prototype_export/*"
 script_export_mode=0
 

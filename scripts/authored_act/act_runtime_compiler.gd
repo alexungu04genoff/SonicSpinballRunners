@@ -20,7 +20,7 @@ static func compile_baked(document: Resource, tuning: PhysicsTuning, controls: P
  # is reusable only with the exact document, engine and validation dependencies.
  if document == null or document.get_script() != Document or not bake is Bake or current_pipeline.is_empty():
   return {"root": null, "error": "A verified full Act bake is required."}
- if not bake.matches(document, bake.theme_id, current_pipeline) or not bake.has_validated_collisions(document):
+ if not bake.matches_geometry(document, bake.theme_id, current_pipeline) or not bake.has_validated_collisions(document):
   return {"root": null, "error": "Act validation is missing or stale. Run Bake Endless.cmd."}
  return _compile(document, tuning, controls, ball, bake.collisions, true)
 

@@ -84,45 +84,53 @@ func build_edges(p: Node3D) -> void:
  var width_scale := clampf(bounds.size.x / 600.0, 0.75, 1.35)
  var sand := material(Color("dfc179"))
  var decor := GreenHillDecor.new(p)
- var headlands := [
+ var layout := scenery_layout(p)
+ var headlands := layout.plans([
   {"name": "PalmHeadland", "side": -1, "at": 0.80, "span": 0.16, "width": 150.0},
   {"name": "LoopPromontory", "side": 1, "at": 0.24, "span": 0.18, "width": 170.0},
- ]
+ ])
  for i: int in headlands.size():
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var plan: Dictionary = headlands[i]
   var side: int = plan.side
-  var radius := Vector2(float(plan.width) * width_scale, maxf(85.0, bounds.size.y * float(plan.span)))
-  var y := bounds.position.y + bounds.size.y * float(plan.at)
+  var radius := Vector2(float(plan.width) * width_scale * layout.varied("width/" + str(i), 1.0, 0.10), maxf(85.0, bounds.size.y * float(plan.span)))
+  var y := layout.fit(bounds, side, bounds.position.y + bounds.size.y * float(plan.at), radius.y * 1.12)
+  if not is_finite(y): continue
   # Include the beach and the full longitudinal prop footprint at curved edges.
   var edge := scenery_side_edge(p, side, y, radius.y * 1.12)
   var center := Vector2(edge + side * (55.0 + radius.x), y)
   var root := _coastal_landform(p, center, radius, i, side, sand)
   root.name = plan.name
   var near_shore := center + Vector2(-side * (radius.x - 55.0), radius.y * 0.36)
-  if i == 1:
+  if i == layout.choice("loop", 1, 2):
    # Reuse the existing collisionless landmark; this is scenery, not a new lane.
    var loop: Node3D = decor.factory.call("turf_loop")
    root.add_child(loop)
    loop.position = TablePresentation.map_point(center + Vector2(-side * radius.x * 0.1, radius.y * 0.42), -1.4)
    loop.scale = Vector3.ONE * 0.9
-   loop.rotation.y = -0.18
+   loop.rotation.y = layout.varied("loop yaw", -0.18, 0.18)
   else:
    _palm(p, TablePresentation.map_point(near_shore, -1.4), side, 0.95 if i == 0 else 0.85, root)
-  _flower(p, TablePresentation.map_point(near_shore + Vector2(side * 12.0, -radius.y * 0.42), -1.4), 0.85, root)
+  if layout.density >= 0.75:
+   _flower(p, TablePresentation.map_point(near_shore + Vector2(side * 12.0, -radius.y * 0.42), -1.4), 0.85, root)
+  if layout.density > 1.0:
+   _rock(p, TablePresentation.map_point(center + Vector2(side * 22, -radius.y * 0.25), -1.4), 0.20)
  # Keep a few of the original small flower/rock islands for scale and variety,
  # deliberately placed in the gaps instead of repeating them along every edge.
- var islets := [Vector3(1, 0.72, 44)]
+ var islets := [Vector3(1, 0.72, 44)] if layout.density >= 1.0 else []
+ if layout.density >= 1.25: islets.append(Vector3(-1, 0.46, 36))
  for i: int in islets.size():
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var spec: Vector3 = islets[i]
-  var side := int(spec.x)
-  var y := bounds.position.y + bounds.size.y * spec.y
+  var side := int(spec.x) * (-1 if layout.choice("islet side", 0, 2) == 1 else 1)
+  var y := layout.fit(bounds, side, bounds.position.y + bounds.size.y * layout.varied("islet/" + str(i), spec.y, 0.06), spec.z + 20.0)
+  if not is_finite(y): continue
   var edge := scenery_side_edge(p, side, y, spec.z + 20.0)
   var center := Vector2(edge + side * (70.0 + spec.z), y)
   _small_coastal_islet(p, center, spec.z, i)
   _flower(p, TablePresentation.map_point(center + Vector2(-side * 12, -5), -0.8), 0.78)
   _rock(p, TablePresentation.map_point(center + Vector2(side * 18, 16), -0.8), 0.22)
+ p.scenery_group_count = layout.occupied.size()
  # Background landmarks do not need additional shadow submissions. Streamed
  # backdrops also retain their existing non-shadow-casting directional light.
  for visual: GeometryInstance3D in p.scenery_root.find_children("*", "GeometryInstance3D", true, false):

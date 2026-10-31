@@ -1,5 +1,6 @@
 extends CanvasLayer
-## Lab-only values. No production settings, source resources, or bake files are saved.
+## Atmosphere presets are lab-only; scenery inputs are authored Act/theme data.
+const SceneryControls := preload("res://experiments/lighting_lab/scenery_controls.gd")
 const EmissionPreview := preload("res://experiments/lighting_lab/emission_preview.gd")
 const LightingLooks := preload("res://experiments/lighting_lab/lighting_looks.gd")
 # Label, property, kind; numeric rows also carry minimum, maximum and step.
@@ -42,6 +43,7 @@ const GROUPS := {
   ["Shadow distance", "sun/directional_shadow_max_distance", "number", 10.0, 500.0, 1.0],
   ["Shadow maps", "sun/directional_shadow_mode", "shadow"],
  ],
+ "Scenery": [],
 }
 const PROCEDURAL_SKY_FIELDS := [
  ["Sky top", "sky/sky_top_color", "color"],
@@ -63,6 +65,9 @@ var retro: CheckButton
 var vsync: CheckButton
 var performance_label: Label
 var fps_overlay: Label
+var tabs: TabContainer
+var scenery: VBoxContainer
+var save_button: Button
 var sky_controls: VBoxContainer
 var palette_controls: VBoxContainer
 var palette_fields: Array = []
@@ -174,7 +179,7 @@ func _build_ui() -> void:
  compare.focus_mode = Control.FOCUS_NONE
  compare.toggled.connect(func(_enabled: bool): apply_values())
  column.add_child(compare)
- var tabs := TabContainer.new()
+ tabs = TabContainer.new()
  tabs.tab_alignment = TabBar.ALIGNMENT_LEFT
  tabs.add_theme_font_size_override("font_size", 12)
  tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -189,6 +194,10 @@ func _build_ui() -> void:
   controls.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   controls.add_theme_constant_override("separation", 8)
   scroll.add_child(controls)
+  if group == "Scenery":
+   scenery = SceneryControls.new()
+   controls.add_child(scenery)
+   scenery.install(self)
   if group == "Sky": sky_controls = controls
   if group == "Palette": palette_controls = controls
   for spec: Array in GROUPS[group]: _field(controls, spec)
@@ -200,10 +209,20 @@ func _build_ui() -> void:
    controls.add_child(note)
  var actions := HBoxContainer.new()
  column.add_child(actions)
- _button(actions, "Save", save_preset)
- _button(actions, "Reload", reload_preset)
- _button(actions, "Reset", reset_values)
- _button(actions, "Open folder", func(): OS.shell_open(ProjectSettings.globalize_path(settings_path).get_base_dir()))
+ save_button = _button(actions, "Save", func():
+  if _scenery_tab(): scenery.save()
+  else: save_preset()
+ )
+ _button(actions, "Reload", func():
+  if _scenery_tab(): scenery.reload()
+  else: reload_preset()
+ )
+ _button(actions, "Reset", func():
+  if _scenery_tab(): scenery.reset()
+  else: reset_values()
+ )
+ _button(actions, "Open folder", func(): OS.shell_open(ProjectSettings.globalize_path(scenery.act_path if _scenery_tab() else settings_path).get_base_dir()))
+ tabs.tab_changed.connect(func(_index: int): save_button.text = "Save scenery" if _scenery_tab() else "Save")
  message = Label.new()
  message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  message.add_theme_font_size_override("font_size", 12)
@@ -316,6 +335,24 @@ func bind_theme() -> void:
  apply_values()
  caption.text = "ATMOSPHERE / " + {"forward_plus": "Forward+", "mobile": "Mobile", "gl_compatibility": "ANGLE"}.get(renderer, renderer)
  message.text = "Lab preset: " + game.presentation.theme_definition.display_name + "\nSave keeps these values for this renderer only."
+
+ scenery.bind_context()
+
+func _scenery_tab() -> bool:
+ return tabs.get_current_tab_control().name == "Scenery"
+
+func preview_scenery(selected: Dictionary) -> void:
+ restore_original()
+ game.presentation.rebuild_local_scenery(selected)
+ emission.collect(game.presentation, game.theme_id, sky_material)
+ _bind_palette()
+ originals.merge(emission.palette_originals, true)
+ for key: String in emission.palette_originals:
+  if not values.has(key): values[key] = emission.palette_originals[key]
+ _sync_widgets()
+ apply_values()
+ set_scenery_visible("far", show_background_scenery)
+ set_scenery_visible("local", show_local_scenery)
 
 func _bind_sky(environment: Environment) -> void:
  for spec: Array in sky_fields: widgets.erase(spec[1])

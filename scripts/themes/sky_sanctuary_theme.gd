@@ -80,35 +80,32 @@ func build_edges(p: Node3D) -> void:
  var ruins := Node3D.new()
  ruins.name = "FloatingRuins"
  p.scenery_root.add_child(ruins)
- # Two broken vertical ruins follow each Act's local silhouette,
- # with cloud gaps instead of platform-like patios alongside the playable deck.
- # Side, longitudinal fraction, variant, scale, yaw, base height, half Z span, X clearance.
- var landmarks := [
-  [-1, 0.80, "sanctuary_belfry", 1.6, -0.10, -3.0, 0.45, 1.5],
-  [1, 0.24, "sky_aqueduct", 1.5, PI * 0.5 - 0.10, -2.3, 1.8, 0.9],
- ]
- for i in landmarks.size():
+ # Existing broken vertical ruins, with bounded population and open cloud gaps.
+ var layout := scenery_layout(p)
+ var variants := ["sanctuary_belfry", "sky_aqueduct"]
+ var landmarks := layout.plans([
+  {"side": -1, "at": 0.80, "variant": 0, "scale": 1.6, "height": -3.0},
+  {"side": 1, "at": 0.24, "variant": 1, "scale": 1.5, "height": -2.3},
+ ])
+ for plan: Dictionary in landmarks:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  var spec: Array = landmarks[i]
-  var side: int = spec[0]
-  var y := lerpf(p.table_bounds.position.y, p.table_bounds.end.y, spec[1])
-  var edge := scenery_side_edge(p, side, y, spec[6] / p.SCALE)
-  var at: Vector3 = p.map_point(Vector2(edge, y), spec[5]) + Vector3(side * spec[7], 0, 0)
   var island := Node3D.new()
-  island.name = "FloatingRuin%d" % i
-  island.position = at
-  island.rotation.y = spec[4]
+  island.name = "FloatingRuin%d" % plan.id
   ruins.add_child(island)
-  var variant: String = spec[2]
-  var prop := _floating_fragment(variant)
+  var variant := layout.choice("ruin/" + str(plan.id), plan.variant, variants.size())
+  island.rotation.y = layout.varied("yaw/" + str(plan.id), -0.10 if variant == 0 else PI * 0.5 - 0.10, 0.12)
+  var prop := _floating_fragment(variants[variant])
   island.add_child(prop)
-  prop.scale = Vector3.ONE * float(spec[3])
-  # Detached narrow masonry signals a broken floating ruin, not a landing deck.
-  for j in 2:
-   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-   var fragment: MeshInstance3D = _library.box(island, "warm", Vector3(side * (0.55 + j * 0.48), -0.8 - j * 0.62, 0.15), Vector3(0.25, 0.55, 0.25))
+  prop.scale = Vector3.ONE * layout.varied("scale/" + str(plan.id), plan.scale, 0.12)
+  # Detached narrow masonry retains the original broken silhouette.
+  for j in clampi(roundi(2.0 * layout.density), 1, 3):
+   var fragment: MeshInstance3D = _library.box(island, "warm", Vector3(plan.side * (0.55 + j * 0.48), -0.8 - j * 0.62, 0.15), Vector3(0.25, 0.55, 0.25))
    fragment.rotation = Vector3(j * 0.3, j * 0.7, 0.25)
+  if not layout.place_group(p, island, plan.side, plan.at, 45.0, plan.height):
+   island.free()
+   continue
   _atmosphere(island, 0.08)
+ p.scenery_group_count = layout.occupied.size()
  await _batch(ruins, p)
 
 func _floating_fragment(variant: String) -> Node3D:

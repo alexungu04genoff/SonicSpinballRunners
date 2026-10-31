@@ -1,6 +1,7 @@
 extends RefCounted
 ## Presentation-only theme contract. No Act records or gameplay systems live here.
 const Atmosphere := preload("res://scripts/themes/theme_atmosphere.gd")
+const SceneryLayout := preload("res://scripts/themes/scenery_layout.gd")
 var theme_id := ""
 var display_name := ""
 var floor_material: Material
@@ -66,6 +67,9 @@ func build_background(_presentation: Node3D) -> void:
 
 func build_edges(_presentation: Node3D) -> void:
  pass
+
+func scenery_layout(p: Node3D) -> SceneryLayout:
+ return SceneryLayout.new(p.scenery_settings, theme_id)
 
 func scenery_side_edge(p: Node3D, side: int, center_y: float, half_span_y: float = 0.0) -> float:
  # All coordinates are Act pixels. Find the outermost floor edge across a prop's

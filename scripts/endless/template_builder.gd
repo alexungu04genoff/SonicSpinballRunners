@@ -24,6 +24,11 @@ func _build(theme_id: String, id: int) -> void:
  await get_tree().process_frame
  var fingerprint := await _fingerprint(theme_id)
  var bake_path := Bake.path_for(paths[id], theme_id)
+ var scenery := Bake.ScenerySettings.read(paths[id], theme_id)
+ if not scenery.error.is_empty():
+  error = scenery.error + " (" + Bake.ScenerySettings.path_for(paths[id]) + ")"
+  busy = false
+  return
  if not await _prepare_runtime(id):
   busy = false
   return
@@ -45,6 +50,7 @@ func _build(theme_id: String, id: int) -> void:
  _theme_lru.append(theme_id)
  var theme: RefCounted = themes[theme_id]
  var p := Presenter.new()
+ p.scenery_settings = scenery
  p.name = "IncrementalVisualBaker"
  p.ball = _game.ball
  var rings := RingField.new()
@@ -126,6 +132,7 @@ func _build(theme_id: String, id: int) -> void:
     for material: Material in previous.preload_materials: _assets.materials[material.get_instance_id()] = material
   var baked := Bake.new()
   baked.source_fingerprint = documents[id].fingerprint()
+  baked.scenery_fingerprint = Bake.ScenerySettings.signature_for(scenery) if theme_id in Bake.ScenerySettings.THEMES else "fixed"
   baked.pipeline_fingerprint = fingerprint
   baked.theme_id = theme_id
   # Full recipes already contain their meshes. The old raw-geometry dictionary

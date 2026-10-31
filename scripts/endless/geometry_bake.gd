@@ -1,11 +1,13 @@
 extends Resource
 ## Derived data only. Never owns or edits the authored document.
-const VERSION := 7
+const VERSION := 8
+const ScenerySettings := preload("res://scripts/themes/scenery_settings.gd")
 const DEPENDENCIES := ["res://scripts/presentation.gd", "res://scripts/themes/themed_presentation.gd",
  "res://scripts/themes/terrain_border.gd", "res://scripts/endless/template_presenter.gd",
  "res://scripts/authored_act/act_runtime_compiler.gd", "res://scripts/act_dimensions.gd"]
 @export var version := VERSION
 @export var source_fingerprint := ""
+@export var scenery_fingerprint := ""
 @export var pipeline_fingerprint := ""
 @export var theme_id := ""
 @export var geometry_job_count := 0
@@ -62,6 +64,10 @@ static func pipeline_hash(theme: String) -> String:
  return content.sha256_text()
 
 func matches(document: Resource, theme: String, fingerprint := "") -> bool:
+ var scenery := ScenerySettings.signature(document.resource_path, theme)
+ return not scenery.is_empty() and scenery_fingerprint == scenery and matches_geometry(document, theme, fingerprint)
+
+func matches_geometry(document: Resource, theme: String, fingerprint := "") -> bool:
  return kind == "act" and source_fingerprint == document.fingerprint() and matches_pipeline(theme, fingerprint)
 
 func matches_pipeline(theme: String, fingerprint := "") -> bool:

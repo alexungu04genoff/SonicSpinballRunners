@@ -143,18 +143,22 @@ func build_edges(p: Node3D) -> void:
  var terraces := Node3D.new()
  terraces.name = "ExteriorRoofGardens"
  p.scenery_root.add_child(terraces)
- # Two local facades per Act; far canals and skyline remain Zone-wide.
- # Garden props sit beside the houses, never through a roof or window row.
- for side: int in [-1, 1]:
+ # Existing facades/gardens remain local; far canals and skyline stay Zone-wide.
+ var layout := scenery_layout(p)
+ var gardens := ["hedge_planter", "garden_bench", "flower_urn"]
+ for plan: Dictionary in layout.plans([{"side": -1, "at": 0.80}, {"side": 1, "at": 0.24}]):
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  var y := lerpf(p.table_bounds.position.y, p.table_bounds.end.y, 0.80 if side < 0 else 0.24)
-  var edge := scenery_side_edge(p, side, y, 105.0)
-  var at: Vector3 = p.map_point(Vector2(edge + side * 160.0, y), -4.56)
-  _library.box(terraces, "stone", at - Vector3.UP * 0.12, Vector3(2.1, 0.24, 2.1))
-  _house(terraces, at, Vector3(1.35, 3.21, 1.20), 0 if side < 0 else 1)
-  var prop := _library.build_variant("hedge_planter") as Node3D
-  terraces.add_child(prop)
-  prop.position = at + Vector3(0, 0, 0.88)
+  var group := Node3D.new()
+  terraces.add_child(group)
+  _library.box(group, "stone", Vector3(0, -0.12, 0), Vector3(2.1, 0.24, 2.1))
+  _house(group, Vector3.ZERO, Vector3(1.35, layout.varied("height/" + str(plan.id), 3.21, 0.25), 1.20), layout.choice("facade/" + str(plan.id), plan.id % 2, 2))
+  if layout.density >= 0.75:
+   var prop := _library.build_variant(gardens[layout.choice("garden/" + str(plan.id), 0, gardens.size())]) as Node3D
+   group.add_child(prop)
+   prop.position = Vector3(0, 0, 0.88)
+  group.rotation.y = layout.varied("yaw/" + str(plan.id), 0.0, 0.10)
+  if not layout.place_group(p, group, plan.side, plan.at, 50.0, -4.56): group.free()
+ p.scenery_group_count = layout.occupied.size()
  await _batch_city(terraces, p)
 
 func _collect_meshes(node: Node3D, transform: Transform3D, batches: Dictionary) -> void:

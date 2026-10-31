@@ -17,6 +17,10 @@ func _initialize() -> void:
  call_deferred("run")
 
 func run() -> void:
+ var paths: Array = Plan.PATHS
+ if "--prototype" in OS.get_cmdline_user_args():
+  paths = preload("res://scripts/prototype/run_plan.gd").source_paths()
+ check(not paths.is_empty(), "The selected pool contains authored Acts")
  for theme: String in Plan.Registry.IDS:
   var fingerprint := Bake.pipeline_hash(theme)
   var background: Resource = load(Bake.theme_path(theme))
@@ -29,7 +33,7 @@ func run() -> void:
     check(material.get_shader_parameter("relief_normal") == null, "Saved shader omits normal texture: " + theme)
    elif material is BaseMaterial3D:
     check(not material.normal_enabled and not material.heightmap_enabled, "Saved standard material has no relief: " + theme)
-  for path: String in Plan.PATHS:
+  for path: String in paths:
    var document: Resource = Document.load_document(path).document
    var baked: Resource = load(Bake.path_for(path, theme))
    check(baked is Bake and baked.matches(document, theme, fingerprint), "Fresh Act: " + path + " / " + theme)
@@ -39,6 +43,6 @@ func run() -> void:
    check(not baked.collisions.is_empty() and not baked.visual_recipe.records.is_empty(), "Saved Act contains collisions and visual records")
    variants += 1
    await process_frame
- check(variants == Plan.PATHS.size() * Plan.Registry.IDS.size(), "Every published Act/theme variant exists")
+ check(variants == paths.size() * Plan.Registry.IDS.size(), "Every published Act/theme variant exists")
  print("ENDLESS_BAKE_AUDIT | variants=%d checks=%d failures=%d" % [variants, checks, failures])
  quit(1 if failures else 0)
