@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://experiments/lighting_lab/lighting_lab.gd" id="1"]
+
+[node name="LightingLab" type="Node"]
+script = ExtResource("1")
+generation_seed = 18

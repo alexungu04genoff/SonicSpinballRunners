@@ -2,7 +2,10 @@ extends SceneTree
 ## Stationary rendering probe. Diagnostic ablations never change saved settings.
 const Run = preload("res://scripts/prototype/zone_run.gd")
 const HardwareBatch = preload("res://scripts/pinball_mesh_batch.gd")
+const Report = preload("res://tests/render_profile_support.gd")
 var game: Node
+var theme := "green_hill"
+var overview := false
 var mode := "prototype"
 var output := "res://test-results/render-cost.json"
 var ablations := false
@@ -20,6 +23,8 @@ func _initialize() -> void:
 func run() -> void:
  for arg: String in OS.get_cmdline_user_args():
   if arg.begins_with("--profile-mode="): mode = arg.trim_prefix("--profile-mode=")
+  if arg.begins_with("--profile-theme="): theme = arg.trim_prefix("--profile-theme=")
+  if arg == "--profile-overview": overview = true
   if arg.begins_with("--profile-output="): output = arg.trim_prefix("--profile-output=")
   if arg.begins_with("--profile-samples="): samples = maxi(120, int(arg.trim_prefix("--profile-samples=")))
   if arg == "--profile-ablations": ablations = true
@@ -51,19 +56,36 @@ func run() -> void:
   var config := Run.RunPlan.Configuration.new([
    "res://data/acts/Authored/RampMania.tres", "res://data/acts/Authored/Reverse C Spring.tres", "res://data/acts/Authored/Secret Entry.tres"])
   config.zone_count = 1
-  config.selected_theme_ids = ["green_hill"]
+  config.selected_theme_ids = [theme]
   game.run_configuration = config
+ var startup_frames: Array = []
+ var previous := Time.get_ticks_usec()
  root.add_child(game)
+ # Native windows can receive desktop keystrokes while a probe is running.
+ # Keep the served-ball workload stationary without stopping simulation.
+ root.gui_disable_input = true
+ Report.disable_native_input(game)
+ game.controls.input_blocked = true
  if mode != "act":
-  while not game.started and game.library.error.is_empty() and Time.get_ticks_msec() - start < 120000: await process_frame
+  while not game.started and game.library.error.is_empty() and Time.get_ticks_msec() - start < 120000:
+   await process_frame
+   var now := Time.get_ticks_usec()
+   startup_frames.append((now - previous) / 1000.0)
+   previous = now
   if not game.started:
    push_error("Profile startup failed: " + game.library.error)
    quit(1)
    return
  var startup_ms := Time.get_ticks_msec() - start
+ var ready_pipelines := Report.pipelines()
+ var lookahead_frames: Array = []
+ previous = Time.get_ticks_usec()
  var settled := 0
  while settled < 180 and Time.get_ticks_msec() - start < 180000:
   await process_frame
+  var now := Time.get_ticks_usec()
+  lookahead_frames.append((now - previous) / 1000.0)
+  previous = now
   if mode == "act" or (not game.library.busy and game.building == null): settled += 1
   else: settled = 0
  if settled < 180:
@@ -149,6 +171,8 @@ func run() -> void:
   phases.append(await _sample("baseline-return"))
  var report := {"mode": mode, "seed": 18 if mode == "act" else game.run_seed, "samples_per_phase": samples,
   "startup_ms": startup_ms, "settled_at_ms": settled_at_ms,
+  "scene_start_uptime_ms": start, "startup_frames": Report.timing(startup_frames),
+  "lookahead_frames": Report.timing(lookahead_frames), "ready_pipelines": ready_pipelines,
   "window_size": [root.size.x, root.size.y], "world_size": [game.view.size.x, game.view.size.y],
   "physics_ticks": Engine.physics_ticks_per_second, "vsync": DisplayServer.window_get_vsync_mode(),
   "engine": Engine.get_version_info().string, "device": RenderingServer.get_video_adapter_name(),
@@ -159,6 +183,13 @@ func run() -> void:
   "shadow_batching": HardwareBatch.shadow_batch_enabled if mode == "act" else "baked",
   "course": game.course_snapshot() if mode == "prototype" else [],
   "note": "Served ball; no input. Preparation settled before sampling. VSync disabled; 120 Hz physics unchanged. Inventory includes hidden/offscreen stored geometry; rendered counters are in phases. Ablation savings overlap and are not additive."}
+ report.merge(Report.metadata(), true)
+ report["pipelines"] = Report.pipelines()
+ if overview:
+  game.presentation.set_camera_follow(false)
+  for frame in 120: await process_frame
+  await RenderingServer.frame_post_draw
+  root.get_texture().get_image().save_png(output.get_basename() + "-overview.png")
  DirAccess.make_dir_recursive_absolute(output.get_base_dir())
  var file := FileAccess.open(output, FileAccess.WRITE)
  file.store_string(JSON.stringify(report, " "))
@@ -225,6 +256,7 @@ func _hide_category(category: String, hide: bool) -> void:
 
 func _sample(label: String, capture := false) -> Dictionary:
  for frame in 120: await process_frame
+ var pipeline_start := Report.pipelines()
  var rows: Array[Dictionary] = []
  var previous := Time.get_ticks_usec()
  for frame in samples:
@@ -259,6 +291,9 @@ func _sample(label: String, capture := false) -> Dictionary:
    result.frame_p99_ms = values[int(values.size() * 0.99)]
    result.frame_max_ms = values[-1]
  print("RENDER_COST | ", JSON.stringify(result))
+ result["timing"] = Report.timing(rows.map(func(row): return row.frame_ms))
+ result["pipelines_start"] = pipeline_start
+ result["pipelines_end"] = Report.pipelines()
  if capture:
   await RenderingServer.frame_post_draw
   DirAccess.make_dir_recursive_absolute(output.get_base_dir())

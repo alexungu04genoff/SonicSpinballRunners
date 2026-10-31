@@ -374,3 +374,119 @@ Final-code bakes completed for all **40 Prototype and 56 Endless variants**. The
 Rendered full Prototype session checks passed **143/143**; rendered 1- and 7-Zone runs passed **74/74**. The `--require-bakes` Endless smoke passed **256/256** checks across 27 transitions, all published Acts and all eight themes, with zero runtime rebuilds. Its jump-driven sampling reached two resident Acts; the continuous tour and settled view use different sampling and are reported separately. Endless diagnostics still report ObjectDB shutdown warnings (10–11 instances in the final tour/smoke); shutdown ownership is not established as fixed by this pass. Their existing teardown waits for the active load before freeing the scene, while the player/session and startup profiler use the fuller `prepare_to_close` path.
 
 Matched standalone, Prototype and Endless screenshots show no meaningful lost shadows or changed geometry. Animated Rings/enemies and FPS labels differ with capture time. The hardware gallery's exact byte equality is the stronger fixed-pose image comparison. Human playtesting still owns flipper feel, camera readability and polish.
+
+## Renderer bakeoff — 2026-10-31
+
+Starting pushed HEAD: `741ef00edba6df595fc4609aef2bfd1dbf450785`. This investigation uses the live working tree, including Alex's separately owned local art, on Godot 4.7.2 stable `ed1daf0bf`, RTX 4060 and NVIDIA 616.64. The default renderer, production shaders, gameplay, physics and bake source remain unchanged. Renderer selection is a process-local command-line override: Compatibility/ANGLE (D3D11), Forward+/Vulkan or Mobile/Vulkan. Runtime metadata and engine logs verify the actual backend; the saved project setting alone cannot establish it.
+
+### Method and limits
+
+Runs are sequential, using the same retained Prototype/Endless bakes and seed 18. Window size is 1280×900, world size 673×363 for standalone RampMania and 673×473 for streamed modes. Four directional shadow cascades, the 8192 atlas, current light/camera settings, N64/VHS/CRT stack and 120 Hz physics stay enabled. VSync and the frame cap are disabled. The stationary Prototype course uses Reverse C Spring, Secret Entry and RampMania in that seeded order, with three resident Acts. The settled Endless opening has six resident Acts. Rendering inventory is not the same as rendered-object counters.
+
+Each steady comparison has two fresh processes, each with three 600-frame blocks, 120 frames between blocks, and preparation settled before sampling. Tables use the median of six block medians/percentiles; these are not pooled percentiles. Worst frame is the maximum sampled frame across those blocks. Capturing a screenshot can itself stall the next frame by approximately a second; screenshots occur outside samples, with the next settling interval excluding that readback. Startup and lookahead are reported separately. One early ANGLE standalone repeat received native input and moved its camera; it is excluded. Stationary probes now disable native input without stopping simulation, and camera/resolution metadata is checked across accepted samples.
+
+One isolated application profile is reused throughout. It is seeded with the existing Pass 2 shader cache, without copying player settings or telemetry. ANGLE therefore starts with prior cache coverage; Vulkan's initial runs encounter their own first-use preparation. No driver cache is cleared, and no sterile cache experiment is performed. These debug-script startup times are not a replacement for Alex's approximately three-second normal player startup observation. They include this selected three-Act course and preparation path; engine/process initialization precedes the reported scene startup. Raw reports, screenshots, logs and process wall times are retained under ignored `test-results/renderer-bakeoff/`.
+
+Godot's counters do not describe identical passes across renderers. Compatibility reports no useful separate shadow or GPU timing here; zero means unavailable, not free. Forward+ can automatically instance matching opaque meshes and has a depth prepass; Mobile uses a different render path. A lower object/draw counter does not establish that geometry vanished. Compare matched views, resident/inventory counts, frame time and CPU cost together. Summed viewport CPU/GPU timings are diagnostic work measurements, not additive wall-clock frame components. See the official [renderer comparison](https://docs.godotengine.org/en/stable/tutorials/rendering/renderers.html), [automatic instancing](https://docs.godotengine.org/en/stable/tutorials/performance/optimizing_3d_performance.html#use-automatic-instancing) and [pipeline compilation monitors](https://docs.godotengine.org/en/stable/tutorials/performance/pipeline_compilations.html).
+
+### Results and desktop recommendation
+
+**Forward+/Vulkan is the recommended desktop migration candidate.** Both Vulkan renderers roughly halve the steady frame time of the current Compatibility/ANGLE path on this RTX 4060. Forward+ and Mobile are effectively tied in the ordinary Green Hill session and settled Endless opening; Forward+ has the stronger RampMania and Aquarium results, while Mobile is faster in Chemical Plant and often cheaper during first-use preparation. This is not a universal Forward+ victory on every workload or GPU. Keep Compatibility/ANGLE as the production default until the visual differences below are approved; the new Lighting Lab launches Forward+ independently.
+
+Steady samples, milliseconds unless specified. Each row represents six 600-frame blocks from two processes. `CPU` is measured render CPU; `Objects` is the renderer's counter, not scene inventory. Aquarium's longer confirmation compares the two Vulkan candidates; its shorter ANGLE visual sample is not promoted into this table.
+
+| View / renderer | Median | p95 | p99 | Worst | Draws | Objects | CPU | GPU | Resident Acts |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| RampMania / ANGLE | 15.553 | 23.774 | 27.228 | 38.129 | 1,373 | 2,005 | 12.672 | n/a | 1 |
+| RampMania / Forward+ | 5.324 | 8.205 | 9.350 | 37.191 | 1,367 | 2,007 | 1.874 | 0.686 | 1 |
+| RampMania / Mobile | 5.877 | 8.508 | 10.190 | 22.212 | 567 | 1,201 | 2.055 | 0.573 | 1 |
+| Prototype GH / ANGLE | 22.807 | 32.319 | 35.522 | 45.927 | 2,776 | 2,872 | 17.998 | n/a | 3 |
+| Prototype GH / Forward+ | 10.955 | 14.995 | 16.771 | 35.207 | 2,113 | 2,873 | 4.544 | 0.715 | 3 |
+| Prototype GH / Mobile | 10.904 | 15.539 | 17.265 | 88.122 | 1,561 | 1,658 | 4.541 | 0.539 | 3 |
+| Endless opening / ANGLE | 17.626 | 24.172 | 26.306 | 43.974 | 1,668 | 1,934 | 13.099 | n/a | 6 |
+| Endless opening / Forward+ | 7.974 | 10.954 | 13.994 | 105.593 | 670 | 1,934 | 2.817 | 0.646 | 6 |
+| Endless opening / Mobile | 7.934 | 11.275 | 13.379 | 184.847 | 1,048 | 1,314 | 2.963 | 0.482 | 6 |
+| Chemical Plant / ANGLE | 19.088 | 26.822 | 29.225 | 41.677 | 2,782 | 2,882 | 14.697 | n/a | 3 |
+| Chemical Plant / Forward+ | 9.568 | 13.617 | 15.498 | 48.221 | 1,138 | 2,884 | 3.359 | 0.721 | 3 |
+| Chemical Plant / Mobile | 8.414 | 11.981 | 13.456 | 32.437 | 1,551 | 1,654 | 3.348 | 0.553 | 3 |
+| Aquarium / Forward+ | 8.237 | 12.105 | 13.705 | 16.964 | 1,333 | 4,662 | 3.240 | 0.972 | 3 |
+| Aquarium / Mobile | 9.512 | 14.162 | 15.815 | 20.844 | 2,422 | 2,523 | 4.258 | 0.652 | 3 |
+
+The nearly unchanged RampMania draw count between ANGLE and Forward+ is particularly informative: render CPU falls from 12.672 to 1.874 ms without a corresponding reduction in submitted geometry. Backend submission/pass handling matters substantially, alongside batching. Forward+'s automatic instancing is also relevant to the much lower Endless/Chemical draw counts. This comparison does not isolate the ANGLE translator from the rest of Compatibility; native OpenGL is not a supported candidate because of the previously reproduced NVIDIA crash. Vulkan's sub-millisecond GPU work and much larger total frame times still point toward CPU/preparation work, rather than simply needing lower resolution.
+
+### Normal Prototype play and continuous streaming
+
+The ordinary Challenge check launches the real Session, menu/bake validation, HUD, sounds and isolated telemetry. It uses finite Balls, Sonic, one Green Hill Zone, and 3,600 physics ticks of scripted launch/steering/flipper inputs. It does not teleport, grant score or force an Act clear. Dynamic camera/ball paths are not identical across renderers, so this complements the stationary comparison rather than replacing it. Mean FPS is observed frames divided by elapsed time, not the reciprocal of median frame time.
+
+| Challenge / process | Mean FPS | Median ms | p95 ms | p99 ms | Worst ms | Frames >100 ms | Ready after Start ms |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| ANGLE 1 | 31.4 | 31.028 | 43.143 | 50.534 | 474.850 | 2 | 9,753.796 |
+| ANGLE 2 | 39.4 | 24.416 | 36.457 | 43.258 | 87.160 | 0 | 7,611.614 |
+| Forward+ 1 | 82.3 | 10.922 | 17.022 | 21.598 | 612.131 | 4 | 7,420.802 |
+| Forward+ 2 | 82.3 | 11.458 | 18.370 | 21.986 | 81.740 | 0 | 4,084.561 |
+| Mobile 1 | 82.1 | 11.522 | 18.413 | 22.172 | 176.611 | 1 | 3,806.769 |
+| Mobile 2 | 81.1 | 11.768 | 18.663 | 22.427 | 48.805 | 0 | 3,748.010 |
+
+Menu validation is separate from Start: approximately 4.9–8.6 seconds in these diagnostic processes. All six sessions remain playable, finish sampling with two Balls left, have three resident Acts, zero boundary waiting and zero runtime rebuilds. Scores are 755 except ANGLE process 2 at 955. This is an opening play sample, not a completed Challenge run or a human feel evaluation.
+
+Continuous Endless tours use speed 400, seed 18, unchanged lookahead and target sequence 6. Every process reaches that target with zero runtime rebuilds.
+
+| Tour / process | Median ms | p95 ms | p99 ms | Worst ms | Boundary wait ms | Frames >100 ms | Peak residents |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| ANGLE 1 | 18.975 | 36.129 | 123.503 | 189.289 | 5,723.603 | 18 | 3 |
+| ANGLE 2 | 18.728 | 33.674 | 105.404 | 152.765 | 3,702.026 | 13 | 3 |
+| Forward+ 1 | 10.711 | 17.394 | 55.832 | 5,988.987 | 672.915 | 4 | 4 |
+| Forward+ 2 | 10.709 | 18.514 | 45.806 | 158.388 | 0 | 1 | 4 |
+| Mobile 1 | 10.301 | 17.630 | 79.740 | 3,421.307 | 314.159 | 6 | 4 |
+| Mobile 2 | 11.122 | 21.273 | 63.198 | 148.260 | 0 | 2 | 4 |
+
+The faster backend allows the same scheduler to reach four resident Acts; no buffer was reduced. First-process Aquarium graphics warm probes correlate with the largest Vulkan stalls: approximately 6.77 seconds of Forward+ probe rendering and 3.95 seconds on Mobile, while CPU node creation is tiny. The worst Forward+ frame reports roughly 5,981 ms render wall time versus 6 ms render CPU and 0.87 ms GPU. First-use pipeline/driver setup is the leading inference, not a measured compiler breakdown. Pipeline counters record created variants but do not measure compiler duration or establish an empty driver cache. Immediate repeats remove the multi-second outliers and boundary waits, but still contain 148–158 ms spikes. **Vulkan improves streaming headroom; first-use hitching is not solved.** Nonzero-wait tours return the profiler's existing failure exit code despite completing their route.
+
+### Preparation and visual migration cost
+
+The initial short Vulkan pilots become ready at 46.012 → 9.746 seconds for Forward+, and 28.120 → 8.721 seconds for Mobile on immediate repeat. Later full Chemical Plant probes record 38.592 → 7.707 seconds and 23.723 → 7.126 seconds respectively; ANGLE records 12.109 → 10.280 seconds with prior cache coverage. These are different preparation buckets from an ordinary menu-validated Start, and they are not sterile-cold or cache-equivalent benchmarks. Full reports retain startup frame tails, lookahead timing, process wall times and pipeline counts separately. Inventory walks and screenshot readbacks are outside steady timed blocks.
+
+Matched gameplay/overview captures were rendered and inspected across all eight themes. No missing-geometry, magenta-material or shader compilation failure was observed. Forward+ and Mobile are visually close to each other; neither is an as-is image match for Compatibility:
+
+- **Aquarium:** glass remains transparent with visible fish, but glass/water become milkier and much brighter cyan. The dark lagoon atmosphere changes substantially.
+- **Sky Sanctuary:** clouds remain present, but bright cloud regions lose contrast/detail. Stone becomes darker relative to the background.
+- **Lava Reef:** molten surfaces, crystals and cavern remain present; orange glow/haze becomes much stronger. The optional, default-off heat-haze experiment was not enabled.
+- **Chemical Plant:** yellow/cyan light halos broaden and the purple background brightens; foreground color balance also changes.
+- **Ice Cap:** ice, crystals and aurora remain present, with a brighter blue background and relatively darker foreground.
+- **Green Hill, Rooftop and Casino:** recognizable materials and shadows remain; warmth, saturation, emission and foreground/background contrast differ. Ball presentation and the N64/VHS/CRT stack remain readable.
+
+Animated shader time, enemy/Ring poses and HUD counters prevent pixel-equality claims. The differences are substantial enough to require lighting/material calibration and human approval, not merely a backend flag. The user-requested [Lighting Lab](LIGHTING_LAB.md) is the next review tool; it does not silently apply its presets to Prototype, Endless, bakes or production renderer settings.
+
+Next priorities are **reviewing the Vulkan presentation and addressing first-use preparation**, then profiling conservative foreground/caster visibility on the selected backend. Presentation bounds must include offscreen shadow casters and joining Acts. Badnik's culling and shadow discipline remain useful references, but the backend result reduces the case for a large visibility rewrite before choosing the render path. No physics culling, reduced resident buffer, lower shadow quality, new engine or language migration is justified by this investigation.
+
+### BadnikFramework architecture reference
+
+Alex reports that Badnik's example game feels smooth on the same RTX 4060. The source review is pinned to [`9f1c38a99b4b042fc1999c338cc0d8a57d3e3bd2`](https://github.com/Gnidel/BadnikFramework/tree/9f1c38a99b4b042fc1999c338cc0d8a57d3e3bd2). This is an architecture comparison, not an instrumented benchmark of that executable or proof of its exact stage, preset, export configuration or renderer.
+
+- **Distance-limited activity is real.** `StageData` defaults to 200 units for enemies and 100 for items. Distant actors have processing, physics callbacks and visibility disabled, with opt-outs for dead/launched enemies and attracted items. Item checks are amortized over 50 items per update after the initial pass. This reduces several kinds of work simultaneously. Our resident foreground Acts remain rendered and shadow-capable; their safe residency does not require every presentation node to contribute every frame. Preserve our authoritative collision/streaming rules when considering presentation culling. [StageData.cs](https://github.com/Gnidel/BadnikFramework/blob/9f1c38a99b4b042fc1999c338cc0d8a57d3e3bd2/Scripts/System/StageData.cs#L57)
+- **Shadow workload differs substantially.** DiscoHill enables one orthogonal directional shadow map, while the inspected HubStage and DigitalSeaActB1 lights specify orthogonal mode but do not enable shadows at all. They are not four-cascade comparisons. A single map avoids repeated caster submissions but can lose nearby shadow detail; our Pass 2 two-cascade test already demonstrated an unacceptable ramp-shadow blur. Do not copy a cascade count without checking the intended image. [DiscoHill](https://github.com/Gnidel/BadnikFramework/blob/9f1c38a99b4b042fc1999c338cc0d8a57d3e3bd2/Games/Example%20game/Levels/DiscoHill/DiscoHill.tscn#L176), [HubStage](https://github.com/Gnidel/BadnikFramework/blob/9f1c38a99b4b042fc1999c338cc0d8a57d3e3bd2/Games/Example%20game/Levels/Hub/HubStage.tscn#L206), [DigitalSeaActB1](https://github.com/Gnidel/BadnikFramework/blob/9f1c38a99b4b042fc1999c338cc0d8a57d3e3bd2/Games/Example%20game/Levels/Digital%20Sea/DigitalSeaActB1.tscn#L295), [shadow modes](https://docs.godotengine.org/en/stable/classes/class_directionallight3d.html#enum-directionallight3d-shadowmode)
+- **Selective casting matters more than apparent scene size.** The sun quad, explosion smoke and blue-sphere mesh explicitly disable casting; the sphere also has a visibility-range limit. Large scenery with a few material submissions can cost less CPU than many small multipart mechanics repeated through shadow passes. That explains a plausible architectural advantage, not a measured percentage of Badnik's frame time. [Smoke](https://github.com/Gnidel/BadnikFramework/blob/9f1c38a99b4b042fc1999c338cc0d8a57d3e3bd2/SonicAssets/Prefabs/Particles/Explosion/%5Bparticles%5D_explosion_smoke.tscn), [blue sphere](https://github.com/Gnidel/BadnikFramework/blob/9f1c38a99b4b042fc1999c338cc0d8a57d3e3bd2/SonicAssets/Prefabs/Items/%5Bitem%5D_blue_sphere.tscn)
+- **Occlusion is enabled, but its benefit is not established by the checkbox.** Godot still requires occluder geometry and useful occlusion opportunities. The three inspected stage files contain no explicit `OccluderInstance3D` node. This review does not establish what imported/nested assets supply. Our elevated, largely open board also presents different occlusion opportunities from a corridor or enclosed level. [Project settings](https://github.com/Gnidel/BadnikFramework/blob/9f1c38a99b4b042fc1999c338cc0d8a57d3e3bd2/project.godot), [Godot occlusion setup and costs](https://docs.godotengine.org/en/stable/tutorials/3d/occlusion_culling.html)
+- **Quality controls exist.** Render distance is applied to each player camera's far plane. The options code exposes resolution, AA and effect choices; environment settings enable/disable several effects. Different user presets can therefore change the actual workload considerably. A shorter camera far plane alone does not suspend actor logic or prove that all shadow work disappears. [ApplyPlayerSettings.cs](https://github.com/Gnidel/BadnikFramework/blob/9f1c38a99b4b042fc1999c338cc0d8a57d3e3bd2/Scripts/System/ApplyPlayerSettings.cs), [OptionsMenu.cs](https://github.com/Gnidel/BadnikFramework/blob/9f1c38a99b4b042fc1999c338cc0d8a57d3e3bd2/Scripts/Ui/OptionsMenu.cs), [environment settings](https://github.com/Gnidel/BadnikFramework/blob/9f1c38a99b4b042fc1999c338cc0d8a57d3e3bd2/Scripts/System/ApplyWorldEnvironmentSettings.cs)
+- **The Mobile label is not runtime proof.** The checked-in project advertises `"Mobile"` in `config/features`, but has no explicit desktop `renderer/rendering_method`; its `.mobile` platform override is `gl_compatibility`. Godot documents the desktop setting's default as Forward+. The exported game may differ; its runtime renderer log is needed before attributing Alex's experience specifically to Mobile. This does not weaken the distance/shadow findings or our direct Mobile bakeoff. [project.godot](https://github.com/Gnidel/BadnikFramework/blob/9f1c38a99b4b042fc1999c338cc0d8a57d3e3bd2/project.godot), [renderer setting and runtime override](https://docs.godotengine.org/en/stable/classes/class_projectsettings.html#class-projectsettings-property-rendering-renderer-rendering-method)
+
+The useful lesson is to budget active objects, material submissions and shadow passes rather than judging cost by how large a scene looks. Nothing in this reference establishes that changing GDScript to C#, copying the framework, or toggling occlusion alone would solve our measured render CPU bottleneck.
+
+### Bakeoff reproduction and verification
+
+Use the existing renderer-independent bakes, one sequential rendering process at a time, and one reused application profile. Run each command twice without clearing caches. Select `gl_compatibility/opengl3_angle`, `forward_plus/vulkan`, or `mobile/vulkan`; the examples use Forward+. `$godot` must name a correctly paired Godot 4.7.2 console wrapper/executable.
+
+```powershell
+$env:APPDATA = Join-Path $PWD 'test-results\renderer-profile'
+$env:LOCALAPPDATA = $env:APPDATA
+& $godot --path . --rendering-method forward_plus --rendering-driver vulkan --script res://tests/render_cost_profile.gd -- --seed=18 --profile-mode=prototype --profile-samples=600 --profile-output=res://test-results/prototype-forward.json
+& $godot --path . --rendering-method forward_plus --rendering-driver vulkan --script res://tests/render_cost_profile.gd -- --seed=18 --profile-mode=prototype --profile-theme=chemical_plant --profile-overview --profile-output=res://test-results/chemical-forward.json
+& $godot --path . --rendering-method forward_plus --rendering-driver vulkan --script res://tests/endless_stream_profile.gd -- --seed=18 --profile-speed=400 --profile-target=6 --profile-unlimited --profile-stages --profile-output=res://test-results/tour-forward.json
+& $godot --path . --rendering-method forward_plus --rendering-driver vulkan --script res://tests/prototype_play_profile.gd -- --seed=18 --profile-seconds=30 --profile-output=res://test-results/play-forward.json
+```
+
+Use `--profile-mode=act` for the standalone RampMania comparison and `--profile-mode=endless` for the settled Endless view. The standalone player uses its existing `--theme=<id>` argument; `--profile-theme=<id>` selects the Prototype course theme. Visual-only probes used 120 frames per block; reported steady measurements use 600. Raw local evidence includes `summary.json`, `validation.json`, `runs.jsonl`, `gallery.html` and per-process JSON/log/PNG files in ignored `test-results/renderer-bakeoff/`.
+
+Accepted evidence contains **28 full steady reports, six continuous tours, six ordinary Challenge sessions and 18 additional theme visual reports**, plus the explicitly identified startup pilots. Cross-backend steady cameras, world sizes and complete geometry inventories match within each workload. Runtime metadata confirms the intended renderer/driver and 120 Hz physics. All accepted streamed/play reports have zero runtime rebuilds. The early native-input-contaminated ANGLE standalone repeat is excluded and replaced by two clean confirmations. An initial ordinary-play harness attempt did not wait for the menu validation gate; it produced no accepted report, was fixed, and all six reported sessions use the corrected path.
+
+The profiling additions only extend reporting and isolate native input. The Lighting Lab is a separate opt-in scene/launcher, added after all timing runs. No production renderer switch or gameplay optimization is included. Existing certificate-store messages are environmental; the continuous-stream harness still has previously documented ObjectDB shutdown warnings. No shader parse/compile failure appeared in the accepted renderer capture matrix. User-owned art remains separate; all 1,284 initially modified/untracked files were hash-checked unchanged after measurement and lab verification.

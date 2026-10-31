@@ -3102,6 +3102,16 @@ Adjacent resident Acts still participate in foreground shadow passes. Zero-weigh
 
 See [PERFORMANCE.md](PERFORMANCE.md) for the complete cold/steady/streaming measurements, rejected trials and verification. Raw evidence is under ignored `test-results/performance-pass2/`. Gameplay tuning, Scorecraft, Buddies, character Specials, authored geometry and the 120 Hz authoritative simulation remain unchanged. Existing local ArtBro work remains separately owned.
 
+# RENDERER BAKEOFF AND LIGHTING LAB — 2026-10-31
+
+The renderer was a big part of the bill. Same retained bakes, current local art, four shadow cascades, retro stack and 120 Hz physics on RTX 4060: Prototype Green Hill's stationary median falls from **22.807 ms ANGLE to 10.955 ms Forward+ / 10.904 ms Mobile**. The ordinary 30-second Challenge opening observes roughly **31–39 FPS on ANGLE versus 81–82 FPS on either Vulkan path**. Those are measured samples, not a whole-game guarantee. RampMania's Forward+ draw count barely changes from ANGLE, but render CPU drops sharply. Thousands of submissions are not equally expensive on these backends.
+
+Forward+ is the desktop migration recommendation: effectively tied with Mobile in normal Green Hill play, faster in RampMania and the longer Aquarium confirmation. Mobile wins Chemical Plant and often first-use preparation, so it remains a credible alternative. Warm Vulkan Endless repeats reach sequence 6 with zero boundary waiting and no rebuilds. First-use Aquarium preparation still causes multi-second stalls, and repeat tours still have roughly 150 ms outliers. Vulkan buys headroom; it does not solve compilation/preparation.
+
+Both Vulkan paths also change the picture: Aquarium becomes bright/milky, Sky clouds lose contrast, Lava glow strengthens, and several themes shift foreground/background balance. **Production remains Compatibility/ANGLE until a reviewed migration.** Alex requested a small manual Lighting Lab to find the right values. `Lighting Lab.cmd` launches Forward+ independently, with live exposure, ambient/sun, tonemapper, glow/emission, fog/background and shadow controls, wheel zoom, middle-drag pan and theme/Act selection. Original/tuned comparison and per-theme/per-renderer presets stay lab-only. Some fixed shader highlights still need material work; this is not an automatic color-space conversion.
+
+Alex's smooth BadnikFramework example is useful architectural context: distance-limited activity, selective shadow casting and often one or zero directional shadow maps can explain why a visibly bigger scene need not cost more CPU. Its checked-in Mobile feature tag is not proof of the exported desktop renderer, and an occlusion checkbox is not measured occlusion benefit. No framework copy, gameplay-physics culling or language migration follows from that comparison. Prefer the Vulkan presentation/preparation decision before another large culling project. Full evidence and caveats live in [PERFORMANCE.md](PERFORMANCE.md); manual controls and saved-preset behavior are in [LIGHTING_LAB.md](LIGHTING_LAB.md).
+
 # REPOSITORY SNAPSHOT AND COMMIT HISTORY — KEEP THIS LAST
 
 ## Current repository context — cleanup and first performance pass, 2026-10-30

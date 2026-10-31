@@ -1,6 +1,7 @@
 extends SceneTree
 ## Fresh-process player startup and lookahead, including per-batch warm-up events.
 const Run = preload("res://scripts/prototype/zone_run.gd")
+const Report = preload("res://tests/render_profile_support.gd")
 
 func _initialize() -> void:
  call_deferred("run")
@@ -51,6 +52,8 @@ func run() -> void:
   "warm_probes": game.library.warm_probes_enabled, "instanced_probes": game.library.warm_instanced_probes,
   "engine": Engine.get_version_info().string, "events": game.library.profile_events.duplicate(true),
   "cpu": game.library.profile_cpu.duplicate(true), "frames": frames}
+ report.merge(Report.metadata(), true)
+ report["pipelines"] = Report.pipelines()
  if game.library._theme_bakes.has(theme): report["manifest"] = _manifest_summary(game.library, theme)
  DirAccess.make_dir_recursive_absolute(output.get_base_dir())
  var file := FileAccess.open(output, FileAccess.WRITE)

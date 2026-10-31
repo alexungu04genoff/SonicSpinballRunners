@@ -1,6 +1,7 @@
 extends SceneTree
 ## Same seeded continuous tour for before/after measurements. No diagnostic jumps.
 const Game = preload("res://scripts/endless/endless_game.gd")
+const Report = preload("res://tests/render_profile_support.gd")
 var game: Node
 var rows: Array[Dictionary] = []
 var previous := 0
@@ -27,6 +28,9 @@ func run() -> void:
  game = Game.new()
  var initialize_at := Time.get_ticks_msec()
  root.add_child(game)
+ root.gui_disable_input = true
+ Report.disable_native_input(game)
+ game.controls.input_blocked = true
  var initialize_ms := Time.get_ticks_msec() - initialize_at
  var started_at := Time.get_ticks_msec()
  while not game.started and game.library.error.is_empty() and Time.get_ticks_msec() - started_at < 120000: await process_frame
@@ -36,6 +40,7 @@ func run() -> void:
   return
  var startup_ms := Time.get_ticks_msec() - started_at
  var startup_cpu: Dictionary = game.library.profile_cpu.duplicate(true)
+ var ready_pipelines := Report.pipelines()
  game.library.profile_cpu.clear()
  game.library.profile_max_cpu_ms.clear()
  game.library.profile_resource_wait_ms = 0.0
@@ -72,6 +77,7 @@ func run() -> void:
    "act": Game.Plan.TITLES[game.active.plan.id], "theme": game.active.plan.theme,
    "resident_acts": game.resident.size(),
    "draw_calls": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
+   "objects": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME),
    "memory_mb": Performance.get_monitor(Performance.MEMORY_STATIC) / 1048576.0,
    "video_mb": Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED) / 1048576.0,
    "nodes": Performance.get_monitor(Performance.OBJECT_NODE_COUNT)})
@@ -98,6 +104,13 @@ func run() -> void:
   "cpu_max_ms": game.library.profile_max_cpu_ms, "threaded_resource_wall_ms": game.library.profile_resource_wait_ms,
   "worst_frames": worst.slice(0, 8)}
  summary["seed"] = game.run_seed
+ summary.merge(Report.metadata(), true)
+ summary["ready_pipelines"] = ready_pipelines
+ summary["pipelines"] = Report.pipelines()
+ for key: String in ["objects", "render_cpu_ms", "render_gpu_ms"]:
+  var values: Array = rows.map(func(row): return row[key])
+  values.sort()
+  summary[key + "_median"] = values[values.size() / 2]
  summary["window_size"] = [root.size.x, root.size.y]
  summary["physics_ticks"] = Engine.physics_ticks_per_second
  summary["vsync"] = DisplayServer.window_get_vsync_mode() if DisplayServer.get_name() != "headless" else -1
