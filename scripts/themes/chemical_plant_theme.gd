@@ -21,6 +21,8 @@ func _init() -> void:
  _cyan = _surface(Color("4de4dc"), 0.5)
  _signal = _surface(Color("f64e91"), 0.6)
  _yellow = _surface(Color("e5b243"))
+ Atmosphere.color(_cyan, "industrial_cyan")
+ Atmosphere.color(_signal, "signal_pink")
 
 func _shader(source: Shader) -> ShaderMaterial:
  var result := ShaderMaterial.new()

@@ -202,7 +202,10 @@ func _initialize_terrain_skin() -> void:
 func _finish_terrain_skin() -> void:
  theme_definition.configure_environment(self)
  theme_definition.build_background(self)
+ for child: Node in scenery_root.get_children(): child.set_meta("atmosphere_scenery", "far")
  theme_definition.build_edges(self)
+ for child: Node in scenery_root.get_children():
+  if not child.has_meta("atmosphere_scenery"): child.set_meta("atmosphere_scenery", "local")
  camera.far = maxf(camera.far, 180.0)
 
 func _floor_line(_a: Vector2, _b: Vector2, _mat: Material) -> void:

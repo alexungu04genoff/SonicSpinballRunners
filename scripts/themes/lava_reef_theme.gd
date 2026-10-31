@@ -140,6 +140,7 @@ func build_background(p: Node3D) -> void:
   lamp.name = "MagmaBounce%d" % i
   lamp.position = center+Vector3((-1.0 if i%2 == 0 else 1.0)*(width*0.5+1.5),-0.8,(i-1)*length*0.35)
   lamp.light_color = Color("ff732b")
+  Atmosphere.tag(lamp, "light_color", "magma_light")
   lamp.light_energy = 1.1
   lamp.omni_range = maxf(10.0,width*0.7)
   lamp.omni_attenuation = 1.6

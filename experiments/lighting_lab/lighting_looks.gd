@@ -17,7 +17,7 @@ const LOOKS := {
  "Neutral inspection": {"ambient": 1.1, "ambient_color": "ffffff", "sun": 0.85, "sun_color": "ffffff", "pitch": -50.0, "yaw": -30.0, "exposure": 1.0, "sky": 1.0, "emission": 1.0, "glow": 0.0},
 }
 # Shared palette recipes are applied only to properties present in the current
-# theme's baseline. Shader skies retain their own palette and use brightness.
+# theme's baseline. Theme-owned shader colors have separate semantic recipes.
 # Daytime/Neutral keep the authored palette; all values remain editable in the lab.
 const SKY_PALETTES := {
  "Morning": {"top": "477ca5", "horizon": "f5c8b2", "bottom": "526779", "curve": 0.25, "brightness": 0.9, "solid": "302637"},
@@ -33,7 +33,7 @@ const SKY_PALETTES := {
  "Neon night": {"top": "030611", "horizon": "141326", "bottom": "03050d", "curve": 0.25, "brightness": 0.6, "solid": "02030a"},
 }
 
-static func create(title: String, authored: Dictionary) -> Dictionary:
+static func create(title: String, authored: Dictionary, theme := "") -> Dictionary:
  var result := authored.duplicate(true)
  if not LOOKS.has(title): return result
  var look: Dictionary = LOOKS[title]
@@ -68,4 +68,9 @@ static func create(title: String, authored: Dictionary) -> Dictionary:
   elif authored.has("env/background_color"):
    result["env/background_color"] = Color(palette.solid)
    result["env/background_energy_multiplier"] = float(authored["env/background_energy_multiplier"]) * float(palette.brightness)
+ preload("res://experiments/lighting_lab/palette_recipes.gd").apply(title, theme, result)
+ if authored.has("palette/ice_horizon") and SKY_PALETTES.has(title):
+  # Ice's palette encodes darkness too; avoid multiplying by the old recipe
+  # intended for a fixed-color custom sky.
+  result["env/background_energy_multiplier"] = float(authored["env/background_energy_multiplier"]) * float(SKY_PALETTES[title].brightness)
  return result

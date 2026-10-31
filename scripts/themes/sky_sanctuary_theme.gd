@@ -134,6 +134,7 @@ func _atmosphere(node: Node3D, amount: float) -> void:
   if not _library.materials.has(key):
    var faded: StandardMaterial3D = original.duplicate()
    faded.albedo_color = original.albedo_color.lerp(Color("99bfd1"), amount)
+   Atmosphere.tag(faded, "albedo_color", "ruin_haze", "haze", {"unhazed": original.albedo_color, "amount": amount, "authored": Color("99bfd1")})
    _library.materials[key] = faded
   node.material_override = _library.materials[key]
   node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

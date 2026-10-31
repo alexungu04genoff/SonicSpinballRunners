@@ -1,4 +1,7 @@
 shader_type spatial;
+// Linear palette uniforms preserve the original shader constants.
+uniform vec3 shadow_color = vec3(0.54, 0.71, 0.82);
+uniform vec3 highlight_color = vec3(0.82, 0.89, 0.93);
 render_mode unshaded, cull_disabled, fog_disabled;
 varying vec3 world_position;
 void vertex() { world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
@@ -12,6 +15,6 @@ void fragment() {
  vec2 p = world_position.xz * 0.12;
  float n = noise(p) * 0.62 + noise(p * 2.1) * 0.26 + noise(p * 4.3) * 0.12;
  // Cloud troughs stay blue, never a white ground slab or a water surface.
- vec3 color = mix(vec3(0.54, 0.71, 0.82), vec3(0.82, 0.89, 0.93), smoothstep(0.18, 0.65, n));
+ vec3 color = mix(shadow_color, highlight_color, smoothstep(0.18, 0.65, n));
  ALBEDO = color;
 }

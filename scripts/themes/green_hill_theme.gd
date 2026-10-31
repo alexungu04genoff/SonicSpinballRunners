@@ -236,13 +236,17 @@ func _rock(p: Node3D, base: Vector3, size: float) -> void:
 func build_background(p: Node3D) -> void:
  var water = PlaneMesh.new()
  water.size = Vector2(150, 150)
- var ocean = material(Color("24afc0"))
- ocean.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+ var ocean := ShaderMaterial.new()
+ ocean.shader = preload("res://scripts/themes/green_hill_ocean.gdshader")
  p.mesh_node(water, ocean, TablePresentation.map_point(p.table_bounds.get_center(), -2.3), p.scenery_root).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  var sand = material(Color("dfc179"))
  var distant_green = material(Color("77b64c"))
  var distant_dark = material(Color("408e5c"))
  var distant_stone = material(Color("66949b"))
+ Atmosphere.color(sand, "shore_tint", "tint")
+ Atmosphere.color(distant_stone, "shore_tint", "tint")
+ Atmosphere.color(distant_green, "vegetation_tint", "tint")
+ Atmosphere.color(distant_dark, "vegetation_tint", "tint")
  var center = p.table_bounds.get_center() * TablePresentation.SCALE
  for i: int in 2:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
@@ -262,8 +266,8 @@ func build_background(p: Node3D) -> void:
   var rock_peak = p.mesh_node(peak, distant_stone, position + Vector3(0, 1.0 + peak_height * 0.5, 0), p.scenery_root)
   rock_peak.rotation.z = side * 0.12
  # Soft clouds and distant green peaks give the lower camera a readable horizon.
- var cloud_material = material(Color("f5ffff"))
- cloud_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+ var cloud_material := ShaderMaterial.new()
+ cloud_material.shader = preload("res://scripts/themes/green_hill_cloud.gdshader")
  for i: int in 3:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var cloud = Node3D.new()

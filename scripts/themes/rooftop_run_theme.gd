@@ -117,6 +117,7 @@ func _haze_material(color: Color) -> Material:
  var key := "haze_" + color.to_html()
  if not _library.materials.has(key):
   _library.materials[key] = material(color)
+  Atmosphere.color(_library.materials[key], "distant_haze")
  return _library.materials[key]
 
 func _house(root: Node3D, at: Vector3, size: Vector3, variation: int) -> void:

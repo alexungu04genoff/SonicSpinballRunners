@@ -1,5 +1,6 @@
 extends RefCounted
 ## Presentation-only theme contract. No Act records or gameplay systems live here.
+const Atmosphere := preload("res://scripts/themes/theme_atmosphere.gd")
 var theme_id := ""
 var display_name := ""
 var floor_material: Material

@@ -1,0 +1,3655 @@
+{
+  "palette": {
+    "act": "Reverse C Spring",
+    "api": "1.4.351",
+    "camera": "50 degrees / 52 FOV / 1.3 zoom / left edge",
+    "device": "NVIDIA GeForce RTX 4060",
+    "driver": "vulkan",
+    "engine": "4.7.2-stable (official)",
+    "note": "Standalone generated Act; palette-only comparison, unchanged lights/shadows. Preparation windows include ordinary frames; they are not isolated compiler timings.",
+    "preparation": [
+      {
+        "elapsed_ms": 5002.049,
+        "phase": "initial_load_and_120_frames",
+        "pipelines": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        }
+      },
+      {
+        "elapsed_ms": 384.337,
+        "phase": "theme_load_and_60_frames",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "theme": "green_hill"
+      },
+      {
+        "apply_cpu_ms": 0.216,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 7.779,
+          "median_ms": 5.152,
+          "p95_ms": 7.312,
+          "p99_ms": 7.779
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.813999973237515,
+          "median_ms": 0.577999971807003,
+          "p95_ms": 0.794000018388033,
+          "p99_ms": 0.813999973237515
+        },
+        "pass": 0,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "theme": "green_hill"
+      },
+      {
+        "apply_cpu_ms": 0.745,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 9.957,
+          "median_ms": 5.725,
+          "p95_ms": 7.471,
+          "p99_ms": 9.957
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.774999998509884,
+          "median_ms": 0.555999994277954,
+          "p95_ms": 0.753999993205071,
+          "p99_ms": 0.774999998509884
+        },
+        "pass": 1,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "theme": "green_hill"
+      },
+      {
+        "apply_cpu_ms": 0.241,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 7.893,
+          "median_ms": 4.841,
+          "p95_ms": 7.282,
+          "p99_ms": 7.893
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.775000009685755,
+          "median_ms": 0.5529999807477,
+          "p95_ms": 0.75899999961257,
+          "p99_ms": 0.775000009685755
+        },
+        "pass": 2,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "theme": "green_hill"
+      },
+      {
+        "apply_cpu_ms": 0.274,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 7.466,
+          "median_ms": 5.069,
+          "p95_ms": 7.083,
+          "p99_ms": 7.466
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.768999990075827,
+          "median_ms": 0.555999990552664,
+          "p95_ms": 0.751999981701374,
+          "p99_ms": 0.768999990075827
+        },
+        "pass": 3,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "theme": "green_hill"
+      },
+      {
+        "elapsed_ms": 1861.544,
+        "phase": "theme_load_and_60_frames",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "theme": "chemical_plant"
+      },
+      {
+        "apply_cpu_ms": 0.217,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 4.864,
+          "median_ms": 2.772,
+          "p95_ms": 4.487,
+          "p99_ms": 4.864
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.775000009685755,
+          "median_ms": 0.540999986231327,
+          "p95_ms": 0.761000026017427,
+          "p99_ms": 0.775000009685755
+        },
+        "pass": 0,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "theme": "chemical_plant"
+      },
+      {
+        "apply_cpu_ms": 0.409,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.635,
+          "median_ms": 3.149,
+          "p95_ms": 5.14,
+          "p99_ms": 5.635
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.740999970585108,
+          "median_ms": 0.520999994128942,
+          "p95_ms": 0.733999975025654,
+          "p99_ms": 0.740999970585108
+        },
+        "pass": 1,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "theme": "chemical_plant"
+      },
+      {
+        "apply_cpu_ms": 0.402,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.72,
+          "median_ms": 3.347,
+          "p95_ms": 4.525,
+          "p99_ms": 5.72
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.751000020653009,
+          "median_ms": 0.519999995827675,
+          "p95_ms": 0.733000013977289,
+          "p99_ms": 0.751000020653009
+        },
+        "pass": 2,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "theme": "chemical_plant"
+      },
+      {
+        "apply_cpu_ms": 0.437,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 4.974,
+          "median_ms": 2.886,
+          "p95_ms": 4.437,
+          "p99_ms": 4.974
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.731999978423119,
+          "median_ms": 0.518999986350536,
+          "p95_ms": 0.720000024884939,
+          "p99_ms": 0.731999978423119
+        },
+        "pass": 3,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "theme": "chemical_plant"
+      },
+      {
+        "elapsed_ms": 1856.986,
+        "phase": "theme_load_and_60_frames",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "theme": "rooftop_run"
+      },
+      {
+        "apply_cpu_ms": 0.225,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.662,
+          "median_ms": 3.825,
+          "p95_ms": 4.726,
+          "p99_ms": 5.662
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.868000026792288,
+          "median_ms": 0.646000012755394,
+          "p95_ms": 0.86200001090765,
+          "p99_ms": 0.868000026792288
+        },
+        "pass": 0,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "theme": "rooftop_run"
+      },
+      {
+        "apply_cpu_ms": 0.326,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.426,
+          "median_ms": 3.661,
+          "p95_ms": 5.233,
+          "p99_ms": 5.426
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.876000009477139,
+          "median_ms": 0.64699998870492,
+          "p95_ms": 0.863000009208918,
+          "p99_ms": 0.876000009477139
+        },
+        "pass": 1,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "theme": "rooftop_run"
+      },
+      {
+        "apply_cpu_ms": 0.231,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.829,
+          "median_ms": 3.676,
+          "p95_ms": 5.552,
+          "p99_ms": 5.829
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.86599999293685,
+          "median_ms": 0.646999977529049,
+          "p95_ms": 0.848999973386526,
+          "p99_ms": 0.86599999293685
+        },
+        "pass": 2,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "theme": "rooftop_run"
+      },
+      {
+        "apply_cpu_ms": 0.393,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 6.952,
+          "median_ms": 4.258,
+          "p95_ms": 6.351,
+          "p99_ms": 6.952
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.867999993264675,
+          "median_ms": 0.645999990403652,
+          "p95_ms": 0.847999986261129,
+          "p99_ms": 0.867999993264675
+        },
+        "pass": 3,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "theme": "rooftop_run"
+      },
+      {
+        "elapsed_ms": 1828.425,
+        "phase": "theme_load_and_60_frames",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "theme": "casino_night"
+      },
+      {
+        "apply_cpu_ms": 0.254,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.862,
+          "median_ms": 3.915,
+          "p95_ms": 5.553,
+          "p99_ms": 5.862
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.964000031352043,
+          "median_ms": 0.750999994575977,
+          "p95_ms": 0.952999994158745,
+          "p99_ms": 0.964000031352043
+        },
+        "pass": 0,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "theme": "casino_night"
+      },
+      {
+        "apply_cpu_ms": 0.382,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 7.445,
+          "median_ms": 4.937,
+          "p95_ms": 6.57,
+          "p99_ms": 7.445
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.980000019073486,
+          "median_ms": 0.756000015884638,
+          "p95_ms": 0.956999979913235,
+          "p99_ms": 0.980000019073486
+        },
+        "pass": 1,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "theme": "casino_night"
+      },
+      {
+        "apply_cpu_ms": 0.279,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 6.81,
+          "median_ms": 4.482,
+          "p95_ms": 6.692,
+          "p99_ms": 6.81
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.977000005543232,
+          "median_ms": 0.752000018954277,
+          "p95_ms": 0.958999987691641,
+          "p99_ms": 0.977000005543232
+        },
+        "pass": 2,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "theme": "casino_night"
+      },
+      {
+        "apply_cpu_ms": 0.517,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 6.687,
+          "median_ms": 3.964,
+          "p95_ms": 6.536,
+          "p99_ms": 6.687
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.968999978154898,
+          "median_ms": 0.750999972224236,
+          "p95_ms": 0.955000028014183,
+          "p99_ms": 0.968999978154898
+        },
+        "pass": 3,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "theme": "casino_night"
+      },
+      {
+        "elapsed_ms": 1937.093,
+        "phase": "theme_load_and_60_frames",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "theme": "sky_sanctuary"
+      },
+      {
+        "apply_cpu_ms": 0.264,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.656,
+          "median_ms": 3.51,
+          "p95_ms": 5.35,
+          "p99_ms": 5.656
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.812999971210957,
+          "median_ms": 0.57600000873208,
+          "p95_ms": 0.789999969303608,
+          "p99_ms": 0.812999971210957
+        },
+        "pass": 0,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "theme": "sky_sanctuary"
+      },
+      {
+        "apply_cpu_ms": 0.289,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.578,
+          "median_ms": 3.766,
+          "p95_ms": 5.201,
+          "p99_ms": 5.578
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.789000019431114,
+          "median_ms": 0.570999976247549,
+          "p95_ms": 0.768999990075827,
+          "p99_ms": 0.789000019431114
+        },
+        "pass": 1,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "theme": "sky_sanctuary"
+      },
+      {
+        "apply_cpu_ms": 0.262,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.629,
+          "median_ms": 3.567,
+          "p95_ms": 5.56,
+          "p99_ms": 5.629
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.792999979108572,
+          "median_ms": 0.568999994546175,
+          "p95_ms": 0.769999977201223,
+          "p99_ms": 0.792999979108572
+        },
+        "pass": 2,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "theme": "sky_sanctuary"
+      },
+      {
+        "apply_cpu_ms": 0.258,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.709,
+          "median_ms": 3.42,
+          "p95_ms": 5.117,
+          "p99_ms": 5.709
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.787999972701073,
+          "median_ms": 0.568000014871359,
+          "p95_ms": 0.767000015825033,
+          "p99_ms": 0.787999972701073
+        },
+        "pass": 3,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "theme": "sky_sanctuary"
+      },
+      {
+        "elapsed_ms": 2822.063,
+        "phase": "theme_load_and_60_frames",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "theme": "ice_cap"
+      },
+      {
+        "apply_cpu_ms": 0.359,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.659,
+          "median_ms": 3.477,
+          "p95_ms": 5.048,
+          "p99_ms": 5.659
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.66899997740984,
+          "median_ms": 0.623999997973442,
+          "p95_ms": 0.658999986946583,
+          "p99_ms": 0.66899997740984
+        },
+        "pass": 0,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "theme": "ice_cap"
+      },
+      {
+        "apply_cpu_ms": 0.472,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.747,
+          "median_ms": 3.518,
+          "p95_ms": 5.327,
+          "p99_ms": 5.747
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 1.00200001895428,
+          "median_ms": 0.625999972224236,
+          "p95_ms": 0.640999972820282,
+          "p99_ms": 1.00200001895428
+        },
+        "pass": 1,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "theme": "ice_cap"
+      },
+      {
+        "apply_cpu_ms": 0.238,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.409,
+          "median_ms": 3.447,
+          "p95_ms": 5.055,
+          "p99_ms": 5.409
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.679000005125999,
+          "median_ms": 0.624999985098839,
+          "p95_ms": 0.67000001296401,
+          "p99_ms": 0.679000005125999
+        },
+        "pass": 2,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "theme": "ice_cap"
+      },
+      {
+        "apply_cpu_ms": 0.296,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 4.991,
+          "median_ms": 3.049,
+          "p95_ms": 4.468,
+          "p99_ms": 4.991
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.948999986052513,
+          "median_ms": 0.625999972224236,
+          "p95_ms": 0.665999978780746,
+          "p99_ms": 0.948999986052513
+        },
+        "pass": 3,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "theme": "ice_cap"
+      },
+      {
+        "elapsed_ms": 2142.659,
+        "phase": "theme_load_and_60_frames",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "theme": "lava_reef"
+      },
+      {
+        "apply_cpu_ms": 0.381,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.683,
+          "median_ms": 3.165,
+          "p95_ms": 5.038,
+          "p99_ms": 5.683
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.71399998664856,
+          "median_ms": 0.697999976575375,
+          "p95_ms": 0.711999986320734,
+          "p99_ms": 0.71399998664856
+        },
+        "pass": 0,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "theme": "lava_reef"
+      },
+      {
+        "apply_cpu_ms": 0.629,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.271,
+          "median_ms": 3.365,
+          "p95_ms": 4.89,
+          "p99_ms": 5.271
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.694999992847443,
+          "median_ms": 0.670000024139881,
+          "p95_ms": 0.686000023037195,
+          "p99_ms": 0.694999992847443
+        },
+        "pass": 1,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "theme": "lava_reef"
+      },
+      {
+        "apply_cpu_ms": 0.316,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.328,
+          "median_ms": 3.238,
+          "p95_ms": 4.838,
+          "p99_ms": 5.328
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.691000003367662,
+          "median_ms": 0.669000014662743,
+          "p95_ms": 0.679999995976686,
+          "p99_ms": 0.691000003367662
+        },
+        "pass": 2,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "theme": "lava_reef"
+      },
+      {
+        "apply_cpu_ms": 0.318,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.082,
+          "median_ms": 3.249,
+          "p95_ms": 4.811,
+          "p99_ms": 5.082
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.698999989777803,
+          "median_ms": 0.669999979436398,
+          "p95_ms": 0.684000000357628,
+          "p99_ms": 0.698999989777803
+        },
+        "pass": 3,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "theme": "lava_reef"
+      },
+      {
+        "elapsed_ms": 1857.397,
+        "phase": "theme_load_and_60_frames",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 54,
+          "mesh": 0,
+          "specialization": 79,
+          "surface": 112
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "theme": "aquarium_park"
+      },
+      {
+        "apply_cpu_ms": 0.246,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 6.195,
+          "median_ms": 3.449,
+          "p95_ms": 5.801,
+          "p99_ms": 6.195
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 1.21200002729893,
+          "median_ms": 0.711000021547079,
+          "p95_ms": 1.01000002399087,
+          "p99_ms": 1.21200002729893
+        },
+        "pass": 0,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 54,
+          "mesh": 0,
+          "specialization": 79,
+          "surface": 112
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 54,
+          "mesh": 0,
+          "specialization": 79,
+          "surface": 112
+        },
+        "theme": "aquarium_park"
+      },
+      {
+        "apply_cpu_ms": 0.311,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.697,
+          "median_ms": 3.345,
+          "p95_ms": 4.47,
+          "p99_ms": 5.697
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.926000021398067,
+          "median_ms": 0.711000010371208,
+          "p95_ms": 0.90999997407198,
+          "p99_ms": 0.926000021398067
+        },
+        "pass": 1,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 54,
+          "mesh": 0,
+          "specialization": 79,
+          "surface": 112
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 54,
+          "mesh": 0,
+          "specialization": 79,
+          "surface": 112
+        },
+        "theme": "aquarium_park"
+      },
+      {
+        "apply_cpu_ms": 0.266,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 4.663,
+          "median_ms": 3.448,
+          "p95_ms": 4.551,
+          "p99_ms": 4.663
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.930999990552664,
+          "median_ms": 0.711000010371208,
+          "p95_ms": 0.910000011324883,
+          "p99_ms": 0.930999990552664
+        },
+        "pass": 2,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 54,
+          "mesh": 0,
+          "specialization": 79,
+          "surface": 112
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 54,
+          "mesh": 0,
+          "specialization": 79,
+          "surface": 112
+        },
+        "theme": "aquarium_park"
+      },
+      {
+        "apply_cpu_ms": 0.378,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.851,
+          "median_ms": 3.608,
+          "p95_ms": 5.225,
+          "p99_ms": 5.851
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.92500001937151,
+          "median_ms": 0.711000021547079,
+          "p95_ms": 0.911999996751547,
+          "p99_ms": 0.92500001937151
+        },
+        "pass": 3,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 54,
+          "mesh": 0,
+          "specialization": 79,
+          "surface": 112
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 54,
+          "mesh": 0,
+          "specialization": 79,
+          "surface": 112
+        },
+        "theme": "aquarium_park"
+      }
+    ],
+    "renderer": "forward_plus",
+    "results": [
+      {
+        "active_materials": 388,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 2630,
+        "draw_calls_p95": 2630,
+        "frame_ms_median": 4.974,
+        "frame_ms_p95": 6.997,
+        "pass": 0,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "render_cpu_ms_median": 2.57000003755093,
+        "render_cpu_ms_p95": 4.09700000286102,
+        "render_gpu_ms_median": 0.552000008523464,
+        "render_gpu_ms_p95": 0.562000021338463,
+        "rendered_objects_median": 3237,
+        "rendered_objects_p95": 3237,
+        "resources_median": 100,
+        "resources_p95": 100,
+        "theme": "green_hill",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 388,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 2630,
+        "draw_calls_p95": 2630,
+        "frame_ms_median": 5.062,
+        "frame_ms_p95": 7.597,
+        "pass": 1,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "render_cpu_ms_median": 2.61200001835823,
+        "render_cpu_ms_p95": 4.4910002052784,
+        "render_gpu_ms_median": 0.551999982446432,
+        "render_gpu_ms_p95": 0.563999984413385,
+        "rendered_objects_median": 3237,
+        "rendered_objects_p95": 3237,
+        "resources_median": 100,
+        "resources_p95": 100,
+        "theme": "green_hill",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 388,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 2630,
+        "draw_calls_p95": 2630,
+        "frame_ms_median": 4.934,
+        "frame_ms_p95": 7.569,
+        "pass": 2,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "render_cpu_ms_median": 2.58599998056889,
+        "render_cpu_ms_p95": 4.53700003027916,
+        "render_gpu_ms_median": 0.551999982446432,
+        "render_gpu_ms_p95": 0.563999999314547,
+        "rendered_objects_median": 3237,
+        "rendered_objects_p95": 3237,
+        "resources_median": 100,
+        "resources_p95": 100,
+        "theme": "green_hill",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 388,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 2630,
+        "draw_calls_p95": 2630,
+        "frame_ms_median": 4.998,
+        "frame_ms_p95": 6.967,
+        "pass": 3,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "render_cpu_ms_median": 2.57800009846687,
+        "render_cpu_ms_p95": 3.98000001907349,
+        "render_gpu_ms_median": 0.551000006496906,
+        "render_gpu_ms_p95": 0.56300001591444,
+        "rendered_objects_median": 3237,
+        "rendered_objects_p95": 3237,
+        "resources_median": 100,
+        "resources_p95": 100,
+        "theme": "green_hill",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 98,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 781,
+        "draw_calls_p95": 781,
+        "frame_ms_median": 3.236,
+        "frame_ms_p95": 4.731,
+        "pass": 0,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "render_cpu_ms_median": 1.32499995827675,
+        "render_cpu_ms_p95": 2.10500004887581,
+        "render_gpu_ms_median": 0.520999990403652,
+        "render_gpu_ms_p95": 0.535000003874302,
+        "rendered_objects_median": 1498,
+        "rendered_objects_p95": 1498,
+        "resources_median": 116,
+        "resources_p95": 116,
+        "theme": "chemical_plant",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 98,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 781,
+        "draw_calls_p95": 781,
+        "frame_ms_median": 3.355,
+        "frame_ms_p95": 5.828,
+        "pass": 1,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "render_cpu_ms_median": 1.3569999486208,
+        "render_cpu_ms_p95": 2.28299996256828,
+        "render_gpu_ms_median": 0.518999990075827,
+        "render_gpu_ms_p95": 0.534999992698431,
+        "rendered_objects_median": 1498,
+        "rendered_objects_p95": 1498,
+        "resources_median": 116,
+        "resources_p95": 116,
+        "theme": "chemical_plant",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 98,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 781,
+        "draw_calls_p95": 781,
+        "frame_ms_median": 2.7,
+        "frame_ms_p95": 4.36,
+        "pass": 2,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "render_cpu_ms_median": 1.1689999550581,
+        "render_cpu_ms_p95": 2.01300004124641,
+        "render_gpu_ms_median": 0.515999998897314,
+        "render_gpu_ms_p95": 0.529999997466803,
+        "rendered_objects_median": 1498,
+        "rendered_objects_p95": 1498,
+        "resources_median": 116,
+        "resources_p95": 116,
+        "theme": "chemical_plant",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 98,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 781,
+        "draw_calls_p95": 781,
+        "frame_ms_median": 3.289,
+        "frame_ms_p95": 5.437,
+        "pass": 3,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 26,
+          "mesh": 0,
+          "specialization": 33,
+          "surface": 45
+        },
+        "render_cpu_ms_median": 1.33399996161461,
+        "render_cpu_ms_p95": 2.32699996232986,
+        "render_gpu_ms_median": 0.518000010401011,
+        "render_gpu_ms_p95": 0.533000014722347,
+        "rendered_objects_median": 1498,
+        "rendered_objects_p95": 1498,
+        "resources_median": 116,
+        "resources_p95": 116,
+        "theme": "chemical_plant",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 99,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 1112,
+        "draw_calls_p95": 1112,
+        "frame_ms_median": 3.804,
+        "frame_ms_p95": 5.626,
+        "pass": 0,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "render_cpu_ms_median": 1.75000001490116,
+        "render_cpu_ms_p95": 2.84899991750717,
+        "render_gpu_ms_median": 0.644999988377094,
+        "render_gpu_ms_p95": 0.667999979108572,
+        "rendered_objects_median": 3257,
+        "rendered_objects_p95": 3257,
+        "resources_median": 108,
+        "resources_p95": 108,
+        "theme": "rooftop_run",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 99,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 1112,
+        "draw_calls_p95": 1112,
+        "frame_ms_median": 3.636,
+        "frame_ms_p95": 5.17,
+        "pass": 1,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "render_cpu_ms_median": 1.65299998223782,
+        "render_cpu_ms_p95": 2.6370000243187,
+        "render_gpu_ms_median": 0.647000011056662,
+        "render_gpu_ms_p95": 0.666999977082014,
+        "rendered_objects_median": 3257,
+        "rendered_objects_p95": 3257,
+        "resources_median": 108,
+        "resources_p95": 108,
+        "theme": "rooftop_run",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 99,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 1112,
+        "draw_calls_p95": 1112,
+        "frame_ms_median": 3.792,
+        "frame_ms_p95": 5.726,
+        "pass": 2,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "render_cpu_ms_median": 1.72100004553795,
+        "render_cpu_ms_p95": 2.90099999308586,
+        "render_gpu_ms_median": 0.645999975502491,
+        "render_gpu_ms_p95": 0.663000013679266,
+        "rendered_objects_median": 3257,
+        "rendered_objects_p95": 3257,
+        "resources_median": 108,
+        "resources_p95": 108,
+        "theme": "rooftop_run",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 99,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 1112,
+        "draw_calls_p95": 1112,
+        "frame_ms_median": 3.666,
+        "frame_ms_p95": 5.431,
+        "pass": 3,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 41,
+          "surface": 53
+        },
+        "render_cpu_ms_median": 1.6779999434948,
+        "render_cpu_ms_p95": 2.69200007617474,
+        "render_gpu_ms_median": 0.646999977529049,
+        "render_gpu_ms_p95": 0.663999997079372,
+        "rendered_objects_median": 3257,
+        "rendered_objects_p95": 3257,
+        "resources_median": 108,
+        "resources_p95": 108,
+        "theme": "rooftop_run",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 94,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 1109,
+        "draw_calls_p95": 1109,
+        "frame_ms_median": 3.967,
+        "frame_ms_p95": 5.682,
+        "pass": 0,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "render_cpu_ms_median": 1.90299993753433,
+        "render_cpu_ms_p95": 2.99100010097027,
+        "render_gpu_ms_median": 0.749999985098839,
+        "render_gpu_ms_p95": 0.765000008046627,
+        "rendered_objects_median": 4121,
+        "rendered_objects_p95": 4121,
+        "resources_median": 124,
+        "resources_p95": 124,
+        "theme": "casino_night",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 94,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 1109,
+        "draw_calls_p95": 1109,
+        "frame_ms_median": 4.131,
+        "frame_ms_p95": 6.034,
+        "pass": 1,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "render_cpu_ms_median": 1.96699994802475,
+        "render_cpu_ms_p95": 3.30399999022484,
+        "render_gpu_ms_median": 0.751999981701374,
+        "render_gpu_ms_p95": 0.765999995172024,
+        "rendered_objects_median": 4121,
+        "rendered_objects_p95": 4121,
+        "resources_median": 124,
+        "resources_p95": 124,
+        "theme": "casino_night",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 94,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 1109,
+        "draw_calls_p95": 1109,
+        "frame_ms_median": 3.732,
+        "frame_ms_p95": 5.623,
+        "pass": 2,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "render_cpu_ms_median": 1.81200003623962,
+        "render_cpu_ms_p95": 3.03299987316132,
+        "render_gpu_ms_median": 0.74999999627471,
+        "render_gpu_ms_p95": 0.767999995499849,
+        "rendered_objects_median": 4121,
+        "rendered_objects_p95": 4121,
+        "resources_median": 124,
+        "resources_p95": 124,
+        "theme": "casino_night",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 94,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 1109,
+        "draw_calls_p95": 1109,
+        "frame_ms_median": 4.283,
+        "frame_ms_p95": 6.294,
+        "pass": 3,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 30,
+          "mesh": 0,
+          "specialization": 44,
+          "surface": 60
+        },
+        "render_cpu_ms_median": 2.04999999701977,
+        "render_cpu_ms_p95": 3.371999964118,
+        "render_gpu_ms_median": 0.751999981701374,
+        "render_gpu_ms_p95": 0.769999977201223,
+        "rendered_objects_median": 4121,
+        "rendered_objects_p95": 4121,
+        "resources_median": 124,
+        "resources_p95": 124,
+        "theme": "casino_night",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 104,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 910,
+        "draw_calls_p95": 910,
+        "frame_ms_median": 3.783,
+        "frame_ms_p95": 5.996,
+        "pass": 0,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "render_cpu_ms_median": 1.80799998342991,
+        "render_cpu_ms_p95": 3.15599995851517,
+        "render_gpu_ms_median": 0.568999979645014,
+        "render_gpu_ms_p95": 0.579999998211861,
+        "rendered_objects_median": 4080,
+        "rendered_objects_p95": 4080,
+        "resources_median": 130,
+        "resources_p95": 130,
+        "theme": "sky_sanctuary",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 104,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 910,
+        "draw_calls_p95": 910,
+        "frame_ms_median": 3.849,
+        "frame_ms_p95": 5.791,
+        "pass": 1,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "render_cpu_ms_median": 1.84300000965595,
+        "render_cpu_ms_p95": 3.09800004959106,
+        "render_gpu_ms_median": 0.568000014871359,
+        "render_gpu_ms_p95": 0.57999999076128,
+        "rendered_objects_median": 4080,
+        "rendered_objects_p95": 4080,
+        "resources_median": 130,
+        "resources_p95": 130,
+        "theme": "sky_sanctuary",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 104,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 910,
+        "draw_calls_p95": 910,
+        "frame_ms_median": 3.61,
+        "frame_ms_p95": 5.191,
+        "pass": 2,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "render_cpu_ms_median": 1.76599997282028,
+        "render_cpu_ms_p95": 2.83999994397163,
+        "render_gpu_ms_median": 0.567000027745962,
+        "render_gpu_ms_p95": 0.578999970108271,
+        "rendered_objects_median": 4080,
+        "rendered_objects_p95": 4080,
+        "resources_median": 130,
+        "resources_p95": 130,
+        "theme": "sky_sanctuary",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 104,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 910,
+        "draw_calls_p95": 910,
+        "frame_ms_median": 3.763,
+        "frame_ms_p95": 5.617,
+        "pass": 3,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 34,
+          "mesh": 0,
+          "specialization": 49,
+          "surface": 69
+        },
+        "render_cpu_ms_median": 1.85699993371964,
+        "render_cpu_ms_p95": 3.01300001144409,
+        "render_gpu_ms_median": 0.567000027745962,
+        "render_gpu_ms_p95": 0.579999979585409,
+        "rendered_objects_median": 4080,
+        "rendered_objects_p95": 4080,
+        "resources_median": 130,
+        "resources_p95": 130,
+        "theme": "sky_sanctuary",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 95,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 892,
+        "draw_calls_p95": 892,
+        "frame_ms_median": 3.501,
+        "frame_ms_p95": 5.172,
+        "pass": 0,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "render_cpu_ms_median": 1.57199993729591,
+        "render_cpu_ms_p95": 2.58500009775162,
+        "render_gpu_ms_median": 0.624000020325184,
+        "render_gpu_ms_p95": 0.638999998569489,
+        "rendered_objects_median": 2800,
+        "rendered_objects_p95": 2800,
+        "resources_median": 137,
+        "resources_p95": 137,
+        "theme": "ice_cap",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 95,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 892,
+        "draw_calls_p95": 892,
+        "frame_ms_median": 3.397,
+        "frame_ms_p95": 5.186,
+        "pass": 1,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "render_cpu_ms_median": 1.5,
+        "render_cpu_ms_p95": 2.62099996209145,
+        "render_gpu_ms_median": 0.625999972224236,
+        "render_gpu_ms_p95": 0.639999974519014,
+        "rendered_objects_median": 2800,
+        "rendered_objects_p95": 2800,
+        "resources_median": 137,
+        "resources_p95": 137,
+        "theme": "ice_cap",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 95,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 892,
+        "draw_calls_p95": 892,
+        "frame_ms_median": 3.067,
+        "frame_ms_p95": 4.941,
+        "pass": 2,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "render_cpu_ms_median": 1.38599999248981,
+        "render_cpu_ms_p95": 2.36600008606911,
+        "render_gpu_ms_median": 0.624999985098839,
+        "render_gpu_ms_p95": 0.639000006020069,
+        "rendered_objects_median": 2800,
+        "rendered_objects_p95": 2800,
+        "resources_median": 137,
+        "resources_p95": 137,
+        "theme": "ice_cap",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 95,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 892,
+        "draw_calls_p95": 892,
+        "frame_ms_median": 3.164,
+        "frame_ms_p95": 4.761,
+        "pass": 3,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 42,
+          "mesh": 0,
+          "specialization": 60,
+          "surface": 86
+        },
+        "render_cpu_ms_median": 1.4099999666214,
+        "render_cpu_ms_p95": 2.3000001013279,
+        "render_gpu_ms_median": 0.625999972224236,
+        "render_gpu_ms_p95": 0.638000018894672,
+        "rendered_objects_median": 2800,
+        "rendered_objects_p95": 2800,
+        "resources_median": 137,
+        "resources_p95": 137,
+        "theme": "ice_cap",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 102,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 926,
+        "draw_calls_p95": 926,
+        "frame_ms_median": 3.094,
+        "frame_ms_p95": 4.055,
+        "pass": 0,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "render_cpu_ms_median": 1.48399996757507,
+        "render_cpu_ms_p95": 2.10999998450279,
+        "render_gpu_ms_median": 0.668000027537346,
+        "render_gpu_ms_p95": 0.677000008523464,
+        "rendered_objects_median": 3481,
+        "rendered_objects_p95": 3481,
+        "resources_median": 145,
+        "resources_p95": 145,
+        "theme": "lava_reef",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 102,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 926,
+        "draw_calls_p95": 926,
+        "frame_ms_median": 3.628,
+        "frame_ms_p95": 5.198,
+        "pass": 1,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "render_cpu_ms_median": 1.68099999427795,
+        "render_cpu_ms_p95": 2.69099998474121,
+        "render_gpu_ms_median": 0.669000014662743,
+        "render_gpu_ms_p95": 0.676999982446432,
+        "rendered_objects_median": 3481,
+        "rendered_objects_p95": 3481,
+        "resources_median": 145,
+        "resources_p95": 145,
+        "theme": "lava_reef",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 102,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 926,
+        "draw_calls_p95": 926,
+        "frame_ms_median": 3.664,
+        "frame_ms_p95": 5.536,
+        "pass": 2,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "render_cpu_ms_median": 1.7479999512434,
+        "render_cpu_ms_p95": 2.8860001116991,
+        "render_gpu_ms_median": 0.669000025838614,
+        "render_gpu_ms_p95": 0.681000009179115,
+        "rendered_objects_median": 3481,
+        "rendered_objects_p95": 3481,
+        "resources_median": 145,
+        "resources_p95": 145,
+        "theme": "lava_reef",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 102,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 926,
+        "draw_calls_p95": 926,
+        "frame_ms_median": 3.576,
+        "frame_ms_p95": 5.125,
+        "pass": 3,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 50,
+          "mesh": 0,
+          "specialization": 72,
+          "surface": 103
+        },
+        "render_cpu_ms_median": 1.68999999761581,
+        "render_cpu_ms_p95": 2.62899994850159,
+        "render_gpu_ms_median": 0.669000014662743,
+        "render_gpu_ms_p95": 0.679000020027161,
+        "rendered_objects_median": 3481,
+        "rendered_objects_p95": 3481,
+        "resources_median": 145,
+        "resources_p95": 145,
+        "theme": "lava_reef",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 94,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 932,
+        "draw_calls_p95": 932,
+        "frame_ms_median": 3.437,
+        "frame_ms_p95": 4.931,
+        "pass": 0,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 54,
+          "mesh": 0,
+          "specialization": 79,
+          "surface": 112
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 54,
+          "mesh": 0,
+          "specialization": 79,
+          "surface": 112
+        },
+        "render_cpu_ms_median": 1.72499994933605,
+        "render_cpu_ms_p95": 2.53500010073185,
+        "render_gpu_ms_median": 0.711000010371208,
+        "render_gpu_ms_p95": 0.720000024884939,
+        "rendered_objects_median": 4325,
+        "rendered_objects_p95": 4325,
+        "resources_median": 149,
+        "resources_p95": 149,
+        "theme": "aquarium_park",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 94,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 932,
+        "draw_calls_p95": 932,
+        "frame_ms_median": 3.604,
+        "frame_ms_p95": 5.374,
+        "pass": 1,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 54,
+          "mesh": 0,
+          "specialization": 79,
+          "surface": 112
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 54,
+          "mesh": 0,
+          "specialization": 79,
+          "surface": 112
+        },
+        "render_cpu_ms_median": 1.7960000038147,
+        "render_cpu_ms_p95": 2.93199995160103,
+        "render_gpu_ms_median": 0.710999973118305,
+        "render_gpu_ms_p95": 0.720000002533197,
+        "rendered_objects_median": 4325,
+        "rendered_objects_p95": 4325,
+        "resources_median": 149,
+        "resources_p95": 149,
+        "theme": "aquarium_park",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 94,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 932,
+        "draw_calls_p95": 932,
+        "frame_ms_median": 3.676,
+        "frame_ms_p95": 5.391,
+        "pass": 2,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 54,
+          "mesh": 0,
+          "specialization": 79,
+          "surface": 112
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 54,
+          "mesh": 0,
+          "specialization": 79,
+          "surface": 112
+        },
+        "render_cpu_ms_median": 1.83599999547005,
+        "render_cpu_ms_p95": 2.90999993681908,
+        "render_gpu_ms_median": 0.711000010371208,
+        "render_gpu_ms_p95": 0.719000026583672,
+        "rendered_objects_median": 4325,
+        "rendered_objects_p95": 4325,
+        "resources_median": 149,
+        "resources_p95": 149,
+        "theme": "aquarium_park",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 94,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 932,
+        "draw_calls_p95": 932,
+        "frame_ms_median": 3.777,
+        "frame_ms_p95": 5.666,
+        "pass": 3,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 54,
+          "mesh": 0,
+          "specialization": 79,
+          "surface": 112
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 54,
+          "mesh": 0,
+          "specialization": 79,
+          "surface": 112
+        },
+        "render_cpu_ms_median": 1.85500004887581,
+        "render_cpu_ms_p95": 3.06800007820129,
+        "render_gpu_ms_median": 0.711000010371208,
+        "render_gpu_ms_p95": 0.717999991029501,
+        "rendered_objects_median": 4325,
+        "rendered_objects_p95": 4325,
+        "resources_median": 149,
+        "resources_p95": 149,
+        "theme": "aquarium_park",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      }
+    ],
+    "retro": "existing default stack",
+    "samples_per_pass": 480,
+    "window": [
+      1280,
+      900
+    ]
+  },
+  "ocean": {
+    "act": "Reverse C Spring",
+    "api": "1.4.351",
+    "camera": "50 degrees / 52 FOV / 1.3 zoom / left edge",
+    "device": "NVIDIA GeForce RTX 4060",
+    "driver": "vulkan",
+    "engine": "4.7.2-stable (official)",
+    "note": "Standalone generated Act; palette-only comparison, unchanged lights/shadows. Preparation windows include ordinary frames; they are not isolated compiler timings.",
+    "preparation": [
+      {
+        "elapsed_ms": 5276.792,
+        "phase": "initial_load_and_120_frames",
+        "pipelines": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        }
+      },
+      {
+        "elapsed_ms": 514.809,
+        "phase": "theme_load_and_60_frames",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "theme": "green_hill"
+      },
+      {
+        "apply_cpu_ms": 0.064,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 8.838,
+          "median_ms": 5.81,
+          "p95_ms": 8.126,
+          "p99_ms": 8.838
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.628000002354383,
+          "median_ms": 0.603000018745661,
+          "p95_ms": 0.615000028163195,
+          "p99_ms": 0.628000002354383
+        },
+        "pass": 0,
+        "phase": "old_flat",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "theme": "green_hill"
+      },
+      {
+        "apply_cpu_ms": 0.061,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 10.513,
+          "median_ms": 6.013,
+          "p95_ms": 9.722,
+          "p99_ms": 10.513
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.631000012159348,
+          "median_ms": 0.611000016331673,
+          "p95_ms": 0.625999987125397,
+          "p99_ms": 0.631000012159348
+        },
+        "pass": 1,
+        "phase": "stylized",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "theme": "green_hill"
+      },
+      {
+        "apply_cpu_ms": 0.034,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 8.274,
+          "median_ms": 5.545,
+          "p95_ms": 7.259,
+          "p99_ms": 8.274
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.627000026404858,
+          "median_ms": 0.604000005871058,
+          "p95_ms": 0.620000004768372,
+          "p99_ms": 0.627000026404858
+        },
+        "pass": 2,
+        "phase": "stylized",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "theme": "green_hill"
+      },
+      {
+        "apply_cpu_ms": 0.048,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 8.252,
+          "median_ms": 5.501,
+          "p95_ms": 8.172,
+          "p99_ms": 8.252
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.563999984413385,
+          "median_ms": 0.55000001937151,
+          "p95_ms": 0.559999976307154,
+          "p99_ms": 0.563999984413385
+        },
+        "pass": 3,
+        "phase": "old_flat",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "theme": "green_hill"
+      }
+    ],
+    "renderer": "forward_plus",
+    "results": [
+      {
+        "active_materials": 388,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 2630,
+        "draw_calls_p95": 2630,
+        "frame_ms_median": 6.14,
+        "frame_ms_p95": 8.494,
+        "pass": 0,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "render_cpu_ms_median": 3.25599998235703,
+        "render_cpu_ms_p95": 5.04699993133545,
+        "render_gpu_ms_median": 0.565999981015921,
+        "render_gpu_ms_p95": 0.590999994426966,
+        "rendered_objects_median": 3237,
+        "rendered_objects_p95": 3237,
+        "resources_median": 100,
+        "resources_p95": 100,
+        "theme": "green_hill",
+        "variant": "old_flat",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 388,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 2630,
+        "draw_calls_p95": 2630,
+        "frame_ms_median": 5.979,
+        "frame_ms_p95": 8.975,
+        "pass": 1,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "render_cpu_ms_median": 3.06400009989738,
+        "render_cpu_ms_p95": 5.11400018632412,
+        "render_gpu_ms_median": 0.558000016957521,
+        "render_gpu_ms_p95": 0.611000001430511,
+        "rendered_objects_median": 3237,
+        "rendered_objects_p95": 3237,
+        "resources_median": 100,
+        "resources_p95": 100,
+        "theme": "green_hill",
+        "variant": "stylized",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 388,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 2630,
+        "draw_calls_p95": 2630,
+        "frame_ms_median": 5.249,
+        "frame_ms_p95": 7.857,
+        "pass": 2,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "render_cpu_ms_median": 2.70900002121925,
+        "render_cpu_ms_p95": 4.62399986386299,
+        "render_gpu_ms_median": 0.554000027477741,
+        "render_gpu_ms_p95": 0.577999997884035,
+        "rendered_objects_median": 3237,
+        "rendered_objects_p95": 3237,
+        "resources_median": 100,
+        "resources_p95": 100,
+        "theme": "green_hill",
+        "variant": "stylized",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 388,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 2630,
+        "draw_calls_p95": 2630,
+        "frame_ms_median": 4.976,
+        "frame_ms_p95": 7.03,
+        "pass": 3,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "render_cpu_ms_median": 2.57400009036064,
+        "render_cpu_ms_p95": 4.1089999973774,
+        "render_gpu_ms_median": 0.548999972641468,
+        "render_gpu_ms_p95": 0.560000009834766,
+        "rendered_objects_median": 3237,
+        "rendered_objects_p95": 3237,
+        "resources_median": 100,
+        "resources_p95": 100,
+        "theme": "green_hill",
+        "variant": "old_flat",
+        "world_size": "(673, 363)"
+      }
+    ],
+    "retro": "existing default stack",
+    "samples_per_pass": 480,
+    "window": [
+      1280,
+      900
+    ]
+  },
+  "lava_repeat": {
+    "act": "Reverse C Spring",
+    "api": "1.4.351",
+    "camera": "50 degrees / 52 FOV / 1.3 zoom / left edge",
+    "device": "NVIDIA GeForce RTX 4060",
+    "driver": "vulkan",
+    "engine": "4.7.2-stable (official)",
+    "note": "Standalone generated Act; palette-only comparison, unchanged lights/shadows. Preparation windows include ordinary frames; they are not isolated compiler timings.",
+    "preparation": [
+      {
+        "elapsed_ms": 6351.505,
+        "phase": "initial_load_and_120_frames",
+        "pipelines": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        }
+      },
+      {
+        "elapsed_ms": 2732.52,
+        "phase": "theme_load_and_60_frames",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 33,
+          "mesh": 0,
+          "specialization": 46,
+          "surface": 59
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "theme": "lava_reef"
+      },
+      {
+        "apply_cpu_ms": 1.324,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 10.617,
+          "median_ms": 4.024,
+          "p95_ms": 5.701,
+          "p99_ms": 10.617
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.723000012338161,
+          "median_ms": 0.692999981343746,
+          "p95_ms": 0.708000019192696,
+          "p99_ms": 0.723000012338161
+        },
+        "pass": 0,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 33,
+          "mesh": 0,
+          "specialization": 46,
+          "surface": 59
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 33,
+          "mesh": 0,
+          "specialization": 46,
+          "surface": 59
+        },
+        "theme": "lava_reef"
+      },
+      {
+        "apply_cpu_ms": 0.707,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 7.5,
+          "median_ms": 3.831,
+          "p95_ms": 5.835,
+          "p99_ms": 7.5
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.699000000953674,
+          "median_ms": 0.67900001630187,
+          "p95_ms": 0.691000018268824,
+          "p99_ms": 0.699000000953674
+        },
+        "pass": 1,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 33,
+          "mesh": 0,
+          "specialization": 46,
+          "surface": 59
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 33,
+          "mesh": 0,
+          "specialization": 46,
+          "surface": 59
+        },
+        "theme": "lava_reef"
+      },
+      {
+        "apply_cpu_ms": 0.417,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 6.272,
+          "median_ms": 3.86,
+          "p95_ms": 5.89,
+          "p99_ms": 6.272
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.695999994874001,
+          "median_ms": 0.6779999807477,
+          "p95_ms": 0.690000012516975,
+          "p99_ms": 0.695999994874001
+        },
+        "pass": 2,
+        "phase": "authored",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 33,
+          "mesh": 0,
+          "specialization": 46,
+          "surface": 59
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 33,
+          "mesh": 0,
+          "specialization": 46,
+          "surface": 59
+        },
+        "theme": "lava_reef"
+      },
+      {
+        "apply_cpu_ms": 0.348,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 5.659,
+          "median_ms": 3.802,
+          "p95_ms": 5.218,
+          "p99_ms": 5.659
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.693000018596649,
+          "median_ms": 0.678000029176474,
+          "p95_ms": 0.691999971866608,
+          "p99_ms": 0.693000018596649
+        },
+        "pass": 3,
+        "phase": "modified",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 33,
+          "mesh": 0,
+          "specialization": 46,
+          "surface": 59
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 33,
+          "mesh": 0,
+          "specialization": 46,
+          "surface": 59
+        },
+        "theme": "lava_reef"
+      }
+    ],
+    "renderer": "forward_plus",
+    "results": [
+      {
+        "active_materials": 102,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 926,
+        "draw_calls_p95": 926,
+        "frame_ms_median": 3.916,
+        "frame_ms_p95": 5.909,
+        "pass": 0,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 33,
+          "mesh": 0,
+          "specialization": 46,
+          "surface": 59
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 33,
+          "mesh": 0,
+          "specialization": 46,
+          "surface": 59
+        },
+        "render_cpu_ms_median": 1.78599996864796,
+        "render_cpu_ms_p95": 2.92599990963936,
+        "render_gpu_ms_median": 0.677999973297119,
+        "render_gpu_ms_p95": 0.690000012516975,
+        "rendered_objects_median": 3481,
+        "rendered_objects_p95": 3481,
+        "resources_median": 119,
+        "resources_p95": 119,
+        "theme": "lava_reef",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 102,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 926,
+        "draw_calls_p95": 926,
+        "frame_ms_median": 3.368,
+        "frame_ms_p95": 5.118,
+        "pass": 1,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 33,
+          "mesh": 0,
+          "specialization": 46,
+          "surface": 59
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 33,
+          "mesh": 0,
+          "specialization": 46,
+          "surface": 59
+        },
+        "render_cpu_ms_median": 1.54700002074242,
+        "render_cpu_ms_p95": 2.57900002598763,
+        "render_gpu_ms_median": 0.676999982446432,
+        "render_gpu_ms_p95": 0.688999999314547,
+        "rendered_objects_median": 3481,
+        "rendered_objects_p95": 3481,
+        "resources_median": 119,
+        "resources_p95": 119,
+        "theme": "lava_reef",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 102,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 926,
+        "draw_calls_p95": 926,
+        "frame_ms_median": 3.747,
+        "frame_ms_p95": 5.777,
+        "pass": 2,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 33,
+          "mesh": 0,
+          "specialization": 46,
+          "surface": 59
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 33,
+          "mesh": 0,
+          "specialization": 46,
+          "surface": 59
+        },
+        "render_cpu_ms_median": 1.67500001192093,
+        "render_cpu_ms_p95": 2.9099999666214,
+        "render_gpu_ms_median": 0.678000021725893,
+        "render_gpu_ms_p95": 0.689000017940998,
+        "rendered_objects_median": 3481,
+        "rendered_objects_p95": 3481,
+        "resources_median": 119,
+        "resources_p95": 119,
+        "theme": "lava_reef",
+        "variant": "authored",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 102,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 926,
+        "draw_calls_p95": 926,
+        "frame_ms_median": 3.725,
+        "frame_ms_p95": 5.698,
+        "pass": 3,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 33,
+          "mesh": 0,
+          "specialization": 46,
+          "surface": 59
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 33,
+          "mesh": 0,
+          "specialization": 46,
+          "surface": 59
+        },
+        "render_cpu_ms_median": 1.68099993467331,
+        "render_cpu_ms_p95": 2.87999993562698,
+        "render_gpu_ms_median": 0.678999975323677,
+        "render_gpu_ms_p95": 0.690999984741211,
+        "rendered_objects_median": 3481,
+        "rendered_objects_p95": 3481,
+        "resources_median": 119,
+        "resources_p95": 119,
+        "theme": "lava_reef",
+        "variant": "modified",
+        "world_size": "(673, 363)"
+      }
+    ],
+    "retro": "existing default stack",
+    "samples_per_pass": 1200,
+    "window": [
+      1280,
+      900
+    ]
+  },
+  "ocean_confirmation": {
+    "act": "Reverse C Spring",
+    "api": "1.4.351",
+    "camera": "50 degrees / 52 FOV / 1.3 zoom / left edge",
+    "device": "NVIDIA GeForce RTX 4060",
+    "driver": "vulkan",
+    "engine": "4.7.2-stable (official)",
+    "note": "Standalone generated Act; palette-only comparison, unchanged lights/shadows. Preparation windows include ordinary frames; they are not isolated compiler timings.",
+    "preparation": [
+      {
+        "elapsed_ms": 6285.006,
+        "phase": "initial_load_and_120_frames",
+        "pipelines": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        }
+      },
+      {
+        "elapsed_ms": 401.313,
+        "phase": "theme_load_and_60_frames",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "theme": "green_hill"
+      },
+      {
+        "apply_cpu_ms": 0.075,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 9.903,
+          "median_ms": 5.651,
+          "p95_ms": 8.461,
+          "p99_ms": 9.903
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.613000016659498,
+          "median_ms": 0.604999974370003,
+          "p95_ms": 0.611999981105328,
+          "p99_ms": 0.613000016659498
+        },
+        "pass": 0,
+        "phase": "old_flat",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 20,
+          "mesh": 0,
+          "specialization": 25,
+          "surface": 32
+        },
+        "theme": "green_hill"
+      },
+      {
+        "apply_cpu_ms": 0.043,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 9.195,
+          "median_ms": 6.498,
+          "p95_ms": 8.815,
+          "p99_ms": 9.195
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.630999982357025,
+          "median_ms": 0.608999982476234,
+          "p95_ms": 0.624000027775764,
+          "p99_ms": 0.630999982357025
+        },
+        "pass": 1,
+        "phase": "stylized",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "theme": "green_hill"
+      },
+      {
+        "apply_cpu_ms": 0.028,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 8.456,
+          "median_ms": 5.391,
+          "p95_ms": 7.395,
+          "p99_ms": 8.456
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.587000004947186,
+          "median_ms": 0.570000026375055,
+          "p95_ms": 0.585999991744757,
+          "p99_ms": 0.587000004947186
+        },
+        "pass": 2,
+        "phase": "stylized",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "theme": "green_hill"
+      },
+      {
+        "apply_cpu_ms": 0.03,
+        "first_60_frames": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 9.022,
+          "median_ms": 5.397,
+          "p95_ms": 8.495,
+          "p99_ms": 9.022
+        },
+        "first_60_gpu": {
+          "count": 60,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.604999989271164,
+          "median_ms": 0.587000001221895,
+          "p95_ms": 0.597000017762184,
+          "p99_ms": 0.604999989271164
+        },
+        "pass": 3,
+        "phase": "old_flat",
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "theme": "green_hill"
+      }
+    ],
+    "renderer": "forward_plus",
+    "results": [
+      {
+        "active_materials": 388,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 2630,
+        "draw_calls_p95": 2630,
+        "frame_ms_median": 5.668,
+        "frame_ms_p95": 8.138,
+        "pass": 0,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "render_cpu_ms_median": 2.88100007176399,
+        "render_cpu_ms_p95": 4.68199977278709,
+        "render_gpu_ms_median": 0.554999995976686,
+        "render_gpu_ms_p95": 0.576999988406897,
+        "rendered_objects_median": 3237,
+        "rendered_objects_p95": 3237,
+        "resources_median": 100,
+        "resources_p95": 100,
+        "theme": "green_hill",
+        "variant": "old_flat",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 388,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 2630,
+        "draw_calls_p95": 2630,
+        "frame_ms_median": 6.213,
+        "frame_ms_p95": 9.372,
+        "pass": 1,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "render_cpu_ms_median": 3.32099995017052,
+        "render_cpu_ms_p95": 5.71799984574318,
+        "render_gpu_ms_median": 0.600000023841858,
+        "render_gpu_ms_p95": 0.617000009864569,
+        "rendered_objects_median": 3237,
+        "rendered_objects_p95": 3237,
+        "resources_median": 100,
+        "resources_p95": 100,
+        "theme": "green_hill",
+        "variant": "stylized",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 388,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 2630,
+        "draw_calls_p95": 2630,
+        "frame_ms_median": 6.188,
+        "frame_ms_p95": 9.103,
+        "pass": 2,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "render_cpu_ms_median": 3.29500004649162,
+        "render_cpu_ms_p95": 5.38699999451637,
+        "render_gpu_ms_median": 0.557999990880489,
+        "render_gpu_ms_p95": 0.59000002220273,
+        "rendered_objects_median": 3237,
+        "rendered_objects_p95": 3237,
+        "resources_median": 100,
+        "resources_p95": 100,
+        "theme": "green_hill",
+        "variant": "stylized",
+        "world_size": "(673, 363)"
+      },
+      {
+        "active_materials": 388,
+        "camera": "Transform3D(1, 0, 0, 0, 0.64278764, 0.7660444, 0, -0.7660444, 0.64278764, 0.24, 2.115734, 7.21762)",
+        "draw_calls_median": 2630,
+        "draw_calls_p95": 2630,
+        "frame_ms_median": 5.359,
+        "frame_ms_p95": 8.389,
+        "pass": 3,
+        "pipelines_after": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "pipelines_before": {
+          "canvas": 5,
+          "draw": 21,
+          "mesh": 0,
+          "specialization": 26,
+          "surface": 32
+        },
+        "render_cpu_ms_median": 2.79899999499321,
+        "render_cpu_ms_p95": 4.76599988341331,
+        "render_gpu_ms_median": 0.55000001937151,
+        "render_gpu_ms_p95": 0.564000025391579,
+        "rendered_objects_median": 3237,
+        "rendered_objects_p95": 3237,
+        "resources_median": 100,
+        "resources_p95": 100,
+        "theme": "green_hill",
+        "variant": "old_flat",
+        "world_size": "(673, 363)"
+      }
+    ],
+    "retro": "existing default stack",
+    "samples_per_pass": 480,
+    "window": [
+      1280,
+      900
+    ]
+  },
+  "ice_sky_preparation": [
+    {
+      "apply_cpu_ms": 0.004,
+      "first_12_gpu_ms": [
+        0.57999999076128,
+        0.585999984294176,
+        0.582000024616718,
+        0.580999989062548,
+        0.583999998867512,
+        0.579000003635883,
+        0.592000000178814,
+        0.583000022917986,
+        0.579000014811754,
+        0.584000021219254,
+        0.576999980956316,
+        0.58899999409914
+      ],
+      "frames": {
+        "count": 120,
+        "frames_over_100_ms": 0,
+        "frames_over_50_ms": 0,
+        "max_ms": 7.398,
+        "median_ms": 4.387,
+        "p95_ms": 5.991,
+        "p99_ms": 6.815
+      },
+      "gpu": {
+        "count": 120,
+        "frames_over_100_ms": 0,
+        "frames_over_50_ms": 0,
+        "max_ms": 0.620000023394823,
+        "median_ms": 0.582000024616718,
+        "p95_ms": 0.598000027239323,
+        "p99_ms": 0.610999971628189
+      },
+      "phase": "baseline",
+      "pipelines_after": {
+        "canvas": 5,
+        "draw": 20,
+        "mesh": 0,
+        "specialization": 28,
+        "surface": 30
+      },
+      "pipelines_before": {
+        "canvas": 5,
+        "draw": 20,
+        "mesh": 0,
+        "specialization": 28,
+        "surface": 30
+      }
+    },
+    {
+      "apply_cpu_ms": 3.014,
+      "first_12_gpu_ms": [
+        0.579999979585409,
+        0.917999990284443,
+        0.581999987363815,
+        0.573999993503094,
+        0.592999972403049,
+        0.584999989718199,
+        0.575000006705523,
+        0.579000003635883,
+        0.580000028014183,
+        0.573000021278858,
+        0.58100001513958,
+        0.579999975860119
+      ],
+      "frames": {
+        "count": 120,
+        "frames_over_100_ms": 0,
+        "frames_over_50_ms": 0,
+        "max_ms": 6.346,
+        "median_ms": 3.825,
+        "p95_ms": 5.555,
+        "p99_ms": 6.174
+      },
+      "gpu": {
+        "count": 120,
+        "frames_over_100_ms": 0,
+        "frames_over_50_ms": 0,
+        "max_ms": 0.917999990284443,
+        "median_ms": 0.58100002259016,
+        "p95_ms": 0.608999975025654,
+        "p99_ms": 0.619000010192394
+      },
+      "phase": "sky_uniform_only",
+      "pipelines_after": {
+        "canvas": 5,
+        "draw": 20,
+        "mesh": 0,
+        "specialization": 28,
+        "surface": 30
+      },
+      "pipelines_before": {
+        "canvas": 5,
+        "draw": 20,
+        "mesh": 0,
+        "specialization": 28,
+        "surface": 30
+      }
+    },
+    {
+      "apply_cpu_ms": 0.001,
+      "first_12_gpu_ms": [
+        0.591999970376492,
+        0.592000015079975,
+        0.57499998062849,
+        0.582999996840954,
+        0.594999991357327,
+        0.58100002259016,
+        0.579000003635883,
+        0.580999977886677,
+        0.584999971091747,
+        0.584999974817038,
+        0.583000022917986,
+        0.617000002413988
+      ],
+      "frames": {
+        "count": 120,
+        "frames_over_100_ms": 0,
+        "frames_over_50_ms": 0,
+        "max_ms": 7.09,
+        "median_ms": 3.594,
+        "p95_ms": 4.799,
+        "p99_ms": 5.251
+      },
+      "gpu": {
+        "count": 120,
+        "frames_over_100_ms": 0,
+        "frames_over_50_ms": 0,
+        "max_ms": 0.622999973595142,
+        "median_ms": 0.58100002259016,
+        "p95_ms": 0.605999998748302,
+        "p99_ms": 0.617000013589859
+      },
+      "phase": "settled_repeat",
+      "pipelines_after": {
+        "canvas": 5,
+        "draw": 20,
+        "mesh": 0,
+        "specialization": 28,
+        "surface": 30
+      },
+      "pipelines_before": {
+        "canvas": 5,
+        "draw": 20,
+        "mesh": 0,
+        "specialization": 28,
+        "surface": 30
+      }
+    }
+  ]
+}

@@ -1,4 +1,10 @@
 shader_type spatial;
+// Linear palette uniforms preserve the original shader constants.
+uniform vec3 deep_color = vec3(0.012,0.070,0.105);
+uniform vec3 wave_color = vec3(0.018,0.12,0.17);
+uniform vec3 caustic_color = vec3(0.03,0.17,0.20);
+uniform vec3 reflection_color = vec3(0.10,0.22,0.29);
+uniform vec3 lantern_color = vec3(0.28,0.10,0.025);
 render_mode cull_disabled;
 // Opaque deep water avoids sorted transparency over the full park. Tank walls
 // use a separate transparent shell. Broad waves survive the retro world buffer.
@@ -15,14 +21,14 @@ void fragment() {
  float ripple = a*0.6+b*0.4;
  NORMAL = normalize(NORMAL+vec3(a*0.045,b*0.035,0.0));
  float fresnel = pow(1.0-max(dot(NORMAL,VIEW),0.0),3.0);
- vec3 deep = mix(vec3(0.012,0.070,0.105),vec3(0.018,0.12,0.17),0.5+0.5*ripple);
+ vec3 deep = mix(deep_color,wave_color,0.5+0.5*ripple);
  float caustic = pow(max(0.0,1.0-abs(a+b)*1.5),5.0);
  // Broken, broad reflection ribbons suggest distant amber lantern rows.
  float reflection = pow(max(0.0,sin(p.x*0.65+0.12*ripple)),18.0);
  reflection *= 0.35+0.65*pow(0.5+0.5*sin(p.y*4.0+t*0.3+a),3.0);
  ALBEDO = deep;
- EMISSION = deep*radiance+vec3(0.03,0.17,0.20)*caustic*0.22;
- EMISSION += vec3(0.10,0.22,0.29)*fresnel+vec3(0.28,0.10,0.025)*reflection*0.35;
+ EMISSION = deep*radiance+caustic_color*caustic*0.22;
+ EMISSION += reflection_color*fresnel+lantern_color*reflection*0.35;
  ROUGHNESS = 0.16;
  SPECULAR = 0.85;
  METALLIC = 0.22;

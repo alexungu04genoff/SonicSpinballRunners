@@ -32,8 +32,8 @@ New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
 $arguments = @('--path', $repoRoot, '--rendering-method', $method, '--rendering-driver', $driver,
     '--log-file', (Join-Path $logDirectory "lighting-lab-$Renderer.log"),
     'res://experiments/lighting_lab/lighting_lab.tscn', '--', "--theme=$Theme", '--act', $Act)
-Write-Host "Lighting Lab: $Renderer / $Theme. Wheel zoom; middle-drag pan; F6 controls."
+Write-Host "Atmosphere Lab: $Renderer / $Theme. Wheel zoom; middle-drag pan; F6 controls."
 # Interactive window requested by the user; wait for GUI and console executables alike.
 $quoted = $arguments | ForEach-Object { '"{0}"' -f $_ }
 $process = Start-Process -FilePath $GodotPath -ArgumentList $quoted -Wait -PassThru
-if ($process.ExitCode -ne 0) { throw "Lighting Lab exited with code $($process.ExitCode). See .godot\lighting-lab-$Renderer.log." }
+if ($process.ExitCode -ne 0) { throw "Atmosphere Lab exited with code $($process.ExitCode). See .godot\lighting-lab-$Renderer.log." }

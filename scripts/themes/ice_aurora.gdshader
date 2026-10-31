@@ -1,8 +1,14 @@
 shader_type spatial;
+// Linear palette uniforms preserve the original shader constants.
+uniform vec3 primary_color = vec3(0.05, 0.95, 0.32);
+uniform vec3 secondary_color = vec3(0.14, 0.52, 0.80);
+uniform vec3 tertiary_color = vec3(0.57, 0.23, 0.62);
 render_mode unshaded, cull_disabled, blend_add, depth_draw_never, shadows_disabled;
 // Original bounded-cost curtain: no raymarch, texture reads, or per-frame CPU work.
 uniform float phase = 0.0;
 uniform float strength = 0.65;
+// Retain the individual curtains' authored strength ratio.
+uniform float atmosphere_strength = 1.0;
 void vertex() {
  float wave = sin(UV.x * 13.0 + TIME * 0.075 + phase);
  VERTEX.y += wave * 1.8 + sin(UV.x * 24.0 - TIME * 0.045) * 0.6;
@@ -15,8 +21,8 @@ void fragment() {
  float folds = 0.64 + 0.22 * sin(UV.x * 91.0 + sin(UV.x * 21.0 + TIME * 0.06) * 3.0);
  folds += 0.10 * sin(UV.x * 169.0 - TIME * 0.025);
  float ends = smoothstep(0.0, 0.10, UV.x) * smoothstep(0.0, 0.10, 1.0 - UV.x);
- vec3 color = mix(vec3(0.05, 0.95, 0.32), vec3(0.14, 0.52, 0.80), clamp(height * 4.0, 0.0, 1.0));
- color = mix(color, vec3(0.57, 0.23, 0.62), smoothstep(0.24, 0.52, height));
+ vec3 color = mix(primary_color, secondary_color, clamp(height * 4.0, 0.0, 1.0));
+ color = mix(color, tertiary_color, smoothstep(0.24, 0.52, height));
  ALBEDO = color;
- ALPHA = curtain * folds * ends * strength;
+ ALPHA = curtain * folds * ends * strength * atmosphere_strength;
 }

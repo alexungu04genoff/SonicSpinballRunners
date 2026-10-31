@@ -118,6 +118,7 @@ func build_background(p: Node3D) -> void:
   lamp.name = "LanternSpillLeft" if side < 0 else "LanternSpillRight"
   lamp.position = at
   lamp.light_color = Color("ffb86a")
+  Atmosphere.tag(lamp, "light_color", "lantern_left" if side < 0 else "lantern_right")
   lamp.light_energy = 1.4
   lamp.omni_range = maxf(5.5,width*0.6)
   lamp.omni_attenuation = 1.8

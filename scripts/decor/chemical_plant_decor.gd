@@ -1,4 +1,5 @@
 extends "res://scripts/decor/decor_skin.gd"
+const Atmosphere := preload("res://scripts/themes/theme_atmosphere.gd")
 ## Original, collisionless factory props in cell units. All primitives and
 ## materials are shared within this library; fluid is a static emissive insert.
 var _meshes: Dictionary = {}
@@ -54,6 +55,8 @@ func _prepare_materials() -> void:
   if key == "glass":
    material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
    material.roughness = 0.2
+  if key == "cyan": Atmosphere.color(material, "industrial_cyan")
+  if key == "pink": Atmosphere.color(material, "signal_pink")
   _materials[key] = material
 
 func _primitive(kind: String) -> Mesh:

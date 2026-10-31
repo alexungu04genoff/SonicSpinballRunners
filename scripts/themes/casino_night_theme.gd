@@ -85,6 +85,7 @@ func build_background(p: Node3D) -> void:
  sign.font_size = 64
  sign.pixel_size = 0.007
  sign.modulate = Color("ffbb60")
+ Atmosphere.tag(sign, "modulate", "marquee")
  sign.outline_modulate = Color("5b163b")
  sign.outline_size = 18
  sign.position = Vector3(center.x, -0.432, far_z + 1.02)
@@ -95,6 +96,7 @@ func build_background(p: Node3D) -> void:
   var fill := OmniLight3D.new()
   fill.name = "CasinoWarmSpill" if side < 0 else "CasinoBlueSpill"
   fill.light_color = Color("ffae55") if side < 0 else Color("557fff")
+  Atmosphere.tag(fill, "light_color", "warm_spill" if side < 0 else "blue_spill")
   fill.light_energy = 2.4
   fill.omni_range = 4.8
   fill.omni_attenuation = 1.5

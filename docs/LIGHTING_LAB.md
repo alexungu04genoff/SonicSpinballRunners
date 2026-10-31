@@ -1,6 +1,8 @@
-# Lighting Lab
+# Atmosphere Lab (formerly Lighting Lab)
 
-Double-click **`Lighting Lab.cmd`** at the repository root. It opens the existing authored Act player with **Forward+/Vulkan**, a lighting inspector and the current local artwork. Production launchers, project renderer, physics, authored Acts and baked Prototype/Endless data are unchanged.
+The current manual palette workflow, migration rules and implementation are documented in [Atmosphere authoring](ATMOSPHERE_AUTHORING.md).
+
+Double-click **`Atmosphere Lab.cmd`** (or the existing **`Lighting Lab.cmd`** alias) at the repository root. It opens the existing authored Act player with **Forward+/Vulkan**, an atmosphere inspector and the current local artwork. Production launchers, project renderer, physics and authored Acts are unchanged. Saved Lab presets do not modify production bakes; source shader changes in this milestone require the normal rebake.
 
 ## Inspect and play
 
@@ -13,16 +15,17 @@ Double-click **`Lighting Lab.cmd`** at the repository root. It opens the existin
 - **Retro** toggles the default world filter stack. F4 and the existing Retro panel remain available.
 - The lab starts **uncapped with VSync off**. Its **VSync** switch optionally synchronizes rendering to the display. A top-left counter shows FPS and average frame time, refreshed twice per second, including with the inspector hidden and in fullscreen Play View. Physics remains 120 Hz. These are process-local lab settings, not production defaults.
 
-The inspector has four tabs:
+The inspector has five tabs:
 
 | Tab | Controls |
 |---|---|
 | Light | Exposure; Linear/Reinhard/Filmic/ACES/AgX tonemapping; ambient energy/color and sky contribution; directional energy/color, elevation/azimuth and specular strength; color-adjustment toggle, contrast and saturation |
 | Sky | Background brightness; procedural sky top/horizon and ground bottom/horizon colors, with separate sky/ground blends; solid background color where applicable; background scenery visibility |
+| Palette | Theme-specific water, cloud, scenery, accent and existing spill-light colors; supported intensity controls |
 | Glow & Fog | Glow enable/intensity, bloom and threshold; material emission multiplier; fog enable, density, color, brightness and sky influence |
 | Shadows | Enable, opacity, directional softness, depth/normal bias, distance, and one/two/four shadow maps |
 
-Numeric fields support typing and sliders. **Show original lighting** switches the live lighting and sky/background back to the loaded theme baseline without discarding the draft. Turning it off restores the tuned atmosphere. Editing any value returns to the tuned preview. This is a same-renderer comparison, not an emulation of Compatibility lighting under Vulkan.
+Numeric fields support typing and sliders. **Show original atmosphere** switches the live lighting, sky/background and theme palette back to the loaded theme baseline without discarding the draft. Turning it off restores the tuned atmosphere. Editing any value returns to the tuned preview. This is a same-renderer comparison, not an emulation of Compatibility lighting under Vulkan.
 
 ## Sky and background types
 
@@ -30,23 +33,23 @@ The Sky tab adapts to the active theme's actual Environment and sky material:
 
 - **Green Hill, Sky Sanctuary, Rooftop Run, Chemical Plant, Casino Night and Aquarium Park:** four procedural-sky colors and two horizon blends. Edits use private Sky/material copies. Ground colors matter in the downward-looking gameplay camera; top/horizon colors matter when the sky above the horizon is visible.
 - **Lava Reef:** background color and brightness, without procedural-sky fields.
-- **Ice Cap:** background brightness only. Its custom shader hardcodes the gradient and stars without palette uniforms; the lab leaves that shader intact and hides unsupported fields.
+- **Ice Cap:** background brightness in Sky, with custom gradient, glow and star controls in Palette. The existing static radiance technique remains.
 
-**Show background scenery** is a view-only toggle, useful when scenery hides the actual sky. It is kept while switching themes in the current session, but is not saved in atmosphere presets. Green Hill's cyan ocean and white clouds are unlit meshes; Sky Sanctuary's cloud deck and lobes have fixed shader palettes. They are separate from the procedural sky and retain their authored colors. Likewise, Lava Reef's background color does not recolor its magma or cavern meshes. Hide background scenery to inspect the sky directly; restore it to judge the complete scene. Material palette work remains separate from this sky-authoring pass.
+**Show far environment** and **Show local framing** independently toggle the existing scenery children. Both are inspection-only and survive theme switches in the session. Hide far scenery to inspect sky while retaining Act-owned landmarks. Palette now controls theme-owned water, clouds and accents as well.
 
 ## Quick atmosphere looks
 
-The **Try an atmosphere…** menu offers **Daytime, Morning, Golden hour, Sunset, Dusk, Blue hour, Night, Moonlit, Indoors, Overcast, Stormfront, Neon night, and Neutral inspection**, plus **Authored lighting**. Every look is available for every theme/Act. Energy, exposure, background brightness, glow and emission are scaled relative to the active theme's original values, with mood-specific ambient/sun colors and sun direction. Compatible sky/background colors are included in the same draft. These are starting points for manual art review, not approved production palettes.
+The **Try an atmosphere…** menu offers **Daytime, Morning, Golden hour, Sunset, Dusk, Blue hour, Night, Moonlit, Indoors, Overcast, Stormfront, Neon night, and Neutral inspection**, plus **Authored atmosphere**. Every look is available for every theme/Act. Energy, exposure, background brightness, glow and emission are scaled relative to the active theme's original values, with mood-specific ambient/sun colors and sun direction. Compatible sky/background colors are included in the same draft. These are starting points for manual art review, not approved production palettes.
 
-Morning/Sunset use low warm light; Dusk/Night use cooler, dimmer lighting; Indoors emphasizes warm ambient light; Overcast reduces direct-light contrast; Neon night raises the contribution of editable emission against darker surroundings. Neutral inspection uses white lighting and disables glow, fog and color adjustment. These looks do not add time-of-day simulation, indoor geometry, new local lights or weather. They leave shadow quality and physics unchanged. Scenery with fixed shader colors/emission may need separate tuning, especially for night looks.
+Morning/Sunset use low warm light; Dusk/Night use cooler, dimmer lighting; Indoors emphasizes warm ambient light; Overcast reduces direct-light contrast; Neon night raises the contribution of editable emission against darker surroundings. Neutral inspection uses white lighting and disables glow, fog and color adjustment. These looks do not add time-of-day simulation, indoor geometry, new local lights or weather. They leave shadow quality and physics unchanged. Theme palette recipes now provide starting water/cloud/background colors where the mapping is clear; all remain editable.
 
-**Golden hour** keeps more warm sunlight than Sunset. **Blue hour** gives a cool twilight transition. **Moonlit** is a more readable, brighter alternative to Night. **Stormfront** uses a subdued slate palette and weak direct light, without adding weather. Sunset pairs a blue/purple upper sky with peach/orange horizons and a darker mauve bottom. Night/Moonlit use navy and blue horizons; Neon night uses nearly black surroundings. Daytime and Neutral inspection retain the theme's authored sky palette. Custom shader skies retain their palette for every look and use brightness instead.
+**Golden hour** keeps more warm sunlight than Sunset. **Blue hour** gives a cool twilight transition. **Moonlit** is a more readable, brighter alternative to Night. **Stormfront** uses a subdued slate palette and weak direct light, without adding weather. Sunset pairs a blue/purple upper sky with peach/orange horizons and a darker mauve bottom. Night/Moonlit use navy and blue horizons; Neon night uses nearly black surroundings. Daytime and Neutral inspection retain the theme's authored sky palette. Ice's custom sky now receives supported palette recipes as well as brightness.
 
-Choosing a look replaces the current unsaved atmosphere draft. It never writes the saved preset automatically: **Save** keeps the result, **Reload** retrieves the saved choice, and **Reset / Authored lighting** returns to the theme baseline. Manual slider edits return the menu to its prompt. VSync, the performance counter and scenery visibility are independent of atmosphere looks.
+Choosing a look replaces the current unsaved atmosphere draft. It never writes the saved preset automatically: **Save** keeps the result, **Reload** retrieves the saved choice, and **Reset / Authored atmosphere** returns to the theme baseline. Manual slider edits return the menu to its prompt. VSync, the performance counter and scenery visibility are independent of atmosphere looks.
 
 ## Save and compare
 
-**Save** stores one preset for the current **theme + renderer** in `user://lighting_lab_presets.cfg`. In a normal Windows launch this is under `%APPDATA%\Godot\app_userdata\Sonic Spinball Runners\`; **Open folder** opens the exact active location. Share that small configuration file to hand off chosen values. It contains lighting/environment and compatible sky/background values, not player settings or telemetry. Existing lighting-only presets still load; missing sky fields use the theme's originals. Unsupported fields do not transfer between sky types.
+**Save** stores one preset for the current **theme + renderer** in `user://lighting_lab_presets.cfg`. In a normal Windows launch this is under `%APPDATA%\Godot\app_userdata\Sonic Spinball Runners\`; **Open folder** opens the exact active location. Share that small configuration file to hand off chosen values. Format v2 contains lighting/environment, compatible sky/background and semantic palette values, not player settings or telemetry. Existing v1 presets still load; missing fields use theme originals. First v2 Save preserves a v1 backup. Unsupported fields do not transfer between sky types.
 
 Saved presets reload automatically on launch/theme selection. Unsaved theme drafts survive switching themes within the current process. **Reload** discards the current draft and reads its saved preset, or originals if none exists. **Reset** restores original values in the preview; it does not replace the saved preset until Save is clicked. Saving while showing originals still saves the tuned draft. The comparison checkbox never erases it.
 
@@ -69,11 +72,13 @@ Renderer changes require relaunching. Each launch explicitly selects its method/
 
 Start with exposure and tonemapper, then balance ambient and sun. Compare with Retro disabled before tuning glow, emission and fog. Check both a close gameplay camera and full overview before changing shadow bias or distance. Bias can cause floating shadows; shorter distance can remove distant shadows; one map can blur nearby shadows. None of those quality changes are applied by default.
 
-Emission changes private material copies, preserving source resources. It affects enabled standard-material emission and existing shader scales named `emission_scale`, `neon_strength` or `radiance`. Fixed shader expressions, such as part of Aquarium glass/water highlights, remain authored. Sky/clear brightness affects the environment background, not independently lit scenery meshes. Consequently, these controls do not guarantee complete Compatibility/Vulkan visual parity; glass, water, clouds or emissive shaders may still need focused material work.
+Emission changes private material copies, preserving source resources. It affects enabled standard-material emission and existing shader scales named `emission_scale`, `neon_strength` or `radiance`. Palette exposes selected environmental shader colors, including Aquarium glass/water highlights. Sky/clear brightness affects the environment background, not independently lit scenery meshes. Consequently, these controls do not guarantee complete Compatibility/Vulkan visual parity; glass, water, clouds or emissive shaders may still need focused material work.
 
-Directional shadow softness uses PCSS and is enabled only on Forward+. It has a performance cost. Other renderer-supported properties can also have different visual effects across backends. See Godot's [Environment controls](https://docs.godotengine.org/en/stable/classes/class_environment.html) and [directional softness support](https://docs.godotengine.org/en/stable/classes/class_light3d.html#class-light3d-property-light-angular-distance). The lab adds no new postprocessing shader or production shader rewrite.
+Directional shadow softness uses PCSS and is enabled only on Forward+. It has a performance cost. Other renderer-supported properties can also have different visual effects across backends. See Godot's [Environment controls](https://docs.godotengine.org/en/stable/classes/class_environment.html) and [directional softness support](https://docs.godotengine.org/en/stable/classes/class_light3d.html#class-light3d-property-light-angular-distance). The lab adds no new postprocessing system; theme shader changes preserve existing algorithms except the small ocean addition and Lava hash correction described in the authoring guide.
 
-## Verification
+## Verification history
+
+The entries below describe the earlier lighting/sky milestones. The subsequent full atmosphere implementation and current checks are recorded in [Atmosphere performance](ATMOSPHERE_PERFORMANCE.md).
 
 `tests/lighting_lab_smoke.gd` exercises actual controls and live scene properties, original/tuned comparison, save/reload/reset, theme draft isolation, wheel zoom, middle-drag pan, panel reopening, material emission, all eight themes and unchanged physics/score. Run it in an isolated application profile to keep test presets separate from manual choices:
 

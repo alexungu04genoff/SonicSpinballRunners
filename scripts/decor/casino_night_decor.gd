@@ -1,4 +1,5 @@
 extends "res://scripts/decor/decor_skin.gd"
+const Atmosphere := preload("res://scripts/themes/theme_atmosphere.gd")
 ## Original casino ornaments, in construction-cell units. No gameplay nodes.
 ## Published pool order is shared by all hints and must remain stable.
 var meshes: Dictionary = {}
@@ -26,6 +27,10 @@ func _init(_presentation: Node3D) -> void:
    mat.emission_enabled = true
    mat.emission = mat.albedo_color
    mat.emission_energy_multiplier = 2.8
+  if key in ["pink", "aqua", "mint", "amber"]: Atmosphere.color(mat, "neon_" + key)
+  if key in ["navy", "dark"]: Atmosphere.color(mat, "skyline_tint", "tint")
+  if key == "purple": Atmosphere.color(mat, "purple_accent")
+  if key == "gold_light": Atmosphere.color(mat, "window_gold")
   materials[key] = mat
 
 func primitive(kind: String) -> Mesh:

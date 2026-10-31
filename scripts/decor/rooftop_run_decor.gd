@@ -1,4 +1,5 @@
 extends "res://scripts/decor/decor_skin.gd"
+const Atmosphere := preload("res://scripts/themes/theme_atmosphere.gd")
 ## Original Spagonia-inspired primitives in cell units; no gameplay nodes.
 ## Pool order is stable: authored fixed variants address these exact indices.
 var meshes: Dictionary = {}
@@ -23,6 +24,8 @@ func _init(_presentation: Node3D) -> void:
   mat.albedo_color = Color(colors[key])
   mat.roughness = 0.88
   mat.metallic_specular = 0.15
+  if key in ["stone", "cream", "ochre"]: Atmosphere.color(mat, "architecture_tint", "tint")
+  if key in ["leaf", "leaf_light"]: Atmosphere.color(mat, "vegetation_tint", "tint")
   materials[key] = mat
 
 func primitive(kind: String) -> Mesh:

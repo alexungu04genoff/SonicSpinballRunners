@@ -3120,6 +3120,18 @@ Alex approved close left/right edge views using the Prototype tilt and zoom as t
 
 Green Hill has low coastal headlands plus small-island variety; Ice's aurora follows the course sides; Sky uses broken vertical ruins with cloud gaps instead of patios; Chemical has close tanks and short pipes. Casino landmarks and Rooftop facades also use local edges. Aquarium and Lava composition remain untouched. The small before/after edge samples are approximately neutral in draws/GPU time, not evidence of a universal FPS gain. Both bake pools need refreshing. Details and the agreed review setup are in [ENVIRONMENT_FRAMING.md](ENVIRONMENT_FRAMING.md).
 
+# ATMOSPHERE AUTHORING INSTRUMENT — 2026-10-31
+
+Lighting Lab has grown into **Atmosphere Lab**, with the old launcher still working. The agreed model is **Act geometry × Theme × Atmosphere Variant**; atmosphere means lighting, sky and a small theme-owned environmental palette. Alex gets Ocean deep, Cloud highlight, Chemical liquid and other understandable roles, not Material 37 or a global hue wheel.
+
+All eight themes now expose their useful environment colors. Palette edits and emission share private material copies, one per source material. Values apply on change; there is no per-frame recoloring, new light, extra pass or reflection system. Sky Sanctuary's unshaded clouds can finally become lavender at Sunset and subdued blue at Night. Ice keeps its custom static sky and contour-following aurora; changing sky colors may prepare radiance once. Existing shared far scenery and Act-owned local framing stay intact, with separate inspection toggles.
+
+Original comparison now restores the complete atmosphere without losing the draft. Existing renderer/theme saves migrate additively to v2, with a v1 backup on first Save. Quick looks offer optional semantic palette recipes, still starting points for Alex to tune. No final production variants were generated or promoted.
+
+Green Hill gets a cheap animated opaque ocean on the existing plane. Lava's rectangular Forward+ mess was real: its sine-based noise hash broke at lattice boundaries even on an isolated unfiltered plane. A small integer-hash replacement removes those seams while retaining the same flowing noise algorithm and approved composition. We did not remodel the cave to hide a shader bug.
+
+The measured all-eight palette comparison keeps draw/object/material counts unchanged and settled GPU time within a few microseconds in the sampled view. Ocean timing is reported separately. Frame/CPU timings remain workstation-sensitive; the work laptop is still the second-hardware gate. See [Atmosphere authoring](ATMOSPHERE_AUTHORING.md) and [measurements and checks](ATMOSPHERE_PERFORMANCE.md). Source-hashed Prototype/Endless bakes must be refreshed; Lab presets remain separate from production.
+
 # REPOSITORY SNAPSHOT AND COMMIT HISTORY — KEEP THIS LAST
 
 ## Current repository context — cleanup and first performance pass, 2026-10-30

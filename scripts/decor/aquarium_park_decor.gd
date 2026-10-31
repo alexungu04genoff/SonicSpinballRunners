@@ -1,4 +1,5 @@
 extends "res://scripts/decor/decor_skin.gd"
+const Atmosphere := preload("res://scripts/themes/theme_atmosphere.gd")
 ## Original low-poly aquatic architecture. Every node is presentation only.
 var meshes: Dictionary = {}
 var materials: Dictionary = {}
@@ -26,6 +27,11 @@ func _init(_presentation: Node3D) -> void:
    mat.emission = Color(colors[key])
    mat.emission_energy_multiplier = 0.90 if key == "paper" else 0.35
    if key == "paper": mat.emission = Color("ff8b36")
+  if key == "paper":
+   Atmosphere.tag(mat, "albedo_color", "lantern_paper")
+   Atmosphere.tag(mat, "emission", "lantern_emission")
+  if key == "coral": Atmosphere.color(mat, "coral")
+  if key in ["cyan", "fish"]: Atmosphere.color(mat, "aquatic_tint", "tint")
   materials[key] = mat
  var roof_material := StandardMaterial3D.new()
  roof_material.vertex_color_use_as_albedo = true

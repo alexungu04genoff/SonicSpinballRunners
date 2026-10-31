@@ -20,6 +20,7 @@ const GROUPS := {
   ["Saturation", "env/adjustment_saturation", "number", 0.0, 2.0, 0.01],
  ],
  "Sky": [],
+ "Palette": [],
  "Glow & Fog": [
   ["Glow enabled", "env/glow_enabled", "bool"],
   ["Glow intensity", "env/glow_intensity", "number", 0.0, 2.0, 0.01],
@@ -63,9 +64,12 @@ var vsync: CheckButton
 var performance_label: Label
 var fps_overlay: Label
 var sky_controls: VBoxContainer
+var palette_controls: VBoxContainer
+var palette_fields: Array = []
 var sky_fields: Array = []
 var sky_material: Material
 var show_background_scenery := true
+var show_local_scenery := true
 var look_selector: OptionButton
 var _performance_elapsed := 0.0
 var _performance_frames := 0
@@ -160,17 +164,19 @@ func _build_ui() -> void:
  look_selector = OptionButton.new()
  look_selector.focus_mode = Control.FOCUS_NONE
  look_selector.add_item("Try an atmosphere…")
- look_selector.add_item("Authored lighting")
+ look_selector.add_item("Authored atmosphere")
  for look: String in LightingLooks.LOOKS: look_selector.add_item(look)
  look_selector.item_selected.connect(_select_look)
  column.add_child(look_selector)
  compare = CheckButton.new()
- compare.text = "Show original lighting"
- compare.tooltip_text = "Compare the original lighting and sky/background with your tuned atmosphere. Your draft is preserved."
+ compare.text = "Show original atmosphere"
+ compare.tooltip_text = "Compare original lighting, sky and theme palette together. Your tuned draft is preserved."
  compare.focus_mode = Control.FOCUS_NONE
  compare.toggled.connect(func(_enabled: bool): apply_values())
  column.add_child(compare)
  var tabs := TabContainer.new()
+ tabs.tab_alignment = TabBar.ALIGNMENT_LEFT
+ tabs.add_theme_font_size_override("font_size", 12)
  tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
  column.add_child(tabs)
  for group: String in GROUPS:
@@ -184,10 +190,11 @@ func _build_ui() -> void:
   controls.add_theme_constant_override("separation", 8)
   scroll.add_child(controls)
   if group == "Sky": sky_controls = controls
+  if group == "Palette": palette_controls = controls
   for spec: Array in GROUPS[group]: _field(controls, spec)
   if group == "Glow & Fog":
    var note := Label.new()
-   note.text = "Emission: standard materials + exposed shader scales.\nFixed shader highlights keep their authored values.\nSky brightness does not dim scenery meshes."
+   note.text = "Emission scales existing emitters. Theme-owned water, clouds and accents are in Palette. No lights or rendering passes are added."
    note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
    note.add_theme_font_size_override("font_size", 12)
    controls.add_child(note)
@@ -201,7 +208,7 @@ func _build_ui() -> void:
  message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  message.add_theme_font_size_override("font_size", 12)
  column.add_child(message)
- reopen = _button(root, "Lighting · F6", toggle_panel)
+ reopen = _button(root, "Atmosphere · F6", toggle_panel)
  reopen.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
  reopen.offset_left = -145
  reopen.offset_right = -10
@@ -291,12 +298,14 @@ func bind_theme() -> void:
  var rooftop = game.get("rooftop_materials")
  if game.theme_id == "rooftop_run" and is_instance_valid(rooftop): rooftop.apply_lighting()
  _bind_sky(environment)
+ emission.collect(game.presentation, game.theme_id, sky_material)
+ _bind_palette()
  preset_key = renderer + "/" + game.theme_id
  originals.clear()
  for group: Array in GROUPS.values():
   for spec: Array in group: originals[spec[1]] = _read_value(spec[1])
  for spec: Array in sky_fields: originals[spec[1]] = _read_value(spec[1])
- emission.collect(game.presentation)
+ originals.merge(emission.palette_originals)
  values = originals.duplicate(true)
  var stored: Dictionary = drafts.get(preset_key, saved.get_value(preset_key, "values", {}))
  for key: String in originals:
@@ -305,7 +314,7 @@ func bind_theme() -> void:
  look_selector.select(0)
  _sync_widgets()
  apply_values()
- caption.text = "LIGHTING / " + {"forward_plus": "Forward+", "mobile": "Mobile", "gl_compatibility": "ANGLE"}.get(renderer, renderer)
+ caption.text = "ATMOSPHERE / " + {"forward_plus": "Forward+", "mobile": "Mobile", "gl_compatibility": "ANGLE"}.get(renderer, renderer)
  message.text = "Lab preset: " + game.presentation.theme_definition.display_name + "\nSave keeps these values for this renderer only."
 
 func _bind_sky(environment: Environment) -> void:
@@ -323,32 +332,55 @@ func _bind_sky(environment: Environment) -> void:
   sky_material = sky_material.duplicate()
   environment.sky.sky_material = sky_material
   sky_fields.append_array(PROCEDURAL_SKY_FIELDS)
-  description = "Procedural sky · Colors and horizon blends are saved with your lighting. Scenery can cover the sky; hide it below to inspect the palette."
+  description = "Procedural sky · Colors and horizon blends save with the atmosphere. Inspect far scenery and local framing separately below."
  elif environment.background_mode == Environment.BG_COLOR:
   sky_fields.append(["Background color", "env/background_color", "color"])
-  description = "Solid background · Color applies behind the scenery. The lava, cavern and other meshes keep their own materials."
+  description = "Solid background · Color applies behind scenery. Magma, cavern and crystal colors are in Palette."
  elif environment.background_mode == Environment.BG_SKY and sky_material is ShaderMaterial:
-  description = "Custom shader sky · Its colors and stars are authored in the shader, without exposed palette controls. Brightness is adjustable; presets keep its existing palette."
+  environment.sky = environment.sky.duplicate()
+  sky_material = sky_material.duplicate()
+  environment.sky.sky_material = sky_material
+  description = "Custom sky · Horizon, stars and aurora colors are in Palette. Radiance updates when those values change, then stays cached."
  var note := Label.new()
  note.text = description
  note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  note.add_theme_font_size_override("font_size", 13)
  sky_controls.add_child(note)
- var scenery := CheckButton.new()
- scenery.text = "Show background scenery"
- scenery.tooltip_text = "View only; not saved in presets. Unlit ocean/cloud meshes keep their authored colors and may cover the sky."
- scenery.focus_mode = Control.FOCUS_NONE
- scenery.set_pressed_no_signal(show_background_scenery)
- scenery.toggled.connect(func(enabled: bool):
-  show_background_scenery = enabled
-  game.presentation.scenery_root.visible = enabled
- )
- sky_controls.add_child(scenery)
- game.presentation.scenery_root.visible = show_background_scenery
+ for kind: String in ["far", "local"]:
+  var scenery := CheckButton.new()
+  scenery.text = "Show far environment" if kind == "far" else "Show local framing"
+  scenery.tooltip_text = "Inspection only; not saved in atmosphere presets."
+  scenery.focus_mode = Control.FOCUS_NONE
+  scenery.set_pressed_no_signal(show_background_scenery if kind == "far" else show_local_scenery)
+  scenery.toggled.connect(func(enabled: bool): set_scenery_visible(kind, enabled))
+  sky_controls.add_child(scenery)
+ set_scenery_visible("far", show_background_scenery)
+ set_scenery_visible("local", show_local_scenery)
  for spec: Array in sky_fields: _field(sky_controls, spec)
  for spec: Array in PROCEDURAL_SKY_FIELDS:
   if spec[2] == "number" and widgets.has(spec[1]):
    # Curve setters expect a positive blend range, unlike free-form light energy.
+   var number: SpinBox = widgets[spec[1]]
+   number.allow_greater = false
+   number.allow_lesser = false
+
+func set_scenery_visible(kind: String, enabled: bool) -> void:
+ if kind == "far": show_background_scenery = enabled
+ else: show_local_scenery = enabled
+ for child: Node3D in game.presentation.scenery_root.get_children():
+  if child.get_meta("atmosphere_scenery", "far") == kind: child.visible = enabled
+
+func _bind_palette() -> void:
+ for spec: Array in palette_fields: widgets.erase(spec[1])
+ for child: Node in palette_controls.get_children():
+  palette_controls.remove_child(child)
+  child.queue_free()
+ palette_fields = []
+ for spec: Array in EmissionPreview.Palette.fields(game.theme_id):
+  if not emission.palette_originals.has(spec[1]): continue
+  palette_fields.append(spec)
+  _field(palette_controls, spec)
+  if spec[2] == "number":
    var number: SpinBox = widgets[spec[1]]
    number.allow_greater = false
    number.allow_lesser = false
@@ -386,6 +418,7 @@ func apply_values() -> void:
 
 func _apply(source: Dictionary) -> void:
  for key: String in source:
+  if key.begins_with("palette/"): continue
   if key == "emission": emission.apply(float(source[key]))
   elif key == "sun_pitch": game.presentation._key_light.rotation_degrees.x = float(source[key])
   elif key == "sun_yaw": game.presentation._key_light.rotation_degrees.y = float(source[key])
@@ -394,6 +427,8 @@ func _apply(source: Dictionary) -> void:
   else:
    var target: Object = game.presentation._world_environment.environment if key.begins_with("env/") else game.presentation._key_light
    target.set(key.get_slice("/", 1), source[key])
+ var changed_sun: bool = source.get("sun_pitch") != originals.get("sun_pitch") or source.get("sun_yaw") != originals.get("sun_yaw")
+ emission.apply_palette(source, game.presentation._key_light, changed_sun)
 
 func restore_original() -> void:
  _apply(originals)
@@ -408,8 +443,21 @@ func save_preset() -> void:
   message.text = "Save stopped: cannot read presets (" + error_string(load_error) + ")"
   return
  saved = latest
- saved.set_value(preset_key, "values", values)
- saved.set_value("format", "version", 1)
+ var version := int(saved.get_value("format", "version", 1))
+ if version > 2:
+  message.text = "Save stopped: this preset file uses a newer format."
+  return
+ if version == 1 and FileAccess.file_exists(settings_path) and not FileAccess.file_exists(settings_path + ".v1-backup"):
+  var backup_error := DirAccess.copy_absolute(ProjectSettings.globalize_path(settings_path), ProjectSettings.globalize_path(settings_path + ".v1-backup"))
+  if backup_error != OK:
+   message.text = "Save stopped: could not back up v1 presets (" + error_string(backup_error) + ")"
+   return
+ var merged_values: Dictionary = saved.get_value(preset_key, "values", {}).duplicate(true)
+ merged_values.merge(values, true)
+ saved.set_value(preset_key, "values", merged_values)
+ # Additive v2: v1 light/sky keys keep their values; missing palette keys use
+ # the authored baseline. Preserve all other renderer/theme sections.
+ saved.set_value("format", "version", 2)
  var error := saved.save(settings_path)
  message.text = ("Saved " + game.presentation.theme_definition.display_name + " · " + renderer) if error == OK else ("Save failed: " + error_string(error))
  message.tooltip_text = ProjectSettings.globalize_path(settings_path)
@@ -451,7 +499,7 @@ func _set_vsync(enabled: bool) -> void:
 func _select_look(index: int) -> void:
  if index == 0: return
  var title := look_selector.get_item_text(index)
- values = originals.duplicate(true) if index == 1 else LightingLooks.create(title, originals)
+ values = originals.duplicate(true) if index == 1 else LightingLooks.create(title, originals, game.theme_id)
  drafts[preset_key] = values.duplicate(true)
  compare.set_pressed_no_signal(false)
  _sync_widgets()

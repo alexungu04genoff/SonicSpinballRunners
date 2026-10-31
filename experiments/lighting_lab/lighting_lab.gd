@@ -1,5 +1,5 @@
 extends "res://experiments/visual_lab/visual_lab.gd"
-## Presentation-only lighting review using the existing authored Act player.
+## Presentation-only atmosphere review using the existing authored Act player.
 var lighting_controls: CanvasLayer
 
 func _ready() -> void:
@@ -9,6 +9,7 @@ func _ready() -> void:
  if DisplayServer.get_name() != "headless":
   DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
  super._ready()
+ DisplayServer.window_set_title("Atmosphere Lab")
  if not is_instance_valid(presentation): return
  # Other local material experiments may be installed in the shared visual lab.
  # Keep their selected materials, but give this lab sole ownership of its UI.
