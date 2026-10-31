@@ -1,6 +1,7 @@
 extends CanvasLayer
 ## Lab-only values. No production settings, source resources, or bake files are saved.
 const EmissionPreview := preload("res://experiments/lighting_lab/emission_preview.gd")
+const LightingLooks := preload("res://experiments/lighting_lab/lighting_looks.gd")
 # Label, property, kind; numeric rows also carry minimum, maximum and step.
 const GROUPS := {
  "Light": [
@@ -50,6 +51,11 @@ var compare: CheckButton
 var reopen: Button
 var pause_button: Button
 var retro: CheckButton
+var vsync: CheckButton
+var performance_label: Label
+var look_selector: OptionButton
+var _performance_elapsed := 0.0
+var _performance_frames := 0
 var widgets := {}
 var drafts := {}
 var originals := {}
@@ -76,6 +82,8 @@ func _build_ui() -> void:
  add_child(root)
  root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  panel = PanelContainer.new()
+ panel.mouse_filter = Control.MOUSE_FILTER_STOP
+ panel.mouse_force_pass_scroll_events = false
  root.add_child(panel)
  panel.set_anchors_and_offsets_preset(Control.PRESET_RIGHT_WIDE)
  panel.offset_left = -395
@@ -113,6 +121,25 @@ func _build_ui() -> void:
  retro.set_pressed_no_signal(not game.retro_filter.selected_effects.is_empty())
  retro.toggled.connect(func(enabled: bool): game.retro_filter.set_effects(game.retro_filter.settings.default_effects if enabled else []))
  row.add_child(retro)
+ var performance_row := HBoxContainer.new()
+ column.add_child(performance_row)
+ vsync = CheckButton.new()
+ vsync.text = "VSync"
+ vsync.tooltip_text = "Off: uncapped rendering. On: synchronize to your display. Physics stays at 120 Hz."
+ vsync.focus_mode = Control.FOCUS_NONE
+ vsync.set_pressed_no_signal(DisplayServer.window_get_vsync_mode() != DisplayServer.VSYNC_DISABLED)
+ vsync.toggled.connect(_set_vsync)
+ performance_row.add_child(vsync)
+ performance_label = Label.new()
+ performance_label.add_theme_font_size_override("font_size", 13)
+ performance_row.add_child(performance_label)
+ look_selector = OptionButton.new()
+ look_selector.focus_mode = Control.FOCUS_NONE
+ look_selector.add_item("Try a lighting look…")
+ look_selector.add_item("Authored lighting")
+ for look: String in LightingLooks.LOOKS: look_selector.add_item(look)
+ look_selector.item_selected.connect(_select_look)
+ column.add_child(look_selector)
  compare = CheckButton.new()
  compare.text = "Show original lighting"
  compare.focus_mode = Control.FOCUS_NONE
@@ -124,6 +151,7 @@ func _build_ui() -> void:
  for group: String in GROUPS:
   var scroll := ScrollContainer.new()
   scroll.name = group
+  scroll.mouse_force_pass_scroll_events = false
   scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
   tabs.add_child(scroll)
   var controls := VBoxContainer.new()
@@ -243,6 +271,7 @@ func bind_theme() -> void:
  for key: String in originals:
   if stored.has(key) and typeof(stored[key]) == typeof(originals[key]): values[key] = stored[key]
  compare.set_pressed_no_signal(false)
+ look_selector.select(0)
  _sync_widgets()
  apply_values()
  caption.text = "LIGHTING / " + {"forward_plus": "Forward+", "mobile": "Mobile", "gl_compatibility": "ANGLE"}.get(renderer, renderer)
@@ -259,6 +288,7 @@ func set_value(key: String, value: Variant) -> void:
  values[key] = value
  drafts[preset_key] = values.duplicate(true)
  compare.set_pressed_no_signal(false)
+ look_selector.select(0)
  _sync_widgets()
  apply_values()
  message.text = "Unsaved lighting · " + game.presentation.theme_definition.display_name
@@ -319,6 +349,7 @@ func reset_values() -> void:
  values = originals.duplicate(true)
  drafts[preset_key] = values.duplicate(true)
  compare.set_pressed_no_signal(false)
+ look_selector.select(1)
  _sync_widgets()
  apply_values()
  message.text = "Original values restored. Save to replace the saved preset."
@@ -327,9 +358,43 @@ func toggle_panel() -> void:
  panel.visible = not panel.visible
  reopen.visible = not panel.visible
 
-func _process(_delta: float) -> void:
+func blocks_camera_at(point: Vector2) -> bool:
+ return visible and ((panel.is_visible_in_tree() and panel.get_global_rect().has_point(point)) or (reopen.is_visible_in_tree() and reopen.get_global_rect().has_point(point)))
+
+func _set_vsync(enabled: bool) -> void:
+ Engine.max_fps = 0
+ if DisplayServer.get_name() != "headless":
+  DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if enabled else DisplayServer.VSYNC_DISABLED)
+ vsync.set_pressed_no_signal(DisplayServer.window_get_vsync_mode() != DisplayServer.VSYNC_DISABLED)
+
+func _select_look(index: int) -> void:
+ if index == 0: return
+ var title := look_selector.get_item_text(index)
+ values = originals.duplicate(true) if index == 1 else LightingLooks.create(title, originals)
+ drafts[preset_key] = values.duplicate(true)
+ compare.set_pressed_no_signal(false)
+ _sync_widgets()
+ apply_values()
+ message.text = title + " · Unsaved preview. Save to keep."
+
+func _process(delta: float) -> void:
  if not is_instance_valid(game): return
- pause_button.text = "Resume play" if get_tree().paused else "Pause play"
+ # Some local visual-lab versions already draw a one-second FPS counter.
+ # Avoid showing two different averaging windows while this inspector is open.
+ var inherited_fps = game.get("fps_label")
+ if is_instance_valid(inherited_fps):
+  var show_inherited: bool = not (visible and panel.visible)
+  if inherited_fps.visible != show_inherited: inherited_fps.visible = show_inherited
+ var pause_text := "Resume play" if get_tree().paused else "Pause play"
+ if pause_button.text != pause_text: pause_button.text = pause_text
  # The existing player owns layout/fullscreen. Reserve space only in lab view.
  if not game.debug_open and not game.player_view:
-  game.view_container.offset_right = -405.0 if panel.visible else 0.0
+  var target_offset := -405.0 if panel.visible else 0.0
+  if not is_equal_approx(game.view_container.offset_right, target_offset):
+   game.view_container.offset_right = target_offset
+ _performance_elapsed += delta
+ _performance_frames += 1
+ if _performance_elapsed >= 0.5:
+  performance_label.text = "%d FPS · %.1f ms/frame" % [roundi(_performance_frames / _performance_elapsed), 1000.0 * _performance_elapsed / _performance_frames]
+  _performance_elapsed = 0.0
+  _performance_frames = 0

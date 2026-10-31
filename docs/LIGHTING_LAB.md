@@ -5,11 +5,13 @@ Double-click **`Lighting Lab.cmd`** at the repository root. It opens the existin
 ## Inspect and play
 
 - **Mouse wheel:** zoom around the cursor. **Middle-drag:** pan. Either enters inspection mode from Follow.
+- Wheel events over the lighting panel stay in the panel, including at either scroll limit and when it overlaps fullscreen Play View.
 - **O / Overview / Follow:** switch between inspecting the Act and following the ball. **Frame Act** restores the full overview.
 - **F6 / Hide:** collapse or reopen lighting controls. The world expands into the freed space.
 - **Pause play / Resume play:** hold the ball while tuning; lighting and camera controls remain live. Time-driven scenery shaders may continue animating.
 - Use the existing bottom **Theme**, **Load Act**, **Reload Act**, character and play controls. Existing flipper/steering controls and 120 Hz physics remain intact.
 - **Retro** toggles the default world filter stack. F4 and the existing Retro panel remain available.
+- The lab starts **uncapped with VSync off**. Its **VSync** switch optionally synchronizes rendering to the display; the adjacent counter shows FPS and average frame time. Physics remains 120 Hz. These are process-local lab settings, not production defaults.
 
 The inspector has three tabs:
 
@@ -20,6 +22,14 @@ The inspector has three tabs:
 | Shadows | Enable, opacity, directional softness, depth/normal bias, distance, and one/two/four shadow maps |
 
 Numeric fields support typing and sliders. **Show original lighting** switches the live scene back to the loaded theme baseline without discarding the draft. Editing any value returns to the tuned preview. This is a same-renderer comparison, not an emulation of Compatibility lighting under Vulkan.
+
+## Quick lighting looks
+
+The **Try a lighting look…** menu offers **Daytime, Morning, Sunset, Dusk, Night, Indoors, Overcast, Neon night, and Neutral inspection**, plus **Authored lighting**. Every look is available for every theme/Act. Energy, exposure, sky brightness, glow and emission are scaled relative to the active theme's original values, with mood-specific ambient/sun colors and sun direction. These are starting points for manual art review, not approved production palettes.
+
+Morning/Sunset use low warm light; Dusk/Night use cooler, dimmer lighting; Indoors emphasizes warm ambient light; Overcast reduces direct-light contrast; Neon night raises the contribution of editable emission against darker surroundings. Neutral inspection uses white lighting and disables glow, fog and color adjustment. These looks do not add time-of-day simulation, indoor geometry, new local lights or weather. They leave shadow quality and physics unchanged. Scenery with fixed shader colors/emission may need separate tuning, especially for night looks.
+
+Choosing a look replaces the current unsaved lighting draft. It never writes the saved preset automatically: **Save** keeps the result, **Reload** retrieves the saved choice, and **Reset / Authored lighting** returns to the theme baseline. Manual slider edits return the menu to its prompt. VSync and the performance counter are independent of lighting looks.
 
 ## Save and compare
 
@@ -63,3 +73,7 @@ $env:LOCALAPPDATA = $env:APPDATA
 Rendered screenshots are written under ignored `test-results/lighting-lab/<method>/`. Human review still owns the selected aesthetic, glare, cloud detail, ball readability and shadow quality. This standalone inspector does not validate a finished streamed-run lighting migration.
 
 Verification on 2026-10-31: all eight themes rendered under Forward+, Mobile and ANGLE, with **44/44** smoke checks passing on each. A clean HEAD source copy plus only this task's additions imported, parsed all nine changed/new diagnostic/lab scripts, and passed the same headless smoke without local art tools. The final headless suite passed **45/45**, adding verification that saving one renderer's preset preserves a preset saved by another window. Existing restricted-profile certificate-store messages and local Casino image-loader/export warnings are unrelated to the lab; no new script or shader error was observed.
+
+The scroll/FPS/quick-look follow-up uses lightweight runtime profiling and visual/UI review, without adding dedicated tests. The old lab's initial VSync mode was enabled, with `Engine.max_fps = 0` and a measured display refresh of 59.95 Hz; the sampled view ran at 59.96 FPS. Disabling VSync lifted that same Green Hill opening view to 210–229 FPS with the original panel visible and 229–243 FPS with its CanvasLayer hidden. Camera, world size (460×363), lighting and simulation stayed fixed; normal F6 hiding resizes the world and is not an equivalent comparison. Two 400-frame pairs put the panel's median difference at roughly 0.36–0.52 ms. Disabling its idle processing after hiding it did not consistently improve timing. The revised lab starts with VSync disabled and remains above 60 FPS in this view. These short, sequential samples do not reproduce or explain an exact 50 FPS dip at an unknown camera/quality setting; they do not establish a large idle-slider bottleneck or promise whole-run FPS.
+
+Additional Forward+ samples recorded approximately 202 FPS in the windowed authored opening, 186 with directional softness at 5°, 195 in fullscreen Follow view (757×473 world buffer), and 185 in that fullscreen view with softness at 5°. These are distinct camera/resolution workloads, not an isolated fullscreen speed comparison. Actual dispatched wheel input at the panel's lower scroll limit left camera transform and zoom unchanged in overlapping fullscreen layout; input over the level still changed zoom. All nine looks plus authored lighting were rendered for Green Hill, Chemical Plant and Aquarium for visual review. Raw follow-up timings and captures are local under ignored `test-results/lighting-lab-followup/`.
