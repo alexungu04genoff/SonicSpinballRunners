@@ -2,7 +2,7 @@
 
 **Act geometry × Theme × Atmosphere Variant** is the accepted model. An atmosphere comprises **lighting + sky + the theme's environmental palette**. This milestone builds the manual instrument; it does not promote saved Lab values into production variants.
 
-Launch **Atmosphere Lab.cmd**. **Lighting Lab.cmd** remains a compatible alias with the same renderer/theme/Act arguments. Forward+/Vulkan is the Lab default; production renderer defaults are unchanged. Existing Light, Sky, Glow & Fog, Shadows, VSync, uncapped FPS, pause, theme switching, Act loading, wheel zoom and middle-drag pan remain available. F6 hides/reopens the inspector while keeping the FPS overlay.
+Launch **Lighting Lab.cmd** in the main project folder. This is the existing Lighting Lab extended with atmosphere authoring, using the same scene and saved presets. **Atmosphere Lab.cmd** forwards to that launcher with the same renderer/theme/Act arguments. Forward+/Vulkan is the Lab default; production renderer defaults are unchanged. Existing Light, Sky, Glow & Fog, Shadows, VSync, uncapped FPS, pause, theme switching, Act loading, wheel zoom and middle-drag pan remain available. F6 hides/reopens the inspector while keeping one FPS overlay.
 
 ## Palette
 
@@ -41,6 +41,8 @@ All thirteen existing quick-start looks remain. Sunset-related and Night-related
 ## Implementation and cost
 
 `scripts/themes/theme_atmosphere.gd` defines the small vocabulary and explicit shader bindings. Themes/decor libraries tag selected shared material properties and existing light/sign properties. The Lab collects bindings once when the presentation changes. Palette and emission editing share one private copy per editable source material, regardless of how many nodes use it. No new material is allocated when a color changes, and no palette work or scene traversal runs each frame.
+
+Generated presentation shaders can retain the same semantic role through an explicit `Atmosphere.tag(material, uniform, role, mode, {"shader": true})` binding. The uniform must already have an authored value. Local art integrations use this for Rooftop foliage and stone, so their palette controls remain effective after adding surface detail. Static scenery combiners must preserve `atmosphere_scenery` ownership and must not combine far and local geometry into one batch.
 
 Existing shader color literals become uniforms while retaining their original rendering algorithms and linear defaults. The Lab converts sRGB picker colors to linear vectors once on apply. Standard-material colors retain Godot's normal color handling. This explicit conversion avoids accidentally darkening a former linear shader literal when introducing a color uniform; see Godot's [shader uniform/color-space guidance](https://docs.godotengine.org/en/stable/tutorials/shaders/shader_reference/shading_language.html#uniforms).
 

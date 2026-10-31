@@ -101,3 +101,16 @@ These are test recipes, not approved production variants. Human review still own
 The restricted test profile emits the existing certificate-store message. The streaming test reports two ObjectDB instances at shutdown; no in-test assertion fails. The final Forward+ atmosphere regression exits without resource warnings. ANGLE passes its assertions but reports GL texture cleanup errors at shutdown. Alex explicitly excluded further ANGLE investigation: Forward+/Vulkan is the acceptance gate for this work.
 
 All work and measurements started from `cfeff926` in an isolated worktree. Uncommitted local art/texture experiments in the main workspace are preserved and are not included in these measurements. No authored geometry, physics, scoring, production renderer defaults or new production variants were changed. Raw logs and captures remain under ignored `test-results/atmosphere/` in that worktree; the compact evidence above is committed.
+
+## Main-workspace integration
+
+The atmosphere implementation is now integrated into `main` and the existing **Lighting Lab.cmd** entry point. **Atmosphere Lab.cmd** forwards to the same launcher, scene and preset store. The window is titled **Lighting Lab · Atmosphere**. The inspector owns one FPS overlay and prevents hidden material-panel shortcuts from replacing its palette materials.
+
+Forward+/Vulkan verification in the primary workspace, with the existing local artwork present:
+
+- Expanded atmosphere regression: **492/492** checks, including explicit palette bindings for generated shaders, shared-copy restoration, ownership after deferred scenery batching and hidden material shortcuts.
+- Existing Lighting Lab smoke: **45/45** checks. Headless editor import passed; all eight theme Palette tabs were captured, with integration visual checks on Green Hill and Rooftop.
+- Refreshed **40 Prototype** and **56 Endless** variants in the primary workspace. The offline Endless bake audit passed **450 checks** across all 56 variants. Forward+ Prototype startup reached `ready=true` using disk bakes with zero generated geometry in its opening preparation; this was a startup smoke, not a frame-time benchmark.
+- All **16 pre-existing tracked art edits** retained the same added/removed lines after the merge. No original file was lost. Two local art helpers received small integration adjustments: Green Hill's combiner preserves far/local ownership, and Rooftop's detailed foliage/stone retain semantic shader bindings. These helpers remain with the uncommitted art work; the shared binding support and tests are committed.
+
+These integration checks are functional checks, not a replacement performance sample. The timing tables above still describe the documented committed-art baseline, not the additional local texture experiments. Local logs are under `test-results/atmosphere-main-integration-20261031/`. Existing local asset-loader warnings remain outside this integration's scope.

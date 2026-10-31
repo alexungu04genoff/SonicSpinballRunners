@@ -1,8 +1,8 @@
-# Atmosphere Lab (formerly Lighting Lab)
+# Lighting Lab — Atmosphere authoring
 
 The current manual palette workflow, migration rules and implementation are documented in [Atmosphere authoring](ATMOSPHERE_AUTHORING.md).
 
-Double-click **`Atmosphere Lab.cmd`** (or the existing **`Lighting Lab.cmd`** alias) at the repository root. It opens the existing authored Act player with **Forward+/Vulkan**, an atmosphere inspector and the current local artwork. Production launchers, project renderer, physics and authored Acts are unchanged. Saved Lab presets do not modify production bakes; source shader changes in this milestone require the normal rebake.
+Double-click **`Lighting Lab.cmd`** at the repository root. The existing Lab now includes atmosphere authoring; **`Atmosphere Lab.cmd`** forwards to the same launcher. It opens the existing authored Act player with **Forward+/Vulkan**, an atmosphere inspector and the current local artwork. Production launchers, project renderer, physics and authored Acts are unchanged. Saved Lab presets do not modify production bakes; source shader changes in this milestone require the normal rebake.
 
 ## Inspect and play
 

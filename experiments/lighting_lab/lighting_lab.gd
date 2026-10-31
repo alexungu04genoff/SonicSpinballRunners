@@ -9,7 +9,7 @@ func _ready() -> void:
  if DisplayServer.get_name() != "headless":
   DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
  super._ready()
- DisplayServer.window_set_title("Atmosphere Lab")
+ DisplayServer.window_set_title("Lighting Lab · Atmosphere")
  if not is_instance_valid(presentation): return
  # Other local material experiments may be installed in the shared visual lab.
  # Keep their selected materials, but give this lab sole ownership of its UI.
@@ -21,6 +21,10 @@ func _ready() -> void:
  print("LIGHTING_LAB_READY | ", RenderingServer.get_current_rendering_method(), " | VSync ", DisplayServer.window_get_vsync_mode(), " | FPS cap ", Engine.max_fps, " | F6 controls | wheel zoom | middle-drag pan | O follow/overview")
 
 func _hide_material_controls() -> void:
+ # The shared visual Lab can provide its own FPS overlay. This inspector owns
+ # the persistent counter, so retain a single readable overlay here.
+ var inherited_fps := get_node_or_null("FrameRateOverlay")
+ if inherited_fps is CanvasLayer: inherited_fps.hide()
  for property in ["rooftop_materials", "chemical_materials"]:
   var other = get(property)
   if is_instance_valid(other):
@@ -44,6 +48,14 @@ func _input(event: InputEvent) -> void:
   if key in [KEY_F7, KEY_F8]:
    get_viewport().set_input_as_handled()
    return
+  # Hidden Rooftop material experiments also use 1/2 to replace materials.
+  # Those swaps would bypass this Lab's bound palette copies. Numeric fields
+  # still receive normal text input while focused.
+  if theme_id == "rooftop_run" and is_instance_valid(get("rooftop_materials")) and key in [KEY_1, KEY_2]:
+   var focus := get_viewport().gui_get_focus_owner()
+   if not focus is LineEdit and not focus is TextEdit:
+    get_viewport().set_input_as_handled()
+    return
  super._input(event)
 
 func _unhandled_input(event: InputEvent) -> void:

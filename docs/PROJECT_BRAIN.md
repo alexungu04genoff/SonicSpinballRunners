@@ -3122,7 +3122,7 @@ Green Hill has low coastal headlands plus small-island variety; Ice's aurora fol
 
 # ATMOSPHERE AUTHORING INSTRUMENT — 2026-10-31
 
-Lighting Lab has grown into **Atmosphere Lab**, with the old launcher still working. The agreed model is **Act geometry × Theme × Atmosphere Variant**; atmosphere means lighting, sky and a small theme-owned environmental palette. Alex gets Ocean deep, Cloud highlight, Chemical liquid and other understandable roles, not Material 37 or a global hue wheel.
+The existing **Lighting Lab** now includes atmosphere authoring on `main`. Use the usual `Lighting Lab.cmd`; `Atmosphere Lab.cmd` forwards to it. This is one tool and one saved-preset file, not a separate workflow. The agreed model is **Act geometry × Theme × Atmosphere Variant**; atmosphere means lighting, sky and a small theme-owned environmental palette. Alex gets Ocean deep, Cloud highlight, Chemical liquid and other understandable roles, not Material 37 or a global hue wheel.
 
 All eight themes now expose their useful environment colors. Palette edits and emission share private material copies, one per source material. Values apply on change; there is no per-frame recoloring, new light, extra pass or reflection system. Sky Sanctuary's unshaded clouds can finally become lavender at Sunset and subdued blue at Night. Ice keeps its custom static sky and contour-following aurora; changing sky colors may prepare radiance once. Existing shared far scenery and Act-owned local framing stay intact, with separate inspection toggles.
 

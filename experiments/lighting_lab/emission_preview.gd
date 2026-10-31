@@ -89,7 +89,9 @@ func _register_tags(target: Object) -> void:
   var entry: Dictionary = bindings[property].duplicate()
   entry.key = "palette/" + entry.key
   if entry.key not in allowed_keys: continue
-  entry.merge({"target": target, "property": property, "base": target.get(property), "shader": false})
+  var shader_binding: bool = entry.get("shader", false)
+  var base = target.get_shader_parameter(property) if shader_binding else target.get(property)
+  entry.merge({"target": target, "property": property, "base": base, "shader": shader_binding})
   palette_parameters.append(entry)
   if not palette_originals.has(entry.key):
    palette_originals[entry.key] = Color.WHITE if entry.mode == "tint" else entry.get("authored", entry.base)

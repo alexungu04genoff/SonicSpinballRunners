@@ -14,11 +14,41 @@ func check(ok: bool, description: String) -> void:
 func frames(count: int) -> void:
  for frame in count: await process_frame
 
+func check_generated_palette() -> void:
+ # Detailed art can generate a shader instead of retaining a StandardMaterial.
+ # Its explicit semantic tag must keep shared copies and exact restore working.
+ var shader := Shader.new()
+ shader.code = "shader_type spatial; uniform vec4 tint : source_color = vec4(1.0); void fragment() { ALBEDO = tint.rgb; }"
+ var source := ShaderMaterial.new()
+ source.shader = shader
+ source.set_shader_parameter("tint", Color("668844"))
+ Palette.tag(source, "tint", "vegetation_tint", "tint", {"shader": true})
+ var parent := Node3D.new()
+ for index in 2:
+  var visual := MeshInstance3D.new()
+  visual.mesh = BoxMesh.new()
+  visual.material_override = source
+  parent.add_child(visual)
+ var adapter := preload("res://experiments/lighting_lab/emission_preview.gd").new()
+ adapter.collect(parent, "rooftop_run")
+ var copy: ShaderMaterial = parent.get_child(0).material_override
+ check(copy != source and parent.get_child(1).material_override == copy, "Generated shader palette shares one private copy")
+ var sun := DirectionalLight3D.new()
+ adapter.apply_palette({"palette/vegetation_tint": Color("8050b0")}, sun, false)
+ check(copy.get_shader_parameter("tint") != source.get_shader_parameter("tint"), "Generated shader semantic tint applies")
+ adapter.apply_palette(adapter.palette_originals, sun, false)
+ check(copy.get_shader_parameter("tint") == source.get_shader_parameter("tint"), "Generated shader authored tint restores exactly")
+ adapter.restore()
+ check(parent.get_child(0).material_override == source and parent.get_child(1).material_override == source, "Generated shader source slots restore")
+ sun.free()
+ parent.free()
+
 func run() -> void:
  if DisplayServer.get_name() == "headless":
   push_error("Atmosphere regression requires a real renderer for shader uniforms.")
   quit(1)
   return
+ check_generated_palette()
  var game = load("res://experiments/lighting_lab/lighting_lab.tscn").instantiate()
  root.add_child(game)
  paused = true
@@ -34,6 +64,8 @@ func run() -> void:
  var score: int = game.score
  for theme: String in game.ThemeRegistry.IDS:
   game.set_theme(theme)
+  # Local presentation extensions may finish static combining deferred.
+  await frames(3)
   panel.reset_values()
   check(panel.palette_fields.size() >= 4, "Semantic controls available: " + theme)
   var authored: Dictionary = panel.originals.duplicate(true)
@@ -44,6 +76,16 @@ func run() -> void:
    modified[spec[1]] = Color("481c68") if spec[2] == "color" else 0.31
   panel.values = modified
   panel.apply_values()
+  if theme == "rooftop_run":
+   root.gui_release_focus()
+   var before: Dictionary = panel.emission.materials.duplicate()
+   for key: int in [KEY_1, KEY_2]:
+    var event := InputEventKey.new()
+    event.pressed = true
+    event.physical_keycode = key
+    game._input(event)
+   check(panel.emission.slots.all(func(slot: Dictionary): return slot.node.material_override in before.values() if slot.surface < 0 else slot.node.get_surface_override_material(slot.surface) in before.values()), "Hidden material shortcuts preserve bound palette slots")
+   before.clear()
   for entry: Dictionary in panel.emission.palette_parameters:
    var actual = entry.target.get_shader_parameter(entry.property) if entry.shader else entry.target.get(entry.property)
    check(actual != entry.base, "Live binding changes: " + theme + "/" + entry.key + "/" + entry.property)
@@ -67,6 +109,7 @@ func run() -> void:
     check(direction == entry.base, "Authored cloud direction restores exactly: " + theme)
   panel.set_scenery_visible("far", false)
   for child: Node3D in game.presentation.scenery_root.get_children():
+   check(child.has_meta("atmosphere_scenery"), "Scenery retains far/local ownership after preparation: " + theme)
    if child.get_meta("atmosphere_scenery", "far") == "local": check(child.visible, "Far inspection preserves local framing: " + theme)
   panel.set_scenery_visible("far", true)
   panel.set_scenery_visible("local", false)
