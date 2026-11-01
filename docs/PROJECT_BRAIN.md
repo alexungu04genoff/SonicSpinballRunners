@@ -3246,6 +3246,10 @@ One adjacent `.scenery.cfg` per Act holds compact per-theme inputs. Geometry sta
 
 Bake v8 adds a separate scenery receipt: a settings edit stales only that Act/theme visual recipe and leaves geometry validation reusable. Source changes still use the normal pipeline hash. Runtime has no new procedural work. See [Scenery authoring](SCENERY_AUTHORING.md) for ownership and checks.
 
+## Directional fog authoring — 2026-11-01
+
+Alex requested separate north-building fog. The Lab now has Directional Fog with angle (0° north), start/fade distances in table pixels, maximum density, curve, color and brightness. Its clear area follows the view center at table height. Ordinary fog also exposes Exponential/Depth modes and native Depth start/end distance plus curve. Both save with atmosphere variants; streamed foreground values blend while background layers own their fog. Defaults remain off. Directional fog uses one optional depth-based pass per enabled viewport, not material rewrites; opaque depth means transparent water/glass still need visual review. Physics stays untouched. See [fog controls](LIGHTING_LAB.md#fog-shaping).
+
 ## Exterior terrain continuity — 2026-10-31
 
 Bro traced the good/bad front joins in First Try through raw presentation, recipes, disk baking and static batching. The split was already present before baking: raised exterior walls used the interior wall material while the lower cliff used the facade. World mapping did not make two different texture roles continuous. Green Hill also had incompatible contour/world charts (the local art experiment fitted each perimeter independently), and baking simplified walls and inferred floors separately.

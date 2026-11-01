@@ -126,6 +126,7 @@ func refresh() -> void:
    if field.has_meta("slider"): field.get_meta("slider").editable = not locked
   elif field is BaseButton: field.disabled = locked
  panel.look_selector.disabled = locked
+ panel.sync_fog_controls()
  panel.save_button.text = "Save scenery" if panel._scenery_tab() else ("Save lab draft" if context.selected == "draft" else "Save Variant")
  syncing = false
 

@@ -467,6 +467,8 @@ func _blend_lighting(from_zone: int, to_zone: int, weight: float) -> void:
  _last_atmosphere_blend = state
  var before = backgrounds[from_zone].layer.atmosphere
  var after = backgrounds[to_zone].layer.atmosphere
+ var fog := preload("res://scripts/atmosphere/directional_fog.gd")
+ fog.apply(presentation.camera, fog.blend(before.values, after.values, weight))
  var light: DirectionalLight3D = presentation._key_light
  light.quaternion = before.lighting.quaternion.slerp(after.lighting.quaternion, weight)
  for property: String in ["light_color", "light_energy", "light_specular", "light_angular_distance", "shadow_opacity", "shadow_bias", "shadow_normal_bias", "directional_shadow_max_distance"]:
@@ -476,7 +478,9 @@ func _blend_lighting(from_zone: int, to_zone: int, weight: float) -> void:
  var target: Environment = presentation._world_environment.environment
  for property: String in ["ambient_light_color", "ambient_light_energy", "tonemap_exposure", "ambient_light_sky_contribution", "adjustment_contrast", "adjustment_saturation", "glow_intensity", "glow_bloom", "glow_hdr_threshold", "fog_density", "fog_light_color", "fog_light_energy", "fog_sky_affect"]:
   target.set(property, lerp(before.environment.get(property), after.environment.get(property), weight))
- for property: String in ["tonemap_mode", "adjustment_enabled"]:
+ for property: String in ["fog_depth_begin", "fog_depth_end", "fog_depth_curve"]:
+  target.set(property, lerp(before.environment.get(property), after.environment.get(property), weight))
+ for property: String in ["tonemap_mode", "adjustment_enabled", "fog_mode"]:
   target.set(property, before.environment.get(property) if weight < 0.5 else after.environment.get(property))
  for effect: String in ["fog", "glow"]:
   var enabled_property := effect + "_enabled"
@@ -485,6 +489,10 @@ func _blend_lighting(from_zone: int, to_zone: int, weight: float) -> void:
   var a: float = before.environment.get(amount_property) if before.environment.get(enabled_property) else 0.0
   var b: float = after.environment.get(amount_property) if after.environment.get(enabled_property) else 0.0
   target.set(amount_property, lerpf(a, b, weight))
+  if effect == "fog" and before.environment.fog_mode != after.environment.fog_mode:
+   # Density means different things in Exponential and Depth modes. Fade out
+   # the old interpretation before switching, then fade in the new one.
+   target.fog_density = a * (1.0 - weight * 2.0) if weight < 0.5 else b * (weight * 2.0 - 1.0)
 
 func _zone_ready(index: int) -> bool:
  return backgrounds.has(index) and backgrounds[index].ready

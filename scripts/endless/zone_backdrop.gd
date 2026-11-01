@@ -39,6 +39,7 @@ func configure(game: Node, entry: Dictionary, library: Node) -> void:
  camera = Camera3D.new()
  view.add_child(camera)
  camera.current = true
+ preload("res://scripts/atmosphere/directional_fog.gd").apply(camera, atmosphere.values)
  scenery = Node3D.new()
  scenery.process_mode = Node.PROCESS_MODE_DISABLED
  scenery.position = TablePresentation.map_point(Vector2(entry.offset) - Vector2(0, 1200))

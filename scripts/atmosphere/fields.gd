@@ -25,11 +25,16 @@ const GROUPS := {
   ["Glow threshold", "env/glow_hdr_threshold", "number", 0.0, 4.0, 0.01],
   ["Emission multiplier", "emission", "number", 0.0, 3.0, 0.01],
   ["Fog enabled", "env/fog_enabled", "bool"],
-  ["Fog density", "env/fog_density", "number", 0.0, 0.1, 0.0005],
+  ["Fog mode", "env/fog_mode", "fog_mode"],
+  ["Fog density", "env/fog_density", "number", 0.0, 1.0, 0.0005],
+  ["Start distance (3D units)", "env/fog_depth_begin", "number", 0.0, 1000.0, 0.5],
+  ["End distance (0 = far)", "env/fog_depth_end", "number", 0.0, 2000.0, 0.5],
+  ["Depth density curve", "env/fog_depth_curve", "number", 0.1, 8.0, 0.05],
   ["Fog color", "env/fog_light_color", "color"],
   ["Fog brightness", "env/fog_light_energy", "number", 0.0, 3.0, 0.01],
   ["Fog sky influence", "env/fog_sky_affect", "number", 0.0, 1.0, 0.01],
  ],
+ "Directional Fog": preload("res://scripts/atmosphere/directional_fog.gd").FIELDS,
  "Shadows": [
   ["Shadows enabled", "sun/shadow_enabled", "bool"],
   ["Opacity", "sun/shadow_opacity", "number", 0.0, 1.0, 0.01],
@@ -97,4 +102,6 @@ static func valid_values(theme: String, values: Dictionary) -> bool:
     if typeof(value) not in [TYPE_FLOAT, TYPE_INT] or not is_finite(float(value)) or value < spec[3] or value > spec[4]: return false
    "tone", "shadow":
     if not value is int or value < 0 or value > (4 if spec[2] == "tone" else 2): return false
+   "fog_mode":
+    if not value is int or value not in [0, 1]: return false
  return true

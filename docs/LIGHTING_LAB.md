@@ -19,17 +19,26 @@ Double-click **`Lighting Lab.cmd`** at the repository root. The existing Lab now
 - **Retro** toggles the default world filter stack. F4 and the existing Retro panel remain available.
 - The lab starts **uncapped with VSync off**. Its **VSync** switch optionally synchronizes rendering to the display. A top-left counter shows FPS and average frame time, refreshed twice per second, including with the inspector hidden and in fullscreen Play View. Physics remains 120 Hz. These are process-local lab settings, not production defaults.
 
-The inspector has five tabs:
+The inspector includes these lighting tabs (alongside Variants, Hue and Scenery):
 
 | Tab | Controls |
 |---|---|
 | Light | Exposure; Linear/Reinhard/Filmic/ACES/AgX tonemapping; ambient energy/color and sky contribution; directional energy/color, elevation/azimuth and specular strength; color-adjustment toggle, contrast and saturation |
 | Sky | Background brightness; procedural sky top/horizon and ground bottom/horizon colors, with separate sky/ground blends; solid background color where applicable; background scenery visibility |
 | Palette | Theme-specific water, cloud, scenery, accent and existing spill-light colors; supported intensity controls |
-| Glow & Fog | Glow enable/intensity, bloom and threshold; material emission multiplier; fog enable, density, color, brightness and sky influence |
+| Glow & Fog | Glow enable/intensity, bloom and threshold; material emission multiplier; ordinary fog enable, mode, density, depth start/end distance, curve, color, brightness and sky influence |
+| Directional Fog | Independent enable, angle, start offset, fade length, maximum density, curve, color and brightness |
 | Shadows | Enable, opacity, directional softness, depth/normal bias, distance, and one/two/four shadow maps |
 
 Numeric fields support typing and sliders. **Show original atmosphere** switches the live lighting, sky/background and theme palette back to the loaded theme baseline without discarding the draft. Turning it off restores the tuned atmosphere. Editing any value returns to the tuned preview. This is a same-renderer comparison, not an emulation of Compatibility lighting under Vulkan.
+
+## Fog shaping
+
+Ordinary fog retains its Exponential mode and adds **Depth / distance** mode. Start/end distance and curve apply only in Depth mode; distances are measured from the camera in 3D units (1 unit = 100 table pixels). End distance 0 uses the camera far plane. In Depth mode density means maximum opacity, so try 0.5 instead of the small values used for Exponential fog. Curve 1 is linear; higher values delay buildup. Existing presets keep their original mode and density.
+
+**Directional Fog** is separate and disabled by default. It builds across the table: 0° points north, 90° east, ±180° south. The origin is the view's center ray at table height, so the clear area travels with the camera. Start offset and fade length use table pixels; negative start brings fog toward the viewer. Maximum density caps opacity; curve, color and brightness are independent. Try the defaults, then adjust start and length to protect the flippers and nearby shots. Both fog types may be enabled together.
+
+Both sets of controls participate in draft saves, original comparison and production variants. Streamed foreground fog blends between Zones; each background viewport owns its own directional pass. This optional pass is allocated only when enabled and is hidden when disabled. It uses opaque depth, leaves empty sky untouched, and does not change physics or source materials. Transparent surfaces use the opaque depth behind them; inspect glass and water when tuning. Final color, density and readability remain manual art decisions.
 
 ## Sky and background types
 

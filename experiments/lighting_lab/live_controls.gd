@@ -5,6 +5,7 @@ const EmissionPreview := preload("res://experiments/lighting_lab/emission_previe
 const LightingLooks := preload("res://experiments/lighting_lab/lighting_looks.gd")
 # Label, property, kind; numeric rows also carry minimum, maximum and step.
 const Fields := preload("res://scripts/atmosphere/fields.gd")
+const DirectionalFog := preload("res://scripts/atmosphere/directional_fog.gd")
 const GROUPS := Fields.GROUPS
 const PROCEDURAL_SKY_FIELDS := Fields.PROCEDURAL_SKY_FIELDS
 var variants: VBoxContainer
@@ -156,6 +157,18 @@ func _build_ui() -> void:
   controls.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   controls.add_theme_constant_override("separation", 8)
   scroll.add_child(controls)
+  if group == "Glow & Fog":
+   var note := Label.new()
+   note.text = "Ordinary fog: choose Depth / distance to use start, end and curve. In Depth mode, density is maximum opacity (try 0.5). Distances are from the camera in 3D units. Directional Fog has its own tab."
+   note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+   note.add_theme_font_size_override("font_size", 12)
+   controls.add_child(note)
+  if group == "Directional Fog":
+   var note := Label.new()
+   note.text = "Fog builds across the table from the view center. 0° = north, 90° = east. Start offsets the clear area; fade length reaches maximum density. Curve 1 is linear; higher values build later. Independent of ordinary fog."
+   note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+   note.add_theme_font_size_override("font_size", 12)
+   controls.add_child(note)
   if group == "Scenery":
    scenery = SceneryControls.new()
    controls.add_child(scenery)
@@ -225,6 +238,9 @@ func _field(parent: Node, spec: Array) -> void:
    number.step = spec[5]
    number.allow_greater = true
    number.allow_lesser = true
+   if key.begins_with("directional_fog/") or key.begins_with("env/fog_"):
+    number.allow_greater = false
+    number.allow_lesser = false
    number.value_changed.connect(func(value: float): set_value(key, value))
    field = number
   "color":
@@ -239,6 +255,7 @@ func _field(parent: Node, spec: Array) -> void:
   _:
    var options := OptionButton.new()
    var names := ["Linear", "Reinhard", "Filmic", "ACES", "AgX"] if spec[2] == "tone" else ["1 · Orthogonal", "2 · PSSM", "4 · PSSM"]
+   if spec[2] == "fog_mode": names = ["Exponential", "Depth / distance"]
    for title: String in names: options.add_item(title)
    options.item_selected.connect(func(value: int): set_value(key, value))
    field = options
@@ -394,6 +411,7 @@ func _bind_palette() -> void:
    number.allow_lesser = false
 
 func _read_value(key: String) -> Variant:
+ if DirectionalFog.DEFAULTS.has(key): return DirectionalFog.DEFAULTS[key]
  if key == "emission": return 1.0
  if key == "sun_pitch": return game.presentation._key_light.rotation_degrees.x
  if key == "sun_yaw": return game.presentation._key_light.rotation_degrees.y
@@ -426,8 +444,22 @@ func apply_values() -> void:
  _apply(originals if compare.button_pressed else values)
  if is_instance_valid(variants): variants.capture()
 
+func sync_fog_controls() -> void:
+ var source: Dictionary = originals if compare.button_pressed else values
+ var locked: bool = variants != null and variants.context.get("selected", "draft") == "default"
+ var depth_mode: bool = int(source.get("env/fog_mode", 0)) == Environment.FOG_MODE_DEPTH
+ for key: String in ["env/fog_depth_begin", "env/fog_depth_end", "env/fog_depth_curve"]:
+  var control: SpinBox = widgets[key]
+  control.editable = depth_mode and not locked
+  control.get_meta("slider").editable = depth_mode and not locked
+  control.tooltip_text = "Depth mode only. Distances are from the camera; 1 unit = 100 table pixels. Curve 1 is linear; higher values build later."
+ widgets["env/fog_density"].tooltip_text = "Exponential: density per distance. Depth: maximum opacity (0–1); try 0.5 for a visible starting point."
+
 func _apply(source: Dictionary) -> void:
+ DirectionalFog.apply(game.presentation.camera, source)
+ sync_fog_controls()
  for key: String in source:
+  if key.begins_with("directional_fog/"): continue
   if key.begins_with("palette/") or key.begins_with("hue/") or key.begins_with("saturation/") or key.begins_with("override/"): continue
   if key == "emission": emission.apply(float(source[key]))
   elif key == "sun_pitch": game.presentation._key_light.rotation_degrees.x = float(source[key])
