@@ -208,6 +208,7 @@ func _palm_frond(p: Node3D, base: Vector3, angle: float, length: float, bright: 
     surface.set_normal(Vector3.UP)
     surface.add_vertex(vertex)
  var leaves = material(Color("62be30") if bright else Color("329a36"))
+ Atmosphere.foliage(leaves)
  leaves.cull_mode = BaseMaterial3D.CULL_DISABLED
  p.mesh_node(surface.commit(), leaves, Vector3.ZERO, parent)
 
@@ -218,6 +219,7 @@ func _flower(p: Node3D, base: Vector3, size: float, target: Node3D = null) -> vo
  flower.scale = Vector3.ONE * size
  (p.scenery_root if target == null else target).add_child(flower)
  var green = material(Color("278c3e"))
+ Atmosphere.foliage(green)
  p.mesh_node(p.cylinder(0.018, 0.37), green, Vector3(0, 0.185, 0), flower)
  var leaves = p.sphere(0.1)
  var leaf = p.mesh_node(leaves, green, Vector3(0.08, 0.15, 0), flower)

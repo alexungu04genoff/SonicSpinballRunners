@@ -65,6 +65,7 @@ func run() -> void:
   check(before == [game.library.visuals.size(), game.library.runtimes.size(), game.library.shapes.size(), game.library.requested_count, game.resident.size()], "Theme preload loads no Act recipes, physics templates or resident Acts")
   game.set_process(true)
  print("ENDLESS_STARTUP_SECONDS | ", opening_seconds)
+ if "--foliage" in OS.get_cmdline_user_args(): _check_foliage()
  await capture("start")
  # An unavailable entrance must park physics until the prepared neighbor returns.
  var neighbor: RefCounted = game.resident[1]
@@ -120,6 +121,7 @@ func run() -> void:
    game.presentation.tour_focus = saved_focus
   game.jump_tour_boundary()
   for j in 12: await process_frame
+  if "--foliage" in OS.get_cmdline_user_args(): _check_foliage()
   max_resident = maxi(max_resident, game.resident.size())
   check(game.library.visuals.size() <= game.library.MAX_VARIANTS, "Visual cache stays bounded")
   check(game.library.themes.size() <= game.library.MAX_THEMES, "Theme resource cache stays bounded")
@@ -176,6 +178,27 @@ func run() -> void:
  while game.library.busy and Time.get_ticks_msec() - cleanup_started < 90000: await process_frame
  game.free()
  quit(1 if failures else 0)
+
+func _check_foliage() -> void:
+ var plant_count := 0
+ for background: Dictionary in game.backgrounds.values():
+  var atmosphere = background.layer.atmosphere
+  var values: Dictionary = atmosphere.values.duplicate(true)
+  values.merge({"hue/foliage": 0.17, "brightness/foliage": 0.6}, true)
+  var originals := {}
+  for entry: Dictionary in atmosphere.bindings.hue_parameters:
+   originals[entry.material] = entry.material.albedo_color if entry.material is BaseMaterial3D else entry.material.get_shader_parameter("atmosphere_hue")
+  atmosphere.bindings.apply_palette(values, atmosphere.sun, false)
+  for entry: Dictionary in atmosphere.bindings.hue_parameters:
+   if entry.group == "foliage":
+    plant_count += 1
+    if entry.material is ShaderMaterial: check(is_equal_approx(entry.material.get_shader_parameter("atmosphere_hue"), 0.17), "Streamed plant material responds to Foliage")
+    else: check(entry.material.albedo_color != originals[entry.material], "Streamed standard plant responds to Foliage")
+   elif entry.material is ShaderMaterial:
+    check(entry.material.get_shader_parameter("atmosphere_hue") == originals[entry.material], "Streamed non-plant hue remains unchanged")
+   else: check(entry.material.albedo_color == originals[entry.material], "Streamed non-plant color remains unchanged")
+  atmosphere.bindings.apply_palette(atmosphere.values, atmosphere.sun, false)
+ if game.active_sequence == 0: check(plant_count > 0, "Opening Sanctuary Zone contains baked plant bindings")
 
 func capture(label: String) -> void:
  if DisplayServer.get_name() == "headless" or "--captures" not in OS.get_cmdline_user_args(): return

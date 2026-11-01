@@ -31,6 +31,22 @@ Saving validates names, IDs, value types/ranges and the weighted pool. It compar
 
 ## Lab workflow
 
+### Foliage semantics
+
+Foliage means visible plant tissue: fronds, leaves, needles, vines, moss, shrubs, decorative grass and aquatic plant material. It is a material role, not a whole-prop selection. Trunks, bridge wood, petals, rocks, ruins, coral, fish, crystals, machinery and playable turf retain their existing Decor, Terrain or Palette roles.
+
+| Theme | Foliage targets |
+| --- | --- |
+| Green Hill | Palm fronds, shrubs, decorative grass tufts, sunflower stems/leaves and distant vegetation mounds. Island turf and playable grass remain separate. |
+| Rooftop Run | Hedge/planter greenery and cypress foliage, including textured local materials. Vegetation tint remains a Palette input. |
+| Sky Sanctuary | Vines, moss, blossom stems and palm leaves; scenery haze remains a separate Palette input. |
+| Ice Cap | Pine/fir needles and frost-grass blades. Frost grass has a private shared copy of the snow material, with identical neutral appearance, so snowcaps do not follow it. |
+| Aquarium Park | The existing `plant` material, currently used for teal stalks in the branching aquatic arrangements. Pink coral branches retain Coral; fish retain Aquatic accent. |
+| Chemical Plant / Lava Reef | No plant materials; Foliage controls are hidden. |
+| Casino Night | The palm is a stylized mint-neon fixture, sharing its light material with casino accents. It deliberately remains under Neon/Neon mint, including its fronds. Foliage controls are hidden; signs are never classified as plants. |
+
+Controls, including Stack with Hue, appear only when the current preview contains Foliage bindings. A plant-free Act may therefore hide them even in a supporting theme. Saved values remain valid. Shared material tags survive Decor conversion, local/distant scenery copies, baking and runtime binding. Vegetation Palette inputs are applied before the single final Foliage adjustment; textured foliage shifts its sampled colors rather than a neutral tint. Selective Hue ranges follow that adjustment and can be disabled for Foliage with Stack with Hue. Neutral settings preserve source colors; no geometry, collision, random sampling, render pass or per-frame traversal is added. Frost grass's separate semantic material can split it from snow in a material batch; ordinary static batching remains enabled.
+
 Use the existing Lighting/Atmosphere Lab. The new selector distinguishes **Lab draft (user-local)** from production variants. The Variants tab contains New, Duplicate, Delete, a name field for renaming, Enabled, Weight, Save Variant and Revert.
 
 1. Select a Theme and Default to edit its usual appearance, or Duplicate for another look. New starts from the source baseline.
@@ -119,6 +135,8 @@ Adjacent Zones can use the same Theme with different variants. Their background 
 The shader/binding implementation requires one ordinary source-hash bake refresh. Subsequent named-variant creation, renaming, weighting or color edits do not change the bake matrix or recipe fingerprint. Production remains five Acts × eight Themes (40 variants); Endless remains seven × eight (56). Runtime ignores the Lab save file and packaged games include the production registry.
 
 ## Verification
+
+The Foliage audit passed 444 all-prop checks in the working art checkout and 422 in clean staged source, plus 765 selective-range checks and 1,458 Lab checks. All 96 refreshed recipes passed material-role coverage (7,290 checks); both bake audits passed (401/465), batching passed 111 checks, and six streamed transitions passed 2,634 checks including live plant recoloring and non-plant isolation. Source defaults, variant weights and lighting files were not edited. Existing local Casino import warnings and streaming shutdown ObjectDB warnings remain. No performance benchmark was run.
 
 The Zone Default pass validated all eight saved Defaults, their live Lab/runtime properties, Showcase loading, and the separate Ultra + FXAA option: 774 checks passed in both the working art checkout and an export of the exact staged source. Overview and gameplay-distance images were reviewed with Retro on/off under `test-results/zone-defaults/`. A separate before/after comparison confirmed all protected hue/saturation/brightness values and all named variants were preserved exactly. Lab smoke passed 1,467 checks, scenery passed 6,607, variant/storage checks passed 440, and batching passed 111. All 40 Prototype and 56 Endless recipes were refreshed and passed 401/465 audit checks; the six-transition disk-backed streaming smoke passed 87 checks without procedural fallback. Existing local Casino raw-image warnings and five ObjectDB instances reported at streaming shutdown remain outside this pass. No performance benchmark was run.
 

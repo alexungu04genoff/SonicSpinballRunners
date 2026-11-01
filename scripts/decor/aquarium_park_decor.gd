@@ -33,6 +33,7 @@ func _init(_presentation: Node3D) -> void:
   if key == "coral": Atmosphere.color(mat, "coral")
   if key in ["cyan", "fish"]: Atmosphere.color(mat, "aquatic_tint", "tint")
   materials[key] = mat
+  if key == "plant": Atmosphere.foliage(mat)
  var roof_material := StandardMaterial3D.new()
  roof_material.vertex_color_use_as_albedo = true
  roof_material.roughness = 0.48

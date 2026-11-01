@@ -26,6 +26,9 @@ func _init(_presentation: Node3D) -> void:
    mat.emission = Color(colors[key])
    mat.emission_energy_multiplier = 0.35
   materials[key] = mat
+  if key == "pine": preload("res://scripts/themes/theme_atmosphere.gd").foliage(mat)
+ materials.frost_grass = materials.snow.duplicate()
+ preload("res://scripts/themes/theme_atmosphere.gd").foliage(materials.frost_grass)
  var crystal := ShaderMaterial.new()
  crystal.shader = preload("res://scripts/themes/ice_crystal.gdshader")
  materials.crystal = crystal
@@ -111,7 +114,7 @@ func build_variant(variant: String) -> Node3D:
     piece(root, "sphere", "snow", Vector3(i * 0.12 - 0.05, 0.20 + i * 0.03, 0), Vector3(0.13, 0.035, 0.13))
   "frost_grass":
    for i in 5:
-    var blade := piece(root, "cone", "snow", Vector3((i - 2) * 0.045, 0.11, sin(i * 2.1) * 0.05), Vector3(0.022, 0.22 + (i % 2) * 0.1, 0.02))
+    var blade := piece(root, "cone", "frost_grass", Vector3((i - 2) * 0.045, 0.11, sin(i * 2.1) * 0.05), Vector3(0.022, 0.22 + (i % 2) * 0.1, 0.02))
     blade.rotation.z = (i - 2) * -0.18
   "snow_pine": pine(root, Vector3.ZERO, 0.64, 0.24)
   "ice_fan":

@@ -71,6 +71,7 @@ func _copy(source: Material, scenery := false) -> Material:
  var cache: Dictionary = scenery_materials if scenery and not semantic else materials
  if cache.has(source): return cache[source]
  if semantic or scenery: copy = source.duplicate()
+ if Palette.is_foliage(source): Palette.foliage(copy)
  if trim_layer:
   copy.set_meta("atmosphere_hue", "terrain_borders")
   copy.set_meta("atmosphere_trim_split", true)
@@ -166,6 +167,9 @@ func apply_palette(values: Dictionary, sun: DirectionalLight3D, use_sun_directio
    var linear: Color = value.srgb_to_linear()
    actual = Vector3(linear.r, linear.g, linear.b)
   var hue_group := _palette_group(key)
+  # Plant palette inputs retain their authored tint. The final surface owns
+  # the Foliage transform, including textured pixels, exactly once.
+  if entry.target is Material and Palette.is_foliage(entry.target) and hue_group == "foliage": hue_group = ""
   # The final material operation owns selective ranges when present. Applying
   # ranges to its palette inputs as well would shift a Decor color twice.
   var ranges_here := _palette_stacks(values, key)
@@ -218,6 +222,9 @@ func apply(multiplier: float) -> void:
  for entry: Dictionary in parameters:
   if entry.shader: entry.material.set_shader_parameter(entry.property, float(entry.base) * multiplier)
   else: entry.material.set(entry.property, float(entry.base) * multiplier)
+
+func has_foliage() -> bool:
+ return hue_parameters.any(func(entry: Dictionary): return entry.group == "foliage")
 
 func restore() -> void:
  # Node properties (existing lights/marquee) are not material slots.

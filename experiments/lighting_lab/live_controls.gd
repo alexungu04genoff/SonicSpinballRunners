@@ -449,6 +449,7 @@ func _bind_palette() -> void:
  for spec: Array in ColorRanges.stack_fields(game.theme_id): emission.palette_originals[spec[1]] = true
  for spec: Array in Fields.HUE_FIELDS:
   emission.palette_originals[spec[1]] = spec[1].begins_with("link/") if spec[2] == "bool" else (1.0 if (spec[1].begins_with("saturation/") or spec[1].begins_with("brightness/")) else 0.0)
+  if spec[1].ends_with("/foliage") and not emission.has_foliage(): continue
   palette_fields.append(spec)
   _field(palette_controls, spec)
   if spec[1].begins_with("brightness/"):

@@ -61,6 +61,6 @@ static func prepare(material: Material) -> void:
 
 static func decor_copy(source: Material) -> Material:
  var result: Material = source.duplicate()
- result.set_meta("atmosphere_hue", "decor")
+ result.set_meta("atmosphere_hue", "foliage" if preload("res://scripts/themes/theme_atmosphere.gd").is_foliage(source) else "decor")
  prepare(result)
  return result

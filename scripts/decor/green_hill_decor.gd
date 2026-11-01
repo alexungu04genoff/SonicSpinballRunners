@@ -36,7 +36,9 @@ func _build_prop(variant: String) -> Node3D:
     mesh.radial_segments = 7
     mesh.rings = 3
     var offset := Vector3((i - 1) * 0.18, 0.15 + (0.07 if i == 1 else 0.0), 0.08 if i == 1 else 0.0)
-    presentation.mesh_node(mesh, presentation.material(Color("52ae36") if i == 1 else Color("287e38")), offset, root)
+    var shrub: Material = presentation.material(Color("52ae36") if i == 1 else Color("287e38"))
+    preload("res://scripts/themes/theme_atmosphere.gd").foliage(shrub)
+    presentation.mesh_node(mesh, shrub, offset, root)
   "flower_patch":
    presentation._flower(Vector3(-0.16, 0, 0.04), 0.72, root)
    presentation._flower(Vector3(0.17, 0, -0.04), 0.54, root)
@@ -90,6 +92,7 @@ func _grass_tuft(root: Node3D) -> void:
    surface.add_vertex(vertex)
   surface.generate_normals()
   var leaf: Material = presentation.material(Color("286c39") if i % 2 == 0 else Color("69ae35"))
+  preload("res://scripts/themes/theme_atmosphere.gd").foliage(leaf)
   leaf.cull_mode = BaseMaterial3D.CULL_DISABLED
   presentation.mesh_node(surface.commit(), leaf, Vector3.ZERO, root)
 

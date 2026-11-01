@@ -27,6 +27,7 @@ func _init(_presentation: Node3D) -> void:
    mat.emission = Color(colors[key])
    mat.emission_energy_multiplier = 0.12
   materials[key] = mat
+  if key in ["leaf", "moss"]: preload("res://scripts/themes/theme_atmosphere.gd").foliage(mat)
 
 func primitive(kind: String) -> Mesh:
  if meshes.has(kind): return meshes[kind]

@@ -91,6 +91,15 @@ static func color(material: BaseMaterial3D, key: String, mode := "direct") -> vo
  tag(material, "albedo_color", key, mode)
  if material.emission_enabled: tag(material, "emission", key, mode)
 
+static func foliage(material: Material) -> void:
+ material.set_meta("atmosphere_hue", "foliage")
+
+static func is_foliage(material: Material) -> bool:
+ if material.get_meta("atmosphere_hue", "") == "foliage": return true
+ for binding: Dictionary in material.get_meta("atmosphere_bindings", {}).values():
+  if binding.get("key") == "vegetation_tint": return true
+ return false
+
 static func fields(theme: String) -> Array:
  var result: Array = []
  for field: Array in FIELDS.get(theme, []):

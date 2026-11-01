@@ -2,6 +2,7 @@ extends SceneTree
 ## Rendered functional checks against the currently loaded theme implementations.
 var checks := 0
 var failures := 0
+var baked_foliage := {}
 var game: Node
 const OUTPUT := "res://test-results/atmosphere-controls"
 
@@ -150,6 +151,7 @@ func check_baked_bindings() -> void:
    check_baked_act(Bake.path_for(path, theme), document, theme, fingerprint)
    cases += 1
   print("ATMOSPHERE_BAKED_THEME | ", theme, " | Acts=", paths.size())
+  check((int(baked_foliage.get(theme, 0)) > 0) == (theme in ["green_hill", "rooftop_run", "sky_sanctuary", "ice_cap", "aquarium_park"]), theme + " baked pool has the audited plant capability")
  print("ATMOSPHERE_BAKED_ACTS | cases=", cases)
 
 func check_trim_controls(panel: Node, theme: String) -> void:
@@ -218,13 +220,15 @@ func check_baked_act(path: String, document: Resource, theme: String, fingerprin
   var bindings := preload("res://scripts/atmosphere/material_bindings.gd").new()
   bindings.collect(container, theme)
   var light := DirectionalLight3D.new()
-  bindings.apply_palette({"hue/terrain": 0.25, "brightness/terrain": 0.4, "hue/decor": -0.3, "brightness/decor": 0.7, "ranges/enabled": true, "ranges/green/hue": 0.2}, light, false)
+  bindings.apply_palette({"hue/terrain": 0.25, "brightness/terrain": 0.4, "hue/decor": -0.3, "brightness/decor": 0.7, "hue/foliage": 0.17, "brightness/foliage": 0.8, "ranges/enabled": true, "ranges/green/hue": 0.2}, light, false)
   var groups := {}
   for entry: Dictionary in bindings.hue_parameters:
    groups[entry.group] = true
+   if entry.group == "foliage": baked_foliage[theme] = int(baked_foliage.get(theme, 0)) + 1
    if entry.material is ShaderMaterial:
-    check(is_equal_approx(float(entry.material.get_shader_parameter("atmosphere_hue")), -0.3 if entry.group == "decor" else (0.25 if entry.group.begins_with("terrain_") else 0.0)), theme + " baked hue reaches " + entry.group)
-    check(is_equal_approx(float(entry.material.get_shader_parameter("atmosphere_brightness")), 0.7 if entry.group == "decor" else (0.4 if entry.group.begins_with("terrain_") else 1.0)), theme + " baked brightness reaches " + entry.group)
+    check(is_equal_approx(float(entry.material.get_shader_parameter("atmosphere_hue")), 0.17 if entry.group == "foliage" else (-0.3 if entry.group == "decor" else (0.25 if entry.group.begins_with("terrain_") else 0.0))), theme + " baked hue reaches " + entry.group)
+    check(is_equal_approx(float(entry.material.get_shader_parameter("atmosphere_brightness")), 0.8 if entry.group == "foliage" else (0.7 if entry.group == "decor" else (0.4 if entry.group.begins_with("terrain_") else 1.0))), theme + " baked brightness reaches " + entry.group)
+    if entry.group == "foliage": check(is_equal_approx(float(entry.material.get_shader_parameter("atmosphere_hue")), 0.17), theme + " baked plant tissue keeps its Foliage role")
    elif not entry.group.is_empty():
     check(entry.material.albedo_color != entry.base or entry.base == Color.BLACK, theme + " baked standard surface responds")
   for group: String in (["terrain_ground", "terrain_upper", "terrain_walls", "terrain_borders", "decor"] if "First Try Smooth Decor" in path else ["terrain_ground", "terrain_walls"]):
