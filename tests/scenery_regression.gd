@@ -27,13 +27,13 @@ func run() -> void:
  check(Settings.read(path, "green_hill").seed == 0, "Missing settings use authored seed zero")
  check(Settings.save(path, "ice_cap", {"seed": 19, "density": 0.75}) == OK, "Save first theme")
  var other := Settings.signature(path, "ice_cap")
- check(Settings.save(path, "green_hill", {"seed": 183742, "density": 1.5}) == OK, "Save selected theme")
+ check(Settings.save(path, "green_hill", {"seed": 183742, "density": 2.5}) == OK, "Save selected theme")
  check(Settings.read(path, "green_hill").seed == 183742, "Round trip seed")
  check(Settings.signature(path, "ice_cap") == other, "Other theme settings preserved")
  check(Settings.signature(path, "green_hill") != default_signature, "Selected theme receipt changes")
  check(Settings.signature(original, "green_hill") == default_signature, "Other Act receipt unchanged")
  check(FileAccess.get_sha256(path) == hash, "Saving scenery never changes Act bytes")
- for values: Dictionary in [{"seed": -1, "density": 1.0}, {"seed": 4.2, "density": 1.0}, {"seed": 1, "density": 1.51}, {"seed": 1, "density": NAN}, {"seed": 1, "density": 0.49}]:
+ for values: Dictionary in [{"seed": -1, "density": 1.0}, {"seed": 4.2, "density": 1.0}, {"seed": 1, "density": 2.51}, {"seed": 1, "density": NAN}, {"seed": 1, "density": 0.49}]:
   check(Settings.save(path, "green_hill", values) == ERR_INVALID_DATA, "Invalid input rejected")
  var document: Resource = preload("res://scripts/act_editor/act_geometry.gd").load_document(original).document
  var bake := Bake.new()
@@ -49,11 +49,12 @@ func run() -> void:
  malformed.store_string("[format]\nversion=1\n[green_hill]\nseed=\"bad\"\ndensity=1.0\n")
  malformed.close()
  check(Settings.signature(path, "green_hill").is_empty(), "Malformed authored values cannot validate a bake")
- for density: float in [0.5, 0.75, 1.0, 1.25, 1.5]:
+ for density: float in [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5]:
   var layout := Layout.new({"seed": 183742, "density": density}, "green_hill")
-  check(layout.plans([{"side": -1, "at": 0.8}, {"side": 1, "at": 0.24}]).size() <= 3, "Bounded group candidates")
+  check(layout.plans([{"side": -1, "at": 0.8}, {"side": 1, "at": 0.24}]).size() <= 5, "Bounded group candidates")
   check(is_finite(layout.fit(Rect2(0, 0, 600, 1800), -1, 100, 80)), "First footprint fits")
-  check(not is_finite(layout.fit(Rect2(0, 0, 600, 1800), -1, 110, 80)), "Overlapping footprint rejected")
+  var next := layout.fit(Rect2(0, 0, 600, 1800), -1, 110, 80)
+  check(not is_finite(next) if density <= 1.5 else absf(next - 100.0) >= 190.0, "Overlapping footprint rejected or relocated with full clearance")
   check(not is_finite(layout.fit(Rect2(0, 0, 600, 100), 1, 50, 80)), "Oversized footprint rejected")
  game = load("res://experiments/lighting_lab/lighting_lab.tscn").instantiate()
  game.authored_act_path = original
@@ -78,7 +79,8 @@ func run() -> void:
   var palette: Dictionary = panel.values.duplicate(true)
   var signatures := []
   for seed_value: int in [0, 183742, 9127]:
-   for density: float in [0.5, 1.0, 1.5]:
+   var normal_groups := 0
+   for density: float in [0.5, 1.0, 1.5, 2.5]:
     var selected := {"seed": seed_value, "density": density}
     seed(8723)
     var expected := [randi(), randi(), randi()]
@@ -93,7 +95,10 @@ func run() -> void:
     if density == 1.0:
      signatures.append(first)
      print("SCENERY_CASE | ", theme, " seed=", seed_value, " groups=", p.scenery_group_count, " hash=", first.substr(0, 12))
-    var maximum := 5 if theme in ["green_hill", "ice_cap"] else 3
+    if density == 1.0: normal_groups = p.scenery_group_count
+    if density == 2.5 and seed_value == 183742:
+     check(p.scenery_group_count > normal_groups, theme + " Showcase adds groups on the representative Act")
+    var maximum := 7 if theme in ["green_hill", "ice_cap"] else 5
     check(p.scenery_group_count <= maximum, theme + " sensible group cap")
     check(p.camera.transform == camera, "Preview preserves camera")
     check([game.ball.get_instance_id(), game.ball.position, game.ball.linear_velocity] == ball_state, "Preview preserves ball")

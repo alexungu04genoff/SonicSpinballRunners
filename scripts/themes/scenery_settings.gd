@@ -9,7 +9,7 @@ static func path_for(act_path: String) -> String:
  return act_path.get_basename() + ".scenery.cfg"
 
 static func valid(values: Dictionary) -> bool:
- return typeof(values.get("seed")) == TYPE_INT and values.seed >= 0 and values.seed <= MAX_SEED and typeof(values.get("density")) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(values.density)) and float(values.density) >= 0.5 and float(values.density) <= 1.5
+ return typeof(values.get("seed")) == TYPE_INT and values.seed >= 0 and values.seed <= MAX_SEED and typeof(values.get("density")) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(values.density)) and float(values.density) >= 0.5 and float(values.density) <= 2.5
 
 static func read(act_path: String, theme: String) -> Dictionary:
  var result := {"seed": 0, "density": 1.0, "error": ""}
@@ -26,7 +26,7 @@ static func read(act_path: String, theme: String) -> Dictionary:
   return result
  var values := {"seed": config.get_value(theme, "seed", 0), "density": config.get_value(theme, "density", 1.0)}
  if not valid(values):
-  result.error = "Scenery settings need an integer seed and density between 0.50 and 1.50."
+  result.error = "Scenery settings need an integer seed and density between 0.50 and 2.50."
   return result
  result.seed = values.seed
  result.density = float(values.density)

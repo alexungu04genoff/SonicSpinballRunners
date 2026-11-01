@@ -3,7 +3,7 @@
 Open `Lighting Lab.cmd`, load an authored Act, choose a Theme, then open **Scenery**.
 
 1. Enter a Scenery seed, or click **Randomize**.
-2. Choose **Scenery Density**: 0.50 Sparse, 0.75 Light, 1.00 Normal, 1.25 Dense or 1.50 Very Dense.
+2. Choose **Scenery Density**: 0.50 Sparse, 0.75 Light, 1.00 Normal, 1.25 Dense, 1.50 Very Dense, 2.00 Packed or 2.50 Showcase.
 3. Use **Inspect left** and **Inspect right**, then pan along the Act. These use the accepted 50° elevation, 52° FOV and 1.3 gameplay zoom. They do not move the ball.
 4. Click **Save scenery**. Run **Bake Prototype** or **Bake Endless** before playing the relevant production mode.
 
@@ -19,13 +19,13 @@ Green Hill, Chemical Plant, Rooftop Run, Casino Night, Sky Sanctuary and Ice Cap
 
 ## Bounded composition
 
-Density adjusts one to three primary landmark candidates and small optional accents. It does not multiply every prop. Rotated/scaled group footprints clear the real course contour, remain inside the Act's longitudinal bounds and keep a 30-pixel minimum gap from another group on the same side. Short Acts can reject extra candidates, so higher density need not increase every view's draw count.
+Density adjusts up to five landmark candidates and small optional accents. Packed (2.00) and Showcase (2.50) add candidates in separate longitudinal bands and search the nearest available gap. Extra ruins, ridges, facades and casino clusters use half-size secondary groups; the full transformed footprint is measured after scaling. Settings through 1.50 retain their previous placement policy. It does not multiply every prop. Rotated/scaled group footprints clear the real course contour, remain inside the Act's longitudinal bounds and keep a 30-pixel minimum gap from another group on the same side. Short Acts can reject extra candidates, so higher density need not increase every view's draw count.
 
 - Green Hill varies headland sides/widths, one loop choice, up to two palms, flowers/rocks and up to two small islets.
 - Chemical Plant varies nearby tank type, radius, height and short pipe groups.
 - Rooftop Run varies facade/garden combinations and modest group rotation.
 - Casino Night uses existing lantern/reel/pylon landmarks with optional neon palms.
-- Sky Sanctuary varies broken ruin choice, rotation, scale and one to three fragments while retaining cloud gaps.
+- Sky Sanctuary varies broken ruin choice, rotation, scale and up to five fragments while retaining cloud gaps.
 - Ice Cap varies ridges, shelves, pines/crystals and one optional arch. Its two aurora ribbons continue to follow the actual contour and do not randomize.
 
 The preview reports local group, mesh-instance and mesh-surface counts, shadow casters and lights. Surface counts are estimates, not GPU draw calls. Local scenery stays shadowless and adds no lights. Existing theme batching and offline spatial batching remain in use.
@@ -36,7 +36,7 @@ The baker resolves Act geometry + Theme + saved scenery inputs into the existing
 
 Bake version 8 adds a scenery fingerprint separate from the gameplay source fingerprint. Changing one Act/theme's settings stales that visual bake only; other Acts/themes and shared far resources retain their input signatures. Collision validation can still reuse the unchanged geometry receipt. Generator/source changes retain the existing broader pipeline invalidation rules. The version upgrade requires one initial refresh of both bake pools.
 
-Regression and rendering checks live in `tests/scenery_regression.gd` and `tests/scenery_profile.gd`. The latter captures local scenery through the production recipe and batch optimizer, then measures Sparse/Normal/Very Dense in matched left/right views. Preparation and screenshot readback occur outside measured frames. Results and images are written under ignored `test-results/scenery-authoring/`.
+Regression and rendering checks live in `tests/scenery_regression.gd` and `tests/scenery_profile.gd`. The latter captures local scenery through the production recipe and batch optimizer, then measures Normal/Very Dense/Showcase in matched left/right views. Preparation and screenshot readback occur outside measured frames. Results and images are written under ignored `test-results/scenery-density/`.
 
 ## Measurements — 2026-10-31
 
@@ -74,3 +74,26 @@ Seeds 0, 183742 and 9127 were rendered in both views for all six supported theme
 - A minimal exported PCK retained seed 183742 / density 1.50 using the new sidecar inclusion filter. Both PowerShell export scripts pass syntax parsing. No full executable release was built for this feature.
 
 Godot's existing certificate-store warning appears in headless logs. The full streaming test also reports 18 ObjectDB instances at process exit; a verbose repeat identifies zero-reference `RefCounted` objects, the same warning class seen in earlier framing/streaming runs. No leaked scenery nodes are reported, and bounded live retirement checks pass. This exit warning remains unresolved. Moving-camera composition preferences and second-hardware performance remain manual review items.
+
+## Higher density polish — 2026-11-01
+
+Packed (2.00) and Showcase (2.50) extend both saved validation and the actual composition budget to five landmark candidates. They search legal gaps and use smaller secondary groups where the theme builds complete ruin/ridge/facade/landmark roots. Green Hill and Chemical retain their contour-aware headland/industrial placement. No prop-by-prop multiplier, new light, gameplay placement or runtime generation was introduced. The existing 30-pixel separation and full footprint/Act bounds checks still apply; insufficient space can reject a candidate. Local scenery stays shadowless.
+
+On Reverse C Spring, seed 183742, group counts at 1.00 / 1.50 / 2.50 were Green Hill 2/3/4, Chemical 2/3/4, Sanctuary 2/3/5, Rooftop 2/3/5, Casino 2/3/5 and Ice 4/4/6 (Ice includes its two unchanged aurora ribbons). The secondary Ice shelf is visible below the main ridge, rather than repeating every crystal. All six supported themes gained accepted groups at Showcase on this representative Act. Short or crowded Acts remain allowed to reject groups.
+
+Profiles measure both approved edge views after recipe capture and batching, with 120-frame ascending and 360-frame descending samples at 1.00/1.50/2.50. Reports and screenshots are under `test-results/scenery-density/profile` and `profile-reverse`. Measurements include the preserved local art experiments; those art edits are not part of this polish commit.
+
+Final descending-pass results (RTX 4060, Godot 4.7.2 Forward+ Vulkan, 1280×900 window, 673×473 world viewport, 360 settled frames; left edge shown):
+
+| Theme | Draws 1.0 / 1.5 / 2.5 | GPU median ms 1.0 / 1.5 / 2.5 |
+| --- | --- | --- |
+| green_hill | 1187 / 1188 / 1200 | 0.644 / 0.644 / 0.678 |
+| chemical_plant | 648 / 658 / 658 | 0.690 / 0.695 / 0.695 |
+| sky_sanctuary | 894 / 894 / 894 | 0.668 / 0.682 / 0.679 |
+| ice_cap | 867 / 867 / 869 | 0.716 / 0.708 / 0.716 |
+| casino_night | 1004 / 1004 / 1009 | 0.830 / 0.836 / 0.833 |
+| rooftop_run | 748 / 748 / 756 | 0.919 / 0.928 / 0.929 |
+
+Higher density is bounded, not free. Culling and batching can keep draw counts equal even when additional groups are present; the opposite edge and other camera positions expose different groups. These are local view measurements, not a whole-run frame-time guarantee. Offline baking ran concurrently, so CPU/frame timings should not be treated as isolated benchmarks.
+
+Polish verification: scenery regression passed 6,606 checks in the working checkout and 8,574 in a clean staged-source export, including deterministic layouts, gameplay RNG isolation, placement bounds, light/shadow rules and settings validation. The different counts reflect local art geometry. Static batching passed 111 checks. All 40 Prototype and 56 Endless variants were refreshed; their audits passed 393 and 457 checks. A disposable density-2.50 sidecar fixture baked all eight variants and loaded into Prototype alongside neighboring Acts under Green Hill, Sanctuary and Ice, with collision receipts reused and no runtime fallback. Forward+ streaming passed 256 checks across 27 transitions with valid disk bakes and bounded caches. The known ObjectDB exit-warning class remains (eight instances on this run). No production sidecar was changed. Final isolated crystal and gameplay captures were reviewed with Retro on/off; see [Ice Cap](ICE_CAP.md#crystal-rendering-polish--2026-11-01).

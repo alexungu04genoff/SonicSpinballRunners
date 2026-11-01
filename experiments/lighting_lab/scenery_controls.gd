@@ -1,7 +1,7 @@
 extends VBoxContainer
 ## Authored Act/theme composition controls; atmosphere presets stay lab-only.
 const Settings := preload("res://scripts/themes/scenery_settings.gd")
-const DENSITIES := [0.5, 0.75, 1.0, 1.25, 1.5]
+const DENSITIES := [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5]
 var lab: CanvasLayer
 var seed_field: SpinBox
 var density_field: OptionButton
@@ -27,7 +27,7 @@ func install(owner_lab: CanvasLayer) -> void:
  random_button = lab._button(self, "Randomize", randomize_seed)
  _label("Scenery Density")
  density_field = OptionButton.new()
- for title: String in ["0.50 · Sparse", "0.75 · Light", "1.00 · Normal", "1.25 · Dense", "1.50 · Very Dense"]:
+ for title: String in ["0.50 · Sparse", "0.75 · Light", "1.00 · Normal", "1.25 · Dense", "1.50 · Very Dense", "2.00 · Packed", "2.50 · Showcase"]:
   density_field.add_item(title)
  density_field.item_selected.connect(func(index: int):
   if index < DENSITIES.size(): change({"seed": values.seed, "density": DENSITIES[index]})

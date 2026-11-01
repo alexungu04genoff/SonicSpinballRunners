@@ -8,7 +8,7 @@ func run() -> void:
  if DisplayServer.get_name() == "headless":
   quit(1)
   return
- output = "res://test-results/scenery-authoring/profile"
+ output = "res://test-results/scenery-density/profile"
  var reverse := "--scenery-reverse" in OS.get_cmdline_user_args()
  if reverse: output += "-reverse"
  samples = 360 if reverse else 120
@@ -40,7 +40,7 @@ func run() -> void:
   panel.reset_values()
   game.presentation.set_process(false)
   await frames(60)
-  for density: float in ([1.5, 1.0, 0.5] if reverse else [0.5, 1.0, 1.5]):
+  for density: float in ([2.5, 1.5, 1.0] if reverse else [1.0, 1.5, 2.5]):
    var start := Time.get_ticks_usec()
    panel.scenery.change({"seed": 183742, "density": density})
    await frames(3)

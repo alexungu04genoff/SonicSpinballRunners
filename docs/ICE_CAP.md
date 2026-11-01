@@ -29,7 +29,7 @@ The scene is a readable **moonlit glacier at violet twilight**. Bright snow shel
 - **Snow:** opaque matte material, roughness 0.94, low specular, broad wind-packed variation. No high-frequency random grain. Raised terrain has more snow coverage than the lower playable floor.
 - **Ice:** opaque cyan-blue patches with roughness 0.16–0.22, stronger specular, sky radiance and a restrained Fresnel contribution. Sparse seams suggest internal fractures. There is no screen-space or ray-traced reflection dependency.
 - **Walls:** world-space fractured facets adapt to arbitrary authored contours. The snow lip is shaded within the existing mesh; it does not widen or smooth the collision silhouette.
-- **Thin crystals/icicles:** a separate alpha-depth-prepass shader supplies limited translucency and edge highlights. Solid walls and playable floors remain opaque.
+- **Thin crystals/icicles:** a separate opaque shader supplies blue glass-like shading and edge highlights. The November 2026 polish replaced alpha-depth-prepass transparency to avoid compound-mesh artifacts; see the diagnosis below. Solid walls and playable floors remain opaque.
 - **Lake:** dark frozen water separates the table from scenery. Broad moving teal streaks are an art-directed aurora-reflection approximation, not an accurate reflection of scene objects.
 - **Atmosphere:** three slowly waving mesh curtains, a static star/violet sky, and 48 small snow flecks outside the playfield footprint. Background primitives are batched; the mountain meshes have original asymmetric facets and irregular snowlines.
 
@@ -41,7 +41,7 @@ Fixed indices retain the established generic order. All surface/edge/either pool
 
 | Size / fixed index | Original variant | Purpose |
 | --- | --- | --- |
-| Small 1 | Crystal shards | Thin translucent highlights |
+| Small 1 | Crystal shards | Thin rim-lit crystal highlights |
 | Small 2 | Snow cairn | Dark rock beneath a soft snow cap |
 | Small 3 | Frost grass | Sparse low vegetation silhouette |
 | Medium 1 | Snow pine | Compact alpine conifer |
@@ -146,3 +146,13 @@ Graphical checks use `--rendering-method gl_compatibility --rendering-driver ope
 The capture harness accepts `--act=res://data/acts/First Try Smooth Decor.tres` for the user's local Act without rewriting or tracking it. Without an Act argument it captures both committed decorated examples.
 
 Human review remains useful for fast-ball readability across snow/ice boundaries, small gold rings with the preferred filter stack, and how much aurora is visible during camera travel. Flipper timing and gameplay feel remain unchanged and are not established by screenshots.
+
+## Crystal rendering polish — 2026-11-01
+
+Small crystals now use opaque, backface-culled ice with the existing blue tint, low roughness, specular highlight and emissive Fresnel rim. They retain shadow casting and reception. No refraction, screen reads, lights or extra passes were added.
+
+The black dots were not solely a transparency problem. The original fractional `pow(1 - abs(dot(NORMAL, VIEW)), 2.5)` could receive an out-of-domain value. Normalizing both interpolated vectors and clamping the base to [0, 1] removed the dots in the actual gameplay view even with the original transparency retained. Retro amplified the invalid pixels but did not originate them. Disabling shadow reception did not cure them and was not retained.
+
+A separate compound-mesh issue remained: facet and cone caps meet at exactly 0.70 × height, and double-sided transparency exposes interior caps/backfaces and overlap ordering. Removing the depth prepass alone did not make those surfaces clean. The opaque, backface-culled variant resolves that appearance without changing any prop geometry.
+
+Forward+ Vulkan comparisons covered single and overlapping clusters, close and gameplay distances, Retro on/off, original/no-prepass/backface-culling/no-cast-shadow variants, and actual Reverse C Spring scenery. Evidence is in ignored `test-results/scenery-polish/crystals` and `gameplay`. In matched actual gameplay captures, final rendering used 12 fewer draws; measured GPU medians were 0.775 vs 0.805 ms without Retro and 0.560 vs 0.565 ms with Retro. These small local measurements establish no meaningful regression, not a whole-run speedup claim.
