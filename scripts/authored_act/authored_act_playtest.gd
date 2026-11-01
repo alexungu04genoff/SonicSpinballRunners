@@ -126,6 +126,7 @@ func _build_ui() -> void:
  view.name = "PlayfieldViewport"
  view.own_world_3d = true
  view.msaa_3d = Viewport.MSAA_4X
+ preload("res://scripts/rendering_options.gd").register_view(view)
  view.world_2d = World2D.new()
  view.process_mode = Node.PROCESS_MODE_PAUSABLE
  view.size = Vector2i(1000, 650)

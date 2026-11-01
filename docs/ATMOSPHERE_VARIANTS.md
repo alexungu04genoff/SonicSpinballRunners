@@ -6,7 +6,26 @@ The production model is **Act geometry × Theme × Atmosphere Variant**. Geometr
 
 `data/atmospheres/<theme_id>.cfg` is version-1, inspectable project data. Each section has a stable ID, display name, enabled flag, weight and a dictionary of atmosphere overrides. Colors remain native ConfigFile `Color` values. There are no copied Theme resources, geometry references or serialized percentages. Both export scripts include these files.
 
-Every Theme starts with **Default**: initially an empty override dictionary representing the current source appearance. Its appearance, enabled flag and weight are editable and save like other variants. Its ID/name remain fixed and the entry cannot be deleted. The Theme must still have an enabled positive-weight choice. Quick looks and old Lab saves are never promoted automatically.
+Every Theme has an authored **Default** atmosphere. Its appearance, enabled flag and weight are editable and save like other variants. Its ID/name remain fixed and the entry cannot be deleted. The Theme must still have an enabled positive-weight choice. An empty override dictionary still means the source appearance. Quick looks and old Lab saves are never promoted automatically.
+
+## Zone Defaults — 2026-11-01
+
+Alex requested a fresh set of eight production Defaults, retaining gameplay visibility at night. These replace the previous saved Default lighting/palette values; other named variants and user-local Lab drafts remain intact. Select **Default** in the Lab selector to review them. **Show original atmosphere** still compares against source theme values.
+
+| Zone | Direction |
+| --- | --- |
+| Green Hill | Clear tropical daylight, warm sun, blue fill and turquoise ocean. |
+| Chemical Plant | Indigo industrial night, readable cool fill, cyan/pink accents and broader soft neon halos. |
+| Rooftop Run | Spagonia afternoon: warm cream masonry and terracotta under a blue sky. |
+| Casino Night | Deep violet night with distinct pink, aqua, mint and amber neon against a readable course. |
+| Sky Sanctuary | Classic pale yellow/green ruins above blue-shadowed cloud banks in daylight. |
+| Ice Cap | Daytime glacier, pale blue sky, cold lake reflections, no sky stars or aurora curtains. |
+| Lava Reef | Warm rock, orange molten glow and restrained distant heat haze. |
+| Aquarium Park | Colours-inspired cool blue lagoon and red architecture with warm lanterns. |
+
+Hue, saturation and brightness controls were preserved, including selective ranges, category overrides, stacking/link flags, environment saturation, background/fog brightness and the existing Color adjustment toggle. Chemical's saved ground brightness/saturation and Rooftop's saved background brightness/saturation therefore remain part of their Defaults. Light energy/exposure, palette colors, emission and halo shape are deliberately tuned independently. Shadows retain enabled / 0.85 opacity / 0.00 angular softness / 0.02 bias / 0.55 normal bias. Only Lava's Default enables a subtle directional haze; ordinary fog stays off to avoid camera-distance-dependent washout.
+
+Scenery defaults to **2.50 Showcase** for the six density-driven themes, separately from atmosphere data. Lava Reef and Aquarium Park retain their fixed scenery builders. Existing explicit sidecar choices still take precedence. Density changes require the normal bake refresh; atmosphere changes alone do not.
 
 Saving validates names, IDs, value types/ranges and the weighted pool. It compares the file revision before replacing it through a temporary file, so another Lab window's save cannot be silently overwritten. A malformed or unavailable runtime registry falls back to the authored Default; the registry exposes its diagnostic to authoring callers.
 
@@ -100,6 +119,8 @@ Adjacent Zones can use the same Theme with different variants. Their background 
 The shader/binding implementation requires one ordinary source-hash bake refresh. Subsequent named-variant creation, renaming, weighting or color edits do not change the bake matrix or recipe fingerprint. Production remains five Acts × eight Themes (40 variants); Endless remains seven × eight (56). Runtime ignores the Lab save file and packaged games include the production registry.
 
 ## Verification
+
+The Zone Default pass validated all eight saved Defaults, their live Lab/runtime properties, Showcase loading, and the separate Ultra + FXAA option: 774 checks passed in both the working art checkout and an export of the exact staged source. Overview and gameplay-distance images were reviewed with Retro on/off under `test-results/zone-defaults/`. A separate before/after comparison confirmed all protected hue/saturation/brightness values and all named variants were preserved exactly. Lab smoke passed 1,467 checks, scenery passed 6,607, variant/storage checks passed 440, and batching passed 111. All 40 Prototype and 56 Endless recipes were refreshed and passed 401/465 audit checks; the six-transition disk-backed streaming smoke passed 87 checks without procedural fallback. Existing local Casino raw-image warnings and five ObjectDB instances reported at streaming shutdown remain outside this pass. No performance benchmark was run.
 
 The independent trim follow-up passed 1,527 all-theme surface/UI checks, 765 selective-range checks, 227 live border checks, 1,528 bake-border checks and 111 static-batching checks. These cover linked legacy appearances, independent hue/saturation/brightness, per-group Hue stacking, save/reload, retained independent settings, unchanged collision outlines, and outer/inner role data in both border builders. All 40 Prototype and 56 Endless recipes were refreshed; their audits passed 401 and 465 checks. The combined 96-recipe material/UV2 audit passed 6,666 checks. No performance benchmark was run.
 

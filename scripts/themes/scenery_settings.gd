@@ -3,7 +3,7 @@ extends RefCounted
 const VERSION := 1
 const MAX_SEED := 2147483647
 const THEMES := ["green_hill", "chemical_plant", "rooftop_run", "casino_night", "sky_sanctuary", "ice_cap"]
-const DEFAULTS := {"seed": 0, "density": 1.0}
+const DEFAULTS := {"seed": 0, "density": 2.5}
 
 static func path_for(act_path: String) -> String:
  return act_path.get_basename() + ".scenery.cfg"
@@ -12,7 +12,8 @@ static func valid(values: Dictionary) -> bool:
  return typeof(values.get("seed")) == TYPE_INT and values.seed >= 0 and values.seed <= MAX_SEED and typeof(values.get("density")) in [TYPE_INT, TYPE_FLOAT] and is_finite(float(values.density)) and float(values.density) >= 0.5 and float(values.density) <= 2.5
 
 static func read(act_path: String, theme: String) -> Dictionary:
- var result := {"seed": 0, "density": 1.0, "error": ""}
+ var result := DEFAULTS.duplicate()
+ result["error"] = ""
  if act_path.is_empty() or theme not in THEMES: return result
  var path := path_for(act_path)
  if not FileAccess.file_exists(path): return result
@@ -24,7 +25,7 @@ static func read(act_path: String, theme: String) -> Dictionary:
  if config.get_value("format", "version", VERSION) != VERSION:
   result.error = "Unsupported scenery settings version."
   return result
- var values := {"seed": config.get_value(theme, "seed", 0), "density": config.get_value(theme, "density", 1.0)}
+ var values := {"seed": config.get_value(theme, "seed", DEFAULTS.seed), "density": config.get_value(theme, "density", DEFAULTS.density)}
  if not valid(values):
   result.error = "Scenery settings need an integer seed and density between 0.50 and 2.50."
   return result

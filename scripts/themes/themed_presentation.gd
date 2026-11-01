@@ -6,7 +6,7 @@ const GreenHillTheme = preload("res://scripts/themes/green_hill_theme.gd")
 const TerrainFacade = preload("res://scripts/themes/terrain_facade.gd")
 const TerrainBorder = preload("res://scripts/themes/terrain_border.gd")
 const ScenerySettings = preload("res://scripts/themes/scenery_settings.gd")
-var scenery_settings := {"seed": 0, "density": 1.0}
+var scenery_settings: Dictionary = preload("res://scripts/themes/scenery_settings.gd").DEFAULTS.duplicate()
 var scenery_group_count := 0
 var theme_definition: RefCounted
 ## Replace this skin with another DecorSkin to reuse an Act's generic slots.

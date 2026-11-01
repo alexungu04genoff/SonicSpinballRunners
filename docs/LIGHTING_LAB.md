@@ -58,7 +58,11 @@ The shared Atmosphere baseline enables shadows with opacity **0.85**, softness *
 
 The rendered Lab smoke passed 1,419 checks across all eight themes, including these defaults, saved shadow overrides, older cached lighting values, and actual wheel input over a slider scrolling the inspector without changing the value or camera zoom.
 
-Softness is the sun's angular size, enabling contact-hardening shadows above zero. Increasing it can reveal the shadow filter's sampling/dither pattern, especially in a large penumbra; Retro may accentuate that pattern. Zero disables this variable softness. The tooltip explains the distinction. This change does not raise renderer quality settings or enable temporal antialiasing. See [Godot's shadow filtering explanation](https://docs.godotengine.org/en/4.5/tutorials/3d/lights_and_shadows.html#shadow-filter-mode).
+Softness is the sun's angular size, enabling contact-hardening shadows above zero. Increasing it can reveal the shadow filter's sampling/dither pattern, especially in a large penumbra; Retro may accentuate that pattern. Zero disables this variable softness. See [Godot's shadow filtering explanation](https://docs.godotengine.org/en/4.5/tutorials/3d/lights_and_shadows.html#shadow-filter-mode).
+
+**Shadows → Smooth shadows · Ultra + FXAA** is an optional device setting. It raises native directional shadow filtering from the project's Medium default to Ultra and enables FXAA on the 3D world viewports. The comparison at 1° angular softness showed substantially cleaner bumper/enemy shadows and less speckling around thin ring shadows, with and without Retro. Large penumbras can still expose limited sampling; this is an improvement, not a guarantee of noise-free shadows at every softness. FXAA slightly smooths the image and Ultra costs more GPU work. MSAA remains unchanged, TAA stays off, and parent UI is unaffected.
+
+The toggle defaults off, applies immediately in the Lab, and persists in `user://graphics_settings.cfg` for future gameplay launches, including streamed background viewports. It is independent of per-Zone atmospheres; changing a preset never toggles rendering quality. Disabling restores the project filter/FXAA defaults. No performance benchmark was run; Alex owns that review. The native Medium/High/Ultra/FXAA/TAA comparison images are under ignored `test-results/shadow-softness/`.
 
 ## Sky and background types
 

@@ -25,6 +25,7 @@ func run() -> void:
  var hash := FileAccess.get_sha256(path)
  var default_signature := Settings.signature(path, "green_hill")
  check(Settings.read(path, "green_hill").seed == 0, "Missing settings use authored seed zero")
+ check(Settings.read(path, "green_hill").density == 2.5 and Layout.new().density == 2.5, "Missing sidecars and layouts default to Showcase")
  check(Settings.save(path, "ice_cap", {"seed": 19, "density": 0.75}) == OK, "Save first theme")
  var other := Settings.signature(path, "ice_cap")
  check(Settings.save(path, "green_hill", {"seed": 183742, "density": 2.5}) == OK, "Save selected theme")
@@ -123,6 +124,8 @@ func run() -> void:
  panel.scenery.reload()
  check(panel.scenery.values == {"seed": 183742, "density": 0.75}, "UI reload restores authored inputs")
  check(FileAccess.get_sha256(path) == hash, "UI saves leave gameplay Act untouched")
+ # Let deferred numeric-field refreshes finish before destroying the inspector.
+ await frames()
  game.free()
  print("SCENERY_REGRESSION | checks=%d failures=%d" % [checks, failures])
  quit(1 if failures else 0)

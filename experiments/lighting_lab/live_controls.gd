@@ -8,6 +8,7 @@ const Fields := preload("res://scripts/atmosphere/fields.gd")
 const ColorRanges := preload("res://scripts/atmosphere/color_ranges.gd")
 const DirectionalFog := preload("res://scripts/atmosphere/directional_fog.gd")
 const FogView := preload("res://experiments/lighting_lab/fog_view.gd")
+const RenderingOptions := preload("res://scripts/rendering_options.gd")
 const GROUPS := Fields.GROUPS
 const PROCEDURAL_SKY_FIELDS := Fields.PROCEDURAL_SKY_FIELDS
 var variants: VBoxContainer
@@ -21,6 +22,7 @@ var reopen: Button
 var pause_button: Button
 var retro: CheckButton
 var vsync: CheckButton
+var smooth_shadows: CheckButton
 var performance_label: Label
 var fps_overlay: Label
 var tabs: TabContainer
@@ -178,6 +180,19 @@ func _build_ui() -> void:
    scenery = SceneryControls.new()
    controls.add_child(scenery)
    scenery.install(self)
+  if group == "Shadows":
+   smooth_shadows = CheckButton.new()
+   smooth_shadows.text = "Smooth shadows · Ultra + FXAA"
+   smooth_shadows.tooltip_text = "Reduces soft-shadow speckling using Ultra filtering and FXAA. Costs more GPU time and slightly smooths the 3D image. Saved for this device, including gameplay; independent of atmosphere variants."
+   smooth_shadows.focus_mode = Control.FOCUS_NONE
+   smooth_shadows.set_pressed_no_signal(RenderingOptions.smooth_shadows_enabled())
+   smooth_shadows.toggled.connect(func(enabled: bool):
+    var error := RenderingOptions.set_smooth_shadows(enabled)
+    if error != OK:
+     smooth_shadows.set_pressed_no_signal(RenderingOptions.smooth_shadows_enabled())
+     message.text = "Cannot save graphics setting: " + error_string(error)
+   )
+   controls.add_child(smooth_shadows)
   if group == "Sky": sky_controls = controls
   if group == "Palette": palette_controls = controls
   if group == "Hue":

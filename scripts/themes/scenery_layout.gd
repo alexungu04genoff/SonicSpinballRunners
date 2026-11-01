@@ -1,7 +1,7 @@
 extends RefCounted
 ## Authoring/bake-only deterministic plans. Never uses Godot's global RNG.
 var seed_value := 0
-var density := 1.0
+var density: float = preload("res://scripts/themes/scenery_settings.gd").DEFAULTS.density
 var theme := ""
 var occupied: Array[Dictionary] = []
 var primary_count := 0
@@ -9,7 +9,7 @@ var group_attempts := 0
 
 func _init(values: Dictionary = {}, theme_id := "") -> void:
  seed_value = int(values.get("seed", 0))
- density = clampf(float(values.get("density", 1.0)), 0.5, 2.5)
+ density = clampf(float(values.get("density", preload("res://scripts/themes/scenery_settings.gd").DEFAULTS.density)), 0.5, 2.5)
  theme = theme_id
 
 func rng(stream: String) -> RandomNumberGenerator:

@@ -176,6 +176,7 @@ func _build_view() -> void:
  view.own_world_3d = true
  view.transparent_bg = true
  view.msaa_3d = Viewport.MSAA_4X
+ preload("res://scripts/rendering_options.gd").register_view(view)
  view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
  container.add_child(view)
  _build_presentation()
