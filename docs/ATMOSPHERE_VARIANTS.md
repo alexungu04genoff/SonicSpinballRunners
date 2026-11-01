@@ -25,7 +25,7 @@ Unsaved variants and edits are retained in memory while switching contexts, not 
 
 In F11 Play View, the inspector uses the available vertical height with 10-pixel top and bottom margins. Returning to the development window restores space for the existing footer. The Palette tab starts with the Decor controls.
 
-Text fields own keyboard input while focused, including in Play View: letters and digits do not trigger overview, pose or material shortcuts. Numeric edits apply on Enter or focus loss; idle fields display two decimal places while retaining finer stored precision. Variant names retain spaces while typing and trim only when saved.
+Text fields own keyboard input while focused, including in Play View: letters and digits do not trigger overview, pose or material shortcuts. Numeric edits apply on Enter or focus loss; idle fields display two decimal places while retaining finer stored precision. Typed values are not snapped to slider increments, so 0.01 works even on fields whose arrows move by 0.5; valid field bounds still apply. Arrow/slider increments remain independent, and scenery seeds remain integers. Variant names retain spaces while typing and trim only when saved.
 
 ## Weights, selection and overrides
 

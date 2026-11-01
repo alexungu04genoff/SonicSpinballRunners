@@ -7,6 +7,7 @@ const LightingLooks := preload("res://experiments/lighting_lab/lighting_looks.gd
 const Fields := preload("res://scripts/atmosphere/fields.gd")
 const ColorRanges := preload("res://scripts/atmosphere/color_ranges.gd")
 const DirectionalFog := preload("res://scripts/atmosphere/directional_fog.gd")
+const FogView := preload("res://experiments/lighting_lab/fog_view.gd")
 const GROUPS := Fields.GROUPS
 const PROCEDURAL_SKY_FIELDS := Fields.PROCEDURAL_SKY_FIELDS
 var variants: VBoxContainer
@@ -28,6 +29,8 @@ var save_button: Button
 var sky_controls: VBoxContainer
 var palette_controls: VBoxContainer
 var color_range_picker: VBoxContainer
+var fog_view_note: Label
+var fog_fit_button: Button
 var palette_fields: Array = []
 var sky_fields: Array = []
 var sky_material: Material
@@ -161,10 +164,15 @@ func _build_ui() -> void:
   scroll.add_child(controls)
   if group == "Glow & Fog":
    var note := Label.new()
-   note.text = "Ordinary fog: choose Depth / distance to use start, end and curve. In Depth mode, density is maximum opacity (try 0.5). Distances are from the camera in 3D units. Directional Fog has its own tab."
+   note.text = "Depth / distance fog: fit start/end to the visible table below. Density is maximum opacity (try 0.5). Exponential fog uses density only. Directional Fog has its own tab."
    note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
    note.add_theme_font_size_override("font_size", 12)
    controls.add_child(note)
+   fog_view_note = Label.new()
+   fog_view_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+   fog_view_note.add_theme_font_size_override("font_size", 12)
+   controls.add_child(fog_view_note)
+   fog_fit_button = _button(controls, "Fit distances to view", _fit_fog_to_view)
   if group == "Directional Fog":
    var note := Label.new()
    note.text = "Fog builds across the table from the view center. 0° = north, 90° = east. Start offsets the clear area; fade length reaches maximum density. Curve 1 is linear; higher values build later. Independent of ordinary fog."
@@ -252,7 +260,8 @@ func _field(parent: Node, spec: Array) -> void:
    preload("res://experiments/lighting_lab/number_display.gd").install(number)
    number.min_value = spec[3]
    number.max_value = spec[4]
-   number.step = spec[5]
+   number.step = 0.0 # Typed values are not quantized to the slider increment.
+   number.custom_arrow_step = spec[5]
    number.allow_greater = true
    number.allow_lesser = true
    if key.begins_with("directional_fog/") or key.begins_with("env/fog_"):
@@ -478,8 +487,30 @@ func sync_fog_controls() -> void:
   var control: SpinBox = widgets[key]
   control.editable = depth_mode
   control.get_meta("slider").editable = depth_mode
-  control.tooltip_text = "Depth mode only. Distances are from the camera; 1 unit = 100 table pixels. Curve 1 is linear; higher values build later."
+  control.tooltip_text = "Depth mode only. Distances are from the camera; 1 unit = 100 table pixels. Higher curve values delay buildup."
  widgets["env/fog_density"].tooltip_text = "Exponential: density per distance. Depth: maximum opacity (0–1); try 0.5 for a visible starting point."
+ fog_fit_button.disabled = not depth_mode
+ _sync_fog_view(source)
+
+func _sync_fog_view(source: Dictionary) -> void:
+ var span := FogView.table_distances(game.presentation.camera)
+ var margin := maxf(0.1, (span.y - span.x) * 0.1)
+ fog_view_note.text = "Visible table: %.2f–%.2f units from camera. Sliders follow this view; saved distances stay fixed. Type a distance to go outside the view." % [span.x, span.y]
+ for key: String in ["env/fog_depth_begin", "env/fog_depth_end"]:
+  var slider: HSlider = widgets[key].get_meta("slider")
+  slider.set_block_signals(true)
+  slider.min_value = maxf(0.0, span.x - margin)
+  slider.max_value = span.y + margin
+  slider.step = 0.01
+  var distance := float(source.get(key, 0.0))
+  slider.value = slider.max_value if key == "env/fog_depth_end" and is_zero_approx(distance) else distance
+  slider.set_block_signals(false)
+
+func _fit_fog_to_view() -> void:
+ var span := FogView.table_distances(game.presentation.camera)
+ set_value("env/fog_depth_begin", snappedf(lerpf(span.x, span.y, 0.1), 0.01))
+ set_value("env/fog_depth_end", snappedf(span.y, 0.01))
+ message.text = "Fog distances fitted to the current view. Save to keep."
 
 func _apply(source: Dictionary) -> void:
  DirectionalFog.apply(game.presentation.camera, source)
@@ -592,6 +623,7 @@ func _process(delta: float) -> void:
  _performance_elapsed += delta
  _performance_frames += 1
  if _performance_elapsed >= 0.5:
+  if panel.visible and tabs.get_current_tab_control().name == "Glow & Fog": _sync_fog_view(originals if compare.button_pressed else values)
   fps_overlay.text = "%d FPS · %.1f ms/frame" % [roundi(_performance_frames / _performance_elapsed), 1000.0 * _performance_elapsed / _performance_frames]
   _performance_elapsed = 0.0
   _performance_frames = 0

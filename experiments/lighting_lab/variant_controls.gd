@@ -43,7 +43,8 @@ func install(owner_panel: CanvasLayer, parent: Node) -> void:
  preload("res://experiments/lighting_lab/number_display.gd").install(weight)
  weight.custom_minimum_size.x = 170
  weight.max_value = 1000000
- weight.step = 0.1
+ weight.step = 0.0
+ weight.custom_arrow_step = 0.1
  weight.value_changed.connect(func(_value: float): capture())
  row.add_child(weight)
  row = HBoxContainer.new()

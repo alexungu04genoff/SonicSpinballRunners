@@ -2,6 +2,7 @@ extends SceneTree
 ## Rendered directional mask, live authoring and persistence regression checks.
 const Fog := preload("res://scripts/atmosphere/directional_fog.gd")
 const Fields := preload("res://scripts/atmosphere/fields.gd")
+const FogView := preload("res://experiments/lighting_lab/fog_view.gd")
 var checks := 0
 var failures := 0
 func _initialize() -> void: call_deferred("run")
@@ -33,6 +34,8 @@ func run() -> void:
  camera.projection = Camera3D.PROJECTION_ORTHOGONAL
  camera.size = 20
  camera.current = true
+ var top_span := FogView.table_distances(camera)
+ check(is_equal_approx(top_span.x, 10.0) and top_span.y > top_span.x, "Top-down view uses radial table distances")
  var plane := MeshInstance3D.new()
  var mesh := PlaneMesh.new()
  mesh.size = Vector2(20, 20)
@@ -121,8 +124,26 @@ func run() -> void:
  panel.set_value("env/fog_depth_end", 24.0)
  panel.set_value("env/fog_depth_curve", 2.0)
  check(environment.fog_mode == Environment.FOG_MODE_DEPTH and environment.fog_depth_curve == 2.0 and environment.fog_depth_begin == 4.0 and environment.fog_depth_end == 24.0, "Native distance and curve controls apply")
+ var span := FogView.table_distances(game.presentation.camera)
+ panel._fit_fog_to_view()
+ check(environment.fog_depth_begin >= span.x and absf(environment.fog_depth_end - span.y) < 0.01, "Fit spans the visible perspective table")
+ var fitted := Vector2(environment.fog_depth_begin, environment.fog_depth_end)
+ var before_view: Transform3D = game.presentation.camera.transform
+ game.presentation.camera.position += game.presentation.camera.basis.z * 4.0
+ panel.sync_fog_controls()
+ check(Vector2(environment.fog_depth_begin, environment.fog_depth_end) == fitted, "Moving camera does not rewrite saved fog distances")
+ var distance_slider: HSlider = panel.widgets["env/fog_depth_begin"].get_meta("slider")
+ var zoom_span := FogView.table_distances(game.presentation.camera)
+ check(distance_slider.min_value < zoom_span.x and distance_slider.max_value > zoom_span.y and distance_slider.max_value < 1000.0, "Distance sliders cover current viewport scale")
+ game.presentation.camera.transform = before_view
+ panel.sync_fog_controls()
  var quad: MeshInstance3D = game.presentation.camera.get_node("DirectionalFog")
  check(quad.visible and environment.fog_enabled, "Both fog types coexist")
+ panel.set_value("directional_fog/enabled", false)
+ DirAccess.make_dir_recursive_absolute("res://test-results/directional-fog")
+ var fitted_capture := await sample(game.view)
+ fitted_capture.save_png("res://test-results/directional-fog/viewport-depth.png")
+ panel.set_value("directional_fog/enabled", true)
  panel.save_preset()
  panel.compare.button_pressed = true
  check(not quad.visible and not environment.fog_enabled, "Original comparison restores both fog types")
