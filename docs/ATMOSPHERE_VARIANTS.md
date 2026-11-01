@@ -33,6 +33,8 @@ Saving validates names, IDs, value types/ranges and the weighted pool. It compar
 
 ### Cosmetic hardware and protected gameplay colors
 
+The Gameplay tab groups ramp adjustments and cosmetic pinball, mechanism, spinner, dash-panel and rail-accent colors. Palette retains environment controls. This is a UI organization change only; saved variant keys and Stack with Hue behavior remain unchanged.
+
 Ramp deck surfaces have independent hue, saturation and brightness controls, plus Stack with Hue. The deck role is isolated from shared terrain/decor materials; rail trim retains its existing ownership and the entry accent has its own color picker. Values use the existing variant persistence and material binding paths.
 
 Palette exposes the six existing Pinball Hardware slots (Rubber, Bumper face, Metal trim, Markings, Flipper face, Hardware base), plus Mechanisms (body/trim/accent), Spinner (frame/paddle/inset), Dash Panel (chassis/frame/chevrons), and the existing rail accent where its material supports a color input. These are ordinary production variant colors with per-color Stack with Hue controls. Fields appear for materials present in the preview. Existing source colors remain the neutral defaults, including different shades that share one role. Aquarium Park now has a deliberate coral-rubber, teal-face/paddle, brass-trim, ivory-mark and deep-blue-base pinball palette.

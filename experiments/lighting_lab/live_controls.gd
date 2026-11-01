@@ -30,6 +30,7 @@ var scenery: VBoxContainer
 var save_button: Button
 var sky_controls: VBoxContainer
 var palette_controls: VBoxContainer
+var gameplay_controls: VBoxContainer
 var color_range_picker: VBoxContainer
 var fog_view_note: Label
 var fog_fit_button: Button
@@ -154,7 +155,9 @@ func _build_ui() -> void:
  variant_scroll.add_child(variants)
  variants.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  tabs.add_child(variant_scroll)
- for group: String in GROUPS:
+ var tab_groups := GROUPS.keys()
+ tab_groups.insert(tab_groups.find("Palette") + 1, "Gameplay")
+ for group: String in tab_groups:
   var scroll := ScrollContainer.new()
   scroll.name = group
   scroll.mouse_force_pass_scroll_events = false
@@ -195,6 +198,7 @@ func _build_ui() -> void:
    controls.add_child(smooth_shadows)
   if group == "Sky": sky_controls = controls
   if group == "Palette": palette_controls = controls
+  if group == "Gameplay": gameplay_controls = controls
   if group == "Hue":
    color_range_picker = preload("res://experiments/lighting_lab/color_range_picker.gd").new()
    controls.add_child(color_range_picker)
@@ -209,7 +213,7 @@ func _build_ui() -> void:
     for spec: Array in ColorRanges.fields(): values[spec[1]] = ColorRanges.neutral(spec[1])
     set_value("ranges/enabled", false)
    )
-  for spec: Array in GROUPS[group]:
+  for spec: Array in GROUPS.get(group, []):
    if spec[1] == "env/fog_enabled":
     var note := Label.new()
     note.text = "Depth / distance fog: fit start/end to the visible table below. Density is maximum opacity (try 0.5). Exponential fog uses density only. Directional Fog has its own tab."
@@ -441,35 +445,40 @@ func _bind_palette() -> void:
  halo.get_parent().visible = not emission.halo_parameters.is_empty()
  halo.get_meta("slider").visible = halo.get_parent().visible
  for spec: Array in palette_fields: widgets.erase(spec[1])
- for child: Node in palette_controls.get_children():
-  palette_controls.remove_child(child)
-  child.queue_free()
+ for container: VBoxContainer in [palette_controls, gameplay_controls]:
+  for child: Node in container.get_children():
+   container.remove_child(child)
+   child.queue_free()
  palette_fields = []
  for spec: Array in ColorRanges.fields(): emission.palette_originals[spec[1]] = ColorRanges.neutral(spec[1])
  for spec: Array in ColorRanges.stack_fields(game.theme_id): emission.palette_originals[spec[1]] = true
  for spec: Array in Fields.HUE_FIELDS:
   emission.palette_originals[spec[1]] = spec[1].begins_with("link/") if spec[2] == "bool" else (1.0 if (spec[1].begins_with("saturation/") or spec[1].begins_with("brightness/")) else 0.0)
   if spec[1].ends_with("/foliage") and not emission.has_foliage(): continue
+  var controls := gameplay_controls if spec[1].ends_with("/ramps") else palette_controls
   palette_fields.append(spec)
-  _field(palette_controls, spec)
+  _field(controls, spec)
   if spec[1].begins_with("brightness/"):
    var stack := ["Stack with Hue", "stack/" + spec[1].trim_prefix("brightness/"), "bool"]
    palette_fields.append(stack)
-   _field(palette_controls, stack)
+   _field(controls, stack)
  widgets["link/terrain_trim"].tooltip_text = "Linked: Borders drives all three groups. Unlinked: Edges affect the outer floor rim, Borders affect trim around terrain bases, and Ledges affect upper trim. Independent values are retained while linked."
+ var hardware_keys := {}
+ for field: Array in EmissionPreview.Palette.HARDWARE_FIELDS: hardware_keys["palette/" + field[1]] = true
  for spec: Array in EmissionPreview.Palette.fields(game.theme_id):
   if not emission.palette_originals.has(spec[1]): continue
+  var controls := gameplay_controls if hardware_keys.has(spec[1]) else palette_controls
   var hardware_heading: String = {"palette/hardware_rubber": "Pinball Hardware", "palette/mechanism_body": "Mechanisms", "palette/spinner_frame": "Spinner", "palette/dash_chassis": "Dash Panel"}.get(spec[1], "")
   if not hardware_heading.is_empty():
    var heading := Label.new()
    heading.text = hardware_heading
-   palette_controls.add_child(heading)
+   controls.add_child(heading)
   palette_fields.append(spec)
-  _field(palette_controls, spec)
+  _field(controls, spec)
   if spec[2] == "color":
    var stack := ["Stack with Hue", "stack/" + spec[1], "bool"]
    palette_fields.append(stack)
-   _field(palette_controls, stack)
+   _field(controls, stack)
   if spec[2] == "number":
    var number: SpinBox = widgets[spec[1]]
    number.allow_greater = false
