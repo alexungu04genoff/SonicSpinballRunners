@@ -1,13 +1,21 @@
 [CmdletBinding()]
 param(
     [string]$GodotPath = 'C:\Program Files\Godot\Godot.exe',
-    [Parameter(Mandatory = $true)][string]$WindowsTemplate
+    [Parameter(Mandatory = $true)][string]$WindowsTemplate,
+    [ValidatePattern('^[A-Za-z0-9 _-]+$')][string]$BuildName = 'Sonic Spinball Runners',
+    [string]$BuildRoot,
+    [string]$DefaultSettings,
+    [string]$ReadmePath
 )
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-$build = Join-Path $repo "test-results\prototype-build\source-$stamp"
-$output = Join-Path $repo "test-results\prototype-build\Sonic Spinball Runners-$stamp"
+if (-not $BuildRoot) { $BuildRoot = Join-Path $repo 'test-results\prototype-build' }
+$BuildRoot = [IO.Path]::GetFullPath($BuildRoot)
+$build = Join-Path $BuildRoot "source-$stamp"
+$output = Join-Path $BuildRoot "$BuildName-$stamp"
+if ($DefaultSettings) { $DefaultSettings = (Resolve-Path -LiteralPath $DefaultSettings).Path }
+if ($ReadmePath) { $ReadmePath = (Resolve-Path -LiteralPath $ReadmePath).Path }
 New-Item -ItemType Directory $build, $output | Out-Null
 foreach ($folder in @('assets', 'data', 'scenes', 'scripts', 'experiments', 'tests', 'third_party')) {
     & robocopy (Join-Path $repo $folder) (Join-Path $build $folder) /E /XD '*.bake' /NFL /NDL /NJH /NJS /NP | Out-Null
@@ -15,6 +23,11 @@ foreach ($folder in @('assets', 'data', 'scenes', 'scripts', 'experiments', 'tes
 }
 $project = Get-Content (Join-Path $repo 'project.godot') -Raw
 $project = $project -replace 'run/main_scene="[^"]+"', 'run/main_scene="res://scenes/prototype_run.tscn"'
+# A named playtest build owns separate preferences and telemetry on the recipient's PC.
+$project = $project -replace 'config/name="[^"]+"', ('config/name="' + $BuildName + '"')
+if ($DefaultSettings) {
+    Copy-Item -LiteralPath $DefaultSettings -Destination (Join-Path $build 'data\prototype_export_defaults.cfg')
+}
 # Preserve the project Forward+/Vulkan settings in the exported snapshot.
 $project += "`n[editor]`n`nexport/convert_text_resources_to_binary=false`n"
 $project += "`n[editor_plugins]`n`nenabled=PackedStringArray(`"res://addons/prototype_export/plugin.cfg`")`n"
@@ -28,7 +41,7 @@ name="Prototype"
 platform="Windows Desktop"
 runnable=true
 export_filter="all_resources"
-include_filter="assets/**/*.png,scripts/**/*.gd,scripts/**/*.gdshader,scripts/**/*.gdshaderinc,data/**/*.scenery.cfg,data/atmospheres/*.cfg"
+include_filter="assets/**/*.png,scripts/**/*.gd,scripts/**/*.gdshader,scripts/**/*.gdshaderinc,data/**/*.scenery.cfg,data/atmospheres/*.cfg,data/prototype_export_defaults.cfg"
 exclude_filter="addons/prototype_export/*"
 script_export_mode=0
 
@@ -70,7 +83,8 @@ try {
     Invoke-BuildStep 'export' ($common + @('--export-release', 'Prototype', ('"{0}"' -f (Join-Path $output 'Sonic Spinball Runners.exe'))))
     Invoke-BuildStep 'verify-package' @('--headless', '--main-pack', ('"{0}"' -f (Join-Path $output 'Sonic Spinball Runners.exe')), '--script', 'res://tests/prototype_package_regression.gd')
 } finally { $env:APPDATA = $previousAppData; $env:LOCALAPPDATA = $previousLocalAppData }
-Copy-Item -LiteralPath (Join-Path $repo 'docs\PLAYABLE_PROTOTYPE.md') -Destination (Join-Path $output 'Read me.md')
+if (-not $ReadmePath) { $ReadmePath = Join-Path $repo 'docs\PLAYABLE_PROTOTYPE.md' }
+Copy-Item -LiteralPath $ReadmePath -Destination (Join-Path $output 'Read me.md')
 $archive = "$output.zip"
 Compress-Archive -LiteralPath (Join-Path $output 'Sonic Spinball Runners.exe'), (Join-Path $output 'Read me.md') -DestinationPath $archive
 Write-Output "Build: $output"

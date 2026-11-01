@@ -5,6 +5,7 @@ const Telemetry = preload("res://scripts/prototype/run_telemetry.gd")
 const Archive = preload("res://scripts/prototype/telemetry_archive.gd")
 const Sounds = preload("res://scripts/prototype/score_sounds.gd")
 const SETTINGS_PATH := "user://prototype_settings.cfg"
+const EXPORT_DEFAULTS_PATH := "res://data/prototype_export_defaults.cfg"
 const CHALLENGE_RECORDS := "two_zone_challenge_records"
 const PRACTICE_RECORDS := "two_zone_practice_records"
 var game: Node
@@ -49,7 +50,10 @@ func _ready() -> void:
  available_act_paths = Run.RunPlan.source_paths()
  run_configuration = Run.RunPlan.Configuration.new(available_act_paths)
  var settings := ConfigFile.new()
- if settings.load(settings_path) == OK:
+ var settings_loaded := settings.load(settings_path) == OK
+ if not settings_loaded and FileAccess.file_exists(EXPORT_DEFAULTS_PATH):
+  settings_loaded = settings.load(EXPORT_DEFAULTS_PATH) == OK
+ if settings_loaded:
   run_configuration.read_preferences(settings, available_act_paths)
   var saved := str(settings.get_value("player", "character", "sonic"))
   if CharacterSpecials.CHARACTERS.has(saved): selected_character = saved
