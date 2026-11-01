@@ -18,8 +18,8 @@ if (-not $GodotPath) {
 if (-not $GodotPath -or -not (Test-Path -LiteralPath $GodotPath -PathType Leaf)) {
     throw 'Godot 4 was not found. Pass -GodotPath with its executable path.'
 }
-$arguments = @('--path', ('"{0}"' -f $projectRoot), '--rendering-method', 'gl_compatibility',
-    '--rendering-driver', 'opengl3_angle', 'res://scenes/endless_runner.tscn', '--', "--seed=$Seed")
+$arguments = @('--path', ('"{0}"' -f $projectRoot), '--rendering-method', 'forward_plus',
+    '--rendering-driver', 'vulkan', 'res://scenes/endless_runner.tscn', '--', "--seed=$Seed")
 if ($Bake) {
     $arguments = @('--path', ('"{0}"' -f $projectRoot), 'res://scenes/act_baker.tscn', '--', '--pool')
 }

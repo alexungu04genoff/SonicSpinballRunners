@@ -2560,8 +2560,8 @@ func _play_current() -> void:
 	if current_path.is_empty() or is_dirty():
 		_set_status("Save your Act before playing, then click Play again.")
 		return
-	var arguments := PackedStringArray(["--rendering-method", "gl_compatibility",
-		"--rendering-driver", "opengl3_angle"])
+	var arguments := PackedStringArray(["--rendering-method", "forward_plus",
+		"--rendering-driver", "vulkan"])
 	if OS.has_feature("editor"):
 		arguments.append_array(["--path", ProjectSettings.globalize_path("res://")])
 		arguments.append_array(["res://experiments/visual_lab/visual_lab.tscn", "--"])

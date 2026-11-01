@@ -45,10 +45,10 @@ Eight production themes share authored geometry: Green Hill, Chemical Plant, Roo
 
 ## Build and checks
 
-Use Godot **4.7.2**. Windows launchers default to Compatibility / ANGLE. Keep authored sources and current art in Git; `.bake` sidecars and `test-results/` are ignored. Re-bake after source, art or pipeline changes. Normal streaming validates existing bakes instead of silently rebuilding them during play.
+Use Godot **4.7.2**. Windows launchers, the Godot project and new exports default to Forward+ / Vulkan. Keep authored sources and current art in Git; `.bake` sidecars and `test-results/` are ignored. Re-bake after source, art or pipeline changes. Normal streaming validates existing bakes instead of silently rebuilding them during play.
 
 `tools/export_prototype.ps1 -WindowsTemplate <matching-local-Windows-release-template>` snapshots the working source, imports and bakes it, exports a standalone embedded EXE, verifies packaged resources and creates a ZIP under `test-results/prototype-build/`. It does not download assets or publish a release.
 
-Run focused checks with `godot --headless --path . --script res://tests/<test>.gd` after importing the project. Useful checks include profiles/physics, `scorecraft_regression`, `buddy_scoring_regression`, `enemy_regression`, `authored_main_game_regression`, `geometry_bake_regression`, `prototype_plan_regression`, `prototype_setup_regression`, `prototype_archive_regression` and `endless_regression`. Rendered `endless_scene_smoke.gd -- --require-bakes` and `endless_stream_profile.gd` exercise actual graphics and transitions; use Compatibility / ANGLE without `--headless`.
+Run focused checks with `godot --headless --path . --script res://tests/<test>.gd` after importing the project. Useful checks include profiles/physics, `scorecraft_regression`, `buddy_scoring_regression`, `enemy_regression`, `authored_main_game_regression`, `geometry_bake_regression`, `prototype_plan_regression`, `prototype_setup_regression`, `prototype_archive_regression` and `endless_regression`. Rendered `endless_scene_smoke.gd -- --require-bakes` and `endless_stream_profile.gd` exercise actual graphics and transitions; use the default Forward+ / Vulkan without `--headless`.
 
 [Shared project brain](docs/PROJECT_BRAIN.md) · [Living design](docs/GAME_DESIGN.md) · [Act editor](docs/ACT_GEOMETRY_EDITOR.md) · [Authored runtime](docs/PLAYFIELD_SOURCES.md) · [Scoring](docs/ACT_SCORING.md)

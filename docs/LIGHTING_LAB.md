@@ -1,5 +1,7 @@
 # Lighting Lab — Atmosphere authoring
 
+**Renderer update — 2026-11-01:** Production gameplay and editors now also default to Forward+/Vulkan. Earlier statements below about unchanged production defaults describe the original lab rollout. Saved atmosphere presets remain lab-only.
+
 The current manual palette workflow, migration rules and implementation are documented in [Atmosphere authoring](ATMOSPHERE_AUTHORING.md).
 
 Double-click **`Lighting Lab.cmd`** at the repository root. The existing Lab now includes atmosphere authoring; **`Atmosphere Lab.cmd`** forwards to the same launcher. It opens the existing authored Act player with **Forward+/Vulkan**, an atmosphere inspector and the current local artwork. Production launchers, project renderer, physics and authored Acts are unchanged. Saved Lab presets do not modify production bakes; source shader changes in this milestone require the normal rebake.

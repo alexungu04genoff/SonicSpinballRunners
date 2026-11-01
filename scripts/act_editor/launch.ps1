@@ -14,9 +14,9 @@ if (-not (Test-Path -LiteralPath $GodotPath -PathType Leaf)) {
     throw 'Godot 4 was not found. Pass -GodotPath with the full executable path.'
 }
 # This scene uses explicit script preloads and can open without an editor import.
-# ANGLE follows the working Windows launch backend used by the physics playground.
-$arguments = @('--path', ('"{0}"' -f $projectRoot), '--rendering-method', 'gl_compatibility',
-    '--rendering-driver', 'opengl3_angle', 'res://scenes/act_geometry_editor.tscn')
+# Forward+/Vulkan matches the player and editor preview backend.
+$arguments = @('--path', ('"{0}"' -f $projectRoot), '--rendering-method', 'forward_plus',
+    '--rendering-driver', 'vulkan', 'res://scenes/act_geometry_editor.tscn')
 # The visible editor is the interactive application requested by this launcher.
 $process = Start-Process -FilePath $GodotPath -ArgumentList $arguments -Wait -PassThru
 if ($process.ExitCode -ne 0) {

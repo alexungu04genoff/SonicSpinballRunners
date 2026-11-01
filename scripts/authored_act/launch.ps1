@@ -18,9 +18,9 @@ if (-not (Test-Path -LiteralPath $GodotPath -PathType Leaf)) {
 }
 
 # This standalone scene leaves the project's ordinary F5/main-scene flow intact.
-# ANGLE follows the project's working Windows debug-playground backend.
-$arguments = @('--path', ('"{0}"' -f $projectRoot), '--rendering-method', 'gl_compatibility',
-    '--rendering-driver', 'opengl3_angle', 'res://scenes/authored_act_playtest.tscn')
+# Forward+/Vulkan matches the project's Windows rendering backend.
+$arguments = @('--path', ('"{0}"' -f $projectRoot), '--rendering-method', 'forward_plus',
+    '--rendering-driver', 'vulkan', 'res://scenes/authored_act_playtest.tscn')
 if ($ActPath) {
     $resolvedActPath = if ($ActPath.StartsWith('res://')) {
         [System.IO.Path]::GetFullPath((Join-Path $projectRoot $ActPath.Substring(6)))

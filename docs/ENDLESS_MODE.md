@@ -1,5 +1,7 @@
 # Endless authored-Act experiment
 
+Windows rendering defaults to **Forward+ / Vulkan** (2026-11-01), matching the Act editor and Lighting/Atmosphere Lab. Existing exported executables must be rebuilt to pick up the migration. Bakes remain source-hashed resources; first-use device-specific shader warm-up still happens during play.
+
 Open **Play Endless.cmd** after **Bake Endless.cmd** for the separate graphics, theme and streaming stress test. The main roguelite run is **Play Prototype.cmd**; F5 and **Play Act.cmd** start the standalone authored player. The procedural alpha modes are retired.
 
 The trial uses seven checked-in snapshots in `data/endless/`: **Second Simple**, **Third Complex**, **First Try Smooth Decor**, **RampMania**, **Reverse C Spring**, **Secret Entry** and **SpringUp**. Each Zone selects three distinct shuffled Acts from this pool under one theme. Adjacent Acts do not repeat across a Zone boundary. Themes use a shuffled bag without adjacent repeats. There are no score gates or limited lives. Shared ball physics, controls, profiles, mechanics and characters remain authoritative.

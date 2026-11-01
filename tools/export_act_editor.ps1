@@ -15,7 +15,7 @@ foreach ($folder in @('assets', 'data', 'scenes', 'scripts', 'experiments', 'tes
 }
 $project = Get-Content (Join-Path $repo 'project.godot') -Raw
 $project = $project -replace 'run/main_scene="[^"]+"', 'run/main_scene="res://scenes/portable_editor.tscn"'
-$project = $project -replace '\[rendering\]', "[rendering]`n`ngl_compatibility/driver.windows=`"opengl3_angle`""
+# Preserve the project Forward+/Vulkan settings in the exported snapshot.
 $project += "`n[editor]`n`nexport/convert_text_resources_to_binary=false`n"
 [IO.File]::WriteAllText((Join-Path $build 'project.godot'), $project)
 $template = (Resolve-Path -LiteralPath $WindowsTemplate).Path.Replace('\', '/')

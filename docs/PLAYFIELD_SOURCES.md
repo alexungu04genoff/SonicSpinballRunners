@@ -60,7 +60,7 @@ Spawn is the serve/reset location. The bottom of the one-cell red gutter is the 
 
 `scenes/authored_act_playtest.tscn` and **Authored Act Playtest.cmd** remain isolated low-level geometry/lifecycle regression tools. Their toolbar, counters, overview framing and simplified reset behavior are diagnostic, not the target human gameplay experience. Do not expand that scene into a second production game. Reusable Resource loading, compilation and lifecycle helpers stay shared. See [diagnostic controls](AUTHORED_ACT_PLAYTEST.md).
 
-- `tests/authored_main_game_regression.gd` checks same-instance ownership, actual Act/picker controls, run resets, authored replay, failure preservation, no-generator authored startup, camera persistence, rings/scoring/meter, all four specials and lifecycle behavior. Run with ANGLE for framebuffer captures or `--headless` for logic checks.
+- `tests/authored_main_game_regression.gd` checks same-instance ownership, actual Act/picker controls, run resets, authored replay, failure preservation, no-generator authored startup, camera persistence, rings/scoring/meter, all four specials and lifecycle behavior. Run with the default Forward+/Vulkan for framebuffer captures or `--headless` for logic checks.
 - `tests/authored_source_physics_regression.gd` compares fresh and baked authored collisions, steering, strikes, rebounds, pickups and serve behavior across all four characters.
 - Character, generic modifier, SRA Buddy, Scorecraft, ring, presentation and Endless regressions cover the shared engine. Retired generator/Score Attack/old Zone tests were removed with those features.
 

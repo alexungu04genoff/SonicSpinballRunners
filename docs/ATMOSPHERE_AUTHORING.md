@@ -1,5 +1,7 @@
 # Atmosphere authoring
 
+**Renderer update — 2026-11-01:** Production gameplay and editors now also default to Forward+/Vulkan. Earlier statements below about unchanged production defaults describe the original lab rollout. Saved atmosphere presets remain lab-only.
+
 **Act geometry × Theme × Atmosphere Variant** is the accepted model. An atmosphere comprises **lighting + sky + the theme's environmental palette**. This milestone builds the manual instrument; it does not promote saved Lab values into production variants.
 
 Launch **Lighting Lab.cmd** in the main project folder. This is the existing Lighting Lab extended with atmosphere authoring, using the same scene and saved presets. **Atmosphere Lab.cmd** forwards to that launcher with the same renderer/theme/Act arguments. Forward+/Vulkan is the Lab default; production renderer defaults are unchanged. Existing Light, Sky, Glow & Fog, Shadows, VSync, uncapped FPS, pause, theme switching, Act loading, wheel zoom and middle-drag pan remain available. F6 hides/reopens the inspector while keeping one FPS overlay.

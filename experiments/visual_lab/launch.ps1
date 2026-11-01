@@ -1,8 +1,8 @@
 [CmdletBinding()]
 param(
     [string]$GodotPath,
-    [ValidateSet('Angle', 'Native')]
-    [string]$GraphicsBackend = 'Angle',
+    [ValidateSet('Forward', 'Angle', 'Native')]
+    [string]$GraphicsBackend = 'Forward',
     [ValidateSet('Sonic', 'Tails', 'Knuckles', 'Shadow')]
     [string]$Character = 'Sonic',
     [ValidateSet('gameplay', 'overview', 'idle', 'jump', 'trick', 'roll', 'reel', 'homing', 'impact', 'fly')]
@@ -92,17 +92,17 @@ if ($ImportOnly) {
 
 # All characters currently use procedural ball form; local models are not required.
 
-# Keep Godot's Compatibility renderer, but use Direct3D 11 through ANGLE by
-# default. Native NVIDIA OpenGL crashed inside nvoglv64.dll during Zone rebuilds.
-# This is a launch override; the user's project/editor settings stay untouched.
-$renderingDriver = if ($GraphicsBackend -eq 'Angle') { 'opengl3_angle' } else { 'opengl3' }
+# Match production Forward+/Vulkan by default; retain explicit comparison backends.
+# Native NVIDIA OpenGL previously crashed during Zone rebuilds.
+$renderingMethod = if ($GraphicsBackend -eq 'Forward') { 'forward_plus' } else { 'gl_compatibility' }
+$renderingDriver = @{ Forward = 'vulkan'; Angle = 'opengl3_angle'; Native = 'opengl3' }[$GraphicsBackend]
 $gameLog = Join-Path $logDirectory 'green-hill-game.log'
 if (Test-Path -LiteralPath $gameLog -PathType Leaf) {
     Copy-Item -LiteralPath $gameLog -Destination (Join-Path $logDirectory 'green-hill-game.previous.log') -Force
 }
 Write-Host "Graphics backend: $GraphicsBackend ($renderingDriver)"
 Write-Host "Game log: $gameLog"
-$launchArguments = @('--path', $repoRoot, '--rendering-method', 'gl_compatibility', '--rendering-driver', $renderingDriver, '--log-file', $gameLog, $scenePath)
+$launchArguments = @('--path', $repoRoot, '--rendering-method', $renderingMethod, '--rendering-driver', $renderingDriver, '--log-file', $gameLog, $scenePath)
 $userArguments = @("--character=$($Character.ToLowerInvariant())")
 if ($Capture) {
     $launchArguments = @('--fixed-fps', '60') + $launchArguments

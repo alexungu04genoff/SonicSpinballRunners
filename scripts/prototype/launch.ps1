@@ -26,6 +26,6 @@ if ($Bake -or $missing) {
 }
 if ($Bake) { return }
 # The player explicitly requested an interactive game window.
-$arguments = @('--path', ('"{0}"' -f $projectRoot), '--rendering-method', 'gl_compatibility', '--rendering-driver', 'opengl3_angle', 'res://scenes/prototype_run.tscn')
+$arguments = @('--path', ('"{0}"' -f $projectRoot), '--rendering-method', 'forward_plus', '--rendering-driver', 'vulkan', 'res://scenes/prototype_run.tscn')
 $process = Start-Process -FilePath $GodotPath -ArgumentList $arguments -Wait -PassThru
 if ($process.ExitCode -ne 0) { throw "Prototype exited with code $($process.ExitCode)." }

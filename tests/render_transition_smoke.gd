@@ -1,6 +1,6 @@
 extends SceneTree
-## Rendered scene-rebuild smoke test. Run with --rendering-driver opengl3_angle
-## or opengl3; this targets driver/resource lifetime, not physics traversal.
+## Rendered scene-rebuild smoke test. Defaults to project Forward+/Vulkan.
+## Explicit backend overrides support driver/resource lifetime comparisons, not physics traversal.
 var game: Node
 var checks := 0
 var failures := 0

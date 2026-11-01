@@ -15,7 +15,7 @@ foreach ($folder in @('assets', 'data', 'scenes', 'scripts', 'experiments', 'tes
 }
 $project = Get-Content (Join-Path $repo 'project.godot') -Raw
 $project = $project -replace 'run/main_scene="[^"]+"', 'run/main_scene="res://scenes/prototype_run.tscn"'
-$project = $project -replace '\[rendering\]', "[rendering]`n`ngl_compatibility/driver.windows=`"opengl3_angle`""
+# Preserve the project Forward+/Vulkan settings in the exported snapshot.
 $project += "`n[editor]`n`nexport/convert_text_resources_to_binary=false`n"
 $project += "`n[editor_plugins]`n`nenabled=PackedStringArray(`"res://addons/prototype_export/plugin.cfg`")`n"
 New-Item -ItemType Directory -Force (Join-Path $build 'addons') | Out-Null

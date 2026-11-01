@@ -375,7 +375,7 @@ Windows
 
 ## Renderer
 
-Primarily Godot Compatibility / OpenGL through ANGLE.
+Forward+ / Vulkan across Windows gameplay, editors, labs and new exports (migration approved 2026-11-01). Explicit lab comparison backends remain available; older ANGLE measurements below are historical.
 
 ## Core pitch
 
@@ -3131,6 +3131,14 @@ Original comparison now restores the complete atmosphere without losing the draf
 Green Hill gets a cheap animated opaque ocean on the existing plane. Lava's rectangular Forward+ mess was real: its sine-based noise hash broke at lattice boundaries even on an isolated unfiltered plane. A small integer-hash replacement removes those seams while retaining the same flowing noise algorithm and approved composition. We did not remodel the cave to hide a shader bug.
 
 The measured all-eight palette comparison keeps draw/object/material counts unchanged and settled GPU time within a few microseconds in the sampled view. Ocean timing is reported separately. Frame/CPU timings remain workstation-sensitive; the work laptop is still the second-hardware gate. See [Atmosphere authoring](ATMOSPHERE_AUTHORING.md) and [measurements and checks](ATMOSPHERE_PERFORMANCE.md). Source-hashed Prototype/Endless bakes must be refreshed; Lab presets remain separate from production.
+
+# PRODUCTION VULKAN MIGRATION — 2026-11-01
+
+Alex approved moving all normal launch paths to Forward+/Vulkan. Project defaults, Play Act, Prototype, Endless, Act Geometry Editor, its child playtest, and the visual lab now agree. Export snapshots inherit the project backend instead of injecting ANGLE. Bake tools inherit project settings; headless baking still uses Godot's dummy renderer and does not compile device-specific Vulkan pipelines. Lighting/Atmosphere Lab already defaulted to Forward+ and keeps its explicit Mobile/ANGLE comparisons; visual lab keeps explicit ANGLE/native comparisons too.
+
+This changes the rendering backend, not physics, scoring, geometry, retro effects or approved art values. Lab presets remain lab-only. Prior brightness/cloud/glow differences and first-use pipeline stalls still need visual/performance review; the migration does not claim color parity or remove shader warm-up. Existing exported executables need rebuilding to receive this change.
+
+Migration checks: all seven edited PowerShell scripts parse, Godot headless import succeeds, and Act editor UI regression passes 92/92. A graphical launch confirms Forward+/Vulkan on the RTX 4060. The all-theme rendered suite was stopped at Alex's request; visual review, Prototype/Endless playtesting and exported-package verification are left to manual testing.
 
 # REPOSITORY SNAPSHOT AND COMMIT HISTORY — KEEP THIS LAST
 
