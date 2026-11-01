@@ -292,6 +292,15 @@ func _field(parent: Node, spec: Array) -> void:
   "color":
    var color := ColorPickerButton.new()
    color.edit_alpha = false
+   var picker := color.get_picker()
+   picker.sampler_visible = true
+   picker.ready.connect(func():
+    var sampler_icon := picker.get_theme_icon("screen_picker", "ColorPicker")
+    for button: Button in picker.find_children("*", "Button", true, false):
+     if button.icon == sampler_icon:
+      button.text = "Pick from screen"
+      button.tooltip_text = "Click, then select a visible color. Escape cancels."
+   )
    for component: SpinBox in color.get_picker().find_children("*", "SpinBox", true, false): preload("res://experiments/lighting_lab/number_display.gd").install(component)
    for component: Slider in color.get_picker().find_children("*", "Slider", true, false): component.scrollable = false
    color.color_changed.connect(func(value: Color): set_value(key, value))
