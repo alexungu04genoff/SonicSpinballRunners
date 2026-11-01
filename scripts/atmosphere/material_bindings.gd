@@ -143,6 +143,7 @@ func _register_tags(target: Object) -> void:
   var base = target.get_shader_parameter(property) if shader_binding else target.get(property)
   entry.merge({"target": target, "property": property, "base": base, "shader": shader_binding})
   palette_parameters.append(entry)
+  if entry.has("tint_key") and entry.tint_key in allowed_keys: palette_originals[entry.tint_key] = Color.WHITE
   if not palette_originals.has(entry.key):
    palette_originals[entry.key] = Color.WHITE if entry.mode == "tint" else entry.get("authored", entry.base)
 
@@ -167,6 +168,8 @@ func apply_palette(values: Dictionary, sun: DirectionalLight3D, use_sun_directio
   elif entry.base is Vector3:
    var linear: Color = value.srgb_to_linear()
    actual = Vector3(linear.r, linear.g, linear.b)
+  if entry.mode == "haze" and entry.has("tint_key"):
+   actual = (entry.unhazed * values.get(entry.tint_key, Color.WHITE)).lerp(value, entry.amount)
   var hue_group := _palette_group(key)
   # Plant palette inputs retain their authored tint. The final surface owns
   # the Foliage transform, including textured pixels, exactly once.
@@ -174,6 +177,7 @@ func apply_palette(values: Dictionary, sun: DirectionalLight3D, use_sun_directio
   # The final material operation owns selective ranges when present. Applying
   # ranges to its palette inputs as well would shift a Decor color twice.
   var ranges_here := _palette_stacks(values, key)
+  if entry.has("tint_key"): ranges_here = ranges_here and _palette_stacks(values, entry.tint_key)
   if entry.target is Material:
    ranges_here = ranges_here and _material_stacks(entry.target, values)
    if entry.target is BaseMaterial3D and entry.target.has_meta("atmosphere_hue"): ranges_here = false

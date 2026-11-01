@@ -26,6 +26,7 @@ func _init(_presentation: Node3D) -> void:
   mat.metallic_specular = 0.15
   if key in ["stone", "cream", "ochre"]: Atmosphere.color(mat, "architecture_tint", "tint")
   if key in ["leaf", "leaf_light"]: Atmosphere.color(mat, "vegetation_tint", "tint")
+  if key in ["roof", "roof_light"]: Atmosphere.color(mat, "roof_tint", "tint")
   materials[key] = mat
 
 func primitive(kind: String) -> Mesh:

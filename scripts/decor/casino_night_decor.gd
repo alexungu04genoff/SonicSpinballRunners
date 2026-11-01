@@ -31,7 +31,9 @@ func _init(_presentation: Node3D) -> void:
   if key in ["navy", "dark"]: Atmosphere.color(mat, "skyline_tint", "tint")
   if key == "purple": Atmosphere.color(mat, "purple_accent")
   if key == "gold_light": Atmosphere.color(mat, "window_gold")
+  if key in ["gold", "ivory"]: Atmosphere.color(mat, "metal_tint", "tint")
   materials[key] = mat
+ if materials.has("housing"): Atmosphere.color(materials.housing, "housing_tint", "tint")
 
 func primitive(kind: String) -> Mesh:
  if meshes.has(kind): return meshes[kind]

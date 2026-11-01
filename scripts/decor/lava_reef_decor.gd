@@ -1,5 +1,6 @@
 extends "res://scripts/decor/decor_skin.gd"
 ## Original volcanic/mining silhouettes in authored cells. No gameplay nodes.
+const Atmosphere := preload("res://scripts/themes/theme_atmosphere.gd")
 var meshes: Dictionary = {}
 var materials: Dictionary = {}
 
@@ -27,6 +28,8 @@ func _init(_presentation: Node3D) -> void:
    mat.emission_enabled = true
    mat.emission = Color(colors[key])
    mat.emission_energy_multiplier = 0.65
+  if key in ["basalt", "facet", "deep", "mineral", "ancient", "inset"]: Atmosphere.color(mat, "rock_tint", "tint")
+  if key in ["iron", "rust", "brass"]: Atmosphere.color(mat, "metal_tint", "tint")
   materials[key] = mat
  var crystal := ShaderMaterial.new()
  crystal.shader = preload("res://scripts/themes/lava_crystal.gdshader")

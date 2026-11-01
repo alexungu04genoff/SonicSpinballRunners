@@ -57,6 +57,9 @@ func _prepare_materials() -> void:
    material.roughness = 0.2
   if key == "cyan": Atmosphere.color(material, "industrial_cyan")
   if key == "pink": Atmosphere.color(material, "signal_pink")
+  if key in ["dark", "blue", "black"]: Atmosphere.color(material, "industrial_body", "tint")
+  if key == "steel": Atmosphere.color(material, "industrial_metal", "tint")
+  if key == "yellow": Atmosphere.color(material, "industrial_trim", "tint")
   _materials[key] = material
 
 func _primitive(kind: String) -> Mesh:

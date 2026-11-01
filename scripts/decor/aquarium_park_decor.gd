@@ -32,12 +32,15 @@ func _init(_presentation: Node3D) -> void:
    Atmosphere.tag(mat, "emission", "lantern_emission")
   if key == "coral": Atmosphere.color(mat, "coral")
   if key in ["cyan", "fish"]: Atmosphere.color(mat, "aquatic_tint", "tint")
+  if key in ["stone", "deep", "wood", "gold", "ivory"]: Atmosphere.color(mat, "architecture_tint", "tint")
+  if key == "roof": Atmosphere.color(mat, "roof_tint", "tint")
   materials[key] = mat
   if key == "plant": Atmosphere.foliage(mat)
  var roof_material := StandardMaterial3D.new()
  roof_material.vertex_color_use_as_albedo = true
  roof_material.roughness = 0.48
  roof_material.metallic = 0.2
+ Atmosphere.color(roof_material, "roof_tint", "tint")
  materials.roof_tiles = roof_material
  for key: String in ["water", "glass"]:
   var mat := ShaderMaterial.new()

@@ -3,21 +3,25 @@ extends RefCounted
 ## Bindings are consumed on atmosphere changes, never by a per-frame traversal.
 const FIELDS := {
  "green_hill": [
+  ["Nearby sand", "local_sand"], ["Rock tint", "rock_tint"],
   ["Ocean deep", "ocean_deep"], ["Ocean wave", "ocean_wave"],
   ["Sky reflection", "ocean_reflection"], ["Sun highlight", "ocean_sun"],
   ["Cloud shadow", "cloud_shadow"], ["Cloud highlight", "cloud_highlight"],
   ["Distant vegetation tint", "vegetation_tint"], ["Distant sand / stone tint", "shore_tint"],
  ],
  "chemical_plant": [
+  ["Industrial body tint", "industrial_body"], ["Industrial metal tint", "industrial_metal"], ["Industrial trim tint", "industrial_trim"],
   ["Reservoir deep", "reservoir_deep"], ["Reservoir ripple", "reservoir_ripple"],
   ["Industrial cyan", "industrial_cyan"], ["Signal pink", "signal_pink"],
  ],
  "rooftop_run": [
+  ["Roof tint", "roof_tint"],
   ["Canal deep", "canal_deep"], ["Canal reflection", "canal_reflection"],
   ["Distant haze", "distant_haze"], ["Architecture tint", "architecture_tint"],
   ["Vegetation tint", "vegetation_tint"],
  ],
  "casino_night": [
+  ["Housing tint", "housing_tint"], ["Decorative metal tint", "metal_tint"],
   ["Neon pink", "neon_pink"], ["Neon aqua", "neon_aqua"],
   ["Neon mint", "neon_mint"], ["Neon amber", "neon_amber"],
   ["Skyline tint", "skyline_tint"], ["Purple accent", "purple_accent"],
@@ -25,11 +29,13 @@ const FIELDS := {
   ["Warm spill light", "warm_spill"], ["Blue spill light", "blue_spill"],
  ],
  "sky_sanctuary": [
+  ["Ruin stone tint", "ruin_stone"],
   ["Cloud sea shadow", "sea_shadow"], ["Cloud sea highlight", "sea_highlight"],
   ["Cloud bank shadow", "bank_shadow"], ["Cloud bank highlight", "bank_highlight"],
   ["Ruin haze", "ruin_haze"],
  ],
  "ice_cap": [
+  ["Snow tint", "snow_tint"], ["Solid ice tint", "ice_tint"], ["Mountain ridge tint", "ridge_tint"],
   ["Sky horizon", "ice_horizon"], ["Sky upper", "ice_upper"],
   ["Sky aurora glow", "ice_sky_glow"], ["Star tint", "star_tint"],
   ["Star intensity", "star_intensity", "number", 0.0, 3.0, 0.01],
@@ -40,6 +46,7 @@ const FIELDS := {
   ["Crystal tint", "crystal_tint"],
  ],
  "lava_reef": [
+  ["Rock / mineral tint", "rock_tint"], ["Mining metal tint", "metal_tint"],
   ["Magma dark", "magma_dark"], ["Magma hot", "magma_hot"],
   ["Magma core", "magma_core"], ["Magma crust", "magma_crust"],
   ["Cavern tint", "cavern_tint"], ["Cavern deep", "cavern_deep"],
@@ -48,6 +55,7 @@ const FIELDS := {
   ["Embers", "ember"], ["Magma bounce lights", "magma_light"],
  ],
  "aquarium_park": [
+  ["Architecture tint", "architecture_tint"], ["Roof tint", "roof_tint"],
   ["Lagoon deep", "lagoon_deep"], ["Lagoon wave", "lagoon_wave"],
   ["Caustic glow", "caustic"], ["Water reflection", "water_reflection"],
   ["Lantern reflection", "lantern_reflection"], ["Glass base", "glass_base"],
@@ -81,7 +89,9 @@ const SHADERS := {
 }
 
 static func tag(target: Object, property: String, key: String, mode := "direct", extra: Dictionary = {}) -> void:
- var bindings: Dictionary = target.get_meta("atmosphere_bindings", {})
+ # Resource.duplicate() can retain shared metadata dictionaries. Retagging a
+ # scenery copy must not overwrite the source material's palette ownership.
+ var bindings: Dictionary = target.get_meta("atmosphere_bindings", {}).duplicate(true)
  var binding := {"key": key, "mode": mode}
  binding.merge(extra)
  bindings[property] = binding

@@ -31,7 +31,26 @@ Saving validates names, IDs, value types/ranges and the weighted pool. It compar
 
 ## Lab workflow
 
-### Cosmetic hardware and protected gameplay colors
+### Nearby scenery palette coverage
+
+Nearby Green Hill beaches previously used an untagged sand material, independent of the distant sand/stone palette. **Nearby sand** now edits that material directly; distant sand retains its own control. Other missing local material families are exposed in Palette:
+
+| Theme | Local controls added or verified |
+| --- | --- |
+| Green Hill | Nearby sand and rock tint; existing terrain and Foliage controls remain separate. |
+| Chemical Plant | Industrial body, metal and trim tints cover tanks, pipes and matching decor; cyan/pink retain their existing controls. |
+| Rooftop Run | Roof tint; existing Architecture and Vegetation tints already cover nearby facades and planting. |
+| Casino Night | Decorative metal tint and textured housing tint where present; existing skyline/neon controls cover the other landmark materials. |
+| Sky Sanctuary | Ruin stone tint is applied before the existing ruin haze, preserving both controls. |
+| Ice Cap | Snow, solid ice and mountain ridge tints, including vertex-colored ridges; crystals and Foliage remain separate. |
+| Lava Reef | Rock/mineral and mining-metal tints; existing magma/crystal controls remain separate. |
+| Aquarium Park | Architecture and roof tints, including vertex-colored roof tiles; lanterns, coral, water and Foliage retain their controls. |
+
+Shared prop materials use the same family control in nearby scenery and authored decor, and in distant copies where the source material is shared. Tint defaults are white and preserve authored shading. Controls use normal variant persistence and per-color Stack with Hue. Palette tagging now copies metadata dictionaries before editing them: retagging a duplicated, hazed material previously could overwrite its source material's bindings. Geometry, collision, placement and render-pass counts are unchanged. Recipe refresh is required for the new material tags.
+
+The focused headless check passed 395 assertions across all eight themes: visible controls, material color responses, unchanged unrelated colors, neutral restoration, variant save/reload and source-binding isolation. No performance benchmark or rendered visual sweep was run for this pass.
+
+### Cosmetic hardware controls
 
 The Gameplay tab groups ramp adjustments and cosmetic pinball, mechanism, spinner, dash-panel and rail-accent colors. Palette retains environment controls. This is a UI organization change only; saved variant keys and Stack with Hue behavior remain unchanged.
 

@@ -1,5 +1,6 @@
 extends "res://scripts/decor/decor_skin.gd"
 ## Original winter props, measured in authored cells. Visual nodes only.
+const Atmosphere := preload("res://scripts/themes/theme_atmosphere.gd")
 var meshes: Dictionary = {}
 var materials: Dictionary = {}
 
@@ -25,9 +26,13 @@ func _init(_presentation: Node3D) -> void:
    mat.emission_enabled = true
    mat.emission = Color(colors[key])
    mat.emission_energy_multiplier = 0.35
+  if key == "snow": Atmosphere.color(mat, "snow_tint", "tint")
+  if key in ["ice", "deep", "inset"]: Atmosphere.color(mat, "ice_tint", "tint")
+  if key == "rock": Atmosphere.color(mat, "ridge_tint", "tint")
   materials[key] = mat
   if key == "pine": preload("res://scripts/themes/theme_atmosphere.gd").foliage(mat)
  materials.frost_grass = materials.snow.duplicate()
+ materials.frost_grass.remove_meta("atmosphere_bindings")
  preload("res://scripts/themes/theme_atmosphere.gd").foliage(materials.frost_grass)
  var crystal := ShaderMaterial.new()
  crystal.shader = preload("res://scripts/themes/ice_crystal.gdshader")

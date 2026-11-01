@@ -1,5 +1,6 @@
 extends "res://scripts/decor/decor_skin.gd"
 ## Original procedural sanctuary masonry. Units are authored cells; no physics nodes.
+const Atmosphere := preload("res://scripts/themes/theme_atmosphere.gd")
 var meshes: Dictionary = {}
 var materials: Dictionary = {}
 
@@ -26,6 +27,7 @@ func _init(_presentation: Node3D) -> void:
    mat.emission_enabled = true
    mat.emission = Color(colors[key])
    mat.emission_energy_multiplier = 0.12
+  if key in ["stone", "warm", "pale", "shadow"]: Atmosphere.color(mat, "ruin_stone", "tint")
   materials[key] = mat
   if key in ["leaf", "moss"]: preload("res://scripts/themes/theme_atmosphere.gd").foliage(mat)
 

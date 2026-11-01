@@ -83,6 +83,7 @@ func build_edges(p: Node3D) -> void:
  var bounds: Rect2 = p.table_bounds
  var width_scale := clampf(bounds.size.x / 600.0, 0.75, 1.35)
  var sand := material(Color("dfc179"))
+ Atmosphere.color(sand, "local_sand")
  var decor := GreenHillDecor.new(p)
  var layout := scenery_layout(p)
  var headlands := layout.plans([
@@ -240,7 +241,9 @@ func _rock(p: Node3D, base: Vector3, size: float) -> void:
  mesh.height = size * 1.4
  mesh.radial_segments = 6
  mesh.rings = 3
- var rock = p.mesh_node(mesh, material(Color("bbb595")), base + Vector3.UP * size * 0.45, p.scenery_root)
+ var stone := material(Color("bbb595"))
+ Atmosphere.color(stone, "rock_tint", "tint")
+ var rock = p.mesh_node(mesh, stone, base + Vector3.UP * size * 0.45, p.scenery_root)
  rock.rotation.y = base.z * 0.7
  rock.scale = Vector3(1.15, 0.8, 0.85)
 

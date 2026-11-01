@@ -65,6 +65,7 @@ func build_edges(p: Node3D) -> void:
  mountain_material.vertex_color_use_as_albedo = true
  mountain_material.cull_mode = BaseMaterial3D.CULL_DISABLED
  mountain_material.roughness = 1.0
+ Atmosphere.color(mountain_material, "ridge_tint", "tint")
  var plans := layout.plans([{"side": -1, "at": 0.80, "height": 4.5, "radius": 2.4}, {"side": 1, "at": 0.24, "height": 4.0, "radius": 2.2}])
  for plan: Dictionary in plans:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
