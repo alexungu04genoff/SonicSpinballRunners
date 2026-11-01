@@ -5,6 +5,7 @@ const EmissionPreview := preload("res://experiments/lighting_lab/emission_previe
 const LightingLooks := preload("res://experiments/lighting_lab/lighting_looks.gd")
 # Label, property, kind; numeric rows also carry minimum, maximum and step.
 const Fields := preload("res://scripts/atmosphere/fields.gd")
+const ColorRanges := preload("res://scripts/atmosphere/color_ranges.gd")
 const DirectionalFog := preload("res://scripts/atmosphere/directional_fog.gd")
 const GROUPS := Fields.GROUPS
 const PROCEDURAL_SKY_FIELDS := Fields.PROCEDURAL_SKY_FIELDS
@@ -26,6 +27,7 @@ var scenery: VBoxContainer
 var save_button: Button
 var sky_controls: VBoxContainer
 var palette_controls: VBoxContainer
+var color_range_picker: VBoxContainer
 var palette_fields: Array = []
 var sky_fields: Array = []
 var sky_material: Material
@@ -175,6 +177,21 @@ func _build_ui() -> void:
    scenery.install(self)
   if group == "Sky": sky_controls = controls
   if group == "Palette": palette_controls = controls
+  if group == "Hue":
+   color_range_picker = preload("res://experiments/lighting_lab/color_range_picker.gd").new()
+   controls.add_child(color_range_picker)
+   color_range_picker.install(self)
+   var note := Label.new()
+   note.text = "Adjust presentation colors after Palette. Gameplay colors and neutral whites/grays stay protected."
+   note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+   note.add_theme_font_size_override("font_size", 12)
+   controls.add_child(note)
+   for spec: Array in ColorRanges.fields(): _field(controls, spec)
+   _button(controls, "Reset color ranges", func():
+    if variants.context.selected == "default": return
+    for spec: Array in ColorRanges.fields(): values[spec[1]] = ColorRanges.neutral(spec[1])
+    set_value("ranges/enabled", false)
+   )
   for spec: Array in GROUPS[group]: _field(controls, spec)
   if group == "Glow & Fog":
    var note := Label.new()
@@ -397,14 +414,24 @@ func _bind_palette() -> void:
   palette_controls.remove_child(child)
   child.queue_free()
  palette_fields = []
+ for spec: Array in ColorRanges.fields(): emission.palette_originals[spec[1]] = ColorRanges.neutral(spec[1])
+ for spec: Array in ColorRanges.stack_fields(game.theme_id): emission.palette_originals[spec[1]] = true
  for spec: Array in Fields.HUE_FIELDS:
-  emission.palette_originals[spec[1]] = false if spec[2] == "bool" else (1.0 if spec[1].begins_with("saturation/") else 0.0)
+  emission.palette_originals[spec[1]] = false if spec[2] == "bool" else (1.0 if (spec[1].begins_with("saturation/") or spec[1].begins_with("brightness/")) else 0.0)
   palette_fields.append(spec)
   _field(palette_controls, spec)
+  if spec[1].begins_with("brightness/"):
+   var stack := ["Stack with Hue", "stack/" + spec[1].trim_prefix("brightness/"), "bool"]
+   palette_fields.append(stack)
+   _field(palette_controls, stack)
  for spec: Array in EmissionPreview.Palette.fields(game.theme_id):
   if not emission.palette_originals.has(spec[1]): continue
   palette_fields.append(spec)
   _field(palette_controls, spec)
+  if spec[2] == "color":
+   var stack := ["Stack with Hue", "stack/" + spec[1], "bool"]
+   palette_fields.append(stack)
+   _field(palette_controls, stack)
   if spec[2] == "number":
    var number: SpinBox = widgets[spec[1]]
    number.allow_greater = false
@@ -460,7 +487,7 @@ func _apply(source: Dictionary) -> void:
  sync_fog_controls()
  for key: String in source:
   if key.begins_with("directional_fog/"): continue
-  if key.begins_with("palette/") or key.begins_with("hue/") or key.begins_with("saturation/") or key.begins_with("override/"): continue
+  if key.begins_with("palette/") or key.begins_with("hue/") or key.begins_with("saturation/") or key.begins_with("override/") or key.begins_with("brightness/") or key.begins_with("ranges/") or key.begins_with("stack/"): continue
   if key == "emission": emission.apply(float(source[key]))
   elif key == "sun_pitch": game.presentation._key_light.rotation_degrees.x = float(source[key])
   elif key == "sun_yaw": game.presentation._key_light.rotation_degrees.y = float(source[key])
@@ -557,6 +584,8 @@ func _process(delta: float) -> void:
  if is_instance_valid(inherited_fps) and inherited_fps.visible: inherited_fps.hide()
  var pause_text := "Resume play" if get_tree().paused else "Pause play"
  if pause_button.text != pause_text: pause_button.text = pause_text
+ panel.offset_top = 10.0 if game.player_view else 30.0
+ panel.offset_bottom = -10.0 if game.player_view else -215.0
  # The existing player owns layout/fullscreen. Reserve space only in lab view.
  if not game.debug_open and not game.player_view:
   var target_offset := -405.0 if panel.visible else 0.0

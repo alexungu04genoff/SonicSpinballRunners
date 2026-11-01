@@ -23,6 +23,8 @@ Default's appearance controls are read-only. Switching variants does not rebuild
 
 Unsaved variants and edits are retained in memory while switching contexts, not automatically promoted or committed. Save Variant saves the selected variant only. The user-local draft's Save action still uses the renderer/theme section in `user://lighting_lab_presets.cfg`. Quick looks remain recipes that populate a draft, never a production roster or automatic run choice.
 
+In F11 Play View, the inspector uses the available vertical height with 10-pixel top and bottom margins. Returning to the development window restores space for the existing footer. The Palette tab starts with the Decor controls.
+
 ## Weights, selection and overrides
 
 Chance is `enabled positive weight / sum of enabled positive weights`. The editor shows the approximate percentage using the current draft pool. It never serializes that derived number. Proportional weights such as 5/3/2 and 50/30/20 are equivalent. Disabled or zero-weight variants remain available for explicit testing. An all-zero/disabled pool, negative or nonfinite weight, duplicate name/ID, or deleted Default cannot be saved.
@@ -37,12 +39,13 @@ For development, the Lab itself previews any stored or unsaved variant directly.
 
 Use the actual stable ID shown in the Variants tab. Save first. The underlying Godot argument is `-- --atmosphere=ice_cap:variant_123456`. It selects that Theme for a one-Zone Prototype and bypasses weights, including for disabled variants. `RunConfiguration.atmosphere_overrides` also supports explicit per-Theme choices in development code. These overrides are not saved as normal run preferences.
 
-## Hue and saturation scope
+## Hue, saturation and brightness scope
 
-Hue is a signed turn (−0.5 to +0.5), saturation a multiplier (0 to 2). Neutral values are 0 and 1. Controls are semantic, not a screen-wide filter.
+Hue is a signed turn (−0.5 to +0.5); saturation and brightness are multipliers (0 to 2). Neutral values are 0, 1 and 1. Every group below has all three controls. Brightness scales the bound surface color, not exposure or real-light energy, and preserves alpha. Older drafts/variants without brightness values remain neutral. Controls are semantic, not a screen-wide filter.
 
 | Group | Explicit coverage |
 | --- | --- |
+| Decor | Collisionless props created by authored Decor slots, including their decorative emission; shared copies per source material |
 | Terrain | Theme floor, raised wall tops, wall/facade and contour-border material roles |
 | Ground floor override | `floor_material` |
 | Raised tops / upper floor override | `top_material` |
@@ -52,11 +55,27 @@ Hue is a signed turn (−0.5 to +0.5), saturation a multiplier (0 to 2). Neutral
 | Foliage | Explicit vegetation-tint bindings, including tagged Rooftop decor and Green Hill distant vegetation |
 | Neon | Tagged Casino decorative neon, windows, marquee and spill lights; Chemical decorative cyan/pink signals |
 
-Each terrain category has an **Override** toggle. Off inherits Terrain; on replaces Terrain hue/saturation for that material role. It does not add another shader operation. These are material categories, not geometry-height detection: a scenery landform using the floor material remains in Ground, and a raised wall top uses Upper. Existing art roles and shared terrain mapping remain intact.
+Each terrain category has an **Override** toggle. Off inherits Terrain; on replaces Terrain hue/saturation/brightness for that material role. It does not add another shader operation. These are material categories, not geometry-height detection: a scenery landform using the floor material remains in Ground, and a raised wall top uses Upper. Existing art roles and shared terrain mapping remain intact.
 
-Decor follows its explicit material bindings. Untagged props do not change. Rings, player/ball, enemies, UI, Goal Rings, physics/debug visuals and untagged readability markers do not join these hue groups. Texture emission maps retain their authored colors under Terrain hue; Neon controls the explicitly tagged decorative bindings. Per-color palette controls remain available alongside the transforms.
+Decor materials opt in at the shared Decor slot factory, without changing their terrain or gameplay source materials. Existing Neon/Foliage/per-color bindings apply first, then Decor adjusts the finished prop color. Distant and local background scenery retain their existing semantic bindings; they are not classified as authored Decor slots. Rings, player/ball, enemies, UI, Goal Rings, physics/debug visuals and untagged readability markers do not join these hue groups. **Neon also controls terrain texture emission**, including Chemical's blue/yellow floor panels and edge strips. It leaves the terrain's non-emissive color alone. Per-color palette controls remain available alongside the transforms.
 
-Production terrain shader families (`terrain_texture`, `terrain_facade`, `texture_surface`, `texture_wall`, `terrain_border`, `green_hill_wall`) use the same small uniform-driven HSV operation in their existing pass. Neutral uniforms bypass it. StandardMaterial and semantic palette colors shift once on apply. Independent, uncommitted material experiments that replace these shaders need their own opt-in before those surfaces participate; they are not rewritten automatically.
+Production terrain shader families (`terrain_texture`, `terrain_facade`, `texture_surface`, `texture_wall`, `terrain_border`, `green_hill_wall`) use the same small uniform-driven HSV operation in their existing pass. Neutral hue/saturation bypass HSV; brightness remains a multiplication. StandardMaterial and semantic palette colors change once on apply.
+
+The ground/raised-top failure reported after the first variant pass came from custom replacement surface shaders: their materials carried terrain role metadata, but their programs lacked the shared color uniforms. `surface_controls.gd` now prepares missing support once when a theme's explicit terrain roles or an authored Decor material are created. It caches the resulting shader programs and retains the original program identity for palette bindings and offline relief conversion. Vertex, texture, relief and lighting code remain intact. Slider edits and variant switches only change uniforms; they do not generate programs, rebuild props or add render passes. This also covers the working checkout's custom Green Hill turf and selected Chemical/Casino/Rooftop shaders without committing those unrelated art experiments.
+
+## Selective color ranges
+
+The separate **Hue** tab adds Red, Orange, Yellow, Green, Aqua, Blue, Purple and Magenta ranges. Each has a hue offset, saturation multiplier and brightness multiplier, using the same bounds as the Palette transforms. Enable color ranges turns the layer on; Reset color ranges resets only this layer. Adjacent ranges interpolate smoothly, red wraps around the hue circle, and neutral whites/grays are protected. An enabled but neutral layer is also an exact no-op.
+
+**Pick in scene** provides a targeted adjustment tool: choose Hue, Saturation or Brightness, click a colored surface, then drag horizontally. Shift gives finer adjustment and Esc exits picking. The swatch and label identify the nearest range. Sampling briefly pauses and freezes the visible preview while reading the existing scene viewport before the Hue/Retro layers; this keeps an already shifted green surface selectable as Green. It restores the original pause/Retro state and uses no additional viewport or persistent pass. Lighting and Palette edits remain in the sampled image; the picker is not an object or gameplay-material selector. Neutral areas request a more colorful sample.
+
+Ranges operate after the category controls. For example, Green hue `0.23`, saturation `0.4` and brightness `1.6` is an icy Green Hill starting point: grass and foliage shift toward pale blue while brown checker colors remain. It is not a production variant or a new default. Warm yellow-green colors overlap Yellow and Green; each range is a smooth selection, not a hard RGB replacement.
+
+Every Palette category and every individual color picker has **Stack with Hue**. On combines its Palette adjustment with the Hue tab. Off retains its Palette adjustment while excluding the range layer. Terrain's master switch gates its subcategories; a category can also opt out independently. For a shader mixing multiple palette inputs, an individual opt-out keeps that input unchanged and applies ranges to the remaining enabled inputs before the shader mixes them. This avoids shifting an opted-out input again in the final surface operation. Old variants without stack flags default to stacking.
+
+The range layer covers explicitly bound terrain and authored Decor, plus **all collisionless local and distant scenery** through its existing ownership roots. Scenery-only copies are separate from an untagged source also used by gameplay, so shared resources cannot leak a shift onto a bumper or player. The baked runtime identifies scenery through its existing background roots rather than mesh names. Texture colors and vertex colors participate after sampling; a cached surface adapter preserves the StandardMaterial features used by those scenery materials, including texture coordinates/triplanar mapping, culling, opacity, roughness, specular and emission. This closes the remaining textured-shrub and vertex-colored-roof/mountain gaps. All changes reuse the original rendering pass.
+
+At Alex's request, Green Hill palm trunks and bridge wood now use two sampled browns from the active checker texture. The bounded sample is cached per Theme instance, works with committed and locally selected textures, and changes no geometry. Leaves retain their own source palette.
 
 ## Runtime and bake boundaries
 
@@ -72,7 +91,13 @@ The shader/binding implementation requires one ordinary source-hash bake refresh
 
 `tests/atmosphere_runtime_regression.gd` exercises two adjacent Ice Zones with different appearances from shared disk recipes, material isolation, switching and a distance-driven transition. It writes matched default/strong ABBA profiles and transition observations. `tests/atmosphere_profile.gd -- --atmosphere-hue` compares strong category/background/foliage/neon transforms in the Lab. Alex owns further performance and visual tuning review; additional performance testing was stopped at his request.
 
-Final functional checks: variant/storage/Lab regression passed 458 checks in the clean export, including a real Act change; the existing atmosphere suite passed 476 there (492 with local art). Scenery passed 8,574 checks in the clean export and 6,606 in the working checkout. Prototype planning passed 41 checks; static batching passed 111. Runtime ownership/switching/transition checks passed 52. All 40 Prototype and 56 Endless recipes were refreshed and audited (387/451 checks). Streaming passed 256 checks over 27 transitions with zero fallback, and the minimal PCK loaded all eight production registries. Launcher/export PowerShell syntax checks pass.
+The follow-up uses `tests/atmosphere_color_ranges_regression.gd` for range boundaries, alpha/neutrals, source/gameplay isolation, stacking, exact reset and rendered texture/triplanar/vertex-color parity with StandardMaterial. `tests/atmosphere_surface_regression.gd` captures all eight live themes with terrain, Decor, selective-green and Neon edits, checks fullscreen layout, and uses `--baked-only` to inspect every published Prototype/Endless Act/theme recipe. These are functional checks, not performance benchmarks.
+
+`tests/atmosphere_picker_regression.gd` exercises picking an already shifted scene color with Retro enabled, all three drag modes, fine adjustment, release/Esc and preservation of the pause, camera, ball and authored cloud-light state. All 17 checks passed in both the working checkout and the clean staged export, including the latest directional-fog integration.
+
+Follow-up checks passed in the working checkout: 765 range/texture/stacking checks, 1,275 all-theme surface/UI checks, 560 Lab checks, 456 variant checks, 6,606 scenery checks and 111 batching checks. The clean staged export passed 765 range checks, 1,232 all-theme surface checks and 461 variant/production-fixture checks. All 96 published Act/theme recipes passed 5,994 binding checks; refreshed Prototype/Endless pools passed 401/465 audit checks. A six-transition streaming check passed 87 checks with disk recipes and no fallback. One existing ObjectDB exit warning remained. No follow-up performance benchmarks were run.
+
+Initial production-system checks: variant/storage/Lab regression passed 458 checks in the clean export, including a real Act change; the existing atmosphere suite passed 476 there (492 with local art). Scenery passed 8,574 checks in the clean export and 6,606 in the working checkout. Prototype planning passed 41 checks; static batching passed 111. Runtime ownership/switching/transition checks passed 52. All 40 Prototype and 56 Endless recipes were refreshed and audited (387/451 checks). Streaming passed 256 checks over 27 transitions with zero fallback, and the minimal PCK loaded all eight production registries. Launcher/export PowerShell syntax checks pass.
 
 Exploratory profiles completed before the manual-performance handoff are retained under ignored test results: the clean export's `test-results/atmosphere-hue/report.json` and `test-results/atmosphere-variants/runtime/report.json` in the working checkout. Strong hue transforms kept draw/object/material/resource counts unchanged in the matched samples; the all-eight mean GPU deltas were approximately −0.0005 to +0.002 ms. CPU/frame results are not isolated benchmarks: an interactive Lab was open, and the Lab profile also overlapped offline baking. These measurements do not establish whole-run FPS or second-hardware behavior.
 

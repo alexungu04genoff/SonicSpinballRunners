@@ -16,8 +16,9 @@ func _initialize() -> void: call_deferred("run")
 func run() -> void:
  var registry := Variants.new()
  registry.directory = "user://variant-regression"
- var records: Array[Dictionary] = [Variants.baseline(), {"id": "pink", "name": "Pink", "enabled": true, "weight": 3.0, "values": {"hue/terrain": 0.25, "hue/neon": -0.2}}]
+ var records: Array[Dictionary] = [Variants.baseline(), {"id": "pink", "name": "Pink", "enabled": true, "weight": 3.0, "values": {"hue/terrain": 0.25, "hue/neon": -0.2, "hue/decor": 0.1, "brightness/decor": 0.8, "brightness/terrain_ground": 1.3}}]
  var hash_before := Bake.pipeline_hash("ice_cap")
+ records[1].values.merge({"ranges/enabled": true, "ranges/green/hue": 0.2, "ranges/green/saturation": 0.5, "ranges/green/brightness": 1.5})
  check(registry.save("ice_cap", records, registry.revision("ice_cap")), "Save project-shaped variant fixture")
  check(registry.read("ice_cap") == records, "Inspectable values round trip")
  check(is_equal_approx(Variants.chance(records, "pink"), 0.75), "Weights derive probabilities")
@@ -114,6 +115,10 @@ func material_ownership() -> void:
  check(container.get_child(0).material_override.albedo_color != neon.albedo_color, "Decorative neon hue changes")
  check(container.get_child(0).material_override.emission != neon.emission, "Neon emission hue follows albedo")
  check(neon.albedo_color == Color("ff2288"), "Source material remains authored")
+ bindings.apply_palette({"brightness/neon": 0.5}, light, false)
+ check(container.get_child(0).material_override.albedo_color.is_equal_approx(Color(neon.albedo_color.r * 0.5, neon.albedo_color.g * 0.5, neon.albedo_color.b * 0.5, neon.albedo_color.a)), "Neon brightness scales color while retaining alpha")
+ for group: String in ["background", "foliage"]:
+  check(bindings.shifted(Color(0.8, 0.4, 0.2, 0.7), {"brightness/" + group: 0.5}, group).is_equal_approx(Color(0.4, 0.2, 0.1, 0.7)), group + " brightness retains alpha")
  check(container.get_child(2).material_override == hazard and hazard.albedo_color == Color.YELLOW, "Untagged hazard/readability materials excluded")
  var choices := {"hue/terrain": 0.1, "override/terrain_walls": true, "hue/terrain_walls": -0.3}
  check(bindings.resolved_group(choices, "terrain_ground") == "terrain", "Disabled category inherits Terrain")

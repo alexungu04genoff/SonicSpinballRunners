@@ -169,8 +169,9 @@ func _palm(p: Node3D, base: Vector3, side: int, size: float, target: Node3D = nu
  palm.position = base
  palm.scale = Vector3.ONE * size
  (p.scenery_root if target == null else target).add_child(palm)
- var bark = material(Color("b7863b"))
- var bark_light = material(Color("d6ad59"))
+ var wood := preload("res://scripts/themes/green_hill_palette.gd").wood(self)
+ var bark = material(wood[0])
+ var bark_light = material(wood[1])
  var previous = Vector3.ZERO
  var tip = Vector3.ZERO
  for step: int in 7:

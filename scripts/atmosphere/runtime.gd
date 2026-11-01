@@ -20,8 +20,8 @@ func configure(theme: String, variant: Dictionary, original: Environment, light:
  for property: String in LIGHT_FIELDS: lighting[property] = sun.get(property)
  lighting["quaternion"] = sun.quaternion
 
-func attach(root: Node, include_sky := false) -> void:
- bindings.append_root(root, environment.sky.sky_material if include_sky and environment.sky != null else null)
+func attach(root: Node, include_sky := false, scenery := false) -> void:
+ bindings.append_root(root, environment.sky.sky_material if include_sky and environment.sky != null else null, scenery)
  bindings.apply(float(values.get("emission", 1.0)))
  bindings.apply_palette(values, sun, values.has("sun_pitch") or values.has("sun_yaw"))
 

@@ -18,7 +18,8 @@ func material(source: Material) -> Material:
  if not source is ShaderMaterial or source.shader == null: return source
  var code: String = source.shader.code
  var flat := code.replace(RELIEF_INCLUDE, FLAT_RELIEF)
- if source.shader.resource_path.get_file() == "green_hill_turf.gdshader":
+ var original_path: String = source.shader.get_meta("atmosphere_source_path", source.shader.resource_path)
+ if original_path.get_file() == "green_hill_turf.gdshader":
   var start := flat.find(" vec2 p=world_position.xz*grass_density;")
   var end := flat.find(" ALBEDO=", start)
   if start < 0 or end < 0:

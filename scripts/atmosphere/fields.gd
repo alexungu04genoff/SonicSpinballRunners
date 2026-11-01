@@ -18,6 +18,7 @@ const GROUPS := {
  ],
  "Sky": [],
  "Palette": [],
+ "Hue": [],
  "Glow & Fog": [
   ["Glow enabled", "env/glow_enabled", "bool"],
   ["Glow intensity", "env/glow_intensity", "number", 0.0, 2.0, 0.01],
@@ -56,33 +57,45 @@ const PROCEDURAL_SKY_FIELDS := [
 ]
 
 const HUE_FIELDS := [
+ ["Decor hue", "hue/decor", "number", -0.5, 0.5, 0.005],
+ ["Decor saturation", "saturation/decor", "number", 0.0, 2.0, 0.01],
+ ["Decor brightness", "brightness/decor", "number", 0.0, 2.0, 0.01],
  ["Override ground floor", "override/terrain_ground", "bool"],
  ["Ground floor hue", "hue/terrain_ground", "number", -0.5, 0.5, 0.005],
  ["Ground floor saturation", "saturation/terrain_ground", "number", 0.0, 2.0, 0.01],
+ ["Ground floor brightness", "brightness/terrain_ground", "number", 0.0, 2.0, 0.01],
  ["Override raised tops / upper floor", "override/terrain_upper", "bool"],
  ["Raised tops / upper floor hue", "hue/terrain_upper", "number", -0.5, 0.5, 0.005],
  ["Raised tops / upper floor saturation", "saturation/terrain_upper", "number", 0.0, 2.0, 0.01],
+ ["Raised tops / upper floor brightness", "brightness/terrain_upper", "number", 0.0, 2.0, 0.01],
  ["Override walls / cliffs", "override/terrain_walls", "bool"],
  ["Walls / cliffs hue", "hue/terrain_walls", "number", -0.5, 0.5, 0.005],
  ["Walls / cliffs saturation", "saturation/terrain_walls", "number", 0.0, 2.0, 0.01],
+ ["Walls / cliffs brightness", "brightness/terrain_walls", "number", 0.0, 2.0, 0.01],
  ["Override ledges / borders / edges", "override/terrain_borders", "bool"],
  ["Ledges / borders / edges hue", "hue/terrain_borders", "number", -0.5, 0.5, 0.005],
  ["Ledges / borders / edges saturation", "saturation/terrain_borders", "number", 0.0, 2.0, 0.01],
+ ["Ledges / borders / edges brightness", "brightness/terrain_borders", "number", 0.0, 2.0, 0.01],
 
  ["Neon hue", "hue/neon", "number", -0.5, 0.5, 0.005],
  ["Neon saturation", "saturation/neon", "number", 0.0, 2.0, 0.01],
+ ["Neon brightness", "brightness/neon", "number", 0.0, 2.0, 0.01],
  ["Terrain hue", "hue/terrain", "number", -0.5, 0.5, 0.005],
  ["Terrain saturation", "saturation/terrain", "number", 0.0, 2.0, 0.01],
+ ["Terrain brightness", "brightness/terrain", "number", 0.0, 2.0, 0.01],
  ["Background hue", "hue/background", "number", -0.5, 0.5, 0.005],
  ["Background saturation", "saturation/background", "number", 0.0, 2.0, 0.01],
+ ["Background brightness", "brightness/background", "number", 0.0, 2.0, 0.01],
  ["Foliage hue", "hue/foliage", "number", -0.5, 0.5, 0.005],
  ["Foliage saturation", "saturation/foliage", "number", 0.0, 2.0, 0.01],
+ ["Foliage brightness", "brightness/foliage", "number", 0.0, 2.0, 0.01],
 ]
 static func specs(theme: String) -> Dictionary:
  var result := {}
  for group: Array in GROUPS.values():
   for field: Array in group: result[field[1]] = field
- for field: Array in PROCEDURAL_SKY_FIELDS + HUE_FIELDS + preload("res://scripts/themes/theme_atmosphere.gd").fields(theme): result[field[1]] = field
+ for field: Array in PROCEDURAL_SKY_FIELDS + HUE_FIELDS + preload("res://scripts/atmosphere/color_ranges.gd").fields() + preload("res://scripts/themes/theme_atmosphere.gd").fields(theme): result[field[1]] = field
+ for field: Array in preload("res://scripts/atmosphere/color_ranges.gd").stack_fields(theme): result[field[1]] = field
  result["env/background_energy_multiplier"] = ["Background brightness", "env/background_energy_multiplier", "number", 0.0, 3.0, 0.01]
  result["env/background_color"] = ["Background color", "env/background_color", "color"]
  return result

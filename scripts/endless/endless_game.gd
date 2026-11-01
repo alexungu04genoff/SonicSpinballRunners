@@ -418,7 +418,7 @@ func _step_background() -> bool:
    background.recipe.bind_animations(background.nodes, presentation)
    for animation: Dictionary in background.recipe.animations:
     background.nodes[animation.index].process_mode = Node.PROCESS_MODE_INHERIT
-   background.layer.atmosphere.attach(background.root, true)
+   background.layer.atmosphere.attach(background.root, true, true)
    background.layer.follow(presentation.camera, view.size, 0.0, true)
    background.warm_until = Engine.get_process_frames() + 3
   elif Engine.get_process_frames() >= background.warm_until:

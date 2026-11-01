@@ -161,10 +161,11 @@ func _quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3,
   surface.add_vertex(point)
 
 func _rope_bridge(root: Node3D) -> void:
- var wood: Material = presentation.material(Color("9d542b"))
- var light_wood: Material = presentation.material(Color("bd7839"))
- var rope: Material = presentation.material(Color("dec078"))
- var post_material: Material = presentation.material(Color("68422a"))
+ var colors := preload("res://scripts/themes/green_hill_palette.gd").wood(presentation.theme_definition)
+ var wood: Material = presentation.material(colors[0])
+ var light_wood: Material = presentation.material(colors[1])
+ var rope: Material = presentation.material(colors[1])
+ var post_material: Material = presentation.material(colors[0])
  for side: int in [-1, 1]:
   _checker_box(root, Vector3(side * 1.12, 0.31, 0), Vector3(0.65, 0.62, 0.84))
   _grass_box(root, Vector3(side * 1.12, 0.65, 0), Vector3(0.71, 0.08, 0.90))

@@ -9,7 +9,9 @@ static func create(theme_id: String) -> RefCounted:
  var roles := {"floor_material": "terrain_ground", "top_material": "terrain_upper", "side_material": "terrain_walls", "cliff_material": "terrain_walls", "floor_border_material": "terrain_borders", "top_border_material": "terrain_borders"}
  for property: String in roles:
   var material: Material = theme.get(property)
-  if material != null: material.set_meta("atmosphere_hue", roles[property])
+  if material != null:
+   material.set_meta("atmosphere_hue", roles[property])
+   preload("res://scripts/atmosphere/surface_controls.gd").prepare(material)
  return theme
 
 static func _create(theme_id: String) -> RefCounted:

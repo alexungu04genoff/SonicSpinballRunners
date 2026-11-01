@@ -3148,6 +3148,10 @@ Prototype and Endless roll one appearance per Zone through a separate determinis
 
 Terrain, background, foliage and decorative neon hue/saturation are explicit opt-ins. Ground, raised tops, walls/cliffs and borders/edges can each override the Terrain controls independently. Gameplay colors stay outside those hue groups. Uniforms or apply-time color changes reuse material copies and existing passes. No per-frame material traversal, texture rebake or manual scenery-transform editor. See [production atmosphere variants](ATMOSPHERE_VARIANTS.md) for ownership, authoring, playtest overrides, scope and verification.
 
+The follow-up caught a real coverage gap in the live art checkout: Green Hill turf and other custom surface programs had role tags but no color-transform uniforms. Explicit terrain and Decor materials now prepare cached shader support at construction, preserving their existing texture/relief code. Authored Decor slots have their own hue/saturation controls, and every color group also has brightness (1.0 neutral). Independent floor/top/wall/border toggles inherit all three Terrain values when off. The F11 inspector fills the available height. Alex owns performance testing for this follow-up.
+
+Alex then asked for Lightroom-style selective ranges: an icy Green Hill needs blue grass/leaves without recoloring every brown prop. A separate Hue tab provides eight color ranges with hue/saturation/brightness, layered over Palette. Category and individual-color Stack with Hue switches let either layer remain independent. Local/distant scenery ownership now includes the previously untagged palms; textured shrubs and vertex-colored scenery get final-color shader support. Terrain emission follows Neon too, fixing Chemical's unchanged blue/yellow panels and strips. Gameplay materials stay excluded. Palm trunks and bridge wood deliberately share the active checker texture's brown palette, as Alex requested.
+
 # REPOSITORY SNAPSHOT AND COMMIT HISTORY — KEEP THIS LAST
 
 ## Current repository context — cleanup and first performance pass, 2026-10-30

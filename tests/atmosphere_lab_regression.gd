@@ -71,6 +71,7 @@ func run() -> void:
   var authored: Dictionary = panel.originals.duplicate(true)
   var nodes: int = game.presentation.find_children("*", "", true, false).size()
   var copies: Dictionary = panel.emission.materials.duplicate()
+  var scenery_copies: Dictionary = panel.emission.scenery_materials.duplicate()
   var modified: Dictionary = authored.duplicate(true)
   for spec: Array in panel.palette_fields:
    modified[spec[1]] = Color("481c68") if spec[2] == "color" else (true if spec[2] == "bool" else 0.31)
@@ -78,19 +79,20 @@ func run() -> void:
   panel.apply_values()
   if theme == "rooftop_run":
    root.gui_release_focus()
-   var before: Dictionary = panel.emission.materials.duplicate()
+   var before: Array = panel.emission.materials.values() + panel.emission.scenery_materials.values()
    for key: int in [KEY_1, KEY_2]:
     var event := InputEventKey.new()
     event.pressed = true
     event.physical_keycode = key
     game._input(event)
-   check(panel.emission.slots.all(func(slot: Dictionary): return slot.node.material_override in before.values() if slot.surface < 0 else slot.node.get_surface_override_material(slot.surface) in before.values()), "Hidden material shortcuts preserve bound palette slots")
+   check(panel.emission.slots.all(func(slot: Dictionary): return slot.node.material_override in before if slot.surface < 0 else slot.node.get_surface_override_material(slot.surface) in before), "Hidden material shortcuts preserve bound palette slots")
    before.clear()
   for entry: Dictionary in panel.emission.palette_parameters:
    var actual = entry.target.get_shader_parameter(entry.property) if entry.shader else entry.target.get(entry.property)
    check(actual != entry.base, "Live binding changes: " + theme + "/" + entry.key + "/" + entry.property)
-  check(panel.emission.materials == copies, "Palette edits reuse the same shared material copies: " + theme)
+  check(panel.emission.materials == copies and panel.emission.scenery_materials == scenery_copies, "Palette edits reuse the same shared material copies: " + theme)
   copies.clear()
+  scenery_copies.clear()
   check(game.presentation.find_children("*", "", true, false).size() == nodes, "Palette edits preserve scene topology: " + theme)
   panel.compare.button_pressed = true
   for entry: Dictionary in panel.emission.palette_parameters:
