@@ -74,6 +74,9 @@ const PROCEDURAL_SKY_FIELDS := [
 ]
 
 const HUE_FIELDS := [
+ ["Ramp surface hue", "hue/ramps", "number", -0.7, 0.7, 0.005],
+ ["Ramp surface saturation", "saturation/ramps", "number", 0.0, 2.0, 0.01],
+ ["Ramp surface brightness", "brightness/ramps", "number", 0.0, 3.0, 0.01],
  ["Decor hue", "hue/decor", "number", -0.7, 0.7, 0.005],
  ["Decor saturation", "saturation/decor", "number", 0.0, 2.0, 0.01],
  ["Decor brightness", "brightness/decor", "number", 0.0, 3.0, 0.01],

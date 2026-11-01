@@ -459,6 +459,11 @@ func _bind_palette() -> void:
  widgets["link/terrain_trim"].tooltip_text = "Linked: Borders drives all three groups. Unlinked: Edges affect the outer floor rim, Borders affect trim around terrain bases, and Ledges affect upper trim. Independent values are retained while linked."
  for spec: Array in EmissionPreview.Palette.fields(game.theme_id):
   if not emission.palette_originals.has(spec[1]): continue
+  var hardware_heading: String = {"palette/hardware_rubber": "Pinball Hardware", "palette/mechanism_body": "Mechanisms", "palette/spinner_frame": "Spinner", "palette/dash_chassis": "Dash Panel"}.get(spec[1], "")
+  if not hardware_heading.is_empty():
+   var heading := Label.new()
+   heading.text = hardware_heading
+   palette_controls.add_child(heading)
   palette_fields.append(spec)
   _field(palette_controls, spec)
   if spec[2] == "color":

@@ -100,9 +100,28 @@ static func is_foliage(material: Material) -> bool:
   if binding.get("key") == "vegetation_tint": return true
  return false
 
+const HARDWARE_FIELDS := [
+ ["Rubber", "hardware_rubber"],
+ ["Bumper face", "hardware_face"],
+ ["Metal trim", "hardware_trim"],
+ ["Markings / stars / chevrons", "hardware_mark"],
+ ["Flipper face", "hardware_paddle"],
+ ["Hardware base", "hardware_base"],
+ ["Mechanism body", "mechanism_body"],
+ ["Mechanism trim", "mechanism_trim"],
+ ["Mechanism accent", "mechanism_light"],
+ ["Spinner frame", "spinner_frame"],
+ ["Spinner paddle", "spinner_paddle"],
+ ["Spinner accent / inset", "spinner_accent"],
+ ["Dash chassis", "dash_chassis"],
+ ["Dash frame", "dash_frame"],
+ ["Dash chevrons", "dash_chevrons"],
+ ["Rail accent", "rail_accent"],
+]
+
 static func fields(theme: String) -> Array:
  var result: Array = []
- for field: Array in FIELDS.get(theme, []):
+ for field: Array in FIELDS.get(theme, []) + HARDWARE_FIELDS:
   var spec := field.duplicate()
   spec[1] = "palette/" + spec[1]
   if spec.size() == 2: spec.append("color")

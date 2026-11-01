@@ -41,7 +41,7 @@ static func apply(color: Color, values: Dictionary) -> Color:
 
 static func stack_fields(theme: String) -> Array:
  var result: Array = []
- for id: String in ["decor", "terrain", "terrain_ground", "terrain_upper", "terrain_walls", "terrain_borders", "terrain_edges", "terrain_ledges", "neon", "background", "foliage"]:
+ for id: String in ["ramps", "decor", "terrain", "terrain_ground", "terrain_upper", "terrain_walls", "terrain_borders", "terrain_edges", "terrain_ledges", "neon", "background", "foliage"]:
   result.append(["Stack with Hue", "stack/" + id, "bool"])
  for spec: Array in preload("res://scripts/themes/theme_atmosphere.gd").fields(theme):
   if spec[2] == "color": result.append(["Stack with Hue", "stack/" + spec[1], "bool"])

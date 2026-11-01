@@ -1,5 +1,6 @@
 extends Node3D
 ## Collisionless pinball visuals; theme materials never alter the shared rail geometry.
+const Hardware := preload("res://scripts/atmosphere/hardware_palette.gd")
 const RailPath = preload("res://scripts/authored_act/rail_path.gd")
 const Gimmicks = preload("res://scripts/authored_act/gimmick_models.gd")
 const BuzzModel = preload("res://scripts/enemies/buzz_bomber_model.gd")
@@ -27,10 +28,10 @@ func build(presenter: TablePresentation, runtime: Dictionary) -> void:
     gimmicks.append(entry)
     Gimmicks.update(entry)
 
-func _box(size: Vector3, color: Color, at: Vector3, parent: Node3D) -> MeshInstance3D:
+func _box(size: Vector3, color: Color, at: Vector3, parent: Node3D, palette_key := "", source_key := "") -> MeshInstance3D:
  var mesh := BoxMesh.new()
  mesh.size = size
- return table.mesh_node(mesh, table.material(color), at, parent)
+ return table.mesh_node(mesh, table.material(color) if palette_key.is_empty() else Hardware.fixed(table, palette_key, 0.0, false, source_key), at, parent)
 
 func _spinner(item: Dictionary) -> void:
  var frame := Node3D.new()
@@ -39,12 +40,12 @@ func _spinner(item: Dictionary) -> void:
  add_child(frame)
  var width := float(item.properties.width) * table.SCALE
  for side: float in [-1.0, 1.0]:
-  _box(Vector3(0.035, 0.23, 0.045), Color("b8cbd9"), Vector3(side * width / 2, -0.10, 0), frame)
- _box(Vector3(width + 0.08, 0.025, 0.025), Color("dbe7ef"), Vector3.ZERO, frame)
+  _box(Vector3(0.035, 0.23, 0.045), Color.WHITE, Vector3(side * width / 2, -0.10, 0), frame, "spinner_frame")
+ _box(Vector3(width + 0.08, 0.025, 0.025), Color.WHITE, Vector3.ZERO, frame, "spinner_frame", "spinner_crossbar")
  var paddle := Node3D.new()
  frame.add_child(paddle)
- _box(Vector3(width * 0.8, 0.16, 0.035), Color("ffbf48"), Vector3.ZERO, paddle)
- _box(Vector3(width * 0.5, 0.055, 0.038), Color("244362"), Vector3.ZERO, paddle)
+ _box(Vector3(width * 0.8, 0.16, 0.035), Color.WHITE, Vector3.ZERO, paddle, "spinner_paddle")
+ _box(Vector3(width * 0.5, 0.055, 0.038), Color.WHITE, Vector3.ZERO, paddle, "spinner_accent")
  spinners.append({"item": item, "paddle": paddle})
 
 func _field(item: Dictionary) -> void:
@@ -54,6 +55,9 @@ func _field(item: Dictionary) -> void:
  var repel: bool = item.properties.mode == "repel"
  var color := Color("f68b6f") if repel else Color("a68ef5")
  var material := table.material(color, 0.1)
+ material.albedo_color.a = 0.2
+ material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+ Hardware.protect(material)
  var radius := float(item.properties.radius) * table.SCALE
  var ring := TorusMesh.new()
  ring.inner_radius = maxf(0.01, radius - 0.012)
@@ -66,7 +70,10 @@ func _field(item: Dictionary) -> void:
  center.add_child(arcs)
  for i in 6:
   var marker := _box(Vector3(0.07, 0.012, 0.018), color, Vector3.ZERO, arcs)
+  marker.material_override = material
   marker.rotation.y = -i * TAU / 6.0
+ for mesh: Node in center.find_children("*", "GeometryInstance3D", true, false):
+  mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  fields.append({"arcs": arcs, "radius": radius, "repel": repel})
 
 func _rail(item: Dictionary) -> void:
@@ -89,6 +96,8 @@ func _rail(item: Dictionary) -> void:
   inside.append(factor)
  path["inside_edge_scale"] = inside
  var style := table.ramp_materials()
+ style.deck = Hardware.ramp_material(table, style.deck, "deck")
+ style.accent = Hardware.ramp_material(table, style.accent, "accent")
  var thickness := preload("res://scripts/act_dimensions.gd").RAMP_DECK_THICKNESS_PIXELS * table.SCALE
  var root := Node3D.new()
  root.name = "ElevatedRail_" + str(item.get("object_id", "route"))

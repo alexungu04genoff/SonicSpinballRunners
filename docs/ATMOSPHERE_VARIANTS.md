@@ -31,6 +31,20 @@ Saving validates names, IDs, value types/ranges and the weighted pool. It compar
 
 ## Lab workflow
 
+### Cosmetic hardware and protected gameplay colors
+
+Ramp deck surfaces have independent hue, saturation and brightness controls, plus Stack with Hue. The deck role is isolated from shared terrain/decor materials; rail trim retains its existing ownership and the entry accent has its own color picker. Values use the existing variant persistence and material binding paths.
+
+Palette exposes the six existing Pinball Hardware slots (Rubber, Bumper face, Metal trim, Markings, Flipper face, Hardware base), plus Mechanisms (body/trim/accent), Spinner (frame/paddle/inset), Dash Panel (chassis/frame/chevrons), and the existing rail accent where its material supports a color input. These are ordinary production variant colors with per-color Stack with Hue controls. Fields appear for materials present in the preview. Existing source colors remain the neutral defaults, including different shades that share one role. Aquarium Park now has a deliberate coral-rubber, teal-face/paddle, brass-trim, ivory-mark and deep-blue-base pinball palette.
+
+Cosmetic materials are shared by presentation and theme. Stateful dash chevrons remain instance-owned, and their pulse updates the live Zone-owned palette material after attachment. Springs, switch buttons, lane lit/unlit/completed lights, diverter pending/normal indicators and magnetic attract/repel identity are protected from palette/range changes. Protected state materials are not replaced by atmosphere copies, so runtime feedback retains its live references. Switch housings and lane posts/rims remain cosmetic. Rings, Goal Rings, player/enemy identity and combo feedback have no new palette bindings.
+
+Spring `color` and `launch_strength` are currently separate Act-authored properties (default red and 300); this pass does not infer strength from color or establish new strength classes. Switch color remains an Act property suitable for Bank correlation. Magnetic field rings, centers and arc markers retain their attract/repel colors at 20% opacity and cast no shadows; their forces and radii are unchanged.
+
+No gameplay geometry, collision, texture rebake, new palette render pass, per-frame scene traversal or bake dimension is introduced. The material-tag changes require the usual recipe refresh. Magnetic alpha uses the existing native transparent material path. All eight themes passed the focused hardware/state check and Lab smoke; performance and extended playtesting are left to Alex.
+
+The final ramp-inclusive headless check passed 447 assertions across all eight themes, including variant save/reload and range opt-out. The earlier rendered hardware check passed 408 assertions and the Lab smoke passed 1,698. A later rendered retry encountered a Vulkan device-loss crash during initial flipper construction; that retry did not validate final ramp appearance. Final visual review remains manual.
+
 ### Foliage semantics
 
 Foliage means visible plant tissue: fronds, leaves, needles, vines, moss, shrubs, decorative grass and aquatic plant material. It is a material role, not a whole-prop selection. Trunks, bridge wood, petals, rocks, ruins, coral, fish, crystals, machinery and playable turf retain their existing Decor, Terrain or Palette roles.

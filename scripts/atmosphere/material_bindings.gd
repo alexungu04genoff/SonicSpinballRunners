@@ -61,6 +61,7 @@ func _slot(node: GeometryInstance3D, surface: int, material: Material, scenery :
  else: (node as MeshInstance3D).set_surface_override_material(surface, copy)
 
 func _copy(source: Material, scenery := false) -> Material:
+ if source.get_meta("atmosphere_protected", false): return source
  var copy: Material = source
  var trim_layer := source.has_meta("grass_shell_fraction")
  var semantic := source.has_meta("atmosphere_bindings") or source.has_meta("atmosphere_hue") or trim_layer
@@ -220,6 +221,7 @@ func apply_palette(values: Dictionary, sun: DirectionalLight3D, use_sun_directio
 
 func apply(multiplier: float) -> void:
  for entry: Dictionary in parameters:
+  entry.material.set_meta("atmosphere_emission_multiplier", multiplier)
   if entry.shader: entry.material.set_shader_parameter(entry.property, float(entry.base) * multiplier)
   else: entry.material.set(entry.property, float(entry.base) * multiplier)
 

@@ -1,5 +1,6 @@
 extends RefCounted
 ## Original procedural low-poly hardware. This file creates no physics objects.
+const Hardware := preload("res://scripts/atmosphere/hardware_palette.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const STYLES := {
  "green_hill": ["705339", "f5c65c", "69e4a3", "flap"],
@@ -20,7 +21,7 @@ static func build(p, parent: Node3D, item: Dictionary) -> Dictionary:
  root.set_meta("object_id", item.object_id)
  parent.add_child(root)
  var palette: Array = STYLES.get(p._pinball_theme_id(), STYLES.green_hill)
- var style := {"body": p.material(Color(palette[0])), "trim": p.material(Color(palette[1])), "light": p.material(Color(palette[2]), 1.8), "kind": palette[3]}
+ var style := {"body": Hardware.material(p, "mechanism_body", Color(palette[0])), "trim": Hardware.material(p, "mechanism_trim", Color(palette[1])), "light": Hardware.material(p, "mechanism_light", Color(palette[2]), 1.8), "kind": palette[3]}
  match item.type:
   "one_way_gate": return _gate(p, root, item, style)
   "switch_target": return _switch(p, root, item, style)
@@ -121,6 +122,7 @@ static func _switch(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dic
  pad.name = "PressPad"
  root.add_child(pad)
  var material: StandardMaterial3D = p.material(color.darkened(0.3))
+ Hardware.protect(material)
  material.emission_enabled = true
  material.emission = color
  material.emission_energy_multiplier = 0.0
@@ -143,6 +145,7 @@ static func _spring(p, root: Node3D, item: Dictionary) -> Dictionary:
  var blue: StandardMaterial3D = p.material(Color("175bd2"))
  var yellow: StandardMaterial3D = p.material(Color("ffdb40"), 0.25)
  var steel: StandardMaterial3D = p.material(Color("b7c5d3"))
+ for identity: Material in [red, blue, yellow, steel]: Hardware.protect(identity)
  steel.metallic = 0.7
  var width: float = float(item.properties.width) * p.SCALE
  var radius := width * 0.5
@@ -191,12 +194,16 @@ static func update(entry: Dictionary) -> void:
    entry.arm.rotation.y = -deg_to_rad(float(item.properties.state_a_angle if item.state == "a" else item.properties.state_b_angle))
    entry.indicator.albedo_color = Color("ffc84c") if item.pending_state != "" else Color("5af1cb")
   "dash_panel":
-   entry.material.emission_energy_multiplier = 3.5 if item.pulse > 0.0 else 1.5
+   # Attachment may replace the material with a Zone-owned palette copy.
+   for mesh: MeshInstance3D in entry.emitters:
+    for surface in mesh.mesh.get_surface_count():
+     var material := mesh.get_active_material(surface) as StandardMaterial3D
+     if material != null: material.emission_energy_multiplier = (3.5 if item.pulse > 0.0 else 1.5) * float(material.get_meta("atmosphere_emission_multiplier", 1.0))
 
 static func _lanes(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dictionary:
- var dark: StandardMaterial3D = p.material(Color("172435"))
+ var dark := Hardware.fixed(p, "mechanism_body", 0.0, false, "lane_chassis")
  var radius: float = float(item.properties.post_radius) * p.SCALE
- var crown: StandardMaterial3D = p.material(Color("77f9e5"), 1.5)
+ var crown := Hardware.fixed(p, "mechanism_light", 1.5, false, "lane_crown")
  var lights: Array[StandardMaterial3D] = []
  var emitters: Array[MeshInstance3D] = []
  for point: Vector2 in item.properties.points:
@@ -212,6 +219,7 @@ static func _lanes(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dict
   var b: Vector2 = item.properties.points[i + 1]
   var center := (a + b) * 0.5
   var material: StandardMaterial3D = p.material(Color("286876"), 0.25)
+  Hardware.protect(material)
   lights.append(material)
   var strip := _box(p, root, Vector3((a.distance_to(b) - 2.0 * item.properties.post_radius) * p.SCALE, 0.007, 0.12), Vector3(center.x * p.SCALE, 0.008, center.y * p.SCALE), material, "PassingLane_%d" % (i + 1))
   strip.rotation.y = -(b - a).angle()
@@ -243,6 +251,7 @@ static func _diverter(p, root: Node3D, item: Dictionary, style: Dictionary) -> D
   var brace := _box(p, arm, Vector3(0.018, 0.13, 0.092), Vector3((i - 2) * length / 6.0, 0.12, 0), style.trim, "Brace")
   if style.kind == "flap": brace.rotation.z = 0.45
  var indicator: StandardMaterial3D = p.material(Color("5af1cb"), 1.0)
+ Hardware.protect(indicator)
  var indicator_mesh := _disc(p, root, 0.036, 0.02, Vector3(0, 0.255, 0), indicator, "PendingStateIndicator", 8)
  root.set_meta("diverter_style", style.kind)
  return {"item": item, "root": root, "arm": arm, "indicator": indicator, "kind": "diverter", "emitters": [indicator_mesh]}
@@ -251,9 +260,9 @@ static func _dash_panel(p, root: Node3D, item: Dictionary, style: Dictionary) ->
  # Original geometry: a dark inset belt, violet rails and three cyan chevrons.
  # No textures, models or other game assets are imported.
  var width: float = float(item.properties.width) * p.SCALE
- var dark: StandardMaterial3D = p.material(Color("182336"))
- var violet: StandardMaterial3D = p.material(Color("7456ad"), 0.15)
- var cyan: StandardMaterial3D = p.material(Color("58f2ff"), 1.5)
+ var dark := Hardware.fixed(p, "dash_chassis")
+ var violet := Hardware.fixed(p, "dash_frame", 0.15)
+ var cyan := Hardware.fixed(p, "dash_chevrons", 1.5, true)
  var emitters: Array[MeshInstance3D] = []
  _box(p, root, Vector3(width, 0.035, 0.36), Vector3(0, 0.0175, 0), dark, "DashChassis")
  for side: float in [-1.0, 1.0]:
