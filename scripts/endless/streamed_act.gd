@@ -78,6 +78,9 @@ func step() -> void:
    else:
     prepared_nodes.clear()
     recipe.bind_animations(nodes, game.presentation, runtime.mechanics)
+    var atmosphere = game.backgrounds[plan.zone].layer.atmosphere
+    atmosphere.attach(visual)
+    atmosphere.attach(background_visual)
     phase = 3
   3:
    # The complete root is already attached; activation has no recursive add_child.

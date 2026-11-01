@@ -1,58 +1,13 @@
 extends CanvasLayer
-## Atmosphere presets are lab-only; scenery inputs are authored Act/theme data.
+## User-local drafts and explicit production variants share one live inspector.
 const SceneryControls := preload("res://experiments/lighting_lab/scenery_controls.gd")
 const EmissionPreview := preload("res://experiments/lighting_lab/emission_preview.gd")
 const LightingLooks := preload("res://experiments/lighting_lab/lighting_looks.gd")
 # Label, property, kind; numeric rows also carry minimum, maximum and step.
-const GROUPS := {
- "Light": [
-  ["Exposure", "env/tonemap_exposure", "number", 0.05, 4.0, 0.01],
-  ["Tonemapper", "env/tonemap_mode", "tone"],
-  ["Ambient energy", "env/ambient_light_energy", "number", 0.0, 3.0, 0.01],
-  ["Ambient color", "env/ambient_light_color", "color"],
-  ["Sky contribution", "env/ambient_light_sky_contribution", "number", 0.0, 1.0, 0.01],
-  ["Sun energy", "sun/light_energy", "number", 0.0, 4.0, 0.01],
-  ["Sun color", "sun/light_color", "color"],
-  ["Sun elevation", "sun_pitch", "number", -90.0, 0.0, 0.5],
-  ["Sun azimuth", "sun_yaw", "number", -180.0, 180.0, 0.5],
-  ["Sun specular", "sun/light_specular", "number", 0.0, 2.0, 0.01],
-  ["Color adjustment", "env/adjustment_enabled", "bool"],
-  ["Contrast", "env/adjustment_contrast", "number", 0.5, 1.5, 0.01],
-  ["Saturation", "env/adjustment_saturation", "number", 0.0, 2.0, 0.01],
- ],
- "Sky": [],
- "Palette": [],
- "Glow & Fog": [
-  ["Glow enabled", "env/glow_enabled", "bool"],
-  ["Glow intensity", "env/glow_intensity", "number", 0.0, 2.0, 0.01],
-  ["Bloom", "env/glow_bloom", "number", 0.0, 1.0, 0.005],
-  ["Glow threshold", "env/glow_hdr_threshold", "number", 0.0, 4.0, 0.01],
-  ["Emission multiplier", "emission", "number", 0.0, 3.0, 0.01],
-  ["Fog enabled", "env/fog_enabled", "bool"],
-  ["Fog density", "env/fog_density", "number", 0.0, 0.1, 0.0005],
-  ["Fog color", "env/fog_light_color", "color"],
-  ["Fog brightness", "env/fog_light_energy", "number", 0.0, 3.0, 0.01],
-  ["Fog sky influence", "env/fog_sky_affect", "number", 0.0, 1.0, 0.01],
- ],
- "Shadows": [
-  ["Shadows enabled", "sun/shadow_enabled", "bool"],
-  ["Opacity", "sun/shadow_opacity", "number", 0.0, 1.0, 0.01],
-  ["Softness (Forward+)", "sun/light_angular_distance", "number", 0.0, 5.0, 0.05],
-  ["Depth bias", "sun/shadow_bias", "number", 0.0, 2.0, 0.01],
-  ["Normal bias", "sun/shadow_normal_bias", "number", 0.0, 8.0, 0.05],
-  ["Shadow distance", "sun/directional_shadow_max_distance", "number", 10.0, 500.0, 1.0],
-  ["Shadow maps", "sun/directional_shadow_mode", "shadow"],
- ],
- "Scenery": [],
-}
-const PROCEDURAL_SKY_FIELDS := [
- ["Sky top", "sky/sky_top_color", "color"],
- ["Sky horizon", "sky/sky_horizon_color", "color"],
- ["Ground / bottom", "sky/ground_bottom_color", "color"],
- ["Ground horizon", "sky/ground_horizon_color", "color"],
- ["Sky horizon blend", "sky/sky_curve", "number", 0.01, 1.0, 0.01],
- ["Ground horizon blend", "sky/ground_curve", "number", 0.01, 1.0, 0.01],
-]
+const Fields := preload("res://scripts/atmosphere/fields.gd")
+const GROUPS := Fields.GROUPS
+const PROCEDURAL_SKY_FIELDS := Fields.PROCEDURAL_SKY_FIELDS
+var variants: VBoxContainer
 var settings_path := "user://lighting_lab_presets.cfg"
 var game: Node
 var panel: PanelContainer
@@ -166,6 +121,8 @@ func _build_ui() -> void:
  performance_label.add_theme_font_size_override("font_size", 13)
  performance_label.text = "Display synchronized" if vsync.button_pressed else "Uncapped rendering"
  performance_row.add_child(performance_label)
+ variants = preload("res://experiments/lighting_lab/variant_controls.gd").new()
+ variants.install(self, column)
  look_selector = OptionButton.new()
  look_selector.focus_mode = Control.FOCUS_NONE
  look_selector.add_item("Try an atmosphere…")
@@ -184,6 +141,11 @@ func _build_ui() -> void:
  tabs.add_theme_font_size_override("font_size", 12)
  tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
  column.add_child(tabs)
+ var variant_scroll := ScrollContainer.new()
+ variant_scroll.name = "Variants"
+ variant_scroll.add_child(variants)
+ variants.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ tabs.add_child(variant_scroll)
  for group: String in GROUPS:
   var scroll := ScrollContainer.new()
   scroll.name = group
@@ -211,10 +173,12 @@ func _build_ui() -> void:
  column.add_child(actions)
  save_button = _button(actions, "Save", func():
   if _scenery_tab(): scenery.save()
+  elif variants.context.selected != "draft": variants.save_variant()
   else: save_preset()
  )
  _button(actions, "Reload", func():
   if _scenery_tab(): scenery.reload()
+  elif variants.context.selected != "draft": variants.revert()
   else: reload_preset()
  )
  _button(actions, "Reset", func():
@@ -222,7 +186,7 @@ func _build_ui() -> void:
   else: reset_values()
  )
  _button(actions, "Open folder", func(): OS.shell_open(ProjectSettings.globalize_path(scenery.act_path if _scenery_tab() else settings_path).get_base_dir()))
- tabs.tab_changed.connect(func(_index: int): save_button.text = "Save scenery" if _scenery_tab() else "Save")
+ tabs.tab_changed.connect(func(_index: int): variants.refresh())
  message = Label.new()
  message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  message.add_theme_font_size_override("font_size", 12)
@@ -297,6 +261,7 @@ func _field(parent: Node, spec: Array) -> void:
   field.set_meta("slider", slider)
 
 func bind_theme() -> void:
+ variants.syncing = true
  # Themes configure a subset of Environment fields. Start from a fresh resource
  # so, for example, Chemical's exposure or Rooftop's fog cannot become the next
  # theme's "original" merely because it was inspected first.
@@ -337,6 +302,8 @@ func bind_theme() -> void:
  message.text = "Lab preset: " + game.presentation.theme_definition.display_name + "\nSave keeps these values for this renderer only."
 
  scenery.bind_context()
+ variants.syncing = false
+ variants.bind_theme()
 
 func _scenery_tab() -> bool:
  return tabs.get_current_tab_control().name == "Scenery"
@@ -413,6 +380,10 @@ func _bind_palette() -> void:
   palette_controls.remove_child(child)
   child.queue_free()
  palette_fields = []
+ for spec: Array in Fields.HUE_FIELDS:
+  emission.palette_originals[spec[1]] = false if spec[2] == "bool" else (1.0 if spec[1].begins_with("saturation/") else 0.0)
+  palette_fields.append(spec)
+  _field(palette_controls, spec)
  for spec: Array in EmissionPreview.Palette.fields(game.theme_id):
   if not emission.palette_originals.has(spec[1]): continue
   palette_fields.append(spec)
@@ -431,9 +402,10 @@ func _read_value(key: String) -> Variant:
  return target.get(key.get_slice("/", 1))
 
 func set_value(key: String, value: Variant) -> void:
+ if not variants.context.is_empty() and variants.context.selected == "default": return
  if not originals.has(key): return
  values[key] = value
- drafts[preset_key] = values.duplicate(true)
+ if variants == null or variants.context.is_empty() or variants.context.selected == "draft": drafts[preset_key] = values.duplicate(true)
  compare.set_pressed_no_signal(false)
  look_selector.select(0)
  _sync_widgets()
@@ -452,10 +424,11 @@ func _sync_widgets() -> void:
 
 func apply_values() -> void:
  _apply(originals if compare.button_pressed else values)
+ if is_instance_valid(variants): variants.capture()
 
 func _apply(source: Dictionary) -> void:
  for key: String in source:
-  if key.begins_with("palette/"): continue
+  if key.begins_with("palette/") or key.begins_with("hue/") or key.begins_with("saturation/") or key.begins_with("override/"): continue
   if key == "emission": emission.apply(float(source[key]))
   elif key == "sun_pitch": game.presentation._key_light.rotation_degrees.x = float(source[key])
   elif key == "sun_yaw": game.presentation._key_light.rotation_degrees.y = float(source[key])
@@ -512,7 +485,7 @@ func reload_preset() -> void:
 
 func reset_values() -> void:
  values = originals.duplicate(true)
- drafts[preset_key] = values.duplicate(true)
+ if variants.context.is_empty() or variants.context.selected == "draft": drafts[preset_key] = values.duplicate(true)
  compare.set_pressed_no_signal(false)
  look_selector.select(1)
  _sync_widgets()
@@ -534,10 +507,11 @@ func _set_vsync(enabled: bool) -> void:
  performance_label.text = "Display synchronized" if vsync.button_pressed else "Uncapped rendering"
 
 func _select_look(index: int) -> void:
+ if variants.context.selected == "default": return
  if index == 0: return
  var title := look_selector.get_item_text(index)
  values = originals.duplicate(true) if index == 1 else LightingLooks.create(title, originals, game.theme_id)
- drafts[preset_key] = values.duplicate(true)
+ if variants.context.is_empty() or variants.context.selected == "draft": drafts[preset_key] = values.duplicate(true)
  compare.set_pressed_no_signal(false)
  _sync_widgets()
  apply_values()

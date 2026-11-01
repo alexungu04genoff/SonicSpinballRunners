@@ -1,6 +1,7 @@
 extends SubViewportContainer
 ## Independent scenery layers crossfade behind the single gameplay viewport.
 ## Each keeps its original sky and lights; sky radiance is not rebuilt by a fade.
+var atmosphere := preload("res://scripts/atmosphere/runtime.gd").new()
 var view: SubViewport
 var camera: Camera3D
 var scenery: Node3D
@@ -26,6 +27,14 @@ func configure(game: Node, entry: Dictionary, library: Node) -> void:
  light.rotation = style.rotation
  light.light_color = style.color
  light.light_energy = style.energy
+ if game.atmosphere_light_defaults.is_empty():
+  for property: String in atmosphere.LIGHT_FIELDS: game.atmosphere_light_defaults[property] = game.presentation._key_light.get(property)
+ for property: String in atmosphere.LIGHT_FIELDS:
+  if property not in ["light_color", "light_energy"]: light.set(property, game.atmosphere_light_defaults[property])
+ light.shadow_normal_bias = style.bias
+ atmosphere.configure(entry.theme, entry.get("atmosphere", {}), environment.environment, light)
+ environment.environment = atmosphere.environment
+ light.shadow_enabled = false # Far/local scenery retains the existing shadowless light.
  view.add_child(light)
  camera = Camera3D.new()
  view.add_child(camera)

@@ -5,6 +5,14 @@ const NAMES := ["Green Hill", "Chemical Plant", "Rooftop Run", "Casino Night", "
 const GreenHill = preload("res://scripts/themes/green_hill_theme.gd")
 
 static func create(theme_id: String) -> RefCounted:
+ var theme := _create(theme_id)
+ var roles := {"floor_material": "terrain_ground", "top_material": "terrain_upper", "side_material": "terrain_walls", "cliff_material": "terrain_walls", "floor_border_material": "terrain_borders", "top_border_material": "terrain_borders"}
+ for property: String in roles:
+  var material: Material = theme.get(property)
+  if material != null: material.set_meta("atmosphere_hue", roles[property])
+ return theme
+
+static func _create(theme_id: String) -> RefCounted:
  if theme_id == "aquarium_park":
   return load("res://scripts/themes/aquarium_park_theme.gd").new()
  if theme_id == "lava_reef":

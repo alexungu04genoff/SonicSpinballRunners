@@ -1,5 +1,7 @@
 # Atmosphere authoring
 
+**Production variants (2026-11-01):** Named Theme atmospheres, weights, protected defaults, independent terrain-category/background/foliage/neon hue controls and deterministic Zone selection are now available in the same Lab. See [Atmosphere Variants](ATMOSPHERE_VARIANTS.md). Older lab-only ownership statements below describe the initial authoring pass.
+
 **Renderer update — 2026-11-01:** Production gameplay and editors now also default to Forward+/Vulkan. Earlier statements below about unchanged production defaults describe the original lab rollout. Saved atmosphere presets remain lab-only.
 
 **Act geometry × Theme × Atmosphere Variant** is the accepted model. An atmosphere comprises **lighting + sky + the theme's environmental palette**. This milestone builds the manual instrument; it does not promote saved Lab values into production variants.

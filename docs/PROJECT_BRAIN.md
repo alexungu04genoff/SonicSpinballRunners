@@ -3140,6 +3140,14 @@ This changes the rendering backend, not physics, scoring, geometry, retro effect
 
 Migration checks: all seven edited PowerShell scripts parse, Godot headless import succeeds, and Act editor UI regression passes 92/92. A graphical launch confirms Forward+/Vulkan on the RTX 4060. The all-theme rendered suite was stopped at Alex's request; visual review, Prototype/Endless playtesting and exported-package verification are left to manual testing.
 
+# NAMED PRODUCTION ATMOSPHERES — 2026-11-01
+
+The Lab can now promote an explicit draft into a named project variant. Default stays source-authored and protected; quick looks remain recipes, and old user-local saves are not a production roster. Alex authors the real looks manually. Per-Theme versioned files hold stable IDs, names, enabled flags, weights and atmosphere deltas. Weight percentages are derived, not a second saved value.
+
+Prototype and Endless roll one appearance per Zone through a separate deterministic seed stream. The full choice travels in the plan; same-theme neighbors own separate material/environment copies. Existing distance-driven scenery fades blend their lighting. The bake remains Act × Theme: saving or editing a variant does not invalidate recipes or multiply the 40/56 variant pools. This implementation's shader bindings need the usual one-time source refresh.
+
+Terrain, background, foliage and decorative neon hue/saturation are explicit opt-ins. Ground, raised tops, walls/cliffs and borders/edges can each override the Terrain controls independently. Gameplay colors stay outside those hue groups. Uniforms or apply-time color changes reuse material copies and existing passes. No per-frame material traversal, texture rebake or manual scenery-transform editor. See [production atmosphere variants](ATMOSPHERE_VARIANTS.md) for ownership, authoring, playtest overrides, scope and verification.
+
 # REPOSITORY SNAPSHOT AND COMMIT HISTORY — KEEP THIS LAST
 
 ## Current repository context — cleanup and first performance pass, 2026-10-30

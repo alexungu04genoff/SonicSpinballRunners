@@ -10,6 +10,7 @@ var samples := 480
 var output := "res://test-results/atmosphere/profile"
 var only_theme := ""
 var ocean_only := false
+var hue_only := false
 var reverse_order := false
 
 func _initialize() -> void: call_deferred("run")
@@ -24,6 +25,7 @@ func run() -> void:
   if arg.begins_with("--atmosphere-theme="): only_theme = arg.get_slice("=", 1)
   if arg.begins_with("--atmosphere-output="): output = arg.get_slice("=", 1)
   if arg.begins_with("--atmosphere-samples="): samples = maxi(120, int(arg.get_slice("=", 1)))
+  if arg == "--atmosphere-hue": hue_only = true
   if arg == "--atmosphere-ocean": ocean_only = true
   if arg == "--atmosphere-reverse": reverse_order = true
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(output))
@@ -74,7 +76,16 @@ func run() -> void:
   var original: Dictionary = panel.originals.duplicate(true)
   var modified: Dictionary = original.duplicate(true)
   for spec: Array in panel.palette_fields:
-   modified[spec[1]] = Color("452078") if spec[2] == "color" else 0.25
+   modified[spec[1]] = Color("452078") if spec[2] == "color" else (true if spec[2] == "bool" else 0.25)
+  if hue_only:
+   modified = original.duplicate(true)
+   for group: String in ["terrain", "background", "foliage", "neon"]:
+    modified["hue/" + group] = 0.3
+    modified["saturation/" + group] = 1.6
+   for category: String in ["ground", "upper", "walls", "borders"]:
+    modified["override/terrain_" + category] = true
+    modified["hue/terrain_" + category] = -0.3 if category == "walls" else 0.3
+    modified["saturation/terrain_" + category] = 1.6
   var ocean: MeshInstance3D
   var stylized: Material
   var flat: StandardMaterial3D

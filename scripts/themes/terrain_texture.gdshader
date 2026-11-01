@@ -1,4 +1,5 @@
 shader_type spatial;
+#include "res://scripts/atmosphere/hue.gdshaderinc"
 render_mode cull_disabled;
 uniform sampler2D albedo_texture : source_color, filter_linear_mipmap_anisotropic, repeat_disable;
 uniform sampler2D emission_texture : source_color, filter_linear_mipmap_anisotropic, repeat_disable;
@@ -50,4 +51,5 @@ void fragment() {
  ROUGHNESS = properties.r;
  SPECULAR = properties.g;
  METALLIC = properties.b;
+ ALBEDO = atmosphere_shift(ALBEDO);
 }

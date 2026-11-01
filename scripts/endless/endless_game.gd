@@ -21,6 +21,8 @@ var resident: Array = []
 var pending: Array[Dictionary] = []
 var building: RefCounted
 var backgrounds := {}
+var atmosphere_light_defaults := {}
+var _last_atmosphere_blend := Vector3(-1, -1, -1)
 var retire_nodes: Array[Node] = []
 var active: RefCounted
 var character: Node3D
@@ -416,6 +418,7 @@ func _step_background() -> bool:
    background.recipe.bind_animations(background.nodes, presentation)
    for animation: Dictionary in background.recipe.animations:
     background.nodes[animation.index].process_mode = Node.PROCESS_MODE_INHERIT
+   background.layer.atmosphere.attach(background.root, true)
    background.layer.follow(presentation.camera, view.size, 0.0, true)
    background.warm_until = Engine.get_process_frames() + 3
   elif Engine.get_process_frames() >= background.warm_until:
@@ -428,14 +431,14 @@ func _step_background() -> bool:
 func _show_background(zone_index: int, theme_id: String, initial := false) -> void:
  if not initial: return # Travel distance, not checkpoint activation, owns the fade.
  _background_zone = zone_index
- var environment: Environment = library.environments[theme_id].duplicate()
+ var environment: Environment = backgrounds[zone_index].layer.atmosphere.environment.duplicate()
  environment.background_mode = Environment.BG_COLOR
  environment.background_color = Color(0, 0, 0, 0)
  environment.sky = null
  environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
  environment.reflected_light_source = Environment.REFLECTION_SOURCE_DISABLED
  presentation._world_environment.environment = environment
- _blend_lighting(theme_id, theme_id, 0.0)
+ _blend_lighting(zone_index, zone_index, 0.0)
 
 func _update_backgrounds() -> void:
  if _background_zone < 0: return
@@ -447,7 +450,7 @@ func _update_backgrounds() -> void:
   # completion reverses the blend naturally; no timer or scene switch is involved.
   var position_y: float = presentation.camera_focus.y
   background_blend = smoothstep(0.0, 1.0, clampf((following.entrance_y + 200.0 - position_y) / 450.0, 0.0, 1.0))
-  _blend_lighting(current.theme, following.theme, background_blend)
+  _blend_lighting(_background_zone, _background_zone + 1, background_blend)
  for index: int in backgrounds:
   var weight := 0.0
   if index == _background_zone: weight = 1.0
@@ -458,19 +461,30 @@ func _update_backgrounds() -> void:
   current.layer.follow(presentation.camera, view.size, 0.0)
   _background_zone += 1
 
-func _blend_lighting(from_theme: String, to_theme: String, weight: float) -> void:
- var from_light: Dictionary = library.lights[from_theme]
- var to_light: Dictionary = library.lights[to_theme]
- presentation._key_light.quaternion = Quaternion.from_euler(from_light.rotation).slerp(Quaternion.from_euler(to_light.rotation), weight)
- presentation._key_light.light_color = from_light.color.lerp(to_light.color, weight)
- presentation._key_light.light_energy = lerpf(from_light.energy, to_light.energy, weight)
- presentation._key_light.shadow_normal_bias = lerpf(from_light.bias, to_light.bias, weight)
- var before: Environment = library.environments[from_theme]
- var after: Environment = library.environments[to_theme]
+func _blend_lighting(from_zone: int, to_zone: int, weight: float) -> void:
+ var state := Vector3(from_zone, to_zone, weight)
+ if state.is_equal_approx(_last_atmosphere_blend): return
+ _last_atmosphere_blend = state
+ var before = backgrounds[from_zone].layer.atmosphere
+ var after = backgrounds[to_zone].layer.atmosphere
+ var light: DirectionalLight3D = presentation._key_light
+ light.quaternion = before.lighting.quaternion.slerp(after.lighting.quaternion, weight)
+ for property: String in ["light_color", "light_energy", "light_specular", "light_angular_distance", "shadow_opacity", "shadow_bias", "shadow_normal_bias", "directional_shadow_max_distance"]:
+  light.set(property, lerp(before.lighting[property], after.lighting[property], weight))
+ for property: String in ["shadow_enabled", "directional_shadow_mode"]:
+  light.set(property, before.lighting[property] if weight < 0.5 else after.lighting[property])
  var target: Environment = presentation._world_environment.environment
- target.ambient_light_color = before.ambient_light_color.lerp(after.ambient_light_color, weight)
- target.ambient_light_energy = lerpf(before.ambient_light_energy, after.ambient_light_energy, weight)
- target.tonemap_exposure = lerpf(before.tonemap_exposure, after.tonemap_exposure, weight)
+ for property: String in ["ambient_light_color", "ambient_light_energy", "tonemap_exposure", "ambient_light_sky_contribution", "adjustment_contrast", "adjustment_saturation", "glow_intensity", "glow_bloom", "glow_hdr_threshold", "fog_density", "fog_light_color", "fog_light_energy", "fog_sky_affect"]:
+  target.set(property, lerp(before.environment.get(property), after.environment.get(property), weight))
+ for property: String in ["tonemap_mode", "adjustment_enabled"]:
+  target.set(property, before.environment.get(property) if weight < 0.5 else after.environment.get(property))
+ for effect: String in ["fog", "glow"]:
+  var enabled_property := effect + "_enabled"
+  var amount_property := "fog_density" if effect == "fog" else "glow_intensity"
+  target.set(enabled_property, before.environment.get(enabled_property) or after.environment.get(enabled_property))
+  var a: float = before.environment.get(amount_property) if before.environment.get(enabled_property) else 0.0
+  var b: float = after.environment.get(amount_property) if after.environment.get(enabled_property) else 0.0
+  target.set(amount_property, lerpf(a, b, weight))
 
 func _zone_ready(index: int) -> bool:
  return backgrounds.has(index) and backgrounds[index].ready

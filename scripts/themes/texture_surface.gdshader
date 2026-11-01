@@ -1,4 +1,5 @@
 shader_type spatial;
+#include "res://scripts/atmosphere/hue.gdshaderinc"
 render_mode cull_disabled, specular_disabled;
 uniform sampler2D surface_texture : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform vec2 repeat_size = vec2(1.0);
@@ -9,4 +10,5 @@ void fragment() {
  vec2 coordinates = world_mapping ? world_position.xz : UV;
  ALBEDO = texture(surface_texture, coordinates / repeat_size).rgb;
  ROUGHNESS = 1.0;
+ ALBEDO = atmosphere_shift(ALBEDO);
 }

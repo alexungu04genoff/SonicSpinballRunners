@@ -1,4 +1,5 @@
 shader_type spatial;
+#include "res://scripts/atmosphere/hue.gdshaderinc"
 render_mode cull_disabled, specular_disabled;
 uniform sampler2D soil_texture : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D fringe_texture : source_color, filter_linear_mipmap_anisotropic, repeat_disable;
@@ -22,4 +23,5 @@ void fragment() {
  vec4 fringe = textureGrad(fringe_texture, vec2(fract(fringe_uv.x), clamp(fringe_uv.y, 0.0, 1.0)), dFdx(fringe_uv), dFdy(fringe_uv));
  ALBEDO = mix(soil, fringe.rgb, fringe.a * (1.0 - step(0.1, depth)));
  ROUGHNESS = 1.0;
+ ALBEDO = atmosphere_shift(ALBEDO);
 }

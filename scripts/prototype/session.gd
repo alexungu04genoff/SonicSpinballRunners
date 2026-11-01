@@ -180,6 +180,7 @@ func start_run() -> void:
  archived_json = ""
  game = Run.new()
  game.run_configuration = Run.RunPlan.Configuration.new(run_configuration.selected_act_paths)
+ game.run_configuration.atmosphere_overrides = run_configuration.atmosphere_overrides.duplicate(true)
  game.run_configuration.zone_count = run_configuration.zone_count
  game.run_configuration.selected_theme_ids = run_configuration.selected_theme_ids.duplicate()
  game.character_id = selected_character

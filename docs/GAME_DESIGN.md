@@ -1,5 +1,7 @@
 # Sonic Spinball Runners — Living Game Design
 
+**Confirmed production atmosphere model — 2026-11-01:** Act geometry × Theme × Atmosphere Variant. Named, project-owned variants belong to Themes and are selected once per Zone with independent deterministic weighted randomness. Atmosphere applies to reusable Act × Theme bakes at runtime; it is not another bake dimension. The Lab retains separate user-local drafts and protects source Default appearances. Optional semantic terrain-category, background, foliage and decorative-neon hue controls preserve gameplay/readability exclusions. The initial roster contains only Defaults; Alex authors the final looks. See [production atmosphere ownership](ATMOSPHERE_VARIANTS.md).
+
 ## Status and use
 
 **Confirmed production renderer migration — 2026-11-01:** All normal Windows gameplay/editor launchers and project defaults now use Forward+/Vulkan, including editor-created playtests and future exports. Bake workflows inherit project settings; headless baking remains CPU-side resource preparation. Explicit comparison backends remain in the labs. Physics, scoring, authored geometry, retro effects and art values are unchanged; atmosphere presets remain lab-only. Older Compatibility measurements below are historical.

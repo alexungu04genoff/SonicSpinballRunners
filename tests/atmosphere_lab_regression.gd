@@ -73,7 +73,7 @@ func run() -> void:
   var copies: Dictionary = panel.emission.materials.duplicate()
   var modified: Dictionary = authored.duplicate(true)
   for spec: Array in panel.palette_fields:
-   modified[spec[1]] = Color("481c68") if spec[2] == "color" else 0.31
+   modified[spec[1]] = Color("481c68") if spec[2] == "color" else (true if spec[2] == "bool" else 0.31)
   panel.values = modified
   panel.apply_values()
   if theme == "rooftop_run":

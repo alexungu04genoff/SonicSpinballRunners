@@ -1,4 +1,5 @@
 shader_type spatial;
+#include "res://scripts/atmosphere/hue.gdshaderinc"
 render_mode cull_disabled, specular_disabled;
 uniform sampler2D wall_texture : source_color, filter_linear_mipmap_anisotropic, repeat_disable;
 uniform float top_height = 0.325;
@@ -18,4 +19,5 @@ void fragment() {
  float depth = top_height - world_position.y;
  ALBEDO = wall(vec2(world_position.z, depth)) * weights.x + wall(vec2(world_position.x, depth)) * weights.y;
  ROUGHNESS = 0.95;
+ ALBEDO = atmosphere_shift(ALBEDO);
 }

@@ -25,7 +25,7 @@ name="Portable Act Editor"
 platform="Windows Desktop"
 runnable=true
 export_filter="all_resources"
-include_filter="assets/**/*.png,data/**/*.scenery.cfg"
+include_filter="assets/**/*.png,data/**/*.scenery.cfg,data/atmospheres/*.cfg"
 exclude_filter="tools/*,*.bake/*"
 script_export_mode=0
 

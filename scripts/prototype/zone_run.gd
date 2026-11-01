@@ -46,7 +46,7 @@ func course_snapshot() -> Array:
  var course: Array = []
  for entry: Dictionary in run_plan:
   course.append({"zone": entry.zone + 1, "act": entry.act + 1, "theme": entry.theme,
-   "source": source_paths[entry.id], "target": RunPlan.target(entry.sequence)})
+   "atmosphere": entry.get("atmosphere", {}).duplicate(true), "source": source_paths[entry.id], "target": RunPlan.target(entry.sequence)})
  return course
 
 func _ready() -> void:

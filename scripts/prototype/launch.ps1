@@ -1,6 +1,7 @@
 [CmdletBinding()]
-param([string]$GodotPath = 'C:\Program Files\Godot\Godot.exe', [switch]$Bake)
+param([string]$GodotPath = 'C:\Program Files\Godot\Godot.exe', [switch]$Bake, [string]$Atmosphere = '')
 $ErrorActionPreference = 'Stop'
+if ($Atmosphere -and $Atmosphere -notmatch '^[a-z_][a-z0-9_]*:[a-z_][a-z0-9_]*$') { throw 'Atmosphere must be theme_id:variant_id.' }
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 if (-not (Test-Path -LiteralPath $GodotPath -PathType Leaf)) { throw 'Godot 4 was not found. Pass -GodotPath with its executable path.' }
 $acts = @(Get-ChildItem -LiteralPath (Join-Path $projectRoot 'data\acts\Authored') -Filter '*.tres' -File)
@@ -27,5 +28,6 @@ if ($Bake -or $missing) {
 if ($Bake) { return }
 # The player explicitly requested an interactive game window.
 $arguments = @('--path', ('"{0}"' -f $projectRoot), '--rendering-method', 'forward_plus', '--rendering-driver', 'vulkan', 'res://scenes/prototype_run.tscn')
+if ($Atmosphere) { $arguments += @('--', "--atmosphere=$Atmosphere") }
 $process = Start-Process -FilePath $GodotPath -ArgumentList $arguments -Wait -PassThru
 if ($process.ExitCode -ne 0) { throw "Prototype exited with code $($process.ExitCode)." }

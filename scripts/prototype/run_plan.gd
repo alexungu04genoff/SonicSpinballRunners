@@ -50,6 +50,7 @@ static func build(documents: Array, seed_value: int, configuration: RefCounted =
     theme_bag[0] = theme_bag[1]
     theme_bag[1] = swap
   var theme: String = theme_bag.pop_front()
+  var atmosphere := preload("res://scripts/atmosphere/variants.gd").new().choose(theme, seed_value, zone, configuration.atmosphere_overrides.get(theme, ""))
   previous_theme = theme
   var used_in_zone: Array = []
   for act in ACTS_PER_ZONE:
@@ -65,7 +66,7 @@ static func build(documents: Array, seed_value: int, configuration: RefCounted =
    var id: int = shuffler.shuffled(candidates)[0]
    if previous_id >= 0: offset = StreamPlan.aligned_offset(documents[previous_id], offset, documents[id])
    entries.append({"sequence": entries.size(), "zone": zone, "act": act,
-    "id": id, "theme": theme, "offset": offset})
+    "id": id, "theme": theme, "atmosphere": atmosphere.duplicate(true), "offset": offset})
    used_in_zone.append(id)
    uses[id] += 1
    previous_id = id

@@ -6,6 +6,7 @@ const PATHS := ["res://data/endless/second_simple.tres", "res://data/endless/thi
 const TITLES := ["Second Simple", "Third Complex", "First Try Smooth Decor", "RampMania",
  "Reverse C Spring", "Secret Entry", "SpringUp"]
 const Registry = preload("res://scripts/themes/theme_registry.gd")
+var run_seed := 18
 var rng := RandomNumberGenerator.new()
 var themes: Array = []
 var previous_theme := ""
@@ -15,6 +16,7 @@ var last_document: Resource
 var last_offset := Vector2.ZERO
 
 func _init(seed_value := 18) -> void:
+ run_seed = seed_value
  rng.seed = seed_value
 
 func shuffled(values: Array) -> Array:
@@ -34,6 +36,7 @@ func next_zone(documents: Array) -> Array[Dictionary]:
    themes[0] = themes[-1]
    themes[-1] = swap
  var theme: String = themes.pop_back()
+ var atmosphere := preload("res://scripts/atmosphere/variants.gd").new().choose(theme, run_seed, sequence / 3)
  previous_theme = theme
  var order := shuffled(range(documents.size()))
  order.resize(3)
@@ -48,7 +51,7 @@ func next_zone(documents: Array) -> Array[Dictionary]:
   if last_document != null:
    offset = aligned_offset(last_document, last_offset, document)
   result.append({"sequence": sequence, "zone": sequence / 3, "act": sequence % 3,
-   "id": id, "theme": theme, "offset": offset})
+   "id": id, "theme": theme, "atmosphere": atmosphere.duplicate(true), "offset": offset})
   last_document = document
   last_offset = offset
   previous_act = id
