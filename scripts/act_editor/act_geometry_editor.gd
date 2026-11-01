@@ -107,6 +107,8 @@ var decor_small_percent_field: SpinBox
 var decor_medium_percent_label: Label
 var decor_position_fields: Array[LineEdit] = []
 var decor_visible_field: CheckBox
+var canvas_decor_visible_field: CheckBox
+var gameplay_visible_field: CheckBox
 var decor_snap_field: CheckBox
 var decor_info: Label
 var inspector: VBoxContainer
@@ -184,7 +186,7 @@ func _build_ui() -> void:
 	var tools := HBoxContainer.new()
 	tools.add_theme_constant_override("separation", 6)
 	column.add_child(tools)
-	_button(tools, "select", "Select / Move", _select_mode, "Esc • click terrain or an object, then drag • Alt-click cycles overlaps")
+	_button(tools, "select", "Select / Move", _select_mode, "Esc • drag empty space to box-select • Ctrl adds / toggles • drag selection to move • Alt-click cycles overlaps")
 	_button(tools, "rotate", "Rotate +90°", rotate_active, "R • terrain +90°; gameplay +15° (Shift+R −15°)")
 	_button(tools, "flip_h", "Flip H", func(): flip_active(true), "H • mirror across the current screen frame")
 	_button(tools, "flip_v", "Flip V", func(): flip_active(false), "V • mirror across the current screen frame")
@@ -564,6 +566,21 @@ func _build_ui() -> void:
 	composite_hint.add_theme_color_override("font_color", Color("9cb3c6"))
 	composite_hint.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	inspector.add_child(composite_hint)
+	var visibility_bar := HBoxContainer.new()
+	tools.add_child(visibility_bar)
+	tools.move_child(visibility_bar, tools.get_child_count() - 3)
+	canvas_decor_visible_field = CheckBox.new()
+	canvas_decor_visible_field.text = "Show decor"
+	canvas_decor_visible_field.button_pressed = true
+	canvas_decor_visible_field.tooltip_text = "Show decor slots in the editor. Hidden slots cannot be selected; saved Act data is unchanged."
+	canvas_decor_visible_field.toggled.connect(func(value): canvas.set_layer_visible("decor", value); _refresh())
+	visibility_bar.add_child(canvas_decor_visible_field)
+	gameplay_visible_field = CheckBox.new()
+	gameplay_visible_field.text = "Show gameplay"
+	gameplay_visible_field.button_pressed = true
+	gameplay_visible_field.tooltip_text = "Show gameplay objects, rings and lifecycle markers in the editor. Saved Act data is unchanged."
+	gameplay_visible_field.toggled.connect(func(value): canvas.set_layer_visible("gameplay", value); _refresh())
+	visibility_bar.add_child(gameplay_visible_field)
 	canvas = Canvas.new()
 	canvas.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	canvas.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -580,6 +597,7 @@ func _build_ui() -> void:
 	_button(marker_reminders, "spawn_reminder", "Spawn point: unset", func(): choose_marker("spawn"), "Set the spawn point")
 	canvas.placement_requested.connect(add_placement)
 	canvas.move_requested.connect(move_placement)
+	canvas.group_move_requested.connect(move_selected_objects)
 	canvas.selection_changed.connect(func(_index): _refresh())
 	canvas.terrain_selection_changed.connect(func(_indices): _refresh())
 	canvas.composite_preview_cancel_requested.connect(cancel_composite_preview)
@@ -800,8 +818,7 @@ func _build_decor_palette(parent: Node) -> void:
 	decor_visible_field.text = "Show decor slots"
 	decor_visible_field.button_pressed = true
 	decor_visible_field.toggled.connect(func(value):
-		canvas.show_decor = value
-		if not value and (canvas.selected_decor_index >= 0 or not canvas.decor_brush.is_empty()): canvas.select_piece(-1)
+		canvas.set_layer_visible("decor", value)
 		_refresh())
 	decor_list.add_child(decor_visible_field)
 	decor_snap_field = CheckBox.new()
@@ -823,6 +840,7 @@ func choose_decor(type: String) -> void:
 
 func _active_decor() -> Dictionary:
 	if not canvas.decor_brush.is_empty(): return canvas.decor_brush
+	if canvas.selection_count() > 1: return {}
 	if canvas.selected_decor_index >= 0: return document.decor_slots[canvas.selected_decor_index]
 	return {}
 
@@ -1003,7 +1021,7 @@ func choose_ring_circle() -> void:
 	_refresh()
 
 func _change_ring_pattern(key: String, value: Variant) -> void:
-	if _refreshing: return
+	if _refreshing or canvas.selection_count() > 1: return
 	if key == "fill": canvas.ring_fill = value
 	else: canvas.ring_rotation = value
 	if canvas.selected_ring_index >= 0:
@@ -1014,7 +1032,7 @@ func _change_ring_pattern(key: String, value: Variant) -> void:
 	canvas.queue_redraw()
 
 func _change_ring_radius(axis: int, value: float) -> void:
-	if _refreshing: return
+	if _refreshing or canvas.selection_count() > 1: return
 	canvas.ring_radii[axis] = value
 	if canvas.selected_ring_index < 0: return
 	var trail: Dictionary = document.ring_trails[canvas.selected_ring_index].duplicate(true)
@@ -1050,7 +1068,7 @@ func set_ring_trail(index: int, trail: Dictionary) -> void:
 	_refresh()
 
 func _change_ring_scoring(key: String, value: Variant) -> void:
-	if _refreshing: return
+	if _refreshing or canvas.selection_count() > 1: return
 	var previous := ring_scoring_defaults.duplicate()
 	ring_scoring_defaults[key] = value
 	if key == "bonus_rack": _switch_ring_defaults(ring_scoring_defaults, bool(previous.bonus_rack), bool(value))
@@ -1078,6 +1096,7 @@ func _apply_scoring_fields() -> void:
 func _change_ring_spacing(value: float) -> void:
 	if _refreshing or canvas == null:
 		return
+	if canvas.selection_count() > 1: return
 	if not is_finite(value) or value <= 0:
 		_set_status("Ring spacing must be finite and greater than zero.")
 		_refresh()
@@ -1104,7 +1123,7 @@ func _select_mode() -> void:
 		return
 	canvas.grab_focus()
 	canvas.select_piece(-1)
-	_set_status("Ctrl-click selects terrain for Merge or switches for a Bank. Alt-click cycles overlaps. Drag to move.")
+	_set_status("Drag empty space to box-select. Ctrl adds or toggles objects. Drag a selected object to move the group. Alt-click cycles overlaps.")
 	_refresh()
 
 func _terrain_selection() -> Array[int]:
@@ -1115,6 +1134,7 @@ func _terrain_selection() -> Array[int]:
 	return indices
 
 func _composite_selection_error(operation: String) -> String:
+	if canvas.selection_count() != _terrain_selection().size(): return "Select only terrain to merge or smooth."
 	var indices := _terrain_selection()
 	if operation == "smooth" and composite_only_joins.button_pressed:
 		return "Only smooth joins needs Merge + Smooth on multiple selected pieces. Turn it off to smooth one outline."
@@ -1361,7 +1381,7 @@ func move_gameplay_placement(index: int, position: Vector2) -> void:
 func _active_gameplay() -> Dictionary:
 	if not canvas.gameplay_brush.is_empty():
 		return canvas.gameplay_brush
-	if canvas.selected_gameplay_indices.size() > 1: return {}
+	if canvas.selection_count() > 1: return {}
 	if canvas.selected_gameplay_index >= 0 and canvas.selected_gameplay_index < document.gameplay_objects.size():
 		return document.gameplay_objects[canvas.selected_gameplay_index]
 	return {}
@@ -1396,6 +1416,7 @@ func _commit_gameplay_angle() -> void:
 
 func _active_terrain() -> Dictionary:
 	if not canvas.brush.is_empty(): return canvas.brush
+	if canvas.selection_count() > 1: return {}
 	if _terrain_selection().size() == 1: return document.placements[canvas.selected_index]
 	return {}
 
@@ -1444,7 +1465,7 @@ func _change_handedness(index: int) -> void:
 	_refresh()
 
 func duplicate_selected() -> void:
-	if composite_preview_active:
+	if composite_preview_active or canvas.selection_count() > 1:
 		return
 	if canvas.selected_decor_index >= 0:
 		var slot: Dictionary = document.decor_slots[canvas.selected_decor_index].duplicate(true)
@@ -1496,7 +1517,7 @@ func flip_active(horizontal: bool) -> void:
 	_transform_active("flip_h" if horizontal else "flip_v")
 
 func _transform_active(operation: String) -> void:
-	if composite_preview_active or _terrain_selection().size() > 1:
+	if composite_preview_active or canvas.selection_count() > 1:
 		return
 	canvas.grab_focus()
 	canvas.cancel_gesture()
@@ -1539,6 +1560,23 @@ func _transform_active(operation: String) -> void:
 
 func delete_selected() -> void:
 	if composite_preview_active:
+		return
+	if canvas.selection_count() > 1:
+		canvas.cancel_gesture()
+		_record_edit()
+		var ids: Array = []
+		for index: int in canvas.selected_gameplay_indices:
+			ids.append(Objects.identity(document.gameplay_objects[index], index))
+		Banks.remove_objects(document.switch_banks, ids)
+		var selection: Dictionary = canvas.object_selection()
+		var collections := {"terrain": document.placements, "gameplay": document.gameplay_objects, "decor": document.decor_slots, "ring": document.ring_trails}
+		for kind: String in selection:
+			var group_indices: Array = selection[kind]
+			group_indices.sort()
+			group_indices.reverse()
+			for index: int in group_indices: collections[kind].remove_at(index)
+		canvas.select_piece(-1)
+		_refresh()
 		return
 	if canvas.selected_decor_index >= 0:
 		canvas.cancel_gesture()
@@ -1585,8 +1623,27 @@ func delete_selected() -> void:
 	canvas.select_piece(-1)
 	_refresh()
 
+func move_selected_objects(offset: Vector2) -> void:
+	if composite_preview_active or not offset.is_finite() or canvas.selection_count() == 0: return
+	offset = canvas.clamp_group_offset(offset)
+	if offset.is_zero_approx(): return
+	_record_edit()
+	for index: int in canvas.selected_indices:
+		var placement: Dictionary = document.placements[index]
+		Shapes.set_placement_position(placement, Shapes.placement_position(placement) + offset / float(document.cell_size))
+	for index: int in canvas.selected_gameplay_indices:
+		document.gameplay_objects[index].position += offset
+	for index: int in canvas.selected_decor_indices:
+		document.decor_slots[index].position += offset
+		document.decor_slots[index].erase("placement_source")
+	for index: int in canvas.selected_ring_indices:
+		document.ring_trails[index].start += offset
+		document.ring_trails[index].end += offset
+	_refresh()
+
 func _snapshot() -> Dictionary:
 	return {"document": document.copy_document(), "selected": canvas.selected_index,
+		"object_selection": canvas.object_selection(),
 		"terrain_selection": _terrain_selection(),
 		"gameplay_selection": canvas.selected_gameplay_indices.duplicate(), "bank": selected_bank_id,
 		"connector": canvas.selected_connector, "gameplay": canvas.selected_gameplay_index,
@@ -1631,6 +1688,8 @@ func _restore_snapshot(snapshot: Dictionary) -> void:
 	canvas.set_document(document, false)
 	if not active_decor_brush.is_empty():
 		canvas.set_decor_brush(active_decor_brush)
+	elif snapshot.has("object_selection") and active_brush.is_empty() and active_gameplay_brush.is_empty() and not active_ring_tool and snapshot.get("connector", "").is_empty() and snapshot.get("marker", "").is_empty():
+		canvas.set_object_selection(snapshot.object_selection)
 	elif snapshot.get("decor", -1) >= 0:
 		canvas.select_decor(snapshot.decor)
 	elif active_ring_tool:
@@ -1849,6 +1908,8 @@ func _refresh() -> void:
 	if document == null:
 		return
 	_refreshing = true
+	canvas_decor_visible_field.set_pressed_no_signal(canvas.show_decor)
+	gameplay_visible_field.set_pressed_no_signal(canvas.show_gameplay)
 	for button: Button in buttons.values():
 		button.disabled = false
 	title_field.text = document.title
@@ -1866,15 +1927,21 @@ func _refresh() -> void:
 	buttons.redo.disabled = redo_stack.is_empty()
 	buttons.delete.disabled = canvas.selected_decor_index < 0 and canvas.selected_index < 0 and canvas.selected_gameplay_index < 0 and canvas.selected_ring_index < 0 and canvas.selected_connector.is_empty() and canvas.selected_marker.is_empty()
 	buttons.duplicate.disabled = canvas.selected_decor_index < 0 and canvas.selected_gameplay_index < 0 and canvas.selected_ring_index < 0 and _terrain_selection().size() != 1
-	if canvas.selected_gameplay_indices.size() > 1: buttons.duplicate.disabled = true
+	if canvas.selection_count() > 1: buttons.duplicate.disabled = true
 	var ring_spacing: float = document.ring_trails[canvas.selected_ring_index].spacing / float(document.cell_size) if canvas.selected_ring_index >= 0 else canvas.ring_spacing_cells
 	ring_spacing_field.set_value_no_signal(ring_spacing)
 	var selected_pattern: Dictionary = document.ring_trails[canvas.selected_ring_index] if canvas.selected_ring_index >= 0 else {}
+	var single_selection: bool = canvas.selection_count() <= 1
+	ring_spacing_field.editable = single_selection
+	ring_fill_field.disabled = not single_selection
+	ring_rotation_field.editable = single_selection
+	ring_bonus_field.disabled = not single_selection
+	for field: SpinBox in ring_radius_fields: field.editable = single_selection
 	var ring_scoring: Dictionary = Rings.scoring_settings(selected_pattern) if not selected_pattern.is_empty() else ring_scoring_defaults
 	ring_bonus_field.set_pressed_no_signal(ring_scoring.bonus_rack)
 	for key: String in ring_scoring_fields:
 		ring_scoring_fields[key].set_value_no_signal(ring_scoring[key])
-		ring_scoring_fields[key].editable = key != "completion_bonus" or ring_scoring.bonus_rack
+		ring_scoring_fields[key].editable = single_selection and (key != "completion_bonus" or ring_scoring.bonus_rack)
 	ring_ellipse_settings.visible = selected_pattern.get("kind", canvas.ring_kind) == "ellipse"
 	ring_fill_field.set_pressed_no_signal(selected_pattern.get("fill", canvas.ring_fill))
 	ring_rotation_field.set_value_no_signal(selected_pattern.get("rotation_degrees", canvas.ring_rotation))
@@ -1884,7 +1951,7 @@ func _refresh() -> void:
 	connector_summary.tooltip_text = connector_summary.text + "\nCompatibility compares width only; horizontal positions may differ."
 	marker_summary.text = "Activation: " + ("unset" if document.activation_y == null else "Y %s px" % var_to_str(document.activation_y))
 	marker_summary.text += "\nSpawn: " + ("unset" if document.spawn_position == null else "%s px" % document.spawn_position)
-	var active: Dictionary = canvas.brush if not canvas.brush.is_empty() else (document.placements[canvas.selected_index] if canvas.selected_index >= 0 else {})
+	var active := _active_terrain()
 	var gameplay := _active_gameplay()
 	var decor := _active_decor()
 	var angled := decor if not decor.is_empty() else gameplay
@@ -1904,7 +1971,10 @@ func _refresh() -> void:
 	handedness_field.disabled = gameplay.is_empty() or gameplay.type not in ["left_flipper", "right_flipper"]
 	handedness_field.visible = not handedness_field.disabled
 	handedness_field.select(1 if not gameplay.is_empty() and gameplay.type == "right_flipper" else 0)
-	if not decor.is_empty():
+	if canvas.selection_count() > 1:
+		mode_label.text = "%d OBJECTS SELECTED" % canvas.selection_count()
+		detail_label.text = "Drag selection to move · Arrows nudge · Ctrl-click toggles · Delete removes · Ctrl+Z undoes"
+	elif not decor.is_empty():
 		mode_label.text = ("PLACE" if not canvas.decor_brush.is_empty() else "SELECTED") + " · " + decor.slot_type.capitalize() + " decor"
 		var variant := "Variant %d" % (int(decor.get("variant_index", 0)) + 1) if decor.get("variant_mode", "auto") == "fixed" else "Auto variant"
 		detail_label.text = "%s px · %s° · %s · %s · Presentation only" % [decor.position, var_to_str(decor.rotation_degrees), decor.placement_hint, variant]
@@ -1973,7 +2043,7 @@ func _refresh_composite_controls() -> void:
 	buttons.composite_cancel.visible = composite_preview_active
 	var terrain: Dictionary = canvas.brush if not canvas.brush.is_empty() else (document.placements[canvas.selected_index] if canvas.selected_index >= 0 else {})
 	terrain_snap_field.disabled = composite_preview_active
-	terrain_scale_field.disabled = composite_preview_active or terrain.is_empty() or _terrain_selection().size() > 1
+	terrain_scale_field.disabled = composite_preview_active or terrain.is_empty() or canvas.selection_count() > 1
 	terrain_scale_field.select(1 if not terrain.is_empty() and float(terrain.get("terrain_scale", 1.0)) == 0.5 else 0)
 	buttons.composite_clear_pins.visible = composite_preview_active and _composite_operation != "merge"
 	composite_strength.editable = not composite_preview_active or _composite_operation != "merge"
@@ -2008,7 +2078,9 @@ func _refresh_composite_controls() -> void:
 	grid_width_field.editable = not composite_preview_active
 	grid_height_field.editable = not composite_preview_active
 	buttons.resize_grid.disabled = composite_preview_active
-	ring_spacing_field.editable = not composite_preview_active
+	ring_spacing_field.editable = not composite_preview_active and canvas.selection_count() <= 1
+	canvas_decor_visible_field.disabled = composite_preview_active
+	gameplay_visible_field.disabled = composite_preview_active
 	for item: Button in palette_buttons.values():
 		item.disabled = composite_preview_active
 	for item: Button in gameplay_buttons.values():
