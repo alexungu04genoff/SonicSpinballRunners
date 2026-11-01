@@ -41,15 +41,20 @@ static func apply(color: Color, values: Dictionary) -> Color:
 
 static func stack_fields(theme: String) -> Array:
  var result: Array = []
- for id: String in ["decor", "terrain", "terrain_ground", "terrain_upper", "terrain_walls", "terrain_borders", "neon", "background", "foliage"]:
+ for id: String in ["decor", "terrain", "terrain_ground", "terrain_upper", "terrain_walls", "terrain_borders", "terrain_edges", "terrain_ledges", "neon", "background", "foliage"]:
   result.append(["Stack with Hue", "stack/" + id, "bool"])
  for spec: Array in preload("res://scripts/themes/theme_atmosphere.gd").fields(theme):
   if spec[2] == "color": result.append(["Stack with Hue", "stack/" + spec[1], "bool"])
  return result
 
 static func group_stacks(values: Dictionary, group: String) -> bool:
+ group = linked_group(values, group)
  if group.begins_with("terrain_") and not values.get("stack/terrain", true): return false
  return values.get("stack/" + group, true)
+
+static func linked_group(values: Dictionary, group: String) -> String:
+ if group in ["terrain_edges", "terrain_ledges"] and values.get("link/terrain_trim", true): return "terrain_borders"
+ return group
 
 static func apply_uniforms(material: ShaderMaterial, values: Dictionary, allow := true) -> void:
  var enabled := allow and active(values)

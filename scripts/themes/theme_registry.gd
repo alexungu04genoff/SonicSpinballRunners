@@ -6,11 +6,12 @@ const GreenHill = preload("res://scripts/themes/green_hill_theme.gd")
 
 static func create(theme_id: String) -> RefCounted:
  var theme := _create(theme_id)
- var roles := {"floor_material": "terrain_ground", "top_material": "terrain_upper", "side_material": "terrain_walls", "cliff_material": "terrain_walls", "floor_border_material": "terrain_borders", "top_border_material": "terrain_borders"}
+ var roles := {"floor_material": "terrain_ground", "top_material": "terrain_upper", "side_material": "terrain_walls", "cliff_material": "terrain_walls", "floor_border_material": "terrain_borders", "top_border_material": "terrain_ledges"}
  for property: String in roles:
   var material: Material = theme.get(property)
   if material != null:
    material.set_meta("atmosphere_hue", roles[property])
+   if property == "floor_border_material": material.set_meta("atmosphere_trim_split", true)
    preload("res://scripts/atmosphere/surface_controls.gd").prepare(material)
  return theme
 

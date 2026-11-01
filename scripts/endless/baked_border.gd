@@ -45,6 +45,7 @@ static func build(outline: PackedVector2Array, holes: Array[PackedVector2Array],
   for index: int in [0, 1, 2, 0, 2, 3]:
    surface.set_normal(Vector3.UP)
    surface.set_uv(uvs[index])
+   surface.set_uv2(Vector2(1.0, 0.0)) # This fast path contains only the outer rim.
    surface.add_vertex(Vector3(points[index].x * Fallback.SCALE, height, points[index].y * Fallback.SCALE))
   distance = end
  return surface.commit()

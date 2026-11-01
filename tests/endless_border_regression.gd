@@ -52,6 +52,12 @@ func inspect(outline: PackedVector2Array, holes: Array[PackedVector2Array], widt
   var uv: Vector2 = arrays[Mesh.ARRAY_TEX_UV][i]
   valid = valid and vertex.is_finite() and is_equal_approx(vertex.y, 0.401) and uv.is_finite() and uv.y >= -0.001 and uv.y <= 1.001 and arrays[Mesh.ARRAY_NORMAL][i].distance_to(Vector3.UP) < 0.00004
  check(valid, label + ": finite UVs, correct height and upward normals")
+ var roles: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV2]
+ check(roles.size() == arrays[Mesh.ARRAY_VERTEX].size(), label + ": baked strip retains trim roles")
+ if holes.is_empty():
+  var outer_only := true
+  for role: Vector2 in roles: outer_only = outer_only and role.x == 1.0
+  check(outer_only, label + ": isolated outlines use the Edges controls")
  if label == "J/50":
   var presentation := TablePresentation.new()
   var walls := presentation._prism(outline, 0.4, material, material).get_faces().size() / 3

@@ -52,12 +52,18 @@ Hue is a signed turn (−0.7 to +0.7); saturation is a multiplier from 0 to 2, a
 | Ground floor override | `floor_material` |
 | Raised tops / upper floor override | `top_material` |
 | Walls / cliffs override | `side_material` and `cliff_material`, retaining a common facade appearance |
-| Ledges / borders / edges override | `floor_border_material` and `top_border_material` |
+| Borders override | Floor trim around the bases of raised terrain |
+| Edges override | Outer floor rims, including local scenery landforms |
+| Ledges override | Raised top trim (`top_border_material`) |
 | Background | Opted-in water/cloud palettes, architecture/skyline/shore tints, ruin haze and cavern colors |
 | Foliage | Explicit vegetation-tint bindings, including tagged Rooftop decor and Green Hill distant vegetation |
 | Neon | Tagged Casino decorative neon, windows, marquee and spill lights; Chemical decorative cyan/pink signals |
 
 Each terrain category has an **Override** toggle. Off inherits Terrain; on replaces Terrain hue/saturation/brightness for that material role. It does not add another shader operation. These are material categories, not geometry-height detection: a scenery landform using the floor material remains in Ground, and a raised wall top uses Upper. Existing art roles and shared terrain mapping remain intact.
+
+**Link edges and ledges to borders** defaults on. Borders then drives hue, saturation, brightness, the override toggle and Stack with Hue for all three trim groups. Turn the link off to edit Edges and Ledges independently; their controls become available, and each has its own override and stacking toggle. Linking does not erase independent values. Old variants without the link field retain their combined appearance through the existing `terrain_borders` keys.
+
+The floor's outer rim and inner foot borders share one mesh/material. Their existing triangles now carry a constant role in the spare UV2 channel; the surface shader selects the corresponding adjustment before its existing color operation. Raised trim has its own material role. This preserves vertices, UV1 mapping, collision, draw passes and static batching; it does not duplicate border meshes. The live and fast bake builders both carry the role, including scenery landforms. Existing Rooftop grass shells inherit the same trim controls. This source change needs the usual bake refresh; subsequent link/color edits do not.
 
 Decor materials opt in at the shared Decor slot factory, without changing their terrain or gameplay source materials. Existing Neon/Foliage/per-color bindings apply first, then Decor adjusts the finished prop color. Distant and local background scenery retain their existing semantic bindings; they are not classified as authored Decor slots. Rings, player/ball, enemies, UI, Goal Rings, physics/debug visuals and untagged readability markers do not join these hue groups. **Neon also controls terrain texture emission**, including Chemical's blue/yellow floor panels and edge strips. It leaves the terrain's non-emissive color alone. Per-color palette controls remain available alongside the transforms.
 
@@ -94,6 +100,8 @@ Adjacent Zones can use the same Theme with different variants. Their background 
 The shader/binding implementation requires one ordinary source-hash bake refresh. Subsequent named-variant creation, renaming, weighting or color edits do not change the bake matrix or recipe fingerprint. Production remains five Acts × eight Themes (40 variants); Endless remains seven × eight (56). Runtime ignores the Lab save file and packaged games include the production registry.
 
 ## Verification
+
+The independent trim follow-up passed 1,527 all-theme surface/UI checks, 765 selective-range checks, 227 live border checks, 1,528 bake-border checks and 111 static-batching checks. These cover linked legacy appearances, independent hue/saturation/brightness, per-group Hue stacking, save/reload, retained independent settings, unchanged collision outlines, and outer/inner role data in both border builders. All 40 Prototype and 56 Endless recipes were refreshed; their audits passed 401 and 465 checks. The combined 96-recipe material/UV2 audit passed 6,666 checks. No performance benchmark was run.
 
 `tests/atmosphere_glow_regression.gd` passed 299 functional checks in the live art checkout: all eight themes with Retro on/off, native rendered halo spread, supported surface-width visibility, source/gameplay material isolation, exact reset, save/reload, runtime settings and streamed glow interpolation. Captures are under `test-results/atmosphere-glow/`. The existing fog regression passed 31 checks after the control layout change, and Godot headless editor import passed. Existing Casino local-art raw-image import warnings remain; no shader errors or glow failures occurred. No performance benchmark was run.
 

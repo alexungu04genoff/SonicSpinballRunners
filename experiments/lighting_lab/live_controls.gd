@@ -433,13 +433,14 @@ func _bind_palette() -> void:
  for spec: Array in ColorRanges.fields(): emission.palette_originals[spec[1]] = ColorRanges.neutral(spec[1])
  for spec: Array in ColorRanges.stack_fields(game.theme_id): emission.palette_originals[spec[1]] = true
  for spec: Array in Fields.HUE_FIELDS:
-  emission.palette_originals[spec[1]] = false if spec[2] == "bool" else (1.0 if (spec[1].begins_with("saturation/") or spec[1].begins_with("brightness/")) else 0.0)
+  emission.palette_originals[spec[1]] = spec[1].begins_with("link/") if spec[2] == "bool" else (1.0 if (spec[1].begins_with("saturation/") or spec[1].begins_with("brightness/")) else 0.0)
   palette_fields.append(spec)
   _field(palette_controls, spec)
   if spec[1].begins_with("brightness/"):
    var stack := ["Stack with Hue", "stack/" + spec[1].trim_prefix("brightness/"), "bool"]
    palette_fields.append(stack)
    _field(palette_controls, stack)
+ widgets["link/terrain_trim"].tooltip_text = "Linked: Borders drives all three groups. Unlinked: Edges affect the outer floor rim, Borders affect trim around terrain bases, and Ledges affect upper trim. Independent values are retained while linked."
  for spec: Array in EmissionPreview.Palette.fields(game.theme_id):
   if not emission.palette_originals.has(spec[1]): continue
   palette_fields.append(spec)
@@ -481,6 +482,14 @@ func _sync_widgets() -> void:
   elif field is ColorPickerButton: field.color = values[key]
   elif field is OptionButton: field.select(int(values[key]))
   elif field is CheckButton: field.set_pressed_no_signal(bool(values[key]))
+ var linked: bool = values.get("link/terrain_trim", true)
+ for group: String in ["terrain_edges", "terrain_ledges"]:
+  for prefix: String in ["override/", "hue/", "saturation/", "brightness/", "stack/"]:
+   var field: Control = widgets.get(prefix + group)
+   if field is SpinBox:
+    field.editable = not linked
+    field.get_meta("slider").editable = not linked
+   elif field is CheckButton: field.disabled = linked
 
 func apply_values() -> void:
  _apply(originals if compare.button_pressed else values)
@@ -523,7 +532,7 @@ func _apply(source: Dictionary) -> void:
  sync_fog_controls()
  for key: String in source:
   if key.begins_with("directional_fog/"): continue
-  if key.begins_with("palette/") or key.begins_with("hue/") or key.begins_with("saturation/") or key.begins_with("override/") or key.begins_with("brightness/") or key.begins_with("ranges/") or key.begins_with("stack/"): continue
+  if key.begins_with("palette/") or key.begins_with("hue/") or key.begins_with("saturation/") or key.begins_with("override/") or key.begins_with("brightness/") or key.begins_with("ranges/") or key.begins_with("stack/") or key.begins_with("link/"): continue
   if key == "emission": emission.apply(float(source[key]))
   elif key == "surface_halo_spread": continue # Applied with the bound material controls below.
   elif key == "sun_pitch": game.presentation._key_light.rotation_degrees.x = float(source[key])

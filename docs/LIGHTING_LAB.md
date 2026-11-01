@@ -32,6 +32,8 @@ The inspector includes these lighting tabs (alongside Variants, Hue and Scenery)
 
 Numeric fields support typing and sliders. Mouse-wheel input over sliders scrolls the inspector without changing their values; color-picker sliders also ignore wheel adjustments. **Show original atmosphere** switches the live lighting, sky/background and theme palette back to the loaded theme baseline without discarding the draft. Turning it off restores the tuned atmosphere. Editing any value returns to the tuned preview. This is a same-renderer comparison, not an emulation of Compatibility lighting under Vulkan.
 
+In **Palette**, trim has three groups: **Edges** (outer floor rims), **Borders** (trim around raised terrain bases), and **Ledges** (upper trim). Each has hue, saturation, brightness, an override of Terrain, and Stack with Hue. **Link edges and ledges to borders** starts on for compatibility with existing appearances. Turn it off and enable the desired overrides for separate edits. While linked, Borders is the master and independent controls are disabled without losing their saved values.
+
 ## Glow shaping
 
 **Emission multiplier** changes how bright the emitters are; it does not change their size. Enable **Glow** to shape the screen-space halo in every theme. **Glow spread** adjusts its blur spread. Lower **Tight halo** and raise **Wide / soft halo** or **Diffuse halo** for a broader, smoother result. **Normalize halo brightness** balances the active halo weights; use **Glow intensity** to set the resulting halo brightness. A useful starting point is Tight `0.10`, Wide `0.80`, Diffuse `0.70`, normalization on, and intensity `0.65`. These are suggestions, not new defaults.

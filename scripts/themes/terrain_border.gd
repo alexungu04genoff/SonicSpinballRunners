@@ -187,6 +187,8 @@ static func build(outline: PackedVector2Array, holes: Array[PackedVector2Array],
        var p := cell[triangle[k]]
        surface.set_normal(Vector3.UP)
        surface.set_uv(Vector2(uv.x, uv.y))
+       # One role per existing triangle: outer rim versus inner terrain-foot border.
+       surface.set_uv2(Vector2(1.0 if coordinates[0].z == 0.0 else 0.0, 0.0))
        surface.add_vertex(Vector3(p.x * SCALE, height, p.y * SCALE))
        vertices += 1
  return surface.commit() if vertices > 0 else null

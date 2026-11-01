@@ -62,7 +62,8 @@ func _slot(node: GeometryInstance3D, surface: int, material: Material, scenery :
 
 func _copy(source: Material, scenery := false) -> Material:
  var copy: Material = source
- var semantic := source.has_meta("atmosphere_bindings") or source.has_meta("atmosphere_hue")
+ var trim_layer := source.has_meta("grass_shell_fraction")
+ var semantic := source.has_meta("atmosphere_bindings") or source.has_meta("atmosphere_hue") or trim_layer
  if source is ShaderMaterial and source.shader != null:
   semantic = semantic or Palette.SHADERS.has(source.shader.resource_path.get_file().get_basename())
  # Scenery ownership is an explicit opt-in, but its untagged source may also
@@ -70,6 +71,9 @@ func _copy(source: Material, scenery := false) -> Material:
  var cache: Dictionary = scenery_materials if scenery and not semantic else materials
  if cache.has(source): return cache[source]
  if semantic or scenery: copy = source.duplicate()
+ if trim_layer:
+  copy.set_meta("atmosphere_hue", "terrain_borders")
+  copy.set_meta("atmosphere_trim_split", true)
  if scenery and not semantic:
   copy.set_meta("atmosphere_ranges_only", true)
   copy.set_meta("atmosphere_range_category", "background")
@@ -98,13 +102,13 @@ func _register_palette(material: Material) -> void:
   var shader_id: String = material.get_meta("atmosphere_shader_id", material.shader.resource_path.get_file().get_basename())
   if material.has_meta("atmosphere_hue") or material.has_meta("atmosphere_ranges_only") or material.has_meta("atmosphere_bindings") or Palette.SHADERS.has(shader_id):
    preload("res://scripts/atmosphere/surface_controls.gd").prepare(material)
-   if material.shader.code.contains("atmosphere_shift"): range_materials.append(material)
+   if material.shader.code.contains("atmosphere_shift") or material.shader.code.contains("atmosphere_border_shift"): range_materials.append(material)
  _register_tags(material)
  if material.has_meta("atmosphere_hue") or material.has_meta("atmosphere_ranges_only"):
   var group: String = material.get_meta("atmosphere_hue", "")
   if material is BaseMaterial3D:
    hue_parameters.append({"material": material, "group": group, "base": material.albedo_color, "emission": material.emission, "bindings": material.get_meta("atmosphere_bindings", {})})
-  elif material is ShaderMaterial and material.shader.code.contains("atmosphere_shift"):
+  elif material is ShaderMaterial and (material.shader.code.contains("atmosphere_shift") or material.shader.code.contains("atmosphere_border_shift")):
    hue_parameters.append({"material": material, "group": group})
  if not material is ShaderMaterial or material.shader == null: return
  var bindings: Dictionary = Palette.SHADERS.get(material.get_meta("atmosphere_shader_id", material.shader.resource_path.get_file().get_basename()), {})
@@ -189,7 +193,14 @@ func apply_palette(values: Dictionary, sun: DirectionalLight3D, use_sun_directio
    entry.material.set_shader_parameter("atmosphere_brightness", float(values.get("brightness/" + group, 1.0)))
  for material: ShaderMaterial in range_materials:
   var allow := _material_stacks(material, values) and not input_ranges.has(material)
-  ColorRanges.apply_uniforms(material, values, allow)
+  var trim := bool(material.get_meta("atmosphere_trim_split", false))
+  var edge_allow := trim and ColorRanges.group_stacks(values, "terrain_edges") and not input_ranges.has(material)
+  ColorRanges.apply_uniforms(material, values, allow or edge_allow)
+  material.set_shader_parameter("atmosphere_ranges_enabled", allow and ColorRanges.active(values))
+  if trim:
+   var edge_group := resolved_group(values, "terrain_edges")
+   material.set_shader_parameter("atmosphere_edge_adjustment", Vector3(float(values.get("hue/" + edge_group, 0.0)), float(values.get("saturation/" + edge_group, 1.0)), float(values.get("brightness/" + edge_group, 1.0))))
+   material.set_shader_parameter("atmosphere_edge_ranges_enabled", edge_allow and ColorRanges.active(values))
   var raw_group: String = material.get_meta("atmosphere_hue", "")
   var emission_group := "neon" if raw_group.begins_with("terrain_") else resolved_group(values, raw_group)
   material.set_shader_parameter("atmosphere_emission_hue", float(values.get("hue/" + emission_group, 0.0)))
@@ -239,6 +250,7 @@ static func shifted(color: Color, values: Dictionary, group: String, ranges := t
  return ColorRanges.apply(color, values) if ranges else color
 
 static func resolved_group(values: Dictionary, group: String) -> String:
+ group = ColorRanges.linked_group(values, group)
  return "terrain" if group.begins_with("terrain_") and not values.get("override/" + group, false) else group
 
 static func _palette_group(key: String) -> String:

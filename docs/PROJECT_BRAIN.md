@@ -3154,6 +3154,8 @@ Alex then asked for Lightroom-style selective ranges: an icy Green Hill needs bl
 
 The Lab also separates emission brightness from glow shape. All themes expose native spread and tight/wide/diffuse halo weights, with optional normalization. Chemical's local material halos additionally expose surface width when those uniforms exist. Native glow follows saved variants and Zone transitions; Retro's phosphor halo remains separate. Existing appearances are unchanged until edited, and Alex retains performance review.
 
+Alex requested three separate trim color groups: Edges are outer floor rims, Borders sit around raised terrain bases, and Ledges are upper trim. A link switch defaults on and lets Borders drive all three, preserving old appearances; unlinking exposes independent hue/saturation/brightness and Hue stacking. A spare UV channel labels the existing floor-trim triangles, so the split adds no border geometry or draw pass. Both live and baked builders preserve the label; the source change requires the ordinary bake refresh.
+
 # REPOSITORY SNAPSHOT AND COMMIT HISTORY — KEEP THIS LAST
 
 ## Current repository context — cleanup and first performance pass, 2026-10-30

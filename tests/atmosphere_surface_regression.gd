@@ -48,10 +48,11 @@ func run() -> void:
   for entry: Dictionary in panel.emission.hue_parameters:
    groups[entry.group] = int(groups.get(entry.group, 0)) + 1
    if entry.material is ShaderMaterial: programs[entry.material] = entry.material.shader
-  for group: String in ["terrain_ground", "terrain_upper", "terrain_walls", "terrain_borders", "decor"]:
+  for group: String in ["terrain_ground", "terrain_upper", "terrain_walls", "terrain_borders", "terrain_ledges", "decor"]:
    check(groups.get(group, 0) > 0, theme + " has live " + group + " bindings")
   await frames(5)
   await capture(theme + "-default")
+  await check_trim_controls(panel, theme)
   var changed: Dictionary = panel.originals.duplicate(true)
   changed["hue/terrain"] = 0.31
   changed["brightness/terrain"] = 0.6
@@ -151,6 +152,49 @@ func check_baked_bindings() -> void:
   print("ATMOSPHERE_BAKED_THEME | ", theme, " | Acts=", paths.size())
  print("ATMOSPHERE_BAKED_ACTS | cases=", cases)
 
+func check_trim_controls(panel: Node, theme: String) -> void:
+ var bindings = panel.emission
+ var values: Dictionary = panel.originals.duplicate(true)
+ values.erase("link/terrain_trim") # Older saved looks did not have a link setting.
+ values.merge({"override/terrain_borders": true, "hue/terrain_borders": 0.21, "saturation/terrain_borders": 0.62, "brightness/terrain_borders": 0.83}, true)
+ panel.values = values
+ panel.apply_values()
+ var split_count := 0
+ for entry: Dictionary in bindings.hue_parameters:
+  if entry.group not in ["terrain_borders", "terrain_ledges"]: continue
+  check(is_equal_approx(entry.material.get_shader_parameter("atmosphere_hue"), 0.21), theme + " preserves legacy combined trim hue")
+  if entry.material.get_meta("atmosphere_trim_split", false):
+   split_count += 1
+   check(entry.material.get_shader_parameter("atmosphere_edge_adjustment").is_equal_approx(Vector3(0.21, 0.62, 0.83)), theme + " legacy edge matches combined controls")
+ check(split_count > 0, theme + " has separately adjustable outer edges")
+ values.merge({"link/terrain_trim": false, "override/terrain_edges": true, "hue/terrain_edges": -0.25, "saturation/terrain_edges": 0.8, "brightness/terrain_edges": 1.4, "override/terrain_ledges": true, "hue/terrain_ledges": 0.55, "brightness/terrain_ledges": 0.6}, true)
+ panel.apply_values()
+ for entry: Dictionary in bindings.hue_parameters:
+  if entry.group == "terrain_ledges": check(is_equal_approx(entry.material.get_shader_parameter("atmosphere_hue"), 0.55), theme + " independent ledges hue")
+  if entry.material.get_meta("atmosphere_trim_split", false):
+   check(is_equal_approx(entry.material.get_shader_parameter("atmosphere_hue"), 0.21), theme + " independent interior border hue")
+   check(entry.material.get_shader_parameter("atmosphere_edge_adjustment").is_equal_approx(Vector3(-0.25, 0.8, 1.4)), theme + " independent outer edge controls")
+ await frames(4)
+ await capture(theme + "-trim-unlinked")
+ values.merge({"ranges/enabled": true, "ranges/green/hue": 0.2, "stack/terrain_borders": false, "stack/terrain_edges": true, "stack/terrain_ledges": false}, true)
+ panel.apply_values()
+ for entry: Dictionary in bindings.hue_parameters:
+  if entry.group in ["terrain_borders", "terrain_ledges"]: check(not entry.material.get_shader_parameter("atmosphere_ranges_enabled"), theme + " trim can opt out of selective Hue")
+  if entry.material.get_meta("atmosphere_trim_split", false): check(entry.material.get_shader_parameter("atmosphere_edge_ranges_enabled"), theme + " edges can stack with Hue independently")
+ panel.set_value("link/terrain_trim", true)
+ check(not panel.widgets["hue/terrain_edges"].editable and not panel.widgets["hue/terrain_ledges"].editable, theme + " linked UI uses Borders as the master")
+ panel.set_value("link/terrain_trim", false)
+ check(panel.widgets["hue/terrain_edges"].editable and is_equal_approx(values["hue/terrain_edges"], -0.25), theme + " unlink restores independent values")
+ var registry := preload("res://scripts/atmosphere/variants.gd").new()
+ registry.directory = "user://trim-regression"
+ var record: Dictionary = registry.baseline()
+ for key: String in values:
+  if key == "link/terrain_trim" or key.ends_with("/terrain_edges") or key.ends_with("/terrain_ledges") or key.ends_with("/terrain_borders"):
+   record.values[key] = values[key]
+ var records: Array[Dictionary] = [record]
+ check(registry.save(theme, records, registry.revision(theme)) and registry.read(theme) == records, theme + " separate and linked trim controls save/reload: " + registry.error)
+ panel.reset_values()
+
 func check_baked_act(path: String, document: Resource, theme: String, fingerprint: String) -> void:
   const Bake := preload("res://scripts/endless/geometry_bake.gd")
   var baked: Resource = load(path)
@@ -163,6 +207,14 @@ func check_baked_act(path: String, document: Resource, theme: String, fingerprin
   var nodes: Array[Node] = []
   for index in baked.visual_recipe.records.size():
    baked.visual_recipe.instantiate_one(index, nodes, scenery if baked.visual_recipe.records[index].get("background", false) else container)
+  for node: Node in nodes:
+   var mesh: Mesh = node.mesh if node is MeshInstance3D else (node.multimesh.mesh if node is MultiMeshInstance3D else null)
+   if mesh == null: continue
+   for surface in mesh.get_surface_count():
+    var material: Material = node.material_override if node.material_override != null else mesh.surface_get_material(surface)
+    if material == null or not material.get_meta("atmosphere_trim_split", false): continue
+    var arrays: Array = mesh.surface_get_arrays(surface)
+    check(arrays[Mesh.ARRAY_TEX_UV2] != null and arrays[Mesh.ARRAY_TEX_UV2].size() == arrays[Mesh.ARRAY_VERTEX].size(), theme + " disk recipe retains outer/interior trim roles")
   var bindings := preload("res://scripts/atmosphere/material_bindings.gd").new()
   bindings.collect(container, theme)
   var light := DirectionalLight3D.new()
@@ -179,6 +231,8 @@ func check_baked_act(path: String, document: Resource, theme: String, fingerprin
    check(groups.has(group), theme + " baked recipe retains " + group)
   for material: ShaderMaterial in bindings.range_materials:
    check(material.get_shader_parameter("atmosphere_ranges_enabled") == true, theme + " baked surface participates in color ranges")
+   if material.get_meta("atmosphere_trim_split", false):
+    check(material.get_shader_parameter("atmosphere_edge_adjustment").is_equal_approx(Vector3(0.25, 1.0, 0.4)), theme + " baked edge trim inherits Terrain")
   for source: Material in bindings.materials:
    if source is ShaderMaterial and source.has_meta("atmosphere_hue"):
     var brightness = source.get_shader_parameter("atmosphere_brightness")

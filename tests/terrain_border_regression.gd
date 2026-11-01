@@ -23,6 +23,19 @@ func _initialize() -> void:
  var before := square.duplicate()
  check(is_equal_approx(area(Border.build(square, [], 5, 0, mat)), 1900), "Square keeps an empty 90x90 center")
  check(is_equal_approx(area(Border.build(square, [hole], 5, 0, mat)), 2400), "Floor includes perimeter and outward obstacle border")
+ var trim_arrays := Border.build(square, [hole], 5, 0, mat).surface_get_arrays(0)
+ var correct_roles := true
+ var role_counts := {0.0: 0, 1.0: 0}
+ for i in range(0, trim_arrays[Mesh.ARRAY_VERTEX].size(), 3):
+  var center := Vector3.ZERO
+  var role: float = trim_arrays[Mesh.ARRAY_TEX_UV2][i].x
+  for j in 3:
+   center += trim_arrays[Mesh.ARRAY_VERTEX][i + j] / (3.0 * Border.SCALE)
+   correct_roles = correct_roles and trim_arrays[Mesh.ARRAY_TEX_UV2][i + j].x == role
+  var outer := center.x < 5 or center.x > 95 or center.z < 5 or center.z > 95
+  correct_roles = correct_roles and role == (1.0 if outer else 0.0)
+  role_counts[role] += 1
+ check(correct_roles and role_counts[0.0] > 0 and role_counts[1.0] > 0, "Outer edges and interior foot borders retain separate, constant triangle roles")
  var notch := PackedVector2Array([Vector2(0, 0), Vector2(100, 0), Vector2(100, 30), Vector2(30, 30), Vector2(30, 100), Vector2(0, 100)])
  var mesh := Border.build(notch, [], 5, 0.326, mat)
  check(mesh != null, "Concave contour creates a border")
