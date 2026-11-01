@@ -49,8 +49,13 @@ func prepare_act(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
  # This is a visual footprint only; it never fills or alters physical geometry.
  var floor_bounds := Rect2(bounds.position, bounds.size - Vector2(0, cell_size * AuthoredActData.RED_GUTTER_CELLS))
  stage = "floor outline"
- authored_floor_outline = await _geometry_job(_authored_floor_boundary.bind(floor_bounds))
- authored_floor_outline = VisualDetail.contour(authored_floor_outline)
+ var floor_polygons: Array[PackedVector2Array] = authored_terrain_polygons.duplicate()
+ for path: PackedVector2Array in authored_open_paths:
+  for ribbon: PackedVector2Array in Geometry2D.offset_polyline(path, cell_size * 0.02, Geometry2D.JOIN_ROUND, Geometry2D.END_ROUND):
+   floor_polygons.append(VisualDetail.contour(ribbon))
+ # Infer the facade from the actual rendered walls. Simplifying both independently
+ # creates different segments/normals at the same wall-to-floor join.
+ authored_floor_outline = await _geometry_job(_authored_floor_boundary.bind(floor_bounds, floor_polygons))
  await stream_checkpoint()
  stage = "floor mesh"
  var floor_root := Node3D.new()
@@ -87,6 +92,7 @@ func prepare_act(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
    # Thin open rails keep a center strip: cap width is at most a quarter of rail width.
    _add_border(ribbon, [], minf(theme_definition.top_border_width, cell_size * 0.01), RAIL_HEIGHT + RAIL_CAP_HEIGHT, theme_definition.top_border_material, rail, "TopSurfaceBorder")
  _add_border(authored_floor_outline, floor_obstacles, theme_definition.floor_border_width, 0.0, theme_definition.floor_border_material, floor_root, "FloorPathBorder")
+ TerrainFacade.consolidate(floor_root, terrain_root, authored_floor_outline, wall_side)
  _finish_terrain_skin()
  stage = "decor"
  for slot: Dictionary in runtime.get("decor_slots", []):

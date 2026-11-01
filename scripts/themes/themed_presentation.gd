@@ -3,6 +3,7 @@ extends TablePresentation
 ## All gameplay shapes, cameras, and animated anchors remain owned by TablePresentation.
 const DecorSlots = preload("res://scripts/act_editor/decor_slots.gd")
 const GreenHillTheme = preload("res://scripts/themes/green_hill_theme.gd")
+const TerrainFacade = preload("res://scripts/themes/terrain_facade.gd")
 const TerrainBorder = preload("res://scripts/themes/terrain_border.gd")
 const ScenerySettings = preload("res://scripts/themes/scenery_settings.gd")
 var scenery_settings := {"seed": 0, "density": 1.0}
@@ -111,6 +112,7 @@ func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> voi
    # Thin open rails keep a center strip: cap width is at most a quarter of rail width.
    _add_border(ribbon, [], minf(theme_definition.top_border_width, cell_size * 0.01), RAIL_HEIGHT + RAIL_CAP_HEIGHT, theme_definition.top_border_material, rail, "TopSurfaceBorder")
  _add_border(authored_floor_outline, floor_obstacles, theme_definition.floor_border_width, 0.0, theme_definition.floor_border_material, floor_root, "FloorPathBorder")
+ TerrainFacade.consolidate(floor_root, terrain_root, authored_floor_outline, wall_side)
  _finish_terrain_skin()
  _build_authored_decor(runtime, cell_size)
 
@@ -152,14 +154,14 @@ func _merge_authored_land(outlines: Array[PackedVector2Array]) -> Array[PackedVe
   result.append(candidate)
  return result
 
-func _authored_floor_boundary(bounds: Rect2) -> PackedVector2Array:
+func _authored_floor_boundary(bounds: Rect2, canonical: Array[PackedVector2Array] = []) -> PackedVector2Array:
  var rectangle := PackedVector2Array([bounds.position, Vector2(bounds.end.x, bounds.position.y), bounds.end, Vector2(bounds.position.x, bounds.end.y)])
- var boundaries: Array[PackedVector2Array] = _outlines.duplicate()
- for path: PackedVector2Array in authored_open_paths:
+ var boundaries: Array[PackedVector2Array] = _outlines.duplicate() if canonical.is_empty() else canonical.duplicate()
+ for path: PackedVector2Array in (authored_open_paths if canonical.is_empty() else []):
   boundaries.append_array(Geometry2D.offset_polyline(path, authored_cell_size * 0.02, Geometry2D.JOIN_ROUND, Geometry2D.END_ROUND))
  # Join copies of every wall type for floor inference: a composite may continue
  # into ordinary stamps. Keep the authoritative obstacle contours untouched.
- boundaries.append_array(authored_composite_polygons)
+ if canonical.is_empty(): boundaries.append_array(authored_composite_polygons)
  boundaries = _merge_authored_land(boundaries)
  var left: Array[PackedVector2Array] = []
  var right: Array[PackedVector2Array] = []
@@ -220,7 +222,7 @@ func _initialize_terrain_skin() -> void:
   remove_child(old_floor)
   old_floor.free()
  _grass = theme_definition.floor_material
- _cliff = theme_definition.cliff_material
+ _cliff = TerrainFacade.material(theme_definition.cliff_material, RAIL_HEIGHT + RAIL_CAP_HEIGHT, theme_definition.side_material)
  terrain_root = Node3D.new()
  terrain_root.name = theme_definition.display_name.replace(" ", "") + "Terrain"
  add_child(terrain_root)
