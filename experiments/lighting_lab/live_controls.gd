@@ -188,7 +188,6 @@ func _build_ui() -> void:
    controls.add_child(note)
    for spec: Array in ColorRanges.fields(): _field(controls, spec)
    _button(controls, "Reset color ranges", func():
-    if variants.context.selected == "default": return
     for spec: Array in ColorRanges.fields(): values[spec[1]] = ColorRanges.neutral(spec[1])
     set_value("ranges/enabled", false)
    )
@@ -250,6 +249,7 @@ func _field(parent: Node, spec: Array) -> void:
  match spec[2]:
   "number":
    var number := SpinBox.new()
+   preload("res://experiments/lighting_lab/number_display.gd").install(number)
    number.min_value = spec[3]
    number.max_value = spec[4]
    number.step = spec[5]
@@ -263,6 +263,7 @@ func _field(parent: Node, spec: Array) -> void:
   "color":
    var color := ColorPickerButton.new()
    color.edit_alpha = false
+   for component: SpinBox in color.get_picker().find_children("*", "SpinBox", true, false): preload("res://experiments/lighting_lab/number_display.gd").install(component)
    color.color_changed.connect(func(value: Color): set_value(key, value))
    field = color
   "bool":
@@ -447,7 +448,6 @@ func _read_value(key: String) -> Variant:
  return target.get(key.get_slice("/", 1))
 
 func set_value(key: String, value: Variant) -> void:
- if not variants.context.is_empty() and variants.context.selected == "default": return
  if not originals.has(key): return
  values[key] = value
  if variants == null or variants.context.is_empty() or variants.context.selected == "draft": drafts[preset_key] = values.duplicate(true)
@@ -473,12 +473,11 @@ func apply_values() -> void:
 
 func sync_fog_controls() -> void:
  var source: Dictionary = originals if compare.button_pressed else values
- var locked: bool = variants != null and variants.context.get("selected", "draft") == "default"
  var depth_mode: bool = int(source.get("env/fog_mode", 0)) == Environment.FOG_MODE_DEPTH
  for key: String in ["env/fog_depth_begin", "env/fog_depth_end", "env/fog_depth_curve"]:
   var control: SpinBox = widgets[key]
-  control.editable = depth_mode and not locked
-  control.get_meta("slider").editable = depth_mode and not locked
+  control.editable = depth_mode
+  control.get_meta("slider").editable = depth_mode
   control.tooltip_text = "Depth mode only. Distances are from the camera; 1 unit = 100 table pixels. Curve 1 is linear; higher values build later."
  widgets["env/fog_density"].tooltip_text = "Exponential: density per distance. Depth: maximum opacity (0–1); try 0.5 for a visible starting point."
 
@@ -566,7 +565,6 @@ func _set_vsync(enabled: bool) -> void:
  performance_label.text = "Display synchronized" if vsync.button_pressed else "Uncapped rendering"
 
 func _select_look(index: int) -> void:
- if variants.context.selected == "default": return
  if index == 0: return
  var title := look_selector.get_item_text(index)
  values = originals.duplicate(true) if index == 1 else LightingLooks.create(title, originals, game.theme_id)

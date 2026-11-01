@@ -48,7 +48,7 @@ static func validate(theme: String, records: Array[Dictionary]) -> String:
   var weight: Variant = record.get("weight")
   if typeof(weight) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(float(weight)) or weight < 0 or weight > 1000000: return "Weight must be finite, between 0 and 1000000."
   if not record.get("values") is Dictionary or not Fields.valid_values(theme, record.values): return "Unsupported atmosphere value or range."
-  if id == "default" and (title != "Default" or not record.values.is_empty()): return "Default appearance is protected. Duplicate it to author a look."
+  if id == "default" and title != "Default": return "Default cannot be renamed."
   if record.enabled: total += weight
  if not ids.has("default"): return "Default cannot be deleted."
  if total <= 0: return "Keep at least one enabled variant with positive weight."

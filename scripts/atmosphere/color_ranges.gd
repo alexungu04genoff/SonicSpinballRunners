@@ -8,9 +8,9 @@ static func fields() -> Array:
  var result: Array = [["Enable color ranges", "ranges/enabled", "bool"]]
  for id: String in IDS:
   var label := id.capitalize()
-  result.append([label + " hue", "ranges/" + id + "/hue", "number", -0.5, 0.5, 0.005])
+  result.append([label + " hue", "ranges/" + id + "/hue", "number", -0.7, 0.7, 0.005])
   result.append([label + " saturation", "ranges/" + id + "/saturation", "number", 0.0, 2.0, 0.01])
-  result.append([label + " brightness", "ranges/" + id + "/brightness", "number", 0.0, 2.0, 0.01])
+  result.append([label + " brightness", "ranges/" + id + "/brightness", "number", 0.0, 3.0, 0.01])
  return result
 
 static func neutral(key: String) -> Variant:

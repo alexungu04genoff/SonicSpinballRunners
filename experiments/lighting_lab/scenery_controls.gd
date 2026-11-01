@@ -20,6 +20,7 @@ func install(owner_lab: CanvasLayer) -> void:
  description = _label("")
  _label("Scenery seed")
  seed_field = SpinBox.new()
+ preload("res://experiments/lighting_lab/number_display.gd").install(seed_field)
  seed_field.max_value = Settings.MAX_SEED
  seed_field.step = 1
  seed_field.value_changed.connect(func(value: float): change({"seed": int(value), "density": values.density}))

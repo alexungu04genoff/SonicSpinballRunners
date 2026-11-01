@@ -16,9 +16,10 @@ func _initialize() -> void: call_deferred("run")
 func run() -> void:
  var registry := Variants.new()
  registry.directory = "user://variant-regression"
- var records: Array[Dictionary] = [Variants.baseline(), {"id": "pink", "name": "Pink", "enabled": true, "weight": 3.0, "values": {"hue/terrain": 0.25, "hue/neon": -0.2, "hue/decor": 0.1, "brightness/decor": 0.8, "brightness/terrain_ground": 1.3}}]
+ var records: Array[Dictionary] = [Variants.baseline(), {"id": "pink", "name": "Pink", "enabled": true, "weight": 3.0, "values": {"hue/terrain": 0.7, "hue/neon": -0.7, "hue/decor": 0.1, "brightness/decor": 3.0, "brightness/terrain_ground": 1.3}}]
  var hash_before := Bake.pipeline_hash("ice_cap")
- records[1].values.merge({"ranges/enabled": true, "ranges/green/hue": 0.2, "ranges/green/saturation": 0.5, "ranges/green/brightness": 1.5})
+ records[0].values = {"brightness/decor": 1.2}
+ records[1].values.merge({"ranges/enabled": true, "ranges/green/hue": -0.7, "ranges/green/saturation": 0.5, "ranges/green/brightness": 3.0})
  check(registry.save("ice_cap", records, registry.revision("ice_cap")), "Save project-shaped variant fixture")
  check(registry.read("ice_cap") == records, "Inspectable values round trip")
  check(is_equal_approx(Variants.chance(records, "pink"), 0.75), "Weights derive probabilities")
@@ -38,8 +39,9 @@ func run() -> void:
  invalid[1].weight = -1
  check(not Variants.validate("ice_cap", invalid).is_empty(), "Reject negative weights")
  invalid = records.duplicate(true)
- invalid[0].values = {"hue/terrain": 0.2}
- check(not Variants.validate("ice_cap", invalid).is_empty(), "Default appearance is immutable")
+ invalid[0].name = "Renamed Default"
+ check(not Variants.validate("ice_cap", invalid).is_empty(), "Default identity is protected")
+ check(registry.choose("ice_cap", 1, 0, "default").values == records[0].values, "Runtime selection uses edited Default values")
  check(Bake.pipeline_hash("ice_cap") == hash_before, "Atmosphere content does not change topology receipt")
  if "--production-fixture" in OS.get_cmdline_user_args():
   # Exercise the real production location, restoring exact bytes before any run.
@@ -140,6 +142,17 @@ func lab(registry: RefCounted) -> void:
  var identity := [game.ball.get_instance_id(), game.presentation.get_instance_id(), game.presentation.camera.transform, game.presentation.scenery_root.get_instance_id()]
  variants.context.selected = "default"
  variants.load_selected()
+ panel._select_look(2)
+ check(panel.values != panel.originals and not panel.look_selector.disabled, "Default accepts atmosphere presets")
+ panel.set_value("hue/terrain", 0.7)
+ variants.save_variant()
+ check(registry.error.is_empty() and registry.read("ice_cap")[0].values["hue/terrain"] == 0.7, "Save edited Default")
+ panel.set_value("hue/terrain", -0.7)
+ variants.revert()
+ check(is_equal_approx(panel.values["hue/terrain"], 0.7), "Default Revert restores saved appearance")
+ panel.reset_values()
+ check(panel.values == panel.originals, "Default Reset restores authored appearance in draft")
+ variants.revert()
  variants.create(true)
  variants.title.text = "Probe " + str(Time.get_ticks_usec())
  panel.set_value("hue/terrain", 0.3)

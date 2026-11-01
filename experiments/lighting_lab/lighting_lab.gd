@@ -38,6 +38,10 @@ func _rebuild_presentation() -> void:
  if is_instance_valid(lighting_controls): lighting_controls.bind_theme()
 
 func _input(event: InputEvent) -> void:
+ # Text entry owns keys before the inherited camera, pose and material shortcuts.
+ if event is InputEventKey:
+  var focus := get_viewport().gui_get_focus_owner()
+  if focus is LineEdit or focus is TextEdit: return
  if event is InputEventKey and event.pressed and not event.echo:
   var key: int = event.physical_keycode if event.physical_keycode != 0 else event.keycode
   if key == KEY_F6 and is_instance_valid(lighting_controls):

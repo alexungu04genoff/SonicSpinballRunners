@@ -40,6 +40,7 @@ func install(owner_panel: CanvasLayer, parent: Node) -> void:
  row.add_child(enabled)
  weight = SpinBox.new()
  weight.prefix = "Weight "
+ preload("res://experiments/lighting_lab/number_display.gd").install(weight)
  weight.custom_minimum_size.x = 170
  weight.max_value = 1000000
  weight.step = 0.1
@@ -58,7 +59,7 @@ func install(owner_panel: CanvasLayer, parent: Node) -> void:
  add_child(status)
  var note := Label.new()
  note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
- note.text = "Default appearance is protected. Duplicate it, try a quick look, then Save Variant. Renaming keeps the stable ID. Lab draft saves stay user-local."
+ note.text = "Edit Default or duplicate it for another look, then Save Variant. Show original atmosphere compares with the authored theme. Lab draft saves stay user-local."
  add_child(note)
 
 func bind_theme() -> void:
@@ -80,13 +81,12 @@ func capture() -> void:
  if syncing or context.is_empty(): return
  if context.selected != "draft":
   var record := selected_record().duplicate(true)
-  record.name = "Default" if record.id == "default" else title.text.strip_edges()
+  record.name = "Default" if record.id == "default" else title.text
   record.enabled = enabled.button_pressed
   record.weight = weight.value
   record.values = {}
-  if record.id != "default":
-   for key: String in panel.values:
-    if panel.values[key] != panel.originals.get(key): record.values[key] = panel.values[key]
+  for key: String in panel.values:
+   if panel.values[key] != panel.originals.get(key): record.values[key] = panel.values[key]
   context.drafts[record.id] = record
  refresh()
 
@@ -115,17 +115,10 @@ func refresh() -> void:
  enabled.disabled = context.selected == "draft"
  weight.editable = context.selected != "draft"
  if not record.is_empty():
-  title.text = record.name
+  if title.text != record.name: title.text = record.name
   enabled.set_pressed_no_signal(record.enabled)
   weight.set_value_no_signal(record.weight)
- status.text = "User-local draft; Duplicate to promote explicitly." if record.is_empty() else "ID: %s · Approx. chance: %.1f%%\n%s" % [record.id, Registry.chance(records, record.id) * 100.0, "Default appearance protected; weighting is editable." if record.id == "default" else "* marks unsaved changes. Rename with the name field."]
- var locked: bool = context.selected == "default"
- for field: Control in panel.widgets.values():
-  if field is Range:
-   field.editable = not locked
-   if field.has_meta("slider"): field.get_meta("slider").editable = not locked
-  elif field is BaseButton: field.disabled = locked
- panel.look_selector.disabled = locked
+ status.text = "User-local draft; Duplicate to promote explicitly." if record.is_empty() else "ID: %s · Approx. chance: %.2f%%\n%s" % [record.id, Registry.chance(records, record.id) * 100.0, "Default appearance is editable; its name and entry are fixed." if record.id == "default" else "* marks unsaved changes. Rename with the name field."]
  panel.sync_fog_controls()
  panel.save_button.text = "Save scenery" if panel._scenery_tab() else ("Save lab draft" if context.selected == "draft" else "Save Variant")
  syncing = false
@@ -162,7 +155,8 @@ func save_variant() -> void:
   return
  capture()
  var records: Array[Dictionary] = []
- var selected := selected_record()
+ var selected := selected_record().duplicate(true)
+ selected.name = selected.name.strip_edges()
  for record: Dictionary in context.records:
   if record.id != selected.id: records.append(record)
  records.append(selected)

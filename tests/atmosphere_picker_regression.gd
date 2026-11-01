@@ -45,7 +45,8 @@ func run() -> void:
  var point := displayed.position + (Vector2(pixel) + Vector2(0.5, 0.5)) / Vector2(picture.get_size()) * displayed.size
  game.retro_filter.set_effects(retro)
  panel.set_value("ranges/enabled", true)
- panel.set_value("ranges/green/hue", 0.23)
+ panel.set_value("ranges/green/hue", 0.55)
+ panel.set_value("ranges/green/brightness", 2.5)
  await frames(4)
  var ball: int = game.ball.get_instance_id()
  var ball_position: Vector2 = game.ball.position
@@ -83,6 +84,62 @@ func run() -> void:
  await frames(3)
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png("res://test-results/atmosphere-controls/picker.png")
+ await check_text_entry(game, panel)
  game.free()
  print("ATMOSPHERE_PICKER | checks=%d failures=%d" % [checks, failures])
  quit(1 if failures else 0)
+
+func press_key(code: int, unicode := 0) -> void:
+ var event := InputEventKey.new()
+ event.keycode = code
+ event.physical_keycode = code
+ event.unicode = unicode
+ event.pressed = true
+ Input.parse_input_event(event)
+ event = event.duplicate()
+ event.pressed = false
+ Input.parse_input_event(event)
+ await frames(2)
+
+func type_text(text: String) -> void:
+ for character: String in text: await press_key(character.to_upper().unicode_at(0), character.unicode_at(0))
+
+func check_text_entry(game: Node, panel: CanvasLayer) -> void:
+ panel.tabs.current_tab = 0
+ panel.variants.create(false)
+ await frames(3)
+ var follow: bool = game.presentation.camera_follow_enabled
+ var ball: int = game.ball.get_instance_id()
+ await type_text("Gold VIP")
+ check(panel.variants.title.text == "Gold VIP" and panel.variants.selected_record().name == "Gold VIP", "Variant name receives every letter: text=%s saved=%s" % [panel.variants.title.text, panel.variants.selected_record().name])
+ check(game.presentation.camera_follow_enabled == follow and game.ball.get_instance_id() == ball, "Typing O does not trigger overview or gameplay shortcuts")
+ panel.variants.title.release_focus()
+ for fullscreen in [false, true]:
+  if fullscreen: game.toggle_fullscreen()
+  panel.tabs.current_tab = 1
+  await frames(3)
+  var number: SpinBox = panel.widgets["env/tonemap_exposure"]
+  var edit := number.get_line_edit()
+  var click := InputEventMouseButton.new()
+  click.position = edit.get_global_rect().get_center()
+  click.button_index = MOUSE_BUTTON_LEFT
+  click.pressed = true
+  root.push_input(click, true)
+  click = click.duplicate()
+  click.pressed = false
+  root.push_input(click, true)
+  await frames(3)
+  check(edit.has_focus(), "Click focuses numeric field in fullscreen=%s" % fullscreen)
+  edit.select_all()
+  var typed := "2.73" if fullscreen else "1.23"
+  await type_text(typed)
+  await press_key(KEY_ENTER)
+  await frames(3)
+  check(is_equal_approx(panel.values["env/tonemap_exposure"], float(typed)), "Typed number applies on Enter in fullscreen=%s" % fullscreen)
+  check(edit.text == typed, "Numeric display has two decimals")
+ if game.player_view: game.toggle_fullscreen()
+ panel.tabs.current_tab = 5
+ panel.set_value("env/fog_density", 0.0065)
+ await frames(3)
+ var density: SpinBox = panel.widgets["env/fog_density"]
+ check(density.get_line_edit().text == "0.01" and is_equal_approx(panel.values["env/fog_density"], 0.0065), "Two-decimal display preserves fine fog precision")

@@ -3142,7 +3142,7 @@ Migration checks: all seven edited PowerShell scripts parse, Godot headless impo
 
 # NAMED PRODUCTION ATMOSPHERES — 2026-11-01
 
-The Lab can now promote an explicit draft into a named project variant. Default stays source-authored and protected; quick looks remain recipes, and old user-local saves are not a production roster. Alex authors the real looks manually. Per-Theme versioned files hold stable IDs, names, enabled flags, weights and atmosphere deltas. Weight percentages are derived, not a second saved value.
+The Lab can now promote an explicit draft into a named project variant. At Alex's follow-up request, Default's appearance is editable and saveable too; only its name/entry stay fixed. Show original atmosphere still compares with the source-authored theme. Quick looks remain recipes, and old user-local saves are not a production roster. Alex authors the real looks manually. Per-Theme versioned files hold stable IDs, names, enabled flags, weights and atmosphere deltas. Weight percentages are derived, not a second saved value.
 
 Prototype and Endless roll one appearance per Zone through a separate deterministic seed stream. The full choice travels in the plan; same-theme neighbors own separate material/environment copies. Existing distance-driven scenery fades blend their lighting. The bake remains Act × Theme: saving or editing a variant does not invalidate recipes or multiply the 40/56 variant pools. This implementation's shader bindings need the usual one-time source refresh.
 

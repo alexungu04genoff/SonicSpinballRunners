@@ -24,10 +24,6 @@ func install(owner_panel: CanvasLayer) -> void:
  arm.tooltip_text = "Samples before Hue and Retro, so previously shifted colors retain their original range. Lighting and Palette edits remain in the sample."
  arm.focus_mode = Control.FOCUS_NONE
  arm.toggled.connect(func(enabled: bool):
-  if enabled and panel.variants.context.selected == "default":
-   arm.set_pressed_no_signal(false)
-   status.text = "Duplicate Default or select a Lab draft first."
-   return
   dragging = false
   Input.set_default_cursor_shape(Input.CURSOR_CROSS if enabled else Input.CURSOR_ARROW)
  )
@@ -59,8 +55,11 @@ func install(owner_panel: CanvasLayer) -> void:
 
 func _input(event: InputEvent) -> void:
  if not arm.button_pressed: return
+ if event is InputEventKey:
+  var focus := get_viewport().gui_get_focus_owner()
+  if focus is LineEdit or focus is TextEdit: return
  if panel.game.is_source_picker_open(): return
- if not panel.panel.visible or panel.variants.context.selected == "default":
+ if not panel.panel.visible:
   arm.button_pressed = false
   return
  if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
@@ -82,7 +81,7 @@ func _input(event: InputEvent) -> void:
    pick_at(start)
 
 func pick_at(point: Vector2) -> bool:
- if busy or panel.variants.context.selected == "default": return false
+ if busy: return false
  var view: SubViewport = panel.game.view
  var holder: Control = panel.game.view_container
  var displayed := displayed_rect(holder.get_global_rect(), view.size)
@@ -141,8 +140,9 @@ func drag_to(point: Vector2, fine: bool) -> void:
  if selected.is_empty(): return
  var hue := drag_key.ends_with("/hue")
  var change := (point.x - start.x) / (400.0 if hue else 160.0)
- panel.set_value(drag_key, clampf(start_value + change * (0.2 if fine else 1.0), -0.5 if hue else 0.0, 0.5 if hue else 2.0))
- status.text = "%s · %s %.3f" % [selected.capitalize(), drag_key.get_slice("/", 2).capitalize(), float(panel.values[drag_key])]
+ var control: SpinBox = panel.widgets[drag_key]
+ panel.set_value(drag_key, clampf(start_value + change * (0.2 if fine else 1.0), control.min_value, control.max_value))
+ status.text = "%s · %s %.2f" % [selected.capitalize(), drag_key.get_slice("/", 2).capitalize(), float(panel.values[drag_key])]
 
 static func nearest_range(color: Color) -> String:
  var best := 0

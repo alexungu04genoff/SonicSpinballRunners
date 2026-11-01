@@ -6,7 +6,7 @@ The production model is **Act geometry × Theme × Atmosphere Variant**. Geometr
 
 `data/atmospheres/<theme_id>.cfg` is version-1, inspectable project data. Each section has a stable ID, display name, enabled flag, weight and a dictionary of atmosphere overrides. Colors remain native ConfigFile `Color` values. There are no copied Theme resources, geometry references or serialized percentages. Both export scripts include these files.
 
-Every Theme starts with **Default**: an empty override dictionary representing the current source appearance. Its ID, name and appearance are protected. Its enabled flag and weight may change, provided the Theme still has an enabled positive-weight choice. The initial production roster contains only these eight baselines; quick looks and old Lab saves have not been promoted.
+Every Theme starts with **Default**: initially an empty override dictionary representing the current source appearance. Its appearance, enabled flag and weight are editable and save like other variants. Its ID/name remain fixed and the entry cannot be deleted. The Theme must still have an enabled positive-weight choice. Quick looks and old Lab saves are never promoted automatically.
 
 Saving validates names, IDs, value types/ranges and the weighted pool. It compares the file revision before replacing it through a temporary file, so another Lab window's save cannot be silently overwritten. A malformed or unavailable runtime registry falls back to the authored Default; the registry exposes its diagnostic to authoring callers.
 
@@ -14,16 +14,18 @@ Saving validates names, IDs, value types/ranges and the weighted pool. It compar
 
 Use the existing Lighting/Atmosphere Lab. The new selector distinguishes **Lab draft (user-local)** from production variants. The Variants tab contains New, Duplicate, Delete, a name field for renaming, Enabled, Weight, Save Variant and Revert.
 
-1. Select a Theme and Default, then Duplicate. New instead starts from the source baseline.
-2. Enter a name. Apply a quick look such as Sunset, then tune Light, Sky, Palette, Glow & Fog and Shadows.
+1. Select a Theme and Default to edit its usual appearance, or Duplicate for another look. New starts from the source baseline.
+2. Enter a name for a new variant. Apply a quick look such as Sunset, then tune Light, Sky, Palette, Glow & Fog and Shadows.
 3. Save Variant explicitly. Slider changes are drafts; an asterisk marks unsaved changes. Editing the name and saving renames the display label without changing the stable ID.
 4. Revert reloads that variant from disk. Delete removes a non-default variant only if the remaining weighted pool is valid.
 
-Default's appearance controls are read-only. Switching variants does not rebuild geometry, regenerate scenery, change the Act, move the camera or reset the ball. Switching Acts retains the selected Theme/variant and its working draft. Scenery remains independently owned by the Act/theme sidecar.
+Default supports the same presets, Palette/Hue controls and scene picker as other variants. Show original atmosphere always compares with the authored theme, even after Default is edited. Reset restores the authored appearance as an unsaved edit; Revert reloads the saved variant. Switching variants does not rebuild geometry, regenerate scenery, change the Act, move the camera or reset the ball. Switching Acts retains the selected Theme/variant and its working draft. Scenery remains independently owned by the Act/theme sidecar.
 
 Unsaved variants and edits are retained in memory while switching contexts, not automatically promoted or committed. Save Variant saves the selected variant only. The user-local draft's Save action still uses the renderer/theme section in `user://lighting_lab_presets.cfg`. Quick looks remain recipes that populate a draft, never a production roster or automatic run choice.
 
 In F11 Play View, the inspector uses the available vertical height with 10-pixel top and bottom margins. Returning to the development window restores space for the existing footer. The Palette tab starts with the Decor controls.
+
+Text fields own keyboard input while focused, including in Play View: letters and digits do not trigger overview, pose or material shortcuts. Numeric edits apply on Enter or focus loss; idle fields display two decimal places while retaining finer stored precision. Variant names retain spaces while typing and trim only when saved.
 
 ## Weights, selection and overrides
 
@@ -41,7 +43,7 @@ Use the actual stable ID shown in the Variants tab. Save first. The underlying G
 
 ## Hue, saturation and brightness scope
 
-Hue is a signed turn (−0.5 to +0.5); saturation and brightness are multipliers (0 to 2). Neutral values are 0, 1 and 1. Every group below has all three controls. Brightness scales the bound surface color, not exposure or real-light energy, and preserves alpha. Older drafts/variants without brightness values remain neutral. Controls are semantic, not a screen-wide filter.
+Hue is a signed turn (−0.7 to +0.7); saturation is a multiplier from 0 to 2, and brightness from 0 to 3. Neutral values are 0, 1 and 1. Hue wraps around the color wheel, so shifts beyond half a turn revisit colors available in the opposite direction. Every group below has all three controls. Brightness scales the bound surface color, not exposure or real-light energy, and preserves alpha. Older drafts/variants without brightness values remain neutral. Controls are semantic, not a screen-wide filter. Sliders, scene dragging and saved-variant validation share these bounds. Numeric fields across the Lab display two decimal places without reducing stored precision or changing their adjustment steps.
 
 | Group | Explicit coverage |
 | --- | --- |
@@ -87,13 +89,13 @@ The shader/binding implementation requires one ordinary source-hash bake refresh
 
 ## Verification
 
-`tests/atmosphere_variants_regression.gd` covers storage, protected baselines, validation, concurrent-save rejection, weights, RNG isolation, per-Zone plan identity, production-location data edits without a changed bake fingerprint, material sharing/exclusions, Lab Save/Revert/Delete and context preservation. The production-location case uses `--production-fixture` in a disposable checkout and restores its files exactly; the ordinary test does not write production files.
+`tests/atmosphere_variants_regression.gd` covers storage, editable Default appearances with fixed identity, validation, concurrent-save rejection, weights, RNG isolation, per-Zone plan identity, production-location data edits without a changed bake fingerprint, material sharing/exclusions, Lab Save/Revert/Delete and context preservation. The production-location case uses `--production-fixture` in a disposable checkout and restores its files exactly; the ordinary test does not write production files.
 
 `tests/atmosphere_runtime_regression.gd` exercises two adjacent Ice Zones with different appearances from shared disk recipes, material isolation, switching and a distance-driven transition. It writes matched default/strong ABBA profiles and transition observations. `tests/atmosphere_profile.gd -- --atmosphere-hue` compares strong category/background/foliage/neon transforms in the Lab. Alex owns further performance and visual tuning review; additional performance testing was stopped at his request.
 
 The follow-up uses `tests/atmosphere_color_ranges_regression.gd` for range boundaries, alpha/neutrals, source/gameplay isolation, stacking, exact reset and rendered texture/triplanar/vertex-color parity with StandardMaterial. `tests/atmosphere_surface_regression.gd` captures all eight live themes with terrain, Decor, selective-green and Neon edits, checks fullscreen layout, and uses `--baked-only` to inspect every published Prototype/Endless Act/theme recipe. These are functional checks, not performance benchmarks.
 
-`tests/atmosphere_picker_regression.gd` exercises picking an already shifted scene color with Retro enabled, all three drag modes, fine adjustment, release/Esc and preservation of the pause, camera, ball and authored cloud-light state. All 17 checks passed in both the working checkout and the clean staged export, including the latest directional-fog integration.
+`tests/atmosphere_picker_regression.gd` exercises picking an already shifted scene color with Retro enabled, all three drag modes, fine adjustment, release/Esc and preservation of the pause, camera, ball and authored cloud-light state. The initial 17 checks passed in both the working checkout and the clean staged export, including directional fog. The authoring follow-up passed 26 checks, including real keyboard entry of “Gold VIP”, numeric entry in windowed/fullscreen views, the extended hue/brightness bounds and two-decimal display without losing fine fog precision. The variant regression passed 461 rendered checks (440 headless), including Default preset application, save/reload/reset and runtime selection of edited Default values.
 
 Follow-up checks passed in the working checkout: 765 range/texture/stacking checks, 1,275 all-theme surface/UI checks, 560 Lab checks, 456 variant checks, 6,606 scenery checks and 111 batching checks. The clean staged export passed 765 range checks, 1,232 all-theme surface checks and 461 variant/production-fixture checks. All 96 published Act/theme recipes passed 5,994 binding checks; refreshed Prototype/Endless pools passed 401/465 audit checks. A six-transition streaming check passed 87 checks with disk recipes and no fallback. One existing ObjectDB exit warning remained. No follow-up performance benchmarks were run.
 
