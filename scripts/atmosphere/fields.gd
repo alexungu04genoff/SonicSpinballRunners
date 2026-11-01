@@ -1,5 +1,16 @@
 extends RefCounted
 ## Shared, bounded authoring vocabulary for production and the Lab.
+const SHADOW_DEFAULTS := {
+ "shadow_enabled": true,
+ "shadow_opacity": 0.85,
+ "light_angular_distance": 0.0,
+ "shadow_bias": 0.02,
+ "shadow_normal_bias": 0.55,
+}
+
+static func apply_shadow_defaults(light: DirectionalLight3D) -> void:
+ for property: String in SHADOW_DEFAULTS: light.set(property, SHADOW_DEFAULTS[property])
+
 const GROUPS := {
  "Light": [
   ["Exposure", "env/tonemap_exposure", "number", 0.05, 4.0, 0.01],

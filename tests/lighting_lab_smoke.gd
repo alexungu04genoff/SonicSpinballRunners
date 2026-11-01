@@ -21,6 +21,22 @@ func run() -> void:
  panel.saved = ConfigFile.new()
  panel.drafts.clear()
  panel.reset_values()
+ panel.tabs.current_tab = panel.tabs.get_node("Light").get_index()
+ for frame in 3: await process_frame
+ var light_scroll: ScrollContainer = panel.tabs.get_current_tab_control()
+ var exposure_slider: Slider = panel.widgets["env/tonemap_exposure"].get_meta("slider")
+ var exposure_before: float = exposure_slider.value
+ var zoom_before: float = game.presentation.overview_zoom
+ var scroll_before: int = light_scroll.scroll_vertical
+ var menu_wheel := InputEventMouseButton.new()
+ menu_wheel.button_index = MOUSE_BUTTON_WHEEL_DOWN
+ menu_wheel.pressed = true
+ menu_wheel.position = exposure_slider.get_global_rect().get_center()
+ root.push_input(menu_wheel, true)
+ for frame in 3: await process_frame
+ check(exposure_slider.value == exposure_before and game.presentation.overview_zoom == zoom_before, "Wheel over a slider changes neither its value nor the camera")
+ check(light_scroll.scroll_vertical > scroll_before, "Wheel over a slider scrolls the inspector")
+ light_scroll.scroll_vertical = 0
  var initial_ball: Vector2 = game.ball.position
  var initial_score: int = game.score
  var world_id: int = game.world.get_instance_id()
@@ -90,6 +106,12 @@ func run() -> void:
    check(is_equal_approx(game.presentation._world_environment.environment.tonemap_exposure, 1.0), "Chemical exposure does not leak into Aquarium's original")
    check(not game.presentation._world_environment.environment.fog_enabled, "Prior theme fog does not leak into Aquarium")
   panel.reset_values()
+  for property: String in preload("res://scripts/atmosphere/fields.gd").SHADOW_DEFAULTS:
+   var expected: Variant = preload("res://scripts/atmosphere/fields.gd").SHADOW_DEFAULTS[property]
+   var actual: Variant = game.presentation._key_light.get(property)
+   check(actual == expected if expected is bool else is_equal_approx(actual, expected), "Shared shadow default " + property + ": " + theme)
+  for slider: Slider in panel.find_children("*", "Slider", true, false):
+   check(not slider.scrollable, "Inspector slider ignores wheel input: " + theme)
   game.presentation.set_camera_follow(true)
   game.presentation.set_camera_follow(false)
   for frame in 12: await process_frame
@@ -97,6 +119,15 @@ func run() -> void:
    await RenderingServer.frame_post_draw
    root.get_texture().get_image().save_png(directory.path_join(theme + ".png"))
  check(Engine.physics_ticks_per_second == 120, "Authoritative physics remains 120 Hz")
+ var runtime := preload("res://scripts/atmosphere/runtime.gd").new()
+ var light := DirectionalLight3D.new()
+ light.shadow_bias = 0.1
+ light.shadow_normal_bias = 2.0 # Simulate a cached recipe's older lighting values.
+ runtime.configure("rooftop_run", {"values": {}}, Environment.new(), light)
+ check(is_equal_approx(light.shadow_bias, 0.02) and is_equal_approx(light.shadow_normal_bias, 0.55) and is_equal_approx(light.shadow_opacity, 0.85), "Runtime defaults supersede older recipe shadow values")
+ runtime.configure("rooftop_run", {"values": {"sun/shadow_opacity": 0.61, "sun/shadow_enabled": false}}, Environment.new(), light)
+ check(is_equal_approx(light.shadow_opacity, 0.61) and not light.shadow_enabled, "Explicit saved shadow overrides remain authoritative")
+ light.free()
  panel.restore_original()
  game.free()
  paused = false

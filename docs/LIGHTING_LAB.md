@@ -30,7 +30,7 @@ The inspector includes these lighting tabs (alongside Variants, Hue and Scenery)
 | Directional Fog | Independent enable, angle, start offset, fade length, maximum density, curve, color and brightness |
 | Shadows | Enable, opacity, directional softness, depth/normal bias, distance, and one/two/four shadow maps |
 
-Numeric fields support typing and sliders. **Show original atmosphere** switches the live lighting, sky/background and theme palette back to the loaded theme baseline without discarding the draft. Turning it off restores the tuned atmosphere. Editing any value returns to the tuned preview. This is a same-renderer comparison, not an emulation of Compatibility lighting under Vulkan.
+Numeric fields support typing and sliders. Mouse-wheel input over sliders scrolls the inspector without changing their values; color-picker sliders also ignore wheel adjustments. **Show original atmosphere** switches the live lighting, sky/background and theme palette back to the loaded theme baseline without discarding the draft. Turning it off restores the tuned atmosphere. Editing any value returns to the tuned preview. This is a same-renderer comparison, not an emulation of Compatibility lighting under Vulkan.
 
 ## Glow shaping
 
@@ -49,6 +49,14 @@ The viewport-fit follow-up passed 31 fog checks, including perspective/top-down 
 **Directional Fog** is separate and disabled by default. It builds across the table: 0° points north, 90° east, ±180° south. The origin is the view's center ray at table height, so the clear area travels with the camera. Start offset and fade length use table pixels; negative start brings fog toward the viewer. Maximum density caps opacity; curve, color and brightness are independent. Try the defaults, then adjust start and length to protect the flippers and nearby shots. Both fog types may be enabled together.
 
 Both sets of controls participate in draft saves, original comparison and production variants. Streamed foreground fog blends between Zones; each background viewport owns its own directional pass. This optional pass is allocated only when enabled and is hidden when disabled. It uses opaque depth, leaves empty sky untouched, and does not change physics or source materials. Transparent surfaces use the opaque depth behind them; inspect glass and water when tuning. Final color, density and readability remain manual art decisions.
+
+## Shadow baseline
+
+The shared Atmosphere baseline enables shadows with opacity **0.85**, softness **0.00**, depth bias **0.02**, and normal bias **0.55**. The Lab and production Zone runtime apply these defaults after theme or cached lighting setup, before explicit saved atmosphere overrides. Existing saved overrides remain authoritative; shadow distance and split mode are unchanged. Background scenery lights remain shadowless.
+
+The rendered Lab smoke passed 1,419 checks across all eight themes, including these defaults, saved shadow overrides, older cached lighting values, and actual wheel input over a slider scrolling the inspector without changing the value or camera zoom.
+
+Softness is the sun's angular size, enabling contact-hardening shadows above zero. Increasing it can reveal the shadow filter's sampling/dither pattern, especially in a large penumbra; Retro may accentuate that pattern. Zero disables this variable softness. The tooltip explains the distinction. This change does not raise renderer quality settings or enable temporal antialiasing. See [Godot's shadow filtering explanation](https://docs.godotengine.org/en/4.5/tutorials/3d/lights_and_shadows.html#shadow-filter-mode).
 
 ## Sky and background types
 

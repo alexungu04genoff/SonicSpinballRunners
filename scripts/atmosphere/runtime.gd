@@ -16,6 +16,7 @@ func configure(theme: String, variant: Dictionary, original: Environment, light:
   environment.sky = original.sky.duplicate()
   environment.sky.sky_material = original.sky.sky_material.duplicate()
  bindings.begin_theme(theme)
+ preload("res://scripts/atmosphere/fields.gd").apply_shadow_defaults(sun)
  apply_properties(values, environment, sun)
  for property: String in LIGHT_FIELDS: lighting[property] = sun.get(property)
  lighting["quaternion"] = sun.quaternion

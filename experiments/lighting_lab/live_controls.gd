@@ -274,6 +274,7 @@ func _field(parent: Node, spec: Array) -> void:
    var color := ColorPickerButton.new()
    color.edit_alpha = false
    for component: SpinBox in color.get_picker().find_children("*", "SpinBox", true, false): preload("res://experiments/lighting_lab/number_display.gd").install(component)
+   for component: Slider in color.get_picker().find_children("*", "Slider", true, false): component.scrollable = false
    color.color_changed.connect(func(value: Color): set_value(key, value))
    field = color
   "bool":
@@ -296,8 +297,11 @@ func _field(parent: Node, spec: Array) -> void:
  if key == "sun/light_angular_distance" and renderer != "forward_plus":
   (field as SpinBox).editable = false
   field.tooltip_text = "Directional soft shadows require Forward+."
+ elif key == "sun/light_angular_distance":
+  field.tooltip_text = "Sun angular size in degrees. Higher values widen contact shadows and can expose shadow-filter dithering. 0.00 disables contact-hardening softness."
  if spec[2] == "number":
   var slider := HSlider.new()
+  slider.scrollable = false
   slider.min_value = spec[3]
   slider.max_value = spec[4]
   slider.step = spec[5]
@@ -319,15 +323,11 @@ func bind_theme() -> void:
  game.presentation._world_environment.environment = environment
  var light: DirectionalLight3D = game.presentation._key_light
  light.light_specular = 1.0
- light.shadow_enabled = true
- light.shadow_opacity = 1.0
- light.light_angular_distance = 0.0
- light.shadow_bias = 0.1
- light.shadow_normal_bias = 2.0
  light.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
  game.presentation.theme_definition.configure_environment(game.presentation)
  var rooftop = game.get("rooftop_materials")
  if game.theme_id == "rooftop_run" and is_instance_valid(rooftop): rooftop.apply_lighting()
+ Fields.apply_shadow_defaults(light)
  _bind_sky(environment)
  emission.collect(game.presentation, game.theme_id, sky_material)
  _bind_palette()
