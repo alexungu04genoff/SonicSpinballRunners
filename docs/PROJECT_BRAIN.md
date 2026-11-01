@@ -3152,6 +3152,8 @@ The follow-up caught a real coverage gap in the live art checkout: Green Hill tu
 
 Alex then asked for Lightroom-style selective ranges: an icy Green Hill needs blue grass/leaves without recoloring every brown prop. A separate Hue tab provides eight color ranges with hue/saturation/brightness, layered over Palette. Category and individual-color Stack with Hue switches let either layer remain independent. Local/distant scenery ownership now includes the previously untagged palms; textured shrubs and vertex-colored scenery get final-color shader support. Terrain emission follows Neon too, fixing Chemical's unchanged blue/yellow panels and strips. Gameplay materials stay excluded. Palm trunks and bridge wood deliberately share the active checker texture's brown palette, as Alex requested.
 
+The Lab also separates emission brightness from glow shape. All themes expose native spread and tight/wide/diffuse halo weights, with optional normalization. Chemical's local material halos additionally expose surface width when those uniforms exist. Native glow follows saved variants and Zone transitions; Retro's phosphor halo remains separate. Existing appearances are unchanged until edited, and Alex retains performance review.
+
 # REPOSITORY SNAPSHOT AND COMMIT HISTORY — KEEP THIS LAST
 
 ## Current repository context — cleanup and first performance pass, 2026-10-30

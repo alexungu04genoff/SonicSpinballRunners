@@ -79,6 +79,12 @@ The range layer covers explicitly bound terrain and authored Decor, plus **all c
 
 At Alex's request, Green Hill palm trunks and bridge wood now use two sampled browns from the active checker texture. The bounded sample is cached per Theme instance, works with committed and locally selected textures, and changes no geometry. Leaves retain their own source palette.
 
+## Glow and emission shaping
+
+Glow & Fog exposes native glow spread, tight/wide/diffuse halo weights and optional brightness normalization in every theme. These complement emission brightness and glow intensity: lower tight weight and increase wide/diffuse weight to soften the halo. Optional Surface halo width scales existing material falloff uniforms where supported, currently the local Chemical floor and edge artwork. Unsupported themes hide that field. Neutral width is `1.00`; no source artwork or saved appearance is changed automatically. Retro's separate phosphor halo is unchanged.
+
+The controls participate in draft/variant storage, validation, original comparison and reset. Each Zone applies surface width to its existing private material copies when attaching scenery. Native glow properties, including the nested `glow_levels` properties, blend through the existing foreground environment transition. This follow-up requires no shader or geometry changes and does not add a bake variant dimension.
+
 ## Runtime and bake boundaries
 
 Each resident Zone owns private environment/sky state and one edited material copy per source material, shared across its Acts and scenery. Cached recipe materials are immutable. Incremental attachment tracks already-bound nodes so background completion cannot duplicate an Act's material copies or apply a transform twice. Binding and palette work happens on attachment/change, not through a per-frame scene traversal.
@@ -88,6 +94,8 @@ Adjacent Zones can use the same Theme with different variants. Their background 
 The shader/binding implementation requires one ordinary source-hash bake refresh. Subsequent named-variant creation, renaming, weighting or color edits do not change the bake matrix or recipe fingerprint. Production remains five Acts × eight Themes (40 variants); Endless remains seven × eight (56). Runtime ignores the Lab save file and packaged games include the production registry.
 
 ## Verification
+
+`tests/atmosphere_glow_regression.gd` passed 299 functional checks in the live art checkout: all eight themes with Retro on/off, native rendered halo spread, supported surface-width visibility, source/gameplay material isolation, exact reset, save/reload, runtime settings and streamed glow interpolation. Captures are under `test-results/atmosphere-glow/`. The existing fog regression passed 31 checks after the control layout change, and Godot headless editor import passed. Existing Casino local-art raw-image import warnings remain; no shader errors or glow failures occurred. No performance benchmark was run.
 
 `tests/atmosphere_variants_regression.gd` covers storage, editable Default appearances with fixed identity, validation, concurrent-save rejection, weights, RNG isolation, per-Zone plan identity, production-location data edits without a changed bake fingerprint, material sharing/exclusions, Lab Save/Revert/Delete and context preservation. The production-location case uses `--production-fixture` in a disposable checkout and restores its files exactly; the ordinary test does not write production files.
 

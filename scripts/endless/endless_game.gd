@@ -478,9 +478,9 @@ func _blend_lighting(from_zone: int, to_zone: int, weight: float) -> void:
  var target: Environment = presentation._world_environment.environment
  for property: String in ["ambient_light_color", "ambient_light_energy", "tonemap_exposure", "ambient_light_sky_contribution", "adjustment_contrast", "adjustment_saturation", "glow_intensity", "glow_bloom", "glow_hdr_threshold", "fog_density", "fog_light_color", "fog_light_energy", "fog_sky_affect"]:
   target.set(property, lerp(before.environment.get(property), after.environment.get(property), weight))
- for property: String in ["fog_depth_begin", "fog_depth_end", "fog_depth_curve"]:
+ for property: String in ["fog_depth_begin", "fog_depth_end", "fog_depth_curve", "glow_strength", "glow_levels/3", "glow_levels/5", "glow_levels/7"]:
   target.set(property, lerp(before.environment.get(property), after.environment.get(property), weight))
- for property: String in ["tonemap_mode", "adjustment_enabled", "fog_mode"]:
+ for property: String in ["tonemap_mode", "adjustment_enabled", "fog_mode", "glow_normalized"]:
   target.set(property, before.environment.get(property) if weight < 0.5 else after.environment.get(property))
  for effect: String in ["fog", "glow"]:
   var enabled_property := effect + "_enabled"

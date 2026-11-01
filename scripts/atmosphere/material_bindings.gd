@@ -9,6 +9,7 @@ var seen_nodes := {}
 var materials := {}
 var scenery_materials := {}
 var parameters: Array[Dictionary] = []
+var halo_parameters: Array[Dictionary] = []
 var palette_parameters: Array[Dictionary] = []
 var palette_originals := {}
 var cloud_lights: Array[Dictionary] = []
@@ -78,6 +79,10 @@ func _copy(source: Material, scenery := false) -> Material:
   parameters.append({"material": copy, "property": "emission_energy" if copy is ShaderMaterial else "emission_energy_multiplier", "base": source.emission_energy_multiplier, "shader": copy is ShaderMaterial})
  elif source is ShaderMaterial and source.shader != null:
   for uniform: Dictionary in source.shader.get_shader_uniform_list():
+   if (semantic or scenery) and str(uniform.name) in ["neon_spread", "floor_neon_spread"]:
+    var width = source.get_shader_parameter(uniform.name)
+    if width == null: width = RenderingServer.shader_get_parameter_default(source.shader.get_rid(), uniform.name)
+    if typeof(width) == TYPE_FLOAT: halo_parameters.append({"material": copy, "property": uniform.name, "base": width})
    if str(uniform.name) not in SCALES: continue
    var value = source.get_shader_parameter(uniform.name)
    if value == null: value = RenderingServer.shader_get_parameter_default(source.shader.get_rid(), uniform.name)
@@ -140,6 +145,8 @@ func _picker_value(value: Variant) -> Variant:
  return value
 
 func apply_palette(values: Dictionary, sun: DirectionalLight3D, use_sun_direction: bool) -> void:
+ for entry: Dictionary in halo_parameters:
+  entry.material.set_shader_parameter(entry.property, float(entry.base) * float(values.get("surface_halo_spread", 1.0)))
  var input_ranges := {}
  for entry: Dictionary in palette_parameters:
   if entry.target is ShaderMaterial and not _palette_stacks(values, entry.key): input_ranges[entry.target] = true
@@ -212,6 +219,7 @@ func restore() -> void:
  slots.clear()
  seen_nodes.clear()
  parameters.clear()
+ halo_parameters.clear()
  palette_parameters.clear()
  palette_originals.clear()
  cloud_lights.clear()

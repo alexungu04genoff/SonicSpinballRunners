@@ -164,15 +164,10 @@ func _build_ui() -> void:
   scroll.add_child(controls)
   if group == "Glow & Fog":
    var note := Label.new()
-   note.text = "Depth / distance fog: fit start/end to the visible table below. Density is maximum opacity (try 0.5). Exponential fog uses density only. Directional Fog has its own tab."
+   note.text = "Enable Glow for screen halos. Lower Tight halo and raise Wide / soft or Diffuse for a softer look. Emission controls the source; Glow intensity controls the halo. Retro adds its own phosphor halo."
    note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
    note.add_theme_font_size_override("font_size", 12)
    controls.add_child(note)
-   fog_view_note = Label.new()
-   fog_view_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-   fog_view_note.add_theme_font_size_override("font_size", 12)
-   controls.add_child(fog_view_note)
-   fog_fit_button = _button(controls, "Fit distances to view", _fit_fog_to_view)
   if group == "Directional Fog":
    var note := Label.new()
    note.text = "Fog builds across the table from the view center. 0° = north, 90° = east. Start offsets the clear area; fade length reaches maximum density. Curve 1 is linear; higher values build later. Independent of ordinary fog."
@@ -199,13 +194,19 @@ func _build_ui() -> void:
     for spec: Array in ColorRanges.fields(): values[spec[1]] = ColorRanges.neutral(spec[1])
     set_value("ranges/enabled", false)
    )
-  for spec: Array in GROUPS[group]: _field(controls, spec)
-  if group == "Glow & Fog":
-   var note := Label.new()
-   note.text = "Emission scales existing emitters. Theme-owned water, clouds and accents are in Palette. No lights or rendering passes are added."
-   note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-   note.add_theme_font_size_override("font_size", 12)
-   controls.add_child(note)
+  for spec: Array in GROUPS[group]:
+   if spec[1] == "env/fog_enabled":
+    var note := Label.new()
+    note.text = "Depth / distance fog: fit start/end to the visible table below. Density is maximum opacity (try 0.5). Exponential fog uses density only. Directional Fog has its own tab."
+    note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    note.add_theme_font_size_override("font_size", 12)
+    controls.add_child(note)
+    fog_view_note = Label.new()
+    fog_view_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    fog_view_note.add_theme_font_size_override("font_size", 12)
+    controls.add_child(fog_view_note)
+    fog_fit_button = _button(controls, "Fit distances to view", _fit_fog_to_view)
+   _field(controls, spec)
  var actions := HBoxContainer.new()
  column.add_child(actions)
  save_button = _button(actions, "Save", func():
@@ -264,7 +265,7 @@ func _field(parent: Node, spec: Array) -> void:
    number.custom_arrow_step = spec[5]
    number.allow_greater = true
    number.allow_lesser = true
-   if key.begins_with("directional_fog/") or key.begins_with("env/fog_"):
+   if key.begins_with("directional_fog/") or key.begins_with("env/fog_") or key.begins_with("env/glow_") or key == "surface_halo_spread":
     number.allow_greater = false
     number.allow_lesser = false
    number.value_changed.connect(func(value: float): set_value(key, value))
@@ -290,6 +291,8 @@ func _field(parent: Node, spec: Array) -> void:
  field.focus_mode = Control.FOCUS_NONE
  row.add_child(field)
  widgets[key] = field
+ if key == "surface_halo_spread":
+  field.tooltip_text = "Scales the existing floor/edge material halo radius. 1.00 preserves the authored width. This is separate from screen-space Glow."
  if key == "sun/light_angular_distance" and renderer != "forward_plus":
   (field as SpinBox).editable = false
   field.tooltip_text = "Directional soft shadows require Forward+."
@@ -419,6 +422,9 @@ func set_scenery_visible(kind: String, enabled: bool) -> void:
   if child.get_meta("atmosphere_scenery", "far") == kind: child.visible = enabled
 
 func _bind_palette() -> void:
+ var halo: SpinBox = widgets["surface_halo_spread"]
+ halo.get_parent().visible = not emission.halo_parameters.is_empty()
+ halo.get_meta("slider").visible = halo.get_parent().visible
  for spec: Array in palette_fields: widgets.erase(spec[1])
  for child: Node in palette_controls.get_children():
   palette_controls.remove_child(child)
@@ -449,12 +455,12 @@ func _bind_palette() -> void:
 
 func _read_value(key: String) -> Variant:
  if DirectionalFog.DEFAULTS.has(key): return DirectionalFog.DEFAULTS[key]
- if key == "emission": return 1.0
+ if key in ["emission", "surface_halo_spread"]: return 1.0
  if key == "sun_pitch": return game.presentation._key_light.rotation_degrees.x
  if key == "sun_yaw": return game.presentation._key_light.rotation_degrees.y
  if key.begins_with("sky/"): return sky_material.get(key.get_slice("/", 1))
  var target: Object = game.presentation._world_environment.environment if key.begins_with("env/") else game.presentation._key_light
- return target.get(key.get_slice("/", 1))
+ return target.get(key.substr(key.find("/") + 1))
 
 func set_value(key: String, value: Variant) -> void:
  if not originals.has(key): return
@@ -519,13 +525,14 @@ func _apply(source: Dictionary) -> void:
   if key.begins_with("directional_fog/"): continue
   if key.begins_with("palette/") or key.begins_with("hue/") or key.begins_with("saturation/") or key.begins_with("override/") or key.begins_with("brightness/") or key.begins_with("ranges/") or key.begins_with("stack/"): continue
   if key == "emission": emission.apply(float(source[key]))
+  elif key == "surface_halo_spread": continue # Applied with the bound material controls below.
   elif key == "sun_pitch": game.presentation._key_light.rotation_degrees.x = float(source[key])
   elif key == "sun_yaw": game.presentation._key_light.rotation_degrees.y = float(source[key])
   elif key.begins_with("sky/"):
    if sky_material is ProceduralSkyMaterial: sky_material.set(key.get_slice("/", 1), source[key])
   else:
    var target: Object = game.presentation._world_environment.environment if key.begins_with("env/") else game.presentation._key_light
-   target.set(key.get_slice("/", 1), source[key])
+   target.set(key.substr(key.find("/") + 1), source[key])
  var changed_sun: bool = source.get("sun_pitch") != originals.get("sun_pitch") or source.get("sun_yaw") != originals.get("sun_yaw")
  emission.apply_palette(source, game.presentation._key_light, changed_sun)
 

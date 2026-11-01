@@ -26,11 +26,19 @@ The inspector includes these lighting tabs (alongside Variants, Hue and Scenery)
 | Light | Exposure; Linear/Reinhard/Filmic/ACES/AgX tonemapping; ambient energy/color and sky contribution; directional energy/color, elevation/azimuth and specular strength; color-adjustment toggle, contrast and saturation |
 | Sky | Background brightness; procedural sky top/horizon and ground bottom/horizon colors, with separate sky/ground blends; solid background color where applicable; background scenery visibility |
 | Palette | Theme-specific water, cloud, scenery, accent and existing spill-light colors; supported intensity controls |
-| Glow & Fog | Glow enable/intensity, bloom and threshold; material emission multiplier; ordinary fog enable, mode, density, depth start/end distance, curve, color, brightness and sky influence |
+| Glow & Fog | Glow enable/intensity, spread, tight/wide/diffuse halo weights, brightness normalization, bloom and threshold; material emission multiplier and supported surface-halo width; ordinary fog enable, mode, density, depth start/end distance, curve, color, brightness and sky influence |
 | Directional Fog | Independent enable, angle, start offset, fade length, maximum density, curve, color and brightness |
 | Shadows | Enable, opacity, directional softness, depth/normal bias, distance, and one/two/four shadow maps |
 
 Numeric fields support typing and sliders. **Show original atmosphere** switches the live lighting, sky/background and theme palette back to the loaded theme baseline without discarding the draft. Turning it off restores the tuned atmosphere. Editing any value returns to the tuned preview. This is a same-renderer comparison, not an emulation of Compatibility lighting under Vulkan.
+
+## Glow shaping
+
+**Emission multiplier** changes how bright the emitters are; it does not change their size. Enable **Glow** to shape the screen-space halo in every theme. **Glow spread** adjusts its blur spread. Lower **Tight halo** and raise **Wide / soft halo** or **Diffuse halo** for a broader, smoother result. **Normalize halo brightness** balances the active halo weights; use **Glow intensity** to set the resulting halo brightness. A useful starting point is Tight `0.10`, Wide `0.80`, Diffuse `0.70`, normalization on, and intensity `0.65`. These are suggestions, not new defaults.
+
+**Surface halo width** appears only when the active materials expose a supported built-in halo. In the current local Chemical artwork it scales both the floor-panel and edge-strip falloff from their authored radii (`1.00` is unchanged). This is separate from screen glow: it widens the light painted onto the surface without changing the solid lamp geometry. Other current themes use the shared screen-glow controls. Source materials and the user's existing appearances remain unchanged until edited; all new controls save with drafts and production variants, and native glow settings blend between streamed Zones.
+
+Retro adds its own phosphor halo after the scene. Compare with Retro off when shaping native glow, then turn it back on for the final look. No new lights, custom screen effects, materials or geometry are added by adjusting these controls; they reuse the existing material uniforms and Godot glow settings. Performance tuning remains a manual check.
 
 ## Fog shaping
 
