@@ -11,7 +11,7 @@ func _initialize() -> void:
  assert(pack.pck_start(path) == OK)
  assert(pack.add_file("res://project.godot", folder.path_join("project.godot")) == OK)
  assert(pack.add_file("res://probe.gd", folder.path_join("probe.gd")) == OK)
- for source: String in ["res://scripts/atmosphere/variants.gd", "res://scripts/atmosphere/fields.gd", "res://scripts/themes/theme_atmosphere.gd"]:
+ for source: String in ["res://scripts/portable_workspace.gd", "res://scripts/atmosphere/variants.gd", "res://scripts/atmosphere/fields.gd", "res://scripts/themes/theme_atmosphere.gd"]:
   assert(pack.add_file(source, source) == OK)
  for theme: String in preload("res://scripts/atmosphere/variants.gd").THEMES:
   var source := "res://data/atmospheres/" + theme + ".cfg"

@@ -696,7 +696,7 @@ func _button(parent: Node, id: String, label: String, action: Callable, hint: St
 	buttons[id] = button
 
 func _build_dialogs() -> void:
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(DEFAULT_ACT_DIRECTORY))
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_act_directory()))
 	save_dialog = FileDialog.new()
 	save_dialog.title = "Save Act geometry"
 	save_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
@@ -2620,6 +2620,8 @@ func _bake_current() -> void:
 
 
 func _act_directory() -> String:
+	var workspace = preload("res://scripts/portable_workspace.gd")
+	if workspace.enabled(): return workspace.act_directory()
 	if OS.has_feature("editor"):
 		return ProjectSettings.globalize_path(DEFAULT_ACT_DIRECTORY)
 	var directory := OS.get_executable_path().get_base_dir().path_join("Acts")

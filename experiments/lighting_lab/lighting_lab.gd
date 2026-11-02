@@ -3,6 +3,8 @@ extends "res://experiments/visual_lab/visual_lab.gd"
 var lighting_controls: CanvasLayer
 
 func _ready() -> void:
+ # Exported authoring tools edit external Acts so scenery sidecars remain writable.
+ authored_act_path = preload("res://scripts/portable_workspace.gd").external_act_path(authored_act_path)
  # This review tool should expose available rendering headroom by default.
  # Simulation frequency remains the project's authoritative 120 Hz.
  Engine.max_fps = 0

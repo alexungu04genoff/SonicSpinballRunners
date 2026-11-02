@@ -3,7 +3,7 @@ extends RefCounted
 const DIRECTORY := "res://data/atmospheres"
 const Fields := preload("res://scripts/atmosphere/fields.gd")
 const THEMES := ["green_hill", "chemical_plant", "rooftop_run", "casino_night", "sky_sanctuary", "ice_cap", "lava_reef", "aquarium_park"]
-var directory := DIRECTORY
+var directory: String = preload("res://scripts/portable_workspace.gd").atmosphere_directory()
 var error := ""
 
 static func baseline() -> Dictionary:
