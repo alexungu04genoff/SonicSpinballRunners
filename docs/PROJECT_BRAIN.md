@@ -3279,3 +3279,10 @@ Low-poly terrain is a study, not a migration: `experiments/pinball_vocabulary/st
 # THREE AUTHORING TRIALS — 2026-11-04
 
 Alex asked for a small batch that learns the existing Acts before we make more. Relay Garden, Switchback Climb and Side Door live under `data/acts/Candidates`, outside the production pool. They use smooth authored contours, multi-height standard paddles, 40/36/44 rings, two Buzz Bombers each and established mechanics. No new pinball toys in these. Springs are 280/300 px/s, not orbital launch equipment. Physics/contact and content checks passed; actual route feel remains Alex's call. See [the source assessment, values and first playtest questions](ACT_CANDIDATES.md). Do not promote this batch or interpret its tuning as confirmed production direction yet.
+
+
+# FIVE TABLE THESES — 2026-11-04
+
+Alex refined the vocabulary after the first three trials felt too much like smooth basins with objects scattered around. Rings, Buzz, main flippers, Slingshots, routing Springs and ordinary bumpers are baseline fabric, not the featured-mechanic quota. Each table should instead advertise two or three systems through shots and terrain. Five separate experiments now live under `data/acts/Experiments`: Orbit Garden, Rail Exchange, Spinner Falls, Split Decision and Lockbox. Their silhouettes are island/orbit, crossover, bowl, fork and vault. See [the overview, concise theses and actual system constraints](ACT_THESES.md).
+
+Alex reported that the 16-segment study looked good and showed no obvious major feel difference. This batch uses broad faceted collision/visual contours, with production Acts still untouched. This is permission to experiment, not permission to migrate everything. The Rail entry stays at 315 px/s; we lowered its first overambitious climb instead of turning the Spring into a space program. Drop Banks still do not command Gates: Orbit's targets physically open the slot, and Lockbox's separate Switch Bank opens its Gate. All five run and the small physical smoke pass passed; whether they feel authored and different is Alex's next verdict.

@@ -1,0 +1,256 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=3]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+format_version = 17
+library_version = 2
+title = "Lockbox - Experiment"
+grid_size = Vector2i(12, 11)
+cell_size = 50.0
+placements = [{
+"shape_id": "composite",
+"base_size": Vector2i(12, 11),
+"anchor": Vector2i(0, 0),
+"quarter_turns": 0,
+"flip_h": false,
+"flip_v": false,
+"composite_version": 1,
+"smoothing_strength": 0.0,
+"outline": PackedVector2Array(0.0, 0.0, 5.0, 0.0, 4.6, 0.7, 3.6, 0.7, 3.2, 1.2, 3.2, 3.2, 4.2, 4.0, 5.3, 4.4, 5.3, 5.8, 4.2, 6.4, 2.0, 6.0, 1.2, 8.0, 2.8, 9.6, 5.0, 11.0, 0.0, 11.0)
+},
+{
+"shape_id": "composite",
+"base_size": Vector2i(12, 11),
+"anchor": Vector2i(0, 0),
+"quarter_turns": 0,
+"flip_h": false,
+"flip_v": false,
+"composite_version": 1,
+"smoothing_strength": 0.0,
+"outline": PackedVector2Array(12.0, 0.0, 7.0, 0.0, 7.4, 0.7, 8.4, 0.7, 8.8, 1.2, 8.8, 3.2, 7.8, 4.0, 6.7, 4.4, 6.7, 5.8, 7.8, 6.4, 10.0, 6.0, 10.8, 8.0, 9.2, 9.6, 7.0, 11.0, 12.0, 11.0)
+}]
+gameplay_objects = [{
+"type": "left_flipper",
+"position": Vector2(250, 550),
+"rotation_degrees": 18.334649444,
+"properties": {
+
+},
+"object_id": "lockbox_0"
+},
+{
+"type": "right_flipper",
+"position": Vector2(350, 550),
+"rotation_degrees": 161.665350556,
+"properties": {
+
+},
+"object_id": "lockbox_1"
+},
+{
+"type": "slingshot",
+"position": Vector2(205, 470),
+"rotation_degrees": 35.0,
+"properties": {
+"width": 60.0,
+"strength": 260.0
+},
+"object_id": "lockbox_2"
+},
+{
+"type": "slingshot",
+"position": Vector2(395, 470),
+"rotation_degrees": -35.0,
+"properties": {
+"width": 60.0,
+"strength": 260.0
+},
+"object_id": "lockbox_3"
+},
+{
+"type": "drop_target_bank",
+"position": Vector2(300, 300),
+"rotation_degrees": 0.0,
+"properties": {
+"target_count": 3.0,
+"spacing": 24.0,
+"target_size": 22.0,
+"color": "yellow",
+"completion_bonus": 500.0,
+"reset_delay": 0.0
+},
+"object_id": "lockbox_4"
+},
+{
+"type": "one_way_gate",
+"position": Vector2(300, 230),
+"rotation_degrees": 180.0,
+"properties": {
+"width": 70.0,
+"initial_state": "closed",
+"visual_mode": "auto"
+},
+"object_id": "lockbox_5"
+},
+{
+"type": "switch_target",
+"position": Vector2(195, 350),
+"rotation_degrees": 0.0,
+"properties": {
+"scale": 0.65,
+"color": "blue",
+"label": "LEFT",
+"score_reward": 25.0
+},
+"object_id": "lockbox_6"
+},
+{
+"type": "switch_target",
+"position": Vector2(405, 350),
+"rotation_degrees": 0.0,
+"properties": {
+"scale": 0.65,
+"color": "blue",
+"label": "RIGHT",
+"score_reward": 25.0
+},
+"object_id": "lockbox_7"
+},
+{
+"type": "spring",
+"position": Vector2(300, 400),
+"rotation_degrees": 0.0,
+"properties": {
+"width": 30.0,
+"launch_strength": 270.0,
+"color": "yellow"
+},
+"object_id": "lockbox_8"
+},
+{
+"type": "spring",
+"position": Vector2(300, 175),
+"rotation_degrees": 0.0,
+"properties": {
+"width": 24.0,
+"launch_strength": 160.0,
+"color": "yellow"
+},
+"object_id": "lockbox_9"
+},
+{
+"type": "round_bumper",
+"position": Vector2(150, 410),
+"rotation_degrees": 0.0,
+"properties": {
+"scale": 1.3
+},
+"object_id": "lockbox_10"
+},
+{
+"type": "round_bumper",
+"position": Vector2(450, 410),
+"rotation_degrees": 0.0,
+"properties": {
+"scale": 1.3
+},
+"object_id": "lockbox_11"
+},
+{
+"type": "round_bumper",
+"position": Vector2(210, 140),
+"rotation_degrees": 0.0,
+"properties": {
+"scale": 1.0
+},
+"object_id": "lockbox_12"
+},
+{
+"type": "round_bumper",
+"position": Vector2(390, 140),
+"rotation_degrees": 0.0,
+"properties": {
+"scale": 1.0
+},
+"object_id": "lockbox_13"
+},
+{
+"type": "buzz_bomber",
+"position": Vector2(300, 140),
+"rotation_degrees": 0.0,
+"properties": {
+"scale": 1.0,
+"patrol_left": -25.0,
+"patrol_right": 25.0,
+"patrol_speed": 65.0,
+"respawn_delay": 15.0,
+"starting_direction": "right"
+},
+"object_id": "lockbox_14"
+}]
+switch_banks = [{
+"members": ["lockbox_6",
+"lockbox_7"],
+"gates": ["lockbox_5"],
+"actions": [],
+"label": "Unlock vault",
+"reset_delay": 0.0,
+"completion_bonus": 500.0,
+"bank_id": "lockbox_bank_0"
+}]
+ring_trails = [{
+"start": Vector2(210, 435),
+"end": Vector2(235, 365),
+"spacing": 22.0,
+"bonus_rack": false,
+"completion_bonus": 0,
+"timeout": 25.0,
+"respawn_delay": 18.0,
+"pattern_id": "lockbox_rings_0"
+},
+{
+"start": Vector2(390, 435),
+"end": Vector2(365, 365),
+"spacing": 22.0,
+"bonus_rack": false,
+"completion_bonus": 0,
+"timeout": 25.0,
+"respawn_delay": 18.0,
+"pattern_id": "lockbox_rings_1"
+},
+{
+"start": Vector2(300, 350),
+"end": Vector2(300, 265),
+"spacing": 20.0,
+"bonus_rack": false,
+"completion_bonus": 0,
+"timeout": 25.0,
+"respawn_delay": 18.0,
+"pattern_id": "lockbox_rings_2"
+},
+{
+"kind": "ellipse",
+"start": Vector2(245, 70),
+"end": Vector2(355, 140),
+"spacing": 20.0,
+"fill": false,
+"rotation_degrees": 0.0,
+"bonus_rack": true,
+"completion_bonus": 500,
+"timeout": 12.0,
+"respawn_delay": 11.0,
+"pattern_id": "lockbox_rings_3"
+}]
+decor_seed = "lockbox_thesis"
+decor_slots = []
+entry_start_x = 5
+entry_width = 2
+exit_start_x = 5
+exit_width = 2
+score_target = 0
+activation_y = 470.0
+spawn_position = Vector2(300, 505)
+goal_position = Vector2(300, 55)
+goal_diameter_cells = 1.0
