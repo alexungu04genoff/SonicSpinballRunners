@@ -119,7 +119,7 @@ func run() -> void:
  check(is_equal_approx(data.longest_combo_seconds, 15.35) and data.longest_combo_max_multiplier == 4 and data.highest_multiplier == 4, "Longest combo uses the gameplay clock and retains its peak")
  var exported := preload("res://scripts/prototype/run_telemetry.gd").export_run({"seed": game.run_seed, "practice": false, "character": "shadow", "won": false, "score": game.score, "normal_score": summary.normal_score, "seconds": game.elapsed, "drains": 2, "buddies": game.buddies.levels, "buddy_contributions": game.buddy_contributions, "acts": game.results})
  var copy: Dictionary = JSON.parse_string(JSON.stringify(exported))
- check(copy.telemetry_format_version == 2 and data.score_by_category.keys().all(func(key): return int(copy.acts[0].score_by_category[key]) == data.score_by_category[key]) and copy.acts[0].score_at_target == data.score_at_target, "Copied V2 JSON round-trips new counters and original raw timing snapshots")
+ check(copy.telemetry_format_version == preload("res://scripts/prototype/run_telemetry.gd").FORMAT_VERSION and data.score_by_category.keys().all(func(key): return int(copy.acts[0].score_by_category[key]) == data.score_by_category[key]) and copy.acts[0].score_at_target == data.score_at_target, "Copied JSON round-trips counters and original raw timing snapshots")
  var retired_mechanics: Node = neighbor.runtime.mechanics
  await game.prepare_to_close()
  game.free()

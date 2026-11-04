@@ -212,6 +212,9 @@ func _transfer_arrived() -> void:
 
 func _act_result(cleared: bool) -> Dictionary:
  var row := {"act": active_sequence + 1, "zone": active.plan.zone + 1, "zone_act": active.plan.act + 1, "theme": active.plan.theme, "source": source_paths[active.plan.id], "title": act_title(active), "cleared": cleared, "score": act_score, "target": act_score_target, "seconds": elapsed - act_started_at, "drains": ball_number - act_start_ball, "categories": act_score_breakdown.duplicate(), "buddy_contributions": act_buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "buddy_state": buddies.state(), "normal_score": act_score - Buddies.total(act_buddy_contributions)}
+ row["authored_difficulty"] = active.document.authored_difficulty
+ row["authored_difficulty_label"] = active.document.difficulty_label()
+ row["act_fingerprint"] = active.document.fingerprint()
  row["telemetry"] = telemetry.finish_act(row, elapsed)
  return row
 

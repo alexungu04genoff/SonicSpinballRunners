@@ -12,6 +12,7 @@ const Composite = preload("res://scripts/act_editor/composite_terrain.gd")
 const Decor = preload("res://scripts/act_editor/decor_slots.gd")
 const DecorScatter = preload("res://scripts/act_editor/decor_scatter.gd")
 const Themes = preload("res://scripts/themes/theme_registry.gd")
+const ReviewPanel = preload("res://scripts/act_editor/act_review_panel.gd")
 const EXAMPLE_PATH := "res://data/acts/curve_garden.tres"
 const DEFAULT_ACT_DIRECTORY := "res://data/acts"
 const HISTORY_LIMIT := 100
@@ -112,6 +113,8 @@ var gameplay_visible_field: CheckBox
 var decor_snap_field: CheckBox
 var decor_info: Label
 var inspector: VBoxContainer
+var review_panel: ScrollContainer
+var _thesis_edit_recorded := false
 var marker_reminders: VBoxContainer
 var verify_dialog: AcceptDialog
 var _decor_position_text: Array[String] = ["", ""]
@@ -412,10 +415,19 @@ func _build_ui() -> void:
 	workspace.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	workspace.add_theme_constant_override("separation", 4)
 	body.add_child(workspace)
+	var inspector_tabs := TabContainer.new()
+	inspector_tabs.custom_minimum_size.x = 300
+	inspector_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	body.add_child(inspector_tabs)
 	var inspector_scroll := ScrollContainer.new()
-	inspector_scroll.custom_minimum_size.x = 300
+	inspector_scroll.name = "Properties"
 	inspector_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	body.add_child(inspector_scroll)
+	inspector_tabs.add_child(inspector_scroll)
+	review_panel = ReviewPanel.new()
+	inspector_tabs.add_child(review_panel)
+	review_panel.difficulty_changed.connect(set_authored_difficulty)
+	review_panel.thesis_changed.connect(set_design_thesis)
+	review_panel.thesis_edit_started.connect(func(): _thesis_edit_recorded = false)
 	inspector = VBoxContainer.new()
 	inspector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	inspector.add_theme_constant_override("separation", 8)
@@ -1650,6 +1662,7 @@ func _snapshot() -> Dictionary:
 		"marker": canvas.selected_marker, "ring": canvas.selected_ring_index, "decor": canvas.selected_decor_index}
 
 func _record_edit() -> void:
+	review_panel.reset_checklist()
 	undo_stack.append(_snapshot())
 	if undo_stack.size() > HISTORY_LIMIT:
 		undo_stack.pop_front()
@@ -1678,6 +1691,8 @@ func redo() -> void:
 	_set_status("Redid one edit.")
 
 func _restore_snapshot(snapshot: Dictionary) -> void:
+	_thesis_edit_recorded = false
+	review_panel.reset_checklist()
 	var active_decor_brush: Dictionary = canvas.decor_brush.duplicate(true)
 	var active_brush: Dictionary = canvas.brush.duplicate(true)
 	var active_gameplay_brush: Dictionary = canvas.gameplay_brush.duplicate(true)
@@ -1718,6 +1733,8 @@ func is_dirty() -> bool:
 	return document != null and (document.fingerprint() != saved_fingerprint or title_field.text != document.title)
 
 func new_document() -> void:
+	_thesis_edit_recorded = false
+	review_panel.reset_checklist()
 	_clear_composite_preview()
 	document = ActData.new()
 	_last_score_target = 3000
@@ -1759,6 +1776,8 @@ func load_from(path: String) -> bool:
 		_show_error("Could not load this Act. Your current edits are still open.\n" + result.error)
 		return false
 	_clear_composite_preview()
+	_thesis_edit_recorded = false
+	review_panel.reset_checklist()
 	document = result.document
 	selected_bank_id = ""
 	_title_edit_recorded = false
@@ -1864,6 +1883,25 @@ func _edit_title(value: String) -> void:
 	buttons.undo.disabled = undo_stack.is_empty()
 	buttons.redo.disabled = redo_stack.is_empty()
 
+func set_authored_difficulty(value: int) -> void:
+	if _refreshing or document == null or composite_preview_active or value < 1 or value > 5 or value == document.authored_difficulty:
+		return
+	_record_edit()
+	document.authored_difficulty = value
+	_thesis_edit_recorded = false
+	_refresh()
+
+func set_design_thesis(value: String) -> void:
+	if _refreshing or document == null or composite_preview_active:
+		return
+	value = value.left(ActData.MAX_DESIGN_THESIS_LENGTH)
+	if value == document.design_thesis: return
+	if not _thesis_edit_recorded:
+		_record_edit()
+		_thesis_edit_recorded = true
+	document.design_thesis = value
+	_refresh()
+
 func _resize_grid() -> void:
 	if _refreshing or document == null or composite_preview_active:
 		return
@@ -1908,6 +1946,7 @@ func _refresh() -> void:
 	if document == null:
 		return
 	_refreshing = true
+	review_panel.refresh(document, not composite_preview_active)
 	canvas_decor_visible_field.set_pressed_no_signal(canvas.show_decor)
 	gameplay_visible_field.set_pressed_no_signal(canvas.show_gameplay)
 	for button: Button in buttons.values():

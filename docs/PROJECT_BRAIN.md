@@ -1,5 +1,13 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Act Review: facts first, Alex judges — 2026-11-04
+
+Bro added Act Review beside Properties in the editor's right sidebar. Five authored difficulty levels run from Relaxed to Expert, defaulting to Standard, plus an optional short Design Thesis. This is a label for intent, not a hidden balance knob. No geometry classifier gets to tell Alex how hard his table is.
+
+The panel counts real generated Rings (including rails), baseline objects and distinct featured families. Rings, Buzz, flippers, Slingshots, Springs and ordinary bumpers stay outside that family count. Switch targets and banks share one family. A few factual hints and Ball-scale measurements sit beside a collapsible human checklist; checks clear after edits and never block anything. No promises about safe shots, fun or fairness.
+
+Act format 18 preserves the fields through saves and undo; legacy Acts become Standard in memory. Full-document fingerprints still own bake freshness, so old bakes need the normal rebake. Telemetry v3 snapshots difficulty and revision with each Act's existing playtest evidence. Analytics can come later and can only suggest review. See [Act Review](ACT_REVIEW.md). Alex still gets the final say after playing the thing.
+
 > Repository edition: shared context for Alex, Sol and Codex. The chat-opening directions below belong to the original handoff, not to every repository task. Current code, current docs and newer agreed decisions win. Update major facts together; keep the jokes and the archaeology.
 
 Hey! This is a context transfer for an ongoing passion project called **Sonic Spinball Runners**.

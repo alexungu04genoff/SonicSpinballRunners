@@ -1,7 +1,9 @@
 class_name ActGeometry
 extends Resource
 ## A single Act's terrain, connectors, gameplay objects and lifecycle authoring data.
-const FORMAT_VERSION := 17
+const FORMAT_VERSION := 18
+const DIFFICULTY_LABELS := ["Relaxed", "Easy", "Standard", "Hard", "Expert"]
+const MAX_DESIGN_THESIS_LENGTH := 240
 const MAX_SCORE_TARGET := 100000000
 ## The system gutter is outside terrain bounds and is never a thirteenth terrain row.
 const RED_GUTTER_CELLS := 1
@@ -34,6 +36,9 @@ const OPTIONAL_TRANSFORM_FIELDS := ["offset", "terrain_scale", "fine_rotation_de
   library_version = value
   _library_version_was_set = true
 @export var title = "Untitled Act"
+## Human-authored review metadata. Never used to resolve gameplay rules.
+@export var authored_difficulty = 3
+@export var design_thesis = ""
 @export var grid_size = Vector2i(12, 12)
 @export var cell_size = 50.0
 @export var placements = []
@@ -97,6 +102,10 @@ func red_gutter_bounds() -> Rect2:
 
 func validation_errors() -> PackedStringArray:
  var errors := PackedStringArray()
+ if typeof(authored_difficulty) != TYPE_INT or authored_difficulty < 1 or authored_difficulty > 5:
+  errors.append("Authored difficulty must be an integer from 1 (Relaxed) to 5 (Expert).")
+ if typeof(design_thesis) != TYPE_STRING or design_thesis.length() > MAX_DESIGN_THESIS_LENGTH:
+  errors.append("Design thesis must be a string of at most %d characters; empty is allowed." % MAX_DESIGN_THESIS_LENGTH)
  if goal_position != null and (not goal_position is Vector2 or not goal_position.is_finite()):
   errors.append("Goal position must be a finite Vector2 or the default spawn position.")
  if typeof(goal_diameter_cells) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(float(goal_diameter_cells)) or float(goal_diameter_cells) < 0.25 or float(goal_diameter_cells) > 8.0:
@@ -381,13 +390,18 @@ func fingerprint() -> String:
  else:
   ordered_trails.append(ring_trails)
  # Hash native scalar bits: decimal formatting can collapse adjacent float values.
- return var_to_bytes([format_version, library_version, title, grid_size, normalized_cell_size, ordered_placements, entry_start_x, entry_width, exit_start_x, exit_width, ordered_objects, normalized_activation, spawn_position, ordered_trails, decor_seed, DECOR.fingerprint_records(decor_slots), BANKS.fingerprint_records(switch_banks), score_target, goal_position, float(goal_diameter_cells)]).hex_encode().sha256_text()
+ return var_to_bytes([format_version, library_version, title, grid_size, normalized_cell_size, ordered_placements, entry_start_x, entry_width, exit_start_x, exit_width, ordered_objects, normalized_activation, spawn_position, ordered_trails, decor_seed, DECOR.fingerprint_records(decor_slots), BANKS.fingerprint_records(switch_banks), score_target, goal_position, float(goal_diameter_cells), authored_difficulty, design_thesis]).hex_encode().sha256_text()
+
+func difficulty_label() -> String:
+ return DIFFICULTY_LABELS[authored_difficulty - 1]
 
 func copy_document() -> Resource:
  var result: Resource = get_script().new()
  result.format_version = format_version
  result.library_version = library_version
  result.title = title
+ result.authored_difficulty = authored_difficulty
+ result.design_thesis = design_thesis
  result.grid_size = grid_size
  result.cell_size = cell_size
  result.placements = placements.duplicate(true) if typeof(placements) == TYPE_ARRAY else placements
@@ -421,7 +435,9 @@ static func load_document(path: String) -> Dictionary:
  if typeof(loaded.format_version) == TYPE_INT and loaded.format_version < 16 and (loaded.goal_position != null or loaded.goal_diameter_cells != 1.0):
   return {"document": null, "error": "Authored goal settings require Act format 16."}
  var source_version: Variant = loaded.format_version
- if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [15, 16]: loaded.format_version = FORMAT_VERSION
+ if typeof(source_version) == TYPE_INT and source_version < 18 and (loaded.authored_difficulty != 3 or loaded.design_thesis != ""):
+  return {"document": null, "error": "Authored difficulty and design thesis require Act format 18."}
+ if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [15, 16, 17]: loaded.format_version = FORMAT_VERSION
  if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
   if typeof(loaded.score_target) != TYPE_INT or loaded.score_target != 0:
    return {"document": null, "error": "Act score targets require Act format 15."}

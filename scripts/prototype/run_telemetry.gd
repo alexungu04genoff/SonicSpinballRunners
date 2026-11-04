@@ -1,5 +1,6 @@
 extends RefCounted
 ## Passive snapshots on the existing gameplay clock. No RNG, I/O or scoring writes.
+const FORMAT_VERSION := 3
 var started_at := 0.0
 var target_at: Variant = null
 var goal_at: Variant = null
@@ -121,6 +122,9 @@ func finish_act(row: Dictionary, ended_at: float) -> Dictionary:
  return {
   "zone": row.zone, "act": row.zone_act, "run_act": row.act,
   "title": row.title, "source": row.source, "cleared": row.cleared,
+  "authored_difficulty": row.get("authored_difficulty"),
+  "authored_difficulty_label": row.get("authored_difficulty_label"),
+  "act_fingerprint": row.get("act_fingerprint"),
   "target": row.target, "theme": row.get("theme", ""),
   "act_start_time_seconds": started_at, "target_ready_time_seconds": target_at,
   "goal_touched_time_seconds": goal_at, "act_end_time_seconds": end,
@@ -154,7 +158,7 @@ static func export_run(summary: Dictionary) -> Dictionary:
   buddies[id] = {"level": summary.buddies[id], "score_contribution": summary.buddy_contributions.get(id, 0)}
  var acts: Array = []
  for row: Dictionary in summary.acts: acts.append(row.telemetry.duplicate(true))
- return {"telemetry_format_version": 2, "run_seed": summary.seed,
+ return {"telemetry_format_version": FORMAT_VERSION, "run_seed": summary.seed,
   "run_configuration": summary.get("run_configuration", {}).duplicate(true),
   "configuration_fingerprint": summary.get("configuration_fingerprint", ""),
   "course": summary.get("course", []).duplicate(true),

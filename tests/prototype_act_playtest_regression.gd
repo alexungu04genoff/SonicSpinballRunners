@@ -41,6 +41,10 @@ func run() -> void:
   game.auto_launch_time = -1.0
   var goal: Node3D = game.active.runtime.goal_ring
   check(game.run_plan.size() == 1 and game.resident.size() == 1 and game.practice_mode, "One-Act Practice uses only the requested source")
+  # Exercise a nondefault authored value without rewriting the experimental source.
+  game.active.document.authored_difficulty = 4
+  var partial: Dictionary = game._act_result(false).telemetry
+  check(partial.authored_difficulty == game.active.document.authored_difficulty and partial.authored_difficulty_label == game.active.document.difficulty_label() and partial.act_fingerprint == game.active.document.fingerprint(), "Partial Act telemetry captures authored difficulty and exact document revision")
   check(goal.is_visible_in_tree() and goal.center == game.active.document.goal_center() and not goal.unlocked, "Authored Goal is rendered at its saved position and starts locked")
   game._observe_authored_motion(goal.center, goal.center)
   check(not game.finished, "Goal cannot complete before the Prototype score target")
@@ -56,6 +60,11 @@ func run() -> void:
    root.get_texture().get_image().save_png("res://test-results/prototype-act-goal.png")
   game._observe_authored_motion(goal.center - Vector2(40, 0), goal.center + Vector2(40, 0))
   check(game.finished and session.state == "results" and session.last_summary.won and session.last_summary.acts.size() == 1, "Goal contact completes the Act through the Prototype results screen")
+  var exported: Dictionary = preload("res://scripts/prototype/run_telemetry.gd").export_run(session.last_summary)
+  var copied: Dictionary = JSON.parse_string(JSON.stringify(exported))
+  check(copied.telemetry_format_version == 3 and copied.acts[0].authored_difficulty == partial.authored_difficulty and copied.acts[0].act_fingerprint == partial.act_fingerprint, "Completed Act exports difficulty and fingerprint in telemetry v3")
+  var archived: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(session.archive_result.path))
+  check(archived.telemetry_format_version == 3 and archived.acts[0].authored_difficulty == 4 and archived.acts[0].authored_difficulty_label == "Hard", "Automatic local archive retains the nondefault authored rating")
   check(session.best_score == 0 and session.practice_best_score == 0 and not FileAccess.file_exists(session.settings_path), "Act tests do not overwrite normal run preferences or records")
   await session.start_run()
   started = await wait_started()
