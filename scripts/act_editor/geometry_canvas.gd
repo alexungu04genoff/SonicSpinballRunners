@@ -964,7 +964,7 @@ func _draw_gameplay_objects() -> void:
  if _patrol_dragging and _patrol_index < 0:
   ObjectPreview.draw_object(self, _patrol_preview, local_pixels_to_screen(_patrol_preview.position), scale_factor, _local_cell_size(), true, true)
  var active_brush := _drop_gameplay_brush if not _drop_gameplay_brush.is_empty() else gameplay_brush
- if not _patrol_dragging and _rail_draft.is_empty() and (_hovering or not _drop_gameplay_brush.is_empty()) and _inside_grid(_cursor_position) and _valid_gameplay_stamp(active_brush):
+ if not _bank_dragging and not _patrol_dragging and _rail_draft.is_empty() and (_hovering or not _drop_gameplay_brush.is_empty()) and _inside_grid(_cursor_position) and _valid_gameplay_stamp(active_brush):
   var point := legal_gameplay_position(screen_to_local_pixels(_cursor_position), _alt_held)
   ObjectPreview.draw_object(self, active_brush, local_pixels_to_screen(point), scale_factor, _local_cell_size(), false, true)
   if active_brush.type == "spring":

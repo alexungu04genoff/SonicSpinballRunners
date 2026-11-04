@@ -2323,6 +2323,10 @@ func _refresh_mechanics_properties() -> void:
 		label.focus_exited.connect(func():
 			if label.text != properties.label: set_gameplay_property("label", label.text))
 		mechanics_properties.add_child(label)
+	if item.type == "slingshot":
+		detail_label.text = "Bright rubber is the active face. Rotation aims the fixed-speed launch; back and ends rebound passively."
+	if item.type == "drop_target_bank":
+		detail_label.text = "Drag a row to place a Bank. Move/rotate as one object. Targets drop independently; reset delay 0 keeps the Bank down."
 	if item.type == "spring":
 		var profile := OptionButton.new()
 		profile.add_item("Arc: Balanced")

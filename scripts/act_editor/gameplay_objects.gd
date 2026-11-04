@@ -168,7 +168,7 @@ static func property_errors(placement: Dictionary) -> PackedStringArray:
    if typeof(values[key]) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(float(values[key])) or float(values[key]) < limits[key][0] or float(values[key]) > limits[key][1]:
     errors.append(str(key) + " is outside its supported finite range.")
    elif key in ["target_ticks", "target_count"] and float(values[key]) != floorf(float(values[key])):
-    errors.append("Spinner target ticks must be a whole number.")
+    errors.append("Target count must be a whole number." if key == "target_count" else "Spinner target ticks must be a whole number.")
   elif key in ["completion_enabled", "rings_enabled"] and typeof(values[key]) != TYPE_BOOL:
    errors.append("Enable flags must be boolean.")
   elif key == "starting_direction" and values[key] not in ["left", "right"]:

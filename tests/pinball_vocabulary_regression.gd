@@ -18,9 +18,9 @@ func run() -> void:
  var bank := Objects.bank_from_span(Objects.make_placement("drop_target_bank"), Vector2(150, 150), Vector2(278, 150))
  bank.properties.reset_delay = 0.5
  act.gameplay_objects = [sling, bank]
- check(act.save_document("user://pinball-vocabulary-test.tres") == OK, "Slingshot placement saves")
+ check(act.save_document("user://pinball-vocabulary-test.tres") == OK, "Slingshot and Bank placements save")
  var loaded := Document.load_document("user://pinball-vocabulary-test.tres")
- check(loaded.document != null and loaded.document.fingerprint() == act.fingerprint(), "Slingshot reload is exact")
+ check(loaded.document != null and loaded.document.fingerprint() == act.fingerprint(), "Slingshot and Bank reload exactly")
  var tuning := PhysicsTuning.new()
  var controls := PlaygroundInput.new()
  controls.virtual_enabled = true
