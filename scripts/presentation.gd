@@ -2,6 +2,7 @@ class_name TablePresentation
 extends Node3D
 ## No CollisionObject3D exists in this tree. This mapping is used for every visual.
 const PinballModels = preload("res://scripts/pinball_models.gd")
+const Density = preload("res://scripts/presentation_density.gd")
 ## Optional slot overrides: rubber, face, trim, mark, paddle and base. Rebuild to apply.
 @export var pinball_palette: Dictionary = {}
 var _pinball_materials: Dictionary = {}
@@ -90,21 +91,11 @@ func mesh_node(mesh: Mesh, mat: Material, where: Vector3, parent: Node = self) -
  parent.add_child(instance)
  return instance
 
-func sphere(radius: float) -> SphereMesh:
- var mesh := SphereMesh.new()
- mesh.radius = radius
- mesh.height = radius * 2.0
- mesh.radial_segments = 16
- mesh.rings = 8
- return mesh
+func sphere(radius: float, family := Density.Family.ORDINARY) -> SphereMesh:
+ return Density.sphere(radius, family)
 
-func cylinder(radius: float, height: float) -> CylinderMesh:
- var mesh := CylinderMesh.new()
- mesh.top_radius = radius
- mesh.bottom_radius = radius
- mesh.height = height
- mesh.radial_segments = 24
- return mesh
+func cylinder(radius: float, height: float, family := Density.Family.ORDINARY) -> CylinderMesh:
+ return Density.cylinder(radius, height, family)
 
 func line(a: Vector2, b: Vector2, radius: float, height: float, mat: Material, parent: Node = self) -> MeshInstance3D:
  var start: Vector3 = map_point(a, height)
@@ -214,8 +205,8 @@ func _build_shared(bounds: Rect2) -> void:
   var torus := TorusMesh.new()
   torus.inner_radius = ring_field.ring_radius * SCALE * 0.55 if authored_mode else 0.075
   torus.outer_radius = ring_field.ring_radius * SCALE if authored_mode else 0.135
-  torus.rings = 16
-  torus.ring_segments = 8
+  torus.rings = Density.RING_SIDES
+  torus.ring_segments = Density.RING_TUBE_SIDES
   ring_visuals.append(mesh_node(torus, gold, map_point(ring.position, ring_height() + float(ring.get("height", 0.0)) * SCALE)))
  if not ring_field.pickup_claimed.is_connected(_on_ring_claimed):
   ring_field.pickup_claimed.connect(_on_ring_claimed)
@@ -234,7 +225,7 @@ func _build_shared(bounds: Rect2) -> void:
   add_child(retracted)
   _paddle(flipper.length * SCALE, flipper.radius * SCALE * 0.45, 0.02 * height_scale, 0.006, material(Color("82978d")), retracted)
   flipper_retracted_visuals.append(retracted)
- ball_visual = mesh_node(sphere(ball.radius * SCALE), material(Color("4f97ff"), 0.12), map_point(ball.position, ball_height()))
+ ball_visual = mesh_node(sphere(ball.radius * SCALE, Density.Family.HARDWARE), material(Color("4f97ff"), 0.12), map_point(ball.position, ball_height()))
  var stripe := TorusMesh.new()
  stripe.inner_radius = ball.radius * SCALE * 0.96 if authored_mode else 0.134
  stripe.outer_radius = ball.radius * SCALE * 1.04 if authored_mode else 0.146
@@ -509,8 +500,8 @@ func _paddle(length: float, radius: float, height: float, base: float, mat: Mate
  var bar := BoxMesh.new()
  bar.size = Vector3(length, height, radius * 2.0)
  mesh_node(bar, mat, Vector3(length * 0.5, base + height * 0.5, 0), parent)
- mesh_node(cylinder(radius, height), mat, Vector3(0, base + height * 0.5, 0), parent)
- mesh_node(cylinder(radius, height), mat, Vector3(length, base + height * 0.5, 0), parent)
+ mesh_node(cylinder(radius, height, Density.Family.HARDWARE), mat, Vector3(0, base + height * 0.5, 0), parent)
+ mesh_node(cylinder(radius, height, Density.Family.HARDWARE), mat, Vector3(length, base + height * 0.5, 0), parent)
 
 func _floor_line(a: Vector2, b: Vector2, mat: Material) -> void:
  # Flat markings avoid tiny cylinder silhouettes and shadows flickering at shallow angles.

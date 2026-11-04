@@ -2,6 +2,7 @@ extends RefCounted
 ## Collisionless Sonic-inspired hardware. All colours are replaceable palette slots.
 const SURFACE = preload("res://scripts/pinball_surface.gdshader")
 const MeshBatch = preload("res://scripts/pinball_mesh_batch.gd")
+const Density = preload("res://scripts/presentation_density.gd")
 const PALETTES := {
  "default": ["dc3546", "164ea1", "ffd45b", "f5f4df", "42ce89", "182b42"],
  "green_hill": ["e54a42", "246fc5", "ffcf50", "fff4dd", "48d293", "243e49"],
@@ -29,7 +30,7 @@ static func materials(theme_id: String, overrides: Dictionary = {}) -> Dictionar
 
 static func disc(p, parent: Node3D, radius: float, height: float, y: float, mat: Material, taper := 1.0) -> void:
  var mesh: CylinderMesh = p.cylinder(radius, height)
- mesh.radial_segments = 48
+ mesh.radial_segments = 12
  mesh.top_radius *= taper
  p.mesh_node(mesh, mat, Vector3(0, y + height * 0.5, 0), parent)
 
@@ -46,7 +47,8 @@ static func round_bumper(p, parent: Node3D, radius: float, height_scale: float, 
  p.mesh_node(p._prism(star, 0.009 * height_scale, m.mark, m.mark), null, Vector3(0, 0.413 * height_scale, 0), parent)
  for i in 8:
   var angle := i * TAU / 8.0
-  var bolt: MeshInstance3D = p.mesh_node(p.cylinder(radius * 0.035, 0.008 * height_scale), m.mark, Vector3(cos(angle) * radius * 0.81, 0.39 * height_scale, sin(angle) * radius * 0.81), parent)
+  var bolt_mesh := Density.cylinder(radius * 0.035, 0.008 * height_scale, Density.Family.TINY)
+  var bolt: MeshInstance3D = p.mesh_node(bolt_mesh, m.mark, Vector3(cos(angle) * radius * 0.81, 0.39 * height_scale, sin(angle) * radius * 0.81), parent)
   bolt.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  MeshBatch.combine(parent, p.has_method("stream_checkpoint"))
  MeshBatch.combine_shadows(parent)

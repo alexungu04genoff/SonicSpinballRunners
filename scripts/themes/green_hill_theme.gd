@@ -1,6 +1,7 @@
 extends "res://scripts/themes/theme_definition.gd"
 ## Original Green Hill art, separated from the shared geometry and gameplay renderer.
 const GreenHillDecor = preload("res://scripts/decor/green_hill_decor.gd")
+const Density = preload("res://scripts/presentation_density.gd")
 
 const TEXTURES := "res://assets/textures/green_hill/"
 
@@ -188,7 +189,7 @@ func _palm(p: Node3D, base: Vector3, side: int, size: float, target: Node3D = nu
   _palm_frond(p, tip, angle, 1.10 + float(leaf % 3) * 0.09, leaf % 2 == 0, palm)
  var coconut = material(Color("704425"))
  for offset: Vector3 in [Vector3(-0.11, -0.07, 0), Vector3(0.10, -0.09, 0.06), Vector3(0, -0.12, -0.10)]:
-  p.mesh_node(p.sphere(0.11), coconut, tip + offset, palm)
+  p.mesh_node(Density.sphere(0.11, Density.Family.TINY), coconut, tip + offset, palm)
 
 func _palm_frond(p: Node3D, base: Vector3, angle: float, length: float, bright: bool, parent: Node3D) -> void:
  var direction = Vector3(cos(angle), 0, sin(angle))
@@ -221,18 +222,15 @@ func _flower(p: Node3D, base: Vector3, size: float, target: Node3D = null) -> vo
  (p.scenery_root if target == null else target).add_child(flower)
  var green = material(Color("278c3e"))
  Atmosphere.foliage(green)
- p.mesh_node(p.cylinder(0.018, 0.37), green, Vector3(0, 0.185, 0), flower)
- var leaves = p.sphere(0.1)
- var leaf = p.mesh_node(leaves, green, Vector3(0.08, 0.15, 0), flower)
- leaf.scale = Vector3(1.2, 0.22, 0.55)
- leaf.rotation.z = 0.45
+ var parts = preload("res://scripts/decor/sunflower_meshes.gd")
+ p.mesh_node(parts.get_part("stem"), green, Vector3(0, 0.185, 0), flower)
+ p.mesh_node(parts.get_part("leaf"), green, Vector3(0.08, 0.15, 0), flower)
  var petals = material(Color("ffcf24"))
  for i: int in 8:
   var angle = float(i) * TAU / 8.0
-  var petal = p.mesh_node(p.sphere(0.075), petals, Vector3(cos(angle) * 0.115, 0.42 + sin(angle) * 0.115, 0), flower)
-  petal.scale = Vector3(0.7, 1.0, 0.35)
+  var petal = p.mesh_node(parts.get_part("petal"), petals, Vector3(cos(angle) * 0.115, 0.42 + sin(angle) * 0.115, 0), flower)
   petal.rotation.z = angle - PI * 0.5
- var heart = p.mesh_node(p.cylinder(0.082, 0.05), material(Color("6f3c25")), Vector3(0, 0.42, 0.02), flower)
+ var heart = p.mesh_node(parts.get_part("center"), material(Color("6f3c25")), Vector3(0, 0.42, 0.02), flower)
  heart.rotation.x = PI * 0.5
 
 func _rock(p: Node3D, base: Vector3, size: float) -> void:

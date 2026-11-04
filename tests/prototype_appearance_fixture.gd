@@ -58,7 +58,18 @@ func open(tree: SceneTree, path: String, theme: String, output: String) -> bool:
  game.retro_filter.set_preset(0)
  # Startup FPS is not a performance sample and makes otherwise matched frames noisy.
  game.fps_label.hide()
- game.presentation.reset_camera(game.ball.position)
+ var camera_target: Vector2 = game.ball.position
+ for argument: String in OS.get_cmdline_user_args():
+  if argument.begins_with("--camera-target="):
+   var coordinates := argument.trim_prefix("--camera-target=").split(",")
+   if coordinates.size() != 2 or not coordinates[0].is_valid_float() or not coordinates[1].is_valid_float():
+    error = "Camera target must be two finite Act coordinates."
+    return false
+   camera_target = Vector2(float(coordinates[0]), float(coordinates[1]))
+   if not camera_target.is_finite():
+    error = "Camera target must be finite."
+    return false
+ game.presentation.reset_camera(camera_target)
  # Let the real compositor/atmosphere copy the settled camera, without game time.
  game._process(0.0)
  receipt = {"authority": "Prototype", "scene": SCENE.resource_path,

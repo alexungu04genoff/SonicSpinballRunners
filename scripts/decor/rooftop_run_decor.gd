@@ -34,6 +34,9 @@ func primitive(kind: String) -> Mesh:
  var result: Mesh
  match kind:
   "box": result = BoxMesh.new()
+  "tiny_sphere":
+   var density = preload("res://scripts/presentation_density.gd")
+   result = density.sphere(1.0, density.Family.TINY)
   "sphere":
    var sphere := SphereMesh.new()
    sphere.radius = 1.0
@@ -134,7 +137,7 @@ func flower_urn(root: Node3D) -> void:
  piece(root, "sphere", "leaf", Vector3(0, 0.29, 0), Vector3(0.18, 0.10, 0.15))
  for i in 3:
   var angle := TAU * i / 3.0
-  piece(root, "sphere", "flower", Vector3(cos(angle) * 0.10, 0.36, sin(angle) * 0.10), Vector3.ONE * 0.055)
+  piece(root, "tiny_sphere", "flower", Vector3(cos(angle) * 0.10, 0.36, sin(angle) * 0.10), Vector3.ONE * 0.055)
 
 func chimney(root: Node3D) -> void:
  box(root, "stone", Vector3(0, 0.13, 0), Vector3(0.34, 0.26, 0.23))

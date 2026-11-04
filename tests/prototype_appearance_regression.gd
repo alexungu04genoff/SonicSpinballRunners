@@ -18,15 +18,20 @@ func run() -> void:
  root.size = Vector2i(1440, 1000)
  var act := Fixture.DEFAULT_ACT
  var manifest: Dictionary = {}
+ var themes: Array = Fixture.Registry.IDS.duplicate()
+ for argument: String in OS.get_cmdline_user_args():
+  if argument.begins_with("--themes="): themes = Array(argument.trim_prefix("--themes=").split(","))
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--act="): act = argument.trim_prefix("--act=")
   if argument.begins_with("--verify-manifest="):
    var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(argument.trim_prefix("--verify-manifest=")))
-   if not parsed is Dictionary or not parsed.get("complete", false) or parsed.get("captures", []).size() != Fixture.Registry.IDS.size():
+   if not parsed is Dictionary or not parsed.get("complete", false) or parsed.get("captures", []).size() != themes.size():
     check(false, "Incomplete capture manifest")
     quit(1)
     return
    for receipt: Dictionary in parsed.captures: manifest[receipt.theme] = receipt
+   check(manifest.size() == themes.size(), "Manifest has one receipt per requested theme")
+   for theme: String in themes: check(manifest.has(theme) and theme in Fixture.Registry.IDS, "Manifest includes requested production theme: " + theme)
  for path: String in ["all_theme_texture_scene.gd", "theme_capture.gd"]:
   var source := FileAccess.get_file_as_string("res://tests/" + path)
   check(source.begins_with('extends "res://tests/prototype_appearance_capture.gd"'), path + " delegates to the canonical capture")
@@ -50,7 +55,7 @@ func run() -> void:
  check(not await rejected.open(self, stale_path, "green_hill", stale_path.get_base_dir()) and rejected.session == null and rejected.error.contains("stale"), "Stale disk input fails before starting a session or falling back to source construction")
  await rejected.close()
  var expected := {}
- for theme: String in Fixture.Registry.IDS:
+ for theme: String in themes:
   var fixture := Fixture.new()
   if not await fixture.open(self, act, theme, "res://test-results/prototype-appearance-regression"):
    check(false, fixture.error)
@@ -79,6 +84,6 @@ func run() -> void:
   fixture.game.run_configuration.single_act_use_bakes = true
   check(not FileAccess.file_exists(fixture.session.settings_path), "No player preferences written")
   await fixture.close()
- check(Fixture.Registry.IDS.size() == 8, "All eight registered themes covered")
+ check(Fixture.Registry.IDS.size() == 8, "Registry retains all eight production themes")
  print("RESULT | Prototype appearance regression | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)

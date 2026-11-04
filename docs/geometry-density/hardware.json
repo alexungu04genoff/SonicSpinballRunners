@@ -1,0 +1,34 @@
+{
+  "after": {
+    "baked": {
+      "mesh_instances": 7,
+      "shadow_only_triangles": 388,
+      "shadow_triangles": 388,
+      "triangles": 1064,
+      "vertices": 1134
+    },
+    "source": {
+      "mesh_instances": 7,
+      "shadow_only_triangles": 388,
+      "shadow_triangles": 388,
+      "triangles": 1064,
+      "vertices": 1134
+    }
+  },
+  "before": {
+    "baked": {
+      "mesh_instances": 7,
+      "shadow_only_triangles": 508,
+      "shadow_triangles": 508,
+      "triangles": 1784,
+      "vertices": 1734
+    },
+    "source": {
+      "mesh_instances": 7,
+      "shadow_only_triangles": 2908,
+      "shadow_triangles": 2908,
+      "triangles": 8120,
+      "vertices": 5724
+    }
+  }
+}

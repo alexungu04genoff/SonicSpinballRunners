@@ -106,7 +106,7 @@ func _turf_loop(root: Node3D) -> void:
  var inner := PackedVector3Array()
  var outer := PackedVector3Array()
  var normals := PackedVector3Array()
- var steps := 64
+ var steps := 16
  for i in steps + 1:
   var t := float(i) / steps
   var angle := -PI * 0.5 + TAU * t
@@ -135,7 +135,11 @@ func _turf_loop(root: Node3D) -> void:
    else:
     _quad(soil, d + offset, c + offset, lip_b + offset, lip_a + offset)
     _quad(turf, lip_a + offset, lip_b + offset, b + offset, a + offset)
-  var top: SurfaceTool = turf if normals[i].y > 0.72 and normals[i + 1].y > 0.72 else soil
+  # Classify the actual superellipse face, not its circular sample direction.
+  # Coarse upper chords can be almost horizontal even at a 45-degree radial
+  # sample; the vertical cliff projection is undefined on those faces.
+  var exterior_normal := Vector3(0, 0, -1).cross(c - d).normalized()
+  var top: SurfaceTool = turf if exterior_normal.y > 0.72 else soil
   _quad(top, d + across, c + across, c - across, d - across)
  # Tangent entry and exit aprons are attached to the two ends of the spiral.
  for end: int in [0, steps]:
@@ -153,15 +157,21 @@ func _turf_loop(root: Node3D) -> void:
 func _quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, reverse := false) -> void:
  var normal := (d - a).cross(b - a).normalized() * (-1.0 if reverse else 1.0)
  # Clockwise front faces; UVs keep checker squares consistent across the cliff.
- for point: Vector3 in ([a, c, b, a, d, c] if reverse else [a, b, c, a, c, d]):
-  surface.set_normal(normal)
-  var uv := Vector2(point.x, point.y)
-  if absf(normal.x) > absf(normal.z) and absf(normal.x) > absf(normal.y):
-   uv = Vector2(point.z, point.y)
-  elif absf(normal.y) > absf(normal.z):
-   uv = Vector2(point.x, point.z)
-  surface.set_uv(uv * 0.60)
-  surface.add_vertex(point)
+ var vertices := [a, c, b, a, d, c] if reverse else [a, b, c, a, c, d]
+ for triangle in [0, 3]:
+  # The loop twists in depth. A coarse quad is not planar: each triangle needs
+  # its own geometric normal for lighting and the existing shadow normal bias.
+  var face_normal: Vector3 = (vertices[triangle + 2] - vertices[triangle]).cross(vertices[triangle + 1] - vertices[triangle]).normalized()
+  for corner in 3:
+   var point: Vector3 = vertices[triangle + corner]
+   surface.set_normal(face_normal)
+   var uv := Vector2(point.x, point.y)
+   if absf(normal.x) > absf(normal.z) and absf(normal.x) > absf(normal.y):
+    uv = Vector2(point.z, point.y)
+   elif absf(normal.y) > absf(normal.z):
+    uv = Vector2(point.x, point.z)
+   surface.set_uv(uv * 0.60)
+   surface.add_vertex(point)
 
 func _rope_bridge(root: Node3D) -> void:
  var colors := preload("res://scripts/themes/green_hill_palette.gd").wood(presentation.theme_definition)

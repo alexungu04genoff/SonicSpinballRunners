@@ -21,6 +21,7 @@ func run() -> void:
   if argument.begins_with("--act="): act = argument.trim_prefix("--act=")
   if argument.begins_with("--output="): output = argument.trim_prefix("--output=")
   if argument.begins_with("--theme="): themes = [argument.trim_prefix("--theme=")]
+  if argument.begins_with("--themes="): themes = Array(argument.trim_prefix("--themes=").split(","))
  if DisplayServer.get_name() == "headless" or RenderingServer.get_current_rendering_method() != "forward_plus" or RenderingServer.get_current_rendering_driver_name() != "vulkan":
   push_error("Canonical captures require Forward+/Vulkan with a graphical display.")
   quit(1)

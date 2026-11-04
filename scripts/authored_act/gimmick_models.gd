@@ -132,8 +132,8 @@ static func _switch(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dic
  var ring := TorusMesh.new()
  ring.inner_radius = radius * 0.33
  ring.outer_radius = radius * 0.43
- ring.rings = 24
- ring.ring_segments = 6
+ ring.rings = 12
+ ring.ring_segments = 4
  p.mesh_node(ring, style.trim, Vector3(0, 0.03, 0), pad).name = "PowerSymbol"
  _box(p, pad, Vector3(0.018, 0.008, radius * 0.44), Vector3(0, 0.04, -radius * 0.35), style.trim, "PowerStroke")
  for i in 4:
@@ -162,8 +162,8 @@ static func _spring(p, root: Node3D, item: Dictionary) -> Dictionary:
   var coil := TorusMesh.new()
   coil.inner_radius = radius * 0.38
   coil.outer_radius = radius * 0.47
-  coil.rings = 20
-  coil.ring_segments = 6
+  coil.rings = 12
+  coil.ring_segments = 4
   p.mesh_node(coil, steel, Vector3(0, -0.02 - i * 0.018, 0), pad).name = "MetalCoil"
  _disc(p, pad, radius, 0.055, Vector3(0, 0.018, 0), red, "RoundedPad", 24)
  _disc(p, pad, radius * 0.88, 0.012, Vector3(0, 0.05, 0), yellow, "YellowRim", 24)

@@ -4,6 +4,8 @@ When asking what the current game looks like, use **Prototype**. Visual Lab and 
 
 ## Canonical eight-theme comparison
 
+The current snapshot includes the [geometric density pass](GEOMETRIC_DENSITY.md). Its before/after and 64/24/16 loop comparisons use this same production fixture.
+
 ![Matched Prototype production appearances](production-appearance/eight-themes.png)
 
 [Capture receipts](production-appearance/manifest.json) — 2026-11-04, current working-tree art, Godot 4.7.2, Forward+/Vulkan on RTX 4060. This snapshot includes uncommitted selected artwork; rerun the command below to inspect newer source.
@@ -29,6 +31,8 @@ Output goes into a **new** timestamped `test-results/prototype-appearance/` dire
 - Bake, capture and final regression logs. Nonzero exits or script/engine errors fail the runner before publishing a sheet.
 
 Use `-ActPath` for another representative saved Act. Use `-OutputDirectory` to choose a new destination. `-SkipBake` is only for already-current sidecars: the same freshness checks still apply. Imported PNGs are also checked against their raw source pixels to reject stale import caches. Missing/stale bakes fail closed; there is no source reconstruction fallback in the production fixture. Existing output directories are rejected to prevent mixing runs.
+
+For focused calibration, `-Themes green_hill` (or a comma-separated PowerShell array of registered themes) bakes/captures/checks only that subset. The default remains all eight. `-CameraTarget '570,500'` changes only the review camera target in Act coordinates; all compared frames must use the same target. It does not move the Ball or edit the Act. The manifest records the resulting camera transform, and the fresh-process regression receives the identical selection/target. These options extend this fixture rather than creating another renderer.
 
 `tests/theme_capture.gd` and `tests/all_theme_texture_scene.gd` now delegate to `tests/prototype_appearance_capture.gd`. `tests/theme_runtime_regression.gd` delegates to `tests/prototype_appearance_regression.gd`. Run them graphically/headlessly as appropriate after baking. The runner also checks the entire capture manifest against a fresh process at the end, so an intervening source/bake change cannot quietly leave earlier frames certified.
 
@@ -96,4 +100,4 @@ Executed on 2026-11-04:
 
 Logs/full-size captures remain under `test-results/prototype-appearance/canonical-final/`; the offline bake log is in `canonical-v1/`. Initial exploratory captures are superseded by `canonical-final`. Current art emits pre-existing source-image/export warnings during authoring baking; the final baked runtime capture and regression error logs are empty. No external artwork was downloaded.
 
-The other four production Acts still need a full Bake Prototype for the six initially stale themes (24 combinations); the comparison does not certify them. Human review still owns motion readability, flipper timing and art polish. This fixture deliberately does not play a run or certify every Act/atmosphere combination.
+That initial appearance milestone left other Acts stale. The subsequent [geometry pass](GEOMETRIC_DENSITY.md) rebuilt all 40 Prototype and 56 Endless variants; their disk audits passed 425 and 489 checks. The image/manifest at the top now comes from `test-results/geometry-density/after/`, with 135 final authority/freshness checks. The original verification record above is historical. Human review still owns motion readability, flipper timing and art polish; a matched screenshot does not certify every Act/atmosphere combination.

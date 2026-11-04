@@ -4,7 +4,7 @@
     {
       "act": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
       "act_bake": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.bake/green_hill.res",
-      "act_bake_sha256": "71d1af843bded95f9679a61398d98a35248d4cd34b67130986d1f3029f216f92",
+      "act_bake_sha256": "cb6ad06991d3db076df8a566dfafc5199723efdbc7a5921195f4955ea322f32e",
       "act_fingerprint": "4eaec4ecbd930eecf421da2b753d7fb4f16744912521bfb7177253c2b724eeea",
       "atmosphere": {
         "enabled": true,
@@ -111,7 +111,7 @@
       "fps_counter_hidden": true,
       "image": "green_hill.png",
       "library": "res://scripts/endless/template_library.gd",
-      "pipeline_fingerprint": "36687f4397c6e9c3094954280e05c3c56ff559efdbc167210e2bb1650697d156",
+      "pipeline_fingerprint": "52b05a8124c4c05b7d44bce3cb0717e9f703922168117c2cfb187e923ecc04ca",
       "renderer": {
         "api": "1.4.351",
         "command_line": [
@@ -125,7 +125,7 @@
         "user_arguments": [
           "--seed=18",
           "--act=E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
-          "--output=E:\\Sonic Spinball Runners\\test-results\\prototype-appearance\\canonical-final"
+          "--output=E:\\Sonic Spinball Runners\\test-results\\geometry-density\\after"
         ]
       },
       "scene": "res://scenes/prototype_run.tscn",
@@ -160,12 +160,12 @@
       "surface_detail": "flat",
       "theme": "green_hill",
       "theme_bake": "res://data/endless/themes.bake/green_hill.res",
-      "theme_bake_sha256": "67a9fd2cd2c6202b8d04a87e5caa1a05189583846cab1357b2908ed53868d11f"
+      "theme_bake_sha256": "3bac6a8b0362ec0681cd474133e3a45ab5b5dfd9e4bf06acb1edb7958ff0457f"
     },
     {
       "act": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
       "act_bake": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.bake/chemical_plant.res",
-      "act_bake_sha256": "c166779f47e294d1f3a97f2adf3265d93410bd95c5ee3ea6581a104c69f63f30",
+      "act_bake_sha256": "7e7d44f7c5cd20dfd07fee9e6eab1df704323c03dad13337ecf2474d2918c657",
       "act_fingerprint": "4eaec4ecbd930eecf421da2b753d7fb4f16744912521bfb7177253c2b724eeea",
       "atmosphere": {
         "enabled": true,
@@ -359,7 +359,7 @@
       "fps_counter_hidden": true,
       "image": "chemical_plant.png",
       "library": "res://scripts/endless/template_library.gd",
-      "pipeline_fingerprint": "d1adaecfb1fa6a738978eba0bf6566dfd05f9a4f6282760d20b113bf9fa27f06",
+      "pipeline_fingerprint": "988246bb805a58a9541004401d4dfd9b58525b64ec4db48c34570a4bfc6590bc",
       "renderer": {
         "api": "1.4.351",
         "command_line": [
@@ -373,7 +373,7 @@
         "user_arguments": [
           "--seed=18",
           "--act=E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
-          "--output=E:\\Sonic Spinball Runners\\test-results\\prototype-appearance\\canonical-final"
+          "--output=E:\\Sonic Spinball Runners\\test-results\\geometry-density\\after"
         ]
       },
       "scene": "res://scenes/prototype_run.tscn",
@@ -408,12 +408,12 @@
       "surface_detail": "flat",
       "theme": "chemical_plant",
       "theme_bake": "res://data/endless/themes.bake/chemical_plant.res",
-      "theme_bake_sha256": "9ba1e3242f1130c4c846e4678646fa408f6ddba45bedf79fd27429e610fe22b0"
+      "theme_bake_sha256": "3c330a36228fda3f0e781380855d8bdbe64f41e1a3d6260b65cd8f9f2ac5e32e"
     },
     {
       "act": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
       "act_bake": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.bake/rooftop_run.res",
-      "act_bake_sha256": "331d432b1b6ee68778efe6f1bfdcf19a98f2315527ad77d37df760e8cd0bd4da",
+      "act_bake_sha256": "42aba6988b75fafd5039345da7ae91859d6f3a5383abc7814aa348ca4e5ac765",
       "act_fingerprint": "4eaec4ecbd930eecf421da2b753d7fb4f16744912521bfb7177253c2b724eeea",
       "atmosphere": {
         "enabled": true,
@@ -634,7 +634,7 @@
       "fps_counter_hidden": true,
       "image": "rooftop_run.png",
       "library": "res://scripts/endless/template_library.gd",
-      "pipeline_fingerprint": "4f12850b15a30f4dc97abd6a32c6bb654329b7397585159443f81bc0565b702f",
+      "pipeline_fingerprint": "4c70bac1fad95195565a485df1ef31eb1bb372be469da4f5254e35e8e9406819",
       "renderer": {
         "api": "1.4.351",
         "command_line": [
@@ -648,7 +648,7 @@
         "user_arguments": [
           "--seed=18",
           "--act=E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
-          "--output=E:\\Sonic Spinball Runners\\test-results\\prototype-appearance\\canonical-final"
+          "--output=E:\\Sonic Spinball Runners\\test-results\\geometry-density\\after"
         ]
       },
       "scene": "res://scenes/prototype_run.tscn",
@@ -683,12 +683,12 @@
       "surface_detail": "flat",
       "theme": "rooftop_run",
       "theme_bake": "res://data/endless/themes.bake/rooftop_run.res",
-      "theme_bake_sha256": "4ae33b6fc34143139ce74b1c397d00a7039182290e28d7b1160dc0f2a27387db"
+      "theme_bake_sha256": "b163e2fabbc426833d781690aa15213362e3b3137a4d8d380810a618bc5b4c3f"
     },
     {
       "act": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
       "act_bake": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.bake/casino_night.res",
-      "act_bake_sha256": "132a0e84383bed6697b547c1c7239da9eee148ad5aa716b1e01f7335f0f11b20",
+      "act_bake_sha256": "48d9a75d3dd5653a0264756c351d8dc8216cf11a9872ed70620127d5084de6ea",
       "act_fingerprint": "4eaec4ecbd930eecf421da2b753d7fb4f16744912521bfb7177253c2b724eeea",
       "atmosphere": {
         "enabled": true,
@@ -792,7 +792,7 @@
       "fps_counter_hidden": true,
       "image": "casino_night.png",
       "library": "res://scripts/endless/template_library.gd",
-      "pipeline_fingerprint": "7865b5f674819e62e0c365a17a95b280b4a086565279f304dc562ef9fff70080",
+      "pipeline_fingerprint": "e69e87ad6502d22c998c43916689866217dde64d48cd90debecb9ac714dc80b9",
       "renderer": {
         "api": "1.4.351",
         "command_line": [
@@ -806,7 +806,7 @@
         "user_arguments": [
           "--seed=18",
           "--act=E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
-          "--output=E:\\Sonic Spinball Runners\\test-results\\prototype-appearance\\canonical-final"
+          "--output=E:\\Sonic Spinball Runners\\test-results\\geometry-density\\after"
         ]
       },
       "scene": "res://scenes/prototype_run.tscn",
@@ -841,12 +841,12 @@
       "surface_detail": "flat",
       "theme": "casino_night",
       "theme_bake": "res://data/endless/themes.bake/casino_night.res",
-      "theme_bake_sha256": "886ed9a76d7537b6466f18f1eb4160ea15ed3c6c59661ea91b384e7ad0970bb4"
+      "theme_bake_sha256": "b6bea061f13e25c4103f60588ac571a26f33b3b39c17ae520087e3c4398fa1e5"
     },
     {
       "act": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
       "act_bake": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.bake/sky_sanctuary.res",
-      "act_bake_sha256": "7ab1d2413af61dee279f6d5b89e89c2d4302a2cf404be9fa80944d2ac6993f22",
+      "act_bake_sha256": "be4c0506067251dbad0b5182079f7eb3f52a45951b69e8570e8a450fd340d0db",
       "act_fingerprint": "4eaec4ecbd930eecf421da2b753d7fb4f16744912521bfb7177253c2b724eeea",
       "atmosphere": {
         "enabled": true,
@@ -1018,7 +1018,7 @@
       "fps_counter_hidden": true,
       "image": "sky_sanctuary.png",
       "library": "res://scripts/endless/template_library.gd",
-      "pipeline_fingerprint": "1b34c979c7cf29ca1b0a3f50b4b16a0ca67f9db881c34b783da1b65e05daa13e",
+      "pipeline_fingerprint": "0a2555fcce51935170b9b5d6aef560dfca269dc5fdc7c43e91e55aff215e1f34",
       "renderer": {
         "api": "1.4.351",
         "command_line": [
@@ -1032,7 +1032,7 @@
         "user_arguments": [
           "--seed=18",
           "--act=E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
-          "--output=E:\\Sonic Spinball Runners\\test-results\\prototype-appearance\\canonical-final"
+          "--output=E:\\Sonic Spinball Runners\\test-results\\geometry-density\\after"
         ]
       },
       "scene": "res://scenes/prototype_run.tscn",
@@ -1067,12 +1067,12 @@
       "surface_detail": "flat",
       "theme": "sky_sanctuary",
       "theme_bake": "res://data/endless/themes.bake/sky_sanctuary.res",
-      "theme_bake_sha256": "bbf2145ff88ea70cee1e7eb1a01c5bb894b30e2f861690c1034cfef1757b31dc"
+      "theme_bake_sha256": "8c75b21af7121e5e6330509fe71c97d5555f460748b0b9c7a57b0f431dbb7730"
     },
     {
       "act": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
       "act_bake": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.bake/ice_cap.res",
-      "act_bake_sha256": "3ddf4c954bb5c42ec6dac2b97e9e3a9a26003581991bbc51ff6f5a9528ef0472",
+      "act_bake_sha256": "e9e67b504726f2a7cacbe8d0af04a187974ee64bce8c8ff05bedf5a0242a447d",
       "act_fingerprint": "4eaec4ecbd930eecf421da2b753d7fb4f16744912521bfb7177253c2b724eeea",
       "atmosphere": {
         "enabled": true,
@@ -1253,7 +1253,7 @@
       "fps_counter_hidden": true,
       "image": "ice_cap.png",
       "library": "res://scripts/endless/template_library.gd",
-      "pipeline_fingerprint": "2826615fb46a1d01ffd8d2c5a39adb39908ae72c3f7136381554ec572d233ac8",
+      "pipeline_fingerprint": "e9b031c6f14937c492edb627a3950cc9f99316b8b8eb0773404b70bb58508dc3",
       "renderer": {
         "api": "1.4.351",
         "command_line": [
@@ -1267,7 +1267,7 @@
         "user_arguments": [
           "--seed=18",
           "--act=E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
-          "--output=E:\\Sonic Spinball Runners\\test-results\\prototype-appearance\\canonical-final"
+          "--output=E:\\Sonic Spinball Runners\\test-results\\geometry-density\\after"
         ]
       },
       "scene": "res://scenes/prototype_run.tscn",
@@ -1302,12 +1302,12 @@
       "surface_detail": "flat",
       "theme": "ice_cap",
       "theme_bake": "res://data/endless/themes.bake/ice_cap.res",
-      "theme_bake_sha256": "ca516cc0d0df9baee5c4b0d52e3bd4ff3f9f1c0308a14ae6b4ae3b9d9079e39b"
+      "theme_bake_sha256": "4ff9c81d2c090de62c1e2f2c035309e66e979e8b415b8fb6212dd1dfb4c41e10"
     },
     {
       "act": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
       "act_bake": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.bake/lava_reef.res",
-      "act_bake_sha256": "ffc161446dabbb950721c9c30beb4996ae817e798cb298493d5459260c2cf94e",
+      "act_bake_sha256": "6456d7157d99f226e7f936a11b932e206758f0b70ff8904d8456b64e2f546f2e",
       "act_fingerprint": "4eaec4ecbd930eecf421da2b753d7fb4f16744912521bfb7177253c2b724eeea",
       "atmosphere": {
         "enabled": true,
@@ -1494,7 +1494,7 @@
       "fps_counter_hidden": true,
       "image": "lava_reef.png",
       "library": "res://scripts/endless/template_library.gd",
-      "pipeline_fingerprint": "b758eba0e1a882d0a0173c5a053f6d43e120c53b7b9ca2d2c7eb5529ba24ff12",
+      "pipeline_fingerprint": "2db5a774cadde5a0a04cef54c9cc200f6ee49be113ce82af2ae0efffa5c49b4b",
       "renderer": {
         "api": "1.4.351",
         "command_line": [
@@ -1508,7 +1508,7 @@
         "user_arguments": [
           "--seed=18",
           "--act=E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
-          "--output=E:\\Sonic Spinball Runners\\test-results\\prototype-appearance\\canonical-final"
+          "--output=E:\\Sonic Spinball Runners\\test-results\\geometry-density\\after"
         ]
       },
       "scene": "res://scenes/prototype_run.tscn",
@@ -1543,12 +1543,12 @@
       "surface_detail": "flat",
       "theme": "lava_reef",
       "theme_bake": "res://data/endless/themes.bake/lava_reef.res",
-      "theme_bake_sha256": "de999f573ee9be7f58adf6bc4ba54de8fc85cbdaf28ea304f5483f9dff424797"
+      "theme_bake_sha256": "9114d953bd73fdd2378675d7fc8c48975dbd61f695d9f9e02919bf3e4fd48399"
     },
     {
       "act": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
       "act_bake": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.bake/aquarium_park.res",
-      "act_bake_sha256": "fcfbcf62901c071a911931bdfed27ee84f4c644de3ea9f68acf9e98f764876a8",
+      "act_bake_sha256": "048a3133d1856dd397ccd55a6ab61a1e45ee19758a7678168266d9e14a8cd488",
       "act_fingerprint": "4eaec4ecbd930eecf421da2b753d7fb4f16744912521bfb7177253c2b724eeea",
       "atmosphere": {
         "enabled": true,
@@ -1736,7 +1736,7 @@
       "fps_counter_hidden": true,
       "image": "aquarium_park.png",
       "library": "res://scripts/endless/template_library.gd",
-      "pipeline_fingerprint": "36bba2a324fa85ef87e1cb2979aaa08455a7c9250c9188b6b872e892cd09c046",
+      "pipeline_fingerprint": "55c052005615f489c49b89dc5612676c2056fe13dcb2fa78c25778d3867cb45a",
       "renderer": {
         "api": "1.4.351",
         "command_line": [
@@ -1750,7 +1750,7 @@
         "user_arguments": [
           "--seed=18",
           "--act=E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
-          "--output=E:\\Sonic Spinball Runners\\test-results\\prototype-appearance\\canonical-final"
+          "--output=E:\\Sonic Spinball Runners\\test-results\\geometry-density\\after"
         ]
       },
       "scene": "res://scenes/prototype_run.tscn",
@@ -1785,7 +1785,7 @@
       "surface_detail": "flat",
       "theme": "aquarium_park",
       "theme_bake": "res://data/endless/themes.bake/aquarium_park.res",
-      "theme_bake_sha256": "5167fe7c0f885ec2f3b0a8d509e9ab14fdfaf7bae63a3691cf6fbd2aecb0dc55"
+      "theme_bake_sha256": "7e69bed5d1bbcc7a2549a3b8106952563d62c8ebf8da45eb737de9dbc6e691eb"
     }
   ],
   "complete": true

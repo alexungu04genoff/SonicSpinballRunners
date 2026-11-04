@@ -1,5 +1,6 @@
 extends "res://scripts/decor/decor_skin.gd"
 const Atmosphere := preload("res://scripts/themes/theme_atmosphere.gd")
+const Density := preload("res://scripts/presentation_density.gd")
 ## Original low-poly aquatic architecture. Every node is presentation only.
 var meshes: Dictionary = {}
 var materials: Dictionary = {}
@@ -55,17 +56,14 @@ func primitive(kind: String) -> Mesh:
   "roof": result = _roof_mesh()
   "shell": result = _shell_mesh()
   "orb":
-   var sphere := SphereMesh.new()
-   sphere.radius = 1.0
-   sphere.height = 2.0
-   sphere.radial_segments = 12
-   sphere.rings = 6
-   result = sphere
+   result = Density.sphere(1.0)
+  "tiny_orb":
+   result = Density.sphere(1.0, Density.Family.TINY)
   "ring":
    var torus := TorusMesh.new()
    torus.inner_radius = 0.93
    torus.outer_radius = 1.0
-   torus.rings = 24
+   torus.rings = 16
    torus.ring_segments = 6
    result = torus
   _:
@@ -73,7 +71,7 @@ func primitive(kind: String) -> Mesh:
    cylinder.top_radius = 0.0 if kind == "cone" else 1.0
    cylinder.bottom_radius = 1.0
    cylinder.height = 1.0
-   cylinder.radial_segments = 12
+   cylinder.radial_segments = 8
    cylinder.rings = 1
    result = cylinder
  meshes[kind] = result
@@ -85,13 +83,15 @@ func _roof_mesh() -> ArrayMesh:
  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
  for side in 4:
   var turn := Basis(Vector3.UP,side*PI*0.5)
-  for step in 24:
-   var a := float(step)/24.0
-   var b := float(step+1)/24.0
+  # Preserve the original narrow gold lip; broad curved faces need fewer bands.
+  var samples := [0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 23.0/24.0, 1.0]
+  for step in samples.size() - 1:
+   var a: float = samples[step]
+   var b: float = samples[step+1]
    var ya := 0.65*pow(1.0-a,1.8)+0.15*pow(a,8.0)
    var yb := 0.65*pow(1.0-b,1.8)+0.15*pow(b,8.0)
    var points := [Vector3(-a,ya,a),Vector3(a,ya,a),Vector3(b,yb,b),Vector3(-b,yb,b)]
-   surface.set_color(Color("aa8352") if step == 23 else Color("163c4e"))
+   surface.set_color(Color("aa8352") if step == samples.size() - 2 else Color("163c4e"))
    for index: int in [0,1,2,0,2,3]: surface.add_vertex(turn*points[index])
  surface.generate_normals()
  return surface.commit()
@@ -100,9 +100,9 @@ func _shell_mesh() -> ArrayMesh:
  # Open cylinder: a single front shell keeps fish visible without stacked panes.
  var surface := SurfaceTool.new()
  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
- for i in 32:
-  var a := TAU*i/32.0
-  var b := TAU*(i+1)/32.0
+ for i in 16:
+  var a := TAU*i/16.0
+  var b := TAU*(i+1)/16.0
   var points := [Vector3(cos(a),-0.5,sin(a)),Vector3(cos(a),0.5,sin(a)),Vector3(cos(b),0.5,sin(b)),Vector3(cos(b),-0.5,sin(b))]
   for index: int in [0,2,1,0,3,2]:
    surface.set_normal(Vector3(points[index].x,0,points[index].z))
@@ -156,7 +156,7 @@ func fish(root: Node3D, at: Vector3, length: float, angle: float) -> void:
  piece(group,"orb","fish",Vector3.ZERO,Vector3(length*0.38,length*0.14,length*0.12))
  var tail := piece(group,"cone","coral",Vector3(-length*0.40,0,0),Vector3(length*0.17,length*0.24,length*0.05))
  tail.rotation.z = -PI*0.5
- piece(group,"orb","deep",Vector3(length*0.23,length*0.035,length*0.10),Vector3.ONE*length*0.025)
+ piece(group,"tiny_orb","deep",Vector3(length*0.23,length*0.035,length*0.10),Vector3.ONE*length*0.025)
 
 func tank(root: Node3D, at: Vector3, radius: float, height: float, jelly := false) -> void:
  piece(root,"pipe","stone",at+Vector3.UP*0.06,Vector3(radius*1.1,0.12,radius*1.1))

@@ -146,7 +146,7 @@ func _orbital_silhouette(parent: Node3D, at: Vector3) -> void:
  station.name = "DistantOrbitalRelic"
  station.position = at
  parent.add_child(station)
- var shell: MeshInstance3D = _library.piece(station, "sphere", "shadow", Vector3.ZERO, Vector3(2.6, 2.85, 2.6))
+ var shell: MeshInstance3D = _library.piece(station, "hero_sphere", "shadow", Vector3.ZERO, Vector3(2.6, 2.85, 2.6))
  shell.material_override = material(Color("8ba9bd"))
  # Original abstract orbital face: recessed eyes, equatorial belt, segmented brow.
  for side: int in [-1, 1]:

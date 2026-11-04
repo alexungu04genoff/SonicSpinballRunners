@@ -1,5 +1,11 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## One game's polygon language — 2026-11-04
+
+Bro followed the new Prototype capture path through the actual disk bake before touching density. The 48-side bumper accusation was partly false: the bake already made it 16. The sunflower was still guilty — 2,496 baked triangles became 96, with reusable wedge petals. The decorative loop is now 16 steps after 64/24/16 production comparisons. A closer camera caught black upper faces at low density; the old radial-angle material classification was wrong for the superellipse, so actual face normals now choose turf versus vertical cliff projection. No shader or terrain-contour migration.
+
+Ordinary Rings are 12×6, round bumpers 12-sided with six-sided bolts, flipper ends stay 16. Sky's tiny vines and repeated clouds, Aquarium's lanterns/fish/roofs, Rooftop's small flowers and Casino cylinders follow the same role-based density. Chemical's pipes, Ice's crystals, Lava's rocks and Buzz already fit; they did not need ritual numeric surgery. Character/Goal silhouettes and thin VFX have documented exceptions. All theme identities and local ArtBro edits remain intact. See [the density audit, comparisons and checks](GEOMETRIC_DENSITY.md). Counts are useful geometry evidence, not an FPS promise.
+
 ## Prototype owns the appearance evidence — 2026-11-04
 
 Bro audited the graphical paths after the Play migrations. Several “actual game” captures were still Visual Lab. The canonical all-theme capture now opens the real Prototype session, requires validated disk recipes and records matching state/camera plus exact source/bake/atmosphere receipts. Selected local art is checked against the texture pixels loaded by the runtime. Visual Lab stays useful for material work; its theme-switch regression now says source_lab. The old standalone player stays only for geometry/lifecycle/2D-overlay checks, with a diagnostic title. Its Green Hill file is merely an alias to the shared source presenter, not a secret old art implementation.

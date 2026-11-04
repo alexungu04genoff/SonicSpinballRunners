@@ -3,9 +3,13 @@ param(
     [string]$GodotPath = 'C:\Program Files\Godot\Godot.exe',
     [string]$ActPath = 'res://data/acts/Authored/First Try Smooth Decor.tres',
     [string]$OutputDirectory = '',
-    [switch]$SkipBake
+    [switch]$SkipBake,
+    [ValidateSet('green_hill', 'chemical_plant', 'rooftop_run', 'casino_night', 'sky_sanctuary', 'ice_cap', 'lava_reef', 'aquarium_park')]
+    [string[]]$Themes = @(),
+    [string]$CameraTarget = ''
 )
 $ErrorActionPreference = 'Stop'
+if (($Themes | Select-Object -Unique).Count -ne $Themes.Count) { throw 'Theme selection must not contain duplicates.' }
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 if (-not $OutputDirectory) {
     $OutputDirectory = Join-Path $projectRoot ('test-results\prototype-appearance\' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
@@ -51,26 +55,35 @@ $worktree = @(& git -C $projectRoot status --short)
 $common = @('--path', ('"{0}"' -f $projectRoot))
 if (-not $SkipBake) {
     # Supported single-Act baker builds all registry themes and shared backgrounds.
-    Invoke-Godot 'bake' ($common + @('--headless', 'res://scenes/act_baker.tscn', '--', ('"--act={0}"' -f $ActPath)))
+    if ($Themes.Count) {
+        foreach ($theme in $Themes) {
+            Invoke-Godot ('bake-' + $theme) ($common + @('--headless', 'res://scenes/act_baker.tscn', '--', ('"--act={0}"' -f $ActPath), ('--theme=' + $theme)))
+        }
+    } else {
+        Invoke-Godot 'bake' ($common + @('--headless', 'res://scenes/act_baker.tscn', '--', ('"--act={0}"' -f $ActPath)))
+    }
 }
-Invoke-Godot 'capture' ($common + @('--rendering-method', 'forward_plus', '--rendering-driver', 'vulkan', '--script', 'res://tests/prototype_appearance_capture.gd', '--', '--seed=18', ('"--act={0}"' -f $ActPath), ('"--output={0}"' -f $output)))
+$selection = @()
+if ($Themes.Count) { $selection = @('--themes=' + ($Themes -join ',')) }
+if ($CameraTarget) { $selection += '--camera-target=' + $CameraTarget }
+Invoke-Godot 'capture' ($common + @('--rendering-method', 'forward_plus', '--rendering-driver', 'vulkan', '--script', 'res://tests/prototype_appearance_capture.gd', '--', '--seed=18', ('"--act={0}"' -f $ActPath), ('"--output={0}"' -f $output)) + $selection)
 $after = Source-Hashes
 $after | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $output 'sources-after.json') -Encoding UTF8
 if (($before | ConvertTo-Json -Compress) -ne ($after | ConvertTo-Json -Compress)) { throw 'Authored source or atmosphere changed during verification. Review before trusting the images.' }
 $manifest = Get-Content -LiteralPath (Join-Path $output 'manifest.json') -Raw | ConvertFrom-Json
-if (-not $manifest.complete -or $manifest.captures.Count -ne 8) { throw 'Incomplete production comparison.' }
+if (-not $manifest.complete -or $manifest.captures.Count -ne $(if ($Themes.Count) { $Themes.Count } else { 8 })) { throw 'Incomplete production comparison.' }
 # Recheck every receipt at the end so concurrent source edits fail the whole set.
-Invoke-Godot 'regression' ($common + @('--headless', '--script', 'res://tests/prototype_appearance_regression.gd', '--', ('"--act={0}"' -f $ActPath), ('"--verify-manifest={0}"' -f (Join-Path $output 'manifest.json'))))
+Invoke-Godot 'regression' ($common + @('--headless', '--script', 'res://tests/prototype_appearance_regression.gd', '--', ('"--act={0}"' -f $ActPath), ('"--verify-manifest={0}"' -f (Join-Path $output 'manifest.json'))) + $selection)
 if (($before | ConvertTo-Json -Compress) -ne ((Source-Hashes) | ConvertTo-Json -Compress)) { throw 'Source changed during the final receipt check.' }
 
 Add-Type -AssemblyName System.Drawing
-$sheet = New-Object System.Drawing.Bitmap(1440, 2224)
+$sheet = New-Object System.Drawing.Bitmap(1440, (72 + 538 * [int][math]::Ceiling($manifest.captures.Count / 2.0)))
 $graphics = [System.Drawing.Graphics]::FromImage($sheet)
 $graphics.Clear([System.Drawing.Color]::FromArgb(12, 20, 32))
 $graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
 $font = New-Object System.Drawing.Font('Segoe UI', 18)
 $small = New-Object System.Drawing.Font('Segoe UI', 11)
-$graphics.DrawString('PROTOTYPE / Eight production themes / Forward+ Vulkan', $font, [System.Drawing.Brushes]::White, 16, 8)
+$graphics.DrawString('PROTOTYPE / Production appearance / Forward+ Vulkan', $font, [System.Drawing.Brushes]::White, 16, 8)
 $graphics.DrawString('Same Act, served Ball and camera. Current working-tree art; validated disk bakes. See manifest.json.', $small, [System.Drawing.Brushes]::LightGray, 16, 40)
 for ($i = 0; $i -lt $manifest.captures.Count; $i++) {
     $capture = $manifest.captures[$i]

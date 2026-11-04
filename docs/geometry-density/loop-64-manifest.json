@@ -1,0 +1,169 @@
+{
+  "authority": "Prototype",
+  "captures": [
+    {
+      "act": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
+      "act_bake": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.bake/green_hill.res",
+      "act_bake_sha256": "1e425fdf5f3eecd119bd32774a9165f7f509b08bdd15324db455550c7743e24e",
+      "act_fingerprint": "4eaec4ecbd930eecf421da2b753d7fb4f16744912521bfb7177253c2b724eeea",
+      "atmosphere": {
+        "enabled": true,
+        "id": "default",
+        "name": "Default",
+        "values": {
+          "directional_fog/enabled": false,
+          "emission": 0.8,
+          "env/ambient_light_color": "(0.7725, 0.9059, 1.0, 1.0)",
+          "env/ambient_light_energy": 0.36,
+          "env/ambient_light_sky_contribution": 0.0,
+          "env/fog_enabled": false,
+          "env/glow_bloom": 0.0,
+          "env/glow_enabled": true,
+          "env/glow_hdr_threshold": 1.1,
+          "env/glow_intensity": 0.16,
+          "env/glow_levels/3": 0.2,
+          "env/glow_levels/5": 0.8,
+          "env/glow_levels/7": 0.25,
+          "env/glow_normalized": true,
+          "env/glow_strength": 1.15,
+          "env/tonemap_exposure": 1.05,
+          "env/tonemap_mode": 0,
+          "palette/cloud_highlight": "(0.9569, 0.9882, 1.0, 1.0)",
+          "palette/cloud_shadow": "(0.6549, 0.8392, 0.9216, 1.0)",
+          "palette/ocean_deep": "(0.0706, 0.4353, 0.6078, 1.0)",
+          "palette/ocean_reflection": "(0.6588, 0.9059, 0.949, 1.0)",
+          "palette/ocean_sun": "(1.0, 0.9451, 0.7961, 1.0)",
+          "palette/ocean_wave": "(0.1412, 0.7059, 0.749, 1.0)",
+          "sky/ground_bottom_color": "(0.1922, 0.549, 0.6314, 1.0)",
+          "sky/ground_curve": 0.2,
+          "sky/ground_horizon_color": "(0.7176, 0.9137, 0.949, 1.0)",
+          "sky/sky_curve": 0.2,
+          "sky/sky_horizon_color": "(0.7176, 0.9137, 0.949, 1.0)",
+          "sky/sky_top_color": "(0.0863, 0.5451, 0.8471, 1.0)",
+          "sun/light_angular_distance": 0.0,
+          "sun/light_color": "(1.0, 0.9451, 0.8235, 1.0)",
+          "sun/light_energy": 0.9,
+          "sun/light_specular": 0.8,
+          "sun/shadow_bias": 0.02,
+          "sun/shadow_enabled": true,
+          "sun/shadow_normal_bias": 0.55,
+          "sun/shadow_opacity": 0.85,
+          "sun_pitch": -55.0,
+          "sun_yaw": -35.0,
+          "surface_halo_spread": 1.0
+        },
+        "weight": 1.0
+      },
+      "authority": "Prototype",
+      "current_texture_matches": [
+        {
+          "rgba8_sha256": "49eaeddeb5f8450f97d5c16e60e05f558ecacdc5bfc9a268099ff4bb9c1f3fe3",
+          "runtime_texture": "res://data/endless/assets.bake/4bce7374303cc992c71fc7058657dfaaa84b3de78717ed1a0e7dfb6aac3cbbf2.res",
+          "source": "res://assets/textures/green_hill/selected/10A.png",
+          "source_sha256": "96c9e4accf5559da70551c9170e471ee3ba76fbf007da8d794d8695a12687e40"
+        },
+        {
+          "rgba8_sha256": "55020b6f0c74c18e3ea76826e6f3daa7b7b75d6bf5bc8d0456f9938a6cd7749c",
+          "runtime_texture": "res://data/endless/assets.bake/1043e4087c6d87029f949924b9277189805cbf5114b46e994d654d55ece07072.res",
+          "source": "res://assets/textures/green_hill/selected/11B.png",
+          "source_sha256": "bcee2085c72bf78d96cfc13de628df124021246607dc5e558f29de97f13d8d50"
+        },
+        {
+          "rgba8_sha256": "6c566db4d0ad2e73bcc6d191eff2a440851d39dafbf620a471cf97729b0d3176",
+          "runtime_texture": "res://data/endless/assets.bake/e490aae50267f6b7e149416613d00bf3adf41c22a4ff7016f261f3c0213a6daa.res",
+          "source": "res://assets/textures/green_hill/selected/1A.png",
+          "source_sha256": "885814895f9637cf9a1786a2ce355b9733f8dc2788953f925e3eadaa8ad32c85"
+        },
+        {
+          "rgba8_sha256": "cccd841d17da8913d802a3b8c20eb72ffb804e5ea0e3bf2b0c1ff85ec09b2a58",
+          "runtime_texture": "res://data/endless/assets.bake/135fe0e39b944f465346bcbe0c26be6b7b060b2b606c796d8ad3e88831912af3.res",
+          "source": "res://assets/textures/green_hill/selected/2B.png",
+          "source_sha256": "536bb5493cd645435141f043040a88251215704c0358697b1abca15b1ea74528"
+        },
+        {
+          "rgba8_sha256": "0f6d881feb405de94f101c6b6ce80a5b9e28807c6eabb22333d1964f270d5010",
+          "runtime_texture": "res://data/endless/assets.bake/a71704f8ae20af600365546236bf5a5b303d913e32643a67c3ce80d0eaed9877.res",
+          "source": "res://assets/textures/green_hill/selected/3A.png",
+          "source_sha256": "2e57fa6798dee155b70c0c3e069a2aaf7d3992b6da2670d889ba147a3aed6313"
+        },
+        {
+          "rgba8_sha256": "b7b01d0d47ee82afdb5099465876d2a380bb0d2348f9ca590901fba545972a1c",
+          "runtime_texture": "res://data/endless/assets.bake/d04a5252c184d6eebdd1264363faa994f64e0f853a53624adf51245fb1689b1c.res",
+          "source": "res://assets/textures/green_hill/selected/4B.png",
+          "source_sha256": "b2a61f45ba35be9a2e87e5287eaf1b67e93f16b42f13cbe05325276d027b5ea5"
+        },
+        {
+          "rgba8_sha256": "368686c35b26d12f915fe97a9932aeeeb632f00fbd5307176bf8c828ae5c63e4",
+          "runtime_texture": "res://data/endless/assets.bake/1d0ad487dfa764700fe115b2324b73b60f97aedce337c5888b0c79cd6b6f14d6.res",
+          "source": "res://assets/textures/green_hill/selected/5B.png",
+          "source_sha256": "dce4e577d272c3e5d5a0bffbcddd15308a81b3faf7d9ecd5c5973789bb458008"
+        },
+        {
+          "rgba8_sha256": "d54bdacfb8708d1419808c7374b36754e58098f54c1dfb8bffd3bf7b39cd139c",
+          "runtime_texture": "res://data/endless/assets.bake/a1af7ef26a36174e2965836abe907ecbf29c1246fcc9c60bcfedc7509a59cb9d.res",
+          "source": "res://assets/textures/green_hill/selected/6B.png",
+          "source_sha256": "79484e771c87e0a4636ff086fb1cd2677beee9a9f63e95a9df0ce7dcbb2e7ce9"
+        }
+      ],
+      "disk_acts": 1,
+      "disk_themes": 1,
+      "fallback_builds": 0,
+      "fps_counter_hidden": true,
+      "image": "green_hill.png",
+      "library": "res://scripts/endless/template_library.gd",
+      "pipeline_fingerprint": "212c40a33cf8d312c9813c6667d7dcbfa3c6ec4ae61085817a4dc8bcdaa83b7a",
+      "renderer": {
+        "api": "1.4.351",
+        "command_line": [
+          "--script",
+          "res://tests/prototype_appearance_capture.gd"
+        ],
+        "device": "NVIDIA GeForce RTX 4060",
+        "driver": "vulkan",
+        "engine": "4.7.2-stable (official)",
+        "renderer": "forward_plus",
+        "user_arguments": [
+          "--seed=18",
+          "--act=E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
+          "--output=E:\\Sonic Spinball Runners\\test-results\\geometry-density\\loop-focused-64",
+          "--themes=green_hill",
+          "--camera-target=570,500"
+        ]
+      },
+      "scene": "res://scenes/prototype_run.tscn",
+      "scenery_fingerprint": "4f98871f697bec4209c9ab04777ae1bbdf37928512cb85e2cffbf894f10aca27",
+      "seed": 18,
+      "source_sha256": "91c1dd949734dea6ef241204abaa8c7b48f6d9191572844942204b7ff1cb4e91",
+      "state": {
+        "act_score": 0,
+        "ball": "(400.0, 500.0)",
+        "camera_fov": 52.0,
+        "camera_projection": 0,
+        "camera_settings": {
+          "dead_zone_x": 18.0,
+          "dead_zone_y": 12.0,
+          "horizontal_response": 2.0,
+          "look_ahead": 0.0,
+          "max_speed": 4000.0,
+          "screen_margin_y": 0.22,
+          "screen_target_y": 0.55,
+          "vertical_response": 28.0,
+          "zoom": 1.3
+        },
+        "camera_size": 1.0,
+        "camera_transform": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (5.7, 2.115734, 6.545638)]",
+        "document": "4eaec4ecbd930eecf421da2b753d7fb4f16744912521bfb7177253c2b724eeea",
+        "goal_unlocked": false,
+        "rings": 0,
+        "score": 0,
+        "serve_pending": true,
+        "velocity": "(0.0, 0.0)"
+      },
+      "surface_detail": "flat",
+      "theme": "green_hill",
+      "theme_bake": "res://data/endless/themes.bake/green_hill.res",
+      "theme_bake_sha256": "094385c429ef38d6f357cba246738473e4520024ee0f973bc53b7cba3d35f8a0"
+    }
+  ],
+  "complete": true
+}

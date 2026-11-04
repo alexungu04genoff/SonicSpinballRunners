@@ -65,7 +65,7 @@ func primitive(kind: String) -> Mesh:
   if kind == "lantern_lower": cylinder.bottom_radius = 0.55
   if kind == "lantern_upper": cylinder.top_radius = 0.18
   cylinder.height = 1.0
-  cylinder.radial_segments = 12
+  cylinder.radial_segments = 10
   cylinder.rings = 1
   result = cylinder
  meshes[kind] = result

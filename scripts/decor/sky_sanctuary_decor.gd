@@ -1,6 +1,7 @@
 extends "res://scripts/decor/decor_skin.gd"
 ## Original procedural sanctuary masonry. Units are authored cells; no physics nodes.
 const Atmosphere := preload("res://scripts/themes/theme_atmosphere.gd")
+const Density := preload("res://scripts/presentation_density.gd")
 var meshes: Dictionary = {}
 var materials: Dictionary = {}
 
@@ -35,7 +36,11 @@ func primitive(kind: String) -> Mesh:
  if meshes.has(kind): return meshes[kind]
  var result: Mesh
  if kind == "box": result = BoxMesh.new()
+ elif kind == "tiny_sphere":
+  result = Density.sphere(1.0, Density.Family.TINY)
  elif kind == "sphere":
+  result = Density.sphere(1.0)
+ elif kind == "hero_sphere":
   var sphere := SphereMesh.new()
   sphere.radius = 1.0
   sphere.height = 2.0
@@ -72,7 +77,7 @@ func bar(root: Node3D, color: String, a: Vector3, b: Vector3, width: float) -> v
 func vine(root: Node3D, at: Vector3, length: float) -> void:
  for i in 5:
   var point := at + Vector3(sin(i * 1.7) * 0.035, -length * i / 5.0, 0.01)
-  piece(root, "sphere", "moss" if i % 2 == 0 else "leaf", point, Vector3(0.065, length * 0.15, 0.035))
+  piece(root, "tiny_sphere", "moss" if i % 2 == 0 else "leaf", point, Vector3(0.065, length * 0.15, 0.035))
 
 func column(root: Node3D, at: Vector3, height: float, radius: float, broken := false) -> void:
  box(root, "warm", at + Vector3.UP * 0.06, Vector3(radius * 2.7, 0.12, radius * 2.7))
@@ -114,7 +119,7 @@ func build_variant(variant: String) -> Node3D:
    for i in 3:
     var at := Vector3((i - 1) * 0.10, 0.21 + (i % 2) * 0.07, 0)
     bar(root, "moss", at * Vector3(1, 0, 1), at, 0.02)
-    piece(root, "sphere", "flower", at, Vector3(0.075, 0.035, 0.065))
+    piece(root, "tiny_sphere", "flower", at, Vector3(0.075, 0.035, 0.065))
   "broken_column":
    column(root, Vector3.ZERO, 0.58, 0.18, true)
    vine(root, Vector3(0.1, 0.52, 0.16), 0.45)
@@ -122,7 +127,7 @@ func build_variant(variant: String) -> Node3D:
    column(root, Vector3.ZERO, 0.35, 0.14)
    piece(root, "sphere", "blue", Vector3(0, 0.54, 0), Vector3.ONE * 0.16)
    for side: int in [-1, 1]: bar(root, "gold", Vector3(side * 0.20, 0.32, 0), Vector3(side * 0.12, 0.65, 0), 0.035)
-   piece(root, "sphere", "cyan", Vector3(0, 0.57, 0.145), Vector3.ONE * 0.035)
+   piece(root, "tiny_sphere", "cyan", Vector3(0, 0.57, 0.145), Vector3.ONE * 0.035)
   "stepped_fountain":
    for i in 3: piece(root, "cylinder", "pale", Vector3(0, 0.07 + i * 0.14, 0), Vector3(0.36 - i * 0.09, 0.10, 0.36 - i * 0.09))
    piece(root, "cylinder", "blue", Vector3(0, 0.13, 0), Vector3(0.28, 0.016, 0.28))
