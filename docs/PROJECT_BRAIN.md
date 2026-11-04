@@ -3274,3 +3274,8 @@ Dedicated Slingshot is now separate from Triangle Bumper. Bright active rubber p
 Drop Target Bank is a drag-place row in Gameplay. One authored structure, independent target identities/contact/state/animation underneath. Each hit pays existing Switch scoring; clearing the row pays existing Bank completion. Optional timed reset waits for Ball clearance. Retry preserves progress. No card games hiding in the targets. Values remain playtest tuning; see [pinball vocabulary](PINBALL_VOCABULARY.md).
 
 Low-poly terrain is a study, not a migration: `experiments/pinball_vocabulary/study_16.tres` and `study_96.tres` compare identical toy tables with matched visible/collision curves. Production Acts and CURVE_STEPS remain untouched. Alex decides whether the facets feel good before any wider change. Primitive-density audit lives in the same vocabulary note.
+
+
+# THREE AUTHORING TRIALS — 2026-11-04
+
+Alex asked for a small batch that learns the existing Acts before we make more. Relay Garden, Switchback Climb and Side Door live under `data/acts/Candidates`, outside the production pool. They use smooth authored contours, multi-height standard paddles, 40/36/44 rings, two Buzz Bombers each and established mechanics. No new pinball toys in these. Springs are 280/300 px/s, not orbital launch equipment. Physics/contact and content checks passed; actual route feel remains Alex's call. See [the source assessment, values and first playtest questions](ACT_CANDIDATES.md). Do not promote this batch or interpret its tuning as confirmed production direction yet.
