@@ -42,3 +42,9 @@ Suggested shared language: broad facets, ordinary cylinders 8, important cylinde
 4. Five useful tuning controls: Slingshot rotation and strength; Bank target count, spacing and reset delay. Width/target size remain secondary knobs.
 
 Automated coverage is intentionally focused: placement/save/reload, front/back/end and rotated physical contacts, independent drop collision, completion/reset/retry, editor undo/redo, both terrain collision outlines, actual game startup/presentation, and baked animation rebinding. Visual polish, trajectory usefulness and flipper timing still need Alex's playtest.
+
+## Third complex comparison copy
+
+`data/acts/Third complex 16.tres` is a separate faceted copy of Alex's `Third complex.tres`. Its five custom smoothed composites use approximately 22.5-degree accumulated curve turns, retaining sharp corners, curvature reversals and axis extrema. This is a 16-side-equivalent curve treatment, not a forced 16-vertex limit on complex terrain. Outline counts change from 444/366/407/88/44 to 13/15/29/16/9. Only the title and terrain outlines differ; gameplay objects, transforms, rings, scenery identity and all other authored data remain intact. The original file is untouched.
+
+Verified loading/validation, exact save/reload, shared-engine headless startup, and matching visual-source/collision polygons. Open the copy through Act Editor or Play Act / Load Act; rebound feel remains a manual comparison.
