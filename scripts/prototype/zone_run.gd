@@ -60,6 +60,13 @@ func _ready() -> void:
  scorecraft.combo_ended.connect(func(reason: String, chain: int, tier: int): telemetry.combo_ended(reason, chain, tier, elapsed))
  specials.special_activated.connect(func(_id: String): telemetry.action_used(specials.definition.character_type))
  specials.area_completed.connect(telemetry.area_completed)
+ specials.homing_started.connect(func(target: Node2D, _direction: Vector2):
+  telemetry.speed_started(ball.position.distance_to(target.global_position), specials.action.target_range))
+ specials.homing_ended.connect(telemetry.speed_ended)
+ specials.special_hit.connect(func(target: Node2D, _multiplier: int): telemetry.speed_hit("enemy" if target.has_meta("enemy_id") else "bumper"))
+ specials.flight_started.connect(telemetry.flight_started)
+ specials.flight_lift_applied.connect(telemetry.flight_lift_applied)
+ specials.area_target_activated.connect(func(_source: String, target: Node2D, _multiplier: int): telemetry.area_target_activated("enemy" if target.has_meta("enemy_id") else "bumper"))
  combo_glow = preload("res://scripts/prototype/combo_glow.gd").new()
  combo_glow.game = self
  add_child(combo_glow)
@@ -128,9 +135,13 @@ func act_score_text() -> String:
  return super.act_score_text().replace("EXIT OPEN", "GOAL READY")
 
 func _physics_process(delta: float) -> void:
- if closing or finished or not started or get_tree().paused: return
- if is_instance_valid(transfer): return
+ if closing or finished or not started or get_tree().paused or is_instance_valid(transfer):
+  telemetry.ball_speed.observe(0.0, 0.0, false)
+  return
  if not ball.serve_pending: elapsed += delta
+ var ordinary_motion := not ball.serve_pending and not ball._teleport_pending and not ball.freeze and not loading_act and respawn_time < 0.0
+ telemetry.observe_motion(delta, ball.linear_velocity.length(), ordinary_motion and not ball.on_ramp and specials.homing_remaining <= 0.0,
+  specials.flight_remaining if ordinary_motion else 0.0)
  super._physics_process(delta)
 
 func _activate(act: RefCounted, initial := false) -> void:
@@ -154,7 +165,7 @@ func _begin_act(act: RefCounted, initial: bool) -> void:
  scorecraft.award_bonuses = buddies.modifiers()
  tuning.set_temporary("run_buddies", buddies.physics_modifier())
  act_started_at = elapsed
- telemetry.begin_act(elapsed)
+ telemetry.begin_act(elapsed, act.document, character_id)
  if exit_unlocked: telemetry.target_ready(elapsed, act_score, 0)
  act_start_ball = ball_number
  active.runtime.goal_ring.set_unlocked(exit_unlocked)
@@ -215,6 +226,9 @@ func _act_result(cleared: bool) -> Dictionary:
  row["authored_difficulty"] = active.document.authored_difficulty
  row["authored_difficulty_label"] = active.document.difficulty_label()
  row["act_fingerprint"] = active.document.fingerprint()
+ row["character"] = character_id
+ row["character_type"] = specials.definition.character_type
+ row["design_thesis"] = active.document.design_thesis
  row["telemetry"] = telemetry.finish_act(row, elapsed)
  return row
 
@@ -296,6 +310,19 @@ func _on_score_awarded(details: Dictionary) -> void:
 
  if exit_unlocked:
   telemetry.target_ready(elapsed, act_score, Buddies.total(act_buddy_contributions))
+
+func _wire_scoring_runtime(runtime: Dictionary, owner_id: String) -> void:
+ super._wire_scoring_runtime(runtime, owner_id)
+ runtime.mechanics.drop_target_event.connect(_on_drop_target_event.bind(owner_id))
+
+func _on_drop_target_event(bank_id: String, target_id: String, phase: StringName, targets: int, owner_id: String) -> void:
+ if _accept_scoring(owner_id): telemetry.drop_target_event(bank_id, target_id, phase, targets)
+
+func _on_traversal_event(kind: StringName, object_id: String, phase: StringName, owner_id: String = "") -> void:
+ super._on_traversal_event(kind, object_id, phase, owner_id)
+ # Slingshots retain Spring's existing combo contract; only the passive counter differs.
+ if phase == &"used" and kind == &"spring" and _accept_scoring(owner_id) and telemetry.slingshots.get("by_object", {}).has(object_id):
+  telemetry.slingshot_activated(object_id)
 
 func _award_position(details: Dictionary) -> Vector2:
  if _ring_award_position.is_finite(): return _ring_award_position

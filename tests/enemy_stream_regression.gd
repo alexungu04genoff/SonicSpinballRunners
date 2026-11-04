@@ -110,6 +110,7 @@ func run() -> void:
  check(summary.buddy_state.rescues_used.chip == 1 and summary.normal_score + Run.Buddies.total(summary.buddy_contributions) == summary.score, "Results preserve Chip's consumed state and exact contribution reconciliation")
  check(summary.telemetry.buddy_state.rescues_used.chip == 1, "Copyable Act telemetry preserves the consumed rescue state")
  var data: Dictionary = summary.telemetry
+ check(data.character_action.type == "speed" and data.character_action.uses == 1 and data.character_action.successful_uses == 1 and data.character_action.speed.physical_target_hits == 1 and data.character_action.speed.hits_by_target_type.enemy == 1, "Real Speed contact populates generalized action evidence once")
  var normal_sum := 0
  for points: int in data.score_by_category.values(): normal_sum += points
  check(normal_sum == summary.normal_score and data.score_by_category.enemy == 3400 and data.score_by_category.ring_rack == 500 and data.score_by_category.switch == 100, "V2 normal categories exclude Buddy bonuses and reconcile with the real Act ledger")

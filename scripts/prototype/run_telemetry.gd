@@ -1,6 +1,18 @@
 extends RefCounted
 ## Passive snapshots on the existing gameplay clock. No RNG, I/O or scoring writes.
-const FORMAT_VERSION := 3
+const FORMAT_VERSION := 4
+const SpeedSamples = preload("res://scripts/prototype/ball_speed_telemetry.gd")
+var ball_speed := SpeedSamples.new()
+var slingshots := {}
+var drop_targets := {}
+var _seen_targets := {}
+var _action_type := ""
+var _successful_uses := 0
+var _speed := {}
+var _fly := {}
+var _power := {}
+var _dash_active := false
+var _dash_bucket := ""
 var started_at := 0.0
 var target_at: Variant = null
 var goal_at: Variant = null
@@ -20,7 +32,7 @@ var enemies := {}
 var _combo_started_at: Variant = null
 var _combo_peak := 1
 
-func begin_act(at: float) -> void:
+func begin_act(at: float, document: Resource = null, character := "") -> void:
  started_at = at
  target_at = null
  goal_at = null
@@ -45,6 +57,100 @@ func begin_act(at: float) -> void:
  type_actions = {"uses": 0, "successful_target_hits": 0, "affected_targets": 0, "affected_rings": 0}
  homing = {"finishers_used": 0, "successful_hits": 0, "normal_score": 0, "hits_by_target_type": {}}
  enemies = {"destructions": 0, "respawns": 0, "normal_score": 0, "by_type": {}}
+ ball_speed.reset()
+ slingshots = {"activations": 0, "by_object": {}}
+ drop_targets = {"hits": 0, "unique_targets_hit": 0, "bank_completions": 0, "bank_resets": 0, "banks": {}}
+ _seen_targets = {}
+ _action_type = CharacterSpecials.CHARACTERS[character].character_type if CharacterSpecials.CHARACTERS.has(character) else ""
+ _successful_uses = 0
+ _dash_active = false
+ _dash_bucket = ""
+ _speed = {"targets_acquired": 0, "physical_target_hits": 0, "failed_approaches": 0,
+  "failures_by_reason": {}, "hits_by_target_type": {}, "distance": {}, "target_range_px": null}
+ for bucket: String in ["close", "medium", "far"]:
+  _speed.distance[bucket] = {"acquired": 0, "hits": 0, "failed": 0}
+ _fly = {"activations": 0, "successful_activations": 0, "active_seconds": 0.0, "rescue_lift_activations": 0}
+ _power = {"uses": 0, "affected_total": 0, "affected_by_type": {"ring": 0, "bumper": 0, "enemy": 0}}
+ if document != null:
+  for item: Dictionary in document.gameplay_objects:
+   if item.type == "slingshot": slingshots.by_object[item.object_id] = 0
+   if item.type == "drop_target_bank":
+    var properties := preload("res://scripts/act_editor/gameplay_objects.gd").properties(item)
+    _add_bank(str(item.object_id), int(properties.target_count))
+
+func _add_bank(id: String, targets: int) -> void:
+ if not drop_targets.banks.has(id):
+  drop_targets.banks[id] = {"targets": targets, "hits": 0, "unique_targets_hit": 0, "completions": 0, "resets": 0}
+
+func slingshot_activated(id: String) -> void:
+ slingshots.activations += 1
+ slingshots.by_object[id] = int(slingshots.by_object.get(id, 0)) + 1
+
+func drop_target_event(bank_id: String, target_id: String, phase: StringName, targets: int) -> void:
+ _add_bank(bank_id, targets)
+ var bank: Dictionary = drop_targets.banks[bank_id]
+ match phase:
+  &"hit":
+   drop_targets.hits += 1
+   bank.hits += 1
+   if not _seen_targets.has(target_id):
+    _seen_targets[target_id] = true
+    drop_targets.unique_targets_hit += 1
+    bank.unique_targets_hit += 1
+  &"completed":
+   drop_targets.bank_completions += 1
+   bank.completions += 1
+  &"reset":
+   drop_targets.bank_resets += 1
+   bank.resets += 1
+
+func speed_started(distance: float, target_range: float) -> void:
+ _dash_active = true
+ _dash_bucket = "close" if distance <= target_range / 3.0 else ("medium" if distance <= target_range * 2.0 / 3.0 else "far")
+ _speed.target_range_px = target_range
+ _speed.targets_acquired += 1
+ _speed.distance[_dash_bucket].acquired += 1
+
+func speed_ended(reason: String) -> void:
+ if not _dash_active or reason == "Hit": return # The physical-hit signal follows Hit.
+ _dash_active = false
+ _speed.failed_approaches += 1
+ _speed.distance[_dash_bucket].failed += 1
+ var key := reason.to_lower().replace(" ", "_")
+ _speed.failures_by_reason[key] = int(_speed.failures_by_reason.get(key, 0)) + 1
+
+func speed_hit(kind: String) -> void:
+ if not _dash_active: return
+ _dash_active = false
+ _successful_uses += 1
+ _speed.physical_target_hits += 1
+ _speed.distance[_dash_bucket].hits += 1
+ _speed.hits_by_target_type[kind] = int(_speed.hits_by_target_type.get(kind, 0)) + 1
+
+func flight_started() -> void:
+ _successful_uses += 1
+ _fly.successful_activations += 1
+
+func flight_lift_applied() -> void:
+ _fly.rescue_lift_activations += 1
+
+func observe_motion(delta: float, speed: float, eligible: bool, flight_remaining: float) -> void:
+ ball_speed.observe(delta, speed, eligible)
+ _fly.active_seconds += minf(maxf(0.0, delta), maxf(0.0, flight_remaining))
+
+func area_target_activated(kind: String) -> void:
+ _power.affected_by_type[kind] = int(_power.affected_by_type.get(kind, 0)) + 1
+
+func _action_snapshot() -> Dictionary:
+ var result := {"type": _action_type if not _action_type.is_empty() else null,
+  "uses": type_actions.uses, "successful_uses": _successful_uses}
+ match _action_type:
+  "speed":
+   result["speed"] = _speed.duplicate(true)
+   result.speed["pending_approaches"] = 1 if _dash_active else 0
+  "fly": result["fly"] = _fly.duplicate(true)
+  "power": result["power"] = _power.duplicate(true)
+ return result
 
 func record_score(details: Dictionary) -> void:
  var kind := str(details.kind)
@@ -83,12 +189,18 @@ func combo_ended(_reason: String, _chain: int, _tier: int, at: float) -> void:
  _combo_started_at = null
 
 func action_used(type_id: String) -> void:
+ _action_type = type_id
  type_actions.uses += 1
  if type_id == "speed": homing.finishers_used += 1
+ if type_id == "fly": _fly.activations += 1
+ if type_id == "power": _power.uses += 1
 
 func area_completed(_source: String, targets: int, rings: int) -> void:
  type_actions.affected_targets += targets
  type_actions.affected_rings += rings
+ _power.affected_total += targets + rings
+ _power.affected_by_type.ring += rings
+ if targets + rings > 0: _successful_uses += 1
 
 func enemy_event(type: StringName, event: String) -> void:
  enemies[event] += 1
@@ -125,6 +237,8 @@ func finish_act(row: Dictionary, ended_at: float) -> Dictionary:
   "authored_difficulty": row.get("authored_difficulty"),
   "authored_difficulty_label": row.get("authored_difficulty_label"),
   "act_fingerprint": row.get("act_fingerprint"),
+  "character": row.get("character"), "character_type": row.get("character_type"),
+  "design_thesis": row.get("design_thesis", ""),
   "target": row.target, "theme": row.get("theme", ""),
   "act_start_time_seconds": started_at, "target_ready_time_seconds": target_at,
   "goal_touched_time_seconds": goal_at, "act_end_time_seconds": end,
@@ -147,7 +261,10 @@ func finish_act(row: Dictionary, ended_at: float) -> Dictionary:
   "combo_support_by_source": combo_support_by_source.duplicate(true),
   "x4_activations": x4_activations, "highest_multiplier": highest_multiplier,
   "longest_combo_seconds": longest, "longest_combo_max_multiplier": peak,
-  "type_actions": type_actions.duplicate(true), "homing": homing.duplicate(true), "enemies": enemies.duplicate(true)
+  "type_actions": type_actions.duplicate(true), "homing": homing.duplicate(true), "enemies": enemies.duplicate(true),
+  "slingshots": slingshots.duplicate(true), "drop_targets": drop_targets.duplicate(true),
+  "character_action": _action_snapshot(), "ball_speed": ball_speed.snapshot(),
+  "wide_spring": null
  }
 
 static func export_run(summary: Dictionary) -> Dictionary:
@@ -158,7 +275,19 @@ static func export_run(summary: Dictionary) -> Dictionary:
   buddies[id] = {"level": summary.buddies[id], "score_contribution": summary.buddy_contributions.get(id, 0)}
  var acts: Array = []
  for row: Dictionary in summary.acts: acts.append(row.telemetry.duplicate(true))
+ var difficulties := {}
+ var actions := {"uses": 0, "successful_uses": 0}
+ for act: Dictionary in acts:
+  if act.get("cleared", false) and act.get("authored_difficulty") != null:
+   var key := str(act.authored_difficulty)
+   difficulties[key] = int(difficulties.get(key, 0)) + 1
+  var action: Dictionary = act.get("character_action", {})
+  var uses: Variant = action.get("uses", act.get("type_actions", {}).get("uses"))
+  actions.uses = null if uses == null or actions.uses == null else int(actions.uses) + int(uses)
+  var successes: Variant = action.get("successful_uses")
+  actions.successful_uses = null if successes == null or actions.successful_uses == null else int(actions.successful_uses) + int(successes)
  return {"telemetry_format_version": FORMAT_VERSION, "run_seed": summary.seed,
+  "completed_act_difficulties": difficulties, "action_totals": actions,
   "run_configuration": summary.get("run_configuration", {}).duplicate(true),
   "configuration_fingerprint": summary.get("configuration_fingerprint", ""),
   "course": summary.get("course", []).duplicate(true),

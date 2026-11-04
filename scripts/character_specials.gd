@@ -9,6 +9,7 @@ signal homing_started(target: Node2D, direction: Vector2)
 signal homing_ended(reason: String)
 signal special_hit(target: Node2D, multiplier: int)
 signal flight_started
+signal flight_lift_applied
 signal flight_ended(reason: String)
 signal area_started(source: String, origin: Vector2, size: Vector2)
 signal area_target_activated(source: String, target: Node2D, multiplier: int)
@@ -140,6 +141,7 @@ func activate() -> bool:
   if game.ball.linear_velocity.y > 0.0:
    var lift: float = minf(action.flight_lift_limit, game.ball.linear_velocity.y + 160.0)
    game.ball.apply_central_impulse(Vector2.UP * lift * game.ball.mass)
+   if lift > 0.0: flight_lift_applied.emit()
   feedback = "FLIGHT — guide the shot"
   flight_started.emit()
  elif action.kind != TypeAction.Kind.POWER:

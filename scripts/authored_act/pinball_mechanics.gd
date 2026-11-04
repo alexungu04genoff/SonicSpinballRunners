@@ -7,6 +7,8 @@ signal feature_completed(kind: StringName, object_id: String, bonus: int)
 signal enemy_destroyed(enemy_type: StringName, object_id: String, base_points: int, source: StringName)
 ## Movement events describe actual launches and rail ownership, independently of rewards.
 signal traversal_event(kind: StringName, object_id: String, phase: StringName)
+## Accepted state transitions only. Observers must not feed back into gameplay.
+signal drop_target_event(bank_id: String, target_id: String, phase: StringName, target_count: int)
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const RailPath = preload("res://scripts/authored_act/rail_path.gd")
 const Contact = preload("res://scripts/authored_act/gimmick_geometry.gd")
@@ -531,11 +533,13 @@ static func slingshot_active(item: Dictionary, start: Vector2, motion: Vector2, 
 func drop_target(item: Dictionary, target: Dictionary) -> void:
  if target.down or not scoring_active: return
  target.down = true
+ drop_target_event.emit(str(item.object_id), str(target.object_id), &"hit", item.targets.size())
  mechanic_score.emit(&"switch", target.object_id, 25)
  for other: Dictionary in item.targets:
   if not other.down: return
  item.complete = true
  item.reset_remaining = float(item.properties.reset_delay)
+ drop_target_event.emit(str(item.object_id), "", &"completed", item.targets.size())
  complete_feature(&"switch_bank", item.object_id, int(item.properties.completion_bonus))
 
 func tick_drop_bank(item: Dictionary, dt: float) -> void:
@@ -550,3 +554,4 @@ func tick_drop_bank(item: Dictionary, dt: float) -> void:
    if not Contact.capsule_hit(ball.position, Vector2.ZERO, target.position, Objects.forward(item), float(item.properties.target_size) * 0.5 - 4.0, ball.radius + 6.0).is_empty(): return
  item.complete = false
  for target: Dictionary in item.targets: target.down = false
+ drop_target_event.emit(str(item.object_id), "", &"reset", item.targets.size())

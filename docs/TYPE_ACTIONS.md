@@ -37,7 +37,7 @@ Direct area awards do not build/refresh combos, multiply by the combo tier or re
 
 ## Telemetry and focused checks
 
-Version 2 JSON keeps its existing fields and adds run-level `character_type` and `type_action`, plus each Act's `type_actions`: `uses`, `successful_target_hits`, `affected_targets`, and `affected_rings`. Speed successes are accepted scoring events; Power counts successful atomic target/pickup callbacks. Flight records uses. Existing Homing counters include Sonic and Shadow.
+The original version-2 action fields remain: run-level `character_type` and `type_action`, plus each Act's `type_actions`: `uses`, `successful_target_hits`, `affected_targets`, and `affected_rings`. Speed successes in this legacy group are accepted scoring events; Power counts successful atomic target/pickup callbacks. Existing Homing counters include Sonic and Shadow. Telemetry v4 adds `character_action` with committed uses and type-specific success definitions: physical Speed hits and failed approaches by range bucket, Flight gameplay time and actual lift activations, and Power affected-object breakdowns. See [precise metric meanings](PROTOTYPE_TELEMETRY.md); no old field changes meaning.
 
 Focused regressions: `character_lab_regression`, `four_character_regression`, `authored_main_game_regression`, `enemy_regression`, `enemy_stream_regression`, `run_telemetry_regression`, `economy_v1_regression`, `ring_rack_regression`, `physics_regression`, `buddy_scoring_regression` and `scorecraft_regression`. The enemy streaming fixture uses distinct test-only source copies; `-- --no-bakes` exercises their runtime construction without changing production bakes.
 

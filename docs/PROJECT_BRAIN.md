@@ -1,5 +1,11 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Telemetry for the next actual playtests — 2026-11-04
+
+V4 follows the difficulty metadata from V3. Bro added powered Slingshot counts, Drop Bank hits/completions/real timed resets, Speed outcomes by range bucket, Flight time/lifts, Power target types and a tiny fixed-memory Ball-speed histogram. No frame dumps and no robot declaring the Act good or bad. Old scoring/timing fields keep their meaning, including Drop Targets under Switch/Bank score categories. Each Act carries character/type, authored difficulty and its revision; run totals stay compact.
+
+Wide Spring Saver still does not exist, so its evidence is null rather than fictional. Interaction-gap analytics can wait too. See [what the numbers actually mean](PROTOTYPE_TELEMETRY.md). Next step is Alex playing and Sol reading the JSON, not another instrumentation expansion.
+
 ## Act Review: facts first, Alex judges — 2026-11-04
 
 Bro added Act Review beside Properties in the editor's right sidebar. Five authored difficulty levels run from Relaxed to Expert, defaulting to Standard, plus an optional short Design Thesis. This is a label for intent, not a hidden balance knob. No geometry classifier gets to tell Alex how hard his table is.

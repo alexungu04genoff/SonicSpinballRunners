@@ -33,6 +33,11 @@ func run() -> void:
  var runtime := Compiler.compile(act, tuning, controls, ball)
  check(runtime.error.is_empty(), "Runtime compiles")
  root.add_child(runtime.root)
+ var telemetry := preload("res://scripts/prototype/run_telemetry.gd").new()
+ telemetry.begin_act(0.0, act, "sonic")
+ runtime.mechanics.drop_target_event.connect(telemetry.drop_target_event)
+ runtime.mechanics.traversal_event.connect(func(_kind: StringName, id: String, phase: StringName):
+  if id == sling.object_id and phase == &"used": telemetry.slingshot_activated(id))
  var item: Dictionary = runtime.mechanics.items[0]
  ball.teleport_to(Vector2(300, 270), Vector2(0, 400))
  await frames(10)
@@ -47,6 +52,7 @@ func run() -> void:
  ball.teleport_to(Vector2(300, 345), Vector2(0, -400))
  await frames(10)
  check(item.launch_count == 2, "End contact does not power launch")
+ check(telemetry.slingshots.activations == 2 and telemetry.slingshots.by_object[sling.object_id] == 2, "Telemetry counts only the two powered contacts, excluding backside and end rebounds")
  var bank_item: Dictionary = runtime.mechanics.items[1]
  ball.teleport_to(Vector2(150, 120), Vector2(0, 400))
  await frames(10)
@@ -61,14 +67,17 @@ func run() -> void:
  runtime.mechanics.feature_completed.connect(func(kind, id, bonus): completions.append([kind, id, bonus]))
  for target: Dictionary in bank_item.targets: runtime.mechanics.drop_target(bank_item, target)
  check(bank_item.complete and completions.size() == 1 and completions[0][2] == 500, "All targets complete bank exactly once")
+ check(telemetry.drop_targets.hits == bank_item.targets.size() and telemetry.drop_targets.unique_targets_hit == bank_item.targets.size() and telemetry.drop_targets.bank_completions == 1, "Physical and direct accepted hits count once per standing target")
  runtime.mechanics.reset_for_retry()
  check(bank_item.complete, "Retry preserves dropped targets and bank state")
  runtime.mechanics.tick(0.6)
  check(not bank_item.complete and not bank_item.targets[0].down and bank_item.targets[0].object_id == first_id, "Timed reset restores independent collision state and stable identity")
+ check(telemetry.drop_targets.bank_resets == 1, "Only the actual timed Bank reset counts; retry does not")
  bank_item.properties.reset_delay = 0.0
  for target: Dictionary in bank_item.targets: runtime.mechanics.drop_target(bank_item, target)
  runtime.mechanics.tick(10.0)
  check(bank_item.complete, "Zero reset delay keeps bank down")
+ check(telemetry.drop_targets.hits == 2 * bank_item.targets.size() and telemetry.drop_targets.unique_targets_hit == bank_item.targets.size() and telemetry.drop_targets.bank_completions == 2 and telemetry.drop_targets.bank_resets == 1, "Re-dropped targets add hits/completions without inflating unique targets or resets")
  runtime.root.free()
  ball.free()
  controls.free()
