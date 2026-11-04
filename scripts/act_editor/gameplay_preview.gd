@@ -17,6 +17,13 @@ static func draw_object(target: CanvasItem, placement: Dictionary, anchor: Vecto
  var definition: Dictionary = Objects.get_definition(str(placement.get("type", "")))
  if definition.is_empty():
   return
+ if placement.type == "drop_target_bank":
+  var props := Objects.properties(placement)
+  for offset: Vector2 in Objects.drop_positions(placement):
+   var center := anchor + offset.rotated(deg_to_rad(float(placement.rotation_degrees))) * scale_factor
+   var side := Vector2.RIGHT.rotated(deg_to_rad(float(placement.rotation_degrees))) * float(props.target_size) * 0.5 * scale_factor
+   target.draw_line(center - side, center + side, SELECTION_COLOR if selected else Objects.COLORS[props.color], maxf(3.0, 8.0 * scale_factor), true)
+  return
  if placement.type == "slingshot":
   var points := rotated_points(placement, cell_size)
   for i in points.size(): points[i] = anchor + points[i] * scale_factor

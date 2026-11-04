@@ -3265,3 +3265,10 @@ Alex requested separate north-building fog. The Lab now has Directional Fog with
 Bro traced the good/bad front joins in First Try through raw presentation, recipes, disk baking and static batching. The split was already present before baking: raised exterior walls used the interior wall material while the lower cliff used the facade. World mapping did not make two different texture roles continuous. Green Hill also had incompatible contour/world charts (the local art experiment fitted each perimeter independently), and baking simplified walls and inferred floors separately.
 
 Exterior triangles now join the existing facade surface before capture, using one world-space chart and height datum. Interior walls keep their own art. Baked floor inference uses the actual simplified wall contours. Collision, authored geometry, scenery framing and atmosphere stay with their existing systems. No extra draws or passes; matched tests retained batching and measured roughly 0.02–0.035 ms extra GPU time from the retained boundary detail. See [Terrain facades](TERRAIN_FACADES.md) for evidence, scope and checks. This replaces per-theme exterior UV alignment tricks; it is not a terrain redesign.
+
+
+# NEW PINBALL TOYS — 2026-11-04
+
+Dedicated Slingshot is now separate from Triangle Bumper. Bright active rubber powers a fixed-speed rebound along local up; rotate to aim. Back and ends stay passive. Zero points, existing Spring combo extension. The old “triangle Bumpers/slings” description above is historical.
+
+Drop Target Bank is a drag-place row in Gameplay. One authored structure, independent target identities/contact/state/animation underneath. Each hit pays existing Switch scoring; clearing the row pays existing Bank completion. Optional timed reset waits for Ball clearance. Retry preserves progress. No card games hiding in the targets. Values remain playtest tuning; see [pinball vocabulary](PINBALL_VOCABULARY.md).

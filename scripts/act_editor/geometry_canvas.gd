@@ -111,6 +111,9 @@ var _decor_drag_original := Vector2.ZERO
 var _decor_drag_position := Vector2.ZERO
 var _decor_drag_moved := false
 var ring_spacing_cells := Rings.DEFAULT_SPACING_CELLS
+var _bank_dragging := false
+var _bank_start := Vector2.ZERO
+var _bank_preview := {}
 var _ring_mode := ""
 var _ring_index := -1
 var _ring_original: Dictionary = {}
@@ -474,6 +477,8 @@ func fit_view() -> void:
 
 
 func cancel_gesture() -> void:
+ _bank_dragging = false
+ _bank_preview = {}
  _box_selecting = false
  _group_dragging = false
  _group_offset = Vector2.ZERO
@@ -952,6 +957,8 @@ func _draw_gameplay_objects() -> void:
   _draw_launch_range(shown)
   if _rail_drag >= 0: shown.properties.points = _rail_preview
   ObjectPreview.draw_object(self, shown, local_pixels_to_screen(point), scale_factor, _local_cell_size(), true)
+ if _bank_dragging:
+  ObjectPreview.draw_object(self, _bank_preview, local_pixels_to_screen(_bank_preview.position), scale_factor, _local_cell_size(), true, true)
  if not _rail_draft.is_empty():
   ObjectPreview.draw_object(self, _rail_draft, local_pixels_to_screen(_rail_draft.position), scale_factor, _local_cell_size(), true, true)
  if _patrol_dragging and _patrol_index < 0:
@@ -1266,7 +1273,9 @@ func _gui_input(event: InputEvent) -> void:
     grab_focus()
     _begin_primary(event.position, event.alt_pressed, event.ctrl_pressed or event.meta_pressed)
    else:
-    if _box_selecting:
+    if _bank_dragging:
+     _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed))
+    elif _box_selecting:
      _box_end = event.position
     elif _group_dragging:
      _update_group_drag(event.position, event.alt_pressed)
@@ -1291,6 +1300,8 @@ func _gui_input(event: InputEvent) -> void:
   if _panning:
    _view_origin += event.relative
    _view_adjusted = true
+  elif _bank_dragging:
+   _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed))
   elif _box_selecting:
    _box_end = event.position
   elif _group_dragging:
@@ -1373,6 +1384,12 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
   else:
    var border := "bottom" if connector_tool == "entry" else "top"
    _set_status("%s can only be created on the %s border." % [connector_tool.capitalize(), border])
+  return
+ if gameplay_brush.get("type") == "drop_target_bank":
+  if _inside_grid(pointer):
+   _bank_dragging = true
+   _bank_start = legal_gameplay_position(screen_to_local_pixels(pointer), cycle_overlaps)
+   _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, _bank_start)
   return
  if gameplay_brush.get("type") in ["elevated_rail", "lane_barrier"]:
   if _inside_grid(pointer):
@@ -1842,6 +1859,12 @@ func _end_connector_drag() -> void:
 
 
 func _end_primary() -> void:
+ if _bank_dragging:
+  _bank_dragging = false
+  gameplay_placement_requested.emit(_bank_preview.duplicate(true))
+  _bank_preview = {}
+  queue_redraw()
+  return
  if _box_selecting:
   _finish_box_selection()
   return

@@ -34,6 +34,7 @@ static func build(p, parent: Node3D, item: Dictionary) -> Dictionary:
    mount.scale.y *= 0.4
    entry["root"] = root
    return entry
+  "drop_target_bank": return _drop_bank(p, root, item, style)
   "slingshot": return _slingshot(p, root, item, style)
   "spring": return _spring(p, root, item)
   "lane_barrier": return _lanes(p, root, item, style)
@@ -175,6 +176,9 @@ static func _spring(p, root: Node3D, item: Dictionary) -> Dictionary:
 static func update(entry: Dictionary) -> void:
  var item: Dictionary = entry.item
  match entry.kind:
+  "drop_target_bank":
+   for i in entry.pads.size():
+    entry.pads[i].scale.y = maxf(0.08, 1.0 - float(item.targets[i].retraction))
   "slingshot": entry.rubber.scale.y = 1.0 + float(item.pulse) * 2.0
   "gate": entry.panel.visible = not item.open
   "switch":
@@ -294,10 +298,25 @@ static func bind_instance_materials(entry: Dictionary) -> void:
   for mesh: MeshInstance3D in entry.emitters: mesh.material_override = entry[key]
 
 static func _slingshot(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dictionary:
- var width := float(item.properties.width) * p.SCALE
+ var width: float = float(item.properties.width) * p.SCALE
  _box(p, root, Vector3(width, 0.12, 8.0 * p.SCALE), Vector3(0, 0.06, 0), style.body, "Chassis")
  var rubber := _box(p, root, Vector3(width - 8.0 * p.SCALE, 0.10, 2.0 * p.SCALE), Vector3(0, 0.08, -4.0 * p.SCALE), style.light, "ActiveRubber")
  for side: float in [-1.0, 1.0]:
   var arrow := _box(p, root, Vector3(0.025, 0.015, 0.13), Vector3(side * 0.04, 0.015, -0.20), style.trim, "LaunchArrow")
   arrow.rotation.y = side * -0.65
  return {"kind": "slingshot", "item": item, "root": root, "rubber": rubber}
+
+static func _drop_bank(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dictionary:
+ var pads: Array = []
+ var color: Color = Objects.COLORS[item.properties.color]
+ var material: Material = p.material(color, 0.2)
+ Hardware.protect(material)
+ for offset: Vector2 in Objects.drop_positions(item):
+  var at := Vector3(offset.x * p.SCALE, 0, offset.y * p.SCALE)
+  _box(p, root, Vector3((float(item.properties.target_size) + 4) * p.SCALE, 0.015, 12 * p.SCALE), at, style.body, "TargetSocket")
+  var pad := Node3D.new()
+  pad.position = at
+  root.add_child(pad)
+  _box(p, pad, Vector3(float(item.properties.target_size) * p.SCALE, 0.18, 8 * p.SCALE), Vector3(0, 0.09, 0), material, "TargetFace")
+  pads.append(pad)
+ return {"kind": "drop_target_bank", "root": root, "item": item, "pads": pads}

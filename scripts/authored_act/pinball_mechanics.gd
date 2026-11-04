@@ -64,6 +64,12 @@ func add_object(placement: Dictionary, descriptor: Dictionary) -> void:
  item["pulse"] = 0.0
  item["launch_count"] = 0
  if Enemies.is_enemy(item.type): enemies.add(item)
+ if item.type == "drop_target_bank":
+  item["targets"] = []
+  item["complete"] = false
+  item["reset_remaining"] = 0.0
+  for offset: Vector2 in Objects.drop_positions(item):
+   item.targets.append({"object_id": str(item.object_id) + "/target_" + str(item.targets.size()), "position": Vector2(item.position) + offset.rotated(deg_to_rad(float(item.rotation_degrees))), "down": false, "retraction": 0.0})
  if item.type == "spinner":
   item["goal_ticks"] = 0
   item["completions"] = 0
@@ -99,6 +105,12 @@ func reset() -> void:
   item.passing = false
   item.pulse = 0.0
   item.launch_count = 0
+  if item.type == "drop_target_bank":
+   item.complete = false
+   item.reset_remaining = 0.0
+   for target: Dictionary in item.targets:
+    target.down = false
+    target.retraction = 0.0
   if item.type == "spinner":
    item.goal_ticks = 0
    item.completions = 0
@@ -162,6 +174,7 @@ func tick(dt: float) -> void:
  for item: Dictionary in items:
   item.cooldown = maxf(0.0, item.cooldown - dt)
   item.pulse = maxf(0.0, item.pulse - dt)
+  if item.type == "drop_target_bank": tick_drop_bank(item, dt)
   if item.type == "lane_barrier":
    for lane: Dictionary in item.lanes: lane.pulse = maxf(0.0, lane.pulse - dt)
    if item.complete and item.cooldown <= 0.0:
@@ -360,6 +373,15 @@ func _observe_gimmicks(state: PhysicsDirectBodyState2D, start: Vector2, motion: 
  var events: Array[Dictionary] = []
  for item: Dictionary in items:
   var contact := {}
+  if item.type == "drop_target_bank":
+   for target: Dictionary in item.targets:
+    if target.down: continue
+    var hit := Contact.capsule_hit(start, motion, target.position, Objects.forward(item), float(item.properties.target_size) * 0.5 - 4.0, ball.radius + 4.0)
+    if hit.is_empty() or motion.dot(hit.normal) >= -0.001: continue
+    hit["item"] = item
+    hit["target"] = target
+    events.append(hit)
+   continue
   if item.type in ["switch_target", "wall_switch"]:
    var outside := Contact.circle_hit(start, Vector2.ZERO, item.position, Objects.switch_radius(item) + ball.radius + 0.5).is_empty()
    if outside: item.latched = false
@@ -409,6 +431,12 @@ func _observe_gimmicks(state: PhysicsDirectBodyState2D, start: Vector2, motion: 
   return a.fraction < b.fraction)
  for event: Dictionary in events:
   var item: Dictionary = event.item
+  if item.type == "drop_target_bank":
+   drop_target(item, event.target)
+   state.transform = Transform2D(0.0, start + motion * float(event.fraction) + Vector2(event.normal) * 0.05)
+   state.linear_velocity = state.linear_velocity.bounce(event.normal) * float(ball.tuning.effective.wall_restitution)
+   ball._reset_steering("Drop target contact")
+   return true
   if item.type in ["switch_target", "wall_switch"]:
    _activate_switch(item)
   elif item.type == "slingshot":
@@ -499,3 +527,26 @@ func _exit_clear(point: Vector2) -> bool:
 static func slingshot_active(item: Dictionary, start: Vector2, motion: Vector2, normal: Vector2) -> bool:
  var facing := Objects.forward(item)
  return (start - Vector2(item.position)).dot(facing) > 0.0 and motion.dot(facing) < -0.001 and normal.dot(facing) > 0.99
+
+func drop_target(item: Dictionary, target: Dictionary) -> void:
+ if target.down or not scoring_active: return
+ target.down = true
+ mechanic_score.emit(&"switch", target.object_id, 25)
+ for other: Dictionary in item.targets:
+  if not other.down: return
+ item.complete = true
+ item.reset_remaining = float(item.properties.reset_delay)
+ complete_feature(&"switch_bank", item.object_id, int(item.properties.completion_bonus))
+
+func tick_drop_bank(item: Dictionary, dt: float) -> void:
+ for target: Dictionary in item.targets:
+  target.retraction = move_toward(float(target.retraction), 1.0 if target.down else 0.0, dt * 8.0)
+ if not scoring_active or not item.complete or float(item.properties.reset_delay) <= 0.0: return
+ item.reset_remaining = maxf(0.0, float(item.reset_remaining) - dt)
+ if item.reset_remaining > 0.0: return
+ # Never restore collision around an overlapping ball.
+ if is_instance_valid(ball) and not ball.on_ramp:
+  for target: Dictionary in item.targets:
+   if not Contact.capsule_hit(ball.position, Vector2.ZERO, target.position, Objects.forward(item), float(item.properties.target_size) * 0.5 - 4.0, ball.radius + 6.0).is_empty(): return
+ item.complete = false
+ for target: Dictionary in item.targets: target.down = false

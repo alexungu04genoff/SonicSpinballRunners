@@ -2311,7 +2311,7 @@ func _refresh_mechanics_properties() -> void:
 		var visual := Label.new()
 		visual.text = "Theme: Auto · Arrow: allowed direction"
 		mechanics_properties.add_child(visual)
-	if item.type in ["switch_target", "wall_switch", "spring"]:
+	if item.type in ["drop_target_bank", "switch_target", "wall_switch", "spring"]:
 		_mechanic_choice("Color", "color", ["red", "yellow", "blue"] if item.type == "spring" else ["blue", "red", "yellow", "green"], properties.color)
 	if item.type in ["switch_target", "wall_switch"]:
 		var label := LineEdit.new()
