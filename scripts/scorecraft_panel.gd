@@ -57,7 +57,7 @@ func _process(_delta: float) -> void:
  if combo.feedback_remaining > 0 and not combo.last_award.is_empty():
   var info: Dictionary = combo.last_award
   if info.special_bonus > 0:
-   award.text = "HOMING +%d · %d×%d + %d finish" % [info.total, info.base, info.multiplier, info.special_bonus]
+   award.text = "TARGET DASH +%d · %d×%d + %d finish" % [info.total, info.base, info.multiplier, info.special_bonus]
   elif info.kind == "bumper" and combo.enabled and not info.fresh_bumper and String(info.get("ability", "")).is_empty():
    award.text = "Repeat bumper +%d · no refresh" % info.total
   else:

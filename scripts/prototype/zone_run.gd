@@ -58,8 +58,8 @@ func _ready() -> void:
  scorecraft.combo_advanced.connect(func(kind: StringName, id: String, tier: int, began: bool): telemetry.combo_advanced(kind, id, tier, began, elapsed))
  scorecraft.combo_supported.connect(telemetry.combo_supported)
  scorecraft.combo_ended.connect(func(reason: String, chain: int, tier: int): telemetry.combo_ended(reason, chain, tier, elapsed))
- specials.special_activated.connect(func(id: String):
-  if id == "sonic": telemetry.homing_used())
+ specials.special_activated.connect(func(_id: String): telemetry.action_used(specials.definition.character_type))
+ specials.area_completed.connect(telemetry.area_completed)
  combo_glow = preload("res://scripts/prototype/combo_glow.gd").new()
  combo_glow.game = self
  add_child(combo_glow)
@@ -367,6 +367,7 @@ func _process(delta: float) -> void:
   _observe_authored_motion(active.runtime.goal_ring.center, active.runtime.goal_ring.center)
  heading.text = progress_text() + "\n" + act_title(active)
  detail.text = "ACT   %s\nTOTAL   %d%s\nBALLS   %s     SPECIAL   %s" % [act_score_text(), score, "     COMBO ×%d" % scorecraft.multiplier if scorecraft.multiplier >= 2 else "", "Unlimited" if practice_mode else "%d / %d" % [balls_remaining, starting_balls], "READY" if special_meter >= 100.0 else "%d%%" % int(special_meter)]
+ detail.text += "\n" + specials.action.label()
  if not buddies.levels.is_empty(): detail.text += "\n" + buddies.summary()
  if scorecraft.ring_link_available:
   detail.text += "\nRING LINK %d/%d" % [scorecraft.ring_progress, scorecraft.config.rings_per_link]

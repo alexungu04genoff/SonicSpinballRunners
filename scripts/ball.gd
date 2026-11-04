@@ -14,6 +14,8 @@ var radius: float = RADIUS:
    _collision_circle.radius = radius
 var _collision_circle: CircleShape2D
 var mechanics: Node
+## Optional shared type action adapter; never owns transforms or collision shapes.
+var type_action_controller: Node
 var on_ramp := false
 ## Elevation in physics pixels, consumed only by collisionless presentation.
 var ramp_height := 0.0
@@ -185,6 +187,7 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
  if state.get_contact_count() > 0:
   _reset_steering("2D contact")
  _apply_steering(state, stats)
+ if is_instance_valid(type_action_controller): type_action_controller.integrate_guidance(state)
 
  # Terminal fall limiter acts only downward. Upward and lateral launch speeds survive.
  var excess: float = maxf(0.0, state.linear_velocity.y - float(stats.max_downward_speed))
@@ -228,7 +231,9 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
  _apply_flipper_strike(state, stats)
  if is_instance_valid(mechanics):
   mechanics.apply_fields(state)
-  if mechanics.observe_motion(state): return
+  if mechanics.observe_motion(state):
+   if is_instance_valid(type_action_controller): type_action_controller.reset(false, "Rail entered")
+   return
  _guard_fast_motion(state)
  if flipper_contact or flipper_launch_pending:
   # Moving paddles contribute native collision velocity in addition to the
@@ -238,6 +243,7 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
   var excess_upward := maxf(0.0, -state.linear_velocity.y - launch_limit)
   state.apply_central_impulse(Vector2(0.0, excess_upward * mass))
  flipper_launch_pending = false
+ if is_instance_valid(type_action_controller): type_action_controller.finish_guidance(state)
  _previous_step_velocity = state.linear_velocity
 
 static func bumper_rebound_speed(incoming_speed: float, stats: Dictionary) -> float:

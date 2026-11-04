@@ -159,9 +159,9 @@ func run() -> void:
  game.ball.freeze = true
  game.ball.serve_pending = false
  game.ball._teleport_pending = false
- game.specials.select_character("shadow")
- game.specials._release_area("chaos_blast", patrol.position)
- check(not patrol.alive and game.score >= 1250, "Chaos Blast uses the same enemy destruction path")
+ game.specials.select_character("knuckles")
+ game.specials._release_area("table_smash", patrol.position)
+ check(not patrol.alive and game.score >= 1250, "Table Smash uses the same enemy destruction path")
  var fresh := ActData.load_document(FIXTURE)
  var compiled := preload("res://scripts/authored_act/act_runtime_compiler.gd").compile(fresh.document, game.tuning, game.controls, game.ball)
  check(compiled.mechanics.enemies.items.all(func(enemy): return enemy.alive), "A fresh Act instance restores all enemy targets")
@@ -217,11 +217,10 @@ func run() -> void:
  var ability_enemies: RefCounted = game.authored_runtime.mechanics.enemies
  var alive_before: int = ability_enemies.items.filter(func(enemy): return enemy.alive).size()
  var enemy_points_before: int = game.act_score_breakdown.get("enemy", 0)
- game.specials._release_area("shockwave", Vector2(300, 780))
+ game.specials._release_area("table_smash", Vector2(300, 780))
  var destroyed: int = alive_before - ability_enemies.items.filter(func(enemy): return enemy.alive).size()
- var normal_enemy_score := 0
- for tier in range(1, destroyed + 1): normal_enemy_score += 200 * mini(tier, 3)
- check(not ability_enemies.by_id.bottom_target.alive and game.act_score_breakdown.get("enemy", 0) - enemy_points_before == normal_enemy_score, "Knuckles Shockwave uses generic enemy combo scoring without its bumper multiplier")
+ var normal_enemy_score := 200 * destroyed
+ check(not ability_enemies.by_id.bottom_target.alive and game.act_score_breakdown.get("enemy", 0) - enemy_points_before == normal_enemy_score and game.scorecraft.chain == 0, "Power awards each enemy base once, without building a combo")
  game.free()
  await process_frame
  print("RESULT | Enemy integration | %d checks | %d failures" % [checks, failures])

@@ -54,7 +54,7 @@ func run() -> void:
  check(field.rings[0].active and field.rings[1].active and field.rings[2].active and completions.is_empty() and game.score == 30, "Incomplete ordinary pattern fully respawns at timeout without a bonus")
 
  field.claim_ring(3)
- field.claim_ring(4, "chaos_blast", 2)
+ field.claim_ring(4, "table_smash", 2)
  field.claim_ring(5)
  check(game.score == 590 and game.rings_collected == 5 and game.special_meter == 20 and completions == ["standalone:bonus"], "Contact and remote claims share one completion with fixed bonus and physical-only meter")
  check(not field.claim_ring(5) and completions.size() == 1, "Repeated claim cannot award the same completion twice")

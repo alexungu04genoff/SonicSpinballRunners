@@ -13,6 +13,7 @@ var x4_activations := 0
 var highest_multiplier := 1
 var longest_combo_seconds := 0.0
 var longest_combo_max_multiplier := 1
+var type_actions := {}
 var homing := {}
 var enemies := {}
 var _combo_started_at: Variant = null
@@ -40,6 +41,7 @@ func begin_act(at: float) -> void:
  longest_combo_max_multiplier = 1
  _combo_started_at = null
  _combo_peak = 1
+ type_actions = {"uses": 0, "successful_target_hits": 0, "affected_targets": 0, "affected_rings": 0}
  homing = {"finishers_used": 0, "successful_hits": 0, "normal_score": 0, "hits_by_target_type": {}}
  enemies = {"destructions": 0, "respawns": 0, "normal_score": 0, "by_type": {}}
 
@@ -54,6 +56,7 @@ func record_score(details: Dictionary) -> void:
   combo_score_by_multiplier[tier] += int(details.get("combo_score", 0))
  if kind == "enemy": enemies.normal_score += normal
  if details.get("ability", "") == "homing":
+  type_actions.successful_target_hits += 1
   homing.successful_hits += 1
   homing.normal_score += normal
   homing.hits_by_target_type[kind] = int(homing.hits_by_target_type.get(kind, 0)) + 1
@@ -78,8 +81,13 @@ func combo_ended(_reason: String, _chain: int, _tier: int, at: float) -> void:
   longest_combo_max_multiplier = _combo_peak
  _combo_started_at = null
 
-func homing_used() -> void:
- homing.finishers_used += 1
+func action_used(type_id: String) -> void:
+ type_actions.uses += 1
+ if type_id == "speed": homing.finishers_used += 1
+
+func area_completed(_source: String, targets: int, rings: int) -> void:
+ type_actions.affected_targets += targets
+ type_actions.affected_rings += rings
 
 func enemy_event(type: StringName, event: String) -> void:
  enemies[event] += 1
@@ -135,7 +143,7 @@ func finish_act(row: Dictionary, ended_at: float) -> Dictionary:
   "combo_support_by_source": combo_support_by_source.duplicate(true),
   "x4_activations": x4_activations, "highest_multiplier": highest_multiplier,
   "longest_combo_seconds": longest, "longest_combo_max_multiplier": peak,
-  "homing": homing.duplicate(true), "enemies": enemies.duplicate(true)
+  "type_actions": type_actions.duplicate(true), "homing": homing.duplicate(true), "enemies": enemies.duplicate(true)
  }
 
 static func export_run(summary: Dictionary) -> Dictionary:
@@ -151,6 +159,8 @@ static func export_run(summary: Dictionary) -> Dictionary:
   "configuration_fingerprint": summary.get("configuration_fingerprint", ""),
   "course": summary.get("course", []).duplicate(true),
   "mode": "practice" if summary.practice else "challenge", "character": summary.character,
+  "character_type": CharacterSpecials.CHARACTERS[summary.character].character_type,
+  "type_action": CharacterSpecials.CHARACTERS[summary.character].type_action.action_name,
   "won": summary.won, "completed": summary.get("completed", summary.won),
   "termination_reason": summary.get("termination_reason", "completed" if summary.won else "out_of_balls"),
   "run_feel": summary.get("run_feel", ""),

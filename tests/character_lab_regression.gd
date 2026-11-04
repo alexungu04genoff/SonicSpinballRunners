@@ -18,6 +18,9 @@ func collider(at: Vector2, shape: Shape2D, bumper: bool) -> StaticBody2D:
 
 func place(at: Vector2, velocity: Vector2 = Vector2.ZERO) -> void:
  game.specials.reset(true)
+ # Let native contacts from the previous shot retire before placing this case.
+ game.ball.teleport_to(Vector2(6000, 6000))
+ await frames(2)
  game.ball.teleport_to(at, velocity)
  await frames(3)
 
@@ -39,15 +42,15 @@ func run() -> void:
  game.ring_field.set_physics_process(false)
  var circle := CircleShape2D.new()
  circle.radius = 30
- target_body = collider(Vector2(2200, 2000), circle, true)
+ target_body = collider(Vector2(4200, 2000), circle, true)
  var target_visual := Node3D.new()
  game.presentation.add_child(target_visual)
  game.presentation.bumper_visuals[target_body.get_instance_id()] = target_visual
  game.playfield._add_bumper(target_body, 30.0)
  var box := RectangleShape2D.new()
  box.size = Vector2(25, 500)
- wall = collider(Vector2(2100, 2000), box, false)
- await place(Vector2(2000, 2000))
+ wall = collider(Vector2(4100, 2000), box, false)
+ await place(Vector2(4000, 2000))
  game.special_meter = 100
  check(game.specials.find_target() == null and not game.specials.activate() and game.special_meter == 100, "Wall blocks full-ball homing sweep; failed activation keeps charge")
  wall.position.y = 3000
@@ -55,35 +58,48 @@ func run() -> void:
  game.special_meter = 99
  check(not game.specials.activate() and game.special_meter == 99, "Insufficient charge cannot activate or spend")
  check(homing_events.is_empty(), "Failed activation emits no homing lifecycle events")
- for incoming: Vector2 in [Vector2.ZERO, Vector2(0, 400), Vector2(-250, -200), Vector2(0, 1200)]:
-  await place(Vector2(2000, 2000), incoming)
+ var cases := [
+  {"distance": 48.0, "velocity": Vector2.ZERO},
+  {"distance": 200.0, "velocity": Vector2.ZERO},
+  {"distance": 398.0, "velocity": Vector2.ZERO},
+  {"distance": 200.0, "velocity": Vector2(350, 0)},
+  {"distance": 200.0, "velocity": Vector2(-250, -200)},
+  {"distance": 200.0, "velocity": Vector2(0, 1200)}]
+ for sample: Dictionary in cases:
+  var incoming: Vector2 = sample.velocity
+  await place(target_body.position - Vector2(sample.distance, 0), incoming)
   homing_events.clear()
   game.special_meter = 100
   var before: int = game.score
-  check(game.specials.activate() and game.special_meter == 0, "Clear target activates bounded impulse: " + str(incoming))
-  check(homing_start.target == target_body and homing_start.direction.is_equal_approx(game.ball.position.direction_to(target_body.position)) and homing_start.remaining == game.specials.definition.hit_window, "Homing start supplies target, direction and active duration")
-  for tick in 90:
+  check(game.specials.activate() and game.special_meter == 0, "Clear target starts guided approach: " + str(incoming))
+  check(homing_start.target == target_body and homing_start.direction.is_equal_approx(game.ball.position.direction_to(target_body.position)) and homing_start.remaining > 0.0 and homing_start.remaining <= game.specials.action.dash_max_duration, "Homing start supplies target, direction and active duration")
+  var fastest := 0.0
+  check(game.score == before, "Activation never scores remotely")
+  for tick in 210:
    await frames(1)
+   fastest = maxf(fastest, game.ball.linear_velocity.length())
    if game.score > before:
     break
-  check(game.score - before == 500 and game.specials.pending_target == null, "Physical contact awards one 5x hit: " + str(incoming))
+  check(fastest <= game.specials.action.dash_speed + 5.0, "Close/far and incoming motion stay under the dash speed cap")
+  check(game.ball.linear_velocity.length() <= game.specials.action.dash_exit_speed + 5.0, "Physical hit returns with bounded exit velocity")
+  check(game.score - before == 500 and game.specials.pending_target == null, "Physical contact awards one base + 400 cash-out: " + str(incoming))
   check(game.special_meter == 2, "Special hit uses ordinary bumper recharge")
   check(homing_events == ["start", "end:Hit", "hit"], "Actual hit ends homing once before impact feedback")
  await place(Vector2(3000, 2000))
  game.special_meter = 100
  check(not game.specials.activate() and game.special_meter == 100, "No nearby target keeps meter")
  # A wall introduced after activation must still stop the physical ball.
- await place(Vector2(2000, 2000))
+ await place(Vector2(4000, 2000))
  game.special_meter = 100
  check(game.specials.activate(), "Activate before a path closes")
  wall.position.y = 2000
  var before_block: int = game.score
  await frames(85)
  check(game.score == before_block and game.specials.pending_target == null, "Blocked shot expires without remote scoring or tunneling")
- check(homing_events.back() == "end:Expired", "Missed shot exposes expiry without an impact event")
+ check(homing_events.back() in ["end:Blocked", "end:Collision"], "Closing route cancels without an impact award")
  wall.position.y = 3000
  for reason: String in ["Drain", "Reset", "New run", "Character changed", "Act complete"]:
-  await place(Vector2(2000, 2000))
+  await place(Vector2(4000, 2000))
   game.special_meter = 100
   homing_events.clear()
   game.specials.activate()

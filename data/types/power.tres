@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="TypeAction" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/type_action.gd" id="1"]
+[resource]
+script = ExtResource("1")
+kind = 2
+action_name = "Table Smash"
+description = "Smash the table: nearby Rings, enemies and bumpers react within 300px in this Act. Base awards, no remote recharge. Switches and other mechanisms are excluded."

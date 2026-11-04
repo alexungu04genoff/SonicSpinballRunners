@@ -154,26 +154,25 @@ func check_specials() -> void:
 	check(game.ball.linear_velocity.y < 400 and game.specials.flight_remaining < remaining, "The existing Flight impulse and timer resume on the same ball")
 	game.specials.reset(false, "Reset")
 	check(game.tuning._temporary.is_empty() and is_equal_approx(game.tuning.effective.gravity_scale, gravity), "Reset removes the temporary Flight modifier without a second profile")
-	game.specials.select_character("knuckles")
-	await place(Vector2(700, 700), Vector2(200, 0))
-	game.controls.virtual_steering = 1.0
-	await frames(2)
-	game.special_meter = 100
-	var before_areas := areas.size()
-	check(game.specials.activate(), "Shared Knuckles glide starts against an authored side wall")
-	for tick in 100:
-		await frames(1)
-		if areas.size() > before_areas: break
-	check(areas.size() == before_areas + 1 and areas.back().source == "shockwave" and areas.back().targets > 0 and game.specials.glide_remaining == 0, "A real authored wall impact triggers the existing shockwave and reaches an authored target", str(areas))
 	game.specials.select_character("shadow")
+	await place(Vector2(400, 400))
+	game.scorecraft.reset("Fixture", true)
+	game.special_meter = 100
+	var before: int = game.score
+	check(game.specials.find_target() == bumper and game.specials.activate(), "Shadow uses the same real Target Dash acquisition")
+	for tick in 180:
+		await frames(1)
+		if game.score > before: break
+	check(game.score - before == 500 and game.specials.pending_target == null, "Shadow shares Sonic's physical cash-out")
+	game.specials.select_character("knuckles")
 	await place(Vector2(600, 500))
 	game.ring_field.reset_rings()
 	game.scorecraft.reset("Fixture", true)
 	var score_before: int = game.score
 	var contacts: int = game.ball.bumper_hit_count
 	game.special_meter = 100
-	check(game.specials.activate() and areas.back().source == "chaos_blast" and areas.back().targets == 2 and areas.back().rings > 0, "Shared Shadow Chaos Blast finds authored targets and the same RingField", str(areas))
-	check(game.score > score_before and game.special_meter == 0 and game.ball.bumper_hit_count == contacts and game.scorecraft.chain == 0, "Authored blast uses normal fixed remote awards without fake physical contacts or meter refill")
+	check(game.specials.activate() and areas.back().source == "table_smash" and areas.back().targets == 2 and areas.back().rings > 0, "Power immediately finds authored targets and the same RingField", str(areas))
+	check(game.score > score_before and game.special_meter == 0 and game.ball.bumper_hit_count == contacts and game.scorecraft.chain == 0, "Table Smash uses fixed remote awards without fake contacts or recharge")
 	game.ring_field.set_physics_process(true)
 	game.set_physics_process(true)
 	game.reset_ball()

@@ -80,7 +80,7 @@ func run() -> void:
  second.runtime.mechanics.mechanic_score.emit(&"spinner_tick", "inactive_spinner", 5)
  second.runtime.mechanics.complete_feature(&"switch_bank", "inactive_bank", 500)
  var inactive_index := ring_index(second_owner)
- check(not game.ring_field.claim_ring(inactive_index, "chaos_blast") and game.score == total, "Inactive resident rewards and remote physical ring claims produce no score")
+ check(not game.ring_field.claim_ring(inactive_index, "table_smash") and game.score == total, "Inactive resident rewards and remote physical ring claims produce no score")
  var first_index := ring_index(first_owner)
  check(game.ring_field.claim_ring(first_index) and game.score == total + 25, "Active resident physical ring uses the main Scorecraft award path")
  var first_rack: Dictionary = game.ring_field.rings[first_index].rack
@@ -116,14 +116,14 @@ func run() -> void:
  var before_inactive: int = game.score
  first.runtime.mechanics.mechanic_score.emit(&"switch_bank", "old_bank", 500)
  if is_instance_valid(first_body):
-  check(not game.activate_area_target(first_body, "chaos_blast", 1), "Character area scoring rejects a previous resident Act's actual bumper")
+  check(not game.activate_area_target(first_body, "table_smash", 1), "Character area scoring rejects a previous resident Act's actual bumper")
  game.ring_field.advance_racks(2.0)
  check(game.score == before_inactive and is_equal_approx(first_rack.timeout_remaining, first_remaining), "Previous Act rewards and ring timers stop when its scoring context ends")
  var second_index := ring_index(second_owner)
  var meter: float = game.special_meter
- game.ring_field.claim_ring(second_index, "chaos_blast")
+ game.ring_field.claim_ring(second_index, "table_smash")
  check(game.act_score == 25 and game.special_meter == meter, "Active remote physical pickup scores locally without charging the special meter")
- if is_instance_valid(second_body): game.activate_area_target(second_body, "chaos_blast", 1)
+ if is_instance_valid(second_body): game.activate_area_target(second_body, "table_smash", 1)
  check(game.act_score == 125 and game.scorecraft.chain == 0, "Active area bumper score enters the new Act ledger without creating combos")
  var needed: int = game.act_score_target - game.act_score
  var before_bonus: int = game.score

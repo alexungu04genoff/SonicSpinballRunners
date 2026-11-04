@@ -1,8 +1,6 @@
 extends "res://tests/character_lab_regression.gd"
 ## Real collision fixtures plus shared scoring/lifecycle assertions. No geometry edits.
 var areas: Array[Dictionary] = []
-var endings: Array[String] = []
-var impacts: Array[Dictionary] = []
 
 func run() -> void:
  game = create_game()
@@ -18,10 +16,6 @@ func run() -> void:
  game.debug_panel.act_controls.process_mode = Node.PROCESS_MODE_DISABLED
  game.controls.virtual_enabled = true
  game.specials.area_completed.connect(func(source: String, targets: int, rings: int): areas.append({"source": source, "targets": targets, "rings": rings}))
- game.specials.glide_ended.connect(func(reason: String): endings.append(reason))
- game.ball.physical_impact.connect(func(body: Node2D, normal: Vector2, speed: float):
-  if speed > 180:
-   impacts.append({"body": body.name, "normal": normal, "speed": speed, "gliding": game.specials.glide_remaining}))
  var circle := CircleShape2D.new()
  circle.radius = 25
  target_body = collider(Vector2(2200, 2000), circle, true)
@@ -31,7 +25,7 @@ func run() -> void:
   game.playfield._add_bumper(body, 25.0)
  # Duplicate descriptor must not multiply a target award.
  game.playfield._add_bumper(target_body, 25.0)
- game.specials.select_character("shadow")
+ game.specials.select_character("knuckles")
  await place(Vector2(2000, 2000))
  game.ring_field.rings.clear()
  for position: Vector2 in [Vector2(2100, 1950), Vector2(1900, 1900), Vector2(2500, 2000)]:
@@ -41,168 +35,52 @@ func run() -> void:
  game.scorecraft.award_bumper(second)
  for index in 3:
   game.scorecraft.award_ring()
+ # Actual mechanics state must stay untouched by radial area iteration.
+ var mechanics: Node = game.authored_runtime.mechanics
+ var excluded: Array[Dictionary] = []
+ for kind: String in ["switch_target", "wall_switch", "drop_target_bank", "one_way_gate", "diverter", "slingshot", "spring", "elevated_rail", "dash_panel", "spinner", "lane_barrier"]:
+  mechanics.add_object({"object_id": "excluded_" + kind, "type": kind, "position": Vector2(2000, 2000), "rotation_degrees": 0.0, "properties": {}}, {})
+  excluded.append(mechanics.items.back().duplicate(true))
  var chain: int = game.scorecraft.chain
  var timer: float = game.scorecraft.remaining
  var before: int = game.score
  var contacts: int = game.ball.bumper_hit_count
  game.special_meter = 99
- check(not game.specials.activate() and game.special_meter == 99, "Shadow requires full charge")
+ check(not game.specials.activate() and game.special_meter == 99, "Power requires full charge")
  game.special_meter = 100
- check(game.specials.activate() and game.special_meter == 0, "Shadow spends full meter before remote awards")
- check(game.score - before == 230 and areas.back().targets == 2 and areas.back().rings == 2, "Blast pays two distinct bumpers and two rings at base value, excluding distant targets")
- check(game.ball.bumper_hit_count == contacts and game.scorecraft.chain == chain and game.scorecraft.remaining == timer, "Remote blast impersonates no contacts, combo links or timer refresh")
+ check(game.specials.activate() and game.special_meter == 0, "Power spends full meter before remote awards")
+ check(game.score - before == 230 and areas.back().targets == 2 and areas.back().rings == 2, "Table Smash pays two distinct bumpers and two rings at base value, excluding distant targets")
+ check(game.ball.bumper_hit_count == contacts and game.scorecraft.chain == chain and game.scorecraft.remaining == timer, "Remote smash impersonates no contacts, combo links or timer refresh")
+ for snapshot: Dictionary in excluded:
+  check(mechanics.by_id[snapshot.object_id] == snapshot, "Table Smash excludes stateful system: " + snapshot.type)
  before = game.score
- check(not game.ring_field.claim_ring(0) and not game.activate_area_target(target_body, "chaos_blast", 1), "Overlapping claims and same-target area calls are deduplicated")
+ check(not game.ring_field.claim_ring(0) and not game.activate_area_target(target_body, "table_smash", 1), "Overlapping claims and same-target area calls are deduplicated")
  game._on_bumper_hit(target_body)
- check(game.score == before and game.special_meter == 0, "Immediate physical callback after blast cannot duplicate points or meter")
+ check(game.score == before and game.special_meter == 0, "Immediate physical callback after smash cannot duplicate points or meter")
  await frames(22)
  game._on_bumper_hit(target_body)
  check(game.score > before and game.special_meter == 2, "Later genuine contact can score and recharge normally")
- # Same blast area straddles an Act edge. Only active-Act objects qualify.
+ # Same smash area straddles an Act edge. Only active-Act objects qualify.
  var original_definition: CharacterDefinition = game.specials.definition
  game.specials.definition = original_definition.duplicate(true)
- game.specials.definition.blast_radius = 5000
- check(not game.specials._area_contains("chaos_blast", Vector2.ZERO, Vector2(601, 0)), "Blast radius has a hard 600px safety ceiling even with oversized tuning")
+ game.specials.action.smash_radius = 5000
+ check(not game.specials._area_contains("table_smash", Vector2.ZERO, Vector2(601, 0)), "Table Smash radius has a hard 600px safety ceiling even with oversized tuning")
  game.specials.definition.meter_cost = 60
  game.special_meter = 60
  check(game.specials.activate() and game.special_meter == 0, "Configured partial meter cost is spent exactly once without remote recharge")
  game.specials.definition = original_definition
- game.ring_field.collection_bounds = Rect2()
- game.ring_field.rings.clear()
- game.specials.select_character("knuckles")
- var control_modifier := PhysicsModifier.new()
- control_modifier.multipliers = {"steering_acceleration": 1.5, "counter_steering_deceleration": 1.75, "max_steering_speed": 1.25}
- game.tuning.set_temporary("control_test", control_modifier)
- var baseline: Dictionary = game.tuning.effective.duplicate()
- var box := RectangleShape2D.new()
- box.size = Vector2(25, 1600)
- wall = collider(Vector2(2250, 2200), box, false)
- game.playfield.terrain_bodies.append(wall)
- game.playfield._glide_surfaces.append(wall)
- target_body.position = Vector2(2210, 1750)
- second.position = Vector2(2500, 2100)
- far.position = Vector2(2800, 2000)
- await place(Vector2(2000, 2000))
- game.controls.virtual_steering = 0
- await frames(2)
- game.special_meter = 100
- check(not game.specials.activate() and game.special_meter == 100, "Stationary Knuckles must choose a direction; no guess or spend")
- game.ring_field.add_ring(Vector2(2120, 1850))
- game.ring_field.add_ring(Vector2(3000, 1850))
- game.controls.virtual_steering = 1
- await frames(2)
- before = game.score
- game.special_meter = 100
- var area_count := areas.size()
- var start_y: float = game.ball.position.y
- check(game.specials.activate() and game.special_meter == 0, "Knuckles launches a paid lateral glide")
- check(game.tuning.effective.gravity_scale == baseline.gravity_scale and game.tuning._temporary.size() == 2 and game.tuning._temporary.has(CharacterSpecials.GLIDE_KEY), "Glide keeps gravity and combines once with the independent control modifier")
- var remaining: float = game.specials.glide_remaining
- paused = true
- await frames(8)
- check(game.specials.glide_remaining == remaining, "Pause freezes glide time")
- paused = false
- var max_x := 0.0
- for tick in 120:
-  await frames(1)
-  max_x = maxf(max_x, game.ball.position.x)
-  if areas.size() > area_count:
-   break
- print("WALL GLIDE | max_x=", max_x, " position=", game.ball.position, " areas=", areas, " ends=", endings, " impacts=", impacts)
- check(areas.size() == area_count + 1 and endings.back() == "Impact", "Real side-wall impact releases exactly one shockwave")
- check(max_x < 2250 and game.ball.position.y > start_y, "Glide collides with the wall while gravity pulls down; no upward launch")
- check(areas.back().targets == 1 and areas.back().rings == 1 and game.score - before == 230, "Vertical shockwave activates an exposed target and ring at exactly 2x base")
- check(game.special_meter == 0 and game.tuning.effective == baseline, "Remote wave cannot refill meter; impact removes only glide modifier")
- var barrier_shape := RectangleShape2D.new()
- barrier_shape.size = Vector2(180, 25)
- var barrier := collider(Vector2(2200, 1900), barrier_shape, false)
- await frames(2)
- check(not game.specials._wave_visible(Vector2(2220, 2050), target_body.position, target_body), "An intervening physical barrier blocks the vertical shockwave")
- check(not game.specials._area_contains("shockwave", Vector2(2220, 2050), Vector2(2500, 1800)), "Shockwave excludes targets outside its configured column")
- await place(Vector2(2000, 2000))
- game.special_meter = 100
- game.specials.activate()
- game.specials._on_impact(barrier, Vector2.LEFT, 650)
- check(game.specials.glide_remaining > 0, "Unrelated collider cannot trigger a shockwave even with a strong lateral impact")
- area_count = areas.size()
- game.specials._on_impact(wall, Vector2.LEFT, 650)
- game.specials.reset(false, "Drain")
- await frames(2)
- check(areas.size() == area_count and not game.specials._area_pending, "Reset invalidates a queued impact before it can award targets")
- barrier.free()
- await place(Vector2(2220, 2000))
- game.special_meter = 100
- area_count = areas.size()
- game.specials.activate()
- await frames(8)
- check(areas.size() == area_count + 1, "A glide begun beside a wall still detects its immediate physical impact")
- # A real bumper impact also qualifies and receives one 2x award, not contact + wave.
- wall.position.x = 3000
- target_body.position = Vector2(2100, 2000)
- game.ring_field.rings.clear()
- await place(Vector2(2000, 2000))
- game.controls.virtual_steering = 1
- await frames(2)
- game.special_meter = 100
- before = game.score
- area_count = areas.size()
- game.specials.activate()
- for tick in 100:
-  await frames(1)
-  if areas.size() > area_count:
-   break
- print("BUMPER GLIDE | position=", game.ball.position, " score=", game.score - before, " meter=", game.special_meter, " ends=", endings, " impacts=", impacts)
- check(areas.size() > area_count and game.score - before == 200 and game.special_meter == 2, "Actual bumper impact scores 2x once and recharges only its ordinary physical contact")
- # No eligible impact: expiry, not automatic wave or rescue.
- target_body.position = Vector2(2500, 1000)
- second.position = Vector2(2500, 1100)
- await place(Vector2(2000, 3000))
- game.controls.virtual_steering = -1
- await frames(2)
- game.special_meter = 100
- area_count = areas.size()
- game.specials.activate()
- await frames(110)
- check(endings.back() == "Expired" and areas.size() == area_count and (game.tuning._temporary.size() == 1 and game.tuning._temporary.has("control_test")), "Missed glide expires safely without targets or leftover effects")
- for reason: String in ["Drain", "Reset", "Character changed", "New run"]:
-  await place(Vector2(2000, 3000))
-  game.special_meter = 100
-  game.specials.activate()
-  game.specials.charge(17)
-  game.specials.reset(false, reason)
-  check(game.specials.glide_remaining == 0 and (game.tuning._temporary.size() == 1 and game.tuning._temporary.has("control_test")) and game.special_meter == 17, "Glide cancellation clears state without checkpoint refill: " + reason)
- # Temporary state survives a preview pause, but cannot carry into a new Act.
- await place(Vector2(2000, 3000))
- game.special_meter = 100
- game.specials.activate()
- paused = true
- remaining = game.specials.glide_remaining
- await frames(10)
- check(game.specials.glide_remaining == remaining, "Pause freezes glide duration")
- game.specials.act_advanced()
- check(game.specials.glide_remaining == 0 and (game.tuning._temporary.size() == 1 and game.tuning._temporary.has("control_test")), "Act advance clears glide while keeping earned meter")
- paused = false
- # Free all fixture bodies before Act replay replaces their descriptor owners.
- for body: Node in [target_body, second, far, wall]:
-  body.free()
- var ui: Control = game.debug_panel.act_controls
- ui.process_mode = Node.PROCESS_MODE_ALWAYS
- check(ui.character_selector.item_count == 4, "Shared character selector exposes all four choices")
- for id: String in ["knuckles", "shadow"]:
-  paused = true
-  ui.character_selector.select(CharacterSpecials.CHARACTER_IDS.find(id))
-  check(ui.start_run(), "Act replay accepts %s" % id)
-  await frames(8)
-  check(game.character_id == id and game.special_meter == 0 and (game.tuning._temporary.size() == 1 and game.tuning._temporary.has("control_test")) and game.character.spin_root.visible, "Fresh %s state and spin-ball presentation" % id)
-  check(game.debug_panel.profiles.selected == PhysicsTuning.PROFILES.find(game.tuning.base), "Physics Lab identifies the selected character profile")
-  check(game.tuning._temporary.get("control_test") == control_modifier, "Character change retains independent modifiers")
-  paused = false
- game.set_physics_process(true)
- game.ring_field.set_physics_process(true)
- game.ball.teleport_to(Vector2(game.playfield.spawn.x, game.playfield.bounds.end.y - 10), Vector2(0, 400))
- await frames(8)
- check(game.respawn_time > 0 and game.specials.glide_remaining == 0 and (game.tuning._temporary.size() == 1 and game.tuning._temporary.has("control_test")), "Authored drain clears glide and queues normal retry")
+ check(CharacterSpecials.CHARACTERS.sonic.type_action == CharacterSpecials.CHARACTERS.shadow.type_action, "Sonic and Shadow share the exact Speed tuning resource")
+ check(CharacterSpecials.CHARACTERS.sonic.profile != CharacterSpecials.CHARACTERS.shadow.profile, "Shared Speed retains distinct character physics profiles")
+ for id: String in CharacterSpecials.CHARACTER_IDS:
+  game.specials.select_character(id)
+  check(game.tuning.base == CharacterSpecials.CHARACTERS[id].profile, "Selection retains original profile: " + id)
+  check(game.specials.definition.selection_label.contains(game.specials.action.label()), "Selection names the shared type action: " + id)
+ var speed: TypeAction = CharacterSpecials.CHARACTERS.sonic.type_action
+ var velocity := Vector2(-100, 150)
+ var next := speed.guided_velocity(velocity, Vector2(398, 0), 44.0, 1.0 / 120.0)
+ check(next.distance_to(velocity) <= speed.dash_acceleration / 120.0 + 0.001, "Guidance bounds per-step acceleration")
+ check(speed.dash_duration(398, 0) > speed.dash_duration(48, 0), "Distance increases approach time, not speed")
  game.free()
  await frames(3)
- print("RESULT | Four characters | %d checks | %d failures" % [checks, failures])
- quit(1 if failures else 0)
+ print("RESULT | Four shared type characters | %d checks | %d failures" % [checks, failures])
+ quit(0 if failures == 0 else 1)

@@ -390,7 +390,6 @@ func _sync_resident() -> void:
    field._add_bumper(body, float(act.runtime.objects[i].get("radius", 0.0)))
   for terrain: Dictionary in act.runtime.terrain:
    field.terrain_bodies.append(terrain.body)
-   field._glide_surfaces.append(terrain.body)
  field.bounds = bounds
  field.terrain_bounds = bounds
  playfield = field

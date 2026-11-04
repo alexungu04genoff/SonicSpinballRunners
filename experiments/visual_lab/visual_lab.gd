@@ -441,7 +441,7 @@ func _select_pose(value: String) -> void:
  if not close_view:
   return
  character.capture_hold = false
- character.select_preview(("fly" if character_id == "tails" else "homing") if value == "special" else value)
+ character.select_preview(["homing", "fly", "impact"][specials.action.kind] if value == "special" else value)
  get_viewport().gui_release_focus()
 
 func _set_close_view(enabled: bool) -> void:
@@ -560,7 +560,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
   KEY_4: _select_pose("trick")
   KEY_5: _select_pose("special")
   KEY_6:
-   if character_id == "sonic":
+   if specials.action.kind == TypeAction.Kind.SPEED:
     _select_pose("impact")
   KEY_C: _set_close_view(not close_view)
   KEY_O: _toggle_overview()
@@ -640,10 +640,10 @@ func _process(_delta: float) -> void:
   pose_label.text = "DRAIN / RETURNING TO SERVE"
  elif not close_view:
   pose_label.text += " · TRY %d" % ball_number
- pose_buttons["impact"].visible = character_id == "sonic"
- pose_buttons["special"].text = "5  Flight" if character_id == "tails" else "5  Homing"
+ pose_buttons["impact"].visible = specials.action.kind == TypeAction.Kind.SPEED
+ pose_buttons["special"].text = "5  " + specials.action.action_name
  for value: String in pose_buttons:
-  var displayed: String = ("fly" if character_id == "tails" else "homing") if value == "special" else value
+  var displayed: String = ["homing", "fly", "impact"][specials.action.kind] if value == "special" else value
   pose_buttons[value].modulate = Color("ffe373") if character.pose == displayed else Color.WHITE
  if not _capture_kind.is_empty():
   _frame_count += 1

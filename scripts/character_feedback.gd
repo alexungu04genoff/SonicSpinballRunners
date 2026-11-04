@@ -47,7 +47,7 @@ func _process(_delta: float) -> void:
  if is_instance_valid(game.specials.target):
   marker.visible = true
   marker.position = TablePresentation.map_point(game.specials.target.global_position, 0.12)
-  caption.text = "HOMING" if game.specials.homing_remaining > 0 else "LOCK ON"
+  caption.text = "TARGET DASH" if game.specials.homing_remaining > 0 else "LOCK ON"
  elif game.specials.flight_remaining > 0:
   marker.visible = true
   marker.position = TablePresentation.map_point(game.ball.position, 0.12)

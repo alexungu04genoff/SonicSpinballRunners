@@ -101,7 +101,9 @@ func run() -> void:
  game.special_meter = 100
  var before: int = game.score
  check(game.specials.activate(), "Homing activates through the normal ability path")
- await frames(50)
+ for tick in 200:
+  await frames(1)
+  if game.score > before: break
  check(game.score - before == 600 and game.scorecraft.chain == 0 and game.special_meter == 2, "Real Homing contact cashes out x2 once without extra meter multiplication")
  first.free()
  second.free()

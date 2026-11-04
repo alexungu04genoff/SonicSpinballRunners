@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="TypeAction" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/type_action.gd" id="1"]
+[resource]
+script = ExtResource("1")
+kind = 1
+action_name = "Flight"
+description = "1.6 seconds of reduced gravity and extra steering, with one bounded rescue lift. Gravity and control restore smoothly."

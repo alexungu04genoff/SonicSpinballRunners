@@ -15,7 +15,14 @@ func check(ok: bool, label: String) -> void:
 
 func run() -> void:
  game = Run.new()
- game.source_paths = [FIXTURE, FIXTURE, FIXTURE]
+ game.character_id = "shadow"
+ # Current run configuration requires three distinct source paths. Copies keep
+ # enemy layouts identical while exercising real resident ownership.
+ for index in 3:
+  var path := "res://test-results/type-enemy-stream-%d.tres" % index
+  var document: Resource = preload("res://scripts/act_editor/act_geometry.gd").load_document(FIXTURE).document.copy_document()
+  check(document.save_document(path) == OK, "Save distinct enemy stream fixture")
+  game.source_paths.append(path)
  root.add_child(game)
  var deadline := Time.get_ticks_msec() + 180000
  while not game.started and game.last_source_error.is_empty() and Time.get_ticks_msec() < deadline: await process_frame
@@ -86,7 +93,7 @@ func run() -> void:
  game.ball.teleport_to(Vector2(180, 330) + Vector2(active.plan.offset), Vector2.ZERO, false)
  for i in 3: await physics_frame
  game.special_meter = 100
- check(game.specials.activate(), "Real Sonic activation spends meter and starts a telemetry finisher")
+ check(game.specials.activate(), "Real Shadow Speed activation spends meter and starts a telemetry finisher")
  game.ball.freeze = false
  for i in 60:
   await physics_frame
@@ -94,6 +101,7 @@ func run() -> void:
   if not first.by_id.easy_top.alive: break
  game.ball.freeze = true
  check(game.telemetry.homing.finishers_used == 1 and game.telemetry.homing.successful_hits == 1 and game.telemetry.homing.normal_score == 1200 and game.scorecraft.chain == 0, "Real x4 enemy Homing records one 1200-point cash-out and ends the combo")
+ check(game.telemetry.type_actions.uses == 1 and game.telemetry.type_actions.successful_target_hits == 1, "Shared Speed action telemetry counts Shadow contact once")
  game.buddies.choose("chip")
  game.balls_remaining = 1
  check(game._spend_ball() and game.balls_remaining == 1 and not game.finished, "Actual Challenge final-ball loss consumes Chip and continues this Act")
@@ -109,7 +117,7 @@ func run() -> void:
  check(data.combo_advances_by_source.enemy == 5 and data.combo_support_by_source.ring_rack == 1 and data.combo_support_by_source.switch == 1, "Advances and support count their distinct production events")
  check(data.enemies.destructions == 6 and data.enemies.respawns == 5 and data.enemies.normal_score == 3400, "Enemy totals include normal and Homing destruction with no duplicate lifecycle event")
  check(is_equal_approx(data.longest_combo_seconds, 15.35) and data.longest_combo_max_multiplier == 4 and data.highest_multiplier == 4, "Longest combo uses the gameplay clock and retains its peak")
- var exported := preload("res://scripts/prototype/run_telemetry.gd").export_run({"seed": game.run_seed, "practice": false, "character": "sonic", "won": false, "score": game.score, "normal_score": summary.normal_score, "seconds": game.elapsed, "drains": 2, "buddies": game.buddies.levels, "buddy_contributions": game.buddy_contributions, "acts": game.results})
+ var exported := preload("res://scripts/prototype/run_telemetry.gd").export_run({"seed": game.run_seed, "practice": false, "character": "shadow", "won": false, "score": game.score, "normal_score": summary.normal_score, "seconds": game.elapsed, "drains": 2, "buddies": game.buddies.levels, "buddy_contributions": game.buddy_contributions, "acts": game.results})
  var copy: Dictionary = JSON.parse_string(JSON.stringify(exported))
  check(copy.telemetry_format_version == 2 and data.score_by_category.keys().all(func(key): return int(copy.acts[0].score_by_category[key]) == data.score_by_category[key]) and copy.acts[0].score_at_target == data.score_at_target, "Copied V2 JSON round-trips new counters and original raw timing snapshots")
  var retired_mechanics: Node = neighbor.runtime.mechanics

@@ -464,8 +464,8 @@ func scoring_feedback_text() -> String:
  if scorecraft.feedback_remaining <= 0.0 or scorecraft.last_award.is_empty(): return ""
  var award: Dictionary = scorecraft.last_award
  var label: String = {"ring_rack": "RING RACK COMPLETE", "switch_bank": "SWITCH BANK COMPLETE", "spinner_goal": "SPINNER BONUS", "lane_set": "LANE SET COMPLETE"}.get(award.kind, String(award.kind).replace("_", " ").to_upper())
- if not String(award.ability).is_empty(): label = String(award.ability).replace("_", " ").to_upper() + " " + label
- elif int(award.special_bonus) > 0: label = "HOMING"
+ if not String(award.ability).is_empty(): label = ("TARGET DASH" if award.ability == "homing" else String(award.ability).replace("_", " ").to_upper()) + " " + label
+ elif int(award.special_bonus) > 0: label = "TARGET DASH"
  return "%s +%d%s" % [label, int(award.total), " ×%d" % int(award.multiplier) if int(award.multiplier) > 1 else ""]
 
 func _on_mechanic_score(kind: StringName, object_id: String, points: int, owner_id: String = "") -> void:
@@ -481,11 +481,13 @@ func award_virtual_rings(amount: int) -> void:
  # Counter only: never emit a pickup, run Scorecraft, charge Special, or recurse.
  rings_collected += maxi(0, amount)
 
-func _on_enemy_destroyed(_enemy_type: StringName, object_id: String, points: int, _source: StringName, owner_id: String = "") -> void:
+func _on_enemy_destroyed(_enemy_type: StringName, object_id: String, points: int, source: StringName, owner_id: String = "") -> void:
  if not _accept_scoring(owner_id): return
  var source_id := (active_scoring_id if owner_id.is_empty() else owner_id) + ":" + object_id
  var target: Node2D = specials.pending_target
- if is_instance_valid(target) and str(target.get_meta("scoring_source", "")) == source_id and specials.hit_multiplier(target) > 1:
+ if source == &"table_smash":
+  scorecraft.award_area("enemy", String(source), 1, null, source_id, points)
+ elif source == &"contact" and is_instance_valid(target) and str(target.get_meta("scoring_source", "")) == source_id and specials.hit_multiplier(target) > 1:
   scorecraft.award_homing(&"enemy", source_id, points, target.get_instance_id())
  else:
   scorecraft.award_mechanic(&"enemy", source_id, points)
@@ -519,8 +521,7 @@ func _on_traversal_event(kind: StringName, object_id: String, phase: StringName,
  if scorecraft.traversal_event(kind, source_id, phase): status_message = "COMBO EXTENDED · " + String(kind).replace("_", " ").to_upper()
 
 func _on_bumper_hit(body: Node) -> void:
- var impact: bool = specials.impact_target == body
- _award_bumper(body, "shockwave" if impact else "", specials.definition.shockwave_multiplier if impact else 1, true)
+ _award_bumper(body, "", 1, true)
 
 func scoring_target_eligible(body: Node2D) -> bool:
  if not is_instance_valid(body) or not body.has_meta("bumper") or respawn_time >= 0.0 or loading_act:
@@ -528,7 +529,7 @@ func scoring_target_eligible(body: Node2D) -> bool:
  return str(body.get_meta("scoring_owner", active_scoring_id)) == active_scoring_id
 
 func activate_area_target(body: Node2D, source: String, multiplier: int) -> bool:
- if source not in ["shockwave", "chaos_blast"]:
+ if source != "table_smash":
   return false
  return _award_bumper(body, source, multiplier, false)
 

@@ -120,10 +120,11 @@ func award_rack() -> int:
  # Rack completion can refresh an active combo but cannot start or advance it.
  return award_mechanic(&"ring_rack", "", RACK_POINTS)
 
-func award_area(kind: String, source: String, scale: int, body: Node = null, object_id: String = "") -> int:
+func award_area(kind: String, source: String, scale: int, body: Node = null, object_id: String = "", base_points: int = -1) -> int:
  # Area abilities pay fixed base awards. They neither advance nor refresh a
  # chain, and their bonus never receives the current combo multiplier.
  var base := BUMPER_POINTS if kind == "bumper" else RING_POINTS
+ if base_points >= 0: base = base_points
  if is_instance_valid(body): object_id = str(body.get_meta("scoring_source", body.get_instance_id()))
  return _award(kind, base, clampi(scale, 1, 2), 0, false, body.get_instance_id() if is_instance_valid(body) else 0, object_id, source)
 

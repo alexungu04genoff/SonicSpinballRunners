@@ -165,7 +165,7 @@ func _show_menu() -> void:
  _label(stack, "Earn 1,000 points, then touch the Goal Ring to complete this Act.\nSave edits in the editor, then restart the Act to reload them." if testing else "Earn each Act's target, touch its Goal Ring, then choose a Buddy.\nThree balls per Act in Challenge; unlimited retries in Practice.", 16)
  var characters := OptionButton.new()
  for id: String in CharacterSpecials.CHARACTERS:
-  characters.add_item(id.capitalize())
+  characters.add_item(CharacterSpecials.CHARACTERS[id].selection_label)
   characters.set_item_metadata(characters.item_count - 1, id)
   if id == selected_character: characters.select(characters.item_count - 1)
  characters.item_selected.connect(func(index: int):

@@ -466,6 +466,12 @@ Do not recommend lowering physics rate merely to inflate the FPS counter unless 
 
 # CHARACTER PRESENTATION
 
+## Current type-action decision — 2026-11-04
+
+Character gameplay is now **Type Action + existing physics profile**. Sonic and Shadow share Speed / Target Dash, Tails uses Fly / Flight, and Knuckles uses Power / Table Smash. No signatures or Team Tags yet: first find out whether these three actions are fun.
+
+Speed guides the real ball at bounded speed and acceleration, requires physical contact, then gives a small controlled recoil. Both Speed characters inherit Homing's base × pre-hit combo + 400 cash-out. Fly keeps the existing temporary float/control and one rescue lift. Power immediately uses the old radial blast machinery for Rings, enemies and round/triangle bumpers; stateful switches, Drop Targets and directional hardware stay excluded. Knuckles no longer needs a mysterious wall-glide ritual, and Shadow no longer has Chaos Blast. Shared resources own action tuning; character profiles remain separate. See [TYPE_ACTIONS.md](TYPE_ACTIONS.md) for provisional numbers, exact callbacks, telemetry and Alex's feel checklist.
+
 Characters currently appear mainly as stylized, character-colored spinning Ball forms.
 
 Earlier experiments explored imported Sonic Runners character models, Blender conversion, pose hooks and animation.

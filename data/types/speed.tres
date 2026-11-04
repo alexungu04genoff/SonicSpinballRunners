@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="TypeAction" load_steps=2 format=3]
+[ext_resource type="Script" path="res://scripts/type_action.gd" id="1"]
+[resource]
+script = ExtResource("1")
+kind = 0
+action_name = "Target Dash"
+description = "Guide toward a clear target with bounded speed. Physical hit pays base × combo + 400, then ends the chain. Controlled recoil returns to normal physics."
