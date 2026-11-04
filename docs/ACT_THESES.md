@@ -1,6 +1,6 @@
 # Five experimental Act theses
 
-Open the `.tres` files under `data/acts/Experiments` through Act Geometry Editor / Play Act or Play Act / Load Act. These are independent, editable Acts, outside the production pool. The five production Acts and the earlier candidates are unchanged. No engine, scoring or physics changes were needed.
+Open a `.tres` under `data/acts/Experiments` in Act Geometry Editor and press Play. This now runs a single-Act Prototype test with a visible Goal, a 1,000-point target and Practice retries. These are independent, editable Acts, outside the production pool. The five production Acts and the earlier candidates are unchanged. The layouts themselves needed no engine, scoring or physics changes.
 
 ![Five Acts at a comparable top-down scale](ACT_THESIS_OVERVIEW.png)
 
@@ -120,5 +120,7 @@ Terrain is authored as broad-facet composite outlines, using the isolated 16-sid
 43 focused checks passed: valid resources, exact save/reload, all five shared-engine startups, featured/baseline instantiation, clear spawn/Goal positions, physical strikes from both primary paddles, target/Bank completion and linked Gate actions. The rail also passes the compiler's terrain/hardware clearance checks. A physical contact with its actual entry Spring completed the whole crossover, and both Diverter states produced opposite horizontal returns. Rail Exchange separately passed an 11-check Forward+/Vulkan rendered run.
 
 The tests do not certify fun, balance, every missed shot or end-to-end human Goal reachability. Alex's manual pass should focus on: Orbit's slot versus the long orbit; Rail's return choice; Spinner pocket retention; Split's perceived route difference; Lockbox's visible progression. No exhaustive visual matrix, production bake or production Act edits were made.
+
+**Play-path correction:** The original content smoke pass used the older standalone engine, which did not instantiate Goal Rings. Editor Play now launches the current Prototype session. Nine focused session checks pass headlessly and with Forward+/Vulkan: the saved Lockbox loads without bakes, its Goal is visible, score unlocks it, contact completes the Act, and restart resets it. Normal run planning retains its 41 passing checks.
 
 Regenerate the overview after edits with `Godot.exe --path . --script res://experiments/act_theses/overview.gd`. A dedicated 1800×1100 viewport avoids dependence on the game's window/stretch settings.

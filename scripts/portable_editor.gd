@@ -16,7 +16,7 @@ func _ready() -> void:
 	if ProjectSettings.get_setting("portable_tools/default_tool", "geometry") == "atmosphere":
 		scene = "res://experiments/lighting_lab/lighting_lab.tscn"
 	if "--portable-play" in arguments:
-		scene = "res://experiments/visual_lab/visual_lab.tscn"
+		scene = "res://scenes/prototype_run.tscn"
 	elif "--portable-bake" in arguments:
 		scene = "res://scenes/act_baker.tscn"
 	elif "--portable-smoke" in arguments:

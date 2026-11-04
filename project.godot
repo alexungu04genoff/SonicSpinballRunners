@@ -3,7 +3,7 @@ config_version=5
 
 [application]
 config/name="Sonic Spinball Runners"
-run/main_scene="res://experiments/visual_lab/visual_lab.tscn"
+run/main_scene="res://scenes/prototype_run.tscn"
 config/features=PackedStringArray("4.4", "Forward Plus")
 
 [display]

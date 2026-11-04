@@ -2642,9 +2642,9 @@ func _play_current() -> void:
 		"--rendering-driver", "vulkan"])
 	if OS.has_feature("editor"):
 		arguments.append_array(["--path", ProjectSettings.globalize_path("res://")])
-		arguments.append_array(["res://experiments/visual_lab/visual_lab.tscn", "--"])
+		arguments.append_array(["res://scenes/prototype_run.tscn", "--"])
 	else:
 		arguments.append_array(["--", "--portable-play"])
 	arguments.append_array(["--act", ProjectSettings.globalize_path(current_path)])
 	var process := OS.create_process(OS.get_executable_path(), arguments)
-	_set_status("Playtest opened. Save edits here, then use Reload Act in the game." if process >= 0 else "Could not open the Act player.")
+	_set_status("Prototype Act test opened. Save edits here, then pause and Restart run to reload." if process >= 0 else "Could not open the Act player.")

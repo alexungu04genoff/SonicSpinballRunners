@@ -9,7 +9,7 @@ Sonic momentum, pinball physics and a configurable roguelite run, built with God
 
 **Play Prototype.cmd** opens the main game: choose Sonic, Tails, Knuckles or Shadow, Challenge or Practice, 1–7 Zones, and the Act/theme pools. Each Zone has three distinct authored Acts. A seed reproduces the course. Reach each score target, touch its Goal Ring, choose an SRA Buddy and continue. Challenge has finite Balls; Practice has unlimited retries. Soft retries preserve Act objectives and earned score. Results automatically archive telemetry v2 and optional Run feel notes locally, with Copy run data and Open telemetry folder controls. See [Prototype](docs/PLAYABLE_PROTOTYPE.md).
 
-**Act Geometry Editor.cmd** authors terrain, gameplay objects, decor, ring trails, Spawn, Goal and connectors with undo/redo. Save, load and Verify share the runtime geometry rules; Verify does not guarantee reachability. **Play Act.cmd** (or Godot F5) opens the themed standalone player, initially **First Try Smooth Decor**. Load Act selects another `.tres`; Reload Act / F5 reloads a saved edit while preserving camera and session settings. A rejected reload preserves the active world.
+**Act Geometry Editor.cmd** authors terrain, gameplay objects, decor, ring trails, Spawn, Goal and connectors with undo/redo. Save, load and Verify share the runtime geometry rules; Verify does not guarantee reachability. The editor's **Play** button opens that saved Act in **Prototype**, defaulting to single-Act Practice: earn 1,000 points, then touch the Goal Ring to finish. Save edits, then pause and **Restart run** to reload. This authoring preview builds the selected Act and theme without production bakes. Its records and preferences do not overwrite normal runs. **Play Act.cmd** and Godot F5 open the normal Prototype menu; `Play Act.cmd -ActPath "data/acts/Experiments/Lockbox.tres"` directly tests a saved Act.
 
 **Bake Prototype.cmd** prepares all five production Acts in all eight themes: 40 variants. Committed `.tres` files in `data/acts/Authored` are production content discovered by run setup:
 
@@ -35,7 +35,7 @@ Two specialist launchers remain deliberately: **Authored Act Playtest.cmd** expo
 | Pause / resume | Enter or Escape | Menu / Start |
 | Fullscreen | F11 | — |
 
-Standalone Play Act and Endless retain **Enter** to launch and **Escape** to pause. Play Act also has **O** for overview/follow, **F1** for physics tools and **F11** for Player View. **F4 / Shift+F4** control post-processing. Endless has **T** for its camera tour, **N** for a diagnostic boundary jump and **F3** for streaming statistics.
+Editor Act tests use the Prototype controls above, including **X** to launch and **Enter / Escape** to pause. Endless retains **Enter** to launch, **Escape** to pause, **T** for its camera tour, **N** for a diagnostic boundary jump and **F3** for streaming statistics. **F4 / Shift+F4** control post-processing.
 
 ## Shared systems
 

@@ -18,7 +18,9 @@ static func source_paths(directory := SOURCE_DIRECTORY) -> Array:
  paths.sort()
  return paths
 
-static func pool_error(documents: Array) -> String:
+static func pool_error(documents: Array, single_act_test := false) -> String:
+ if single_act_test:
+  return "An Act test needs one Act with a Spawn." if documents.size() != 1 or documents[0].spawn_position == null else ""
  if documents.size() < ACTS_PER_ZONE: return "The prototype needs at least three selected Acts."
  return StreamPlan.pool_error(documents)
 
@@ -26,9 +28,13 @@ static func target(sequence: int) -> int:
  return 1000 + 500 * maxi(0, sequence)
 
 static func build(documents: Array, seed_value: int, configuration: RefCounted = null) -> Array[Dictionary]:
- if not pool_error(documents).is_empty(): return []
  if configuration == null: configuration = Configuration.new(source_paths())
+ if not pool_error(documents, configuration.single_act_test).is_empty(): return []
  if not configuration.validation_error().is_empty() or documents.size() != configuration.selected_act_paths.size(): return []
+ if configuration.single_act_test:
+  var theme: String = configuration.selected_theme_ids[0]
+  var atmosphere := preload("res://scripts/atmosphere/variants.gd").new().choose(theme, seed_value, 0, configuration.atmosphere_overrides.get(theme, ""))
+  return [{"sequence": 0, "zone": 0, "act": 0, "id": 0, "theme": theme, "atmosphere": atmosphere, "offset": Vector2.ZERO}]
  var shuffler := StreamPlan.new(seed_value)
  var theme_shuffler := StreamPlan.new(seed_value)
  var themes: Array = configuration.snapshot().selected_themes

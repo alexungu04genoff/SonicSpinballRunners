@@ -4,6 +4,14 @@ Windows rendering defaults to **Forward+ / Vulkan** (2026-11-01), matching the A
 
 Current workflow: **Act Geometry Editor → Play Act → Bake Prototype → Play Prototype**. Production content is the five committed Acts in `data/acts/Authored`: First Try Smooth Decor, RampMania, Reverse C Spring, Secret Entry and SpringUp. All eight themes are supported. Earlier dated verification counts below describe their original snapshots; they are not the current pool size. Current scoring is [economy V1](ACT_SCORING.md), with telemetry v2, 35 px default rail-ring spacing, and the final configured Goal Ring ending the run.
 
+## Editor Play uses Prototype
+
+The Act editor's **Play** action launches the saved Act directly in the current Prototype session, including its HUD, score economy, Goal Ring, retry rules and results. A single-Act test defaults to Practice and uses the first Prototype target of 1,000 points. The Goal starts gray, turns gold at target, and completes the test on contact. It does not add the Act to the production pool.
+
+This explicit authoring path builds only the selected Act and theme in memory; no production bake is required. Save edits in the editor, then pause and **Restart run** to load a fresh copy. The test menu offers character, theme and Challenge/Practice choices. Tests archive their ordinary telemetry with `single_act_test: true` in the configuration, but do not overwrite normal preferences or best records. Normal multi-Act runs retain disk bakes and their three-distinct-Acts-per-Zone rules.
+
+**Play Act.cmd**, **Play Prototype.cmd**, and Godot F5 open Prototype. To test a file directly, use `Play Act.cmd -ActPath "data/acts/Experiments/Lockbox.tres"` with optional `-Theme chemical_plant`. Existing exported tools need rebuilding to receive the changed Play action. Source verification: nine Act-test checks passed both headlessly and rendered, plus 41 existing run-plan checks.
+
 ## Automatic run archive and run feel
 
 Prototype automatically archives one JSON per run in `user://telemetry/runs/`. On Windows with the default profile this resolves to `%APPDATA%\Godot\app_userdata\Sonic Spinball Runners\telemetry\runs`. Results retain **Copy run data**, show save status, and offer **Open telemetry folder**. No administrator permissions, repository writes, uploads or automatic retention deletion are involved.

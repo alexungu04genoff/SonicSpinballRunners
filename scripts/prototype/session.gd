@@ -67,9 +67,25 @@ func _ready() -> void:
  overlay = CanvasLayer.new()
  overlay.layer = 40
  add_child(overlay)
+ var arguments := OS.get_cmdline_user_args()
+ var act_argument := arguments.find("--act")
+ if act_argument >= 0 and act_argument + 1 < arguments.size():
+  configure_act_test(arguments[act_argument + 1])
+  for argument: String in arguments:
+   if argument.begins_with("--theme="): run_configuration.selected_theme_ids = [argument.trim_prefix("--theme=")]
+  start_run.call_deferred()
+  return
  _show_menu()
 
+func configure_act_test(path: String) -> void:
+ run_configuration = Run.RunPlan.Configuration.new([path])
+ run_configuration.single_act_test = true
+ run_configuration.zone_count = 1
+ if run_configuration.atmosphere_overrides.is_empty(): run_configuration.selected_theme_ids = ["green_hill"]
+ practice_mode = true
+
 func _save_settings() -> void:
+ if run_configuration.single_act_test: return # Authoring tests do not overwrite normal run preferences or records.
  var settings := ConfigFile.new()
  settings.load(settings_path) # Preserve records from previous course versions.
  run_configuration.write_preferences(settings, available_act_paths)
@@ -134,8 +150,9 @@ func _action(parent: Node, text: String, callback: Callable, focus := false) -> 
 
 func _show_menu() -> void:
  state = "menu"
- var stack := _panel("SONIC SPINBALL RUNNERS", "PLAY PROTOTYPE")
- _label(stack, "Earn each Act's target, touch its Goal Ring, then choose a Buddy.\nThree balls per Act in Challenge; unlimited retries in Practice.", 16)
+ var testing: bool = run_configuration.single_act_test
+ var stack := _panel("SONIC SPINBALL RUNNERS", "PROTOTYPE · ACT TEST" if testing else "PLAY PROTOTYPE")
+ _label(stack, "Earn 1,000 points, then touch the Goal Ring to complete this Act.\nSave edits in the editor, then restart the Act to reload them." if testing else "Earn each Act's target, touch its Goal Ring, then choose a Buddy.\nThree balls per Act in Challenge; unlimited retries in Practice.", 16)
  var characters := OptionButton.new()
  for id: String in CharacterSpecials.CHARACTERS:
   characters.add_item(id.capitalize())
@@ -157,21 +174,35 @@ func _show_menu() -> void:
  sound.button_pressed = sound_enabled
  sound.toggled.connect(func(value: bool): sound_enabled = value; _save_settings())
  stack.add_child(sound)
- if best_score > 0: _label(stack, "Challenge best (all setups): %d · Fastest clear: %s" % [best_score, _time_text(best_seconds)])
- if practice_best_score > 0: _label(stack, "Practice best (all setups): %d" % practice_best_score, 16)
- start_button = _action(stack, "Start run", start_run)
- setup_menu = preload("res://scripts/prototype/run_setup_menu.gd").new()
- stack.add_child(setup_menu)
- stack.move_child(setup_menu, start_button.get_index())
- setup_menu.changed.connect(_save_settings)
- setup_menu.configure(run_configuration, available_act_paths, start_button)
+ if not testing and best_score > 0: _label(stack, "Challenge best (all setups): %d · Fastest clear: %s" % [best_score, _time_text(best_seconds)])
+ if not testing and practice_best_score > 0: _label(stack, "Practice best (all setups): %d" % practice_best_score, 16)
+ if testing:
+  _label(stack, run_configuration.selected_act_paths[0].get_file(), 18)
+  var themes := OptionButton.new()
+  for id: String in Run.RunPlan.Configuration.Registry.IDS:
+   themes.add_item(Run.RunPlan.Configuration.Registry.NAMES[themes.item_count])
+   themes.set_item_metadata(themes.item_count - 1, id)
+   if id == run_configuration.selected_theme_ids[0]: themes.select(themes.item_count - 1)
+  themes.item_selected.connect(func(index: int): run_configuration.selected_theme_ids = [themes.get_item_metadata(index)])
+  stack.add_child(themes)
+ start_button = _action(stack, "Play Act" if testing else "Start run", start_run)
+ if not testing:
+  setup_menu = preload("res://scripts/prototype/run_setup_menu.gd").new()
+  stack.add_child(setup_menu)
+  stack.move_child(setup_menu, start_button.get_index())
+  setup_menu.changed.connect(_save_settings)
+  setup_menu.configure(run_configuration, available_act_paths, start_button)
  _label(stack, "Q / E or LB / RB: flippers     Arrows or stick: steer\nX: launch     Space / A: special     Enter / Esc / Menu: pause\nR / Back: retry (uses a ball in Challenge)     F11: fullscreen", 16)
  _action(stack, "Quit", _quit)
 
 func start_run() -> void:
  if transitioning: return
  if state == "menu" and is_instance_valid(start_button) and start_button.disabled: return
- if not run_configuration.validation_error().is_empty(): return
+ var configuration_error: String = run_configuration.validation_error()
+ if not configuration_error.is_empty():
+  var stack := _panel("RUN COULD NOT START", configuration_error)
+  _action(stack, "Quit", _quit, true)
+  return
  transitioning = true
  state = "loading"
  _panel("PREPARING RUN", "Loading the authored Acts…")
@@ -187,6 +218,7 @@ func start_run() -> void:
  game.run_configuration.atmosphere_overrides = run_configuration.atmosphere_overrides.duplicate(true)
  game.run_configuration.zone_count = run_configuration.zone_count
  game.run_configuration.selected_theme_ids = run_configuration.selected_theme_ids.duplicate()
+ game.run_configuration.single_act_test = run_configuration.single_act_test
  game.character_id = selected_character
  game.practice_mode = practice_mode
  game.completed.connect(_on_completed)
@@ -274,7 +306,7 @@ func _choose_buddy(id: String) -> void:
 
 func _on_completed(summary: Dictionary) -> void:
  _archive_run(summary)
- if summary.won:
+ if summary.won and not run_configuration.single_act_test:
   if summary.practice:
    practice_best_score = maxi(practice_best_score, int(summary.score))
    if practice_best_seconds <= 0.0 or float(summary.seconds) < practice_best_seconds: practice_best_seconds = float(summary.seconds)
@@ -307,7 +339,7 @@ func _on_completed(summary: Dictionary) -> void:
   state_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
   state_label.custom_minimum_size.x = 610
   _label(stack, "Buddy virtual Rings: %d · Emergency rescues: %d" % [summary.buddy_state.run.get("virtual_rings", 0), summary.buddy_state.run.get("rescues", 0)], 16)
- _label(stack, "%s best (all setups): %d" % ["Practice" if summary.practice else "Challenge", practice_best_score if summary.practice else best_score], 18, Color("8fe9b1"))
+ if not run_configuration.single_act_test: _label(stack, "%s best (all setups): %d" % ["Practice" if summary.practice else "Challenge", practice_best_score if summary.practice else best_score], 18, Color("8fe9b1"))
  _label(stack, "Run feel (optional)", 16)
  run_feel = TextEdit.new()
  run_feel.name = "RunFeel"

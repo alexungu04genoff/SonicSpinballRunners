@@ -100,7 +100,10 @@ func _default_run_seed() -> int:
 
 func _pool_error(documents: Array) -> String:
  var error: String = effective_configuration().validation_error()
- return error if not error.is_empty() else RunPlan.pool_error(documents)
+ return error if not error.is_empty() else RunPlan.pool_error(documents, effective_configuration().single_act_test)
+
+func _uses_authoring_builder() -> bool:
+ return effective_configuration().single_act_test or super._uses_authoring_builder()
 
 func _next_planned_zone(documents: Array) -> Array[Dictionary]:
  if _planned: return []
@@ -118,6 +121,7 @@ func act_title(act: RefCounted) -> String:
  return str(source_paths[act.plan.id]).get_file().get_basename()
 
 func progress_text() -> String:
+ if effective_configuration().single_act_test: return "ACT TEST · %s · %s" % [act_title(active), library.themes[active.plan.theme].display_name.to_upper()]
  return "ZONE %d / %d · %s · ACT %d / %d" % [active.plan.zone + 1, effective_configuration().zone_count, library.themes[active.plan.theme].display_name.to_upper(), active.plan.act + 1, RunPlan.ACTS_PER_ZONE]
 
 func act_score_text() -> String:

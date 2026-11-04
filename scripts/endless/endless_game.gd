@@ -68,6 +68,9 @@ func _default_run_seed() -> int:
 func _pool_error(documents: Array) -> String:
  return Plan.pool_error(documents)
 
+func _uses_authoring_builder() -> bool:
+ return "--no-bakes" in OS.get_cmdline_user_args()
+
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
  run_seed = _default_run_seed()
@@ -88,6 +91,7 @@ func _ready() -> void:
   return
  planner = Plan.new(run_seed)
  pending.assign(_next_planned_zone(documents))
+ var opening_act_count := mini(2, pending.size())
  next_zone_to_plan = 1
  authored_act_path = _source_paths()[pending[0].id]
  _opening_document = documents[pending[0].id]
@@ -100,15 +104,16 @@ func _ready() -> void:
  get_tree().paused = true
  _build_hud()
  library = Library.new()
- # Construction is an explicit developer path; normal play loads only the
- # runtime library and cannot invoke the authoring builder.
- if "--no-bakes" in OS.get_cmdline_user_args():
+ # Act tests and --no-bakes explicitly choose authoring construction.
+ # Normal multi-Act play loads only the baked runtime library.
+ if _uses_authoring_builder():
   library.free()
   library = load("res://scripts/endless/template_builder.gd").new()
   library.bake_only = false
  add_child(library)
  library.progress.connect(func(message: String): _startup_message = message)
- library.prepare(self, _source_paths(), true, documents)
+ # The source-specific pool was validated above, including single-Act tests.
+ library.prepare(self, _source_paths(), false, documents)
  if not library.error.is_empty():
   _startup_error(library.error)
   return
@@ -119,7 +124,7 @@ func _ready() -> void:
  pending.append_array(_next_planned_zone(library.documents))
  next_zone_to_plan = 2
  _startup_message = "Loading the opening Acts and warming graphics…"
- while resident.size() < 2 or not _zone_ready(0):
+ while resident.size() < opening_act_count or not _zone_ready(0):
   if closing: return
   if not library.error.is_empty():
    _startup_error(library.error)
@@ -240,7 +245,7 @@ func _process(delta: float) -> void:
    pass
   elif not pending.is_empty():
    var entry: Dictionary = pending[0]
-   # Startup waits for two Acts only. During play prepare the rest of this Zone and the next Zone.
+   # Startup prepares at most two Acts. During play prepare the rest of this Zone and the next Zone.
    if entry.sequence > active_sequence + (5 if started else 1): break
    if not library.has_variant(entry.theme, entry.id):
     if not library.busy:
