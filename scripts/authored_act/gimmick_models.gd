@@ -34,6 +34,7 @@ static func build(p, parent: Node3D, item: Dictionary) -> Dictionary:
    mount.scale.y *= 0.4
    entry["root"] = root
    return entry
+  "slingshot": return _slingshot(p, root, item, style)
   "spring": return _spring(p, root, item)
   "lane_barrier": return _lanes(p, root, item, style)
   "diverter": return _diverter(p, root, item, style)
@@ -174,6 +175,7 @@ static func _spring(p, root: Node3D, item: Dictionary) -> Dictionary:
 static func update(entry: Dictionary) -> void:
  var item: Dictionary = entry.item
  match entry.kind:
+  "slingshot": entry.rubber.scale.y = 1.0 + float(item.pulse) * 2.0
   "gate": entry.panel.visible = not item.open
   "switch":
    entry.pad.position.y = 0.052 if item.active else 0.105
@@ -290,3 +292,12 @@ static func bind_instance_materials(entry: Dictionary) -> void:
   var key := "indicator" if entry.kind == "diverter" else "material"
   entry[key] = entry[key].duplicate()
   for mesh: MeshInstance3D in entry.emitters: mesh.material_override = entry[key]
+
+static func _slingshot(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dictionary:
+ var width := float(item.properties.width) * p.SCALE
+ _box(p, root, Vector3(width, 0.12, 8.0 * p.SCALE), Vector3(0, 0.06, 0), style.body, "Chassis")
+ var rubber := _box(p, root, Vector3(width - 8.0 * p.SCALE, 0.10, 2.0 * p.SCALE), Vector3(0, 0.08, -4.0 * p.SCALE), style.light, "ActiveRubber")
+ for side: float in [-1.0, 1.0]:
+  var arrow := _box(p, root, Vector3(0.025, 0.015, 0.13), Vector3(side * 0.04, 0.015, -0.20), style.trim, "LaunchArrow")
+  arrow.rotation.y = side * -0.65
+ return {"kind": "slingshot", "item": item, "root": root, "rubber": rubber}

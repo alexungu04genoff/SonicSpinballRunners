@@ -375,6 +375,9 @@ func _observe_gimmicks(state: PhysicsDirectBodyState2D, start: Vector2, motion: 
    if distance < ball.radius - 0.5 or motion.dot(forward) >= -0.001: continue
    contact = Contact.capsule_hit(start, motion, item.position, forward, maxf(0.0, Objects.switch_radius(item) - 2.0), ball.radius + 2.0)
    if not contact.is_empty() and Vector2(contact.normal).dot(forward) < 0.5: continue
+  elif item.type == "slingshot":
+   contact = Contact.capsule_hit(start, motion, item.position, Objects.forward(item), float(item.properties.width) * 0.5 - 4.0, ball.radius + 4.0)
+   if not contact.is_empty() and motion.dot(contact.normal) >= -0.001: continue
   elif item.type == "diverter":
    contact = Contact.capsule_hit(start, motion, item.position, Objects.diverter_forward(item, item.state), float(item.properties.length) * 0.5 - 4.0, ball.radius + 4.0)
    if not contact.is_empty() and motion.dot(contact.normal) >= -0.001: continue
@@ -408,6 +411,20 @@ func _observe_gimmicks(state: PhysicsDirectBodyState2D, start: Vector2, motion: 
   var item: Dictionary = event.item
   if item.type in ["switch_target", "wall_switch"]:
    _activate_switch(item)
+  elif item.type == "slingshot":
+   var facing := Objects.forward(item)
+   var powered: bool = slingshot_active(item, start, motion, event.normal) and item.cooldown <= 0.0
+   state.transform = Transform2D(0.0, start + motion * float(event.fraction) + Vector2(event.normal) * 0.05)
+   if powered:
+    state.linear_velocity = facing * float(item.properties.strength)
+    item.cooldown = 0.12
+    item.pulse = 0.2
+    item.launch_count += 1
+    traversal_event.emit(&"spring", item.object_id, &"used")
+   else:
+    state.linear_velocity = state.linear_velocity.bounce(event.normal) * float(ball.tuning.effective.wall_restitution)
+   ball._reset_steering("Slingshot contact")
+   return true
   elif item.type in ["one_way_gate", "diverter"]:
    if item.open: continue # An earlier switch contact may complete its bank this step.
    var incoming := state.linear_velocity.dot(event.normal)
@@ -478,3 +495,7 @@ func _exit_clear(point: Vector2) -> bool:
  query.collision_mask = _saved_mask
  query.exclude = [ball.get_rid()]
  return ball.get_world_2d().direct_space_state.intersect_shape(query, 1).is_empty()
+
+static func slingshot_active(item: Dictionary, start: Vector2, motion: Vector2, normal: Vector2) -> bool:
+ var facing := Objects.forward(item)
+ return (start - Vector2(item.position)).dot(facing) > 0.0 and motion.dot(facing) < -0.001 and normal.dot(facing) > 0.99

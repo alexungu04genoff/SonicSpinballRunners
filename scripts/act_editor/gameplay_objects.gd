@@ -9,12 +9,13 @@ const CURVE_STEPS := 24
 static func definitions() -> Array[Dictionary]:
  return [
   {"id": "round_bumper", "label": "Round Bumper", "color": Color("53d5ed")},
-  {"id": "triangle_bumper", "label": "Triangle Bumper / Sling", "color": Color("76cafa")},
+  {"id": "triangle_bumper", "label": "Triangle Bumper", "color": Color("76cafa")},
   {"id": "left_flipper", "label": "Left Flipper", "color": Color("ffd76b")},
   {"id": "right_flipper", "label": "Right Flipper", "color": Color("ffd76b")},
   {"id": "one_way_gate", "label": "One-Way Gate", "color": Color("66e0b2")},
   {"id": "switch_target", "label": "Switch Target", "color": Color("599dff")},
   {"id": "wall_switch", "label": "Wall Switch", "color": Color("599dff")},
+  {"id": "slingshot", "label": "Slingshot", "color": Color("ff9d59")},
   {"id": "spring", "label": "Spring", "color": Color("ff5968")},
   {"id": "spinner", "label": "Spinner", "color": Color("ffc76c")},
   {"id": "magnetic_field", "label": "Magnetic Field", "color": Color("ba8cff")},
@@ -53,7 +54,7 @@ static func local_points(placement: Dictionary, cell_size: float) -> PackedVecto
   "spring":
    for step in 48:
     points.append(Vector2.from_angle(TAU * step / 48.0) * float(properties(placement).width) * 0.5)
-  "spinner", "one_way_gate":
+  "slingshot", "spinner", "one_way_gate":
    var width := float(properties(placement).width)
    var depth := 4.0
    points = PackedVector2Array([Vector2(-width / 2, -depth), Vector2(width / 2, -depth), Vector2(width / 2, depth), Vector2(-width / 2, depth)])
@@ -108,6 +109,7 @@ static func new_id() -> String:
 
 static func defaults(type: String) -> Dictionary:
  match type:
+  "slingshot": return {"width": 80.0, "strength": 650.0}
   "buzz_bomber": return {"scale": 1.0, "patrol_speed": 65.0, "starting_direction": "right", "patrol_left": -60.0, "patrol_right": 60.0, "respawn_delay": 15.0}
   "round_bumper", "triangle_bumper": return {"scale": 1.0}
   "one_way_gate": return {"width": 80.0, "initial_state": "closed", "visual_mode": "auto"}
@@ -128,6 +130,7 @@ static func properties(placement: Dictionary) -> Dictionary:
 
 static func property_limits(type: String) -> Dictionary:
  match type:
+  "slingshot": return {"width": [24.0, 200.0], "strength": [100.0, 1600.0]}
   "buzz_bomber": return {"scale": [0.35, 2.5], "patrol_speed": [0.0, 400.0], "patrol_left": [-2000.0, 0.0], "patrol_right": [0.0, 2000.0], "respawn_delay": [0.1, 300.0]}
   "round_bumper", "triangle_bumper": return {"scale": [0.35, 2.5]}
   "one_way_gate": return {"width": [20.0, 500.0]}

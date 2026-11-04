@@ -17,6 +17,13 @@ static func draw_object(target: CanvasItem, placement: Dictionary, anchor: Vecto
  var definition: Dictionary = Objects.get_definition(str(placement.get("type", "")))
  if definition.is_empty():
   return
+ if placement.type == "slingshot":
+  var points := rotated_points(placement, cell_size)
+  for i in points.size(): points[i] = anchor + points[i] * scale_factor
+  target.draw_colored_polygon(points, Color("263549"))
+  target.draw_line(points[0], points[1], SELECTION_COLOR if selected else Color("ff9d59"), maxf(2.0, 4.0 * scale_factor), true)
+  _arrow(target, anchor, anchor + Objects.forward(placement) * 32.0 * scale_factor, Color("ffdf85"))
+  return
  if placement.type == "buzz_bomber":
   _draw_enemy(target, placement, anchor, scale_factor, selected, ghost, annotations)
   return
