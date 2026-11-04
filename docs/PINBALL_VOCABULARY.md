@@ -48,3 +48,7 @@ Automated coverage is intentionally focused: placement/save/reload, front/back/e
 `data/acts/Third complex 16.tres` is a separate faceted copy of Alex's `Third complex.tres`. Its five custom smoothed composites use approximately 22.5-degree accumulated curve turns, retaining sharp corners, curvature reversals and axis extrema. This is a 16-side-equivalent curve treatment, not a forced 16-vertex limit on complex terrain. Outline counts change from 444/366/407/88/44 to 13/15/29/16/9. Only the title and terrain outlines differ; gameplay objects, transforms, rings, scenery identity and all other authored data remain intact. The original file is untouched.
 
 Verified loading/validation, exact save/reload, shared-engine headless startup, and matching visual-source/collision polygons. Open the copy through Act Editor or Play Act / Load Act; rebound feel remains a manual comparison.
+
+## Secret Entry comparison copy
+
+`data/acts/Secret Entry 16.tres` applies the same 22.5-degree, corner/extrema-preserving curve treatment to `data/acts/Authored/Secret Entry.tres`. The copy stays outside the production `Authored` pool. Its four composite outlines change from 828/345/121/86 points to 35/22/6/16; only title and terrain outlines differ. Original source, gameplay and other authored data are preserved. Loading/validation, exact save/reload, headless shared-engine startup and matched visible-source/collision outlines passed. Rebound feel remains for manual playtesting.
