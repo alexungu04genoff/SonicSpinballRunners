@@ -35,7 +35,7 @@ func run() -> void:
  var floor_outline := PackedVector2Array([Vector2(-210, -155), Vector2(210, -155), Vector2(210, 155), Vector2(-210, 155)])
  var holes: Array[PackedVector2Array] = [circle]
  var no_holes: Array[PackedVector2Array] = []
- for theme: RefCounted in [GreenHill.new(), Rooftop.new()]:
+ for theme: RefCounted in [preload("res://scripts/themes/theme_registry.gd").create("green_hill"), preload("res://scripts/themes/theme_registry.gd").create("rooftop_run")]:
   p.set_theme_definition(theme)
   theme.configure_environment(p)
   var stage := Node3D.new()

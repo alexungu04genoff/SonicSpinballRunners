@@ -1,4 +1,5 @@
 extends RefCounted
+const Density = preload("res://scripts/presentation_density.gd")
 ## Collisionless Sonic-inspired hardware. All colours are replaceable palette slots.
 const SURFACE = preload("res://scripts/pinball_surface.gdshader")
 const MeshBatch = preload("res://scripts/pinball_mesh_batch.gd")
@@ -27,9 +28,8 @@ static func materials(theme_id: String, overrides: Dictionary = {}) -> Dictionar
   result[SLOTS[i]] = mat
  return result
 
-static func disc(p, parent: Node3D, radius: float, height: float, y: float, mat: Material, taper := 1.0) -> void:
- var mesh: CylinderMesh = p.cylinder(radius, height)
- mesh.radial_segments = 48
+static func disc(p, parent: Node3D, radius: float, height: float, y: float, mat: Material, taper := 1.0, segments := Density.HERO_SEGMENTS) -> void:
+ var mesh: CylinderMesh = p.cylinder(radius, height, segments)
  mesh.top_radius *= taper
  p.mesh_node(mesh, mat, Vector3(0, y + height * 0.5, 0), parent)
 
@@ -46,7 +46,7 @@ static func round_bumper(p, parent: Node3D, radius: float, height_scale: float, 
  p.mesh_node(p._prism(star, 0.009 * height_scale, m.mark, m.mark), null, Vector3(0, 0.413 * height_scale, 0), parent)
  for i in 8:
   var angle := i * TAU / 8.0
-  var bolt: MeshInstance3D = p.mesh_node(p.cylinder(radius * 0.035, 0.008 * height_scale), m.mark, Vector3(cos(angle) * radius * 0.81, 0.39 * height_scale, sin(angle) * radius * 0.81), parent)
+  var bolt: MeshInstance3D = p.mesh_node(p.cylinder(radius * 0.035, 0.008 * height_scale, Density.DETAIL_SEGMENTS), m.mark, Vector3(cos(angle) * radius * 0.81, 0.39 * height_scale, sin(angle) * radius * 0.81), parent)
   bolt.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  MeshBatch.combine(parent, p.has_method("stream_checkpoint"))
  MeshBatch.combine_shadows(parent)
@@ -74,7 +74,7 @@ static func flipper(p, parent: Node3D, length: float, radius: float, h: float, m
  p._paddle(length, radius * 0.70, 0.025 * h, 0.235 * h, m.paddle, parent)
  disc(p, parent, radius * 0.62, 0.016 * h, 0.262 * h, m.base)
  disc(p, parent, radius * 0.43, 0.02 * h, 0.278 * h, m.trim)
- disc(p, parent, radius * 0.16, 0.006 * h, 0.298 * h, m.mark)
+ disc(p, parent, radius * 0.16, 0.006 * h, 0.298 * h, m.mark, 1.0, Density.DETAIL_SEGMENTS)
  for fraction in [0.37, 0.55, 0.73]:
   var x: float = length * fraction / p.SCALE
   var r: float = radius * 0.55 / p.SCALE

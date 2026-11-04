@@ -1,6 +1,6 @@
 extends SceneTree
 ## Explicit authoring utility. Never runs in gameplay or automatically overwrites art.
-const OUTPUT := "res://assets/textures/green_hill/"
+const OUTPUT := "res://experiments/texture_reference/green_hill/"
 var viewport: SubViewport
 var swatch: ColorRect
 

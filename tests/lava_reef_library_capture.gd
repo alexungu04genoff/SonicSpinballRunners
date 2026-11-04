@@ -34,7 +34,7 @@ func run() -> void:
  background.color = Color("241e30")
  background.size = Vector2(1600, 1385)
  canvas.add_child(background)
- var theme := LavaTheme.new()
+ var theme := preload("res://scripts/themes/theme_registry.gd").create("lava_reef")
  var library: RefCounted = theme.create_decor(null)
  var sizes := ["small", "medium", "large", "landmark"]
  for row in 4:

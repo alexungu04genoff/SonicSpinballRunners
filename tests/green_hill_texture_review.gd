@@ -15,7 +15,8 @@ func run() -> void:
   return
  root.size = Vector2i(1780, 1100)
  root.content_scale_size = root.size
- var theme := GreenHill.new()
+ var theme := preload("res://scripts/themes/theme_registry.gd").create("green_hill")
+ var include_reference := "--reference" in OS.get_cmdline_user_args()
  var before := [reference("grass"), reference("grass", {"raised_turf": true}), reference("wall"), reference("cliff"), reference("ramp", {"base_color": Color("b97d3f"), "alternate_color": Color("d2a15d")})]
  var after := [theme.floor_material, theme.top_material, theme.side_material, theme.cliff_material, theme.ramp_materials().deck]
  var canvas := CanvasLayer.new()
@@ -27,10 +28,10 @@ func run() -> void:
  label(canvas, "GREEN HILL / EDITABLE TEXTURES", Vector2(30, 20), 34)
  label(canvas, "Same unlit swatches. PNG patterns retain world scale; grass and wood now have finite seamless repeats.", Vector2(30, 66), 21)
  for column in 5: label(canvas, HEADINGS[column], Vector2(30 + column * 350, 112), 21)
- for row in 2:
+ for row in (2 if include_reference else 1):
   var y := 158 + row * 250
-  label(canvas, "BEFORE / procedural reference" if row == 0 else "AFTER / imported PNG materials", Vector2(30, y), 25)
-  var materials: Array = before if row == 0 else after
+  label(canvas, "BEFORE / procedural reference" if include_reference and row == 0 else "CURRENT / canonical theme materials", Vector2(30, y), 25)
+  var materials: Array = before if include_reference and row == 0 else after
   for column in 5:
    var container := SubViewportContainer.new()
    container.position = Vector2(30 + column * 350, y + 40)
@@ -59,11 +60,11 @@ func run() -> void:
     camera.look_at(Vector3.ZERO)
    camera.current = true
  label(canvas, "SOURCE PNGs / edit these files to change the game", Vector2(30, 682), 25)
- var names := ["floor", "top", "soil", "cliff", "ramp", "wall-fringe", "floor-border", "top-border"]
+ var names := ["1A", "5B", "3A", "ramp", "4B", "2B", "6B"]
  for i in names.size():
   var item := TextureRect.new()
   item.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-  item.texture = load(GreenHill.TEXTURES + names[i] + ".png")
+  item.texture = load(GreenHill.TEXTURES + "ramp.png") if names[i] == "ramp" else theme._selected_texture(names[i])
   item.position = Vector2(30 + i * 218, 730)
   item.size = Vector2(192, 192)
   item.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED

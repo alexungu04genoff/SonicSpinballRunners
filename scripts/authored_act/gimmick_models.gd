@@ -1,4 +1,5 @@
 extends RefCounted
+const Density = preload("res://scripts/presentation_density.gd")
 ## Original procedural low-poly hardware. This file creates no physics objects.
 const Hardware := preload("res://scripts/atmosphere/hardware_palette.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
@@ -49,7 +50,7 @@ static func _box(p, parent: Node3D, size: Vector3, at: Vector3, mat: Material, l
  node.name = label
  return node
 
-static func _disc(p, parent: Node3D, radius: float, height: float, at: Vector3, mat: Material, label: String, segments := 16) -> MeshInstance3D:
+static func _disc(p, parent: Node3D, radius: float, height: float, at: Vector3, mat: Material, label: String, segments := Density.HERO_SEGMENTS) -> MeshInstance3D:
  var mesh: CylinderMesh = p.cylinder(radius, height)
  mesh.radial_segments = segments
  var node: MeshInstance3D = p.mesh_node(mesh, mat, at, parent)
@@ -128,11 +129,11 @@ static func _switch(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dic
  material.emission_enabled = true
  material.emission = color
  material.emission_energy_multiplier = 0.0
- _disc(p, pad, radius * 0.73, 0.055, Vector3(0, 0, 0), material, "ColoredButton", 24)
+ _disc(p, pad, radius * 0.73, 0.055, Vector3(0, 0, 0), material, "ColoredButton", Density.HERO_SEGMENTS)
  var ring := TorusMesh.new()
  ring.inner_radius = radius * 0.33
  ring.outer_radius = radius * 0.43
- ring.rings = 24
+ ring.rings = Density.HERO_SEGMENTS
  ring.ring_segments = 6
  p.mesh_node(ring, style.trim, Vector3(0, 0.03, 0), pad).name = "PowerSymbol"
  _box(p, pad, Vector3(0.018, 0.008, radius * 0.44), Vector3(0, 0.04, -radius * 0.35), style.trim, "PowerStroke")
@@ -162,12 +163,12 @@ static func _spring(p, root: Node3D, item: Dictionary) -> Dictionary:
   var coil := TorusMesh.new()
   coil.inner_radius = radius * 0.38
   coil.outer_radius = radius * 0.47
-  coil.rings = 20
+  coil.rings = Density.HERO_SEGMENTS
   coil.ring_segments = 6
   p.mesh_node(coil, steel, Vector3(0, -0.02 - i * 0.018, 0), pad).name = "MetalCoil"
- _disc(p, pad, radius, 0.055, Vector3(0, 0.018, 0), red, "RoundedPad", 24)
- _disc(p, pad, radius * 0.88, 0.012, Vector3(0, 0.05, 0), yellow, "YellowRim", 24)
- _disc(p, pad, radius * 0.75, 0.014, Vector3(0, 0.061, 0), blue, "BlueInset", 24)
+ _disc(p, pad, radius, 0.055, Vector3(0, 0.018, 0), red, "RoundedPad", Density.HERO_SEGMENTS)
+ _disc(p, pad, radius * 0.88, 0.012, Vector3(0, 0.05, 0), yellow, "YellowRim", Density.HERO_SEGMENTS)
+ _disc(p, pad, radius * 0.75, 0.014, Vector3(0, 0.061, 0), blue, "BlueInset", Density.HERO_SEGMENTS)
  _star(p, pad, radius * 0.55, 0.07, yellow)
  var arrow := PackedVector2Array([Vector2(-4, -float(item.properties.width) * 0.5 - 5), Vector2(4, -float(item.properties.width) * 0.5 - 5), Vector2(0, -float(item.properties.width) * 0.5 - 14)])
  p.mesh_node(p._prism(arrow, 0.003, yellow, yellow), null, Vector3(0, 0.005, 0), root).name = "LaunchDirection"

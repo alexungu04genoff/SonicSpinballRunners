@@ -33,6 +33,7 @@ func _init(_presentation: Node3D) -> void:
   if key == "gold_light": Atmosphere.color(mat, "window_gold")
   if key in ["gold", "ivory"]: Atmosphere.color(mat, "metal_tint", "tint")
   materials[key] = mat
+ materials["housing"] = preload("res://scripts/themes/casino_selected_materials.gd").housing()
  if materials.has("housing"): Atmosphere.color(materials.housing, "housing_tint", "tint")
 
 func primitive(kind: String) -> Mesh:
@@ -140,7 +141,7 @@ func chips(root: Node3D) -> void:
  piece(root, "cylinder", "gold", Vector3(0, 0.265, 0), Vector3(0.10, 0.012, 0.10))
 
 func reels(root: Node3D) -> void:
- box(root, "red", Vector3(0, 0.34, 0), Vector3(0.72, 0.68, 0.48))
+ box(root, "housing", Vector3(0, 0.34, 0), Vector3(0.72, 0.68, 0.48))
  box(root, "gold", Vector3(0, 0.08, 0), Vector3(0.78, 0.16, 0.53))
  box(root, "navy", Vector3(0, 0.40, 0.252), Vector3(0.62, 0.38, 0.035))
  frame(root, Vector3(0, 0.40, 0.28), Vector2(0.64, 0.40), "amber", 0.025)
@@ -183,13 +184,13 @@ func cards(root: Node3D) -> void:
 
 func lantern(root: Node3D) -> void:
  piece(root, "cylinder", "gold", Vector3(0, 0.08, 0), Vector3(0.39, 0.16, 0.39))
- piece(root, "cylinder", "blue", Vector3(0, 0.62, 0), Vector3(0.19, 1.10, 0.19))
+ piece(root, "cylinder", "housing", Vector3(0, 0.62, 0), Vector3(0.19, 1.10, 0.19))
  for i in 6:
   var angle := TAU * i / 6.0
   box(root, "pink", Vector3(cos(angle) * 0.19, 0.65, sin(angle) * 0.19), Vector3(0.035, 0.87, 0.035))
  # Faceted tulip lantern: a swollen lower bowl and tapered crown, not a cone.
- piece(root, "lantern_lower", "purple", Vector3(0, 1.10, 0), Vector3(0.43, 0.24, 0.43))
- piece(root, "lantern_upper", "purple", Vector3(0, 1.47, 0), Vector3(0.43, 0.50, 0.43))
+ piece(root, "lantern_lower", "housing", Vector3(0, 1.10, 0), Vector3(0.43, 0.24, 0.43))
+ piece(root, "lantern_upper", "housing", Vector3(0, 1.47, 0), Vector3(0.43, 0.50, 0.43))
  for i in 4:
   var y := 1.22 + i * 0.12
   var radius := lerpf(0.43, 0.077, (y - 1.22) / 0.50)
@@ -199,7 +200,7 @@ func lantern(root: Node3D) -> void:
 
 func pylon(root: Node3D) -> void:
  box(root, "gold", Vector3(0, 0.10, 0), Vector3(0.70, 0.20, 0.60))
- box(root, "navy", Vector3(0, 0.78, 0), Vector3(0.47, 1.30, 0.42))
+ box(root, "housing", Vector3(0, 0.78, 0), Vector3(0.47, 1.30, 0.42))
  for side: int in [-1, 1]:
   box(root, "gold", Vector3(side * 0.28, 0.76, 0), Vector3(0.10, 1.18, 0.50))
   box(root, "aqua", Vector3(side * 0.28, 0.76, 0.26), Vector3(0.035, 1.0, 0.025))
@@ -226,7 +227,7 @@ func palace(root: Node3D, wide: bool) -> void:
 func gateway(root: Node3D) -> void:
  for side: int in [-1, 1]:
   box(root, "gold", Vector3(side * 1.28, 0.06, 0), Vector3(0.44, 0.12, 0.98))
-  box(root, "blue", Vector3(side * 1.28, 0.60, 0), Vector3(0.29, 1.08, 0.38))
+  box(root, "housing", Vector3(side * 1.28, 0.60, 0), Vector3(0.29, 1.08, 0.38))
   box(root, "pink", Vector3(side * 1.28, 0.61, 0.21), Vector3(0.06, 0.87, 0.035))
  box(root, "gold", Vector3(0, 1.16, 0), Vector3(2.85, 0.24, 0.48))
  box(root, "navy", Vector3(0, 1.16, 0.25), Vector3(2.55, 0.18, 0.03))

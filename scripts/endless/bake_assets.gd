@@ -3,8 +3,6 @@ extends RefCounted
 ## again in every Act/theme file; imported textures already share external paths.
 const DIRECTORY := "res://data/endless/assets.bake"
 const VisualDetail = preload("res://scripts/endless/visual_detail.gd")
-const FlatSurfaces = preload("res://scripts/endless/flat_surfaces.gd")
-var flat_surfaces := FlatSurfaces.new()
 var visited := {}
 var error := ""
 var materials: Dictionary = {}
@@ -20,8 +18,8 @@ func share(value: Variant) -> Variant:
   var id := resource.get_instance_id()
   if visited.has(id): return visited[id]
   if resource is Material:
-   resource = flat_surfaces.material(resource)
-   if not flat_surfaces.error.is_empty(): error = flat_surfaces.error
+   # Baking owns a copy; preserve the canonical shader, relief and parameters.
+   resource = resource.duplicate()
    value = resource
    materials[resource.get_instance_id()] = resource
   visited[id] = resource

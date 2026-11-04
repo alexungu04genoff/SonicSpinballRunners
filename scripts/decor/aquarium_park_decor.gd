@@ -1,4 +1,5 @@
 extends "res://scripts/decor/decor_skin.gd"
+const Density = preload("res://scripts/presentation_density.gd")
 const Atmosphere := preload("res://scripts/themes/theme_atmosphere.gd")
 ## Original low-poly aquatic architecture. Every node is presentation only.
 var meshes: Dictionary = {}
@@ -58,14 +59,14 @@ func primitive(kind: String) -> Mesh:
    var sphere := SphereMesh.new()
    sphere.radius = 1.0
    sphere.height = 2.0
-   sphere.radial_segments = 12
-   sphere.rings = 6
+   sphere.radial_segments = Density.IMPORTANT_SPHERE_SEGMENTS
+   sphere.rings = Density.IMPORTANT_RINGS
    result = sphere
   "ring":
    var torus := TorusMesh.new()
    torus.inner_radius = 0.93
    torus.outer_radius = 1.0
-   torus.rings = 24
+   torus.rings = Density.HERO_SEGMENTS
    torus.ring_segments = 6
    result = torus
   _:
@@ -100,9 +101,9 @@ func _shell_mesh() -> ArrayMesh:
  # Open cylinder: a single front shell keeps fish visible without stacked panes.
  var surface := SurfaceTool.new()
  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
- for i in 32:
-  var a := TAU*i/32.0
-  var b := TAU*(i+1)/32.0
+ for i in Density.IMPORTANT_SEGMENTS:
+  var a := TAU*i/Density.IMPORTANT_SEGMENTS
+  var b := TAU*(i+1)/Density.IMPORTANT_SEGMENTS
   var points := [Vector3(cos(a),-0.5,sin(a)),Vector3(cos(a),0.5,sin(a)),Vector3(cos(b),0.5,sin(b)),Vector3(cos(b),-0.5,sin(b))]
   for index: int in [0,2,1,0,3,2]:
    surface.set_normal(Vector3(points[index].x,0,points[index].z))

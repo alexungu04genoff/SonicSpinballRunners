@@ -46,7 +46,7 @@ func label(canvas: Node, text: String, at: Vector2, size: int) -> void:
 func run() -> void:
  root.size = Vector2i(1400, 900)
  var stage := Presentation.new()
- stage.set_theme_definition(GreenHillTheme.new())
+ stage.set_theme_definition(preload("res://scripts/themes/theme_registry.gd").create("green_hill"))
  root.add_child(stage)
  var library: RefCounted = stage.decor_skin
  var slot := Slots.make_slot("landmark")

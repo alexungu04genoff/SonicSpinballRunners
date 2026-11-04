@@ -1,4 +1,5 @@
 extends Node3D
+const Density = preload("res://scripts/presentation_density.gd")
 ## Collisionless goal presentation; the run checks authoritative swept 2D motion.
 var center := Vector2.ZERO
 var radius := 25.0
@@ -13,7 +14,7 @@ func configure(document: Resource, offset: Vector2) -> void:
  var mesh := TorusMesh.new()
  mesh.outer_radius = radius * TablePresentation.SCALE
  mesh.inner_radius = mesh.outer_radius * 0.78
- mesh.rings = 32
+ mesh.rings = Density.HERO_SEGMENTS
  mesh.ring_segments = 8
  hoop.mesh = mesh
  material.metallic = 0.55

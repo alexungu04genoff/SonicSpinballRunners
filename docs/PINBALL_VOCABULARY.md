@@ -24,15 +24,27 @@ The upper/middle court compares a circle, oval, semicircular bump and convex qua
 
 Run `Godot.exe --headless --path . --script res://experiments/pinball_vocabulary/studies.gd` to check both saved studies. Add `-- --write` only to regenerate the two disposable files, replacing local edits to them. The script never writes production Acts.
 
-### Primitive-density audit (recommendations, not adopted settings)
+### Adopted visual geometry guideline — 2026-11-04
 
-- `scripts/pinball_models.gd`, `disc`: 48 radial segments. Candidate hero-hardware range: 12-16.
-- `scripts/presentation.gd`, shared sphere: 16 radial segments / 8 rings; shared cylinder: 24 radial segments. Candidate ordinary defaults: 8x4 sphere and 8-sided cylinder. Important pieces: 10x5 spheres and 10-12-sided cylinders.
-- `scripts/decor/aquarium_park_decor.gd`: explicit 12x6 spheres, 24-ring torus forms and 12-sided cylinders. The cylinders already suit important props; sphere/torus silhouettes deserve a camera-distance comparison before changing.
-- `scripts/decor/sky_sanctuary_decor.gd`: 12x6 spheres and 8-sided cylinders. Cylinder density already fits; spheres are a modest outlier.
-- `scripts/authored_act/mechanics_presentation.gd`: magnetic field torus has 48 rings, with a six-segment tube. Treat thin effect outlines separately from solid hero hardware.
+SSR uses Dreamcast/PS2-inspired solid geometry with modern materials, lighting and atmosphere. Similar screen size and visual importance should imply comparable density, with deliberate theme and readability exceptions. This is art direction, not a minimum-polygon contest.
 
-Suggested shared language: broad facets, ordinary cylinders 8, important cylinders 10-12, hero hardware 12-16, ordinary spheres 8x4, important spheres 10x5. Terrain 16 is a hypothesis; test 20/24 later only if rebound feel calls for it. Existing bake-time caps may already reduce some source primitives, so inspect both Play Act and baked output before any later migration.
+| Family | Starting point |
+| --- | --- |
+| Tiny details | 5–6 radial sides |
+| Ordinary scenery | 8 sides; spheres 8×4 |
+| Important scenery | 10–12 sides; spheres 10×5 |
+| Hero hardware | 12–16 sides; 16 for prominent bumper/paddle/Spring silhouettes |
+| Collectible and Goal Rings | 16 main segments × 8 tube segments |
+
+`scripts/presentation_density.gd` supplies the small shared vocabulary. Generic helpers use ordinary density; the ball and paddle caps explicitly request hero density. Bumpers use 16 instead of 48; bolts/pivot pins use six. Switch/Spring solids use 16 instead of 24. Buzz Bomber, Chemical machinery, Casino regular geometry, Rooftop and Ice custom geometry retain their existing character.
+
+Use flat/separated normals selectively for rock, coconut, foliage and constructed cloud forms. Preserve smooth radial normals for metal, glass and polished hardware. Green Hill's tiny petals remain softly shaded; Sky's blue relics retain smooth 10×5 forms while foliage/cloud clusters use facets. Aquarium uses smooth 10×5 orbs, 16×6 architectural rings and 12-sided glass shells matching its cylinders. Its custom roof curvature remains intentional. Materials retain their authored roughness, neon, palettes and Hybrid relief; low-poly does not mean removing modern lighting or normal maps.
+
+Thin VFX are exempt. Magnetic outlines retain 48×6 in authored and baked paths through explicit `preserve_visual_density` metadata. Character contact markers, halos and impact effects keep their existing smooth outlines. Gameplay colors, state indicators, arrows and silhouettes take precedence over density uniformity.
+
+**Terrain:** the accepted art target is 16-equivalent full curves / 8 semicircles / 4 quarter curves. This presentation pass does not migrate physics: the current terrain library still has `CURVE_STEPS = 24`, while experimental composite Acts already carry their authored facets. Those contours are also collision authority. Never reduce them as a cosmetic mesh edit. No other changed mesh family owns collision; the 2D simulation remains authoritative.
+
+Bake caps remain upper bounds, not a second style pass. New solid tiers fit those bounds; flat-normal ArrayMeshes preserve their normals. Rebuild bakes after source changes. See [visual-source ownership and verification](VISUAL_PIPELINE.md).
 
 ### Manual pass
 

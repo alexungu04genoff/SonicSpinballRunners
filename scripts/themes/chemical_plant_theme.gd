@@ -1,8 +1,6 @@
 extends "res://scripts/themes/theme_definition.gd"
 ## Original low-poly industrial art. Only presentation nodes and materials live here.
 const ChemicalDecor = preload("res://scripts/decor/chemical_plant_decor.gd")
-const FLOOR = preload("res://scripts/themes/chemical_floor.gdshader")
-const WALL = preload("res://scripts/themes/chemical_wall.gdshader")
 const LIQUID = preload("res://scripts/themes/chemical_reservoir.gdshader")
 var _steel: StandardMaterial3D
 var _dark: StandardMaterial3D
@@ -10,14 +8,32 @@ var _blue: StandardMaterial3D
 var _cyan: StandardMaterial3D
 var _signal: StandardMaterial3D
 var _yellow: StandardMaterial3D
+var _selected_colors: Dictionary = {}
+var material_maps = preload("res://scripts/themes/chemical_material_maps.gd").new()
+var improved_lighting := true
+var key_energy := 1.25
+var ambient_energy := 0.30
+var _lighting_baseline: Dictionary = {}
+var _environment_baseline: Dictionary = {}
 
 func _init() -> void:
  theme_id = "chemical_plant"
  display_name = "Chemical Plant"
- _apply_texture_set()
+ var sets = preload("res://scripts/themes/terrain_texture_sets.gd")
+ floor_material = sets.material(theme_id, "floor")
+ side_material = sets.material(theme_id, "wall")
+ cliff_material = sets.material(theme_id, "facade")
+ floor_border_width = 6.0
+ top_border_width = 4.0
+ floor_material = material_maps.apply(floor_material, "1C", true)
+ side_material = material_maps.apply(side_material, "3C", true)
+ cliff_material = material_maps.apply(cliff_material, "9C", true)
+ top_material = _selected_color("5A", 0, Vector2(1.5, 1.5))
+ floor_border_material = _selected_color("2A", 1, Vector2(1.0, 1.0))
+ top_border_material = _selected_color("6B", 1, Vector2(1.0, 1.0))
  _steel = _surface(Color("647487"))
  _dark = _surface(Color("1c233b"))
- _blue = _surface(Color("224f9c"))
+ _blue = _surface(Color("245aca"))
  _cyan = _surface(Color("4de4dc"), 0.5)
  _signal = _surface(Color("f64e91"), 0.6)
  _yellow = _surface(Color("e5b243"))
@@ -26,6 +42,19 @@ func _init() -> void:
  Atmosphere.color(_yellow, "industrial_trim", "tint")
  Atmosphere.color(_cyan, "industrial_cyan")
  Atmosphere.color(_signal, "signal_pink")
+
+func _selected_color(id: String, mapping: int, repeat_size: Vector2) -> ShaderMaterial:
+ if _selected_colors.has(id): return _selected_colors[id]
+ var path := "res://assets/textures/chemical_plant/selected/" + id + ".png"
+ var texture := preload("res://scripts/themes/theme_textures.gd").texture(path)
+ var result := ShaderMaterial.new()
+ result.shader = preload("res://scripts/themes/chemical_selected_colors.gdshader")
+ result.set_shader_parameter("albedo_texture", texture)
+ result.set_shader_parameter("mapping", mapping)
+ result.set_shader_parameter("repeat_size", repeat_size)
+ result = material_maps.apply(result, id)
+ _selected_colors[id] = result
+ return result
 
 func _shader(source: Shader) -> ShaderMaterial:
  var result := ShaderMaterial.new()
@@ -75,6 +104,31 @@ func configure_environment(p: Node3D) -> void:
  light.light_color = Color("d9e9ff")
  light.light_energy = 0.90
  light.shadow_normal_bias = 2.0
+ _lighting_baseline = {"rotation_degrees":light.rotation_degrees,"light_color":light.light_color,"light_energy":light.light_energy,"shadow_bias":light.shadow_bias,"shadow_normal_bias":light.shadow_normal_bias,"directional_shadow_max_distance":light.directional_shadow_max_distance}
+ for property in ["ambient_light_energy","ambient_light_sky_contribution","reflected_light_source","tonemap_exposure"]:
+  _environment_baseline[property]=world.get(property)
+ set_lighting(p, improved_lighting)
+
+func set_lighting(p: Node3D, enabled: bool) -> void:
+ improved_lighting = enabled
+ var world: Environment = p._world_environment.environment
+ var light: DirectionalLight3D = p._key_light
+ for property in _lighting_baseline: light.set(property,_lighting_baseline[property])
+ for property in _environment_baseline: world.set(property,_environment_baseline[property])
+ if enabled:
+  world.ambient_light_energy = ambient_energy
+  world.ambient_light_sky_contribution = 0.15
+  world.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
+  world.tonemap_exposure = 1.03
+  light.rotation_degrees = Vector3(-42,-62,0)
+  light.light_color = Color("e5eeff")
+  light.light_energy = key_energy
+  light.shadow_bias = 0.10
+  light.shadow_normal_bias = 1.1
+  light.directional_shadow_max_distance = 24.0
+ for node in p.find_children("*","GeometryInstance3D",true,false):
+  if node.has_meta("chemical_shadow_candidate"):
+   node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if enabled else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 func create_decor(p: Node3D) -> RefCounted:
  return ChemicalDecor.new(p)
@@ -174,12 +228,13 @@ func _pipe(p: Node3D, parent: Node3D, a: Vector3, b: Vector3, radius: float, mat
  mesh.quaternion = Quaternion(Vector3.UP, (b - a).normalized())
 
 func ramp_materials() -> Dictionary:
- var blue := material(Color("314acb"))
+ var blue := material(Color("245aca"))
  blue.roughness = 0.32
  blue.metallic = 0.25
- var coupler := material(Color("6e7896"))
+ var coupler := material(Color("7d8fa3"))
  coupler.roughness = 0.48
  coupler.metallic = 0.45
- return {"deck": _texture_ramp(),
-  "edge": material(Color("e5b638")), "support": material(Color("26384b")), "accent": material(Color("68e1de"), 0.25),
-  "pipe": blue, "pipe_clamp": coupler}
+ var guard := _selected_color("8B", 3, Vector2(1.0, 1.0))
+ return {"deck": _selected_color("7C-yellow", 2, Vector2(1.0, 0.68)),
+  "edge": guard, "fascia": guard, "support": material(Color("26384b")), "accent": material(Color("68e1de"), 0.25),
+  "pipe": blue, "pipe_clamp": coupler, "pipe_strap": material(Color("e5b638"))}

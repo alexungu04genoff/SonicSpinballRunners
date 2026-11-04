@@ -5,6 +5,9 @@ const NAMES := ["Green Hill", "Chemical Plant", "Rooftop Run", "Casino Night", "
 const GreenHill = preload("res://scripts/themes/green_hill_theme.gd")
 
 static func create(theme_id: String) -> RefCounted:
+ if theme_id not in IDS:
+  push_error("Unknown production theme: " + theme_id)
+  return null
  var theme := _create(theme_id)
  var roles := {"floor_material": "terrain_ground", "top_material": "terrain_upper", "side_material": "terrain_walls", "cliff_material": "terrain_walls", "floor_border_material": "terrain_borders", "top_border_material": "terrain_ledges"}
  for property: String in roles:

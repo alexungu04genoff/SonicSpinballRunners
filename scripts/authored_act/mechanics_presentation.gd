@@ -64,6 +64,8 @@ func _field(item: Dictionary) -> void:
  ring.outer_radius = radius
  ring.rings = 48
  ring.ring_segments = 6
+ # Thin translucent field outlines need the same silhouette in Play Act and bakes.
+ ring.set_meta("preserve_visual_density", true)
  table.mesh_node(ring, material, Vector3.ZERO, center)
  table.mesh_node(table.cylinder(0.035, 0.025), material, Vector3.ZERO, center)
  var arcs := Node3D.new()

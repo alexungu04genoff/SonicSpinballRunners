@@ -4,13 +4,14 @@ const Decor = preload("res://scripts/decor/rooftop_run_decor.gd")
 const TEXTURES := "res://assets/textures/rooftop_run/"
 const CANAL = preload("res://scripts/themes/rooftop_canal.gdshader")
 var _library: RefCounted
+var material_maps = preload("res://scripts/themes/rooftop_material_maps.gd").new()
 
 func _init() -> void:
  theme_id = "rooftop_run"
  display_name = "Rooftop Run"
  edge_trim_color = Color("e6c48e")
- floor_material = _texture_material("floor", Vector2(4, 4))
- top_material = _texture_material("top", Vector2(5, 3.125))
+ floor_material = _texture_material("floor", Vector2(1.8, 1.8))
+ top_material = _texture_material("top", Vector2(1.8, 1.5))
  side_material = _wall_material("wall")
  cliff_material = _wall_material("facade")
  cliff_material.set_shader_parameter("top_height", 0.0)
@@ -19,6 +20,8 @@ func _init() -> void:
  floor_border_width = 12.0
  top_border_width = 8.0
  _library = Decor.new(null)
+ _library.material_detail = material_maps
+ _library.roof_material = top_material
 
 func _shader(source: Shader) -> ShaderMaterial:
  var result := ShaderMaterial.new()
@@ -27,20 +30,28 @@ func _shader(source: Shader) -> ShaderMaterial:
 
 func _texture_material(name: String, repeat_size: Vector2, world_mapping := true) -> ShaderMaterial:
  var result := _shader(preload("res://scripts/themes/texture_surface.gdshader"))
- result.set_shader_parameter("surface_texture", load(TEXTURES + name + ".png"))
+ result.set_shader_parameter("surface_texture", material_maps.albedo(name))
  result.set_shader_parameter("repeat_size", repeat_size)
  result.set_shader_parameter("world_mapping", world_mapping)
- return result
+ return material_maps.apply(result,name,"surface_texture")
 
 func _wall_material(name: String) -> ShaderMaterial:
  var result := _shader(preload("res://scripts/themes/texture_wall.gdshader"))
- result.set_shader_parameter("wall_texture", load(TEXTURES + name + ".png"))
- return result
+ if name == "facade":
+  var shader:=Shader.new()
+  shader.code=result.shader.code.replace("vec2(3.4, 1.45)","vec2(1.7, 0.85)")
+  result.shader=shader
+ result.set_shader_parameter("wall_texture",material_maps.albedo(name))
+ return material_maps.apply(result,name,"wall_texture")
 
 func _border_material(name: String) -> ShaderMaterial:
  var result := _shader(preload("res://scripts/themes/terrain_border.gdshader"))
- result.set_shader_parameter("border_texture", load(TEXTURES + name + ".png"))
- return result
+ if name=="floor-border":
+  var shader:=Shader.new()
+  shader.code=result.shader.code.replace("fract(UV.x)","fract(UV.x * 1.5)").replace("clamp(UV.y, 0.0, 1.0)","clamp(UV.y, 0.0, 1.0) * 0.375").replace("dFdx(UV)","dFdx(vec2(UV.x * 1.5, UV.y * 0.375))").replace("dFdy(UV)","dFdy(vec2(UV.x * 1.5, UV.y * 0.375))")
+  result.shader=shader
+ result.set_shader_parameter("border_texture",material_maps.albedo(name))
+ return material_maps.apply(result,name,"border_texture")
 
 func create_decor(_presentation: Node3D) -> RefCounted:
  return _library
@@ -60,13 +71,17 @@ func configure_environment(p: Node3D) -> void:
  world.sky = sky
  world.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
  world.ambient_light_color = Color("b8cee2")
- world.ambient_light_energy = 0.32
+ world.ambient_light_energy = 0.28
+ world.ambient_light_sky_contribution = 0.15
+ world.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
  world.tonemap_mode = Environment.TONE_MAPPER_LINEAR
  world.glow_enabled = false
  var light: DirectionalLight3D = p._key_light
- light.rotation_degrees = Vector3(-49, -37, 0)
- light.light_color = Color("ffe6c5")
- light.light_energy = 0.95
+ light.rotation_degrees = Vector3(-42, -62, 0)
+ light.light_color = Color("ffe9cc")
+ light.light_energy = 1.05
+ light.shadow_bias = 0.22
+ light.directional_shadow_max_distance = 24.0
  light.shadow_normal_bias = 2.0
 
 func build_background(p: Node3D) -> void:
@@ -209,5 +224,5 @@ func build_study(_p: Node3D, parent: Node3D, origin: Vector3) -> void:
   prop.scale = Vector3.ONE * 0.65
 
 func ramp_materials() -> Dictionary:
- return {"deck": _texture_material("ramp", Vector2(0.48, 0.44), false),
-  "edge": material(Color("e8cba0")), "support": material(Color("b69b77")), "accent": material(Color("fff0c7"))}
+ return {"deck": _texture_material("ramp", Vector2(1.2, 1.2), false),
+  "edge": material_maps.guard(), "support": material(Color("b69b77")), "accent": material(Color("fff0c7")), "fascia": material_maps.guard()}

@@ -1,5 +1,6 @@
 class_name CharacterFeedback
 extends Node3D
+const Density = preload("res://scripts/presentation_density.gd")
 ## Minimal replaceable art adapter. All markers and placeholders are collisionless.
 var game: Node
 var marker: MeshInstance3D
@@ -23,6 +24,8 @@ func _ready() -> void:
  var sphere := SphereMesh.new()
  sphere.radius = 0.14
  sphere.height = 0.28
+ sphere.radial_segments = Density.HERO_SEGMENTS
+ sphere.rings = Density.IMPORTANT_RINGS
  placeholder.mesh = sphere
  var material := StandardMaterial3D.new()
  material.albedo_color = Color("ffb54a")

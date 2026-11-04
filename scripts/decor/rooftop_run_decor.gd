@@ -4,6 +4,9 @@ const Atmosphere := preload("res://scripts/themes/theme_atmosphere.gd")
 ## Pool order is stable: authored fixed variants address these exact indices.
 var meshes: Dictionary = {}
 var materials: Dictionary = {}
+var material_detail: RefCounted
+var roof_material: Material
+var detail_materials := {}
 
 func _init(_presentation: Node3D) -> void:
  skin_id = "rooftop_run"
@@ -69,6 +72,14 @@ func piece(root: Node3D, kind: String, color: String, at: Vector3, size: Vector3
  var mesh := MeshInstance3D.new()
  mesh.mesh = primitive(kind)
  mesh.material_override = materials[color]
+ if material_detail != null:
+  if color in ["leaf","leaf_light"]:
+   mesh.material_override=material_detail.foliage(materials[color])
+  elif kind=="roof" and roof_material != null:
+   mesh.material_override=roof_material
+  elif kind=="box" and color in ["stone","cream"]:
+   if not detail_materials.has(color): detail_materials[color]=material_detail.solid_stone(materials[color],Vector3.ONE,0.18 if color=="cream" else 0.30)
+   mesh.material_override=detail_materials[color]
  mesh.position = at
  mesh.scale = size
  root.add_child(mesh)

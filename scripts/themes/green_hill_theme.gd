@@ -1,6 +1,10 @@
 extends "res://scripts/themes/theme_definition.gd"
+const Density = preload("res://scripts/presentation_density.gd")
 ## Original Green Hill art, separated from the shared geometry and gameplay renderer.
 const GreenHillDecor = preload("res://scripts/decor/green_hill_decor.gd")
+
+const SELECTED := "res://assets/textures/green_hill/selected/"
+var _selected_textures: Dictionary = {}
 
 const TEXTURES := "res://assets/textures/green_hill/"
 
@@ -8,23 +12,67 @@ func _init() -> void:
  theme_id = "green_hill"
  display_name = "Green Hill"
  edge_trim_color = Color("549c24")
- floor_material = _texture_material("floor", Vector2(4, 4))
- top_material = _texture_material("top", Vector2(4, 4))
- cliff_material = _texture_material("cliff", Vector2(0.32, 0.32), false)
+ floor_material = _texture_material("1A", Vector2(4, 4))
+ top_material = _texture_material("5B", Vector2(2, 2))
  side_material = ShaderMaterial.new()
  side_material.shader = preload("res://scripts/themes/green_hill_wall.gdshader")
- side_material.set_shader_parameter("soil_texture", load(TEXTURES + "soil.png"))
- side_material.set_shader_parameter("fringe_texture", load(TEXTURES + "wall-fringe.png"))
- side_material.set_shader_parameter("turf_height", TablePresentation.RAIL_HEIGHT)
- floor_border_material = _border_material("floor-border")
- top_border_material = _border_material("top-border")
+ side_material.set_shader_parameter("soil_texture", _selected_texture("3A"))
+ side_material.set_shader_parameter("fringe_texture", _selected_texture("4B"))
+ side_material.set_shader_parameter("turf_height", TablePresentation.RAIL_HEIGHT + TablePresentation.RAIL_CAP_HEIGHT)
+ cliff_material = side_material.duplicate()
+ cliff_material.set_shader_parameter("show_fringe", false)
+ floor_border_material = _border_material("2B")
+ top_border_material = _border_material("6B")
  floor_border_width = 5.0
  top_border_width = 3.0
 
+func _selected_texture(id: String) -> Texture2D:
+ return preload("res://scripts/themes/theme_textures.gd").texture(SELECTED + id + ".png")
+
+func _guard_material() -> ShaderMaterial:
+ var result := ShaderMaterial.new()
+ result.shader = preload("res://scripts/themes/green_hill_guard.gdshader")
+ result.set_shader_parameter("surface_texture", _selected_texture("8B"))
+ return result
+
+func wall_distances(points: PackedVector2Array) -> PackedFloat32Array:
+ # Keep one continuous U coordinate around the contour, with a whole number
+ # of texture repeats at the closing edge. All meshes share world-height rows.
+ var distances := PackedFloat32Array([0.0])
+ var anchor := 0
+ for i in points.size():
+  distances.append(distances[-1] + points[i].distance_to(points[(i + 1) % points.size()]) * TablePresentation.SCALE)
+  if points[i].x < points[anchor].x or (is_equal_approx(points[i].x, points[anchor].x) and points[i].y < points[anchor].y):
+   anchor = i
+ var perimeter := distances[-1]
+ var fitted_length := maxf(1.0, roundf(perimeter / 0.64)) * 0.64
+ var scale_u := fitted_length / maxf(perimeter, 0.0001)
+ var origin := distances[anchor]
+ for i in distances.size(): distances[i] = (distances[i] - origin) * scale_u
+ return distances
+
+func wrap_wall_mesh(mesh: ArrayMesh, outline: PackedVector2Array) -> ArrayMesh:
+ var points := outline.duplicate()
+ if Geometry2D.is_polygon_clockwise(points): points.reverse()
+ var distances := wall_distances(points)
+ var arrays := mesh.surface_get_arrays(1)
+ var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+ var coords := PackedVector2Array()
+ for i in points.size():
+  for j in 6:
+   var u := distances[i + 1] if j == 1 or j == 3 or j == 4 else distances[i]
+   coords.append(Vector2(u, vertices[i * 6 + j].y))
+ arrays[Mesh.ARRAY_TEX_UV] = coords
+ var result := ArrayMesh.new()
+ for i in mesh.get_surface_count():
+  result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays if i == 1 else mesh.surface_get_arrays(i))
+  result.surface_set_material(i, mesh.surface_get_material(i))
+ return result
+
 func _texture_material(name: String, repeat_size: Vector2, world_mapping := true) -> ShaderMaterial:
  var result := ShaderMaterial.new()
- result.shader = preload("res://scripts/themes/texture_surface.gdshader")
- result.set_shader_parameter("surface_texture", load(TEXTURES + name + ".png"))
+ result.shader = preload("res://scripts/themes/green_hill_turf.gdshader") if name in ["1A", "5B"] else preload("res://scripts/themes/texture_surface.gdshader")
+ result.set_shader_parameter("surface_texture", load(TEXTURES + name + ".png") if name == "ramp" else _selected_texture(name))
  result.set_shader_parameter("repeat_size", repeat_size)
  result.set_shader_parameter("world_mapping", world_mapping)
  return result
@@ -32,11 +80,17 @@ func _texture_material(name: String, repeat_size: Vector2, world_mapping := true
 func _border_material(name: String) -> ShaderMaterial:
  var result := ShaderMaterial.new()
  result.shader = preload("res://scripts/themes/terrain_border.gdshader")
- result.set_shader_parameter("border_texture", load(TEXTURES + name + ".png"))
+ result.set_shader_parameter("border_texture", load(TEXTURES + name + ".png") if name == "ramp" else _selected_texture(name))
  return result
 
 func create_decor(presentation: Node3D) -> RefCounted:
  return GreenHillDecor.new(presentation)
+
+func combine_static_scenery(p: Node3D) -> void:
+ if not is_instance_valid(p) or p.theme_definition != self or not is_instance_valid(p.scenery_root): return
+ var combiner = preload("res://scripts/themes/green_hill_static_scenery.gd")
+ combiner.combine(p.scenery_root)
+ if is_instance_valid(p.decor_root): combiner.combine(p.decor_root)
 
 func material(color: Color, glow: float = 0.0) -> StandardMaterial3D:
  # Reuse the original collision-matched mesh silhouettes with a cohesive toy palette.
@@ -47,11 +101,18 @@ func material(color: Color, glow: float = 0.0) -> StandardMaterial3D:
   "b0e6ff": Color("fff2cb"), "4f97ff": Color("197ee5")
  }
  var result := super.material(palette.get(color.to_html(false), color), glow)
+ if color.to_html(false) in ["287e38", "52ae36", "b9b497", "bbb595"]:
+  result.albedo_color = Color.WHITE
+  result.albedo_texture = _selected_texture("10A" if color.to_html(false) in ["287e38", "52ae36"] else "11B")
+  result.uv1_triplanar = true
+  result.uv1_scale = Vector3.ONE * 1.5
  result.roughness = 0.87
  result.metallic_specular = 0.16
  return result
 
 func configure_environment(p: Node3D) -> void:
+ # Build routines finish synchronously; combine only after props are placed.
+ if not p.has_method("stream_checkpoint"): combine_static_scenery.call_deferred(p)
  for child: Node in p.get_children():
   if child is WorldEnvironment:
    var world: Environment = child.environment
@@ -188,7 +249,7 @@ func _palm(p: Node3D, base: Vector3, side: int, size: float, target: Node3D = nu
   _palm_frond(p, tip, angle, 1.10 + float(leaf % 3) * 0.09, leaf % 2 == 0, palm)
  var coconut = material(Color("704425"))
  for offset: Vector3 in [Vector3(-0.11, -0.07, 0), Vector3(0.10, -0.09, 0.06), Vector3(0, -0.12, -0.10)]:
-  p.mesh_node(p.sphere(0.11), coconut, tip + offset, palm)
+  p.mesh_node(Density.faceted(p.sphere(0.11, Density.DETAIL_SEGMENTS, 3)), coconut, tip + offset, palm)
 
 func _palm_frond(p: Node3D, base: Vector3, angle: float, length: float, bright: bool, parent: Node3D) -> void:
  var direction = Vector3(cos(angle), 0, sin(angle))
@@ -221,15 +282,15 @@ func _flower(p: Node3D, base: Vector3, size: float, target: Node3D = null) -> vo
  (p.scenery_root if target == null else target).add_child(flower)
  var green = material(Color("278c3e"))
  Atmosphere.foliage(green)
- p.mesh_node(p.cylinder(0.018, 0.37), green, Vector3(0, 0.185, 0), flower)
- var leaves = p.sphere(0.1)
+ p.mesh_node(p.cylinder(0.018, 0.37, Density.DETAIL_SEGMENTS), green, Vector3(0, 0.185, 0), flower)
+ var leaves = Density.faceted(p.sphere(0.1))
  var leaf = p.mesh_node(leaves, green, Vector3(0.08, 0.15, 0), flower)
  leaf.scale = Vector3(1.2, 0.22, 0.55)
  leaf.rotation.z = 0.45
  var petals = material(Color("ffcf24"))
  for i: int in 8:
   var angle = float(i) * TAU / 8.0
-  var petal = p.mesh_node(p.sphere(0.075), petals, Vector3(cos(angle) * 0.115, 0.42 + sin(angle) * 0.115, 0), flower)
+  var petal = p.mesh_node(p.sphere(0.075, Density.DETAIL_SEGMENTS, 3), petals, Vector3(cos(angle) * 0.115, 0.42 + sin(angle) * 0.115, 0), flower)
   petal.scale = Vector3(0.7, 1.0, 0.35)
   petal.rotation.z = angle - PI * 0.5
  var heart = p.mesh_node(p.cylinder(0.082, 0.05), material(Color("6f3c25")), Vector3(0, 0.42, 0.02), flower)
@@ -243,7 +304,7 @@ func _rock(p: Node3D, base: Vector3, size: float) -> void:
  mesh.rings = 3
  var stone := material(Color("bbb595"))
  Atmosphere.color(stone, "rock_tint", "tint")
- var rock = p.mesh_node(mesh, stone, base + Vector3.UP * size * 0.45, p.scenery_root)
+ var rock = p.mesh_node(Density.faceted(mesh), stone, base + Vector3.UP * size * 0.45, p.scenery_root)
  rock.rotation.y = base.z * 0.7
  rock.scale = Vector3(1.15, 0.8, 0.85)
 
@@ -289,7 +350,7 @@ func build_background(p: Node3D) -> void:
   p.scenery_root.add_child(cloud)
   for j: int in 3:
    if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-   var puff = p.mesh_node(p.sphere(1.2 + float(j % 2) * 0.3), cloud_material, Vector3(float(j) * 1.1, float(j % 2) * 0.2, 0), cloud)
+   var puff = p.mesh_node(Density.faceted(p.sphere(1.2 + float(j % 2) * 0.3, Density.IMPORTANT_SPHERE_SEGMENTS, Density.IMPORTANT_RINGS)), cloud_material, Vector3(float(j) * 1.1, float(j % 2) * 0.2, 0), cloud)
    puff.scale = Vector3(1.2, 0.58, 0.8)
 
 func build_study(p: Node3D, parent: Node3D, origin: Vector3) -> void:
@@ -308,4 +369,4 @@ func build_study(p: Node3D, parent: Node3D, origin: Vector3) -> void:
 
 func ramp_materials() -> Dictionary:
  return {"deck": _texture_material("ramp", Vector2(0.64, 1.04), false),
-  "edge": top_material, "support": material(Color("704322")), "accent": material(Color("ffe6a1"))}
+  "edge": _guard_material(), "support": material(Color("704322")), "accent": material(Color("ffe6a1"))}

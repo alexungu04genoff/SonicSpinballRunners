@@ -28,7 +28,9 @@ func source(theme: String, surface: String) -> Dictionary:
    name = "ramp_deck"
    parameters.merge({"surface_kind": 2, "base_color": Color("40646f"), "alternate_color": Color("829d9e")})
   else: parameters.raised_surface = theme != "ice_cap"
- var code := FileAccess.get_file_as_string("res://scripts/themes/" + name + ".gdshader")
+ var source_path := "res://tools/texture_sources/" + name + ".gdshader"
+ if not FileAccess.file_exists(source_path): source_path = "res://scripts/themes/" + name + ".gdshader"
+ var code := FileAccess.get_file_as_string(source_path)
  # Make the initial recipes tileable while retaining their existing visual motifs.
  # Runtime reads the images; these adjustments are not extra procedural shading.
  if prefix == "lava":
@@ -80,7 +82,7 @@ func bake(theme: String, surface: String, recipe: Dictionary, size: Vector2i) ->
   for i in 3: await process_frame
   await RenderingServer.frame_post_draw
   var suffix: String = ["", "-emission", "-surface"][channel]
-  var path := "res://assets/textures/" + theme + "/" + surface + suffix + ".png"
+  var path := "res://experiments/texture_reference/" + theme + "/" + surface + suffix + ".png"
   if viewport.get_texture().get_image().save_png(path) != OK: failures += 1
  print("BAKED | ", theme, "/", surface)
 
@@ -97,7 +99,7 @@ func run() -> void:
  var border := FileAccess.get_file_as_string("res://tools/texture_sources/theme_border.gdshader")
  var index := 0
  for theme: String in Sets.SETS:
-  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://assets/textures/" + theme))
+  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://experiments/texture_reference/" + theme))
   for surface: String in ["floor", "top", "wall", "facade", "ramp"]:
    await bake(theme, surface, source(theme, surface), Vector2i(1024, 512) if surface in ["wall", "facade"] else Vector2i(1024, 1024))
   for surface: String in ["floor-border", "top-border"]:

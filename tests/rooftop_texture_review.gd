@@ -15,7 +15,8 @@ func run() -> void:
   return
  root.size = Vector2i(1780, 1100)
  root.content_scale_size = root.size
- var theme := Rooftop.new()
+ var theme := preload("res://scripts/themes/theme_registry.gd").create("rooftop_run")
+ var include_reference := "--reference" in OS.get_cmdline_user_args()
  var before := [reference("paving"), reference("paving", {"raised_surface": true}), reference("masonry"), reference("masonry", {"facade": true, "top_height": 0.0}), reference("ramp", {"base_color": Color("bf7954"), "alternate_color": Color("dba27a"), "surface_kind": 2})]
  var after := [theme.floor_material, theme.top_material, theme.side_material, theme.cliff_material, theme.ramp_materials().deck]
  var canvas := CanvasLayer.new()
@@ -27,10 +28,10 @@ func run() -> void:
  label(canvas, "ROOFTOP RUN / EDITABLE TEXTURES", Vector2(30, 20), 34)
  label(canvas, "Original shader reference / editable PNGs. Cobblestone floor and contour borders; terracotta tops retained.", Vector2(30, 66), 21)
  for column in 5: label(canvas, HEADINGS[column], Vector2(30 + column * 350, 112), 21)
- for row in 2:
+ for row in (2 if include_reference else 1):
   var y := 158 + row * 250
-  label(canvas, "BEFORE / procedural reference" if row == 0 else "AFTER / imported PNG materials", Vector2(30, y), 25)
-  var materials: Array = before if row == 0 else after
+  label(canvas, "BEFORE / procedural reference" if include_reference and row == 0 else "CURRENT / canonical theme materials", Vector2(30, y), 25)
+  var materials: Array = before if include_reference and row == 0 else after
   for column in 5:
    var container := SubViewportContainer.new()
    container.position = Vector2(30 + column * 350, y + 40)
@@ -63,7 +64,7 @@ func run() -> void:
  for i in names.size():
   var item := TextureRect.new()
   item.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-  item.texture = load(Rooftop.TEXTURES + names[i] + ".png")
+  item.texture = theme.material_maps.albedo(names[i])
   item.position = Vector2(30 + i * 250, 730)
   item.size = Vector2(192, 192)
   item.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED

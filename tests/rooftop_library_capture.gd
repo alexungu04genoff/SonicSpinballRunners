@@ -34,7 +34,7 @@ func run() -> void:
  background.color = Color("203c49")
  background.size = Vector2(1600, 1100)
  canvas.add_child(background)
- var theme := RooftopTheme.new()
+ var theme := preload("res://scripts/themes/theme_registry.gd").create("rooftop_run")
  var library: RefCounted = theme.create_decor(null)
  var sizes := ["small", "medium", "large", "landmark"]
  for row in 3:

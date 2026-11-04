@@ -1,6 +1,6 @@
 extends Resource
 ## Derived data only. Never owns or edits the authored document.
-const VERSION := 8
+const VERSION := 9
 const ScenerySettings := preload("res://scripts/themes/scenery_settings.gd")
 const DEPENDENCIES := ["res://scripts/presentation.gd", "res://scripts/themes/themed_presentation.gd",
  "res://scripts/themes/terrain_border.gd", "res://scripts/endless/template_presenter.gd",
@@ -17,7 +17,7 @@ const DEPENDENCIES := ["res://scripts/presentation.gd", "res://scripts/themes/th
 @export var environment: Environment
 @export var light: Dictionary = {}
 @export var kind := "act"
-@export var surface_detail := "flat"
+@export var surface_detail := "source"
 @export var preload_materials: Array[Material] = []
 @export var preload_recipe: Resource
 @export var retirement_dependencies: Array[Resource] = []

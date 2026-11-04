@@ -1,4 +1,5 @@
 extends Node3D
+const Density = preload("res://scripts/presentation_density.gd")
 ## Collisionless character adapter. Only observations flow from the 2D simulation.
 enum State { SPIN, JUMP, TRICK, SHOWCASE, HOMING, IMPACT, FLIGHT }
 var specials: CharacterSpecials
@@ -73,8 +74,8 @@ func _build_visuals() -> void:
  spin_surface = ShaderMaterial.new()
  spin_surface.shader = preload("res://experiments/visual_lab/spin_ball.gdshader")
  var sphere := table.sphere(spin_radius)
- sphere.radial_segments = 32
- sphere.rings = 16
+ sphere.radial_segments = Density.HERO_SEGMENTS
+ sphere.rings = Density.IMPORTANT_RINGS
  table.mesh_node(sphere, spin_surface, Vector3.ZERO, spin_root)
  marker = Node3D.new()
  marker.name = "AuthoritativeBallContactMarker"

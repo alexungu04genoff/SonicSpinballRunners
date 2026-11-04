@@ -1,4 +1,5 @@
 extends "res://scripts/decor/decor_skin.gd"
+const Density = preload("res://scripts/presentation_density.gd")
 ## Original procedural sanctuary masonry. Units are authored cells; no physics nodes.
 const Atmosphere := preload("res://scripts/themes/theme_atmosphere.gd")
 var meshes: Dictionary = {}
@@ -35,13 +36,13 @@ func primitive(kind: String) -> Mesh:
  if meshes.has(kind): return meshes[kind]
  var result: Mesh
  if kind == "box": result = BoxMesh.new()
- elif kind == "sphere":
+ elif kind in ["sphere", "foliage", "cloud"]:
   var sphere := SphereMesh.new()
   sphere.radius = 1.0
   sphere.height = 2.0
-  sphere.radial_segments = 12
-  sphere.rings = 6
-  result = sphere
+  sphere.radial_segments = Density.ORDINARY_SEGMENTS if kind == "foliage" else Density.IMPORTANT_SPHERE_SEGMENTS
+  sphere.rings = Density.ORDINARY_RINGS if kind == "foliage" else Density.IMPORTANT_RINGS
+  result = Density.faceted(sphere) if kind in ["foliage", "cloud"] else sphere
  else:
   var cylinder := CylinderMesh.new()
   cylinder.top_radius = 0.0 if kind == "cone" else 1.0
@@ -72,7 +73,7 @@ func bar(root: Node3D, color: String, a: Vector3, b: Vector3, width: float) -> v
 func vine(root: Node3D, at: Vector3, length: float) -> void:
  for i in 5:
   var point := at + Vector3(sin(i * 1.7) * 0.035, -length * i / 5.0, 0.01)
-  piece(root, "sphere", "moss" if i % 2 == 0 else "leaf", point, Vector3(0.065, length * 0.15, 0.035))
+  piece(root, "foliage", "moss" if i % 2 == 0 else "leaf", point, Vector3(0.065, length * 0.15, 0.035))
 
 func column(root: Node3D, at: Vector3, height: float, radius: float, broken := false) -> void:
  box(root, "warm", at + Vector3.UP * 0.06, Vector3(radius * 2.7, 0.12, radius * 2.7))
@@ -114,7 +115,7 @@ func build_variant(variant: String) -> Node3D:
    for i in 3:
     var at := Vector3((i - 1) * 0.10, 0.21 + (i % 2) * 0.07, 0)
     bar(root, "moss", at * Vector3(1, 0, 1), at, 0.02)
-    piece(root, "sphere", "flower", at, Vector3(0.075, 0.035, 0.065))
+    piece(root, "foliage", "flower", at, Vector3(0.075, 0.035, 0.065))
   "broken_column":
    column(root, Vector3.ZERO, 0.58, 0.18, true)
    vine(root, Vector3(0.1, 0.52, 0.16), 0.45)
@@ -143,7 +144,7 @@ func build_variant(variant: String) -> Node3D:
    for i in 5: piece(root, "cylinder", "trunk", Vector3(i * 0.018, 0.17 + i * 0.17, 0), Vector3(0.075, 0.19, 0.075))
    for i in 7:
     var angle := TAU * i / 7.0
-    var leaf := piece(root, "sphere", "moss" if i % 2 else "leaf", Vector3(cos(angle) * 0.23, 1.02, sin(angle) * 0.23), Vector3(0.40, 0.055, 0.10))
+    var leaf := piece(root, "foliage", "moss" if i % 2 else "leaf", Vector3(cos(angle) * 0.23, 1.02, sin(angle) * 0.23), Vector3(0.40, 0.055, 0.10))
     leaf.rotation.y = -angle
     leaf.rotation.z = -0.20
   "sanctuary_belfry":

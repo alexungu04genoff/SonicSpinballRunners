@@ -1,6 +1,6 @@
 extends SceneTree
 ## Explicit initial-art bake. Runtime loads PNGs and never regenerates artwork.
-const OUTPUT := "res://assets/textures/rooftop_run/"
+const OUTPUT := "res://experiments/texture_reference/rooftop_run/"
 var viewport: SubViewport
 var swatch: ColorRect
 

@@ -166,5 +166,24 @@ func run() -> void:
   print("PINBALL_PACKED_FIDELITY | ", JSON.stringify({"baked": baked, "tolerance": tolerance, "error": error}))
   check(cylinder.radial_segments == 48, "Bake detail never mutates a shared primitive resource")
   hardware.free()
+ var field := TorusMesh.new()
+ field.rings = 48
+ field.ring_segments = 6
+ field.set_meta("preserve_visual_density", true)
+ var baked_field: TorusMesh = Detail.primitive(field)
+ check(baked_field != field and baked_field.rings == 48 and baked_field.ring_segments == 6, "Explicit thin VFX retain their authored silhouette through baking")
+ var organic := SphereMesh.new()
+ organic.radial_segments = 8
+ organic.rings = 4
+ var faceted := preload("res://scripts/presentation_density.gd").faceted(organic)
+ var facets: Array = faceted.surface_get_arrays(0)
+ var vertices: PackedVector3Array = facets[Mesh.ARRAY_VERTEX]
+ var normals: PackedVector3Array = facets[Mesh.ARRAY_NORMAL]
+ var valid := true
+ for i in range(0, vertices.size(), 3):
+  var center := (vertices[i] + vertices[i + 1] + vertices[i + 2]) / 3.0
+  valid = valid and normals[i].is_finite() and normals[i].dot(center) > 0.0
+  valid = valid and normals[i].is_equal_approx(normals[i + 1]) and normals[i].is_equal_approx(normals[i + 2])
+ check(valid, "Organic facets have finite outward normals shared across each triangle")
  print("PINBALL_MESH_BATCH_REGRESSION | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)

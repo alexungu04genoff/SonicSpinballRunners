@@ -1,5 +1,6 @@
 class_name TablePresentation
 extends Node3D
+const Density = preload("res://scripts/presentation_density.gd")
 ## No CollisionObject3D exists in this tree. This mapping is used for every visual.
 const PinballModels = preload("res://scripts/pinball_models.gd")
 ## Optional slot overrides: rubber, face, trim, mark, paddle and base. Rebuild to apply.
@@ -90,20 +91,21 @@ func mesh_node(mesh: Mesh, mat: Material, where: Vector3, parent: Node = self) -
  parent.add_child(instance)
  return instance
 
-func sphere(radius: float) -> SphereMesh:
+func sphere(radius: float, segments := Density.ORDINARY_SEGMENTS, rings := Density.ORDINARY_RINGS) -> SphereMesh:
  var mesh := SphereMesh.new()
  mesh.radius = radius
  mesh.height = radius * 2.0
- mesh.radial_segments = 16
- mesh.rings = 8
+ mesh.radial_segments = segments
+ mesh.rings = rings
  return mesh
 
-func cylinder(radius: float, height: float) -> CylinderMesh:
+func cylinder(radius: float, height: float, segments := Density.ORDINARY_SEGMENTS) -> CylinderMesh:
  var mesh := CylinderMesh.new()
  mesh.top_radius = radius
  mesh.bottom_radius = radius
  mesh.height = height
- mesh.radial_segments = 24
+ mesh.radial_segments = segments
+ mesh.rings = 1
  return mesh
 
 func line(a: Vector2, b: Vector2, radius: float, height: float, mat: Material, parent: Node = self) -> MeshInstance3D:
@@ -234,7 +236,7 @@ func _build_shared(bounds: Rect2) -> void:
   add_child(retracted)
   _paddle(flipper.length * SCALE, flipper.radius * SCALE * 0.45, 0.02 * height_scale, 0.006, material(Color("82978d")), retracted)
   flipper_retracted_visuals.append(retracted)
- ball_visual = mesh_node(sphere(ball.radius * SCALE), material(Color("4f97ff"), 0.12), map_point(ball.position, ball_height()))
+ ball_visual = mesh_node(sphere(ball.radius * SCALE, Density.HERO_SEGMENTS, Density.IMPORTANT_RINGS), material(Color("4f97ff"), 0.12), map_point(ball.position, ball_height()))
  var stripe := TorusMesh.new()
  stripe.inner_radius = ball.radius * SCALE * 0.96 if authored_mode else 0.134
  stripe.outer_radius = ball.radius * SCALE * 1.04 if authored_mode else 0.146
@@ -505,12 +507,12 @@ func terrain_top_material() -> Material:
  return material(RAIL_TOP_COLOR)
 
 func _paddle(length: float, radius: float, height: float, base: float, mat: Material, parent: Node3D) -> void:
- # Extrude the exact 2D capsule footprint; only the inset top trim is smaller.
+ # Approximate the authoritative 2D capsule with a matching-radius visual; only the inset top trim is smaller.
  var bar := BoxMesh.new()
  bar.size = Vector3(length, height, radius * 2.0)
  mesh_node(bar, mat, Vector3(length * 0.5, base + height * 0.5, 0), parent)
- mesh_node(cylinder(radius, height), mat, Vector3(0, base + height * 0.5, 0), parent)
- mesh_node(cylinder(radius, height), mat, Vector3(length, base + height * 0.5, 0), parent)
+ mesh_node(cylinder(radius, height, Density.HERO_SEGMENTS), mat, Vector3(0, base + height * 0.5, 0), parent)
+ mesh_node(cylinder(radius, height, Density.HERO_SEGMENTS), mat, Vector3(length, base + height * 0.5, 0), parent)
 
 func _floor_line(a: Vector2, b: Vector2, mat: Material) -> void:
  # Flat markings avoid tiny cylinder silhouettes and shadows flickering at shallow angles.

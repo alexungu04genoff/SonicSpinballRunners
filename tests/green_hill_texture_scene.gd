@@ -29,8 +29,8 @@ func run() -> void:
  # Capture the real world viewport directly, so HUD panels cannot hide borders.
  var document: String = game.authored_document.fingerprint()
  var ball: int = game.ball.get_instance_id()
- for variant: String in ["before", "after"]:
-  var theme := GreenHill.new()
+ for variant: String in (["before", "after"] if "--reference" in OS.get_cmdline_user_args() else ["after"]):
+  var theme := preload("res://scripts/themes/theme_registry.gd").create("green_hill")
   if variant == "before":
    theme.floor_material = reference("grass")
    theme.top_material = reference("grass", {"raised_turf": true})

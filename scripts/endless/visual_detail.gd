@@ -51,6 +51,7 @@ static func _crosses(points: PackedVector2Array, closed := true) -> bool:
 
 static func primitive(source: PrimitiveMesh) -> PrimitiveMesh:
  var mesh: PrimitiveMesh = source.duplicate()
+ if source.get_meta("preserve_visual_density", false): return mesh
  if mesh is SphereMesh:
   mesh.radial_segments = mini(mesh.radial_segments, 16)
   mesh.rings = mini(mesh.rings, 7)

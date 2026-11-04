@@ -3310,3 +3310,10 @@ Alex spotted the missing Goal while testing Lockbox. The saved Goal was present;
 # ATMOSPHERE PLAY USES PROTOTYPE TOO — 2026-11-04
 
 Alex asked which lighting tool is current and wanted the same Prototype Play handoff. Atmosphere Lab.cmd and Lighting Lab.cmd open the same editor. Main Play and the old copy-playtest-args slot now say Play Prototype. They launch the loaded Act and theme with the visible atmosphere, including unsaved draft/variant edits; Show original captures the comparison. A validated user-local snapshot preserves color/numeric precision and travels through the existing run plan and atmosphere renderer. Nothing is published to production variants. Restart retains the captured lighting; click Play in the Lab again for new edits. Scenery still uses its saved sidecar. The editor stays open as an inspection tool, and its local pause button now says Pause preview. Thirteen focused handoff/runtime checks passed both headlessly and rendered; the 41 normal planning checks still pass. See [the current Lab workflow](LIGHTING_LAB.md).
+
+
+# ONE VISUAL SOURCE — 2026-11-04
+
+Grandpa Green Hill was partly a Git problem: selected art lived only in the dirty workspace, so a clean checkout faithfully rendered the older committed world. The current theme definitions, not Prototype itself, are the source of truth. Selected/approved artwork now belongs with those definitions. Registry-prepared previews and imported texture loading keep authoring and shipping on the same source. The bake-only flat relief conversion is retired in v9; Hybrid detail survives baking. Old initial-art generators write reference output outside production. See [visual pipeline](VISUAL_PIPELINE.md).
+
+The geometry language is now explicit in [pinball vocabulary](PINBALL_VOCABULARY.md): ordinary 8, important 10–12, hero 12–16, selective organic facets, material-appropriate smooth metal. Magnetic outlines keep 48 even when baked. Terrain physics is not migrated here; the 16-equivalent preference and the current 24-step library are documented separately.

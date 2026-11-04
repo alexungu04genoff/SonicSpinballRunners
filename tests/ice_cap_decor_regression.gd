@@ -19,7 +19,7 @@ func only_visual(node: Node) -> bool:
  return true
 
 func _initialize() -> void:
- var theme := IceTheme.new()
+ var theme := preload("res://scripts/themes/theme_registry.gd").create("ice_cap")
  var skin: RefCounted = theme.create_decor(null)
  var built: Dictionary = {}
  for size: String in ["small", "medium", "large", "landmark"]:

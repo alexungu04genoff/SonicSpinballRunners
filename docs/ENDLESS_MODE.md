@@ -36,7 +36,7 @@ Sidecars record their source and presentation-pipeline fingerprints, including e
 
 ### Flat surface trial
 
-The shared offline baker now clones recognized surface materials and removes the Rooftop/Chemical normal-map calculations, Green Hill procedural grass bump calculations and standard-material normal/height maps. These flat shaders and their surviving color/material parameters are saved in the sidecars before batching and warm-manifest generation. No runtime shader rewriting is required. `flat_surfaces.gd` defines this trial policy, participates in pipeline fingerprints, and applies to both editor **Bake** and **Bake Endless.cmd**. The original shaders remain available for editor previews and standalone Act play. Returning to raised detail requires changing this bake policy and rebuilding the sidecars.
+Bake v9 preserves the canonical theme materials, including selective normal and height detail. The earlier bake-only flat-surface experiment is retired; see [visual pipeline ownership](VISUAL_PIPELINE.md). Rebuild old sidecars after this change.
 
 Albedo, roughness/AO/metallic maps, scenery, lighting transitions, animated water and screen effects remain. Texture artwork can still contain painted grooves or shading; this pass removes computed surface relief, not those painted marks or modeled geometry.
 
@@ -134,7 +134,7 @@ Useful focused checks:
 - `tests/endless_retirement_regression.gd`: bounded gradual release and shared-resource ownership.
 - `tests/endless_reuse_regression.gd`: retained identities, transforms, visibility/culling, animation bindings and interrupted-build cleanup.
 - `tests/endless_cache_regression.gd`, `tests/geometry_bake_regression.gd`: serialized assets and collision equality.
-- `tests/flat_surfaces_regression.gd`: offline material cloning, parameter preservation and disk serialization. `tests/endless_bake_audit.gd` verifies the complete published pool after baking, without repairing missing or stale assets.
+- `tests/theme_resolution_regression.gd`: canonical material identity, parameter preservation and disk serialization. `tests/endless_bake_audit.gd` verifies the complete published pool after baking, without repairing missing or stale assets.
 - `tests/endless_scene_smoke.gd`: startup scope, readiness protection, bounded caches, theme-only preloading, blending and checkpoints. `--captures` saves images; `--require-bakes` rejects fallback; `--transitions=3` shortens the run.
 - `tests/endless_regression.gd`, `tests/endless_detail_regression.gd`, `tests/endless_batch_regression.gd`, `tests/endless_border_regression.gd`: ordering/seams and offline geometry safeguards.
 

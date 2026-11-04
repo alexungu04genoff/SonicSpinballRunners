@@ -57,7 +57,7 @@ func run() -> void:
  stage.add_child(stage._world_environment)
  stage._key_light = DirectionalLight3D.new()
  stage.add_child(stage._key_light)
- var theme := ChemicalTheme.new()
+ var theme := preload("res://scripts/themes/theme_registry.gd").create("chemical_plant")
  theme.configure_environment(stage)
  var library := ChemicalDecor.new(stage)
  var plinth_material := _material(Color("283c55"))

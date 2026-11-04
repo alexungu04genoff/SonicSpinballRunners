@@ -34,7 +34,7 @@ func run() -> void:
  background.color = Color("101e32")
  background.size = Vector2(1600, 1385)
  canvas.add_child(background)
- var theme := AquariumTheme.new()
+ var theme := preload("res://scripts/themes/theme_registry.gd").create("aquarium_park")
  var library: RefCounted = theme.create_decor(null)
  var sizes := ["small", "medium", "large", "landmark"]
  for row in 4:

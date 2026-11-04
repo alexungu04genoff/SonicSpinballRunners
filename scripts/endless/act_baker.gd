@@ -23,7 +23,7 @@ func _ready() -> void:
  heading.add_theme_font_size_override("font_size", 28)
  panel.add_child(heading)
  var description := Label.new()
- description.text = "Bakes collision, optimized meshes, flat surface materials, scenery and warm-up plans to disk.\nEndless loads these files and stages live instances and device-specific graphics ahead. Your saved Act stays unchanged."
+ description.text = "Bakes collision, optimized meshes, canonical theme materials, scenery and warm-up plans to disk.\nEndless loads these files and stages live instances and device-specific graphics ahead. Your saved Act stays unchanged."
  panel.add_child(description)
  status = Label.new()
  status.text = "Choose a saved Act to bake."

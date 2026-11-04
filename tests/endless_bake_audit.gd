@@ -26,20 +26,19 @@ func run() -> void:
   var background: Resource = load(Bake.theme_path(theme))
   check(background is Bake and background.matches_pipeline(theme, fingerprint), "Fresh shared theme: " + theme)
   if not background is Bake: continue
-  check(background.surface_detail == "flat" and background.visual_recipe.has_warm_manifest(), "Flat theme has an offline warm manifest: " + theme)
+  check(background.surface_detail == "source" and background.visual_recipe.has_warm_manifest(), "Canonical theme has an offline warm manifest: " + theme)
   for material: Material in background.preload_materials:
-   if material is ShaderMaterial and material.shader:
-    check(not material.shader.code.contains("rooftop_normal.gdshaderinc") and not material.shader.code.contains("NORMAL=normalize(NORMAL-gradient)"), "Saved shader omits recognized relief: " + theme)
-    check(material.get_shader_parameter("relief_normal") == null, "Saved shader omits normal texture: " + theme)
-   elif material is BaseMaterial3D:
-    check(not material.normal_enabled and not material.heightmap_enabled, "Saved standard material has no relief: " + theme)
+   if material is ShaderMaterial and material.shader and material.shader.code.contains("rooftop_normal.gdshaderinc"):
+    check(material.get_shader_parameter("relief_normal") is Texture2D, "Canonical relief shader keeps its normal texture: " + theme)
+   elif material is BaseMaterial3D and material.normal_enabled:
+    check(material.normal_texture != null, "Enabled canonical normal mapping keeps its texture: " + theme)
   for path: String in paths:
    var document: Resource = Document.load_document(path).document
    var baked: Resource = load(Bake.path_for(path, theme))
    check(baked is Bake and baked.matches(document, theme, fingerprint), "Fresh Act: " + path + " / " + theme)
    if not baked is Bake: continue
    check(baked.has_validated_collisions(document), "Act includes successful physics validation and complete collisions")
-   check(baked.surface_detail == "flat" and baked.visual_recipe.has_warm_manifest(), "Flat Act has an offline warm manifest")
+   check(baked.surface_detail == "source" and baked.visual_recipe.has_warm_manifest(), "Canonical Act has an offline warm manifest")
    check(not baked.collisions.is_empty() and not baked.visual_recipe.records.is_empty(), "Saved Act contains collisions and visual records")
    variants += 1
    await process_frame

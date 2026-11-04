@@ -1,15 +1,28 @@
 extends "res://scripts/themes/theme_definition.gd"
 ## A luminous entertainment district, entirely outside gameplay authority.
 const Decor = preload("res://scripts/decor/casino_night_decor.gd")
-const FLOOR = preload("res://scripts/themes/casino_floor.gdshader")
-const WALL = preload("res://scripts/themes/casino_wall.gdshader")
+const Selected = preload("res://scripts/themes/casino_selected_materials.gd")
 var _library: RefCounted
+var _ramp_deck_material: Material
+var _ramp_guard_material: Material
+var _facade_outline := PackedVector2Array()
+var _facade_distances := PackedFloat32Array()
 
 func _init() -> void:
  theme_id = "casino_night"
  display_name = "Casino Night"
  edge_trim_color = Color("c48b35")
- _apply_texture_set()
+ floor_material = preload("res://scripts/themes/terrain_texture_sets.gd").material(theme_id, "floor")
+ floor_border_width = 6.0
+ top_border_width = 4.0
+ # Phase 3: retained floor and neon lenses keep their current materials.
+ top_material = Selected.surface("5A", 0, Vector2(1.6, 1.6))
+ side_material = Selected.surface("3A", 1, Vector2(0.96, 1.0))
+ cliff_material = Selected.surface("9A", 4, Vector2(0.96, 1.6))
+ floor_border_material = Selected.surface("2A", 2, Vector2.ONE)
+ top_border_material = Selected.surface("6B", 2, Vector2.ONE)
+ _ramp_deck_material = Selected.surface("7Cards", 3, Vector2(1.0, 2.2))
+ _ramp_guard_material = Selected.surface("8B", 2, Vector2.ONE)
  _library = Decor.new(null)
 
 func _shader(source: Shader) -> ShaderMaterial:
@@ -142,7 +155,7 @@ func build_edges(p: Node3D) -> void:
  await _batch_background(local, p)
 
 func ramp_materials() -> Dictionary:
- return {"deck": _texture_ramp(),
+ return {"deck": _ramp_deck_material, "border": _ramp_guard_material,
   "edge": material(Color("e7bd62")), "support": material(Color("742641")),
   "accent": material(Color("b52349"))}
 
@@ -184,3 +197,76 @@ func build_study(_p: Node3D, parent: Node3D, origin: Vector3) -> void:
  plinth.material_override = side_material
  var top: MeshInstance3D = _library.box(parent, "blue", Vector3(0, 0.01, 0), Vector3(2.8, 0.035, 2.8))
  top.material_override = floor_material
+
+func wall_distances(points: PackedVector2Array) -> PackedFloat32Array:
+ # A fixed physical pitch keeps separate wall and facade meshes at the same scale.
+ # Do not stretch each outline independently to fit a whole number of bays.
+ var distances := PackedFloat32Array([0.0])
+ var anchor := 0
+ for i in points.size():
+  distances.append(distances[-1] + points[i].distance_to(points[(i + 1) % points.size()]) * TablePresentation.SCALE)
+  if points[i].x < points[anchor].x or (is_equal_approx(points[i].x, points[anchor].x) and points[i].y < points[anchor].y):
+   anchor = i
+ var origin := distances[anchor]
+ for i in distances.size(): distances[i] -= origin
+ return distances
+
+func set_facade_reference(points: PackedVector2Array) -> void:
+ _facade_outline = points.duplicate()
+ _facade_distances = wall_distances(points)
+
+func _facade_coordinate(point: Vector2) -> Vector2:
+ var closest := INF
+ var coordinate := 0.0
+ for i in _facade_outline.size():
+  var a := _facade_outline[i]
+  var b := _facade_outline[(i + 1) % _facade_outline.size()]
+  var projected := Geometry2D.get_closest_point_to_segment(point, a, b)
+  var separation := point.distance_to(projected)
+  if separation < closest:
+   closest = separation
+   coordinate = _facade_distances[i] + a.distance_to(projected) * TablePresentation.SCALE
+ return Vector2(coordinate, closest)
+
+func _shared_facade_span(a: Vector2, b: Vector2) -> PackedFloat32Array:
+ if _facade_outline.is_empty(): return PackedFloat32Array()
+ var start := _facade_coordinate(a)
+ var end := _facade_coordinate(b)
+ var middle := _facade_coordinate((a + b) * 0.5)
+ # Only coincident edges inherit the facade coordinates. Interior walls keep
+ # their own continuous contour mapping instead of projecting across corners.
+ if maxf(maxf(start.y, end.y), middle.y) > 0.05: return PackedFloat32Array()
+ var length := a.distance_to(b) * TablePresentation.SCALE
+ var perimeter := _facade_distances[-1] - _facade_distances[0]
+ var delta := end.x - start.x
+ if absf(delta) > perimeter * 0.5: delta -= signf(delta) * perimeter
+ if absf(absf(delta) - length) > 0.001: return PackedFloat32Array()
+ return PackedFloat32Array([start.x, start.x + delta])
+
+func wrap_wall_mesh(mesh: ArrayMesh, outline: PackedVector2Array) -> ArrayMesh:
+ var points := outline.duplicate()
+ if Geometry2D.is_polygon_clockwise(points): points.reverse()
+ var distances := wall_distances(points)
+ var arrays := mesh.surface_get_arrays(1)
+ var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+ var coords := PackedVector2Array()
+ # Anchor the rest of the contour to the first shared exterior edge as well.
+ for i in points.size():
+  var shared := _shared_facade_span(points[i], points[(i + 1) % points.size()])
+  if shared.size() == 2:
+   var offset := shared[0] - distances[i]
+   for j in distances.size(): distances[j] += offset
+   break
+ for i in points.size():
+  var shared := _shared_facade_span(points[i], points[(i + 1) % points.size()])
+  var start_u := shared[0] if shared.size() == 2 else distances[i]
+  var end_u := shared[1] if shared.size() == 2 else distances[i + 1]
+  for j in 6:
+   var u := end_u if j == 1 or j == 3 or j == 4 else start_u
+   coords.append(Vector2(u, vertices[i * 6 + j].y))
+ arrays[Mesh.ARRAY_TEX_UV] = coords
+ var result := ArrayMesh.new()
+ for i in mesh.get_surface_count():
+  result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays if i == 1 else mesh.surface_get_arrays(i))
+  result.surface_set_material(i, mesh.surface_get_material(i))
+ return result
