@@ -67,6 +67,7 @@ func _build(theme_id: String, id: int) -> void:
  await p.prepare_act(runtime, Rect2(Vector2.ZERO, documents[id].red_gutter_bounds().end), documents[id].cell_size)
  p.stage = "environment"
  theme.configure_environment(p)
+ preload("res://scripts/rendering_options.gd").register_light(p._key_light)
  await p.stream_checkpoint()
  p.stage = "capture"
  var recipe := Recipe.new()

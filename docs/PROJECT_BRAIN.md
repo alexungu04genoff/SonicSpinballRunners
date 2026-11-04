@@ -1,5 +1,11 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Sunset does not own the GPU budget — 2026-11-04
+
+Bro separated shadow appearance from device quality. Atmosphere still owns enablement, opacity, softness, biases and distance. `RenderingOptions` now owns live 2048/4096/8192 resolution, 1/2/4 cascades and the existing Ultra + FXAA toggle in the device-local graphics file. Lab, Prototype and streaming/warm-up lights follow one policy; deliberately shadowless backgrounds stay that way. Old atmosphere cascade fields are ignored in memory and disappear only on explicit save. No art source migration or new visual default.
+
+The portable Atmosphere Lab exposes both axes separately under Shadows, with uncapped FPS for Alex's work-laptop comparisons. 8192/4 stays the no-preference baseline. Bro's desktop does not get to vote for the laptop. See [device shadow quality](DEVICE_SHADOW_QUALITY.md).
+
 ## One game's polygon language — 2026-11-04
 
 Bro followed the new Prototype capture path through the actual disk bake before touching density. The 48-side bumper accusation was partly false: the bake already made it 16. The sunflower was still guilty — 2,496 baked triangles became 96, with reusable wedge petals. The decorative loop is now 16 steps after 64/24/16 production comparisons. A closer camera caught black upper faces at low density; the old radial-angle material classification was wrong for the superellipse, so actual face normals now choose turf versus vertical cliff projection. No shader or terrain-contour migration.

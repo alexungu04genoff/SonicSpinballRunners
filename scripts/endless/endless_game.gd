@@ -478,7 +478,7 @@ func _blend_lighting(from_zone: int, to_zone: int, weight: float) -> void:
  light.quaternion = before.lighting.quaternion.slerp(after.lighting.quaternion, weight)
  for property: String in ["light_color", "light_energy", "light_specular", "light_angular_distance", "shadow_opacity", "shadow_bias", "shadow_normal_bias", "directional_shadow_max_distance"]:
   light.set(property, lerp(before.lighting[property], after.lighting[property], weight))
- for property: String in ["shadow_enabled", "directional_shadow_mode"]:
+ for property: String in ["shadow_enabled"]:
   light.set(property, before.lighting[property] if weight < 0.5 else after.lighting[property])
  var target: Environment = presentation._world_environment.environment
  for property: String in ["ambient_light_color", "ambient_light_energy", "tonemap_exposure", "ambient_light_sky_contribution", "adjustment_contrast", "adjustment_saturation", "glow_intensity", "glow_bloom", "glow_hdr_threshold", "fog_density", "fog_light_color", "fog_light_energy", "fog_sky_affect"]:

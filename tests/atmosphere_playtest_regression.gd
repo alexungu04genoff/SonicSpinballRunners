@@ -2,6 +2,7 @@ extends SceneTree
 ## Lab capture and actual Prototype application without publishing atmosphere data.
 const Lab = preload("res://experiments/lighting_lab/lighting_lab.gd")
 const Snapshot = preload("res://scripts/atmosphere/playtest_snapshot.gd")
+const Options = preload("res://scripts/rendering_options.gd")
 const ACT := "res://data/acts/Experiments/Lockbox.tres"
 class PreviewSession:
  extends "res://scripts/prototype/session.gd"
@@ -18,6 +19,10 @@ func check(value: bool, label: String) -> void:
  else: failures += 1; push_error("FAIL | " + label)
 
 func run() -> void:
+ Options.settings_path = "user://atmosphere-playtest-graphics.cfg"
+ Options.set_shadow_resolution(4096)
+ Options.set_shadow_cascades(2)
+ Options.set_smooth_shadows(true)
  root.size = Vector2i(1600, 1000)
  var production := "res://data/atmospheres/green_hill.cfg"
  var before := FileAccess.get_sha256(production)
@@ -26,6 +31,7 @@ func run() -> void:
  root.add_child(lab)
  for frame in 6: await process_frame
  var controls: CanvasLayer = lab.lighting_controls
+ check(lab.presentation._key_light.directional_shadow_mode == DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS, "Lab inherits device cascades")
  controls.set_value("env/tonemap_exposure", 0.65)
  controls.set_value("sun_yaw", -25.0)
  var request := lab.prototype_playtest_request()
@@ -62,6 +68,15 @@ func run() -> void:
  var game: Node = session.game
  check(is_instance_valid(game) and game.started, "Prototype starts the single Act with the unsaved Lab atmosphere")
  if is_instance_valid(game) and game.started:
+  check(Options.shadow_resolution() == 4096 and Options.shadow_cascades() == 2 and Options.smooth_shadows_enabled(), "Prototype retains device quality from the Lab")
+  check(game.presentation._key_light.directional_shadow_mode == DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS and game.view.screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA, "Prototype foreground inherits device cascades and FXAA")
+  for background: Dictionary in game.backgrounds.values():
+   check(background.layer.light.directional_shadow_mode == DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS and not background.layer.light.shadow_enabled and background.layer.view.screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA, "Streamed backdrop inherits policy and remains shadowless")
+  for count: int in [1, 4, 2]:
+   Options.set_shadow_cascades(count)
+   game._last_atmosphere_blend = Vector3(-1, -1, -1)
+   game._blend_lighting(0, 0, 0.0)
+   check(game.presentation._key_light.directional_shadow_mode == Options.SHADOW_CASCADES.find(count), "Runtime atmosphere blend cannot restore old cascades")
   var atmosphere = game.backgrounds[0].layer.atmosphere
   check(game.active.plan.atmosphere.values == loaded.preview.values and game.active.plan.atmosphere.id == "lab_preview", "Run planning retains the exact preview instead of selecting a weighted variant")
   check(is_equal_approx(game.presentation._world_environment.environment.tonemap_exposure, 0.65) and is_equal_approx(atmosphere.environment.tonemap_exposure, 0.65), "Foreground and background both apply the Lab exposure")

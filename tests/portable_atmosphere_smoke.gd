@@ -3,6 +3,7 @@ extends Node
 const Workspace = preload("res://scripts/portable_workspace.gd")
 const Variants = preload("res://scripts/atmosphere/variants.gd")
 const Scenery = preload("res://scripts/themes/scenery_settings.gd")
+const Options = preload("res://scripts/rendering_options.gd")
 var failures := 0
 var checks := 0
 
@@ -30,6 +31,16 @@ func run() -> void:
  var act_path: String = game.authored_act_path
  check(act_path.begins_with(Workspace.act_directory()) and FileAccess.file_exists(act_path), "Lab starts with an editable external Act")
  var panel = game.lighting_controls
+ if "--graphics-reload" in OS.get_cmdline_user_args():
+  check(Options.shadow_resolution() == 4096 and Options.shadow_cascades() == 2 and Options.smooth_shadows_enabled(), "Fresh portable process reloads device preferences")
+ for size: int in [8192, 2048, 4096]:
+  panel.shadow_resolution.item_selected.emit(panel.shadow_resolution.get_item_index(size))
+  check(Options.shadow_resolution() == size, "Portable live atlas resolution " + str(size))
+ for count: int in [1, 4, 2]:
+  panel.shadow_cascades.item_selected.emit(panel.shadow_cascades.get_item_index(count))
+  check(game.presentation._key_light.directional_shadow_mode == Options.SHADOW_CASCADES.find(count), "Portable live cascade count " + str(count))
+ panel.smooth_shadows.button_pressed = true
+ panel.tabs.current_tab = panel.tabs.get_tab_idx_from_control(panel.tabs.get_node("Shadows"))
  var variants = panel.variants
  variants.context.selected = "default"
  variants.load_selected()
@@ -53,6 +64,9 @@ func run() -> void:
  panel.save_preset()
  check(FileAccess.file_exists(panel.settings_path), "User-local Lab drafts save successfully")
  if DisplayServer.get_name() != "headless":
+  for frame in 4: await get_tree().process_frame
+  panel.tabs.get_node("Shadows").scroll_vertical = 10000
+  for frame in 2: await get_tree().process_frame
   await RenderingServer.frame_post_draw
   get_tree().root.get_texture().get_image().save_png("user://portable-atmosphere.png")
  game.queue_free()
@@ -61,6 +75,7 @@ func run() -> void:
  get_tree().root.add_child(game)
  await get_tree().process_frame
  await get_tree().process_frame
+ check(game.presentation._key_light.directional_shadow_mode == DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS and game.view.screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA, "Fresh portable Lab inherits cascades and FXAA")
  check(game.lighting_controls.scenery.values.seed == 123456 and is_equal_approx(float(Variants.new().read("green_hill")[0].weight), weight), "A fresh Lab instance reloads saved scenery and variants")
  for theme: String in ["chemical_plant", "casino_night", "rooftop_run"]:
   check(game.set_theme(theme), "Theme selector accepts " + theme)

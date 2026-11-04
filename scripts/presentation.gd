@@ -162,7 +162,7 @@ func _build_shared(bounds: Rect2) -> void:
   _key_light.light_energy = 1.15
   _key_light.shadow_enabled = true
   # Reserve shadow detail near the camera, including close-up views of the ball.
-  _key_light.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+  preload("res://scripts/rendering_options.gd").register_light(_key_light)
   _key_light.directional_shadow_blend_splits = true
   _key_light.shadow_bias = 0.1
   _key_light.shadow_normal_bias = 2.0

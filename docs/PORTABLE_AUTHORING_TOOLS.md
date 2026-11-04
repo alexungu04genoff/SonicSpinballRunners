@@ -23,6 +23,20 @@ Use **Load Act** to inspect another saved level, or **Reload Act** after editing
 it in Geometry Editor. Theme selection, lighting, sky, palette, selective hue,
 glow, fog and scenery controls are included.
 
+For the work-laptop shadow experiment, open **Shadows** and scroll to **Device
+Shadow Quality**. Change **Resolution** (2048 / 4096 / 8192), **Cascades**
+(1 / 2 / 4), and **Smooth shadows · Ultra + FXAA** independently, without a
+restart. Turn **VSync** off to compare uncapped FPS. The active choices appear
+below the controls; no-preference defaults remain 8192 / 4 with project filtering.
+Try 8192/4, 4096/4, 4096/2, 2048/2 and 4096/1 with the same view and atmosphere.
+
+Device graphics save immediately to `graphics_settings.cfg` in
+`%APPDATA%\Godot\app_userdata\Sonic Spinball Authoring Tools`, independently of
+portable Atmospheres and Lab drafts. **Save / Reload / Reset / Show Original**
+affect atmosphere only. **Play Prototype** uses the same device preferences in
+its separate process. No Godot installation is required. Judge quality and
+performance on the laptop; these options do not select new production defaults.
+
 - **Save Variant** writes the selected Theme's `.cfg` in **Atmospheres**.
 - **Scenery Save** writes a `.scenery.cfg` beside the loaded Act.
 - **Lab draft Save** stores local drafts in

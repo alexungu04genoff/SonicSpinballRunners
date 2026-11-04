@@ -60,7 +60,6 @@ const GROUPS := {
   ["Depth bias", "sun/shadow_bias", "number", 0.0, 2.0, 0.01],
   ["Normal bias", "sun/shadow_normal_bias", "number", 0.0, 8.0, 0.05],
   ["Shadow distance", "sun/directional_shadow_max_distance", "number", 10.0, 500.0, 1.0],
-  ["Shadow maps", "sun/directional_shadow_mode", "shadow"],
  ],
  "Scenery": [],
 }
@@ -129,9 +128,18 @@ static func specs(theme: String) -> Dictionary:
  result["env/background_color"] = ["Background color", "env/background_color", "color"]
  return result
 
+# Retired device-quality field. Drop it only in memory or on an explicit save.
+const LEGACY_SHADOW_MODE := "sun/directional_shadow_mode"
+
+static func appearance_values(values: Dictionary) -> Dictionary:
+ var result := values.duplicate(true)
+ result.erase(LEGACY_SHADOW_MODE)
+ return result
+
 static func valid_values(theme: String, values: Dictionary) -> bool:
  var allowed := specs(theme)
  for key: Variant in values:
+  if key == LEGACY_SHADOW_MODE: continue
   if not allowed.has(key): return false
   var spec: Array = allowed[key]
   var value: Variant = values[key]
@@ -142,8 +150,8 @@ static func valid_values(theme: String, values: Dictionary) -> bool:
     if not value is bool: return false
    "number":
     if typeof(value) not in [TYPE_FLOAT, TYPE_INT] or not is_finite(float(value)) or value < spec[3] or value > spec[4]: return false
-   "tone", "shadow":
-    if not value is int or value < 0 or value > (4 if spec[2] == "tone" else 2): return false
+   "tone":
+    if not value is int or value < 0 or value > 4: return false
    "fog_mode":
     if not value is int or value not in [0, 1]: return false
  return true

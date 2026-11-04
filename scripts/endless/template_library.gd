@@ -103,6 +103,7 @@ func prepare(game: Node, act_paths: Array = Plan.PATHS, validate_pool := true, l
  _view.size = Vector2i(256, 256)
  _view.own_world_3d = true
  _view.msaa_3d = game.view.msaa_3d
+ preload("res://scripts/rendering_options.gd").register_view(_view)
  _view.render_target_update_mode = SubViewport.UPDATE_DISABLED
  add_child(_view)
 
@@ -326,9 +327,10 @@ func _warm_recipe(recipe: Resource, theme_id: String, kind := "act", retain_vari
  light.light_color = lights[theme_id].color
  light.light_energy = lights[theme_id].energy
  if not is_background:
-  for property: String in ["shadow_enabled", "directional_shadow_mode", "directional_shadow_blend_splits", "shadow_bias", "directional_shadow_max_distance"]:
+  for property: String in ["shadow_enabled", "directional_shadow_blend_splits", "shadow_bias", "directional_shadow_max_distance"]:
    light.set(property, _game.presentation._key_light.get(property))
   light.shadow_normal_bias = lights[theme_id].bias
+ preload("res://scripts/rendering_options.gd").register_light(light)
  root.add_child(light)
  var camera := Camera3D.new()
  root.add_child(camera)

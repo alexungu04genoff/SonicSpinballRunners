@@ -1,5 +1,7 @@
 # Atmosphere authoring
 
+**Device shadow quality (2026-11-04):** Shadows now separates artistic appearance from device-local resolution, cascades and smooth-shadow filtering/FXAA. Legacy cascade fields load without controlling quality; loading never rewrites source files. See [device shadow quality and laptop comparison](DEVICE_SHADOW_QUALITY.md).
+
 **Production variants (2026-11-01):** Named Theme atmospheres, weights, protected defaults, independent terrain-category/background/foliage/neon hue controls and deterministic Zone selection are now available in the same Lab. See [Atmosphere Variants](ATMOSPHERE_VARIANTS.md). Older lab-only ownership statements below describe the initial authoring pass.
 
 **Renderer update — 2026-11-01:** Production gameplay and editors now also default to Forward+/Vulkan. Earlier statements below about unchanged production defaults describe the original lab rollout. Saved atmosphere presets remain lab-only.

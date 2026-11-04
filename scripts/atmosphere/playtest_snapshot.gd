@@ -11,6 +11,8 @@ static func validation_error(preview: Dictionary) -> String:
 static func save_preview(preview: Dictionary) -> Dictionary:
  var error := validation_error(preview)
  if not error.is_empty(): return {"error": error, "path": ""}
+ preview = preview.duplicate(true)
+ preview.values = Fields.appearance_values(preview.values)
  var directory := "user://atmosphere_playtests"
  var result := DirAccess.make_dir_recursive_absolute(directory)
  var path := directory.path_join("preview_%d_%d.bin" % [OS.get_process_id(), Time.get_ticks_usec()])
@@ -31,4 +33,6 @@ static func read_preview(path: String) -> Dictionary:
  if not data is Dictionary or data.get("version", 0) != 1: return {"error": "Invalid atmosphere preview format.", "preview": {}}
  var preview: Variant = data.get("preview", {})
  if not preview is Dictionary: return {"error": "Invalid atmosphere preview.", "preview": {}}
- return {"error": validation_error(preview), "preview": preview}
+ var error := validation_error(preview)
+ if error.is_empty(): preview.values = Fields.appearance_values(preview.values)
+ return {"error": error, "preview": preview}

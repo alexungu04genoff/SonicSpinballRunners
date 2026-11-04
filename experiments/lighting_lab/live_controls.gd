@@ -22,6 +22,9 @@ var reopen: Button
 var pause_button: Button
 var retro: CheckButton
 var vsync: CheckButton
+var shadow_resolution: OptionButton
+var shadow_cascades: OptionButton
+var shadow_quality_status: Label
 var smooth_shadows: CheckButton
 var performance_label: Label
 var fps_overlay: Label
@@ -184,18 +187,9 @@ func _build_ui() -> void:
    controls.add_child(scenery)
    scenery.install(self)
   if group == "Shadows":
-   smooth_shadows = CheckButton.new()
-   smooth_shadows.text = "Smooth shadows · Ultra + FXAA"
-   smooth_shadows.tooltip_text = "Reduces soft-shadow speckling using Ultra filtering and FXAA. Costs more GPU time and slightly smooths the 3D image. Saved for this device, including gameplay; independent of atmosphere variants."
-   smooth_shadows.focus_mode = Control.FOCUS_NONE
-   smooth_shadows.set_pressed_no_signal(RenderingOptions.smooth_shadows_enabled())
-   smooth_shadows.toggled.connect(func(enabled: bool):
-    var error := RenderingOptions.set_smooth_shadows(enabled)
-    if error != OK:
-     smooth_shadows.set_pressed_no_signal(RenderingOptions.smooth_shadows_enabled())
-     message.text = "Cannot save graphics setting: " + error_string(error)
-   )
-   controls.add_child(smooth_shadows)
+   var appearance_heading := Label.new()
+   appearance_heading.text = "SHADOW APPEARANCE"
+   controls.add_child(appearance_heading)
   if group == "Sky": sky_controls = controls
   if group == "Palette": palette_controls = controls
   if group == "Gameplay": gameplay_controls = controls
@@ -226,6 +220,7 @@ func _build_ui() -> void:
     controls.add_child(fog_view_note)
     fog_fit_button = _button(controls, "Fit distances to view", _fit_fog_to_view)
    _field(controls, spec)
+  if group == "Shadows": _build_device_shadow_controls(controls)
  var actions := HBoxContainer.new()
  column.add_child(actions)
  save_button = _button(actions, "Save", func():
@@ -255,6 +250,68 @@ func _build_ui() -> void:
  reopen.offset_top = 30
  reopen.offset_bottom = 66
  reopen.hide()
+
+func _build_device_shadow_controls(controls: VBoxContainer) -> void:
+ controls.add_child(HSeparator.new())
+ var heading := Label.new()
+ heading.text = "DEVICE SHADOW QUALITY"
+ controls.add_child(heading)
+ var note := Label.new()
+ note.text = "Device quality is saved for this machine and does not belong to Atmosphere variants. Changes apply live. Turn VSync off above to compare uncapped FPS."
+ note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ note.add_theme_font_size_override("font_size", 12)
+ controls.add_child(note)
+ shadow_resolution = _device_choice(controls, "Resolution", RenderingOptions.SHADOW_RESOLUTIONS)
+ shadow_resolution.item_selected.connect(func(index: int):
+  _device_shadow_changed(RenderingOptions.set_shadow_resolution(shadow_resolution.get_item_id(index)))
+ )
+ shadow_cascades = _device_choice(controls, "Cascades", RenderingOptions.SHADOW_CASCADES)
+ shadow_cascades.item_selected.connect(func(index: int):
+  _device_shadow_changed(RenderingOptions.set_shadow_cascades(shadow_cascades.get_item_id(index)))
+ )
+ smooth_shadows = CheckButton.new()
+ smooth_shadows.text = "Smooth shadows · Ultra + FXAA"
+ smooth_shadows.disabled = not RenderingOptions.smooth_filter_supported()
+ smooth_shadows.tooltip_text = "Device-local preference shared with gameplay. Ultra filtering and FXAA require Forward+ or Mobile; unavailable in Compatibility."
+ smooth_shadows.focus_mode = Control.FOCUS_NONE
+ smooth_shadows.toggled.connect(func(enabled: bool): _device_shadow_changed(RenderingOptions.set_smooth_shadows(enabled)))
+ controls.add_child(smooth_shadows)
+ shadow_quality_status = Label.new()
+ shadow_quality_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ shadow_quality_status.add_theme_font_size_override("font_size", 12)
+ shadow_quality_status.tooltip_text = "Resolution reports the size submitted to Godot's global runtime atlas API; Godot exposes no GPU atlas-size readback. Cascades are applied to registered lights."
+ controls.add_child(shadow_quality_status)
+ _sync_device_shadow_controls()
+
+func _device_choice(parent: Node, title: String, choices: Array) -> OptionButton:
+ var row := HBoxContainer.new()
+ parent.add_child(row)
+ var label := Label.new()
+ label.text = title
+ label.custom_minimum_size.x = 165
+ row.add_child(label)
+ var choice := OptionButton.new()
+ choice.focus_mode = Control.FOCUS_NONE
+ choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ for value: int in choices: choice.add_item(str(value), value)
+ row.add_child(choice)
+ return choice
+
+func _device_shadow_changed(error: Error) -> void:
+ _sync_device_shadow_controls()
+ message.text = "Device graphics saved; atmosphere unchanged." if error == OK else "Cannot save graphics setting: " + error_string(error)
+
+func _sync_device_shadow_controls() -> void:
+ var size := RenderingOptions.shadow_resolution()
+ if shadow_resolution.get_item_index(size) < 0: shadow_resolution.add_item("%d (project default)" % size, size)
+ shadow_resolution.select(shadow_resolution.get_item_index(size))
+ shadow_cascades.select(shadow_cascades.get_item_index(RenderingOptions.shadow_cascades()))
+ smooth_shadows.set_pressed_no_signal(RenderingOptions.smooth_shadows_enabled())
+ var quality := "Ultra + FXAA"
+ if not RenderingOptions.smooth_shadows_enabled(): quality = "Project filter / AA defaults"
+ if not RenderingOptions.smooth_filter_supported(): quality = "Ultra / FXAA unavailable on this renderer\nSaved smooth preference: " + ("On" if RenderingOptions.smooth_shadows_enabled() else "Off")
+ shadow_quality_status.text = "%d px · %d cascades\n%s" % [size, RenderingOptions.shadow_cascades(), quality]
+ if DisplayServer.get_name() == "headless": shadow_quality_status.text += "\nHeadless: no rendered shadow comparison."
 
 func _button(parent: Node, title: String, callback: Callable) -> Button:
  var button := Button.new()
@@ -351,11 +408,11 @@ func bind_theme() -> void:
  game.presentation._world_environment.environment = environment
  var light: DirectionalLight3D = game.presentation._key_light
  light.light_specular = 1.0
- light.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
  game.presentation.theme_definition.configure_environment(game.presentation)
  var rooftop = game.get("rooftop_materials")
  if game.theme_id == "rooftop_run" and is_instance_valid(rooftop): rooftop.apply_lighting()
  Fields.apply_shadow_defaults(light)
+ RenderingOptions.register_light(light)
  _bind_sky(environment)
  emission.collect(game.presentation, game.theme_id, sky_material)
  _bind_palette()
@@ -570,6 +627,7 @@ func _apply(source: Dictionary) -> void:
  DirectionalFog.apply(game.presentation.camera, source)
  sync_fog_controls()
  for key: String in source:
+  if key == Fields.LEGACY_SHADOW_MODE: continue
   if key.begins_with("directional_fog/"): continue
   if key.begins_with("palette/") or key.begins_with("hue/") or key.begins_with("saturation/") or key.begins_with("override/") or key.begins_with("brightness/") or key.begins_with("ranges/") or key.begins_with("stack/") or key.begins_with("link/"): continue
   if key == "emission": emission.apply(float(source[key]))
@@ -583,6 +641,7 @@ func _apply(source: Dictionary) -> void:
    target.set(key.substr(key.find("/") + 1), source[key])
  var changed_sun: bool = source.get("sun_pitch") != originals.get("sun_pitch") or source.get("sun_yaw") != originals.get("sun_yaw")
  emission.apply_palette(source, game.presentation._key_light, changed_sun)
+ RenderingOptions.register_light(game.presentation._key_light)
 
 func restore_original() -> void:
  _apply(originals)
@@ -608,6 +667,7 @@ func save_preset() -> void:
    return
  var merged_values: Dictionary = saved.get_value(preset_key, "values", {}).duplicate(true)
  merged_values.merge(values, true)
+ merged_values = Fields.appearance_values(merged_values)
  saved.set_value(preset_key, "values", merged_values)
  # Additive v2: v1 light/sky keys keep their values; missing palette keys use
  # the authored baseline. Preserve all other renderer/theme sections.

@@ -1,6 +1,7 @@
 extends SceneTree
 const Run = preload("res://scripts/prototype/zone_run.gd")
 const Telemetry = preload("res://scripts/prototype/run_telemetry.gd")
+const Options = preload("res://scripts/rendering_options.gd")
 var failures := 0
 var checks := 0
 
@@ -12,6 +13,12 @@ func check(value: bool, label: String) -> void:
  else: failures += 1; push_error("FAIL | " + label)
 
 func run() -> void:
+ Options.settings_path = "user://prototype-variable-graphics.cfg"
+ var graphics := ConfigFile.new()
+ graphics.set_value("rendering", "directional_shadow_resolution", 4096)
+ graphics.set_value("rendering", "directional_shadow_cascades", 2)
+ graphics.set_value("rendering", "smooth_shadows", true)
+ graphics.save(Options.settings_path)
  for count in [1, 7]:
   var game := Run.new()
   game.run_configuration = Run.RunPlan.Configuration.new(Run.RunPlan.source_paths().slice(0, 3))
@@ -30,6 +37,7 @@ func run() -> void:
    paused = false
    break
   game.set_physics_process(false)
+  check(Options.shadow_resolution() == 4096 and Options.shadow_cascades() == 2 and game.view.screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA, "Ordinary disk-baked startup loads saved device settings without the Lab")
   game.ring_field.set_physics_process(false)
   for sequence in count * 3:
    game.ball.freeze = true
@@ -39,6 +47,12 @@ func run() -> void:
    game.active.runtime.mechanics.mechanic_score.emit(&"wall_switch", "variable_run_award", game.act_score_target)
    deadline = Time.get_ticks_msec() + 180000
    while game._has_next_act() and not game._next_ready() and Time.get_ticks_msec() < deadline: await process_frame
+   check(game.presentation._key_light.directional_shadow_mode == DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS, "Production foreground keeps device cascades across Acts/Zones")
+   for background: Dictionary in game.backgrounds.values():
+    check(background.layer.light.directional_shadow_mode == DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS and not background.layer.light.shadow_enabled and background.layer.view.screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA, "Production streamed backdrop keeps device policy without enabling shadows")
+   for reference: WeakRef in Options._lights:
+    var light := reference.get_ref() as DirectionalLight3D
+    if is_instance_valid(light): check(light.directional_shadow_mode == DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS, "Every resident/warm-up light follows the device policy")
    check(game.active_sequence == sequence and game.act_score_target == 1000 + sequence * 500 and game.active.plan.theme == "green_hill", "Configured Act %d has the correct target and theme" % (sequence + 1))
    var goal: Vector2 = game.active.runtime.goal_ring.center
    game._observe_authored_motion(goal, goal)

@@ -28,6 +28,8 @@ func read(theme: String) -> Array[Dictionary]:
  for id: String in file.get_sections():
   if id == "format": continue
   result.append({"id": id, "name": file.get_value(id, "name", ""), "enabled": file.get_value(id, "enabled", false), "weight": file.get_value(id, "weight", -1), "values": file.get_value(id, "values", {})})
+ for record: Dictionary in result:
+  if record.values is Dictionary: record.values = Fields.appearance_values(record.values)
  error = validate(theme, result)
  if not error.is_empty(): return [baseline()]
  result.sort_custom(func(a: Dictionary, b: Dictionary): return a.id == "default" or (b.id != "default" and a.id < b.id))
@@ -64,7 +66,8 @@ func save(theme: String, records: Array[Dictionary], expected_revision: String) 
  var file := ConfigFile.new()
  file.set_value("format", "version", 1)
  for record: Dictionary in records:
-  for key: String in ["name", "enabled", "weight", "values"]: file.set_value(record.id, key, record[key])
+  for key: String in ["name", "enabled", "weight", "values"]:
+   file.set_value(record.id, key, Fields.appearance_values(record[key]) if key == "values" else record[key])
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(directory))
  var temporary := path(theme) + ".tmp"
  var result := file.save(temporary)

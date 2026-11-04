@@ -232,6 +232,7 @@ func _initialize_terrain_skin() -> void:
 
 func _finish_terrain_skin() -> void:
  theme_definition.configure_environment(self)
+ preload("res://scripts/rendering_options.gd").register_light(_key_light)
  theme_definition.build_background(self)
  for child: Node in scenery_root.get_children(): child.set_meta("atmosphere_scenery", "far")
  _build_local_scenery()
