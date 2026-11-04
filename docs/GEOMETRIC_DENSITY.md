@@ -9,6 +9,7 @@ The starting HEAD was `c342462`. Existing selected/approved art, atmosphere edit
 All comparison frames use the existing [canonical Prototype workflow](PRODUCTION_APPEARANCE.md): the real session, validated disk recipes, Forward+/Vulkan, First Try Smooth Decor, served Sonic, seed 18, zero score, locked Goal, fixed time and a 1440×1000 window. The ordinary spawn view is primary. The supplemental loop view moves only the camera target to `(570, 500)`; its Ball and gameplay state remain fixed.
 
 - [Eight-theme before/after sheet](geometry-density/before-after.png)
+- [Full-resolution individual pairs, untouched originals and detail crops](geometry-density/full-resolution/README.md) — 1440×1000 per frame; no downscaling. Sky cloud-bank detail is explicitly after-only because the existing before camera does not expose it.
 - [Green Hill calibration: loop, Ring, bumper and flower](geometry-density/calibration.png)
 - [64 / 24 / 16-step loop comparison](geometry-density/loops.png)
 - [Supplemental eight-theme edge review](geometry-density/edge-review.png)

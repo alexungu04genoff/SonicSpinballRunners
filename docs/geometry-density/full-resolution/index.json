@@ -1,0 +1,413 @@
+{
+  "comparisons": [
+    {
+      "labels": [
+        "BEFORE",
+        "AFTER"
+      ],
+      "crop_xywh": [
+        0,
+        0,
+        1440,
+        1000
+      ],
+      "integer_scale": 1,
+      "sources": [
+        "before/green_hill.png",
+        "after/green_hill.png"
+      ],
+      "header_height": 80,
+      "output": "green_hill-pair.png"
+    },
+    {
+      "labels": [
+        "BEFORE",
+        "AFTER"
+      ],
+      "crop_xywh": [
+        0,
+        0,
+        1440,
+        1000
+      ],
+      "integer_scale": 1,
+      "sources": [
+        "before/chemical_plant.png",
+        "after/chemical_plant.png"
+      ],
+      "header_height": 80,
+      "output": "chemical_plant-pair.png"
+    },
+    {
+      "labels": [
+        "BEFORE",
+        "AFTER"
+      ],
+      "crop_xywh": [
+        0,
+        0,
+        1440,
+        1000
+      ],
+      "integer_scale": 1,
+      "sources": [
+        "before/rooftop_run.png",
+        "after/rooftop_run.png"
+      ],
+      "header_height": 80,
+      "output": "rooftop_run-pair.png"
+    },
+    {
+      "labels": [
+        "BEFORE",
+        "AFTER"
+      ],
+      "crop_xywh": [
+        0,
+        0,
+        1440,
+        1000
+      ],
+      "integer_scale": 1,
+      "sources": [
+        "before/casino_night.png",
+        "after/casino_night.png"
+      ],
+      "header_height": 80,
+      "output": "casino_night-pair.png"
+    },
+    {
+      "labels": [
+        "BEFORE",
+        "AFTER"
+      ],
+      "crop_xywh": [
+        0,
+        0,
+        1440,
+        1000
+      ],
+      "integer_scale": 1,
+      "sources": [
+        "before/sky_sanctuary.png",
+        "after/sky_sanctuary.png"
+      ],
+      "header_height": 80,
+      "output": "sky_sanctuary-pair.png"
+    },
+    {
+      "labels": [
+        "BEFORE",
+        "AFTER"
+      ],
+      "crop_xywh": [
+        0,
+        0,
+        1440,
+        1000
+      ],
+      "integer_scale": 1,
+      "sources": [
+        "before/ice_cap.png",
+        "after/ice_cap.png"
+      ],
+      "header_height": 80,
+      "output": "ice_cap-pair.png"
+    },
+    {
+      "labels": [
+        "BEFORE",
+        "AFTER"
+      ],
+      "crop_xywh": [
+        0,
+        0,
+        1440,
+        1000
+      ],
+      "integer_scale": 1,
+      "sources": [
+        "before/lava_reef.png",
+        "after/lava_reef.png"
+      ],
+      "header_height": 80,
+      "output": "lava_reef-pair.png"
+    },
+    {
+      "labels": [
+        "BEFORE",
+        "AFTER"
+      ],
+      "crop_xywh": [
+        0,
+        0,
+        1440,
+        1000
+      ],
+      "integer_scale": 1,
+      "sources": [
+        "before/aquarium_park.png",
+        "after/aquarium_park.png"
+      ],
+      "header_height": 80,
+      "output": "aquarium_park-pair.png"
+    },
+    {
+      "labels": [
+        "BEFORE",
+        "AFTER"
+      ],
+      "crop_xywh": [
+        880,
+        745,
+        160,
+        125
+      ],
+      "integer_scale": 4,
+      "sources": [
+        "before/green_hill.png",
+        "after/green_hill.png"
+      ],
+      "header_height": 80,
+      "output": "details/green-hill-flower.png"
+    },
+    {
+      "labels": [
+        "BEFORE",
+        "AFTER"
+      ],
+      "crop_xywh": [
+        260,
+        430,
+        140,
+        115
+      ],
+      "integer_scale": 4,
+      "sources": [
+        "before/green_hill.png",
+        "after/green_hill.png"
+      ],
+      "header_height": 80,
+      "output": "details/ring.png"
+    },
+    {
+      "labels": [
+        "BEFORE",
+        "AFTER"
+      ],
+      "crop_xywh": [
+        640,
+        345,
+        175,
+        140
+      ],
+      "integer_scale": 3,
+      "sources": [
+        "before/green_hill.png",
+        "after/green_hill.png"
+      ],
+      "header_height": 80,
+      "output": "details/bumper.png"
+    },
+    {
+      "labels": [
+        "BEFORE",
+        "AFTER"
+      ],
+      "crop_xywh": [
+        700,
+        645,
+        455,
+        275
+      ],
+      "integer_scale": 2,
+      "sources": [
+        "before/sky_sanctuary.png",
+        "after/sky_sanctuary.png"
+      ],
+      "header_height": 80,
+      "output": "details/sky-foliage.png"
+    },
+    {
+      "labels": [
+        "BEFORE",
+        "AFTER"
+      ],
+      "crop_xywh": [
+        1020,
+        0,
+        420,
+        870
+      ],
+      "integer_scale": 1,
+      "sources": [
+        "before/aquarium_park.png",
+        "after/aquarium_park.png"
+      ],
+      "header_height": 80,
+      "output": "details/aquarium-architecture.png"
+    },
+    {
+      "labels": [
+        "BEFORE",
+        "AFTER"
+      ],
+      "crop_xywh": [
+        865,
+        715,
+        190,
+        180
+      ],
+      "integer_scale": 3,
+      "sources": [
+        "before/aquarium_park.png",
+        "after/aquarium_park.png"
+      ],
+      "header_height": 80,
+      "output": "details/aquarium-lantern.png"
+    },
+    {
+      "labels": [
+        "64 STEPS",
+        "16 STEPS + FACE FIX"
+      ],
+      "crop_xywh": [
+        130,
+        15,
+        510,
+        760
+      ],
+      "integer_scale": 1,
+      "sources": [
+        "loop-focused-64/green_hill.png",
+        "loop-fixed-16/green_hill.png"
+      ],
+      "header_height": 80,
+      "output": "details/green-hill-loop.png"
+    },
+    {
+      "labels": [
+        "No matched before cloud view in saved captures"
+      ],
+      "crop_xywh": [
+        1060,
+        35,
+        330,
+        365
+      ],
+      "integer_scale": 2,
+      "sources": [
+        "edge-review/sky_sanctuary.png"
+      ],
+      "header_height": 80,
+      "output": "details/sky-clouds-after-only.png"
+    }
+  ],
+  "originals": [
+    {
+      "capture": "before/green_hill.png",
+      "sha256": "551DF7587D50E8F55D1F7FF1EEDB5BE4BEA2E9C6B4E2B9B00A44457A6B273A42",
+      "path": "green_hill-before.png"
+    },
+    {
+      "capture": "after/green_hill.png",
+      "sha256": "20C7266DFBDBE228540206FE98822B358550FA368FB2C1408C9F74ACA8780E50",
+      "path": "green_hill-after.png"
+    },
+    {
+      "capture": "before/chemical_plant.png",
+      "sha256": "81EE5948FB1CF87499576C247B658701554B1A7972FA4385EB17A3DEBE4C194B",
+      "path": "chemical_plant-before.png"
+    },
+    {
+      "capture": "after/chemical_plant.png",
+      "sha256": "A1CEED89582FDC68632DC5C9562F780406E547789B71E43E96BCFA73BD741E81",
+      "path": "chemical_plant-after.png"
+    },
+    {
+      "capture": "before/rooftop_run.png",
+      "sha256": "463C40D75CB2C82338AF018D521BBC59DCD0A0E95966B7E645A8A07CFBDE763F",
+      "path": "rooftop_run-before.png"
+    },
+    {
+      "capture": "after/rooftop_run.png",
+      "sha256": "A2DC7E7A923FB2BA4887937FC6BE06CDDB7C309743AB4731195845CFD19D6E92",
+      "path": "rooftop_run-after.png"
+    },
+    {
+      "capture": "before/casino_night.png",
+      "sha256": "63B8F3474F1CA501027D94D4326898EF816EA668C5B176A1F3E3946A0D09CB8D",
+      "path": "casino_night-before.png"
+    },
+    {
+      "capture": "after/casino_night.png",
+      "sha256": "19066EDA6DB02A69F926EA384DF4D407356DAEC4D9042EF44EDF20BCD0495FBA",
+      "path": "casino_night-after.png"
+    },
+    {
+      "capture": "before/sky_sanctuary.png",
+      "sha256": "3629327998537CB86D04526DFD3D816C9CC47A1622BD8C6148946C2D510097CE",
+      "path": "sky_sanctuary-before.png"
+    },
+    {
+      "capture": "after/sky_sanctuary.png",
+      "sha256": "25E8E2D5568892827F46AB2982FEF3678F39EF0A17A7C19847CE4E9C6FD6C8D8",
+      "path": "sky_sanctuary-after.png"
+    },
+    {
+      "capture": "before/ice_cap.png",
+      "sha256": "3B56663860B32F8E83CE56AF6D415B8BAC4A483DF2B69BE64A3CB8FAD91E92B7",
+      "path": "ice_cap-before.png"
+    },
+    {
+      "capture": "after/ice_cap.png",
+      "sha256": "A26671468A88E1D2DB8FB9946CD106DF2800B994DDC718FEA378F43F22B11381",
+      "path": "ice_cap-after.png"
+    },
+    {
+      "capture": "before/lava_reef.png",
+      "sha256": "BD485B0BAA70EDAAC907C8979DAD23C2115CC3E29FF9B46A2DF91D30025831C5",
+      "path": "lava_reef-before.png"
+    },
+    {
+      "capture": "after/lava_reef.png",
+      "sha256": "25C122F483C07DC8492D4D47219302128752CC740B49E22091C10F4930B04E13",
+      "path": "lava_reef-after.png"
+    },
+    {
+      "capture": "before/aquarium_park.png",
+      "sha256": "4A4CA5E237A8F2392E6E3FEBF4C3A0B71B77B9B212837AB3441A531AC28C6A01",
+      "path": "aquarium_park-before.png"
+    },
+    {
+      "capture": "after/aquarium_park.png",
+      "sha256": "AC5A5C92A6B5ED00B2D2396477F2FC00372E97683D9BB10AC6BB370874999C25",
+      "path": "aquarium_park-after.png"
+    },
+    {
+      "capture": "loop-focused-64/green_hill.png",
+      "sha256": "95ECFE9B157771BFBD2C883D939306CFCC47EE66D2EB93F976BB11A65A8663F9",
+      "path": "supplemental/loop-64.png"
+    },
+    {
+      "capture": "loop-fixed-16/green_hill.png",
+      "sha256": "4298AD80ADBEDB502F99F961F2F25CB91F8AD585DD78D46B9627B11BE32C4EAD",
+      "path": "supplemental/loop-16.png"
+    },
+    {
+      "capture": "edge-review/sky_sanctuary.png",
+      "sha256": "6DE8FBD755E31DBEEB26A3C611EC3EAB6970B82A4D1F97959ACBCCF5D0453E66",
+      "path": "supplemental/sky-edge-after.png"
+    }
+  ],
+  "limitation": "Cloud-bank detail is after-only: the saved before camera does not expose it. Supplemental loop captures isolate the loop calibration, not a complete historical before/after scene.",
+  "pair_size": [
+    2880,
+    1080
+  ],
+  "source_capture_size": [
+    1440,
+    1000
+  ],
+  "method": "Lossless PNG; no rerender, sharpening or color changes. Crops use identical source rectangles and integer nearest-neighbor magnification."
+}
