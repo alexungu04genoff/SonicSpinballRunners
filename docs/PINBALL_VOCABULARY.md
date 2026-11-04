@@ -15,3 +15,30 @@ Choose Gameplay / Drop Target Bank, then drag the first-to-last target span. Rel
 Each target owns a stable `bank_object_id/target_index` identity, down state, swept capsule collision and independent retraction animation. Down targets are omitted from contact queries immediately. A hit uses existing Switch scoring (25 points); completion uses existing Switch Bank semantics (default fixed 500, including the existing completion Buddy). No labels or custom-layout grouping in V1. Zero reset delay leaves targets down; a positive delay begins after completion and waits for Ball clearance before restoring collision. Soft retries preserve progress; full reset restores the row.
 
 Editor check: `Godot.exe --headless --path . --script res://tests/pinball_vocabulary_editor_regression.gd`.
+
+## Disposable terrain comparison
+
+Open `experiments/pinball_vocabulary/study_16.tres` in Act Geometry Editor and choose Play Act. Both this file and `study_96.tres` contain the same paired Slingshots, five-target Bank, flippers and serve Spring. In the Play Act window, Load Act switches between the two files; O opens Overview. These files are outside the production Act pool. Save experiments to these copies or Save As, not to production Acts.
+
+The upper/middle court compares a circle, oval, semicircular bump and convex quarter corner. The 96-side baseline preserves the current library sampling. The 16-side study stores every sixth curve vertex in ordinary composite outlines: 16 full-circle edges, eight semicircle segments, four quarter-curve segments. Closing straight edges remain. Those same stored points feed visible terrain and authoritative collision; there is no hidden smooth collider. `CURVE_STEPS` remains 24. Hardware and props keep current production density so this comparison isolates terrain.
+
+Run `Godot.exe --headless --path . --script res://experiments/pinball_vocabulary/studies.gd` to check both saved studies. Add `-- --write` only to regenerate the two disposable files, replacing local edits to them. The script never writes production Acts.
+
+### Primitive-density audit (recommendations, not adopted settings)
+
+- `scripts/pinball_models.gd`, `disc`: 48 radial segments. Candidate hero-hardware range: 12-16.
+- `scripts/presentation.gd`, shared sphere: 16 radial segments / 8 rings; shared cylinder: 24 radial segments. Candidate ordinary defaults: 8x4 sphere and 8-sided cylinder. Important pieces: 10x5 spheres and 10-12-sided cylinders.
+- `scripts/decor/aquarium_park_decor.gd`: explicit 12x6 spheres, 24-ring torus forms and 12-sided cylinders. The cylinders already suit important props; sphere/torus silhouettes deserve a camera-distance comparison before changing.
+- `scripts/decor/sky_sanctuary_decor.gd`: 12x6 spheres and 8-sided cylinders. Cylinder density already fits; spheres are a modest outlier.
+- `scripts/authored_act/mechanics_presentation.gd`: magnetic field torus has 48 rings, with a six-segment tube. Treat thin effect outlines separately from solid hero hardware.
+
+Suggested shared language: broad facets, ordinary cylinders 8, important cylinders 10-12, hero hardware 12-16, ordinary spheres 8x4, important spheres 10x5. Terrain 16 is a hypothesis; test 20/24 later only if rebound feel calls for it. Existing bake-time caps may already reduce some source primitives, so inspect both Play Act and baked output before any later migration.
+
+### Manual pass
+
+1. Open `study_16.tres`; inspect paired Slingshots above the flippers and the Bank near the top. Gameplay palette contains both Slingshot and Drop Target Bank.
+2. Drag a new Bank row, move/rotate it, then save/reload. Hit individual targets; clear the row and wait five seconds for the fixture reset.
+3. Switch to `study_96.tres` through Load Act. Compare curve rebounds and camera readability with the same theme/atmosphere.
+4. Five useful tuning controls: Slingshot rotation and strength; Bank target count, spacing and reset delay. Width/target size remain secondary knobs.
+
+Automated coverage is intentionally focused: placement/save/reload, front/back/end and rotated physical contacts, independent drop collision, completion/reset/retry, editor undo/redo, both terrain collision outlines, actual game startup/presentation, and baked animation rebinding. Visual polish, trajectory usefulness and flipper timing still need Alex's playtest.

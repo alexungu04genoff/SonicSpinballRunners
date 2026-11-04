@@ -3272,3 +3272,5 @@ Exterior triangles now join the existing facade surface before capture, using on
 Dedicated Slingshot is now separate from Triangle Bumper. Bright active rubber powers a fixed-speed rebound along local up; rotate to aim. Back and ends stay passive. Zero points, existing Spring combo extension. The old “triangle Bumpers/slings” description above is historical.
 
 Drop Target Bank is a drag-place row in Gameplay. One authored structure, independent target identities/contact/state/animation underneath. Each hit pays existing Switch scoring; clearing the row pays existing Bank completion. Optional timed reset waits for Ball clearance. Retry preserves progress. No card games hiding in the targets. Values remain playtest tuning; see [pinball vocabulary](PINBALL_VOCABULARY.md).
+
+Low-poly terrain is a study, not a migration: `experiments/pinball_vocabulary/study_16.tres` and `study_96.tres` compare identical toy tables with matched visible/collision curves. Production Acts and CURVE_STEPS remain untouched. Alex decides whether the facets feel good before any wider change. Primitive-density audit lives in the same vocabulary note.

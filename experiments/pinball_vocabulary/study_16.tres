@@ -1,0 +1,158 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=4]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_jqbtt"]
+
+[resource]
+script = ExtResource("1_jqbtt")
+format_version = 17
+library_version = 2
+title = "Pinball Toys / Terrain Study / 16 sides"
+grid_size = Vector2i(12, 20)
+placements = [{
+"anchor": Vector2i(0, 0),
+"base_size": Vector2i(1, 20),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray("IwAAAAQAAADNzMw+AAAAAJqZGT8AAAAAmpkZPwAAoEHNzMw+AACgQQ=="),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray("AwAAAAAAAAA=")
+}, {
+"anchor": Vector2i(11, 0),
+"base_size": Vector2i(1, 20),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray("IwAAAAQAAADNzMw+AAAAAJqZGT8AAAAAmpkZPwAAoEHNzMw+AACgQQ=="),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray("AwAAAAAAAAA=")
+}, {
+"anchor": Vector2i(0, 17),
+"base_size": Vector2i(5, 3),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray("IwAAAAQAAADNzMw+AAAAAAAAoECamZk/AACgQJqZ2T/NzMw+AABAQA=="),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray("AwAAAAAAAAA=")
+}, {
+"anchor": Vector2i(7, 17),
+"base_size": Vector2i(5, 3),
+"composite_version": 1,
+"flip_h": true,
+"flip_v": false,
+"outline": PackedByteArray("IwAAAAQAAADNzMw+AAAAAAAAoECamZk/AACgQJqZ2T/NzMw+AABAQA=="),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray("AwAAAAAAAAA=")
+}, {
+"anchor": Vector2i(2, 5),
+"base_size": Vector2i(3, 3),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray("IwAAABAAAAAAAEBAAADAP0OxOEDUvARA2+EjQNvhI0DUvARAQ7E4QAAAwD8AAEBAsAxtP0OxOEAm8eA+2+EjQJLX6T3UvARAAAAAAAAAwD+S1+k9sAxtPybx4D4m8eA+sAxtP5LX6T0AAMA/AAAAANS8BECS1+k92+EjQCbx4D5DsThAsAxtPw=="),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray("AwAAAAAAAAA=")
+}, {
+"anchor": Vector2i(7, 5),
+"base_size": Vector2i(2, 3),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray("IwAAABAAAAAAAABAAADAP69B9j/UvARAeoLaP9vhI0DF+7A/Q7E4QAAAgD8AAEBAdQgeP0OxOEAa9pU+2+EjQAzlmz3UvARAAAAAAAAAwD8M5Zs9sAxtPxr2lT4m8eA+dQgeP5LX6T0AAIA/AAAAAMX7sD+S1+k9eoLaPybx4D6vQfY/sAxtPw=="),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray("AwAAAAAAAAA=")
+}, {
+"anchor": Vector2i(2, 10),
+"base_size": Vector2i(3, 2),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray("IwAAAAkAAAAAAAAAAAAAQJLX6T11CJ4/JvHgPhr2FT+wDG0/DOUbPgAAwD8AAAAA1LwEQAzlGz7b4SNAGvYVP0OxOEB1CJ4/AABAQAAAAEA="),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray("AwAAAAAAAAA=")
+}, {
+"anchor": Vector2i(7, 10),
+"base_size": Vector2i(3, 3),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray("IwAAAAYAAAAAAAAAAAAAAFDzkj+S12k+tsMHQCbxYD+HYjFAsAztPwAAQEAAAEBAAAAAAAAAQEA="),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray("AwAAAAAAAAA=")
+}]
+gameplay_objects = [{
+"object_id": "left",
+"position": Vector2(260, 900),
+"properties": {},
+"rotation_degrees": PackedByteArray("AwABAKlnAparVTJA"),
+"type": "left_flipper"
+}, {
+"object_id": "right",
+"position": Vector2(340, 900),
+"properties": {},
+"rotation_degrees": PackedByteArray("AwABAAuzP41KNWRA"),
+"type": "right_flipper"
+}, {
+"object_id": "serve_spring",
+"position": Vector2(300, 850),
+"properties": {
+"color": "red",
+"launch_strength": PackedByteArray("AwAAAACAiUQ="),
+"width": PackedByteArray("AwAAAAAAIEI=")
+},
+"rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
+"type": "spring"
+}, {
+"object_id": "study_sling_3",
+"position": Vector2(180, 810),
+"properties": {
+"strength": PackedByteArray("AwAAAACAIkQ="),
+"width": PackedByteArray("AwAAAAAAoEI=")
+},
+"rotation_degrees": PackedByteArray("AwAAAAAA8EE="),
+"type": "slingshot"
+}, {
+"object_id": "study_sling_4",
+"position": Vector2(420, 810),
+"properties": {
+"strength": PackedByteArray("AwAAAACAIkQ="),
+"width": PackedByteArray("AwAAAAAAoEI=")
+},
+"rotation_degrees": PackedByteArray("AwAAAAAA8ME="),
+"type": "slingshot"
+}, {
+"object_id": "study_drop_bank",
+"position": Vector2(300, 160),
+"properties": {
+"color": "green",
+"completion_bonus": PackedByteArray("AwAAAAAA+kM="),
+"reset_delay": PackedByteArray("AwAAAAAAoEA="),
+"spacing": PackedByteArray("AwAAAAAAAEI="),
+"target_count": PackedByteArray("AwAAAAAAoEA="),
+"target_size": PackedByteArray("AwAAAAAAsEE=")
+},
+"rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
+"type": "drop_target_bank"
+}]
+ring_trails = [{
+"end": Vector2(120, 50),
+"pattern_id": "ring_pattern_0",
+"spacing": PackedByteArray("AwAAAAAAyEE="),
+"start": Vector2(120, 210)
+}]
+entry_start_x = 5
+entry_width = 2
+exit_start_x = 2
+exit_width = 2
+activation_y = PackedByteArray("AwAAAAAASEQ=")
+spawn_position = Vector2(300, 850)
+goal_position = null

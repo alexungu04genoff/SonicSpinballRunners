@@ -1,0 +1,158 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=4]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_4gs1t"]
+
+[resource]
+script = ExtResource("1_4gs1t")
+format_version = 17
+library_version = 2
+title = "Pinball Toys / Terrain Study / 96 sides"
+grid_size = Vector2i(12, 20)
+placements = [{
+"anchor": Vector2i(0, 0),
+"base_size": Vector2i(1, 20),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray("IwAAAAQAAADNzMw+AAAAAJqZGT8AAAAAmpkZPwAAoEHNzMw+AACgQQ=="),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray("AwAAAAAAAAA=")
+}, {
+"anchor": Vector2i(11, 0),
+"base_size": Vector2i(1, 20),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray("IwAAAAQAAADNzMw+AAAAAJqZGT8AAAAAmpkZPwAAoEHNzMw+AACgQQ=="),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray("AwAAAAAAAAA=")
+}, {
+"anchor": Vector2i(0, 17),
+"base_size": Vector2i(5, 3),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray("IwAAAAQAAADNzMw+AAAAAAAAoECamZk/AACgQJqZ2T/NzMw+AABAQA=="),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray("AwAAAAAAAAA=")
+}, {
+"anchor": Vector2i(7, 17),
+"base_size": Vector2i(5, 3),
+"composite_version": 1,
+"flip_h": true,
+"flip_v": false,
+"outline": PackedByteArray("IwAAAAQAAADNzMw+AAAAAAAAoECamZk/AACgQJqZ2T/NzMw+AABAQA=="),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray("AwAAAAAAAAA=")
+}, {
+"anchor": Vector2i(2, 5),
+"base_size": Vector2i(3, 3),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray("IwAAAGAAAAAAAEBAAADAP2LLP0Cyjsw/wC0/QKAP2T/HJz5AFHXlP5i6PEB5sfE/wec6QGW3/T9DsThA1LwEQIsZNkCwdQpAcSMzQAAAEEAy0i9AslUVQHQpLEDscBpANy0oQBVMH0Db4SNA2+EjQBVMH0A3LShA7HAaQHQpLECyVRVAMtIvQAAAEEBxIzNAsHUKQIsZNkDUvARAQ7E4QGW3/T/B5zpAebHxP5i6PEAUdeU/xyc+QKAP2T/ALT9Aso7MP2LLP0AAAMA/AABAQE5xsz9iyz9AYPCmP8AtP0Dsipo/xyc+QIdOjj+YujxAm0iCP8HnOkCwDG0/Q7E4QEEpVj+LGTZAAABAP3EjM0A5qSo/MtIvQFE8Fj90KSxAq88CPzctKEAm8eA+2+EjQEeWvj4VTB9AY7SePuxwGkBsboE+slUVQPTITT4AABBASmcePrB1CkCS1+k91LwEQNgHoz1lt/0/C1pRPXmx8T9IHOw8FHXlP0dAUjygD9k/9nlSO7KOzD8AAAAAAADAP/Z5UjtOcbM/R0BSPGDwpj9IHOw87IqaPwtaUT2HTo4/2AejPZtIgj+S1+k9sAxtP0pnHj5BKVY/9MhNPgAAQD9sboE+OakqP2O0nj5RPBY/R5a+PqvPAj8m8eA+JvHgPqvPAj9Hlr4+UTwWP2O0nj45qSo/bG6BPgAAQD/0yE0+QSlWP0pnHj6wDG0/ktfpPZtIgj/YB6M9h06OPwtaUT3sipo/SBzsPGDwpj9HQFI8TnGzP/Z5UjsAAMA/AAAAALKOzD/2eVI7oA/ZP0dAUjwUdeU/SBzsPHmx8T8LWlE9Zbf9P9gHoz3UvARAktfpPbB1CkBKZx4+AAAQQPTITT6yVRVAbG6BPuxwGkBjtJ4+FUwfQEeWvj7b4SNAJvHgPjctKECrzwI/dCksQFE8Fj8y0i9AOakqP3EjM0AAAEA/ixk2QEEpVj9DsThAsAxtP8HnOkCbSII/mLo8QIdOjj/HJz5A7IqaP8AtP0Bg8KY/Yss/QE5xsz8="),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray("AwAAAAAAAAA=")
+}, {
+"anchor": Vector2i(7, 5),
+"base_size": Vector2i(2, 3),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray("IwAAAGAAAAAAAABAAADAP9e5/z+yjsw/quf+P6AP2T9fiv0/FHXlP3Wj+z95sfE/AjX5P2W3/T+vQfY/1LwEQLrM8j+wdQpA7NnuPwAAEECZbeo/slUVQJqM5T/scBpASTzgPxVMH0B6gto/2+EjQHJl1D83LShA5evNP3QpLEDtHMc/MtIvQAAAwD9xIzNA6py4P4sZNkDF+7A/Q7E4QO4kqT/B5zpA/CChP5i6PEC4+Jg/xyc+QBW1kD/ALT9AIV+IP2LLP0AAAIA/AABAQL5Bbz9iyz9A1pVeP8AtP0CQDk4/xyc+QAm+PT+YujxAJbYtP8HnOkB1CB4/Q7E4QCvGDj+LGTZAAAAAP3EjM0BMjOM+MtIvQGxQyD50KSxAOmquPjctKEAa9pU+2+EjQLUdfj4VTB9AL5tTPuxwGkA7kyw+slUVQKMwCT4AABBAYjTTPbB1CkAM5Zs91LwEQMtfWT1lt/0/XJELPXmx8T8waJ08FHXlP9oqDDygD9k/T1EMO7KOzD8AAAAAAADAP09RDDtOcbM/2ioMPGDwpj8waJ087IqaP1yRCz2HTo4/y19ZPZtIgj8M5Zs9sAxtP2I00z1BKVY/ozAJPgAAQD87kyw+OakqPy+bUz5RPBY/tR1+PqvPAj8a9pU+JvHgPjpqrj5Hlr4+bFDIPmO0nj5MjOM+bG6BPgAAAD/0yE0+K8YOP0pnHj51CB4/ktfpPSW2LT/YB6M9Cb49PwtaUT2QDk4/SBzsPNaVXj9HQFI8vkFvP/Z5UjsAAIA/AAAAACFfiD/2eVI7FbWQP0dAUjy4+Jg/SBzsPPwgoT8LWlE97iSpP9gHoz3F+7A/ktfpPeqcuD9KZx4+AADAP/TITT7tHMc/bG6BPuXrzT9jtJ4+cmXUP0eWvj56gto/JvHgPkk84D+rzwI/mozlP1E8Fj+Zbeo/OakqP+zZ7j8AAEA/uszyP0EpVj+vQfY/sAxtPwI1+T+bSII/daP7P4dOjj9fiv0/7IqaP6rn/j9g8KY/17n/P05xsz8="),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray("AwAAAAAAAAA=")
+}, {
+"anchor": Vector2i(2, 10),
+"base_size": Vector2i(3, 2),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray("IwAAADEAAAAAAAAAAAAAQPZ5Uju+Qe8/R0BSPNaV3j9IHOw8kA7OPwtaUT0Jvr0/2AejPSW2rT+S1+k9dQieP0pnHj4rxo4/9MhNPgAAgD9sboE+TIxjP2O0nj5sUEg/R5a+PjpqLj8m8eA+GvYVP6vPAj+1Hf4+UTwWPy+b0z45qSo/O5OsPgAAQD+jMIk+QSlWP2I0Uz6wDG0/DOUbPptIgj/LX9k9h06OP1yRiz3sipo/MGgdPWDwpj/aKow8TnGzP09RjDsAAMA/AAAAALKOzD9PUYw7oA/ZP9oqjDwUdeU/MGgdPXmx8T9ckYs9Zbf9P8tf2T3UvARADOUbPrB1CkBiNFM+AAAQQKMwiT6yVRVAO5OsPuxwGkAvm9M+FUwfQLUd/j7b4SNAGvYVPzctKEA6ai4/dCksQGxQSD8y0i9ATIxjP3EjM0AAAIA/ixk2QCvGjj9DsThAdQieP8HnOkAltq0/mLo8QAm+vT/HJz5AkA7OP8AtP0DWld4/Yss/QL5B7z8AAEBAAAAAQA=="),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray("AwAAAAAAAAA=")
+}, {
+"anchor": Vector2i(7, 10),
+"base_size": Vector2i(3, 3),
+"composite_version": 1,
+"flip_h": false,
+"flip_v": false,
+"outline": PackedByteArray("IwAAABoAAAAAAAAAAAAAAB3rSD72edI7/XzIPkdA0jxR1BU/SBxsPeXFRj8LWtE9kt12P9gHIz5Q85I/ktdpPr/WqT9KZ54+AADAP/TIzT7HVtU/bG4BP6/D6T9jtB4/VTD9P0eWPj+2wwdAJvFgP25aEECrz4I/51IYQFE8lj9lpB9AOamqP+FGJkAAAMA/FzMsQEEp1j+HYjFAsAztP4LPNUCbSAJAMHU5QIdODkCPTzxA7IoaQH9bPkBg8CZAw5Y/QE5xM0AAAEBAAABAQAAAAAAAAEBA"),
+"quarter_turns": 0,
+"shape_id": "composite",
+"smoothing_strength": PackedByteArray("AwAAAAAAAAA=")
+}]
+gameplay_objects = [{
+"object_id": "left",
+"position": Vector2(260, 900),
+"properties": {},
+"rotation_degrees": PackedByteArray("AwABAKlnAparVTJA"),
+"type": "left_flipper"
+}, {
+"object_id": "right",
+"position": Vector2(340, 900),
+"properties": {},
+"rotation_degrees": PackedByteArray("AwABAAuzP41KNWRA"),
+"type": "right_flipper"
+}, {
+"object_id": "serve_spring",
+"position": Vector2(300, 850),
+"properties": {
+"color": "red",
+"launch_strength": PackedByteArray("AwAAAACAiUQ="),
+"width": PackedByteArray("AwAAAAAAIEI=")
+},
+"rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
+"type": "spring"
+}, {
+"object_id": "study_sling_3",
+"position": Vector2(180, 810),
+"properties": {
+"strength": PackedByteArray("AwAAAACAIkQ="),
+"width": PackedByteArray("AwAAAAAAoEI=")
+},
+"rotation_degrees": PackedByteArray("AwAAAAAA8EE="),
+"type": "slingshot"
+}, {
+"object_id": "study_sling_4",
+"position": Vector2(420, 810),
+"properties": {
+"strength": PackedByteArray("AwAAAACAIkQ="),
+"width": PackedByteArray("AwAAAAAAoEI=")
+},
+"rotation_degrees": PackedByteArray("AwAAAAAA8ME="),
+"type": "slingshot"
+}, {
+"object_id": "study_drop_bank",
+"position": Vector2(300, 160),
+"properties": {
+"color": "green",
+"completion_bonus": PackedByteArray("AwAAAAAA+kM="),
+"reset_delay": PackedByteArray("AwAAAAAAoEA="),
+"spacing": PackedByteArray("AwAAAAAAAEI="),
+"target_count": PackedByteArray("AwAAAAAAoEA="),
+"target_size": PackedByteArray("AwAAAAAAsEE=")
+},
+"rotation_degrees": PackedByteArray("AwAAAAAAAAA="),
+"type": "drop_target_bank"
+}]
+ring_trails = [{
+"end": Vector2(120, 50),
+"pattern_id": "ring_pattern_0",
+"spacing": PackedByteArray("AwAAAAAAyEE="),
+"start": Vector2(120, 210)
+}]
+entry_start_x = 5
+entry_width = 2
+exit_start_x = 2
+exit_width = 2
+activation_y = PackedByteArray("AwAAAAAASEQ=")
+spawn_position = Vector2(300, 850)
+goal_position = null
