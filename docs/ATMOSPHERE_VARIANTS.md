@@ -105,7 +105,9 @@ Chance is `enabled positive weight / sum of enabled positive weights`. The edito
 
 Prototype and Endless choose once per Zone, after choosing its Theme. A private RNG is seeded from the run seed, Zone index and Theme ID with a versioned `atmosphere/v1` salt. Stable ID order makes selection reproducible for the same registry. The choice, including its override values, is copied into every Act entry in that Zone. Editing a registry during a run does not rewrite already-planned Zones. Prototype course telemetry includes the selected atmosphere snapshot. Neither theme/Act planning RNG nor gameplay RNG is consumed by atmosphere selection.
 
-For development, the Lab itself previews any stored or unsaved variant directly. **Playtest args** copies an argument for the normal launcher:
+For development, **Play Prototype** in the Lab launches the current Act and theme with the current appearance, including unsaved edits. It also works directly from the user-local Lab draft. This preview does not write production variants. See [the Lab playtest workflow](LIGHTING_LAB.md).
+
+The explicit command-line override remains available for saved variants:
 
 ```powershell
 & ".\Play Prototype.cmd" -Atmosphere ice_cap:variant_123456

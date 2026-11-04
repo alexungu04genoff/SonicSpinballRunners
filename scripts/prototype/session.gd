@@ -70,18 +70,28 @@ func _ready() -> void:
  var arguments := OS.get_cmdline_user_args()
  var act_argument := arguments.find("--act")
  if act_argument >= 0 and act_argument + 1 < arguments.size():
-  configure_act_test(arguments[act_argument + 1])
+  var preview_path := ""
+  for argument: String in arguments:
+   if argument.begins_with("--atmosphere-preview="): preview_path = argument.trim_prefix("--atmosphere-preview=")
+  configure_act_test(arguments[act_argument + 1], preview_path)
   for argument: String in arguments:
    if argument.begins_with("--theme="): run_configuration.selected_theme_ids = [argument.trim_prefix("--theme=")]
   start_run.call_deferred()
   return
  _show_menu()
 
-func configure_act_test(path: String) -> void:
+func configure_act_test(path: String, preview_path := "") -> void:
  run_configuration = Run.RunPlan.Configuration.new([path])
  run_configuration.single_act_test = true
  run_configuration.zone_count = 1
  if run_configuration.atmosphere_overrides.is_empty(): run_configuration.selected_theme_ids = ["green_hill"]
+ if not preview_path.is_empty():
+  var loaded := preload("res://scripts/atmosphere/playtest_snapshot.gd").read_preview(preview_path)
+  run_configuration.atmosphere_preview_error = loaded.error
+  if loaded.error.is_empty():
+   run_configuration.atmosphere_preview = loaded.preview
+   run_configuration.selected_theme_ids = [loaded.preview.theme]
+   run_configuration.atmosphere_overrides.clear()
  practice_mode = true
 
 func _save_settings() -> void:
@@ -178,12 +188,18 @@ func _show_menu() -> void:
  if not testing and practice_best_score > 0: _label(stack, "Practice best (all setups): %d" % practice_best_score, 16)
  if testing:
   _label(stack, run_configuration.selected_act_paths[0].get_file(), 18)
+  if not run_configuration.atmosphere_preview.is_empty():
+   _label(stack, "Lab atmosphere: " + str(run_configuration.atmosphere_preview.get("name", "Preview")), 16)
   var themes := OptionButton.new()
   for id: String in Run.RunPlan.Configuration.Registry.IDS:
    themes.add_item(Run.RunPlan.Configuration.Registry.NAMES[themes.item_count])
    themes.set_item_metadata(themes.item_count - 1, id)
    if id == run_configuration.selected_theme_ids[0]: themes.select(themes.item_count - 1)
-  themes.item_selected.connect(func(index: int): run_configuration.selected_theme_ids = [themes.get_item_metadata(index)])
+  themes.tooltip_text = "Changing theme clears the current Lab atmosphere preview."
+  themes.item_selected.connect(func(index: int):
+   run_configuration.selected_theme_ids = [themes.get_item_metadata(index)]
+   run_configuration.atmosphere_preview.clear()
+  )
   stack.add_child(themes)
  start_button = _action(stack, "Play Act" if testing else "Start run", start_run)
  if not testing:
@@ -219,6 +235,7 @@ func start_run() -> void:
  game.run_configuration.zone_count = run_configuration.zone_count
  game.run_configuration.selected_theme_ids = run_configuration.selected_theme_ids.duplicate()
  game.run_configuration.single_act_test = run_configuration.single_act_test
+ game.run_configuration.atmosphere_preview = run_configuration.atmosphere_preview.duplicate(true)
  game.character_id = selected_character
  game.practice_mode = practice_mode
  game.completed.connect(_on_completed)

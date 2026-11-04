@@ -23,6 +23,8 @@ Sonic momentum, pinball physics and a configurable roguelite run, built with God
 
 Two specialist launchers remain deliberately: **Authored Act Playtest.cmd** exposes the diagnostic 2D/3D player used by editor tests; **Play Green Hill.cmd** is retained for ongoing local art-review work. Use the six workflow launchers above for ordinary development.
 
+**Atmosphere Lab.cmd** and **Lighting Lab.cmd** open the same current lighting/atmosphere editor. Its **Play Prototype** button tests the loaded Act with the current theme and lighting, including unsaved drafts, without publishing variants. See [Atmosphere Lab](docs/LIGHTING_LAB.md).
+
 ## Controls
 
 | Action | Prototype keyboard | Controller |

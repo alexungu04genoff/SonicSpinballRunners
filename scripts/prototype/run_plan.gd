@@ -34,6 +34,8 @@ static func build(documents: Array, seed_value: int, configuration: RefCounted =
  if configuration.single_act_test:
   var theme: String = configuration.selected_theme_ids[0]
   var atmosphere := preload("res://scripts/atmosphere/variants.gd").new().choose(theme, seed_value, 0, configuration.atmosphere_overrides.get(theme, ""))
+  if not configuration.atmosphere_preview.is_empty():
+   atmosphere = {"id": "lab_preview", "name": configuration.atmosphere_preview.get("name", "Lab preview"), "enabled": true, "weight": 1.0, "values": configuration.atmosphere_preview.values.duplicate(true)}
   return [{"sequence": 0, "zone": 0, "act": 0, "id": 0, "theme": theme, "atmosphere": atmosphere, "offset": Vector2.ZERO}]
  var shuffler := StreamPlan.new(seed_value)
  var theme_shuffler := StreamPlan.new(seed_value)

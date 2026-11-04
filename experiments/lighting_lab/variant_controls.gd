@@ -51,10 +51,8 @@ func install(owner_panel: CanvasLayer, parent: Node) -> void:
  add_child(row)
  panel._button(row, "Save Variant", save_variant)
  panel._button(row, "Revert", revert)
- panel._button(row, "Playtest args", func():
-  DisplayServer.clipboard_set("-Atmosphere " + theme_id + ":" + context.selected)
-  panel.message.text = "Copied Prototype playtest override. Save the variant before launching."
- )
+ var play: Button = panel._button(row, "Play Prototype", func(): panel.game.play_prototype())
+ play.tooltip_text = "Play the current Act and atmosphere, including unsaved lighting edits. Production variants are not changed."
  status = Label.new()
  status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  add_child(status)

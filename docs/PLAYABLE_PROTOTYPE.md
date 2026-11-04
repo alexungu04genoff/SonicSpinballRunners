@@ -12,6 +12,8 @@ This explicit authoring path builds only the selected Act and theme in memory; n
 
 **Play Act.cmd**, **Play Prototype.cmd**, and Godot F5 open Prototype. To test a file directly, use `Play Act.cmd -ActPath "data/acts/Experiments/Lockbox.tres"` with optional `-Theme chemical_plant`. Existing exported tools need rebuilding to receive the changed Play action. Source verification: nine Act-test checks passed both headlessly and rendered, plus 41 existing run-plan checks.
 
+**Atmosphere Lab / Lighting Lab** use this same Prototype Act-test flow through **Play Prototype**. The selected theme and current unsaved appearance are captured for that test without publishing variants. The existing runtime applies the preview to foreground and background, and telemetry records it. See [Lab controls and preview behavior](LIGHTING_LAB.md).
+
 ## Automatic run archive and run feel
 
 Prototype automatically archives one JSON per run in `user://telemetry/runs/`. On Windows with the default profile this resolves to `%APPDATA%\Godot\app_userdata\Sonic Spinball Runners\telemetry\runs`. Results retain **Copy run data**, show save status, and offer **Open telemetry folder**. No administrator permissions, repository writes, uploads or automatic retention deletion are involved.

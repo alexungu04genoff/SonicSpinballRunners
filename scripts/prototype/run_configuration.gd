@@ -7,6 +7,8 @@ var zone_count := 2
 var selected_theme_ids: Array = ["green_hill", "chemical_plant"]
 var selected_act_paths: Array = []
 var single_act_test := false
+var atmosphere_preview := {}
+var atmosphere_preview_error := ""
 
 func _init(paths: Array = []) -> void:
  selected_act_paths = paths.duplicate()
@@ -23,6 +25,11 @@ func apply_cli_override() -> void:
     zone_count = 1
 
 func validation_error() -> String:
+ if not atmosphere_preview_error.is_empty(): return atmosphere_preview_error
+ if not atmosphere_preview.is_empty():
+  var error := preload("res://scripts/atmosphere/playtest_snapshot.gd").validation_error(atmosphere_preview)
+  if not error.is_empty(): return error
+  if not single_act_test or selected_theme_ids != [atmosphere_preview.theme]: return "Atmosphere previews require an Act test in the matching theme."
  if zone_count < 1 or zone_count > 7: return "Choose 1–7 Zones."
  if selected_theme_ids.is_empty(): return "Select at least one theme."
  for id: String in selected_theme_ids:
@@ -50,6 +57,7 @@ func snapshot() -> Dictionary:
  if single_act_test:
   result["single_act_test"] = true
   result.acts_per_zone = 1
+  if not atmosphere_preview.is_empty(): result["atmosphere_preview"] = atmosphere_preview.duplicate(true)
  return result
 
 func fingerprint() -> String:

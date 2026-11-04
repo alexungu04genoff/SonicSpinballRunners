@@ -106,7 +106,7 @@ func _build_ui() -> void:
  column.add_child(hint)
  var row := HBoxContainer.new()
  column.add_child(row)
- pause_button = _button(row, "Pause play", func(): game.toggle_pause())
+ pause_button = _button(row, "Pause preview", func(): game.toggle_pause())
  _button(row, "Frame Act", func():
   game.presentation.set_camera_follow(true)
   game.presentation.set_camera_follow(false)
@@ -666,7 +666,7 @@ func _process(delta: float) -> void:
  # local visual-lab versions have a separate counter with a different interval.
  var inherited_fps = game.get("fps_label")
  if is_instance_valid(inherited_fps) and inherited_fps.visible: inherited_fps.hide()
- var pause_text := "Resume play" if get_tree().paused else "Pause play"
+ var pause_text := "Resume preview" if get_tree().paused else "Pause preview"
  if pause_button.text != pause_text: pause_button.text = pause_text
  panel.offset_top = 10.0 if game.player_view else 30.0
  panel.offset_bottom = -10.0 if game.player_view else -215.0

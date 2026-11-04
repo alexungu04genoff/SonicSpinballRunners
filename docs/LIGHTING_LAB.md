@@ -6,7 +6,13 @@
 
 The current manual palette workflow, migration rules and implementation are documented in [Atmosphere authoring](ATMOSPHERE_AUTHORING.md).
 
-Double-click **`Lighting Lab.cmd`** at the repository root. The existing Lab now includes atmosphere authoring; **`Atmosphere Lab.cmd`** forwards to the same launcher. It opens the existing authored Act player with **Forward+/Vulkan**, an atmosphere inspector and the current local artwork. Production launchers, project renderer, physics and authored Acts are unchanged. Saved Lab presets do not modify production bakes; source shader changes in this milestone require the normal rebake.
+Double-click **`Atmosphere Lab.cmd`** or **`Lighting Lab.cmd`** at the repository root. Both open the same current tool; there is no separate newer editor to locate. It opens the atmosphere inspector with **Forward+/Vulkan** and the current local artwork. Saved Lab presets do not modify production bakes; source shader changes require the normal rebake.
+
+**Play Prototype (2026-11-04)** opens the currently loaded Act in the real single-Act Prototype session. The bottom Play button and the atmosphere action row both use this path. It carries the selected theme and all current lighting/palette values, including an unsaved Lab draft or variant edit. With **Show original atmosphere** enabled, it carries the visible original comparison instead. No Save Variant or production bake is required. The prototype uses its usual Goal, 1,000-point target, Practice retries and results.
+
+The appearance is captured when Play is clicked. To test newer lighting edits, return to the Lab and click Play Prototype again. Restart inside Prototype reloads the Act while retaining that captured appearance. Changing theme in the test menu clears the Lab preview. Scenery composition continues to use the Act's saved scenery settings; use the Scenery tab's Save action for those edits. Viewport inspection toggles and camera framing are not production atmosphere settings.
+
+Preview data is stored separately under `user://atmosphere_playtests`, validated with the existing atmosphere field rules and recorded in run telemetry. Production variant files, normal run preferences and best records remain unchanged. Thirteen focused Lab-to-Prototype checks pass headlessly and rendered; normal run planning retains 41 passing checks. Existing exported tools must be rebuilt to receive the new button.
 
 ## Inspect and play
 
@@ -14,8 +20,8 @@ Double-click **`Lighting Lab.cmd`** at the repository root. The existing Lab now
 - Wheel events over the lighting panel stay in the panel, including at either scroll limit and when it overlaps fullscreen Play View.
 - **O / Overview / Follow:** switch between inspecting the Act and following the ball. **Frame Act** restores the full overview.
 - **F6 / Hide:** collapse or reopen lighting controls. The world expands into the freed space.
-- **Pause play / Resume play:** hold the ball while tuning; lighting and camera controls remain live. Time-driven scenery shaders may continue animating.
-- Use the existing bottom **Theme**, **Load Act**, **Reload Act**, character and play controls. Existing flipper/steering controls and 120 Hz physics remain intact.
+- **Pause preview / Resume preview:** hold the inspection ball while tuning; lighting and camera controls remain live. Time-driven scenery shaders may continue animating.
+- Use the bottom **Theme**, **Load Act** and **Reload Act** controls to choose the inspection context. **Play Prototype** opens that context for gameplay testing; the Lab stays open for editing.
 - **Retro** toggles the default world filter stack. F4 and the existing Retro panel remain available.
 - The lab starts **uncapped with VSync off**. Its **VSync** switch optionally synchronizes rendering to the display. A top-left counter shows FPS and average frame time, refreshed twice per second, including with the inspector hidden and in fullscreen Play View. Physics remains 120 Hz. These are process-local lab settings, not production defaults.
 

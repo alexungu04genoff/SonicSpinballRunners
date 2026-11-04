@@ -1,6 +1,7 @@
 extends "res://experiments/visual_lab/visual_lab.gd"
 ## Presentation-only atmosphere review using the existing authored Act player.
 var lighting_controls: CanvasLayer
+const PlaytestSnapshot = preload("res://scripts/atmosphere/playtest_snapshot.gd")
 
 func _ready() -> void:
  # Exported authoring tools edit external Acts so scenery sidecars remain writable.
@@ -11,7 +12,7 @@ func _ready() -> void:
  if DisplayServer.get_name() != "headless":
   DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
  super._ready()
- DisplayServer.window_set_title("Lighting Lab · Atmosphere")
+ DisplayServer.window_set_title("Atmosphere Lab · Lighting")
  if not is_instance_valid(presentation): return
  # Other local material experiments may be installed in the shared visual lab.
  # Keep their selected materials, but give this lab sole ownership of its UI.
@@ -19,8 +20,40 @@ func _ready() -> void:
  lighting_controls = preload("res://experiments/lighting_lab/live_controls.gd").new()
  add_child(lighting_controls)
  lighting_controls.install(self)
+ # Keep the embedded ball as an inspection aid; the main Play action uses Prototype.
+ play_buttons.get_child(0).hide()
+ var prototype_button := _button("Play Prototype", play_prototype)
+ play_buttons.add_child(prototype_button)
+ play_buttons.move_child(prototype_button, 0)
  presentation.set_camera_follow(false)
  print("LIGHTING_LAB_READY | ", RenderingServer.get_current_rendering_method(), " | VSync ", DisplayServer.window_get_vsync_mode(), " | FPS cap ", Engine.max_fps, " | F6 controls | wheel zoom | middle-drag pan | O follow/overview")
+
+func prototype_playtest_request() -> Dictionary:
+ if loading_act or not is_instance_valid(lighting_controls): return {"error": "Wait for the Act to finish loading."}
+ # Commit text currently being edited before capturing the visible appearance.
+ var focus := get_viewport().gui_get_focus_owner()
+ if focus is LineEdit and focus.get_parent() is SpinBox: focus.get_parent().apply()
+ var source: Dictionary = lighting_controls.originals if lighting_controls.compare.button_pressed else lighting_controls.values
+ var name := "Original atmosphere" if lighting_controls.compare.button_pressed else "Lab draft"
+ var record: Dictionary = lighting_controls.variants.selected_record()
+ if not record.is_empty() and not lighting_controls.compare.button_pressed: name = str(record.name)
+ var saved := PlaytestSnapshot.save_preview({"theme": theme_id, "name": name, "values": source.duplicate(true)})
+ if not saved.error.is_empty(): return saved
+ var arguments := PackedStringArray(["--rendering-method", "forward_plus", "--rendering-driver", "vulkan"])
+ if OS.has_feature("editor"):
+  arguments.append_array(["--path", ProjectSettings.globalize_path("res://"), "res://scenes/prototype_run.tscn", "--"])
+ else:
+  arguments.append_array(["--", "--portable-play"])
+ arguments.append_array(["--act", ProjectSettings.globalize_path(authored_act_path), "--theme=" + theme_id, "--atmosphere-preview=" + saved.path])
+ return {"error": "", "arguments": arguments, "path": saved.path}
+
+func play_prototype() -> void:
+ var request := prototype_playtest_request()
+ if not request.error.is_empty():
+  lighting_controls.message.text = request.error
+  return
+ var process := OS.create_process(OS.get_executable_path(), request.arguments)
+ lighting_controls.message.text = "Prototype opened with this atmosphere. New lighting edits: click Play Prototype again." if process >= 0 else "Could not open Prototype."
 
 func _hide_material_controls() -> void:
  # The shared visual Lab can provide its own FPS overlay. This inspector owns
