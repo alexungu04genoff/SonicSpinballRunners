@@ -1,5 +1,6 @@
 extends SceneTree
-## Whole-frame comparison in the real engine. Run graphically with VSync disabled.
+## Specialized Visual Lab aurora A/B benchmark; not a Prototype frame budget.
+## Source/authoring evidence only. Canonical appearance: prototype_appearance_capture.gd.
 const Game = preload("res://experiments/visual_lab/visual_lab.gd")
 const Filter = preload("res://scripts/retro/retro_filter.gd")
 const OUTPUT := "res://test-results/ice-review"
@@ -7,6 +8,7 @@ var game: Node
 var results: Array[Dictionary] = []
 
 func _initialize() -> void:
+ print("SOURCE_LAB | ice_aurora_benchmark | Not production appearance")
  call_deferred("run")
 
 func frames(count: int) -> void:

@@ -1,5 +1,6 @@
 extends SceneTree
-## Matched production-game captures. Reference materials never enter saved Acts.
+## Visual Lab material-authoring comparison, including reference materials.
+## Source/authoring evidence only. Canonical appearance: prototype_appearance_capture.gd.
 const Game = preload("res://experiments/visual_lab/visual_lab.gd")
 const GreenHill = preload("res://scripts/themes/green_hill_theme.gd")
 const OUTPUT := "res://docs/green-hill-textures/"
@@ -7,6 +8,7 @@ var game: Node
 var failures := 0
 
 func _initialize() -> void:
+ print("SOURCE_LAB | green_hill_texture_scene | Not production appearance")
  call_deferred("run")
 
 func frames(count: int) -> void:

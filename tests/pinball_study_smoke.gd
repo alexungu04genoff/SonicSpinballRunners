@@ -1,11 +1,12 @@
 extends "res://tests/authored_gimmick_regression.gd"
+## Visual Lab mechanism/terrain study. Production appearance uses Prototype.
 func run() -> void:
  root.size = Vector2i(1280, 900)
  game = ObservedGame.new()
  game.authored_act_path = "res://experiments/pinball_vocabulary/study_16.tres"
  root.add_child(game)
  await frames(30)
- check(game.playfield.source == "authored", "Study starts in the normal game", game.last_source_error)
+ check(game.playfield.source == "authored", "Study starts in the source lab", game.last_source_error)
  await move_in_run(Vector2(500, 600), Vector2.ZERO)
  var hardware := visuals()
  var slings := 0

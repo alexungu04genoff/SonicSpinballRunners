@@ -1,5 +1,5 @@
 extends "res://tests/gimmick_batch_regression.gd"
-## Original hardware gallery rendered by the live main-game theme presenter.
+## Visual Lab source hardware gallery; not Prototype appearance validation.
 func run() -> void:
  if DisplayServer.get_name() == "headless": quit(1); return
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results"))

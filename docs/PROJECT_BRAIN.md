@@ -1,5 +1,11 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Prototype owns the appearance evidence — 2026-11-04
+
+Bro audited the graphical paths after the Play migrations. Several “actual game” captures were still Visual Lab. The canonical all-theme capture now opens the real Prototype session, requires validated disk recipes and records matching state/camera plus exact source/bake/atmosphere receipts. Selected local art is checked against the texture pixels loaded by the runtime. Visual Lab stays useful for material work; its theme-switch regression now says source_lab. The old standalone player stays only for geometry/lifecycle/2D-overlay checks, with a diagnostic title. Its Green Hill file is merely an alias to the shared source presenter, not a secret old art implementation.
+
+The first audit found six themes stale. Rebuild the chosen Act in all eight before comparison; do not trust old screenshot folders or regenerate selected artwork with the historical texture tools. Ordinary editor Act tests still build in memory; normal runs and canonical appearance evidence use the disk library. See [the audit, reproduction command and limits](PRODUCTION_APPEARANCE.md). Other Acts can still need Bake Prototype.
+
 ## Telemetry for the next actual playtests — 2026-11-04
 
 V4 follows the difficulty metadata from V3. Bro added powered Slingshot counts, Drop Bank hits/completions/real timed resets, Speed outcomes by range bucket, Flight time/lifts, Power target types and a tiny fixed-memory Ball-speed histogram. No frame dumps and no robot declaring the Act good or bad. Old scoring/timing fields keep their meaning, including Drop Targets under Switch/Bank score categories. Each Act carries character/type, authored difficulty and its revision; run totals stay compact.

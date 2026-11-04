@@ -1,5 +1,6 @@
 extends SceneTree
-## Review-only overlay on the real authored game. Never changes the Act.
+## Visual Lab close-up emission/material authoring diagnostic.
+## Source/authoring evidence only. Canonical appearance: prototype_appearance_capture.gd.
 const Game = preload("res://experiments/visual_lab/visual_lab.gd")
 const OUTPUT := "res://test-results/casino-review"
 var game: Node
@@ -18,6 +19,7 @@ class Callout extends Node2D:
   draw_string(ThemeDB.fallback_font, Vector2(-6, 7), str(number), HORIZONTAL_ALIGNMENT_LEFT, -1, 22, tint)
 
 func _initialize() -> void:
+ print("SOURCE_LAB | casino_emitter_capture | Not production appearance")
  call_deferred("run")
 
 func label(parent: Node, text: String, at: Vector2, size: int, color := Color.WHITE) -> Label:

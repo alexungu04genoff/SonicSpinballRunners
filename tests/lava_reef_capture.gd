@@ -1,5 +1,6 @@
 extends SceneTree
-## Matched captures of the real main engine, with optional local authored files.
+## Visual Lab source-theme and animated lava inspection.
+## Source/authoring evidence only. Canonical appearance: prototype_appearance_capture.gd.
 const Game = preload("res://experiments/visual_lab/visual_lab.gd")
 const Themes = preload("res://scripts/themes/theme_registry.gd")
 const Filter = preload("res://scripts/retro/retro_filter.gd")
@@ -10,6 +11,7 @@ var manifest: Array[Dictionary] = []
 var effect_results: Array[Dictionary] = []
 
 func _initialize() -> void:
+ print("SOURCE_LAB | lava_reef_capture | Not production appearance")
  call_deferred("run")
 
 func frames(count := 8) -> void:

@@ -1,5 +1,7 @@
 # Green Hill Visual Lab
 
+**Scope:** Visual Lab is a source/character/material authoring tool. Production appearance belongs to the [Prototype capture workflow](../../docs/PRODUCTION_APPEARANCE.md), which uses validated disk bakes, current atmosphere and the real camera/HUD.
+
 **Current presentation (2026-10-30):** Sonic, Tails, Knuckles and Shadow remain in character-colored ball form. The disabled imported-model loader, Blender preparation scripts and rig-only orientation probe were retired during repository cleanup. Ball spin, motion trails, reaction states, Special effects, character study, camera and authoritative 2D gameplay remain. Asset provenance below is historical context, not a runtime dependency.
 
 The main authored Act player wraps the shared 2D physics engine in collisionless 3D presentation. **Play Act.cmd** opens it; the default Act is First Try Smooth Decor. The older Play Green Hill launcher is retained for local art-review work. The former generated Free Play, Score Attack and score-gated Green Hill Zone have been removed. Endless uses authored Acts and has its own **Play Endless.cmd** launcher.

@@ -1,6 +1,6 @@
 extends SceneTree
-## Authored Act replacement uses the actual themed application and
-## shared physics callbacks; graphical runs capture its ordinary retained HUD.
+## Visual Lab authored-source replacement and shared physics diagnostic.
+## The historical filename does not imply Prototype appearance validation.
 const ActData = preload("res://scripts/act_editor/act_geometry.gd")
 const FIXTURE := "res://test-results/main-engine-act.tres"
 const COMPARISON := "res://data/acts/scale_comparison.tres"
@@ -37,7 +37,7 @@ func frames(count := 3) -> void:
 
 func fixture() -> Resource:
 	var document := ActData.new()
-	document.title = "Shared main-engine regression"
+	document.title = "Visual Lab authored-source regression"
 	document.cell_size = 100.0
 	document.spawn_position = Vector2(442.5, 900.25)
 	document.activation_y = 600.0
@@ -121,7 +121,7 @@ func check_rings_and_score() -> void:
 	game.tuning.use_profile(game.specials.definition.profile)
 	game.reset_ball()
 	await frames(3)
-	check(game.ball.serve_pending and game.ball.position == game.playfield.spawn and game.scorecraft.chain == 0, "Normal main-game reset clears combo state and returns to authored Spawn")
+	check(game.ball.serve_pending and game.ball.position == game.playfield.spawn and game.scorecraft.chain == 0, "Source-Lab reset clears combo state and returns to authored Spawn")
 
 
 func check_specials() -> void:
@@ -207,7 +207,7 @@ func check_switches() -> void:
 		game.presentation.set_camera_follow(true)
 		await frames(3)
 		await RenderingServer.frame_post_draw
-		check(root.get_texture().get_image().save_png("res://test-results/selected-act-green-hill.png") == OK, "Selected Act captured in the same normal main-game HUD")
+		check(root.get_texture().get_image().save_png("res://test-results/source-lab-selected-act-green-hill.png") == OK, "Selected Act captured in the source-Lab HUD")
 		game.presentation.set_camera_follow(false)
 	check(game.request_authored_act(FIXTURE), "The same application accepts an authored Act after another Act")
 	await await_rebuild()

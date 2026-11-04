@@ -1,5 +1,6 @@
 extends SceneTree
-## Production same-Act comparisons; fixed camera, ball and document throughout.
+## Visual Lab source-theme comparison and water/decor inspection.
+## Source/authoring evidence only. Canonical appearance: prototype_appearance_capture.gd.
 const Game = preload("res://experiments/visual_lab/visual_lab.gd")
 const Themes = preload("res://scripts/themes/theme_registry.gd")
 const Filter = preload("res://scripts/retro/retro_filter.gd")
@@ -9,6 +10,7 @@ var failures := 0
 var manifest: Array[Dictionary] = []
 
 func _initialize() -> void:
+ print("SOURCE_LAB | aquarium_park_capture | Not production appearance")
  call_deferred("run")
 
 func frames(count := 8) -> void:

@@ -1,5 +1,7 @@
 extends SceneTree
-## Stationary rendering probe. Diagnostic ablations never change saved settings.
+## Stationary rendering probe. Prototype is the production baseline.
+## --profile-mode=act uses Visual Lab source construction; endless is a stream stress test.
+## Diagnostic ablations never change saved settings.
 const Run = preload("res://scripts/prototype/zone_run.gd")
 const HardwareBatch = preload("res://scripts/pinball_mesh_batch.gd")
 const Report = preload("res://tests/render_profile_support.gd")

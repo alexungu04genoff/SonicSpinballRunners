@@ -30,7 +30,7 @@ func run() -> void:
  game.authored_act_path = "res://data/acts/playtest_showcase.tres"
  root.add_child(game)
  await frames(3)
- check(ProjectSettings.get_setting("application/run/main_scene") == "res://experiments/visual_lab/visual_lab.tscn", "Project entry point opens themed Play Act")
+ check(ProjectSettings.get_setting("application/run/main_scene") == "res://scenes/prototype_run.tscn", "Prototype owns the project entry point; this Lab is a source inspection tool")
  check(collision_count(game.presentation) == 0, "Scenery and ball-form character add no 3D collision objects")
  check(not game.debug_panel.visible and game.presentation.camera.current, "Dedicated play view starts without the physics debug panels")
  var actor: Node3D = game.character

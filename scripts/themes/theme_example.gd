@@ -1,5 +1,5 @@
 extends "res://experiments/visual_lab/visual_lab.gd"
-## Example configuration only; the ordinary main game owns all gameplay.
+## Visual Lab authoring example. This is not the Prototype production runtime.
 @export_file("*.tres") var example_act_path := "res://data/acts/decor_terraces.tres"
 
 func _ready() -> void:

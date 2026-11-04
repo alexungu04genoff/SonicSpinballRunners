@@ -54,3 +54,5 @@ Use Godot **4.7.2**. Windows launchers, the Godot project and new exports defaul
 Run focused checks with `godot --headless --path . --script res://tests/<test>.gd` after importing the project. Useful checks include profiles/physics, `scorecraft_regression`, `buddy_scoring_regression`, `enemy_regression`, `authored_main_game_regression`, `geometry_bake_regression`, `prototype_plan_regression`, `prototype_setup_regression`, `prototype_archive_regression` and `endless_regression`. Rendered `endless_scene_smoke.gd -- --require-bakes` and `endless_stream_profile.gd` exercise actual graphics and transitions; use the default Forward+ / Vulkan without `--headless`.
 
 [Shared project brain](docs/PROJECT_BRAIN.md) · [Living design](docs/GAME_DESIGN.md) · [Act editor](docs/ACT_GEOMETRY_EDITOR.md) · [Authored runtime](docs/PLAYFIELD_SOURCES.md) · [Scoring](docs/ACT_SCORING.md)
+
+Production appearance is authoritative in Prototype. Use [the canonical eight-theme capture and graphical-path audit](docs/PRODUCTION_APPEARANCE.md) when reviewing the current game; Lab previews and historical texture sheets are source studies.

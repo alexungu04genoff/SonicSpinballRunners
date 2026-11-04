@@ -1,11 +1,13 @@
 extends SceneTree
-## Runs the actual game with the same document and state for both texture themes.
+## Visual Lab material-authoring comparison with matched source geometry.
+## Source/authoring evidence only. Canonical appearance: prototype_appearance_capture.gd.
 const Game = preload("res://experiments/visual_lab/visual_lab.gd")
 const OUTPUT := "res://docs/rooftop-textures/"
 var game: Node
 var failures := 0
 
 func _initialize() -> void:
+ print("SOURCE_LAB | rooftop_texture_scene | Not production appearance")
  call_deferred("run")
 
 func frames(count: int) -> void:

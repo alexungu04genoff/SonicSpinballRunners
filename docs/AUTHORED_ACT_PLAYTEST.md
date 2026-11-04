@@ -1,5 +1,7 @@
 # Authored Act diagnostics
 
+**Current scope — 2026-11-04:** This is a specialist geometry/lifecycle diagnostic, not the supported gameplay or appearance baseline. Its Green Hill renderer is a compatibility alias to the shared source presenter. Use [Prototype production capture](PRODUCTION_APPEARANCE.md) for appearance and Play Act/editor Play for gameplay.
+
 **Normal human authored playtesting happens through the main Green Hill application.** Launch **Play Green Hill.cmd** and use **Level source → Authored Act / Load Act…**. That path retains the normal game's ball, tuning, input, rings, scoring, characters, specials, HUD and camera. See [one engine, multiple level sources](PLAYFIELD_SOURCES.md) for the current gameplay workflow and architecture.
 
 The standalone scene below remains a low-level geometry, scale and lifecycle diagnostic. Its simplified loop, toolbar, counters and reset rules are test fixtures, not a second production gameplay engine. It compiles the same canonical terrain silhouettes and reuses the same primitive physics implementations. Keep reusable loading/compiler/lifecycle helpers shared; add normal gameplay features to `game.gd`.

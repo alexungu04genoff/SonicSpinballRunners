@@ -1,5 +1,6 @@
 extends Control
-## One saved authored Act, using existing authoritative gameplay physics.
+## Specialist geometry/lifecycle diagnostic with shared authoritative physics.
+## Simplified reset/overview and legacy Green Hill alias are not production appearance.
 signal act_activated
 signal exit_reached
 signal drained
@@ -92,7 +93,7 @@ func _build_ui() -> void:
  var toolbar := HBoxContainer.new()
  column.add_child(toolbar)
  title_label = Label.new()
- title_label.text = "AUTHORED ACT / PLAYTEST"
+ title_label.text = "ACT GEOMETRY / DIAGNOSTIC"
  title_label.add_theme_font_size_override("font_size", 22)
  title_label.add_theme_color_override("font_color", Color("70e5d5"))
  title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL

@@ -1,5 +1,7 @@
 # Editable terrain textures across all eight themes
 
+**Authority correction — 2026-11-04:** Images below document historical source-material studies in Visual Lab/direct builders. Earlier “actual-game” wording did not mean Prototype. For current production appearance, use the [baked eight-theme Prototype comparison](PRODUCTION_APPEARANCE.md). Selected local artwork may supersede the original PNG generations described here.
+
 Every registered theme now has image-based floor, raised-top, wall, outer-facade and ramp artwork, plus floor and top borders that follow the final terrain contours. Ramp edge caps use the same top-border artwork with route-distance coordinates. These are presentation changes: Act geometry, collisions, route height, width, control points, scoring and physics remain unchanged.
 
 ![All eight themes](all-theme-textures/all-themes.png)
@@ -38,7 +40,7 @@ The same camera, light and mesh were captured before conversion and after conver
 
 Individual full-size `*-curve-before.png`, `*-curve.png`, `*-ramp-before.png` and `*-ramp.png` files are in `docs/all-theme-textures/`. Before images are historical captures; rerunning the tool against current code produces current materials.
 
-Actual-game captures of the same smoothed local Act are named `local-act-<theme>.png` and `local-act-<theme>-detail.png`. The review loads an isolated copy and checks its bytes after the theme cycle; the user's source Act is not rewritten or committed.
+Historical Visual Lab source captures of the same smoothed local Act are named `local-act-<theme>.png` and `local-act-<theme>-detail.png`. The review loads an isolated copy and checks its bytes after the theme cycle; the user's source Act is not rewritten or committed.
 
 ## Missing-surface audit
 
@@ -48,13 +50,13 @@ Generated wall-mounted flipper housings bypass the authored terrain border path.
 
 ## Reproduce and limitations
 
-Use Godot 4 with `--path .`. Graphical captures on the verified Windows setup use `--rendering-method gl_compatibility --rendering-driver opengl3_angle`.
+Use Godot 4 with `--path .`. Current production comparisons require Forward+/Vulkan; run `tools/capture_prototype_appearance.ps1` to bake and capture. The older conversion evidence below used Compatibility/ANGLE.
 
 - `--script res://tests/all_theme_texture_review.gd`: curved walls/ledges and elevated ramps, all eight themes.
-- `--script res://tests/all_theme_texture_scene.gd -- --act=res://data/acts/YourAct.tres`: actual game, identical document and ball identity across theme switches. The default Act is the committed terrace example.
+- `--script res://tests/all_theme_texture_scene.gd`: delegates to the canonical baked Prototype comparison. Prepare bakes with the runner above; the default is First Try Smooth Decor. Each theme uses a fresh session with equal state/camera, not one live theme-switching Lab.
 - `--headless --script res://tests/theme_texture_regression.gd`: imported maps, lossless mipmaps, route mapping and generated housing borders.
 - `--headless --script res://tests/ramp_height_theme_regression.gd`: physical ramp clearance plus rendered ramp/border coverage across all themes.
-- `--headless --script res://tests/terrain_border_regression.gd` and `res://tests/theme_runtime_regression.gd`: contour validity and gameplay-state preservation.
+- `--headless --script res://tests/terrain_border_regression.gd` and `res://tests/source_theme_runtime_regression.gd`: contour validity and source-Lab state preservation. `theme_runtime_regression.gd` now guards Prototype production authority.
 - `--script res://tools/bake_theme_textures.gd -- --overwrite`: explicitly regenerate the six new sets from the original shaders and border recipe. This overwrites painted edits; do not use it for ordinary texture tuning.
 
 PNG artwork uses texture memory and has finite close-up resolution. Dense smoothed Acts still take several seconds to rebuild presentation; borders are built on loading/theme changes, not every frame. Human review still owns border widths, mortar contrast and readability under the retro filters. No external artwork was downloaded.
@@ -69,6 +71,6 @@ Godot 4.7.2 on Windows, isolated checkout of `4c6a297` plus this change:
 - Ramp heights, surfaces and all-theme ledges: **90 checks, 0 failures**.
 - Theme runtime, authored/generated layouts and state preservation: **813 checks, 0 failures**.
 - Pinball mechanics, including elevated traversal and source switching: **42 checks, 0 failures**.
-- **16** final curved-wall/ramp captures and **16** actual-game captures completed without errors and were visually reviewed. All eight theme switches kept the document fingerprint and ball identity; the local Act copy remained byte-identical to its source.
+- **16** final curved-wall/ramp captures and **16** Visual Lab source captures completed without errors and were visually reviewed. All eight theme switches kept the document fingerprint and ball identity; the local Act copy remained byte-identical to its source.
 
 The five regression scripts total **1,453 checks**. A final authored-game integration run in the main working directory passed another **70 checks**, bringing the total to **1,523**. Four mixed-indent lines in the local gameplay script were normalized back to their committed whitespace so this startup check could run; gameplay code was not changed. The smoothed local Act's theme rebuilds measured approximately **2.1–3.5 seconds** during the capture run; these are loading/rebuild times, not frame-rate benchmarks. The full regression suite used an isolated checkout to preserve unrelated local work. Logs are under the ignored `test-results/all-theme-textures/` directory.

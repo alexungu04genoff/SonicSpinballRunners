@@ -17,7 +17,7 @@ if (-not (Test-Path -LiteralPath $GodotPath -PathType Leaf)) {
     throw 'Godot 4 was not found. Pass -GodotPath with the full executable path.'
 }
 
-# This standalone scene leaves the project's ordinary F5/main-scene flow intact.
+# Specialist geometry/lifecycle diagnostic only; use Prototype for appearance and play.
 # Forward+/Vulkan matches the project's Windows rendering backend.
 $arguments = @('--path', ('"{0}"' -f $projectRoot), '--rendering-method', 'forward_plus',
     '--rendering-driver', 'vulkan', 'res://scenes/authored_act_playtest.tscn')

@@ -1,5 +1,6 @@
 extends SceneTree
-## Small shared helpers for authored gameplay regression fixtures.
+## Shared Visual Lab fixtures for isolated physics/character/scoring diagnostics.
+## Their screenshots are diagnostic evidence, not Prototype appearance.
 var checks := 0
 var failures := 0
 var game: Node
@@ -39,7 +40,7 @@ func capture(label: String) -> void:
  await RenderingServer.frame_post_draw
  var directory := "res://test-results"
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(directory))
- var prefix := "authored-game-"
+ var prefix := "source-lab-authored-"
  var result := root.get_texture().get_image().save_png(directory.path_join(prefix + label + ".png"))
  if result != OK:
   failures += 1

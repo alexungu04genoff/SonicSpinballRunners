@@ -48,12 +48,12 @@ func _ready() -> void:
  note_timer.timeout.connect(_flush_run_feel)
  add_child(note_timer)
  available_act_paths = Run.RunPlan.source_paths()
- run_configuration = Run.RunPlan.Configuration.new(available_act_paths)
+ if run_configuration == null: run_configuration = Run.RunPlan.Configuration.new(available_act_paths)
  var settings := ConfigFile.new()
  var settings_loaded := settings.load(settings_path) == OK
  if not settings_loaded and FileAccess.file_exists(EXPORT_DEFAULTS_PATH):
   settings_loaded = settings.load(EXPORT_DEFAULTS_PATH) == OK
- if settings_loaded:
+ if settings_loaded and not run_configuration.single_act_test:
   run_configuration.read_preferences(settings, available_act_paths)
   var saved := str(settings.get_value("player", "character", "sonic"))
   if CharacterSpecials.CHARACTERS.has(saved): selected_character = saved
@@ -235,6 +235,7 @@ func start_run() -> void:
  game.run_configuration.zone_count = run_configuration.zone_count
  game.run_configuration.selected_theme_ids = run_configuration.selected_theme_ids.duplicate()
  game.run_configuration.single_act_test = run_configuration.single_act_test
+ game.run_configuration.single_act_use_bakes = run_configuration.single_act_use_bakes
  game.run_configuration.atmosphere_preview = run_configuration.atmosphere_preview.duplicate(true)
  game.character_id = selected_character
  game.practice_mode = practice_mode

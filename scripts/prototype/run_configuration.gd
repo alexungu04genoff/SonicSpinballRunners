@@ -7,6 +7,9 @@ var zone_count := 2
 var selected_theme_ids: Array = ["green_hill", "chemical_plant"]
 var selected_act_paths: Array = []
 var single_act_test := false
+## Run-local verification option: use the normal validated disk library for one Act.
+## Never saved as a player preference; editor playtests still build from source.
+var single_act_use_bakes := false
 var atmosphere_preview := {}
 var atmosphere_preview_error := ""
 

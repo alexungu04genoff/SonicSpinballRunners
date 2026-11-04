@@ -110,7 +110,9 @@ func _pool_error(documents: Array) -> String:
  return error if not error.is_empty() else RunPlan.pool_error(documents, effective_configuration().single_act_test)
 
 func _uses_authoring_builder() -> bool:
- return effective_configuration().single_act_test or super._uses_authoring_builder()
+ if effective_configuration().single_act_test:
+  return not effective_configuration().single_act_use_bakes
+ return super._uses_authoring_builder()
 
 func _next_planned_zone(documents: Array) -> Array[Dictionary]:
  if _planned: return []

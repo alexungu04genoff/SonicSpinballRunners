@@ -1,5 +1,5 @@
 extends "res://tests/authored_act_runtime_regression.gd"
-## Exercise the standalone UI and capture the real rendered simulation with ANGLE.
+## Specialist standalone geometry/lifecycle UI diagnostic, not production appearance.
 var game: Control
 const SAMPLE := "res://data/acts/playtest_showcase.tres"
 

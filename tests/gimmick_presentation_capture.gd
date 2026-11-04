@@ -1,5 +1,5 @@
 extends "res://tests/authored_gimmick_regression.gd"
-## Close inspection of the same authored objects in the main game's theme renderer.
+## Visual Lab source inspection of authored hardware; not Prototype appearance.
 func run() -> void:
  if DisplayServer.get_name() == "headless": quit(0); return
  root.size = Vector2i(1280, 900)

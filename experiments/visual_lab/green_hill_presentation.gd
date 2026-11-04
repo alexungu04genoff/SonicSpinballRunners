@@ -1,2 +1,3 @@
 extends "res://scripts/themes/themed_presentation.gd"
-## Compatibility entry point. The shared renderer defaults to Green Hill.
+## Diagnostic compatibility alias for the shared source renderer.
+## No separate old material implementation; not Prototype appearance evidence.

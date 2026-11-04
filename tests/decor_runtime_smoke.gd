@@ -1,5 +1,6 @@
 extends SceneTree
-## Uses the production Green Hill application, not the standalone diagnostic loop.
+## Visual Lab source decor and theme-switching diagnostic.
+## Source/authoring evidence only. Canonical appearance: prototype_appearance_capture.gd.
 const Game = preload("res://experiments/visual_lab/visual_lab.gd")
 const Act = preload("res://scripts/act_editor/act_geometry.gd")
 const Slots = preload("res://scripts/act_editor/decor_slots.gd")
@@ -11,6 +12,7 @@ var failures := 0
 var game: Node
 
 func _initialize() -> void:
+ print("SOURCE_LAB | decor_runtime_smoke | Not production appearance")
  call_deferred("run")
 
 func check(ok: bool, message: String) -> void:

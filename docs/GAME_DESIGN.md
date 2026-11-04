@@ -1,5 +1,7 @@
 # Sonic Spinball Runners — Living Game Design
 
+**Confirmed production appearance authority — 2026-11-04:** Prototype owns canonical graphical evidence. Matched theme comparisons run the actual session with validated disk recipes, current materials/atmosphere and its camera/HUD. Lab previews, direct material studies and standalone geometry/lifecycle tools remain explicitly diagnostic. Editor Play retains source construction; normal multi-Act play is unchanged. See [the graphical-path audit and comparison workflow](PRODUCTION_APPEARANCE.md).
+
 **Confirmed production atmosphere model — 2026-11-01:** Act geometry × Theme × Atmosphere Variant. Named, project-owned variants belong to Themes and are selected once per Zone with independent deterministic weighted randomness. Atmosphere applies to reusable Act × Theme bakes at runtime; it is not another bake dimension. The Lab retains separate user-local drafts and protects source Default appearances. Optional semantic terrain-category, background, foliage and decorative-neon hue controls preserve gameplay/readability exclusions. The initial roster contains only Defaults; Alex authors the final looks. See [production atmosphere ownership](ATMOSPHERE_VARIANTS.md).
 
 ## Status and use
