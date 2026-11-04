@@ -49,3 +49,4 @@ Manual checks for Alex:
 2. Dash at a barely separated bumper/enemy, a medium target and a near-400 px target. Try moving toward and away, a closing/blocked route and a target beside a drain. Look for bounded approach, one cash-out and readable recoil.
 3. Use Flight during a fall, steer both ways, pause/resume and drain/retry. Check rescue usefulness and smooth return to normal gravity/control.
 4. Smash while stationary near Rings, enemies and bumpers. Check immediate reactions and no remote recharge. Switches, Drop Targets and directional mechanisms must remain unchanged.
+5. For the separate first-Buzz-kill issue, run **Buzz Death Diagnostic.cmd** on the work laptop. Compare legacy, opaque and off; see [measurements and report paths](BUZZ_FIRST_KILL.md).

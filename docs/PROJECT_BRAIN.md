@@ -472,6 +472,8 @@ Character gameplay is now **Type Action + existing physics profile**. Sonic and 
 
 Speed guides the real ball at bounded speed and acceleration, requires physical contact, then gives a small controlled recoil. Both Speed characters inherit Homing's base × pre-hit combo + 400 cash-out. Fly keeps the existing temporary float/control and one rescue lift. Power immediately uses the old radial blast machinery for Rings, enemies and round/triangle bumpers; stateful switches, Drop Targets and directional hardware stay excluded. Knuckles no longer needs a mysterious wall-glide ritual, and Shadow no longer has Chaos Blast. Shared resources own action tuning; character profiles remain separate. See [TYPE_ACTIONS.md](TYPE_ACTIONS.md) for provisional numbers, exact callbacks, telemetry and Alex's feel checklist.
 
+Separate Buzz hitch investigation: the first death's runtime transparency introduced extra local Vulkan pipeline work, but Alex's two-second laptop freeze was not reproduced on the RTX 4060. The default flash now stays opaque and shrinks. **Buzz Death Diagnostic.cmd** compares the original transparent effect, opaque fallback and effect-off with two real kills and saved timings. This is a plausible fix with a laptop comparison still needed, not a solved-by-vibes performance claim. See [BUZZ_FIRST_KILL.md](BUZZ_FIRST_KILL.md).
+
 Characters currently appear mainly as stylized, character-colored spinning Ball forms.
 
 Earlier experiments explored imported Sonic Runners character models, Blender conversion, pose hooks and animation.

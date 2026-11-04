@@ -187,6 +187,23 @@ func run() -> void:
  check(is_equal_approx(turn_body.rotation.y, turn_partial_angle), "Paused presentation time freezes the turn")
  turn_model.update(turn_entry, 0.4, turn_presenter)
  check(absf(angle_difference(turn_body.rotation.y, PI + deg_to_rad(15))) < 0.001 and turn_item.direction == -1.0, "Turn reaches its target without changing patrol direction")
+ var death_flash := MeshInstance3D.new()
+ var death_item := {"alive": false, "death_remaining": 0.14}
+ var death_entry := {"item": death_item, "flash": death_flash}
+ turn_model.update_death_flash(death_entry, "legacy")
+ check(death_flash.visible and is_equal_approx(death_flash.transparency, 0.5), "Legacy diagnostic preserves the original transparent death fade")
+ turn_model.update_death_flash(death_entry, "opaque")
+ var halfway_scale := death_flash.scale
+ check(death_flash.visible and death_flash.transparency == 0.0, "Default death flash never enters runtime transparency, including after legacy state")
+ death_item.death_remaining = 0.02
+ turn_model.update_death_flash(death_entry, "opaque")
+ check(death_flash.scale.length() < halfway_scale.length() and death_flash.transparency == 0.0, "Opaque death flash shrinks away without an alpha fade")
+ turn_model.update_death_flash(death_entry, "off")
+ check(not death_flash.visible and death_item.death_remaining == 0.02 and not death_item.alive, "Disabled effect leaves the enemy lifecycle unchanged")
+ death_item.death_remaining = 0.0
+ turn_model.update_death_flash(death_entry, "opaque")
+ check(not death_flash.visible, "Expired death effect hides completely")
+ death_flash.free()
  turn_portrait.free()
  turn_presenter.free()
  game.free()

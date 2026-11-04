@@ -3,6 +3,15 @@ extends RefCounted
 ## The portrait plane faces the camera; collision remains entirely in 2D.
 const VISUAL_SCALE := 0.39
 const HOVER_HEIGHT := 10.5
+static var death_effect := _death_effect_option()
+
+static func _death_effect_option() -> String:
+ for argument: String in OS.get_cmdline_user_args():
+  if argument.begins_with("--buzz-death-effect="):
+   var value := argument.trim_prefix("--buzz-death-effect=")
+   if value in ["opaque", "legacy", "off"]: return value
+   push_warning("Unknown Buzz death effect; using opaque.")
+ return "opaque"
 
 static func build(table: TablePresentation, parent: Node3D, item: Dictionary) -> Dictionary:
  var root := Node3D.new()
@@ -119,12 +128,24 @@ static func update(entry: Dictionary, elapsed: float, table: TablePresentation) 
  entry.last_turn_time = elapsed
  entry.body.visible = item.alive or appearing
  entry.body.scale = Vector3.ONE * (float(item.respawn_fade) / 0.35 if appearing else 1.0)
- entry.flash.visible = not item.alive and item.death_remaining > 0.0
+ update_death_flash(entry, death_effect)
  if item.alive:
   for i in entry.wings.size():
    entry.wings[i].rotation.y = sin(elapsed * 45) * 0.16 * (-1 if i == 0 else 1)
    entry.wings[i].rotation.z = sin(elapsed * 45) * 0.06
- else:
-  var progress := 1.0 - float(item.death_remaining) / 0.28
+
+static func update_death_flash(entry: Dictionary, mode: String) -> void:
+ var showing: bool = not entry.item.alive and entry.item.death_remaining > 0.0
+ entry.flash.visible = showing and mode != "off"
+ if not showing: return
+ var progress := clampf(1.0 - float(entry.item.death_remaining) / 0.28, 0.0, 1.0)
+ if mode == "legacy":
+  # Explicit diagnostic comparison with the original runtime transparent path.
   entry.flash.scale = Vector3(38, 38, 30) * TablePresentation.SCALE * (1.0 + progress * 1.5)
-  entry.flash.transparency = clampf(progress, 0, 1)
+  entry.flash.transparency = progress
+ else:
+  # Keep the existing opaque material/pipeline. A quick pop and shrink replace
+  # alpha fading; no runtime material, shader, particle or mesh is constructed.
+  entry.flash.transparency = 0.0
+  var size := lerpf(0.6, 1.3, progress / 0.2) if progress < 0.2 else 1.3 * (1.0 - smoothstep(0.2, 1.0, progress))
+  entry.flash.scale = Vector3(38, 38, 30) * TablePresentation.SCALE * maxf(0.001, size)

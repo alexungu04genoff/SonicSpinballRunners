@@ -2,6 +2,8 @@ extends RefCounted
 ## Destructible 2D sensors. Rendering and abilities use this same atomic lifecycle.
 signal enemy_destroyed(enemy_type: StringName, object_id: String, base_points: int, source: StringName)
 signal enemy_respawned(enemy_type: StringName, object_id: String)
+## Opt-in CPU samples; deferred printing/file I/O belongs to the diagnostic runner.
+signal death_profiled(sample: Dictionary)
 const Contact = preload("res://scripts/authored_act/gimmick_geometry.gd")
 const DEFINITIONS := {"buzz_bomber": {"base_score": 200, "half_segment": 6.0, "radius": 6.0}}
 const ENEMY_TOP_BOUNCE_SPEED := 420.0
@@ -17,6 +19,7 @@ var owner_act := ""
 var destruction_allowed: Callable
 var ball: PlaygroundBall
 var previous_ball_position := Vector2.INF
+var profile_deaths := "--buzz-profile" in OS.get_cmdline_user_args()
 
 static func is_enemy(type: String) -> bool:
  return DEFINITIONS.has(type)
@@ -105,12 +108,17 @@ func destroy(id: String, source: StringName = &"contact") -> bool:
  if not by_id.has(id) or (destruction_allowed.is_valid() and not destruction_allowed.call()): return false
  var item: Dictionary = by_id[id]
  if not item.alive: return false
+ var started := Time.get_ticks_usec() if profile_deaths else 0
  item.alive = false # Consume before signals; callbacks cannot farm or recurse.
  item.death_remaining = 0.28
  item.respawn_remaining = float(item.properties.get("respawn_delay", 15.0))
  item.respawn_ready = false
  item.respawn_fade = 0.0
+ var callbacks_started := Time.get_ticks_usec() if profile_deaths else 0
  enemy_destroyed.emit(StringName(item.enemy_type), id, int(item.base_score), source)
+ if profile_deaths:
+  var finished := Time.get_ticks_usec()
+  death_profiled.emit({"enemy": item.enemy_type, "object_id": id, "source": String(source), "lifecycle_ms": (callbacks_started - started) / 1000.0, "callbacks_ms": (finished - callbacks_started) / 1000.0})
  return true
 
 static func swept_contact(item: Dictionary, start: Vector2, finish: Vector2, ball_radius: float) -> Dictionary:
