@@ -72,7 +72,11 @@ try {
     $env:LOCALAPPDATA = $previousLocalAppData
 }
 Copy-Item -LiteralPath (Join-Path $repo 'docs\PORTABLE_AUTHORING_TOOLS.md') -Destination (Join-Path $output 'Read me.md')
-Compress-Archive -LiteralPath (Join-Path $output 'Geometry Editor.exe'), (Join-Path $output 'Atmosphere Lab.exe'), (Join-Path $output 'Read me.md') -DestinationPath "$output.zip"
+foreach ($policy in @('legacy', 'conservative')) {
+    $launcher = "@echo off`r`n`"%~dp0Geometry Editor.exe`" -- --portable-play --no-bakes --seed=18 --atmosphere=green_hill:default --foreground-contribution=$policy %*`r`n"
+    [IO.File]::WriteAllText((Join-Path $output "Compare Prototype $policy.cmd"), $launcher)
+}
+Compress-Archive -LiteralPath (Join-Path $output 'Geometry Editor.exe'), (Join-Path $output 'Atmosphere Lab.exe'), (Join-Path $output 'Read me.md'), (Join-Path $output 'Compare Prototype legacy.cmd'), (Join-Path $output 'Compare Prototype conservative.cmd') -DestinationPath "$output.zip"
 Write-Output "Build: $output"
 Write-Output "Archive: $output.zip"
 Write-Output "Logs: $build"

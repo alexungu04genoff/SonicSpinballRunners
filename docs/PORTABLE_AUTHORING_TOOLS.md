@@ -58,3 +58,30 @@ The November 5 traversal refresh includes per-rail **Terrain clearance**, flippe
 the actual Prototype session. Save new work with this format-19 editor; older
 builds cannot read the new format. Existing Acts load without a source rewrite
 until you explicitly save them.
+
+## Foreground performance comparison
+
+Use **Compare Prototype legacy.cmd** and **Compare Prototype conservative.cmd**
+one at a time. Both open the actual Prototype menu with seed 18 and Green Hill
+Default. Choose the same Act pool, character, Practice/Challenge mode and graphics
+settings in both runs. Wait until preparation settles, then compare the same
+served-ball view, joins and overview. Restart repeats the seed. The ordinary
+executables use conservative foreground contribution by default.
+
+These portable comparisons construct their resident Acts from the bundled source
+(`--no-bakes`), because the authoring ZIP intentionally excludes disk recipes.
+The same contribution policy runs on source-built and disk-baked Acts. The
+standard repository Prototype still requires its validated disk bakes. Standalone
+editor Play loads only one Act, so it is a control workload rather than the main
+multi-resident optimization test.
+
+The development argument is `--foreground-contribution=legacy` or
+`--foreground-contribution=conservative`, after Godot's `--` separator. It changes
+only foreground visibility. Active Acts, camera-visible neighbors, possible
+shadow contributors and transfer/warmup safety states stay visible. Residency,
+physics, gameplay and background crossfades remain live. Unknown deformation
+bounds retain rendering conservatively.
+
+Keep device shadow settings, window size, render scale and atmosphere identical.
+World MSAA remains **4×**; this pass does not change it. Laptop results must be
+measured on the laptop; the development machine's timings are not predictions.

@@ -1,5 +1,11 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Loaded does not mean drawing — 2026-11-05
+
+Resident foreground Acts now have a conservative contribution gate. Bro caches real presentation bounds at attachment and checks the final camera frustum plus sunlight reach before drawing. Active Acts, joins that can appear, draft/transfer/loading safety and unknown deformation stay visible. Physics, Rings, enemies, scoring, residency and background crossfades do not follow that visibility flag.
+
+The old active-Act-only diagnostic was an upper-bound clue, not the rule we shipped. The tested opening courses keep three Acts resident while drawing two foreground roots; wide/transition views can still need all three. A single large active Act is unchanged. Shadow quality, 4× MSAA, renderer and all art stay with their existing owners. The portable authoring ZIP now has matched legacy/conservative Prototype launchers. See [the ownership audit, shadow math, measurements and validation limits](FOREGROUND_CONTRIBUTION.md). Laptop timing and actual traversal feel still belong to Alex's playtest.
+
 ## Cross the path without building a skyscraper — 2026-11-05
 
 Bro traced the actual rail owner before carving anything. Rail travel already suspends ground collision; the compiler's full-height clearance rule was the constraint. Opt-in Terrain clearance lowers the crossed cap while leaving ground collision alone. A 20 px rail clears a 15 px cap; full-height terrain needed at least 37.5 px elevation. Mouths remain clear and weak shots still roll back.

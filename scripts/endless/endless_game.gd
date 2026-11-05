@@ -52,6 +52,9 @@ var loading_label: Label
 var tour_button: Button
 var _startup_message := "Loading baked endless mode…"
 var closing := false
+var foreground_contribution_enabled := not "--foreground-contribution=legacy" in OS.get_cmdline_user_args()
+var foreground_contributing := 0
+var foreground_update_usec := 0
 
 func _source_paths() -> Array:
  return Plan.PATHS
@@ -73,6 +76,8 @@ func _uses_authoring_builder() -> bool:
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
+ # Runs after camera/animation/light updates, including paused overview input.
+ RenderingServer.frame_pre_draw.connect(_update_foreground_contribution)
  run_seed = _default_run_seed()
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--seed="): run_seed = int(argument.trim_prefix("--seed="))
@@ -297,6 +302,32 @@ func _process(delta: float) -> void:
   diagnostics.text = "Seed %d | Resident %d | Queued %d | Build %.2f ms (max %.2f) | Frame max %.1f ms\nDisk Acts %d · Disk themes %d · Runtime rebuilds %d · Last prepare %.2f s" % [run_seed, resident.size(), pending.size() + int(building != null), last_build_ms, max_build_ms, max_frame_ms, library.visual_bake_hits, library.theme_bake_hits, library.fallback_builds, library.last_prepare_ms / 1000.0]
   diagnostics.text += "\nTheme preloads %d · Last %.2f s%s" % [library.theme_prefetches, library.last_theme_prepare_ms / 1000.0, " · Preparing " + library.preparing_theme if not library.preparing_theme.is_empty() else ""]
   diagnostics.text += "\n" + scoring_breakdown_text()
+
+func _foreground_safety_hold() -> bool:
+ return not started or loading_boundary or not presentation.ring_pickups.is_empty()
+
+func _update_foreground_contribution() -> void:
+ if closing or not is_instance_valid(presentation) or not is_instance_valid(presentation.camera): return
+ var began := Time.get_ticks_usec()
+ var camera: Camera3D = presentation.camera
+ var planes := camera.get_frustum()
+ var floor_y := -1.0
+ var unknown_receiver := false
+ for act: RefCounted in resident:
+  if act.contribution.valid: floor_y = minf(floor_y, act.contribution.bounds.position.y)
+  unknown_receiver = unknown_receiver or not act.contribution.valid or not act.contribution.supported
+ var hold := _foreground_safety_hold() or unknown_receiver
+ foreground_contributing = 0
+ for act: RefCounted in resident:
+  var visible_now := true
+  if not foreground_contribution_enabled: act.contribution.reason = "legacy"
+  elif act == active: act.contribution.reason = "active"
+  elif hold: act.contribution.reason = "safety"
+  elif Engine.get_process_frames() <= act.contribution_warm_until: act.contribution.reason = "warming"
+  else: visible_now = act.contribution.contributes(planes, presentation._key_light, floor_y, camera)
+  if act.visual.visible != visible_now: act.visual.visible = visible_now
+  foreground_contributing += int(visible_now)
+ foreground_update_usec = Time.get_ticks_usec() - began
 
 func _prefetch_next_theme() -> void:
  if not started or active == null: return

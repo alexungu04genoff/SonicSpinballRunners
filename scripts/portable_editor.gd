@@ -23,4 +23,6 @@ func _ready() -> void:
 		scene = "res://tests/portable_editor_smoke.tscn"
 	elif "--portable-atmosphere-smoke" in arguments:
 		scene = "res://tests/portable_atmosphere_smoke.tscn"
+	elif "--portable-contribution-smoke" in arguments:
+		scene = "res://tests/portable_contribution_smoke.tscn"
 	get_tree().call_deferred("change_scene_to_file", scene)

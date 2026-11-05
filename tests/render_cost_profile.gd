@@ -18,6 +18,12 @@ var samples := 600
 var geometry: Array[Dictionary] = []
 var views: Array[Viewport] = []
 var mesh_triangles := {}
+var contribution_trial := false
+var single_act := ""
+var contribution_views := "opening,boundary,forward,backward,overview,transition,long-shadow"
+var visual_pairs := {}
+var capture_only := false
+var profile_cascades := 0
 
 func _initialize() -> void:
  call_deferred("run")
@@ -32,6 +38,11 @@ func run() -> void:
   if arg == "--profile-ablations": ablations = true
   if arg == "--profile-scale-only": scale_trial = true
   if arg == "--profile-shadow-audit": shadow_audit = true
+  if arg == "--profile-contribution": contribution_trial = true
+  if arg == "--profile-capture-only": capture_only = true
+  if arg.begins_with("--profile-cascades="): profile_cascades = int(arg.trim_prefix("--profile-cascades="))
+  if arg.begins_with("--profile-act="): single_act = arg.trim_prefix("--profile-act=")
+  if arg.begins_with("--profile-views="): contribution_views = arg.trim_prefix("--profile-views=")
   if arg.begins_with("--profile-shadow-distance="): shadow_distance = float(arg.trim_prefix("--profile-shadow-distance="))
   if arg == "--profile-unbatched": HardwareBatch.enabled = false
   if arg == "--profile-original-shadows": HardwareBatch.shadow_batch_enabled = false
@@ -39,6 +50,14 @@ func run() -> void:
   push_error("Unbatched A/B is available only for freshly constructed standalone Acts.")
   quit(1)
   return
+ if contribution_trial and mode != "prototype":
+  push_error("Contribution comparisons require the Prototype profile mode.")
+  quit(1)
+  return
+ if profile_cascades in [1, 2, 4]:
+  var options := preload("res://scripts/rendering_options.gd")
+  options.shadow_resolution() # Load existing device settings before an unsaved probe override.
+  options._shadow_cascades = profile_cascades
  if DisplayServer.get_name() == "headless":
   push_error("Rendering measurements require a graphical renderer.")
   quit(1)
@@ -59,6 +78,10 @@ func run() -> void:
    "res://data/acts/Authored/RampMania.tres", "res://data/acts/Authored/Reverse C Spring.tres", "res://data/acts/Authored/Secret Entry.tres"])
   config.zone_count = 1
   config.selected_theme_ids = [theme]
+  if not single_act.is_empty():
+   config.selected_act_paths = [single_act]
+   config.single_act_test = true
+   config.single_act_use_bakes = not "--no-bakes" in OS.get_cmdline_user_args()
   game.run_configuration = config
  var startup_frames: Array = []
  var previous := Time.get_ticks_usec()
@@ -97,6 +120,12 @@ func run() -> void:
  var settled_at_ms := Time.get_ticks_msec() - start
  if shadow_distance > 0.0: game.presentation._key_light.directional_shadow_max_distance = shadow_distance
  _inspect(root)
+ if mode != "act" and not contribution_trial and (shadow_audit or ablations):
+  # Preserve the older explicit ablations: production contribution updates must
+  # not restore a root which the diagnostic is intentionally suppressing.
+  game.foreground_contribution_enabled = false
+  game._update_foreground_contribution()
+  RenderingServer.frame_pre_draw.disconnect(game._update_foreground_contribution)
  var inventory := {}
  for item: Dictionary in geometry:
   if not inventory.has(item.category): inventory[item.category] = {"nodes": 0, "triangles": 0, "casters": 0}
@@ -104,8 +133,11 @@ func run() -> void:
   inventory[item.category].triangles += item.triangles
   inventory[item.category].casters += int(item.shadow != GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
  var phases: Array[Dictionary] = []
- for index in 3:
-  phases.append(await _sample("baseline-%d" % (index + 1), index == 0))
+ if contribution_trial:
+  phases = await _contribution_samples()
+ else:
+  for index in 3:
+   phases.append(await _sample("baseline-%d" % (index + 1), index == 0))
  if shadow_audit:
   # Category ablations measure stable submission counts, not timing tails.
   var baseline_samples := samples
@@ -180,6 +212,11 @@ func run() -> void:
   "engine": Engine.get_version_info().string, "device": RenderingServer.get_video_adapter_name(),
   "node_count": Performance.get_monitor(Performance.OBJECT_NODE_COUNT),
   "inventory": inventory, "phases": phases,
+  "msaa_3d": game.view.msaa_3d, "contribution_trial": contribution_trial,
+  "visual_pairs": visual_pairs,
+  "shadow_resolution": preload("res://scripts/rendering_options.gd").shadow_resolution(),
+  "shadow_cascades": preload("res://scripts/rendering_options.gd").shadow_cascades(),
+  "smooth_shadows": preload("res://scripts/rendering_options.gd").smooth_shadows_enabled(),
   "theme": game.theme_id if mode == "act" else game.active.plan.theme,
   "hardware_batching": HardwareBatch.enabled if mode == "act" else "baked",
   "shadow_batching": HardwareBatch.shadow_batch_enabled if mode == "act" else "baked",
@@ -271,6 +308,7 @@ func _sample(label: String, capture := false) -> Dictionary:
    "process_ms": Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0,
    "physics_ms": Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0,
    "color_draws": 0, "shadow_draws": 0, "render_cpu_ms": 0.0, "render_gpu_ms": 0.0}
+  if mode != "act": row["contribution_cpu_ms"] = game.foreground_update_usec / 1000.0
   for view: Viewport in views:
    if view is SubViewport and view.render_target_update_mode == SubViewport.UPDATE_DISABLED: continue
    var rid := view.get_viewport_rid()
@@ -284,6 +322,10 @@ func _sample(label: String, capture := false) -> Dictionary:
   "camera_transform": var_to_str(game.presentation.camera.transform), "camera_far": game.presentation.camera.far,
   "shadow_distance": game.presentation._key_light.directional_shadow_max_distance,
   "resident_acts": 1 if mode == "act" else game.resident.size()}
+ if mode != "act":
+  result["contributing_acts"] = game.foreground_contributing
+  result["foreground_policy"] = "conservative" if game.foreground_contribution_enabled else "legacy"
+  result["act_contributions"] = game.resident.map(func(act): return {"sequence": act.plan.sequence, "reason": act.contribution.reason, "bounds": str(act.contribution.bounds), "supported": act.contribution.supported, "cache_ms": act.contribution.capture_usec / 1000.0})
  for key: String in rows[0]:
   var values := rows.map(func(row): return row[key])
   values.sort()
@@ -301,6 +343,82 @@ func _sample(label: String, capture := false) -> Dictionary:
   DirAccess.make_dir_recursive_absolute(output.get_base_dir())
   root.get_texture().get_image().save_png(output.get_basename() + "-" + label + ".png")
  return result
+
+func _contribution_samples() -> Array[Dictionary]:
+ var phases: Array[Dictionary] = []
+ var p: Node = game.presentation
+ var original := _camera_state()
+ var light_rotation: Vector3 = p._key_light.rotation
+ var light_softness: float = p._key_light.light_angular_distance
+ var follow: bool = p.camera_follow_enabled
+ game.fps_label.hide()
+ p.set_process(false)
+ # Hold GDScript and shader time for paired screenshots only. Timed
+ # phases below run normal served-ball simulation and presentation processing.
+ for view_name: String in contribution_views.split(","):
+  _restore_camera(original)
+  p._key_light.rotation = light_rotation
+  p._key_light.light_angular_distance = light_softness
+  p.camera_follow_enabled = follow
+  if view_name == "overview": p.set_camera_follow(false)
+  elif view_name in ["boundary", "forward", "backward", "transition", "long-shadow"]:
+   var point: Vector2 = game.active.bounds().get_center()
+   point.y = game.active.bounds().position.y + {"boundary": 0.0, "forward": -120.0, "backward": 180.0, "transition": 0.0, "long-shadow": 100.0}[view_name]
+   p.reset_camera(point)
+  if view_name == "long-shadow":
+   p._key_light.rotation_degrees = Vector3(-12, -30, 0)
+   p._key_light.light_angular_distance = 0.0
+  if view_name == "transition":
+   game.ball.position = Vector2(game.active.bounds().get_center().x, game.active.bounds().position.y)
+   game._start_transfer(false)
+   game.transfer.set_process(false)
+   game.transfer._draw(0.5)
+   p.reset_camera(game.ball.position)
+  # Paired steady-state timing with the same fixed production camera. Camera
+  # updates are held; all mechanics/animation continue running normally.
+  for policy: String in ["legacy", "conservative", "legacy-return"]:
+   if capture_only: continue
+   game.foreground_contribution_enabled = policy == "conservative"
+   game._update_foreground_contribution()
+   phases.append(await _sample(view_name + "-" + policy))
+  paused = true
+  Engine.time_scale = 0.0
+  var baseline: Image
+  for policy: String in ["legacy", "conservative"]:
+   game.foreground_contribution_enabled = policy == "conservative"
+   game._update_foreground_contribution()
+   for frame in 8: await process_frame
+   await RenderingServer.frame_post_draw
+   var capture := root.get_texture().get_image()
+   DirAccess.make_dir_recursive_absolute(output.get_base_dir())
+   capture.save_png(output.get_basename() + "-" + view_name + "-" + policy + ".png")
+   if policy == "legacy": baseline = capture
+   else:
+    var a := baseline.get_data()
+    var b := capture.get_data()
+    var changed := 0
+    var maximum := 0
+    for i in a.size():
+     var difference := absi(int(a[i]) - int(b[i]))
+     changed += int(difference != 0)
+     maximum = maxi(maximum, difference)
+    visual_pairs[view_name] = {"different_channels": changed, "total_channels": a.size(), "maximum_delta": maximum}
+    print("CONTRIBUTION_IMAGE | ", view_name, " | ", visual_pairs[view_name])
+  Engine.time_scale = 1.0
+  paused = false
+  if view_name == "transition":
+   var completed_transfer: Node = game.transfer
+   game.character.show()
+   game._transfer_arrived()
+   completed_transfer.free()
+   game.auto_launch_time = -1.0
+   game.controls.input_blocked = true
+ p._key_light.rotation = light_rotation
+ p._key_light.light_angular_distance = light_softness
+ p.camera_follow_enabled = follow
+ _restore_camera(original)
+ p.set_process(true)
+ return phases
 
 func _camera_state() -> Dictionary:
  var p: Node = game.presentation

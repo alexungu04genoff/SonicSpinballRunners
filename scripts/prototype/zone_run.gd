@@ -146,6 +146,9 @@ func _physics_process(delta: float) -> void:
   specials.flight_remaining if ordinary_motion else 0.0)
  super._physics_process(delta)
 
+func _foreground_safety_hold() -> bool:
+ return super._foreground_safety_hold() or drafting or pending_act != null or is_instance_valid(transfer)
+
 func _activate(act: RefCounted, initial := false) -> void:
  if finished or drafting or (not initial and active == act): return
  if not initial:

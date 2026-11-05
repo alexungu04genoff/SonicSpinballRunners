@@ -20,6 +20,8 @@ var shape_index := 0
 var current_body: StaticBody2D
 var ring_data: Array[Dictionary] = []
 var game: Node
+var contribution := preload("res://scripts/endless/foreground_contribution.gd").new()
+var contribution_warm_until := 0
 
 func _notification(what: int) -> void:
  if what != NOTIFICATION_PREDELETE: return
@@ -83,6 +85,7 @@ func step() -> void:
     var atmosphere = game.backgrounds[plan.zone].layer.atmosphere
     atmosphere.attach(visual)
     atmosphere.attach(background_visual, false, true)
+    contribution.capture(self)
     phase = 3
   3:
    # The complete root is already attached; activation has no recursive add_child.
@@ -92,6 +95,7 @@ func step() -> void:
    background_visual.process_mode = Node.PROCESS_MODE_INHERIT
    background_visual.visible = true
    ready = true
+   contribution_warm_until = Engine.get_process_frames() + 2
    phase = 4
 
 func _terrain_step() -> void:
