@@ -1,10 +1,11 @@
 extends RefCounted
 ## Passive snapshots on the existing gameplay clock. No RNG, I/O or scoring writes.
-const FORMAT_VERSION := 4
+const FORMAT_VERSION := 5
 const SpeedSamples = preload("res://scripts/prototype/ball_speed_telemetry.gd")
 var ball_speed := SpeedSamples.new()
 var slingshots := {}
 var drop_targets := {}
+var teleporters := {}
 var _seen_targets := {}
 var _action_type := ""
 var _successful_uses := 0
@@ -59,6 +60,7 @@ func begin_act(at: float, document: Resource = null, character := "") -> void:
  enemies = {"destructions": 0, "respawns": 0, "normal_score": 0, "by_type": {}}
  ball_speed.reset()
  slingshots = {"activations": 0, "by_object": {}}
+ teleporters = {"transfers": 0, "by_object": {}}
  drop_targets = {"hits": 0, "unique_targets_hit": 0, "bank_completions": 0, "bank_resets": 0, "banks": {}}
  _seen_targets = {}
  _action_type = CharacterSpecials.CHARACTERS[character].character_type if CharacterSpecials.CHARACTERS.has(character) else ""
@@ -85,6 +87,10 @@ func _add_bank(id: String, targets: int) -> void:
 func slingshot_activated(id: String) -> void:
  slingshots.activations += 1
  slingshots.by_object[id] = int(slingshots.by_object.get(id, 0)) + 1
+
+func teleporter_used(id: String) -> void:
+ teleporters.transfers += 1
+ teleporters.by_object[id] = int(teleporters.by_object.get(id, 0)) + 1
 
 func drop_target_event(bank_id: String, target_id: String, phase: StringName, targets: int) -> void:
  _add_bank(bank_id, targets)
@@ -262,7 +268,7 @@ func finish_act(row: Dictionary, ended_at: float) -> Dictionary:
   "x4_activations": x4_activations, "highest_multiplier": highest_multiplier,
   "longest_combo_seconds": longest, "longest_combo_max_multiplier": peak,
   "type_actions": type_actions.duplicate(true), "homing": homing.duplicate(true), "enemies": enemies.duplicate(true),
-  "slingshots": slingshots.duplicate(true), "drop_targets": drop_targets.duplicate(true),
+  "slingshots": slingshots.duplicate(true), "drop_targets": drop_targets.duplicate(true), "teleporters": teleporters.duplicate(true),
   "character_action": _action_snapshot(), "ball_speed": ball_speed.snapshot(),
   "wide_spring": null
  }

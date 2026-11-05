@@ -17,6 +17,7 @@ var rings: Array[Dictionary] = []
 var ball: PlaygroundBall
 var tuning: PhysicsTuning
 var previous_ball_position: Vector2
+var _transfer_serial := 0
 ## Empty bounds preserve sandbox behavior; Zone mode collects only the active Act.
 var collection_bounds := Rect2()
 ## Ownership is authoritative when neighboring Acts are resident simultaneously.
@@ -194,6 +195,9 @@ func claim_ring(index: int, source: String = "", multiplier: int = 1) -> bool:
 
 func _physics_process(delta: float) -> void:
  if not is_instance_valid(ball) or not scoring_enabled: return
+ if _transfer_serial != ball.transfer_serial:
+  _transfer_serial = ball.transfer_serial
+  previous_ball_position = ball.position
  if ball.serve_pending or ball._teleport_pending:
   previous_ball_position = ball._teleport_position if ball._teleport_pending else ball.position
   return

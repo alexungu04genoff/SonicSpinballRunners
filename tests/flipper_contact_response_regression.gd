@@ -48,7 +48,7 @@ func _initialize() -> void:
  right.free()
  call_deferred("run_trials")
 
-func trial(side: float, fraction: float) -> Dictionary:
+func trial(side: float, fraction: float, length_multiplier := 1.0) -> Dictionary:
  var world := Node2D.new()
  root.add_child(world)
  var tuning := PhysicsTuning.new()
@@ -62,7 +62,7 @@ func trial(side: float, fraction: float) -> Dictionary:
  ball.controls = controls
  var paddle := PlaygroundFlipper.new()
  paddle.side = side
- paddle.length = 32.5
+ paddle.length = 32.5 * length_multiplier
  paddle.radius = 2.5
  paddle.tuning = tuning
  paddle.controls = controls
@@ -84,7 +84,7 @@ func trial(side: float, fraction: float) -> Dictionary:
   if -ball.linear_velocity.y > -result.velocity.y: result.velocity = ball.linear_velocity
  check(result.shots == 1, "One powered contact at authored-scale fraction " + str(fraction))
  check(-result.velocity.y <= 400.0 * sqrt(0.5) + 2.0, "Authored ball retains the upward safety cap")
- print("AUTHORED CONTACT | side=", side, " fraction=", fraction, " ", result)
+ print("AUTHORED CONTACT | side=", side, " fraction=", fraction, " length_multiplier=", length_multiplier, " ", result)
  world.free()
  await physics_frame
  return result
@@ -99,6 +99,13 @@ func run_trials() -> void:
  # Exact mirrored response is checked above with matched contact states. Full
  # capsule-tip trajectories can diverge after native solver contacts, so enforce
  # power ordering and the shared speed cap on each hand independently instead.
+ for length_multiplier in [1.5, 2.0]:
+  for side in [-1.0, 1.0]:
+   var first := await trial(side, 0.5, length_multiplier)
+   var repeated := await trial(side, 0.5, length_multiplier)
+   # Compare the accepted contact impulse, not the later solver trajectory's
+   # accumulated subpixel roundoff (the ordinary trials check its speed cap).
+   check(first.shots == repeated.shots and first.impulse.is_equal_approx(repeated.impulse) and is_equal_approx(first.contact_fraction, repeated.contact_fraction), "Long flipper repeats deterministic native contact response")
  print("CONTACT RESPONSE | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)
 

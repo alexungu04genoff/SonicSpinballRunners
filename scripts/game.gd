@@ -32,6 +32,7 @@ var respawn_time: float = -1.0
 var auto_launch_time: float = -1.0
 var ring_reset_time: float = -1.0
 var previous_goal_position := Vector2.ZERO
+var _transfer_serial := 0
 var _goal_motion_ready := false
 var loading_act: bool = false
 var view: SubViewport
@@ -563,6 +564,9 @@ func _on_ring_collected(_where: Vector2, source: String = "", multiplier: int = 
 func _physics_process(delta: float) -> void:
  if not is_instance_valid(ball) or loading_act:
   return
+ if _transfer_serial != ball.transfer_serial:
+  _transfer_serial = ball.transfer_serial
+  _goal_motion_ready = false
  if respawn_time >= 0.0:
   respawn_time -= delta
   if respawn_time <= 0:

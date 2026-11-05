@@ -17,6 +17,17 @@ static func draw_object(target: CanvasItem, placement: Dictionary, anchor: Vecto
  var definition: Dictionary = Objects.get_definition(str(placement.get("type", "")))
  if definition.is_empty():
   return
+ if placement.type == "teleporter":
+  var exit := anchor + (Objects.teleporter_exit(placement) - Vector2(placement.position)) * scale_factor
+  var color := Color("cb96ff")
+  target.draw_dashed_line(anchor, exit, Color(color, 0.5), 1.5, 8.0)
+  target.draw_arc(anchor, float(Objects.properties(placement).radius) * scale_factor, 0, TAU, 24, color, 3.0, true)
+  target.draw_arc(exit, 10.0 * scale_factor, 0, TAU, 16, Color("76eddd"), 2.0, true)
+  _arrow(target, exit, exit + Objects.teleporter_direction(placement) * 40.0 * scale_factor, Color("76eddd"))
+  if annotations:
+   target.draw_string(ThemeDB.fallback_font, anchor + Vector2(8, -10), "IN", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, color)
+   target.draw_string(ThemeDB.fallback_font, exit + Vector2(8, -10), "OUT", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("76eddd"))
+  return
  if placement.type == "drop_target_bank":
   var props := Objects.properties(placement)
   for offset: Vector2 in Objects.drop_positions(placement):
@@ -111,7 +122,7 @@ static func _draw_swing(target: CanvasItem, placement: Dictionary, anchor: Vecto
  var rest := deg_to_rad(float(placement.rotation_degrees))
  var direction := -1.0 if placement.type == "left_flipper" else 1.0
  var swing := deg_to_rad(Objects.FLIPPER_SWING_DEGREES) * direction
- var radius: float = Dimensions.FLIPPER_LENGTH_CELLS * cell_pixels
+ var radius: float = Objects.flipper_length(placement, cell_pixels)
  var arc := PackedVector2Array()
  for step in range(25):
   arc.append(anchor + Vector2.RIGHT.rotated(rest + swing * float(step) / 24.0) * radius)
@@ -134,6 +145,9 @@ static func _draw_mechanic(target: CanvasItem, placement: Dictionary, anchor: Ve
    target.draw_arc(anchor + (ring.position - placement.position) * scale_factor, maxf(2.0, 5.0 * scale_factor), 0, TAU, 16, Color("ffd568"), 1.5, true)
   if points.size() >= 2:
    target.draw_polyline(points, Color(color, 0.18), maxf(3.0, float(props.width) * scale_factor), true)
+   if props.terrain_clearance:
+    target.draw_circle(points[0], 7.0, Color("ffd37b"), false, 1.5, true)
+    if selected: target.draw_string(ThemeDB.fallback_font, points[0] + Vector2(10, 16), "TERRAIN CLEARANCE", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("ffd37b"))
    target.draw_polyline(points, color, 2.0, true)
    _arrow(target, points[-1] - (points[-1] - points[-2]).normalized() * 18, points[-1], color)
   for point: Vector2 in props.points:

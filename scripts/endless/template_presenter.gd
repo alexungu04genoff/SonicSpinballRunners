@@ -23,6 +23,7 @@ func _finish_terrain_skin() -> void:
  camera.far = maxf(camera.far, 180.0)
 
 func prepare_act(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
+ _terrain_clearance_cuts = preload("res://scripts/authored_act/terrain_clearance.gd").crossings(runtime.mechanics.items, preload("res://scripts/act_dimensions.gd").BALL_RADIUS_CELLS * cell_size)
  authored_mode = true
  authored_cell_size = cell_size
  _build_shared(bounds)
@@ -92,7 +93,6 @@ func prepare_act(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
    # Thin open rails keep a center strip: cap width is at most a quarter of rail width.
    _add_border(ribbon, [], minf(theme_definition.top_border_width, cell_size * 0.01), RAIL_HEIGHT + RAIL_CAP_HEIGHT, theme_definition.top_border_material, rail, "TopSurfaceBorder")
  _add_border(authored_floor_outline, floor_obstacles, theme_definition.floor_border_width, 0.0, theme_definition.floor_border_material, floor_root, "FloorPathBorder")
- TerrainFacade.consolidate(floor_root, terrain_root, authored_floor_outline, wall_side)
  _finish_terrain_skin()
  stage = "decor"
  for slot: Dictionary in runtime.get("decor_slots", []):
@@ -100,6 +100,8 @@ func prepare_act(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
   _build_authored_decor({"decor_slots": [slot], "decor_seed": runtime.decor_seed, "terrain": runtime.terrain}, cell_size)
   await stream_checkpoint()
  await _finish_borders()
+ preload("res://scripts/authored_act/terrain_clearance.gd").apply(terrain_root, runtime.mechanics.items, preload("res://scripts/act_dimensions.gd").BALL_RADIUS_CELLS * cell_size, SCALE)
+ TerrainFacade.consolidate(floor_root, terrain_root, authored_floor_outline, wall_side)
 
 func _moving_objects(runtime: Dictionary) -> void:
  var gold := material(Color("ffd568"), 0.08)

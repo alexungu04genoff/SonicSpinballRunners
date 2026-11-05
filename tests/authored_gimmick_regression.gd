@@ -317,6 +317,10 @@ func _scale_checks() -> void:
 
 func _demo_checks() -> void:
  var loaded := ActData.load_document(EXAMPLE)
+ # Optional flipper length defaults do not require rewriting the shipped Act.
+ if loaded.document != null:
+  for item: Dictionary in loaded.document.gameplay_objects:
+   if item.type in ["left_flipper", "right_flipper"]: item.properties = Objects.properties(item)
  check(loaded.document != null and loaded.document.fingerprint() == fixture().fingerprint(), "Shipped mechanic Act matches verified example")
  await game.request_authored_act(EXAMPLE)
  await await_rebuild()

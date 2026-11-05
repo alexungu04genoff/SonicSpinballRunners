@@ -11,6 +11,7 @@ const Mechanics = preload("res://scripts/authored_act/pinball_mechanics.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const Dimensions = preload("res://scripts/act_dimensions.gd")
 const Bake = preload("res://scripts/endless/geometry_bake.gd")
+const Clearance = preload("res://scripts/authored_act/terrain_clearance.gd")
 
 static func compile(document: Resource, tuning: PhysicsTuning, controls: PlaygroundInput, ball: PlaygroundBall, baked_shapes: Array = []) -> Dictionary:
  return _compile(document, tuning, controls, ball, baked_shapes, false)
@@ -115,7 +116,7 @@ static func _compile(document: Resource, tuning: PhysicsTuning, controls: Playgr
   var descriptor := placement.duplicate(true)
   var body: Node2D
   match placement.type:
-   "drop_target_bank", "slingshot", "spinner", "magnetic_field", "elevated_rail", "one_way_gate", "switch_target", "wall_switch", "spring", "lane_barrier", "diverter", "dash_panel", "buzz_bomber":
+   "teleporter", "drop_target_bank", "slingshot", "spinner", "magnetic_field", "elevated_rail", "one_way_gate", "switch_target", "wall_switch", "spring", "lane_barrier", "diverter", "dash_panel", "buzz_bomber":
     body = lane_barrier_body(placement, wall_material) if placement.type == "lane_barrier" else Node2D.new()
     body.position = placement.position
     body.rotation_degrees = placement.rotation_degrees
@@ -131,7 +132,7 @@ static func _compile(document: Resource, tuning: PhysicsTuning, controls: Playgr
     var flipper := Flipper.new()
     flipper.name = "LeftFlipper" if placement.type == "left_flipper" else "RightFlipper"
     flipper.side = 1.0 if placement.type == "left_flipper" else -1.0
-    flipper.length = Dimensions.FLIPPER_LENGTH_CELLS * cell_size
+    flipper.length = Objects.flipper_length(placement, cell_size)
     flipper.radius = Dimensions.FLIPPER_RADIUS_CELLS * cell_size
     flipper.position = placement.position
     flipper.authored_rest_angle = deg_to_rad(float(placement.rotation_degrees))
@@ -148,12 +149,16 @@ static func _compile(document: Resource, tuning: PhysicsTuning, controls: Playgr
   result.objects.append(descriptor)
   act_root.add_child(body)
  var rail_error := "" if validated else _validate_rail_clearance(result, ball.radius)
+ if rail_error.is_empty() and not validated:
+  rail_error = preload("res://scripts/authored_act/teleporter.gd").validation_error(result, document.terrain_bounds(), ball.radius)
  if not rail_error.is_empty():
   act_root.free()
   ball.radius = previous_radius
   result.error = rail_error
   return result
  result.timings.objects_ms = float(Time.get_ticks_usec() - objects_started) / 1000.0
+ mechanics.exit_obstacles = result.objects
+ mechanics.cell_size = cell_size
  result.root = act_root
  result.timings.total_ms = float(Time.get_ticks_usec() - started) / 1000.0
  return result
@@ -195,8 +200,8 @@ static func _validate_rail_clearance(result: Dictionary, ball_radius: float) -> 
    var margin := Dimensions.RAMP_DECK_THICKNESS_PIXELS + Dimensions.RAMP_CLEARANCE_GAP_PIXELS
    var footprint := maxf(ball_radius, float(item.properties.width) * 0.54)
    for terrain: Dictionary in result.terrain:
-    if height < Dimensions.TERRAIN_HEIGHT_PIXELS + margin and _near_outline(point, terrain.points, terrain.closed, footprint):
-     return "Rail %s: route needs %.1f px elevation above terrain here (currently %.1f). Raise the rail or move the crossing." % [item.object_id, Dimensions.TERRAIN_HEIGHT_PIXELS + margin, height]
+    if height < Clearance.required_height(item) and _near_outline(point, terrain.points, terrain.closed, footprint):
+     return "Rail %s: route needs %.1f px elevation above terrain here (currently %.1f). Raise the rail, move the crossing, or enable Terrain clearance. Mouths must stay clear." % [item.object_id, Clearance.required_height(item), height]
    for object: Dictionary in result.objects:
     var touching := false
     var obstacle_height := 0.0

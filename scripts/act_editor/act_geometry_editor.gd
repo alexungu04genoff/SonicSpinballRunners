@@ -659,6 +659,7 @@ func _build_ui() -> void:
 	inspector.add_child(mechanics_properties)
 	canvas.rail_points_changed.connect(set_rail_points)
 	canvas.patrol_changed.connect(set_enemy_patrol)
+	canvas.teleporter_exit_changed.connect(set_teleporter_exit)
 	detail_label = Label.new()
 	detail_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	detail_label.add_theme_color_override("font_color", Color("b5c8d6"))
@@ -2218,6 +2219,19 @@ func set_gameplay_property(key: String, value: Variant) -> void:
 func set_rail_points(points: PackedVector2Array) -> void:
 	set_gameplay_property("points", points)
 
+func set_teleporter_exit(index: int, offset: Vector2) -> void:
+	if index < 0 or index >= document.gameplay_objects.size(): return
+	var item: Dictionary = document.gameplay_objects[index]
+	if item.type != "teleporter": return
+	var candidate := item.duplicate(true)
+	candidate.properties = Objects.properties(item)
+	candidate.properties.exit_x = offset.x
+	candidate.properties.exit_y = offset.y
+	if not Objects.property_errors(candidate).is_empty() or candidate.properties == item.get("properties", {}): return
+	_record_edit()
+	item.properties = candidate.properties
+	_refresh()
+
 func set_enemy_patrol(index: int, endpoints: Vector2) -> void:
 	if index < 0 or index >= document.gameplay_objects.size(): return
 	var item: Dictionary = document.gameplay_objects[index]
@@ -2293,6 +2307,12 @@ func _refresh_mechanics_properties() -> void:
 				canvas.queue_redraw())
 			mechanics_properties.add_child(timings)
 	var properties := Objects.properties(item)
+	if item.type == "teleporter":
+		var help := Label.new()
+		help.text = "Select the entrance, then drag OUT. Exit X/Y are local offsets; Exit angle rotates its arrow. No minimum speed. Leave the arrival area before another transfer."
+		help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		help.custom_minimum_size.x = 260
+		mechanics_properties.add_child(help)
 	var identity := Label.new()
 	identity.text = "ID"
 	identity.tooltip_text = str(item.get("object_id", "Unsaved brush")) + "\nStable object ID used by switch banks. Duplicating creates a new identity."
@@ -2315,6 +2335,13 @@ func _refresh_mechanics_properties() -> void:
 		stationary.pressed.connect(func(): set_enemy_patrol(canvas.selected_gameplay_index, Vector2.ZERO))
 		mechanics_properties.add_child(stationary)
 	if item.type == "elevated_rail":
+		var clearance := CheckBox.new()
+		clearance.name = "TerrainClearance"
+		clearance.text = "Terrain clearance (lower crossing)"
+		clearance.tooltip_text = "Lower terrain beneath this rail. Ground collision remains solid; only rail traversal crosses above it. Mouths must stay clear."
+		clearance.button_pressed = properties.terrain_clearance
+		clearance.toggled.connect(func(value: bool): set_gameplay_property.call_deferred("terrain_clearance", value))
+		mechanics_properties.add_child(clearance)
 		var enabled := CheckBox.new()
 		enabled.name = "RailRingsEnabled"
 		enabled.text = "Rings along path"

@@ -15,6 +15,7 @@ const Contact = preload("res://scripts/authored_act/gimmick_geometry.gd")
 const Lanes = preload("res://scripts/authored_act/passing_lanes.gd")
 const Banks = preload("res://scripts/act_editor/switch_banks.gd")
 const Enemies = preload("res://scripts/enemies/enemy_runtime.gd")
+const Teleporter = preload("res://scripts/authored_act/teleporter.gd")
 var enemies := Enemies.new()
 var scoring_allowed: Callable
 const MAX_FIELD_ACCELERATION := 600.0
@@ -35,6 +36,8 @@ var reentry_time := 0.0
 var _saved_layer := 2
 var _saved_mask := 1
 var _travel_origin: Variant = null
+var exit_obstacles: Array = []
+var cell_size := 50.0
 
 func _init() -> void:
  enemies.enemy_destroyed.connect(func(type: StringName, id: String, points: int, source: StringName): enemy_destroyed.emit(type, id, points, source))
@@ -249,6 +252,7 @@ func observe_motion(state: PhysicsDirectBodyState2D, sample_travel := true) -> b
  var hit := PhysicsTestMotionResult2D.new()
  if PhysicsServer2D.body_test_motion(ball.get_rid(), query, hit): motion = hit.get_travel()
  var end := start + motion
+ if _observe_teleporters(state, start, motion): return true
  if _observe_gimmicks(state, start, motion):
   # Launches and one-way responses remain ordinary free flight on the same ball.
   # The native-body sweep still protects the new direction against nearby terrain.
@@ -284,6 +288,33 @@ func observe_motion(state: PhysicsDirectBodyState2D, sample_travel := true) -> b
    traversal_event.emit(&"elevated_rail", item.object_id, &"entered")
    advance_ramp(state, state.step * (1.0 - fraction))
    return true
+ return false
+
+func _observe_teleporters(state: PhysicsDirectBodyState2D, start: Vector2, motion: Vector2) -> bool:
+ if ball.teleporter_arrival.is_finite() or ball.teleporter_cooldown > 0.0: return false
+ for item: Dictionary in items:
+  if item.type != "teleporter": continue
+  if Contact.circle_hit(start, motion, item.position, float(item.properties.radius) + ball.radius).is_empty(): continue
+  var exit := Objects.teleporter_exit(item)
+  # Do not move or reward the ball if a moving body currently occupies the exit.
+  if not _exit_clear(exit) or not Teleporter.hardware_clear(exit, ball.radius + 2.0, exit_obstacles, cell_size): continue
+  var velocity := Objects.teleporter_direction(item) * minf(state.linear_velocity.length(), Teleporter.SPEED_CAP)
+  state.transform = Transform2D(0.0, exit)
+  state.linear_velocity = velocity
+  state.angular_velocity = 0.0
+  ball.teleporter_arrival = exit
+  ball.transfer_serial += 1
+  ball.teleporter_cooldown = 0.35
+  ball.flipper_launch_pending = false
+  ball._flipper_strike.clear()
+  ball._contact_cooldowns.clear()
+  ball._reset_steering("Teleporter")
+  # Reset every resident Act's swept history; the jump must never collect objects.
+  if is_instance_valid(ball.mechanics): ball.mechanics.reset_motion()
+  ball._guard_fast_motion(state)
+  ball._previous_step_velocity = state.linear_velocity
+  traversal_event.emit(&"teleporter", item.object_id, &"used")
+  return true
  return false
 
 func _activate_switch(item: Dictionary) -> void:

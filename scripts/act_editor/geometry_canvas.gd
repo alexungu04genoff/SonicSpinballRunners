@@ -32,6 +32,9 @@ const ActData = preload("res://scripts/act_editor/act_geometry.gd")
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 signal rail_points_changed(points: PackedVector2Array)
 signal patrol_changed(index: int, endpoints: Vector2)
+signal teleporter_exit_changed(index: int, offset: Vector2)
+var _teleporter_index := -1
+var _teleporter_preview: Dictionary = {}
 var _patrol_dragging := false
 var _patrol_index := -1
 var _patrol_side := ""
@@ -477,6 +480,8 @@ func fit_view() -> void:
 
 
 func cancel_gesture() -> void:
+ _teleporter_index = -1
+ _teleporter_preview = {}
  _bank_dragging = false
  _bank_preview = {}
  _box_selecting = false
@@ -942,6 +947,7 @@ func _draw_gameplay_objects() -> void:
  for index in objects.size():
   var placement: Dictionary = objects[index]
   if _patrol_dragging and index == _patrol_index: placement = _patrol_preview
+  if index == _teleporter_index: placement = _teleporter_preview
   var point: Vector2 = placement.position
   if selected_gameplay_indices.has(index): point += _group_offset
   if index == _gameplay_drag_index and _gameplay_drag_moved:
@@ -953,6 +959,7 @@ func _draw_gameplay_objects() -> void:
   var point: Vector2 = _gameplay_drag_position if selected_gameplay_index == _gameplay_drag_index and _gameplay_drag_moved else placement.position
   var shown := placement.duplicate(true)
   if _patrol_dragging and selected_gameplay_index == _patrol_index: shown = _patrol_preview.duplicate(true)
+  if selected_gameplay_index == _teleporter_index: shown = _teleporter_preview.duplicate(true)
   shown.position = point
   _draw_launch_range(shown)
   if _rail_drag >= 0: shown.properties.points = _rail_preview
@@ -1161,6 +1168,9 @@ func _input(event: InputEvent) -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
+ if _teleporter_input(event):
+  accept_event()
+  return
  if _patrol_input(event):
   accept_event()
   return
@@ -2108,6 +2118,36 @@ func _rail_input(event: InputEvent) -> bool:
  if event is InputEventMouseMotion and _rail_drag >= 0:
   _rail_preview[_rail_drag] = (legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed) - Vector2(item.position)).rotated(-deg_to_rad(float(item.rotation_degrees)))
   queue_redraw()
+  return true
+ return false
+
+func _teleporter_input(event: InputEvent) -> bool:
+ if document == null or preview_active or not show_gameplay: return false
+ if _teleporter_index >= 0:
+  if (event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE) or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT):
+   cancel_gesture()
+   queue_redraw()
+   return true
+  if event is InputEventMouseMotion or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed):
+   var offset := (legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed) - Vector2(_teleporter_preview.position)).rotated(-deg_to_rad(float(_teleporter_preview.rotation_degrees)))
+   _teleporter_preview.properties.exit_x = offset.x
+   _teleporter_preview.properties.exit_y = offset.y
+   if event is InputEventMouseButton:
+    var index := _teleporter_index
+    _teleporter_index = -1
+    _teleporter_preview = {}
+    teleporter_exit_changed.emit(index, offset)
+   queue_redraw()
+   return true
+  return false
+ if not gameplay_brush.is_empty() or selection_count() != 1 or selected_gameplay_index < 0: return false
+ var item: Dictionary = _gameplay_objects()[selected_gameplay_index]
+ if item.type != "teleporter": return false
+ if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and local_pixels_to_screen(Objects.teleporter_exit(item)).distance_to(event.position) <= 12.0:
+  _teleporter_index = selected_gameplay_index
+  _teleporter_preview = item.duplicate(true)
+  _teleporter_preview.properties = Objects.properties(item)
+  grab_focus()
   return true
  return false
 

@@ -21,6 +21,7 @@ static func definitions() -> Array[Dictionary]:
   {"id": "spinner", "label": "Spinner", "color": Color("ffc76c")},
   {"id": "magnetic_field", "label": "Magnetic Field", "color": Color("ba8cff")},
   {"id": "elevated_rail", "label": "Elevated Ramp / Rail", "color": Color("6ee8dd")},
+  {"id": "teleporter", "label": "Teleporter", "color": Color("cb96ff")},
   {"id": "lane_barrier", "label": "Lane Barrier", "color": Color("66efd1")},
   {"id": "diverter", "label": "Diverter", "color": Color("f3b669")},
   {"id": "dash_panel", "label": "Dash Panel", "color": Color("56eaff")},
@@ -48,6 +49,9 @@ static func local_points(placement: Dictionary, cell_size: float) -> PackedVecto
  # The sling keeps its origin relative to the original silhouette, without re-centering.
  var points := PackedVector2Array()
  match placement.get("type", ""):
+  "teleporter":
+   var props := properties(placement)
+   for step in 32: points.append(Vector2.from_angle(TAU * step / 32.0) * float(props.radius))
   "buzz_bomber":
    var size_value := float(properties(placement).scale)
    for step in 32:
@@ -97,7 +101,7 @@ static func local_points(placement: Dictionary, cell_size: float) -> PackedVecto
   "left_flipper", "right_flipper":
    # The paddle is a capsule around the pivot-to-tip centerline.
    # Both hands share this unrotated body; rest angle and swing sign differ.
-   var length := Dimensions.FLIPPER_LENGTH_CELLS * cell_size
+   var length := flipper_length(placement, cell_size)
    var radius := Dimensions.FLIPPER_RADIUS_CELLS * cell_size
    for step in range(CURVE_STEPS * 2 + 1):
     var angle := PI * 0.5 + PI * float(step) / (CURVE_STEPS * 2)
@@ -114,6 +118,8 @@ static func new_id() -> String:
 
 static func defaults(type: String) -> Dictionary:
  match type:
+  "left_flipper", "right_flipper": return {"length_multiplier": 1.0}
+  "teleporter": return {"radius": 18.0, "exit_x": 150.0, "exit_y": 0.0, "exit_angle": 0.0}
   "drop_target_bank": return {"target_count": 5.0, "spacing": 32.0, "target_size": 22.0, "color": "green", "completion_bonus": 500.0, "reset_delay": 0.0}
   "slingshot": return {"width": 80.0, "strength": 650.0}
   "buzz_bomber": return {"scale": 1.0, "patrol_speed": 65.0, "starting_direction": "right", "patrol_left": -60.0, "patrol_right": 60.0, "respawn_delay": 15.0}
@@ -126,7 +132,7 @@ static func defaults(type: String) -> Dictionary:
   "spring": return {"width": 40.0, "launch_strength": 300.0, "color": "red"}
   "spinner": return {"width": 40.0, "tick_score": 5.0, "decay": 2.0, "max_spin": 40.0, "completion_enabled": true, "target_ticks": 10.0, "completion_bonus": 300.0}
   "magnetic_field": return {"radius": 100.0, "strength": 260.0, "mode": "attract"}
-  "elevated_rail": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(0, -100), Vector2(100, -170)]), "width": 40.0, "height": 40.0, "drag": 0.06, "entry_speed": 100.0, "rings_enabled": true, "ring_spacing": 35.0}
+  "elevated_rail": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(0, -100), Vector2(100, -170)]), "width": 40.0, "height": 40.0, "drag": 0.06, "entry_speed": 100.0, "rings_enabled": true, "ring_spacing": 35.0, "terrain_clearance": false}
  return {}
 
 static func properties(placement: Dictionary) -> Dictionary:
@@ -136,6 +142,8 @@ static func properties(placement: Dictionary) -> Dictionary:
 
 static func property_limits(type: String) -> Dictionary:
  match type:
+  "left_flipper", "right_flipper": return {"length_multiplier": [1.0, 2.0]}
+  "teleporter": return {"radius": [10.0, 60.0], "exit_x": [-10000.0, 10000.0], "exit_y": [-10000.0, 10000.0], "exit_angle": [-180.0, 180.0]}
   "drop_target_bank": return {"target_count": [2.0, 12.0], "spacing": [16.0, 80.0], "target_size": [10.0, 50.0], "completion_bonus": [0.0, 100000.0], "reset_delay": [0.0, 60.0]}
   "slingshot": return {"width": [24.0, 200.0], "strength": [100.0, 1600.0]}
   "buzz_bomber": return {"scale": [0.35, 2.5], "patrol_speed": [0.0, 400.0], "patrol_left": [-2000.0, 0.0], "patrol_right": [0.0, 2000.0], "respawn_delay": [0.1, 300.0]}
@@ -169,7 +177,7 @@ static func property_errors(placement: Dictionary) -> PackedStringArray:
     errors.append(str(key) + " is outside its supported finite range.")
    elif key in ["target_ticks", "target_count"] and float(values[key]) != floorf(float(values[key])):
     errors.append("Target count must be a whole number." if key == "target_count" else "Spinner target ticks must be a whole number.")
-  elif key in ["completion_enabled", "rings_enabled"] and typeof(values[key]) != TYPE_BOOL:
+  elif key in ["completion_enabled", "rings_enabled", "terrain_clearance"] and typeof(values[key]) != TYPE_BOOL:
    errors.append("Enable flags must be boolean.")
   elif key == "starting_direction" and values[key] not in ["left", "right"]:
    errors.append("Starting direction must be left or right.")
@@ -196,6 +204,16 @@ static func property_errors(placement: Dictionary) -> PackedStringArray:
   var props := properties(placement)
   if float(props.spacing) < float(props.target_size) + 2.0: errors.append("Target spacing must exceed target size by at least 2 pixels.")
  return errors
+
+static func flipper_length(item: Dictionary, cell_size: float) -> float:
+ return Dimensions.FLIPPER_LENGTH_CELLS * cell_size * float(properties(item).length_multiplier)
+
+static func teleporter_exit(item: Dictionary) -> Vector2:
+ var props := properties(item)
+ return Vector2(item.position) + Vector2(props.exit_x, props.exit_y).rotated(deg_to_rad(float(item.rotation_degrees)))
+
+static func teleporter_direction(item: Dictionary) -> Vector2:
+ return Vector2.UP.rotated(deg_to_rad(float(item.rotation_degrees) + float(properties(item).exit_angle)))
 
 static func identity(item: Dictionary, index: int) -> String:
  return item.get("object_id", "legacy_" + var_to_bytes([index, item.get("type"), item.get("position"), item.get("rotation_degrees")]).hex_encode().sha256_text().left(24))

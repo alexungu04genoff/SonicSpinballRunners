@@ -51,3 +51,10 @@ exported games are not updated automatically.
 Both EXEs embed current project resources and local artwork. First-use graphics
 shader compilation may pause briefly. If the tools cannot create their data
 folders, move them to a writable location and reopen them.
+
+The November 5 traversal refresh includes per-rail **Terrain clearance**, flipper
+**Length multiplier** (1–2×), and **Teleporter** with a draggable OUT marker.
+`Acts/Experiments/Traversal Diagnostic.tres` demonstrates all three. Play uses
+the actual Prototype session. Save new work with this format-19 editor; older
+builds cannot read the new format. Existing Acts load without a source rewrite
+until you explicitly save them.

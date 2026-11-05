@@ -1,5 +1,13 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Cross the path without building a skyscraper — 2026-11-05
+
+Bro traced the actual rail owner before carving anything. Rail travel already suspends ground collision; the compiler's full-height clearance rule was the constraint. Opt-in Terrain clearance lowers the crossed cap while leaving ground collision alone. A 20 px rail clears a 15 px cap; full-height terrain needed at least 37.5 px elevation. Mouths remain clear and weak shots still roll back.
+
+The diagnostic compares 40/20 px peaks on equal 440 px horizontal routes. Three offsets each: 140 px/s completed the tall route, 110 px/s completed the lowered route. No Dash Panel, steering buff or entry nerf. These are examples, not promises for every uphill Act.
+
+Flipper length is now 1–2× per object, including preview probes and baked actors. Defaults stay 1× until Alex tests control. Teleporter is the explicit no-speed alternative: one IN/OUT pair, direction-aligned incoming speed capped at 2,400 px/s, safe exits, global reentry lock and no swept rewards across the jump. Telemetry V5 adds transfer counts without changing DropTarget comparisons. Portable smoke finally exercises Prototype instead of quietly visiting Visual Lab. See [traversal authoring](TRAVERSAL_AUTHORING.md).
+
 ## Sunset does not own the GPU budget — 2026-11-04
 
 Bro separated shadow appearance from device quality. Atmosphere still owns enablement, opacity, softness, biases and distance. `RenderingOptions` now owns live 2048/4096/8192 resolution, 1/2/4 cascades and the existing Ultra + FXAA toggle in the device-local graphics file. Lab, Prototype and streaming/warm-up lights follow one policy; deliberately shadowless backgrounds stay that way. Old atmosphere cascade fields are ignored in memory and disappear only on explicit save. No art source migration or new visual default.

@@ -23,6 +23,7 @@ var _wall_soil: Material
 var _outlines: Array[PackedVector2Array] = []
 ## Primitive presentation unions and exact stored composites; physics stays untouched.
 var authored_terrain_polygons: Array[PackedVector2Array] = []
+var _terrain_clearance_cuts: Array[Dictionary] = []
 var authored_composite_polygons: Array[PackedVector2Array] = []
 var authored_open_paths: Array[PackedVector2Array] = []
 var decor_warnings := PackedStringArray()
@@ -63,6 +64,7 @@ func _clear_playfield_geometry() -> void:
  super._clear_playfield_geometry()
  _outlines.clear()
  authored_terrain_polygons.clear()
+ _terrain_clearance_cuts.clear()
  authored_composite_polygons.clear()
  authored_open_paths.clear()
  decor_warnings.clear()
@@ -72,6 +74,7 @@ func _clear_playfield_geometry() -> void:
 
 func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
  super.build_authored(runtime, bounds, cell_size)
+ _terrain_clearance_cuts = preload("res://scripts/authored_act/terrain_clearance.gd").crossings(runtime.mechanics.items, preload("res://scripts/act_dimensions.gd").BALL_RADIUS_CELLS * cell_size)
  _initialize_terrain_skin()
  for terrain: Dictionary in runtime.terrain:
   var points: PackedVector2Array = terrain.points.duplicate()
@@ -112,6 +115,7 @@ func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> voi
    # Thin open rails keep a center strip: cap width is at most a quarter of rail width.
    _add_border(ribbon, [], minf(theme_definition.top_border_width, cell_size * 0.01), RAIL_HEIGHT + RAIL_CAP_HEIGHT, theme_definition.top_border_material, rail, "TopSurfaceBorder")
  _add_border(authored_floor_outline, floor_obstacles, theme_definition.floor_border_width, 0.0, theme_definition.floor_border_material, floor_root, "FloorPathBorder")
+ preload("res://scripts/authored_act/terrain_clearance.gd").apply(terrain_root, runtime.mechanics.items, preload("res://scripts/act_dimensions.gd").BALL_RADIUS_CELLS * cell_size, SCALE)
  TerrainFacade.consolidate(floor_root, terrain_root, authored_floor_outline, wall_side)
  _finish_terrain_skin()
  _build_authored_decor(runtime, cell_size)
@@ -131,7 +135,10 @@ func _build_authored_decor(runtime: Dictionary, cell_size: float) -> void:
   var prop: Node3D = decor_skin.instantiate_slot(runtime.get("decor_seed", ""), slot)
   if prop == null: continue
   decor_root.add_child(prop)
-  prop.position = map_point(slot.position, RAIL_HEIGHT + RAIL_CAP_HEIGHT)
+  var support_height := preload("res://scripts/authored_act/terrain_clearance.gd").top_at(slot.position, _terrain_clearance_cuts) * SCALE
+  prop.position = map_point(slot.position, support_height)
+  if support_height < RAIL_HEIGHT + RAIL_CAP_HEIGHT - 0.001:
+   decor_warnings.append("Slot %s is on lowered terrain; check prop clearance beneath the rail." % slot.slot_id)
   # Canvas +Y maps to +Z. Clockwise canvas angles require negative world yaw.
   prop.rotation.y = -deg_to_rad(float(slot.rotation_degrees))
   prop.scale = Vector3.ONE * cell_size * SCALE * float(slot.get("scale", 1.0))

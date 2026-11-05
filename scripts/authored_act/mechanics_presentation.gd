@@ -19,6 +19,7 @@ func build(presenter: TablePresentation, runtime: Dictionary) -> void:
   if not descriptor.has("mechanic"): continue
   var item: Dictionary = descriptor.mechanic
   match item.type:
+   "teleporter": preload("res://scripts/authored_act/teleporter.gd").build(table, self, item)
    "buzz_bomber": enemies.append(BuzzModel.build(table, self, item))
    "spinner": _spinner(item)
    "magnetic_field": _field(item)

@@ -1,4 +1,6 @@
-# Prototype telemetry evidence · version 4
+# Prototype telemetry evidence · version 5
+
+V5 (2026-11-05) adds `teleporters.transfers` and `teleporters.by_object`, keyed by stable entrance/exit-pair IDs. Only accepted transfers in the active Act count. Blocked exits, cooldowns and overlapping arrival sensors do not count. Teleporters grant no score or combo support. All V4 counters retain their meanings, so existing DropTarget evidence stays comparable. Missing Teleporter fields in older files are unknown, not zero. The V4 definitions below remain historical introduction notes.
 
 Telemetry records what happened. It does not judge design, compute difficulty, rebalance mechanics or change an authored Act. This is a compact local summary, not an event log or per-frame trace.
 
@@ -6,7 +8,7 @@ Telemetry records what happened. It does not judge design, compute difficulty, r
 
 Results → **Copy run data** and the automatic archive use the same pretty-printed JSON. Files remain under `user://telemetry/runs` (normally `%APPDATA%\Godot\app_userdata\Sonic Spinball Runners\telemetry\runs` on Windows). Results → **Open telemetry folder** resolves the actual location; separately named exported builds have separate user directories. Existing feedback, termination reasons and file protections are unchanged.
 
-`telemetry_format_version` is now **4**, because version 3 already introduced authored difficulty and Act fingerprints. All v2/v3 fields retain their meanings, including the legacy `homing` and `type_actions` groups, original flat timing fields, category scores, combo buckets, enemy lifecycle, Balls and Buddy contribution. Old files are never rewritten. Readers should branch on the version and treat missing new fields as unknown, not as zero. When an old row is passed to the exporter, unknown aggregate action counts remain `null`.
+`telemetry_format_version` is now **5**. V4 introduced the detailed mechanic/action counters below; V3 introduced authored difficulty and Act fingerprints. All earlier fields retain their meanings, including the legacy `homing` and `type_actions` groups, original flat timing fields, category scores, combo buckets, enemy lifecycle, Balls and Buddy contribution. Old files are never rewritten. Readers should branch on the version and treat missing new fields as unknown, not as zero. When an old row is passed to the exporter, unknown aggregate action counts remain `null`.
 
 Each new Act row retains source path, title, theme, full document fingerprint and authored difficulty number/label. It also snapshots `character`, `character_type` (`speed`, `fly`, `power`) and optional `design_thesis`. These describe the document and character used in that run, not the current contents of a later edited file. Authored difficulty is never inferred from the measurements.
 

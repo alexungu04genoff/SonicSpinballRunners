@@ -53,15 +53,19 @@ func statistics() -> void:
  var expected := randi()
  seed(701)
  recorder.observe_motion(0.1, 900.0, true, 0.0)
+ recorder.teleporter_used("pair_a")
+ recorder.teleporter_used("pair_a")
  var row := {"zone": 1, "zone_act": 1, "act": 1, "title": "Fixture", "source": ACT, "cleared": true, "target": 1000, "score": 1000, "drains": 0, "buddy_contributions": {}, "authored_difficulty": 4}
  var result := recorder.finish_act(row, 1.0)
  check(randi() == expected and row.score == 1000, "Recording and snapshotting preserve RNG and input score")
  var summary := {"won": true, "seed": 18, "practice": true, "character": "sonic", "score": 1000, "normal_score": 1000, "buddy_contributions": {}, "buddies": {}, "seconds": 1.0, "drains": 0, "acts": [{"telemetry": result}]}
  var json: Dictionary = JSON.parse_string(JSON.stringify(Telemetry.export_run(summary)))
- check(json.telemetry_format_version == 4 and json.completed_act_difficulties == {"4": 1.0} and json.action_totals.uses == 3 and json.acts[0].ball_speed.max == 900.0 and json.acts[0].wide_spring == null, "V4 JSON keeps authored difficulty and compact run totals; unavailable Saver is null")
+ check(json.telemetry_format_version == 5 and json.completed_act_difficulties == {"4": 1.0} and json.action_totals.uses == 3 and json.acts[0].ball_speed.max == 900.0 and json.acts[0].wide_spring == null, "V5 JSON keeps authored difficulty and compact run totals; unavailable Saver is null")
+ check(json.acts[0].teleporters.transfers == 2 and json.acts[0].teleporters.by_object.pair_a == 2 and json.acts[0].drop_targets.hits == 0, "Teleporter counters serialize independently of existing mechanic counts")
  result.erase("character_action")
  check(Telemetry.export_run(summary).action_totals.successful_uses == null, "Legacy rows without generalized success evidence remain unknown")
  recorder.begin_act(2.0)
+ check(recorder.teleporters.transfers == 0 and recorder.teleporters.by_object.is_empty(), "Act boundary resets transfer counters")
  check(recorder.type_actions.uses == 0 and recorder.ball_speed.snapshot().samples == 0 and recorder.drop_targets.hits == 0 and recorder._action_snapshot().successful_uses == 0, "Act boundary resets every new evidence group")
 
 func run() -> void:

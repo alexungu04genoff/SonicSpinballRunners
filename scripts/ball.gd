@@ -17,6 +17,10 @@ var mechanics: Node
 ## Optional shared type action adapter; never owns transforms or collision shapes.
 var type_action_controller: Node
 var on_ramp := false
+## Ball-owned so neighboring streamed Acts cannot recursively transfer it.
+var teleporter_cooldown := 0.0
+var teleporter_arrival := Vector2.INF
+var transfer_serial := 0
 ## Elevation in physics pixels, consumed only by collisionless presentation.
 var ramp_height := 0.0
 var tuning: PhysicsTuning
@@ -66,6 +70,8 @@ func _ready() -> void:
  physics_material_override.bounce = 0.0
 
 func teleport_to(where: Vector2, velocity: Vector2 = Vector2.ZERO, waiting: bool = false) -> void:
+ teleporter_cooldown = 0.0
+ teleporter_arrival = Vector2.INF
  # Reset/serve and explicit rail constraints own full velocity replacement.
  if is_instance_valid(mechanics): mechanics.reset_for_retry()
  _teleport_position = where
@@ -140,6 +146,10 @@ func _apply_steering(state: PhysicsDirectBodyState2D, stats: Dictionary) -> void
    steering_block_reason = "No command / deadzone" if absf(axis) <= 0.01 else "Selected acceleration rate is zero"
 
 func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
+ if not serve_pending:
+  teleporter_cooldown = maxf(0.0, teleporter_cooldown - state.step)
+  if teleporter_cooldown <= 0.0 and teleporter_arrival.is_finite() and state.transform.origin.distance_to(teleporter_arrival) > 60.0 + radius + 2.0:
+   teleporter_arrival = Vector2.INF
  steering_reset_age += state.step
  steering_acceleration_applied = 0.0
  steering_impulse_applied = 0.0

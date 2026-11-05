@@ -1,7 +1,7 @@
 class_name ActGeometry
 extends Resource
 ## A single Act's terrain, connectors, gameplay objects and lifecycle authoring data.
-const FORMAT_VERSION := 18
+const FORMAT_VERSION := 19
 const DIFFICULTY_LABELS := ["Relaxed", "Easy", "Standard", "Hard", "Expert"]
 const MAX_DESIGN_THESIS_LENGTH := 240
 const MAX_SCORE_TARGET := 100000000
@@ -437,7 +437,7 @@ static func load_document(path: String) -> Dictionary:
  var source_version: Variant = loaded.format_version
  if typeof(source_version) == TYPE_INT and source_version < 18 and (loaded.authored_difficulty != 3 or loaded.design_thesis != ""):
   return {"document": null, "error": "Authored difficulty and design thesis require Act format 18."}
- if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [15, 16, 17]: loaded.format_version = FORMAT_VERSION
+ if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [15, 16, 17, 18]: loaded.format_version = FORMAT_VERSION
  if typeof(loaded.format_version) == TYPE_INT and loaded.format_version in [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14] and typeof(loaded.library_version) == TYPE_INT and loaded.library_version == SHAPES.VERSION:
   if typeof(loaded.score_target) != TYPE_INT or loaded.score_target != 0:
    return {"document": null, "error": "Act score targets require Act format 15."}

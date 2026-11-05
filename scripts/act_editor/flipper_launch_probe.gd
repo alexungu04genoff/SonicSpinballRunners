@@ -25,7 +25,7 @@ func _ready() -> void:
 func request(item: Dictionary, cell_size: float, resolved_stats: Dictionary = {}, spawn_context: Dictionary = {}) -> void:
  var stats := PhysicsTuning.resolve(PhysicsTuning.BALANCED, {}, []) if resolved_stats.is_empty() else resolved_stats.duplicate(true)
  # Generic catches ignore translation. Spawn catches depend on the entire Act.
- var key := [item.type, float(item.rotation_degrees), cell_size, stats]
+ var key := [item.type, float(item.rotation_degrees), item.get("properties", {}), cell_size, stats]
  if not spawn_context.is_empty():
   key.append([spawn_context.document.fingerprint(), item, spawn_context.index, spawn_context.target])
  if key == _key: return
@@ -76,7 +76,7 @@ func _restart(generation: int, item: Dictionary, cell_size: float, stats: Dictio
   var paddle := PlaygroundFlipper.new()
   paddle.side = 1.0 if item.type == "left_flipper" else -1.0
   paddle.authored_rest_angle = deg_to_rad(float(item.rotation_degrees))
-  paddle.length = Dimensions.FLIPPER_LENGTH_CELLS * cell_size
+  paddle.length = preload("res://scripts/act_editor/gameplay_objects.gd").flipper_length(item, cell_size)
   paddle.radius = Dimensions.FLIPPER_RADIUS_CELLS * cell_size
   paddle.position = Vector2(_trials.size() * 10000.0, 0)
   paddle.ball = ball

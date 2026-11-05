@@ -322,6 +322,7 @@ func _on_drop_target_event(bank_id: String, target_id: String, phase: StringName
 
 func _on_traversal_event(kind: StringName, object_id: String, phase: StringName, owner_id: String = "") -> void:
  super._on_traversal_event(kind, object_id, phase, owner_id)
+ if phase == &"used" and kind == &"teleporter" and _accept_scoring(owner_id): telemetry.teleporter_used(object_id)
  # Slingshots retain Spring's existing combo contract; only the passive counter differs.
  if phase == &"used" and kind == &"spring" and _accept_scoring(owner_id) and telemetry.slingshots.get("by_object", {}).has(object_id):
   telemetry.slingshot_activated(object_id)
