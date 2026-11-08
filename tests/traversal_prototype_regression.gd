@@ -1,7 +1,7 @@
 extends SceneTree
 ## Compare source-built and disk-baked traversal in the supported Prototype route.
 const Session = preload("res://scripts/prototype/session.gd")
-const ACT := "res://data/acts/Experiments/Traversal Diagnostic.tres"
+const ACT := "res://tests/fixtures/traversal_diagnostic.tres"
 var checks := 0
 var failures := 0
 

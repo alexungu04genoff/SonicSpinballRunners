@@ -11,6 +11,7 @@ var failures := 0
 class StreamingHost extends Node:
  var started := true
  var presentation: TablePresentation
+ var backgrounds := {}
 
 class ObservedRecipe extends Recipe:
  var created_ids: Array[int] = []
@@ -60,6 +61,10 @@ func run() -> void:
  library.backgrounds.fixture = Recipe.new()
  library.environments.fixture = Environment.new()
  library.lights.fixture = {"rotation": Vector3(-0.6, 0.3, 0), "color": Color.WHITE, "energy": 1.0, "bias": 1.0}
+ # Attachment now binds both foreground and local scenery to a resident Zone.
+ var atmosphere := preload("res://scripts/atmosphere/runtime.gd").new()
+ atmosphere.configure("green_hill", {}, library.environments.fixture, host.presentation._key_light)
+ host.backgrounds[0] = {"layer": {"atmosphere": atmosphere}}
 
  var authoring := Node3D.new()
  authoring.position = Vector3(2, 0.5, -3)
@@ -152,6 +157,9 @@ func run() -> void:
 
  var live = Act.new()
  live.game = host
+ live.plan = {"zone": 0}
+ live.background_visual = Node3D.new()
+ root.add_child(live.background_visual)
  live.recipe = recipe
  live.phase = 2
  live.prepared_nodes = prepared
@@ -184,10 +192,12 @@ func run() -> void:
  check(live.ready and live.visual.visible and live.visual.process_mode == Node.PROCESS_MODE_PAUSABLE, "Activation exposes the completed visual")
  var live_root: Node = live.root
  var live_visual: Node = live.visual
+ var live_background: Node = live.background_visual
  live = null
  check(is_instance_valid(live_visual) and is_instance_valid(live_hidden), "Releasing a complete Act does not free tree-owned visuals")
  live_root.free()
  live_visual.free()
+ live_background.free()
  expected_root.free()
 
  recipe.created_ids.clear()

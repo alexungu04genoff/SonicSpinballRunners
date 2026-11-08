@@ -82,7 +82,23 @@ func run() -> void:
   check(definition.floor_border_material != null and definition.top_border_material != null and definition.floor_border_width > 0 and definition.top_border_width > 0, "Floor and wall ledge borders are enabled: " + theme)
   check(not game.presentation.terrain_root.find_children("TopSurfaceBorder", "MeshInstance3D", true, false).is_empty() and not game.presentation.terrain_root.find_children("FloorPathBorder", "MeshInstance3D", true, false).is_empty(), "Authored walls and floor contain rendered border meshes: " + theme)
   if theme == "chemical_plant":
-   check(deck.material_override is ShaderMaterial and deck.material_override.get_shader_parameter("albedo_texture").resource_path == "res://assets/textures/chemical_plant/ramp.png", "Chemical ramp uses the editable yellow, gray and pale inset panel image")
+   var source: ShaderMaterial = definition.ramp_materials().deck
+   var material: ShaderMaterial = deck.material_override
+   check(definition.theme_id == "chemical_plant" and material != source and material.shader == source.shader and material.get_meta("atmosphere_hue", "") == "ramps", "Chemical ramp owns a separate material using the current theme shader and ramp atmosphere category")
+   var actual_texture: Texture2D = material.get_shader_parameter("albedo_texture")
+   var source_texture: Texture2D = source.get_shader_parameter("albedo_texture")
+   check(actual_texture != null and actual_texture == source_texture, "Chemical ramp retains the authoritative theme deck texture")
+   # Selected art is read as an ImageTexture in editor builds, with no resource path.
+   # Compare decoded pixels with the intentional source, not an old texture name/hash.
+   var selected := "res://assets/textures/chemical_plant/selected/7C-yellow.png"
+   var source_path: String = selected if FileAccess.file_exists(selected) else "res://assets/textures/chemical_plant/ramp.png"
+   var expected := Image.load_from_file(ProjectSettings.globalize_path(source_path))
+   var actual := actual_texture.get_image()
+   actual.convert(Image.FORMAT_RGBA8)
+   expected.convert(Image.FORMAT_RGBA8)
+   actual.clear_mipmaps()
+   expected.clear_mipmaps()
+   check(actual.get_size() == expected.get_size() and actual.get_data() == expected.get_data(), "Chemical ramp texture matches current selected artwork (or the shipped base artwork when no selection exists)")
    var pipes: Node = visual.get_node("SidePipes")
    check(pipes.get_child_count() == 8 and pipes.has_node("BluePipeLeft") and pipes.has_node("BluePipeRight") and pipes.has_node("CouplingsLeft"), "Both blue pipes, metal couplings and yellow/cyan details use eight batched meshes")
   if DisplayServer.get_name() != "headless":

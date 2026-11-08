@@ -1,4 +1,66 @@
-# Physics Playground verification
+# Supported regression baseline — 2026-11-08
+
+The four recurring failure groups reported during traversal work have been repaired without changing production code, physics tuning, scores, validation, or artwork. The tests retain their intended contracts; none was disabled or retired. Earlier verification entries below are historical.
+
+## Failure archaeology
+
+Baseline: `f308ebe898170ff9fbfc73ae475f0b9c29e8dc53`, plus the existing uncommitted art/Act work. Before edits, the working-tree suites reported authored gimmicks **91 checks / 1 failure**, pinball mechanics **56 / 2**, ramp/theme **90 / 1**, and soft retry rejected startup. An exported, imported clean HEAD reproduced the gimmick, pinball and retry failures. Its ramp suite passed **90/90**: the old asset assertion fails specifically with the selected local Chemical artwork. Both contexts are recorded separately under ignored `test-results/regression-debt/`.
+
+| Failure | Classification | Root cause | Resolution |
+| --- | --- | --- | --- |
+| Authored gimmick drain reset | A — stale test | `028c548` deliberately replaced ball-loss full resets with soft retries. The assertion still expected the spring usage count to clear. | Check transient contact cleanup, retained usage/bank/gate/score state, and fresh state on actual source reload. |
+| Ordinary flipper composition shot | B — obsolete fixture assumption | The fixture predates `b5fe20b` contact-normal assistance. Its actual tip contact fires rightward, away from the spinner and ramp, instead of using removed position-based aiming. | Verify a real powered contact separately; use a controlled physical incoming shot to verify spinner, magnet, rail capture and tangent departure together. |
+| Rail departure event | A — stale test | `879c66c` deliberately introduced `completed` for forward rail completion so only successful rails support the combo. Rollback/cancellation still emit `exited`. | Assert the exact entry/completion sequence and stable ID, plus rollback and reset exit semantics. |
+| Chemical ramp asset | A — stale test | Selected `7C-yellow.png` intentionally replaces the generated `ramp.png`; editor-loaded ImageTextures have no resource path. | Check current theme/shader ownership, separate ramp atmosphere ownership, authoritative texture identity and decoded source pixels. Clean checkouts still verify their shipped base artwork. |
+| Soft-retry source pool | B — broken fixture | `ece3ae7` requires three distinct source Acts per ordinary Zone. Repeating one path never forms a legal pool. | Use `Session.configure_act_test()` and the current single-Act planner/builder. Retain duplicate rejection, add Practice/Challenge and actual session restart coverage, and test neighboring runtime isolation directly at the shared adapter. |
+| Adjacent texture coverage | A — stale test | Selected Chemical/Casino color shaders do not all declare the old emission/surface maps, imported paths, or shared mapping enum. | Require declared color/maps, lossless mipmaps for imported or source ImageTextures, and each current shader's route mapping. |
+| Adjacent traversal fixtures | B — broken fixture | Both traversal suites used the editable experimental Act as immutable test geometry; local authoring removed its Teleporter and changed its routes. | Preserve that Act. Save/read an isolated round-trip document and use `tests/fixtures/traversal_diagnostic.tres` for source/baked Prototype tests. |
+| Adjacent warmed-visual reuse | B — broken fixture | The historical 125/127 failure reproduced: the host stub omitted current Zone/background atmosphere attachment, causing two script errors before activation. | Supply the resident Zone, local scenery root and real atmosphere runtime; retain all 127 existing assertions. |
+
+The shot probe observed one contact at `(271.9846, 535.7651)`, tip fraction approximately 1, with assistance `(309.9697, -314.4155)`. The ball then travels rightward and never crosses the intended mouth. This is not a missing event or a frame-order bug. Existing contact-response tests continue to protect the current physics; no attempt was made to retune this old demonstration layout.
+
+## Current retry contract
+
+Ball loss and manual retry preserve score, Goal readiness, target telemetry, switch/bank progress, routing, Spinner Goal ticks and partial rotation, lane lights/cooldowns, Drop Target state/reset countdown, ring lifecycle, enemy respawn clocks and earned pending diverter actions. They clear transient contacts/rail ownership and spinner inertia. Serve/protected-transfer time does not advance those objective clocks. The streaming adapter resets active contacts without clearing neighboring objectives.
+
+Practice retries are unlimited. Challenge spends one Ball per drain/manual retry; its final loss ends the run without a new transfer. Session **Restart run** destroys the old runtime and creates fresh objectives, live enemies, score, Goal and telemetry state. `mechanics.reset()` is a lower-level mechanic reset, not a substitute for a new session. The repaired retry suite exercises all these distinctions, including partial and completed Drop Target Banks, through the supported single-Act Prototype path.
+
+## Reproduction and verification
+
+Use Godot 4.7.2 with an isolated writable user-data profile. Run each suite as `Godot.exe --headless --path . --script res://tests/<suite>.gd`; graphical suites use `--rendering-method forward_plus --rendering-driver vulkan` instead of `--headless`. Allow at least ten minutes for traversal authoring's repeated real-time physical trials; a four-minute harness timeout cut off an initial run and was not counted as a pass.
+
+Before normal multi-Act/session checks, run the supported baker with `res://scenes/act_baker.tscn -- --prototype`. Before `traversal_prototype_regression.gd`, bake `--act=res://tests/fixtures/traversal_diagnostic.tres --theme=green_hill`. Do not validate/read a bake concurrently with rewriting it. Missing/stale receipts must continue to fail closed. This pass refreshed all **40 Prototype Act/theme variants** and the isolated traversal fixture; source Acts and selected artwork were not rewritten.
+
+Final baseline: **32 suites, 8,596 checks, zero assertion failures**, counting each suite once with its final rendered count where applicable. The Act geometry child process additionally passed six reload checks. Repeated clean-HEAD/headless/rendered runs are not added again to the total.
+
+| Suite | Checks | Suite | Checks |
+| --- | ---: | --- | ---: |
+| Authored gimmicks | 93 | Pinball mechanics | 58 |
+| Soft retry | 62 | Ramp height/themes | 92 |
+| Theme textures | 284 | Warmed visual reuse | 127 |
+| Scorecraft | 29 | Buddy scoring | 70 |
+| Enemies | 50 | Authored main game | 70 |
+| Traversal authoring | 36 | Traversal Prototype | 20 |
+| Flipper contact response | 208 | Telemetry evidence | 30 |
+| Prototype plan | 41 | Prototype setup | 16 |
+| Prototype archive | 34 | Foreground contribution | 26 |
+| Geometry bake | 2,842 | Act geometry | 3,461 |
+| Geometry density | 18 | Economy V1 | 44 |
+| Pinball vocabulary | 17 | Routing gimmick batch | 103 |
+| Scoring flow | 31 | Rail rings | 13 |
+| Profiles/modifiers | 12 | Prototype Ball budget | 57 |
+| Prototype run | 143 | Run telemetry | 14 |
+| Prototype appearance | 70 | Production bake audit | 425 |
+
+Forward+/Vulkan on RTX 4060 covered authored gimmicks, pinball mechanics, soft retry, ramp/themes, warmed visual reuse, foreground contribution, traversal Prototype, Prototype setup/budget/run/archive and all eight themes in the disk-loaded appearance guard. Other suites were headless logic/geometry diagnostics. The bake audit passed all **40 variants**. Headless editor import of the clean HEAD plus all changed tests completed without script/parse errors, and task-owned diffs passed `git diff --check`.
+
+The additional canonical Chemical Plant/RampMania capture passed with one disk Act, one disk theme and **zero fallback builds**. Its receipt matches the runtime ramp texture's decoded pixels to selected `7C-yellow.png` (`rgba8_sha256=add8185c5384d830bf268555b94d0bbb3e965c4d4e7e7a03b404d760b844dc62`). Capture and receipt are in `test-results/regression-debt/chemical-capture/`. This comparison records current source/bake agreement; the hash is evidence, not a new frozen art expectation. All 28 pre-existing tracked worktree diffs remained identical and no pre-existing untracked path disappeared.
+
+Remaining diagnostics are not suppressed: rendered Prototype budget/archive shutdowns still report ObjectDB leaks (one and seven instances respectively), also described by earlier lifecycle verification. Those warnings remain outside this test-contract repair; no assertion or process failed. Headless session runs emitted dummy-renderer RID diagnostics and were superseded by real Vulkan runs for those sessions. The malformed-resource and blocked-archive negative tests intentionally produce their expected errors. This is a defined executed baseline, not a claim that every historical script in the repository was run.
+
+The original four repaired suites additionally passed **305 checks** against the isolated clean HEAD implementation, without any local selected artwork. Source material diagnostics are not canonical production appearance evidence: the separate Forward+/Vulkan Prototype checks load validated disk recipes. Dummy-renderer diagnostics are not counted as graphical validation. Negative malformed-resource/archive-write probes deliberately emit errors; restricted Windows runs also emit the root-certificate-store diagnostic and existing source-image/export warnings. Human timing, feel and polish remain unassessed.
+
+# Historical Physics Playground verification
 
 Latest checks: 2026-10-25. Engine: Godot 4.7.2 stable, Windows. Physics: 120 Hz. Graphical renderer: Compatibility / ANGLE D3D11 on NVIDIA GeForce RTX 4060.
 

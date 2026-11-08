@@ -135,13 +135,13 @@ geometry bake 2,842/2,842, Scorecraft 29/29, run telemetry 14/14, and single-Act
 Prototype playtest 12/12. Both exported portable executables passed the editor
 Save/Load/Undo and actual Prototype transfer smoke test.
 
-Four older suites retain failures reproduced against preserved pre-task code:
-authored gimmicks expects a full reset instead of the current soft retry;
-pinball mechanics has two existing shot/departure assertions; ramp theme height
-expects an older Chemical Plant texture; soft retry cannot start because its
-fixture repeats a source Act forbidden by current pool validation. These were
-not weakened or folded into this traversal change. Headless graphical Prototype
-checks also emit dummy-renderer RID errors; the Forward+/Vulkan run passes cleanly.
+The four older failure groups recorded during this change were repaired on
+2026-11-08 as stale contracts or broken fixtures, without production changes.
+See [classification, current retry policy and supported baseline](VERIFICATION.md).
+Traversal regressions now keep fixed geometry in
+`tests/fixtures/traversal_diagnostic.tres`, separate from the editable experimental
+Act. Bake that test fixture for Green Hill before the Prototype regression.
+Headless dummy-renderer diagnostics are not graphical validation; use Forward+/Vulkan.
 
 Shadow defaults, cascades, MSAA, renderer, atmospheres, steering strength, scoring,
 Buddies and character actions remain outside this pass.

@@ -245,13 +245,18 @@ func run() -> void:
  check(game.ball.position.distance_to(expected) < 6.0, "Ballistic editor arc agrees with free-flight spring motion", str([game.ball.position, expected]))
  var preview := Objects.spring_trajectory(spring, game.tuning.effective.gravity_scale)
  check(absf((preview[10].y - preview[0].y) - (-500.0 * 0.25 + 0.5 * 700 * game.tuning.effective.gravity_scale * 0.25 * 0.25)) < 0.001, "Preview uses selected profile gravity and authored launch strength")
+ manager._activate_switch(manager.by_id.s1)
+ manager._activate_switch(manager.by_id.s2)
+ var score_before_drain: int = game.score
  await move_in_run(Vector2(500, 1080), Vector2(0, 500))
  await frames(80)
- check(game.ball.serve_pending and spring.launch_count == 0 and not manager.by_id.s1.active, "Drain clears latch, switch and bank state through shared reset")
+ check(game.ball.serve_pending and not spring.latched and not game.ball.on_ramp, "Drain clears transient contacts and returns the ball to serve")
+ check(spring.launch_count == 1, "Soft retry preserves the Act's spring usage history")
+ check(manager.by_id.s1.active and manager.banks[0].complete and manager.by_id.gate.open and game.score == score_before_drain, "Drain preserves completed bank, routing and earned score")
  await game.reload_authored_act()
  await frames(4)
  manager = game.ball.mechanics
- check(manager.by_id.spring.launch_count == 0 and manager.by_id.spring.rotation_degrees == act.gameplay_objects[4].rotation_degrees and manager.by_id.open_gate.open, "Reload restores saved spring settings and authored states without a picker")
+ check(manager.by_id.spring.launch_count == 0 and manager.by_id.spring.rotation_degrees == act.gameplay_objects[4].rotation_degrees and manager.by_id.open_gate.open and not manager.by_id.s1.active and not manager.banks[0].get("complete", false), "Reload restores saved spring settings and fresh authored objectives without a picker")
  var stable_root: Node = game._authored_root
  var saved := FileAccess.get_file_as_bytes(RUN_PATH)
  var file := FileAccess.open(RUN_PATH, FileAccess.WRITE)

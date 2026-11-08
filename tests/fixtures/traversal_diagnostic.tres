@@ -1,0 +1,94 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=3]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_w43as"]
+
+[resource]
+script = ExtResource("1_w43as")
+format_version = 19
+library_version = 2
+title = "Traversal Diagnostic"
+design_thesis = "Compare 40 px full-height and 20 px carved horizontal crossings; 1x, 1.5x and 2x flippers; one paired Teleporter. Diagnostic, not a finished Act."
+placements = [{
+"anchor": Vector2i(5, 2),
+"base_size": Vector2i(1, 3),
+"flip_h": false,
+"flip_v": false,
+"quarter_turns": 0,
+"shape_id": "rectangle_1x3"
+}, {
+"anchor": Vector2i(5, 5),
+"base_size": Vector2i(1, 3),
+"flip_h": false,
+"flip_v": false,
+"quarter_turns": 0,
+"shape_id": "rectangle_1x3"
+}]
+gameplay_objects = [{
+"object_id": "diagnostic_full_height",
+"position": Vector2(80, 170),
+"properties": {
+"drag": PackedByteArray(3, 0, 1, 0, 184, 30, 133, 235, 81, 184, 174, 63),
+"entry_speed": PackedByteArray(3, 0, 0, 0, 0, 0, 200, 66),
+"height": PackedByteArray(3, 0, 0, 0, 0, 0, 32, 66),
+"points": PackedByteArray(35, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 220, 67, 0, 0, 0, 0),
+"ring_spacing": PackedByteArray(3, 0, 0, 0, 0, 0, 12, 66),
+"rings_enabled": false,
+"terrain_clearance": false,
+"width": PackedByteArray(3, 0, 0, 0, 0, 0, 32, 66)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "elevated_rail"
+}, {
+"object_id": "diagnostic_underpass",
+"position": Vector2(80, 330),
+"properties": {
+"drag": PackedByteArray(3, 0, 1, 0, 184, 30, 133, 235, 81, 184, 174, 63),
+"entry_speed": PackedByteArray(3, 0, 0, 0, 0, 0, 200, 66),
+"height": PackedByteArray(3, 0, 0, 0, 0, 0, 160, 65),
+"points": PackedByteArray(35, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 220, 67, 0, 0, 0, 0),
+"ring_spacing": PackedByteArray(3, 0, 0, 0, 0, 0, 12, 66),
+"rings_enabled": false,
+"terrain_clearance": true,
+"width": PackedByteArray(3, 0, 0, 0, 0, 0, 32, 66)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "elevated_rail"
+}, {
+"object_id": "diagnostic_flipper_1",
+"position": Vector2(100, 530),
+"properties": {
+"length_multiplier": PackedByteArray(3, 0, 0, 0, 0, 0, 128, 63)
+},
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 169, 103, 2, 150, 171, 85, 50, 64),
+"type": "left_flipper"
+}, {
+"object_id": "diagnostic_flipper_15",
+"position": Vector2(230, 530),
+"properties": {
+"length_multiplier": PackedByteArray(3, 0, 0, 0, 0, 0, 192, 63)
+},
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 169, 103, 2, 150, 171, 85, 50, 64),
+"type": "left_flipper"
+}, {
+"object_id": "diagnostic_flipper_2",
+"position": Vector2(450, 530),
+"properties": {
+"length_multiplier": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 64)
+},
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 11, 179, 63, 141, 74, 53, 100, 64),
+"type": "right_flipper"
+}, {
+"object_id": "diagnostic_teleporter",
+"position": Vector2(80, 440),
+"properties": {
+"exit_angle": PackedByteArray(3, 0, 0, 0, 0, 0, 180, 66),
+"exit_x": PackedByteArray(3, 0, 0, 0, 0, 0, 210, 67),
+"exit_y": PackedByteArray(3, 0, 0, 0, 0, 0, 170, 195),
+"radius": PackedByteArray(3, 0, 0, 0, 0, 0, 144, 65)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "teleporter"
+}]
+activation_y = null
+spawn_position = Vector2(80, 440)
+goal_position = Vector2(500, 80)

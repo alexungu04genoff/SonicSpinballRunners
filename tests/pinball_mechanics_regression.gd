@@ -78,17 +78,26 @@ func run() -> void:
  game.ring_field.set_physics_process(false)
  var manager: Node = game.ball.mechanics
  manager.traversal_event.connect(func(kind, id, phase): traversal_events.append([kind, id, phase]))
+ var shots: Array = []
+ game.flippers[0].shot_fired.connect(func(at, impulse, fraction): shots.append([at, impulse, fraction]))
  game.launch_ball()
+ for i in 180:
+  game.controls.virtual_left = game.ball.position.y > 526 and game.ball.linear_velocity.y > 0
+  await frames(1)
+  if not shots.is_empty(): break
+ check(shots.size() == 1 and shots[0][1].is_finite() and shots[0][1].y < 0.0, "Ordinary input produces one real powered flipper contact", str(shots))
+ # Contact-normal assistance no longer aims every tip contact at the rail mouth.
+ # Test composition with a controlled incoming shot, without changing flipper tuning.
+ await place(Vector2(280, 470), Vector2(0, -900))
  var composed := false
  var completed_route := false
- for i in 720:
-  game.controls.virtual_left = game.ball.position.y > 526 and game.ball.linear_velocity.y > 0
+ for i in 240:
   await frames(1)
   composed = composed or game.ball.on_ramp
   if composed and not game.ball.on_ramp:
    completed_route = game.ball.position.x > 440
    break
- check(composed and completed_route and game.score > 0, "Ordinary flipper input composes spinner, magnet, complete rail and tangent exit", str([composed, completed_route, game.ball.position, game.score]))
+ check(composed and completed_route and game.score > 0, "Controlled physical shot composes spinner, magnet, complete rail and tangent exit", str([composed, completed_route, game.ball.position, game.score]))
  game.reset_ball(false)
  await frames(2)
  manager.mechanic_score.connect(func(kind: StringName, _id: String, _points: int):
@@ -129,6 +138,7 @@ func run() -> void:
  var rail_rings: Array = game.ring_field.rings.filter(func(ring): return ring.has("rail_id"))
  check(not rail_rings.is_empty(), "Authored rail generates collectible rings")
  check(not game.ring_field.claim_ring(game.ring_field.rings.find(rail_rings[0])), "Floor contact and area abilities cannot claim elevated rings")
+ var event_start := traversal_events.size()
  await enter_rail()
  check(game.ball.on_ramp and game.ball.collision_mask == 0 and game.ball.collision_layer == 0, "Forward mouth crossing enters explicit elevated state")
  check(traversal_events.back() == [&"elevated_rail", "sandbox_elevated_rail", &"entered"], "Actual rail capture emits typed entry with stable identity")
@@ -150,7 +160,7 @@ func run() -> void:
  check(camera_followed, "Existing follow camera keeps the elevated ball on screen")
  check(saw_crossing, "Raised ball traverses above the lower lane and collision rails")
  check(not game.ball.on_ramp and game.ball.collision_layer == 2 and game.ball.collision_mask == 1 and not game.ball.custom_integrator, "Exit restores original collision and integration state")
- check(traversal_events.back() == [&"elevated_rail", "sandbox_elevated_rail", &"exited"], "Actual rail departure emits typed exit")
+ check(traversal_events.slice(event_start) == [[&"elevated_rail", "sandbox_elevated_rail", &"entered"], [&"elevated_rail", "sandbox_elevated_rail", &"completed"]], "Forward traversal emits exactly one entry and one completion with stable identity")
  check(game.ball.get_instance_id() == ball_id and game.ball.position.x > 440 and game.ball.linear_velocity.y > 0, "Same ball exits with forward tangent momentum")
  game.ring_field.reset_rings()
  await enter_rail()
@@ -185,6 +195,7 @@ func run() -> void:
   await frames(1)
   weak_entered = weak_entered or game.ball.on_ramp
  check(weak_entered and not game.ball.on_ramp and game.ball.linear_velocity.y > 0.0, "Weak uphill shot rolls back and leaves at the entry tangent", str([weak_entered, game.ball.on_ramp, game.ball.position, game.ball.linear_velocity, manager.speed]))
+ check(traversal_events.back() == [&"elevated_rail", "sandbox_elevated_rail", &"exited"], "Rollback emits an exit, never a completed-rail reward")
  await enter_rail()
  game.ball.position = Vector2(280, 720)
  game._physics_process(1.0 / 120.0)

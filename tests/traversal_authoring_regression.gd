@@ -68,8 +68,14 @@ func run() -> void:
  check(act.validation_errors().is_empty(), "Diagnostic data validates")
  if "--write-fixture" in OS.get_cmdline_user_args():
   check(act.save_document(ACT) == OK, "Diagnostic Act saved through normal persistence")
- var loaded := Document.load_document(ACT)
+ # The editable example is not a regression fixture: authors may change it freely.
+ var round_trip := "res://test-results/traversal-round-trip.tres"
+ DirAccess.make_dir_recursive_absolute(round_trip.get_base_dir())
+ check(act.save_document(round_trip) == OK, "Diagnostic saves to an isolated regression path")
+ var loaded := Document.load_document(round_trip)
  check(loaded.document != null and loaded.document.fingerprint() == act.fingerprint(), "Diagnostic round trip is exact")
+ var frozen := Document.load_document("res://tests/fixtures/traversal_diagnostic.tres")
+ check(frozen.document != null and frozen.document.fingerprint() == act.fingerprint(), "Prototype traversal fixture matches the tested authoring geometry")
  runtime = compile(act)
  check(runtime.error.is_empty(), "Full-height and underpass routes compile: " + runtime.error)
  if not runtime.error.is_empty(): world.free(); ball.free(); quit(1); return
