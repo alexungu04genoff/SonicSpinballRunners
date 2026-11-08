@@ -16,7 +16,6 @@ func configure(game: Node, entry: Dictionary, library: Node) -> void:
  view = SubViewport.new()
  view.size = game.view.size
  view.own_world_3d = true
- view.msaa_3d = game.view.msaa_3d
  preload("res://scripts/rendering_options.gd").register_view(view)
  view.render_target_update_mode = SubViewport.UPDATE_DISABLED
  add_child(view)

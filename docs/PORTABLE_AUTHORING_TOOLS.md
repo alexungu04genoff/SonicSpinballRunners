@@ -61,6 +61,19 @@ until you explicitly save them.
 
 ## Foreground performance comparison
 
+For the separate pixel-cost experiment, use **Compare Prototype pixels.cmd**.
+In the running Prototype, **F6** cycles MSAA 4× / Off / 2× and **F7** cycles native
+3D scale 100% / 75% / 85%. The overlay shows both current values. These choices
+last only for that process and never save to device preferences or Atmospheres.
+Ordinary launches remain 4× / 100%. Keep scale at 100% when comparing MSAA, and
+MSAA at 4× when comparing scale. Use the same camera/Act and wait after each switch.
+Keep shadow resolution, cascades, Retro and atmosphere fixed; disable Smooth
+Shadows before primary MSAA comparisons because it also enables FXAA. Existing
+device shadow preferences still apply. HUD/text resolution is unchanged.
+The developer keys apply to Prototype/Endless only; the Lab retains its F6 inspector
+shortcut. Desktop findings and native comparison paths are in `docs/PIXEL_COST_AUDIT.md`
+in the repository; laptop performance and moving-edge quality still need validation.
+
 Use **Compare Prototype legacy.cmd** and **Compare Prototype conservative.cmd**
 one at a time. Both open the actual Prototype menu with seed 18 and Green Hill
 Default. Choose the same Act pool, character, Practice/Challenge mode and graphics

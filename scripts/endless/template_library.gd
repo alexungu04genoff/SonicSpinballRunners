@@ -102,7 +102,6 @@ func prepare(game: Node, act_paths: Array = Plan.PATHS, validate_pool := true, l
  _view.name = "StreamingWarmup"
  _view.size = Vector2i(256, 256)
  _view.own_world_3d = true
- _view.msaa_3d = game.view.msaa_3d
  preload("res://scripts/rendering_options.gd").register_view(_view)
  _view.render_target_update_mode = SubViewport.UPDATE_DISABLED
  add_child(_view)

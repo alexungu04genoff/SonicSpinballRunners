@@ -65,7 +65,7 @@ func bake(paths: Array) -> void:
  ball.controls = controls
  world.add_child(ball)
  view = SubViewport.new()
- view.msaa_3d = Viewport.MSAA_4X
+ preload("res://scripts/rendering_options.gd").register_view(view)
  add_child(view)
  library = Builder.new()
  add_child(library)

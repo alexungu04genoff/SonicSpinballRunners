@@ -76,6 +76,7 @@ func _uses_authoring_builder() -> bool:
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
+ preload("res://scripts/rendering_options.gd").install_profile_controls(self)
  # Runs after camera/animation/light updates, including paused overview input.
  RenderingServer.frame_pre_draw.connect(_update_foreground_contribution)
  run_seed = _default_run_seed()
@@ -185,7 +186,6 @@ func _build_view() -> void:
  view.size = get_viewport().get_visible_rect().size
  view.own_world_3d = true
  view.transparent_bg = true
- view.msaa_3d = Viewport.MSAA_4X
  preload("res://scripts/rendering_options.gd").register_view(view)
  view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
  container.add_child(view)

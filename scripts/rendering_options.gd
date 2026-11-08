@@ -9,6 +9,31 @@ const SHADOW_CASCADES := [1, 2, 4]
 static var _shadow_resolution := 8192
 static var _shadow_cascades := 4
 static var _lights: Array[WeakRef] = []
+## Opt-in, process-local profiling only. Never saved as graphics preferences.
+const PROFILE_MSAA := [0, 2, 4]
+const PROFILE_SCALES := [75, 85, 100]
+static var _profile_msaa := 4
+static var _profile_scale := 100
+static var _profile_fxaa := -1
+
+static func pixel_profile() -> Dictionary:
+ _load_settings()
+ return {"msaa": _profile_msaa, "scale_percent": _profile_scale, "fxaa_override": _profile_fxaa}
+
+static func set_pixel_profile(samples: int, scale_percent := 100, fxaa_override := -1) -> Error:
+ _load_settings()
+ if samples not in PROFILE_MSAA or scale_percent not in PROFILE_SCALES or fxaa_override not in [-1, 0, 1]: return ERR_INVALID_PARAMETER
+ _profile_msaa = samples
+ _profile_scale = scale_percent
+ _profile_fxaa = fxaa_override
+ for reference: WeakRef in _views:
+  var view := reference.get_ref() as Viewport
+  if is_instance_valid(view): _apply_view(view)
+ return OK
+
+static func install_profile_controls(owner: Node) -> void:
+ if "--pixel-controls" in OS.get_cmdline_user_args():
+  owner.add_child(load("res://scripts/pixel_profile_controls.gd").new())
 
 static func shadow_resolution() -> int:
  _load_settings()
@@ -83,6 +108,9 @@ static func set_smooth_shadows(enabled: bool) -> Error:
 static func _load_settings() -> void:
  if _loaded: return
  _loaded = true
+ _profile_msaa = 4
+ _profile_scale = 100
+ _profile_fxaa = -1
  _smooth_shadows = false
  _shadow_resolution = int(ProjectSettings.get_setting("rendering/lights_and_shadows/directional_shadow/size", 8192))
  _shadow_cascades = 4
@@ -99,6 +127,15 @@ static func _load_settings() -> void:
   push_warning("Cannot load graphics settings: " + error_string(error))
  _apply_resolution()
  _apply_filter()
+ for argument: String in OS.get_cmdline_user_args():
+  if argument.begins_with("--world-msaa="):
+   var value := argument.trim_prefix("--world-msaa=")
+   if value.is_valid_int() and int(value) in PROFILE_MSAA: _profile_msaa = int(value)
+   else: push_warning("Ignored unsupported --world-msaa value: " + value)
+  elif argument.begins_with("--world-scale="):
+   var value := argument.trim_prefix("--world-scale=")
+   if value.is_valid_int() and int(value) in PROFILE_SCALES: _profile_scale = int(value)
+   else: push_warning("Ignored unsupported --world-scale value: " + value)
 
 static func _apply_resolution() -> void:
  # Global runtime API, not a project-file change. Godot exposes no atlas-size getter.
@@ -114,7 +151,13 @@ static func _apply_filter() -> void:
  RenderingServer.directional_soft_shadow_filter_set_quality(quality)
 
 static func _apply_view(view: Viewport) -> void:
+ view.msaa_3d = {0: Viewport.MSAA_DISABLED, 2: Viewport.MSAA_2X, 4: Viewport.MSAA_4X}[_profile_msaa]
+ # Scale only the native 3D buffer. Viewport layout, camera projection, Retro's
+ # existing compositor sizing and parent HUD remain at their original sizes.
+ view.scaling_3d_scale = _profile_scale / 100.0
  if not smooth_filter_supported():
   view.screen_space_aa = Viewport.SCREEN_SPACE_AA_DISABLED
   return
  view.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA if _smooth_shadows else int(ProjectSettings.get_setting("rendering/anti_aliasing/quality/screen_space_aa", Viewport.SCREEN_SPACE_AA_DISABLED))
+ if _profile_fxaa >= 0:
+  view.screen_space_aa = Viewport.SCREEN_SPACE_AA_FXAA if _profile_fxaa == 1 else Viewport.SCREEN_SPACE_AA_DISABLED
