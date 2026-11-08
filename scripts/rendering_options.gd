@@ -152,6 +152,10 @@ static func _apply_filter() -> void:
 
 static func _apply_view(view: Viewport) -> void:
  view.msaa_3d = {0: Viewport.MSAA_DISABLED, 2: Viewport.MSAA_2X, 4: Viewport.MSAA_4X}[_profile_msaa]
+ # Godot 4.7.2 precompiles framebuffer variants from the project hint, not each
+ # SubViewport's MSAA. Keep unsaved diagnostic switches consistent with it too.
+ if ProjectSettings.get_setting("rendering/anti_aliasing/quality/msaa_3d") != view.msaa_3d:
+  ProjectSettings.set_setting("rendering/anti_aliasing/quality/msaa_3d", view.msaa_3d)
  # Scale only the native 3D buffer. Viewport layout, camera projection, Retro's
  # existing compositor sizing and parent HUD remain at their original sizes.
  view.scaling_3d_scale = _profile_scale / 100.0

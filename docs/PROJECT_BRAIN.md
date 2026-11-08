@@ -1,5 +1,13 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Tell Vulkan which MSAA we actually use — 2026-11-08
+
+Bro found a concrete first-use mismatch: Godot 4.7.2 precompiles scene pipelines using the project's global MSAA hint, while SSR only declared 4× on its SubViewports. The missing project setting meant preparation targeted 1×. We now declare 4× up front and keep the hint aligned with the existing unsaved diagnostic controls. Visual quality and gameplay do not change.
+
+Controlled disk-loaded Prototype runs remove all 43–53 draw-triggered pipeline requests across Green Hill, Chemical Plant, Aquarium Park and Ice Cap; the seed-18 Endless tour removes all 88 through sequence 6. Mesh, surface and specialization totals remain the same. Detached recipe construction already queues useful surface preparation, including node material overrides. Some live atmosphere programs are created later, but the tested combinations are covered with the matching hint. No new warm-up graph, extra resident Acts, loader replacement or cache-disabling policy was needed.
+
+This is not a claim that cold startup is solved. Quiet timings show modest, mixed changes; queued surface work can still block, and the driver cache was not sterilized. Verbose shader-cache logging badly distorted Windows startup measurements, so the new explicit profiler defaults to quiet operation. Persistent application caches are working. Keep this separate from the upstream threaded ResourceLoader leak. Exact counters, phase evidence, cache receipts, visual checks and limits live in [VULKAN_FIRST_USE.md](VULKAN_FIRST_USE.md).
+
 ## Make the editor pleasant — 2026-11-08
 
 Alex asked for Shift sizing everywhere, reliable Alt freedom, readable trajectory arcs, then Ctrl+C/Ctrl+V. All eighteen Gameplay types now share Shift-wheel sizing through their real authored dimensions. Buzz wheel sizes the enemy; Shift-drag still owns patrol length. Terrain keeps its existing half/full sizes, Decor its existing limits, and structural connectors stay whole-cell. Spawn/Activation are points/lines, not secretly resizable physics.

@@ -12,6 +12,7 @@ func check(value: bool, label: String) -> void:
  if not value: failures += 1; push_error(label)
 
 func run() -> void:
+ var precompile_default: int = ProjectSettings.get_setting("rendering/anti_aliasing/quality/msaa_3d")
  Options.settings_path = "user://pixel-quality-regression.cfg"
  if FileAccess.file_exists(Options.settings_path): DirAccess.remove_absolute(Options.settings_path)
  var world := SubViewport.new()
@@ -19,6 +20,7 @@ func run() -> void:
  root.add_child(world)
  Options.register_view(world)
  check(world.msaa_3d == Viewport.MSAA_4X and world.scaling_3d_scale == 1.0, "Absent overrides retain 4x/full-scale defaults")
+ check(precompile_default == Viewport.MSAA_4X and ProjectSettings.get_setting("rendering/anti_aliasing/quality/msaa_3d") == Viewport.MSAA_4X, "Saved precompilation hint declares the production 4x default before viewport registration")
  var original := Options.pixel_profile()
  check(Options.set_pixel_profile(8, 100) == ERR_INVALID_PARAMETER and Options.set_pixel_profile(2, 80) == ERR_INVALID_PARAMETER and Options.set_pixel_profile(2, 85, 2) == ERR_INVALID_PARAMETER and Options.pixel_profile() == original, "Invalid combinations are rejected atomically")
  var light := DirectionalLight3D.new()
@@ -30,6 +32,7 @@ func run() -> void:
    var late := SubViewport.new()
    Options.register_view(late)
    check(world.msaa_3d == {0:0, 2:1, 4:2}[samples] and late.msaa_3d == world.msaa_3d and is_equal_approx(late.scaling_3d_scale, scale_percent / 100.0), "Existing and late viewports inherit the same pixel profile")
+   check(ProjectSettings.get_setting("rendering/anti_aliasing/quality/msaa_3d") == world.msaa_3d, "Pipeline preparation follows the live MSAA profile without changing visual quality")
    check(world.size == Vector2i(673, 473) and shadows == [Options.shadow_resolution(), Options.shadow_cascades(), Options.smooth_shadows_enabled(), light.directional_shadow_mode], "Pixel switching leaves layout and all shadow choices intact")
    late.free()
  check(not FileAccess.file_exists(Options.settings_path), "Profile controls never write graphics preferences")

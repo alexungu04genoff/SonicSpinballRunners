@@ -1,0 +1,112 @@
+{
+  "before_complete": true,
+  "after_directory": "appearance-repeat",
+  "before_directory": "appearance-after",
+  "after_complete": true,
+  "captures": [
+    {
+      "theme": "green_hill",
+      "width": 1440.0,
+      "height": 1000.0,
+      "differing_pixels": 0.0,
+      "max_channel_error": 0.0,
+      "mean_channel_error": 0.0,
+      "state_equal": true,
+      "graphics_equal": true,
+      "source_equal": true,
+      "before_sha256": "CD3AC19192277ED777F68A8266DC3D8381C3EA3CB089A9D8D8A1EB112DE61566",
+      "after_sha256": "CD3AC19192277ED777F68A8266DC3D8381C3EA3CB089A9D8D8A1EB112DE61566"
+    },
+    {
+      "theme": "chemical_plant",
+      "width": 1440.0,
+      "height": 1000.0,
+      "differing_pixels": 0.0,
+      "max_channel_error": 0.0,
+      "mean_channel_error": 0.0,
+      "state_equal": true,
+      "graphics_equal": true,
+      "source_equal": true,
+      "before_sha256": "62EF5EBA139D65185E777C8A1B8A485E3B36C666905F2854891343F74A04F841",
+      "after_sha256": "62EF5EBA139D65185E777C8A1B8A485E3B36C666905F2854891343F74A04F841"
+    },
+    {
+      "theme": "rooftop_run",
+      "width": 1440.0,
+      "height": 1000.0,
+      "differing_pixels": 0.0,
+      "max_channel_error": 0.0,
+      "mean_channel_error": 0.0,
+      "state_equal": true,
+      "graphics_equal": true,
+      "source_equal": true,
+      "before_sha256": "11B1E08771CE20F451A0A261AB803C910ED4093ADCECDF13722F3575B78629A4",
+      "after_sha256": "11B1E08771CE20F451A0A261AB803C910ED4093ADCECDF13722F3575B78629A4"
+    },
+    {
+      "theme": "casino_night",
+      "width": 1440.0,
+      "height": 1000.0,
+      "differing_pixels": 0.0,
+      "max_channel_error": 0.0,
+      "mean_channel_error": 0.0,
+      "state_equal": true,
+      "graphics_equal": true,
+      "source_equal": true,
+      "before_sha256": "40AE91ED5FE36DA2089CBC107FEF07946F97D26F451BD33FEE598A4156FFE245",
+      "after_sha256": "40AE91ED5FE36DA2089CBC107FEF07946F97D26F451BD33FEE598A4156FFE245"
+    },
+    {
+      "theme": "sky_sanctuary",
+      "width": 1440.0,
+      "height": 1000.0,
+      "differing_pixels": 0.0,
+      "max_channel_error": 0.0,
+      "mean_channel_error": 0.0,
+      "state_equal": true,
+      "graphics_equal": true,
+      "source_equal": true,
+      "before_sha256": "70B2828072CF90B39087EC82A424845DC42B258C437A48784E078804ADB68BFD",
+      "after_sha256": "70B2828072CF90B39087EC82A424845DC42B258C437A48784E078804ADB68BFD"
+    },
+    {
+      "theme": "ice_cap",
+      "width": 1440.0,
+      "height": 1000.0,
+      "differing_pixels": 0.0,
+      "max_channel_error": 0.0,
+      "mean_channel_error": 0.0,
+      "state_equal": true,
+      "graphics_equal": true,
+      "source_equal": true,
+      "before_sha256": "95451D0E18D5F3F9A4F33E5252A90A81035F43B650949B720D487312178DB45B",
+      "after_sha256": "95451D0E18D5F3F9A4F33E5252A90A81035F43B650949B720D487312178DB45B"
+    },
+    {
+      "theme": "lava_reef",
+      "width": 1440.0,
+      "height": 1000.0,
+      "differing_pixels": 0.0,
+      "max_channel_error": 0.0,
+      "mean_channel_error": 0.0,
+      "state_equal": true,
+      "graphics_equal": true,
+      "source_equal": true,
+      "before_sha256": "7CFD306D7B38CA4DBABCF537BBDD69D68B1E05E01788FA5DB78D237385554B2B",
+      "after_sha256": "7CFD306D7B38CA4DBABCF537BBDD69D68B1E05E01788FA5DB78D237385554B2B"
+    },
+    {
+      "theme": "aquarium_park",
+      "width": 1440.0,
+      "height": 1000.0,
+      "differing_pixels": 0.0,
+      "max_channel_error": 0.0,
+      "mean_channel_error": 0.0,
+      "state_equal": true,
+      "graphics_equal": true,
+      "source_equal": true,
+      "before_sha256": "2E2796DB878524997C8151E9C0F8E99EEF957CE5538A7F54363CFD2F1C34A36E",
+      "after_sha256": "2E2796DB878524997C8151E9C0F8E99EEF957CE5538A7F54363CFD2F1C34A36E"
+    }
+  ]
+}

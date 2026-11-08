@@ -1,0 +1,22 @@
+{
+  "engine_sha256": "AB1824F85BFD8E0E4128182C000C4003A3E042245B2967848D089B2A04B22424",
+  "source_project_shader_cache_present": false,
+  "cpu": {
+    "Name": "AMD Ryzen 5 1600X Six-Core Processor           ",
+    "NumberOfCores": 6,
+    "NumberOfLogicalProcessors": 12
+  },
+  "driver_cache": "Uncontrolled; no global cache deletion",
+  "gpu": [
+    {
+      "Name": "Parsec Virtual Display Adapter",
+      "DriverVersion": "0.45.0.0",
+      "DriverDate": "2024-01-25T02:00:00+02:00"
+    },
+    {
+      "Name": "NVIDIA GeForce RTX 4060",
+      "DriverVersion": "32.0.16.1664",
+      "DriverDate": "2026-08-24T03:00:00+03:00"
+    }
+  ]
+}

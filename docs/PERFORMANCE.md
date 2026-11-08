@@ -1,5 +1,7 @@
 # Rendering and streaming performance — 2026-10-30
 
+Current Forward+/Vulkan first-use investigation: [VULKAN_FIRST_USE.md](VULKAN_FIRST_USE.md). Godot 4.7.2's global precompilation MSAA hint did not match SSR's 4× SubViewports. The focused audit measures mesh/surface/draw/specialization requests, isolated application caches, quiet startup timings and canonical Prototype appearance. The older renderer measurements below remain historical evidence for their stated workloads.
+
 This pass starts at `77ecd3ff536fd5b8f868bc7994ef2eeb3debac71`. The working tree includes pre-existing local art changes; those are preserved separately from the optimization changes. Local measurements, logs and screenshots are under ignored `test-results/performance-20261030/`.
 
 The first measured improvement combines rigid mesh pieces within individual Bumpers and flippers. In alternating RampMania runs, it reduces the typical frame time by **11.1%** and draw calls by **17.2%**, while preserving source triangles, materials and actor animation roots. The larger remaining steady cost is repeated rendering of many small shadow-casting objects. Streaming and severe first-use preparation stalls are measured separately below.

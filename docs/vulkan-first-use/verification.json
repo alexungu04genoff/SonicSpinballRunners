@@ -1,0 +1,398 @@
+{
+  "date": "2026-11-08",
+  "base_commit": "21f97e358c1bce5bb2d947cf0025740629983b06",
+  "context": "The 32-suite baseline uses the frozen performance source plus the retained fix and rebuilt disk bakes. Concurrent editor commit afb75de and later art edits are not substituted into that snapshot. A supplemental 44-check contract run validates the live working tree too.",
+  "suites": 32,
+  "checks": 8596,
+  "assertion_failures": 0,
+  "additional_child_reload_checks": 6,
+  "supplemental": [
+    {
+      "name": "pixel_quality_unit",
+      "checks": 44,
+      "failures": 0,
+      "exit_code": 0,
+      "project": "E:\\Sonic Spinball Runners\\test-results\\vulkan-first-use\\source",
+      "log": "test-results/vulkan-first-use/checks/pixel_quality_unit.log",
+      "log_sha256": "d0f999532802fa2ff6dfecf0db733c3727efa4e3f597db3f64a9782ddcc0d5c4"
+    },
+    {
+      "name": "pixel_quality_regression",
+      "checks": 68,
+      "failures": 0,
+      "exit_code": 0,
+      "project": "E:\\Sonic Spinball Runners\\test-results\\vulkan-first-use\\source",
+      "log": "test-results/vulkan-first-use/checks/pixel_quality_regression.log",
+      "log_sha256": "2e594f58a5030fb3550efad4b0ec7f74dbb1c7a7a65fd207842172708ea1bcce"
+    },
+    {
+      "name": "current-tree-pixel-contract",
+      "checks": 44,
+      "failures": 0,
+      "exit_code": 0,
+      "project": "E:\\Sonic Spinball Runners",
+      "log": "test-results/vulkan-first-use/checks/current-tree-pixel-contract.log",
+      "log_sha256": "d0f999532802fa2ff6dfecf0db733c3727efa4e3f597db3f64a9782ddcc0d5c4"
+    }
+  ],
+  "rows": [
+    {
+      "suite": "authored_gimmick_regression",
+      "checks": 93,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": true,
+      "log": "test-results/vulkan-first-use/checks/authored_gimmick_regression.log",
+      "log_sha256": "b3528ba042c258fd44130917737e7f34b32bcf3e716c311e52b9020f7426fe88",
+      "stderr_sha256": "43151a193edba9fd4f82aa54f83e3cb5f29a9ba2c89dc3819d78a3db8f9aba00",
+      "test_source_sha256": "e74d830826c022f7a57c17214afd9c21e75b77ecf53a260a553f6e9d958eb997"
+    },
+    {
+      "suite": "pinball_mechanics_regression",
+      "checks": 58,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": true,
+      "log": "test-results/vulkan-first-use/checks/pinball_mechanics_regression.log",
+      "log_sha256": "6e9f89d21eb99bec26fafc8c97a2f3a4f6123c9ca051899112f5f171a996e0d4",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "22491e467845a6c9b92bf4a0c9f7a1e95f270aaf175b09ef56c12f080b8b1580"
+    },
+    {
+      "suite": "soft_retry_regression",
+      "checks": 62,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": true,
+      "log": "test-results/vulkan-first-use/checks/soft_retry_regression.log",
+      "log_sha256": "5398763433b3bbd0ea30a78826ebab2182703dc04e6e14abad5806ab46dbe51b",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "2192dee56df1bbd6346589d5d122b8c3911e08ff2317a38b1bcb59af16e3e77c"
+    },
+    {
+      "suite": "ramp_height_theme_regression",
+      "checks": 92,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": true,
+      "log": "test-results/vulkan-first-use/checks/ramp_height_theme_regression.log",
+      "log_sha256": "18474452b3a33fa1c5c0f4be441c26d9285afd1a7ba0d361727f000c7f5b1ff4",
+      "stderr_sha256": "1382f09bbcccdd32207c2eb5d27fd2f02be1874d4c559a96349e327cbe2c44c1",
+      "test_source_sha256": "17c78164c0a64244d60cc1289e89aa82800291292e75270f08e2500100913795"
+    },
+    {
+      "suite": "theme_texture_regression",
+      "checks": 284,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/theme_texture_regression.log",
+      "log_sha256": "9c3681408f30f1362ee19534bb9c2d52f005f6b9fd318680d7fd8340d7b87cfa",
+      "stderr_sha256": "9b7913b921450c9144224dfd5306dbc1aa64ac7a1249904fc3ddc057eebef2bb",
+      "test_source_sha256": "accda6e20f42b809df6daa9cc029d7ab8e9a340245ea4308b49a2bdc65f2d47a"
+    },
+    {
+      "suite": "endless_reuse_regression",
+      "checks": 127,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": true,
+      "log": "test-results/vulkan-first-use/checks/endless_reuse_regression.log",
+      "log_sha256": "d7ac0ed18c9876e8868162fae8ed6f4cccc26f7e08d6b357b05c884394460ebf",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "21c61c8686ce705915ba9ebc60173f3dee3a5effb57b9c0a74a4f4466a8337d4"
+    },
+    {
+      "suite": "scorecraft_regression",
+      "checks": 29,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/scorecraft_regression.log",
+      "log_sha256": "921c1dbaef00b4cd166fd2546d8b6b6120346bf6761898160c2da2b13926d9f4",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "bd0e0ce27beae8b257734a7f97209a9d08ccf5cd2d6f2229f8a1d80c3fe50b17"
+    },
+    {
+      "suite": "buddy_scoring_regression",
+      "checks": 70,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/buddy_scoring_regression.log",
+      "log_sha256": "379383d5c815f83a7cf0062eb99bd5930b67a93a14d379937e1a92cbbdc2ff81",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "28f5e27eb7696172afdbdc2be439630a93fa3fd8b522945730d9b0e0f4668a5e"
+    },
+    {
+      "suite": "enemy_regression",
+      "checks": 50,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/enemy_regression.log",
+      "log_sha256": "742480111877f085472961464089d38d51e4ba972e3d2b5ffb887738d8efb126",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "a644b096d5d6e99d69cf0f05242b0afc6396b290fb894eee80d6d5c11e42bbea"
+    },
+    {
+      "suite": "authored_main_game_regression",
+      "checks": 70,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/authored_main_game_regression.log",
+      "log_sha256": "d4fbab869ff2af9a18d2e1a5f1a63cb541d4ef3dfd56c81eac45326df5389389",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "24d2b714c4afeca61835fcc4e9dec4a126a7b7796960fe76a64babfd0465cef0"
+    },
+    {
+      "suite": "traversal_authoring_regression",
+      "checks": 36,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/traversal_authoring_regression.log",
+      "log_sha256": "6736294d6a56fa999f9a050f021428bace9e00f02a4100b61414b6818a9e43bf",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "f71a3e9ef049d565e59294efdaed99bd424010ae924370603b563c979c27bbb4"
+    },
+    {
+      "suite": "traversal_prototype_regression",
+      "checks": 20,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": true,
+      "log": "test-results/vulkan-first-use/checks/traversal_prototype_regression.log",
+      "log_sha256": "d78e0bc661ab487203960eccbe4dc5bd12a25f942eda9a7cf8ac8efcdbfa1d79",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "e3f6890d53d10b7c52940262470a575540fbcc05ecd598ec1d2acf05a510f32a"
+    },
+    {
+      "suite": "flipper_contact_response_regression",
+      "checks": 208,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/flipper_contact_response_regression.log",
+      "log_sha256": "a56e728f06af13e58291d412556b26bfc2627a724383920431db1dbcf67c5f24",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "4d89f2097831191d455069ecd8b8ab03617d68e26d9503bf1f3a1a6ecd251698"
+    },
+    {
+      "suite": "telemetry_evidence_regression",
+      "checks": 30,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/telemetry_evidence_regression.log",
+      "log_sha256": "6f7429aa7e8fed36b6a219a6cfb5fd51d2ea4649acb9a18297124a06616337c0",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "f315d08a347b3789695646c5f632293ee3a45eae97b00a8c16d20ca55a072280"
+    },
+    {
+      "suite": "prototype_plan_regression",
+      "checks": 41,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/prototype_plan_regression.log",
+      "log_sha256": "7b4edd1f39156ff4cd398e5249b569d66451a76e7b0919e54feb7f142ace8d22",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "17867db405616a4c84374f1b76f9d6ac8ff625cc8b69214bdfd3ba3bc6e79cba"
+    },
+    {
+      "suite": "prototype_setup_regression",
+      "checks": 16,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": true,
+      "log": "test-results/vulkan-first-use/checks/prototype_setup_regression.log",
+      "log_sha256": "144c67f6dd12674fcad39b400dbaf35df90ae5b6df65ee72df17b65573960ef8",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "c4b14ce48092bd840f1fe40d916d61672ed58a2b1029839f3dddced1486f7b17"
+    },
+    {
+      "suite": "prototype_archive_regression",
+      "checks": 34,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": true,
+      "log": "test-results/vulkan-first-use/checks/prototype_archive_regression.log",
+      "log_sha256": "c20fa58f3852cd99e77149781c03f4f3777089042db791d8c3304cf288a72e38",
+      "stderr_sha256": "0795d739f8d7584bb2182b1515cb2248ec3f4c9711ff313ecb2e18951dc22c84",
+      "test_source_sha256": "af7738a38d375a96982a8fac02d5c9dd594575ee5da244bf17e2b14bc120e81a"
+    },
+    {
+      "suite": "foreground_contribution_regression",
+      "checks": 26,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": true,
+      "log": "test-results/vulkan-first-use/checks/foreground_contribution_regression.log",
+      "log_sha256": "307cfa53a555523c95b46ff477370b715928fd6cf9a4db3723437cc0c6a5d521",
+      "stderr_sha256": "3ac8102d186bbcb0904202fbd63ccc56d980427094a84f39c9c38cbf313dc10d",
+      "test_source_sha256": "26a3921d075dfca5c1415adad00c3970d81b7d12e635b20e8f5e634793b607e1"
+    },
+    {
+      "suite": "geometry_bake_regression",
+      "checks": 2842,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/geometry_bake_regression.log",
+      "log_sha256": "b5d9f059dae54ee29d6a7a9a9fd38bc7fe1f8c41146623011d1617313d1ba511",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "c6ce19b267ffa2c21895d2d34aca26abfb1ef0b515138be2a5526bd6c79efd41"
+    },
+    {
+      "suite": "act_geometry_regression",
+      "checks": 3461,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/act_geometry_regression.log",
+      "log_sha256": "91551ccf1658d12ad595ee801431bbb280954dd682ecc6b74666c889430e25f4",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "37c702f644b9dfe91ec52a87f754cf77650d10e2d578e4a3c60e37053eabdfa8"
+    },
+    {
+      "suite": "geometry_density_regression",
+      "checks": 18,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/geometry_density_regression.log",
+      "log_sha256": "f8519c5f6e3eed349fb3ba6f949a4a780a14a7a80576b4d7a6ecfec9607e135a",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "1539a7b119f4da74fe6c56d4876df4cf4a4cee0c2699795025f824c59a00d4b3"
+    },
+    {
+      "suite": "economy_v1_regression",
+      "checks": 44,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/economy_v1_regression.log",
+      "log_sha256": "b5ce022d01087d1007b76ae9e312bfc487fdf10892195602099046704f30813c",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "c59509c8b3dbf9bd50b6ebafc9a732437dcfb094930ddd26191f10553fc1c8fe"
+    },
+    {
+      "suite": "pinball_vocabulary_regression",
+      "checks": 17,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/pinball_vocabulary_regression.log",
+      "log_sha256": "08179c8c73a76eb97a51d1a9b1334f0fdc328d2c60f5212dd1309344f4d5f2ca",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "6a3a268276b0fe4b37bfb4a06a7f27296ac223d4c35f8d023e8dfdb805bd2807"
+    },
+    {
+      "suite": "gimmick_batch_regression",
+      "checks": 103,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/gimmick_batch_regression.log",
+      "log_sha256": "f3258204cb7fe76899e1fa0451b0238b9fe645f035489eab9a0171b4c8d39e3c",
+      "stderr_sha256": "6d7adba224005b1e6b6e0273395e77103e272f115885160e2c7d70721e195635",
+      "test_source_sha256": "761807b8d7a1fe4b5c52afcaadd2f196e3a912cb6f23d5493fbbd556d3f156c2"
+    },
+    {
+      "suite": "scoring_flow_regression",
+      "checks": 31,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/scoring_flow_regression.log",
+      "log_sha256": "46d12ed6969cb613fb499bb0770fc97a91a522de7ade470761dee348e9616016",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "4f6a6f3df219375c8d30b7cdb2c2b1b140ca387c5fc9b6b489f0d17d2dfbc0e3"
+    },
+    {
+      "suite": "rail_rings_regression",
+      "checks": 13,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/rail_rings_regression.log",
+      "log_sha256": "20945f1f3aafcbd7e4a04fc3113938a41a8763257bfdb98593170fb8a68915b0",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "865bc720dbf2a9f7e6d1fe143087da99bb34363e514ba1b4de596e363d8847e1"
+    },
+    {
+      "suite": "profile_regression",
+      "checks": 12,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/profile_regression.log",
+      "log_sha256": "0b8e15601824bf46affb265d6e18069d80143acc20ed9a2c4307430db6b3e385",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "96e5a025717fc1614fdeed561286a4c5867a2d36e14af648d7524ce97ee7ad4b"
+    },
+    {
+      "suite": "prototype_budget_regression",
+      "checks": 57,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": true,
+      "log": "test-results/vulkan-first-use/checks/prototype_budget_regression.log",
+      "log_sha256": "4f2bca59cb88e7382ea417047ab28ce8bd03efd2dc2c3aca212df7754919dd90",
+      "stderr_sha256": "3ac8102d186bbcb0904202fbd63ccc56d980427094a84f39c9c38cbf313dc10d",
+      "test_source_sha256": "cdd20c7284a53c386040f724aee7389fe37c2e91b608521593b4a621c3800374"
+    },
+    {
+      "suite": "prototype_run_regression",
+      "checks": 143,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": true,
+      "log": "test-results/vulkan-first-use/checks/prototype_run_regression.log",
+      "log_sha256": "27cd79abcad31abba9937335ba31ffec58d398cd0d37b019737d9f4ff6a55ae5",
+      "stderr_sha256": "411031dce7ea7e33bc85aac06dccc1bc21f7e21c871da8c604d4b87b5e842dce",
+      "test_source_sha256": "d1f9330a992f12c907c2022a0141e43b5d1831f5185ec5b1f786a3abac7c7d4f"
+    },
+    {
+      "suite": "run_telemetry_regression",
+      "checks": 14,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/run_telemetry_regression.log",
+      "log_sha256": "08429fadc99babf872fcd13edcb4953f94f9b3544d1ee7106a645774ace7fb38",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "06a475624f4a746d10afc2daed4f9ceb5ebfc2433d2ee8ce1a667de36d59a046"
+    },
+    {
+      "suite": "prototype_appearance_regression",
+      "checks": 70,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": true,
+      "log": "test-results/vulkan-first-use/checks/prototype_appearance_regression.log",
+      "log_sha256": "efb67098e781db9aef19057995eacf92348eec2a2cfebc6a1ba067b5563e7fdd",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "a952fd48698f8e25460bf730e072c9083511e7f401465aa3b4753051baab5395"
+    },
+    {
+      "suite": "endless_bake_audit --prototype",
+      "checks": 425,
+      "failures": 0,
+      "exit_code": 0,
+      "rendered": false,
+      "log": "test-results/vulkan-first-use/checks/endless_bake_audit.log",
+      "log_sha256": "1fb6f7adff9a0133606454fa7a482524937d379aa66abeeff7075bc54f99ab89",
+      "stderr_sha256": "354f6b41afac0af85c870c4ddfdbe208e44ad5223ae6d89aba867d4090718998",
+      "test_source_sha256": "ddec521079d08fd7bb2feba0b5937964d503923626bb2872a43a7fbbc12a3648"
+    }
+  ],
+  "notes": [
+    "Ten new MSAA contract checks are included in the supplemental pixel-quality suite, not counted toward the historical 8596 baseline.",
+    "Godot 4.7.2; graphical baseline routes use Forward+/Vulkan.",
+    "Expected malformed-resource/archive-write cases, certificate diagnostics and the upstream threaded ResourceLoader warnings remain visible.",
+    "Timing measurements completed under reservation before correctness-only work resumed in other chats."
+  ]
+}

@@ -1,0 +1,22 @@
+diff --git a/tests/prototype_appearance_capture.gd b/tests/prototype_appearance_capture.gd
+index 042aa00..2a09cdd 100644
+--- a/tests/prototype_appearance_capture.gd
++++ b/tests/prototype_appearance_capture.gd
+@@ -9,0 +10,3 @@ func _initialize() -> void:
++ _force_old_hint()
++ node_added.connect(_hint_node_added)
++ RenderingServer.frame_pre_draw.connect(_force_old_hint)
+@@ -74,0 +78,6 @@ func run() -> void:
++ print("MSAA_HINT_CONTROL | DRAW=", Performance.get_monitor(Performance.PIPELINE_COMPILATIONS_DRAW))
++ RenderingServer.frame_pre_draw.disconnect(_force_old_hint)
++ node_added.disconnect(_hint_node_added)
++ ProjectSettings.set_setting("rendering/anti_aliasing/quality/msaa_3d", Viewport.MSAA_4X)
++ await process_frame
++ await RenderingServer.frame_post_draw
+@@ -75,0 +85,6 @@ func run() -> void:
++
++func _force_old_hint() -> void:
++ ProjectSettings.set_setting("rendering/anti_aliasing/quality/msaa_3d", Viewport.MSAA_DISABLED)
++
++func _hint_node_added(node: Node) -> void:
++ if node is Viewport: _force_old_hint()
