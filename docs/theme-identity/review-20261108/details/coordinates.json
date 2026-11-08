@@ -1,0 +1,74 @@
+[
+  {
+    "stem": "green_hill",
+    "name": "sunflower",
+    "x": 900,
+    "y": 650,
+    "width": 320,
+    "height": 270,
+    "scale": 1
+  },
+  {
+    "stem": "green_hill",
+    "name": "loop",
+    "x": 1150,
+    "y": 180,
+    "width": 290,
+    "height": 480,
+    "scale": 1
+  },
+  {
+    "stem": "rooftop_run",
+    "name": "clock",
+    "x": 1210,
+    "y": 100,
+    "width": 230,
+    "height": 370,
+    "scale": 1
+  },
+  {
+    "stem": "rooftop_run",
+    "name": "roof-chimney",
+    "x": 1000,
+    "y": 610,
+    "width": 290,
+    "height": 250,
+    "scale": 1
+  },
+  {
+    "stem": "sky_sanctuary",
+    "name": "leaves",
+    "x": 740,
+    "y": 620,
+    "width": 400,
+    "height": 340,
+    "scale": 1
+  },
+  {
+    "stem": "sky_sanctuary-sky-edge",
+    "name": "clouds",
+    "x": 980,
+    "y": 0,
+    "width": 460,
+    "height": 340,
+    "scale": 1
+  },
+  {
+    "stem": "aquarium_park",
+    "name": "fish",
+    "x": 1090,
+    "y": 250,
+    "width": 350,
+    "height": 510,
+    "scale": 1
+  },
+  {
+    "stem": "aquarium_park",
+    "name": "lantern",
+    "x": 920,
+    "y": 700,
+    "width": 300,
+    "height": 250,
+    "scale": 1
+  }
+]

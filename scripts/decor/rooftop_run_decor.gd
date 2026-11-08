@@ -189,9 +189,9 @@ func arch(root: Node3D, width := 1.12, height := 0.85, depth := 0.28) -> void:
   block.rotation.z = angle - PI * 0.5
 
 func railing(root: Node3D, width: float, at: Vector3) -> void:
- box(root, "dark", at + Vector3.UP * 0.24, Vector3(width, 0.028, 0.025))
- for i in 7:
-  box(root, "dark", at + Vector3((i / 6.0 - 0.5) * width, 0.12, 0), Vector3(0.025, 0.24, 0.025))
+ box(root, "dark", at + Vector3.UP * 0.24, Vector3(width, 0.045, 0.045))
+ for i in 4:
+  box(root, "dark", at + Vector3((i / 3.0 - 0.5) * width, 0.12, 0), Vector3(0.045, 0.24, 0.045))
 
 func pavilion(root: Node3D) -> void:
  box(root, "stone", Vector3(0, 0.07, 0), Vector3(1.05, 0.14, 0.8))
@@ -219,10 +219,12 @@ func clock_tower(root: Node3D) -> void:
   var wall_depth := 0.31 if side % 2 == 0 else 0.325
   var clock_depth := 0.33 if side % 2 == 0 else 0.35
   box(face, "shutter", Vector3(0, 1.12, wall_depth + 0.018), Vector3(0.22, 0.33, 0.018))
-  var clock := piece(face, "cylinder", "cream", Vector3(0, 1.60, clock_depth + 0.014), Vector3(0.135, 0.018, 0.135))
+  var bezel := piece(face, "cylinder", "shutter", Vector3(0, 1.60, clock_depth + 0.012), Vector3(0.215, 0.022, 0.215))
+  bezel.rotation.x = PI * 0.5
+  var clock := piece(face, "cylinder", "cream", Vector3(0, 1.60, clock_depth + 0.030), Vector3(0.19, 0.018, 0.19))
   clock.rotation.x = PI * 0.5
-  bar(face, "dark", Vector3(0, 1.60, clock_depth + 0.035), Vector3(0, 1.70, clock_depth + 0.035), 0.017)
-  bar(face, "dark", Vector3(0, 1.60, clock_depth + 0.036), Vector3(0.07, 1.64, clock_depth + 0.036), 0.017)
+  bar(face, "dark", Vector3(0, 1.60, clock_depth + 0.050), Vector3(0, 1.75, clock_depth + 0.050), 0.028)
+  bar(face, "dark", Vector3(0, 1.60, clock_depth + 0.051), Vector3(0.11, 1.66, clock_depth + 0.051), 0.028)
  roof(root, Vector3(0, 1.82, 0), Vector3(0.82, 0.32, 0.78))
  piece(root, "cone", "dark", Vector3(0, 2.24, 0), Vector3(0.10, 0.24, 0.10))
 

@@ -210,6 +210,12 @@ func pylon(root: Node3D) -> void:
 func palace(root: Node3D, wide: bool) -> void:
  box(root, "gold", Vector3(0, 0.08, 0), Vector3(3.0 if wide else 1.4, 0.16, 0.98))
  box(root, "navy", Vector3(0, 0.73, 0), Vector3(1.16, 1.30, 0.78))
+ # Authored rotations expose the rear at gameplay distance. Give that broad
+ # face one readable emblem instead of adding miniature casino decorations.
+ var rear := Node3D.new()
+ rear.rotation.y = PI
+ root.add_child(rear)
+ star(rear, Vector3(0, 0.88, 0.425), 0.88, "pink")
  var cabinet := Node3D.new()
  root.add_child(cabinet)
  cabinet.position = Vector3(0, 0.62, 0.10)

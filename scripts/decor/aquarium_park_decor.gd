@@ -147,12 +147,13 @@ func coral(root: Node3D, at: Vector3, height: float) -> void:
   bar(root,"coral",joint,tip,height*0.045)
   bar(root,"coral",tip,tip+Vector3.UP*height*0.16,height*0.035)
 
-func fish(root: Node3D, at: Vector3, length: float, angle: float) -> void:
+func fish(root: Node3D, at: Vector3, length: float, angle: float, depth_scale := 1.0) -> void:
  var group := Node3D.new()
  group.name = "DecorativeFish"
  root.add_child(group)
  group.position = at
  group.rotation.y = angle
+ group.scale.z = depth_scale
  piece(group,"orb","fish",Vector3.ZERO,Vector3(length*0.38,length*0.14,length*0.12))
  var tail := piece(group,"cone","coral",Vector3(-length*0.40,0,0),Vector3(length*0.17,length*0.24,length*0.05))
  tail.rotation.z = -PI*0.5
@@ -177,7 +178,8 @@ func tank(root: Node3D, at: Vector3, radius: float, height: float, jelly := fals
     var top := pos+Vector3((j-1.5)*radius*0.08,-radius*0.02,0)
     bar(root,"fish",top,top+Vector3(sin(j)*radius*0.06,-height*0.23,0),radius*0.012)
  else:
-  for i in 4: fish(root,at+Vector3(sin(i*2.2)*radius*0.5,0.25+height*(0.2+i*0.14),cos(i*2.2)*radius*0.45),radius*0.55,i*1.2)
+  # Two readable silhouettes replace a school of tiny flecks behind the glass.
+  for i in 2: fish(root,at+Vector3((i-0.5)*radius*0.4,0.25+height*(0.25+i*0.32),0),radius*1.12,i*PI)
   coral(root,at+Vector3(-radius*0.35,0.18,0),height*0.48)
 
 func pavilion(root: Node3D, at: Vector3, width: float, height: float, depth: float) -> void:
@@ -269,7 +271,10 @@ func build_variant(variant: String) -> Node3D:
    pavilion(root,Vector3.ZERO,2.66,0.82,0.87)
    pavilion(root,Vector3(0,1.05,0),1.75,0.67,0.76)
    box(root,"deep",Vector3(0,0.53,-0.23),Vector3(2.05,0.64,0.12))
-   for i in 7: box(root,"paper",Vector3((i-3)*0.26,0.56,-0.15),Vector3(0.13,0.30,0.025))
+   # A giant fish relief carries aquatic identity on both sides of the palace.
+   # It stays inside the existing roof/base footprint under authored rotations.
+   for side: int in [-1,1]:
+    fish(root,Vector3(0,0.55,side*0.39),1.55,0 if side > 0 else PI,0.45)
   "moon_bridge": bridge(root,2.90,0.90)
   "jellyfish_rotunda":
    tank(root,Vector3.ZERO,0.76,1.05,true)

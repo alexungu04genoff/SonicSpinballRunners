@@ -1,0 +1,37 @@
+{
+  "base_commit": "6a723e68db6b354b0eac070fd775c8b81ec38c3b",
+  "method": "Current working-tree snapshot; only six identity constructors restored from preserved pre-pass source. Existing selected artwork and authored data are identical.",
+  "compared_files": 545,
+  "differences": [
+    {
+      "path": "scripts/decor/aquarium_park_decor.gd",
+      "before_sha256": "6661F4E58FEF5CA730C779D400E79B94DE990C8A2D604EF1F9AF5B71473450F4",
+      "after_sha256": "6C82C56CA8463E2BD7E5BBE6F4C76273388CCC4955F34DFA420ECC8AFBFB5CEF"
+    },
+    {
+      "path": "scripts/decor/casino_night_decor.gd",
+      "before_sha256": "890BF69159F5D553A248B06DDDD3F018E7516E86E8201D7B3CCCD17740B2AD55",
+      "after_sha256": "3667F3EE0614536BD9249972F5918A15BC1BD4032AFACC0AC3C9C989B6C15B0E"
+    },
+    {
+      "path": "scripts/decor/chemical_plant_decor.gd",
+      "before_sha256": "EA10DAC17F2EA852450EF15118ADEBE543AEC8461F947C3169B496E197C87E44",
+      "after_sha256": "598C4667B8633D489F9C6CDECFD79E050F455F40BA8A7275948D51426D7C2384"
+    },
+    {
+      "path": "scripts/decor/rooftop_run_decor.gd",
+      "before_sha256": "6864D4F12DAD1C28BCB60863E4BA94E5B0184919D9525D340E1DF0DC67395950",
+      "after_sha256": "A236A6616166341C680C21AA4931FF233D990A2799A398D159371E637271D3A0"
+    },
+    {
+      "path": "scripts/decor/sky_sanctuary_decor.gd",
+      "before_sha256": "4CFFA299E3A1BB7402F2E284921D277548997D6F893EDDE900B48ED98557AA3D",
+      "after_sha256": "CD5FE55D5EBE0A276060370580CC532FEE315E08B72B6E256B968801855BD76F"
+    },
+    {
+      "path": "scripts/themes/sky_sanctuary_theme.gd",
+      "before_sha256": "8E96C8EAF9E83A3D8F2A10FAEEE596250080BA7916AF135668144AB6918C0B42",
+      "after_sha256": "F530DA89CB6E3B957C71AB56C398191028B35F4B5825864D1ECBD6E7F1B8623F"
+    }
+  ]
+}

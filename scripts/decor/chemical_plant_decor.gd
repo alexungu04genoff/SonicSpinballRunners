@@ -239,10 +239,9 @@ func _fluid_reactor(root: Node3D, circular := false) -> void:
   _box(root, "dark", Vector3(0, 0.06, 0), Vector3(3.0, 0.12, 0.98))
  for side: int in ([] if circular else [-1, 1]):
   _box(root, "steel", Vector3(side * 1.08, 0.18, 0), Vector3(0.70, 0.12, 0.76))
-  _pipe(root, "blue", Vector3(side * 0.77, 0.40, 0), Vector3(side * 1.33, 0.40, 0), 0.18)
-  _pipe(root, "steel", Vector3(side * 1.27, 0.40, 0), Vector3(side * 1.36, 0.40, 0), 0.21)
-  _pipe(root, "yellow", Vector3(side * 0.35, 0.59, -0.20), Vector3(side * 1.10, 0.59, -0.20), 0.055)
-  _pipe(root, "yellow", Vector3(side * 1.10, 0.40, -0.20), Vector3(side * 1.10, 0.59, -0.20), 0.055)
+  # Two oversized feeds carry the machine silhouette without thin service runs.
+  _pipe(root, "yellow", Vector3(side * 0.44, 0.43, 0), Vector3(side * 1.33, 0.43, 0), 0.23)
+  _pipe(root, "steel", Vector3(side * 1.24, 0.43, 0), Vector3(side * 1.36, 0.43, 0), 0.27)
   _hazard_plate(root, Vector3(side * 1.08, 0.18, 0.39), 0.65)
  _cylinder(root, "dark", Vector3(0, 0.11, 0), 0.48, 0.22)
  _cylinder(root, "pink", Vector3(0, 0.62, 0), 0.29, 0.79)
@@ -255,8 +254,7 @@ func _fluid_reactor(root: Node3D, circular := false) -> void:
   _bar(root, "dark", offset + Vector3.UP * 0.30, offset + Vector3.UP * 1.42, 0.048)
  _cylinder(root, "blue", Vector3(0, 1.61, 0), 0.28, 0.15)
  _cylinder(root, "red", Vector3(0, 1.74, 0), 0.055, 0.12)
- _pipe(root, "yellow", Vector3(-0.48, 0.20, -0.10), Vector3(-0.48, 1.34, -0.10), 0.065)
- _pipe(root, "yellow", Vector3(-0.48, 1.34, -0.10), Vector3(-0.24, 1.34, -0.10), 0.065)
+ _valve_wheel(root, Vector3(0, 0.52, 0.40), 0.23)
  _hazard_plate(root, Vector3(0, 0.12, 0.48), 0.55)
 
 func _pipe_arch(root: Node3D) -> void:
@@ -265,14 +263,12 @@ func _pipe_arch(root: Node3D) -> void:
  _box(root, "dark", Vector3(0, 0.06, 0), Vector3(3.0, 0.12, 0.94))
  for x: float in [-0.72, 0.72]:
   _box(root, "steel", Vector3(x, 0.15, 0), Vector3(0.35, 0.12, 0.52))
-  _pipe(root, "blue", Vector3(x, 0.15, 0), Vector3(x, 0.88, 0), 0.115)
+  _pipe(root, "blue", Vector3(x, 0.15, 0), Vector3(x, 0.88, 0), 0.18)
   for y: float in [0.24, 0.67]:
-   _cylinder(root, "steel", Vector3(x, y, 0), 0.145, 0.075)
+   _cylinder(root, "steel", Vector3(x, y, 0), 0.21, 0.10)
   _hazard_plate(root, Vector3(x, 0.18, 0.27), 0.29)
- _arc(root, "blue", Vector3(0, 0.88, 0), 0.72, 0.115, 0, PI, 10)
- _arc(root, "yellow", Vector3(0, 0.88, -0.18), 0.56, 0.045, 0, PI, 9)
+ _arc(root, "blue", Vector3(0, 0.88, 0), 0.72, 0.18, 0, PI, 10)
  for side: int in [-1, 1]:
-  _pipe(root, "yellow", Vector3(side * 0.56, 0.18, -0.18), Vector3(side * 0.56, 0.88, -0.18), 0.045)
   _box(root, "blue", Vector3(side * 1.20, 0.23, 0), Vector3(0.36, 0.22, 0.46))
   _cylinder(root, "cyan", Vector3(side * 1.20, 0.38, 0), 0.075, 0.08)
  _box(root, "steel", Vector3(0, 1.61, 0), Vector3(0.23, 0.16, 0.29))

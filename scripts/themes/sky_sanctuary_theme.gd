@@ -70,7 +70,12 @@ func build_background(p: Node3D) -> void:
   var at := center + Vector3(x, -10.6 + sin(i * 2.3) * 1.15, z)
   for lobe in 3:
    if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-   var cloud: MeshInstance3D = _library.piece(clouds, "sphere", "pale", at + Vector3((lobe - 1) * 1.9, sin(lobe * 2.0 + i) * 0.4, lobe * 0.6), Vector3(3.8, 1.3 + (i % 3) * 0.2, 2.7))
+   # A high central billow and lower shoulders preserve a cloud silhouette.
+   # Keep the same 180 ordinary faceted lobes; change proportions, not density.
+   var crown := lobe == 1
+   var offset := Vector3((lobe - 1) * 2.0, 0.8 if crown else -0.15, lobe * 0.45)
+   var size := Vector3(2.6, 2.1, 2.3) if crown else Vector3(2.25, 1.45, 1.95)
+   var cloud: MeshInstance3D = _library.piece(clouds, "sphere", "pale", at + offset, size)
    cloud.material_override = cloud_mat
    cloud.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  await _batch(clouds, p)

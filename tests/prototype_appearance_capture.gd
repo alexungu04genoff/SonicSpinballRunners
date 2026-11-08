@@ -29,6 +29,10 @@ func run() -> void:
  root.size = Vector2i(1440, 1000)
  root.gui_disable_input = true
  DirAccess.make_dir_recursive_absolute(output)
+ # Appearance comparisons must not inherit a player's device-quality experiment.
+ var options := preload("res://scripts/rendering_options.gd")
+ options.settings_path = output.path_join("isolated-graphics.cfg")
+ check(options.pixel_profile().msaa == 4 and options.pixel_profile().scale_percent == 100, "Canonical identity captures retain 4x MSAA and 100% native scale")
  # Freeze shader animation time as well as gameplay for matched review frames.
  var expected := {}
  for theme: String in themes:
@@ -53,6 +57,12 @@ func run() -> void:
   check(fixture.error.is_empty(), fixture.error)
   check(not receipt.current_texture_matches.is_empty(), "No current source pixels found in loaded bake: " + theme)
   receipt["state"] = before
+  receipt["graphics"] = {"window_size": str(root.size), "world_size": str(fixture.game.view.size),
+   "msaa_3d": fixture.game.view.msaa_3d, "scale_3d": fixture.game.view.scaling_3d_scale,
+   "fxaa": fixture.game.view.screen_space_aa, "retro": fixture.game.retro_filter.selected_effects.duplicate(),
+   "shadow_atlas": options.shadow_resolution(), "shadow_cascades": options.shadow_cascades(),
+   "smooth_shadows": options.smooth_shadows_enabled(),
+   "project_shadow_filter": ProjectSettings.get_setting("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality")}
   receipt["image"] = theme + ".png"
   captures.append(receipt)
   print("PROTOTYPE_APPEARANCE | ", theme, " | ", JSON.stringify(before))

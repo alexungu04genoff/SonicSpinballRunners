@@ -1,0 +1,241 @@
+{
+  "date": "2026-11-08",
+  "context": "Current working tree, including preserved separately owned artwork and Acts",
+  "engine": "Godot 4.7.2 Forward+ / Vulkan; headless for nonvisual suites",
+  "suite_count": 32,
+  "checks": 8596,
+  "assertion_failures": 0,
+  "additional_child_checks": 6,
+  "suites": [
+    {
+      "suite": "authored_gimmick_regression",
+      "checks": 93,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-authored_gimmick_regression.log",
+      "sha256": "13E9504E941AAFB4E2BE37BD9C4891E2949CAA103339916E571FB02E8D7DBE5C"
+    },
+    {
+      "suite": "pinball_mechanics_regression",
+      "checks": 58,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-pinball_mechanics_regression.log",
+      "sha256": "A62F30FF3ADFB339D02617BABB611AD22CD973769617CDD810493A2B465EDA04"
+    },
+    {
+      "suite": "soft_retry_regression",
+      "checks": 62,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-soft_retry_regression.log",
+      "sha256": "C2C72AA2803C3ECFC02B05F94AB27055C9095374AC32EAB2CDA085D79689B496"
+    },
+    {
+      "suite": "ramp_height_theme_regression",
+      "checks": 92,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-ramp_height_theme_regression.log",
+      "sha256": "172D9BDFAC9597F89FAFB58AD45F3768EF5F764501CB9700B011BE19D5F3FB02"
+    },
+    {
+      "suite": "theme_texture_regression",
+      "checks": 284,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-theme_texture_regression.log",
+      "sha256": "9C3681408F30F1362EE19534BB9C2D52F005F6B9FD318680D7FD8340D7B87CFA"
+    },
+    {
+      "suite": "endless_reuse_regression",
+      "checks": 127,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-endless_reuse_regression.log",
+      "sha256": "312ED6962A5E864D82C326D8B20D249B225CE68E9FDEBB20C22F3B75021C40C7"
+    },
+    {
+      "suite": "scorecraft_regression",
+      "checks": 29,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-scorecraft_regression.log",
+      "sha256": "E5FA41F4D31F6B1FF98763CC97CDEF0F240C7B55808C531165C2CE34F3BADA7E"
+    },
+    {
+      "suite": "buddy_scoring_regression",
+      "checks": 70,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-buddy_scoring_regression.log",
+      "sha256": "379383D5C815F83A7CF0062EB99BD5930B67A93A14D379937E1A92CBBDC2FF81"
+    },
+    {
+      "suite": "enemy_regression",
+      "checks": 50,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-enemy_regression.log",
+      "sha256": "6067F554F0C2F3F7B5C9D62B99EE45C15A02251C7C3D06961CD4455B1F55B941"
+    },
+    {
+      "suite": "authored_main_game_regression",
+      "checks": 70,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-authored_main_game_regression.log",
+      "sha256": "134569BF95B3FA6DBB2CDD730C2F3784B3A22B075BBF5580358F986F63C60005"
+    },
+    {
+      "suite": "traversal_authoring_regression",
+      "checks": 36,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-traversal_authoring_regression.log",
+      "sha256": "6736294D6A56FA999F9A050F021428BACE9E00F02A4100B61414B6818A9E43BF"
+    },
+    {
+      "suite": "traversal_prototype_regression",
+      "checks": 20,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-traversal_prototype_regression.log",
+      "sha256": "BFA037EDEF0CA8571BF2A589B11248915DCE7A0B7B833ACB54626ADDC7229DCD"
+    },
+    {
+      "suite": "flipper_contact_response_regression",
+      "checks": 208,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-flipper_contact_response_regression.log",
+      "sha256": "A56E728F06AF13E58291D412556B26BFC2627A724383920431DB1DBCF67C5F24"
+    },
+    {
+      "suite": "telemetry_evidence_regression",
+      "checks": 30,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-telemetry_evidence_regression.log",
+      "sha256": "7DCFCBD1822445DDD52B6D11AB92E07BF64076BA1EF7787231333DA20F1FE064"
+    },
+    {
+      "suite": "prototype_plan_regression",
+      "checks": 41,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-prototype_plan_regression.log",
+      "sha256": "7B4EDD1F39156FF4CD398E5249B569D66451A76E7B0919E54FEB7F142ACE8D22"
+    },
+    {
+      "suite": "prototype_setup_regression",
+      "checks": 16,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-prototype_setup_regression.log",
+      "sha256": "144C67F6DD12674FCAD39B400DBAF35DF90AE5B6DF65EE72DF17B65573960EF8"
+    },
+    {
+      "suite": "prototype_archive_regression",
+      "checks": 34,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-prototype_archive_regression.log",
+      "sha256": "5A440D19CD396B87D76CD6609DE42C470780A33B388015DB071665B2F55A5B79"
+    },
+    {
+      "suite": "foreground_contribution_regression",
+      "checks": 26,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-foreground_contribution_regression.log",
+      "sha256": "D4B63806122D4E7D0C5A1463931FCC3974AE23FEE24A8F9C21AC53C8222FDFB4"
+    },
+    {
+      "suite": "geometry_bake_regression",
+      "checks": 2842,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-geometry_bake_regression.log",
+      "sha256": "B5D9F059DAE54EE29D6A7A9A9FD38BC7FE1F8C41146623011D1617313D1BA511"
+    },
+    {
+      "suite": "act_geometry_regression",
+      "checks": 3461,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-act_geometry_regression.log",
+      "sha256": "91551CCF1658D12AD595EE801431BBB280954DD682ECC6B74666C889430E25F4"
+    },
+    {
+      "suite": "geometry_density_regression",
+      "checks": 18,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-geometry_density_regression.log",
+      "sha256": "F8519C5F6E3EED349FB3BA6F949A4A780A14A7A80576B4D7A6ECFEC9607E135A"
+    },
+    {
+      "suite": "economy_v1_regression",
+      "checks": 44,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-economy_v1_regression.log",
+      "sha256": "393C9A13CCD578CAF4E217C90E668E21CB7CFC2CFCCBACEF999F47D3DB515268"
+    },
+    {
+      "suite": "pinball_vocabulary_regression",
+      "checks": 17,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-pinball_vocabulary_regression.log",
+      "sha256": "08179C8C73A76EB97A51D1A9B1334F0FDC328D2C60F5212DD1309344F4D5F2CA"
+    },
+    {
+      "suite": "gimmick_batch_regression",
+      "checks": 103,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-gimmick_batch_regression.log",
+      "sha256": "58B6A070510DB2D7F2AE9936ACA0887C1FA62046FA3CF67CCC66FA5E8CD2DB45"
+    },
+    {
+      "suite": "scoring_flow_regression",
+      "checks": 31,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-scoring_flow_regression.log",
+      "sha256": "600F0453B2C8524B668050EE71AFC0399C4CF601FAF996A7842DDFC1B47A6A88"
+    },
+    {
+      "suite": "rail_rings_regression",
+      "checks": 13,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-rail_rings_regression.log",
+      "sha256": "20945F1F3AAFCBD7E4A04FC3113938A41A8763257BFDB98593170FB8A68915B0"
+    },
+    {
+      "suite": "profile_regression",
+      "checks": 12,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-profile_regression.log",
+      "sha256": "0B8E15601824BF46AFFB265D6E18069D80143ACC20ED9A2C4307430DB6B3E385"
+    },
+    {
+      "suite": "prototype_budget_regression",
+      "checks": 57,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-prototype_budget_regression.log",
+      "sha256": "5E86145C9DCE74A5AFC54F5CDB690216BE596446E22FE467BB8E9968264FE9B3"
+    },
+    {
+      "suite": "prototype_run_regression",
+      "checks": 143,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-prototype_run_regression.log",
+      "sha256": "CB0FA3273DB4DE60D5062CD3D1082A114465A02B9E7ED087B98C33E93055A061"
+    },
+    {
+      "suite": "run_telemetry_regression",
+      "checks": 14,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-run_telemetry_regression.log",
+      "sha256": "08429FADC99BABF872FCD13EDCB4953F94F9B3544D1EE7106A645774ACE7FB38"
+    },
+    {
+      "suite": "prototype_appearance_regression",
+      "checks": 70,
+      "failures": 0,
+      "log": "test-results/regression-debt/identity-prototype_appearance_regression.log",
+      "sha256": "8D04A1306B480E57D581D16217AF024ACA8DC4D285C7BFB4E42FD7DDB2CA4881"
+    },
+    {
+      "suite": "endless_bake_audit --prototype",
+      "checks": 425,
+      "failures": 0,
+      "log": "test-results/theme-identity-finish/prototype-audit.log",
+      "sha256": "1FB6F7ADFF9A0133606454FA7A482524937D379AA66ABEEFF7075BC54F99AB89"
+    }
+  ],
+  "notes": [
+    "Counts follow docs/VERIFICATION.md; repeat runs are excluded.",
+    "Profile has twelve explicit checks; vocabulary prints seventeen PASS lines.",
+    "Known root-certificate/dummy-renderer diagnostics, deliberate malformed-resource/archive-write failures and existing ObjectDB cleanup warnings are not suppressed.",
+    "Legacy decor_runtime_smoke is outside this baseline and has a documented historical batching mismatch."
+  ]
+}

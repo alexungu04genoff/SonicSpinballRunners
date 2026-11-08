@@ -36,6 +36,17 @@ func primitive(kind: String) -> Mesh:
  if meshes.has(kind): return meshes[kind]
  var result: Mesh
  if kind == "box": result = BoxMesh.new()
+ elif kind == "leaf":
+  # A pointed, folded blade reads as vegetation even without surface texture.
+  # Eight triangles, closed on both sides; no smooth pebble silhouette.
+  var surface := SurfaceTool.new()
+  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+  var rim := [Vector3(0, 1, 0), Vector3(0.55, 0, 0), Vector3(0, -1, 0), Vector3(-0.55, 0, 0)]
+  for i in 4:
+   for vertex: Vector3 in [Vector3(0, 0, 0.18), rim[i], rim[(i + 1) % 4], Vector3(0, 0, -0.10), rim[(i + 1) % 4], rim[i]]:
+    surface.add_vertex(vertex)
+  surface.generate_normals()
+  result = surface.commit()
  elif kind == "tiny_sphere":
   result = Density.sphere(1.0, Density.Family.TINY)
  elif kind == "sphere":
@@ -75,9 +86,13 @@ func bar(root: Node3D, color: String, a: Vector3, b: Vector3, width: float) -> v
  mesh.quaternion = Quaternion(Vector3.UP, (b - a).normalized())
 
 func vine(root: Node3D, at: Vector3, length: float) -> void:
- for i in 5:
-  var point := at + Vector3(sin(i * 1.7) * 0.035, -length * i / 5.0, 0.01)
-  piece(root, "tiny_sphere", "moss" if i % 2 == 0 else "leaf", point, Vector3(0.065, length * 0.15, 0.035))
+ bar(root, "moss", at, at - Vector3.UP * length, 0.012)
+ for i in 4:
+  var side := -1.0 if i % 2 == 0 else 1.0
+  var point := at + Vector3(side * 0.035, -length * (i + 0.35) / 4.0, 0.025)
+  var leaf := piece(root, "leaf", "moss" if i % 2 == 0 else "leaf", point, Vector3(maxf(0.07, length * 0.10), maxf(0.07, length * 0.20), 0.12))
+  leaf.rotation.z = side * 0.40
+  leaf.rotation.x = -0.40
 
 func column(root: Node3D, at: Vector3, height: float, radius: float, broken := false) -> void:
  box(root, "warm", at + Vector3.UP * 0.06, Vector3(radius * 2.7, 0.12, radius * 2.7))
@@ -113,7 +128,13 @@ func build_variant(variant: String) -> Node3D:
    vine(root, Vector3(-0.13, 0.25, 0.14), 0.20)
   "vine_tablet":
    box(root, "stone", Vector3(0, 0.055, 0), Vector3(0.38, 0.11, 0.32))
-   for i in 3: vine(root, Vector3((i - 1) * 0.10, 0.18, i * 0.04), 0.16)
+   # Lay two sprigs across the slab instead of burying hanging leaves inside it.
+   for side: int in [-1, 1]:
+    var sprig := Node3D.new()
+    root.add_child(sprig)
+    sprig.position = Vector3(side * 0.08, 0.14, -0.13)
+    sprig.rotation.x = -PI * 0.5
+    vine(sprig, Vector3.ZERO, 0.28)
   "sky_blossoms":
    piece(root, "cylinder", "warm", Vector3(0, 0.06, 0), Vector3(0.17, 0.12, 0.17))
    for i in 3:
