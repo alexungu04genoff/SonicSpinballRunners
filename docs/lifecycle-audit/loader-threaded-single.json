@@ -1,0 +1,103 @@
+{
+  "driver": "vulkan",
+  "engine": "4.7.2-stable (official)",
+  "renderer": "forward_plus",
+  "rows": [
+    {
+      "after": {
+        "nodes": 1.0,
+        "objects": 1531.0,
+        "resources": 43.0
+      },
+      "before": {
+        "nodes": 1.0,
+        "objects": 1489.0,
+        "resources": 1.0
+      },
+      "cycle": 0,
+      "mode": "threaded_single",
+      "resource": "res://data/acts/Authored/RampMania.bake/green_hill.res",
+      "resource_released": true
+    },
+    {
+      "after": {
+        "nodes": 1.0,
+        "objects": 1531.0,
+        "resources": 43.0
+      },
+      "before": {
+        "nodes": 1.0,
+        "objects": 1531.0,
+        "resources": 43.0
+      },
+      "cycle": 1,
+      "mode": "threaded_single",
+      "resource": "res://data/acts/Authored/RampMania.bake/green_hill.res",
+      "resource_released": true
+    },
+    {
+      "after": {
+        "nodes": 1.0,
+        "objects": 1531.0,
+        "resources": 43.0
+      },
+      "before": {
+        "nodes": 1.0,
+        "objects": 1531.0,
+        "resources": 43.0
+      },
+      "cycle": 2,
+      "mode": "threaded_single",
+      "resource": "res://data/acts/Authored/RampMania.bake/green_hill.res",
+      "resource_released": true
+    },
+    {
+      "after": {
+        "nodes": 1.0,
+        "objects": 1531.0,
+        "resources": 43.0
+      },
+      "before": {
+        "nodes": 1.0,
+        "objects": 1531.0,
+        "resources": 43.0
+      },
+      "cycle": 3,
+      "mode": "threaded_single",
+      "resource": "res://data/acts/Authored/RampMania.bake/green_hill.res",
+      "resource_released": true
+    },
+    {
+      "after": {
+        "nodes": 1.0,
+        "objects": 1531.0,
+        "resources": 43.0
+      },
+      "before": {
+        "nodes": 1.0,
+        "objects": 1531.0,
+        "resources": 43.0
+      },
+      "cycle": 4,
+      "mode": "threaded_single",
+      "resource": "res://data/acts/Authored/RampMania.bake/green_hill.res",
+      "resource_released": true
+    },
+    {
+      "after": {
+        "nodes": 1.0,
+        "objects": 1531.0,
+        "resources": 43.0
+      },
+      "before": {
+        "nodes": 1.0,
+        "objects": 1531.0,
+        "resources": 43.0
+      },
+      "cycle": 5,
+      "mode": "threaded_single",
+      "resource": "res://data/acts/Authored/RampMania.bake/green_hill.res",
+      "resource_released": true
+    }
+  ]
+}

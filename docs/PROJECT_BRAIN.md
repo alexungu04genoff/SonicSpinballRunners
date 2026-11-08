@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## The ghost is in the loader — 2026-11-08
+
+The [lifecycle audit](LIFECYCLE_AUDIT.md) traced the recurring zero-reference RefCounted warnings to Godot 4.7.2's threaded ResourceLoader path. Six normal disk-loaded runs released their tracked Game/Act/atmosphere/recipe owners, returned to one Node and zero orphans, and left no live device-registration targets. But total ObjectDB count still rose by one per run: this is an engine allocation leak, not harmless exit noise. Loading a bake without any Session reproduces the signature; synchronous and ordinary-Thread controls isolate the worker-pool path. We did not change production cleanup or loader scheduling, hide diagnostics, or unload resident Acts early. The new probes keep the distinction measurable. Graphics defaults, art, gameplay and archive behavior remain untouched.
+
 ## Loaded does not mean drawing — 2026-11-05
 
 Resident foreground Acts now have a conservative contribution gate. Bro caches real presentation bounds at attachment and checks the final camera frustum plus sunlight reach before drawing. Active Acts, joins that can appear, draft/transfer/loading safety and unknown deformation stay visible. Physics, Rings, enemies, scoring, residency and background crossfades do not follow that visibility flag.

@@ -1,0 +1,271 @@
+{
+  "checks": 33,
+  "failures": 0,
+  "initial": {
+    "close_connections": 1,
+    "live_registered_lights": 0,
+    "live_registered_views": 0,
+    "nodes": 1.0,
+    "objects": 1646.0,
+    "orphans": 0.0,
+    "post_draw_connections": 0,
+    "pre_draw_connections": 0,
+    "registered_light_slots": 0,
+    "registered_view_slots": 0,
+    "resources": 141.0
+  },
+  "metadata": {
+    "api": "1.4.351",
+    "command_line": [
+      "--script",
+      "res://tests/prototype_lifecycle_regression.gd"
+    ],
+    "device": "NVIDIA GeForce RTX 4060",
+    "driver": "vulkan",
+    "engine": "4.7.2-stable (official)",
+    "renderer": "forward_plus",
+    "user_arguments": []
+  },
+  "observations": [
+    {
+      "after_close": [],
+      "after_frames": [],
+      "cycle": 0,
+      "live": {
+        "close_connections": 2,
+        "live_registered_lights": 2,
+        "live_registered_views": 3,
+        "nodes": 4093.0,
+        "objects": 16395.0,
+        "orphans": 1586.0,
+        "post_draw_connections": 0,
+        "pre_draw_connections": 1,
+        "registered_light_slots": 3,
+        "registered_view_slots": 3,
+        "resources": 5628.0
+      },
+      "menu": {
+        "close_connections": 2,
+        "live_registered_lights": 0,
+        "live_registered_views": 0,
+        "nodes": 74.0,
+        "objects": 1911.0,
+        "orphans": 0.0,
+        "post_draw_connections": 1,
+        "pre_draw_connections": 0,
+        "registered_light_slots": 3,
+        "registered_view_slots": 3,
+        "resources": 144.0
+      },
+      "run": 0
+    },
+    {
+      "after_close": [],
+      "after_frames": [],
+      "cycle": 0,
+      "live": {
+        "close_connections": 2,
+        "live_registered_lights": 2,
+        "live_registered_views": 3,
+        "nodes": 4093.0,
+        "objects": 16388.0,
+        "orphans": 1586.0,
+        "post_draw_connections": 0,
+        "pre_draw_connections": 1,
+        "registered_light_slots": 3,
+        "registered_view_slots": 3,
+        "resources": 5628.0
+      },
+      "menu": {
+        "close_connections": 2,
+        "live_registered_lights": 0,
+        "live_registered_views": 0,
+        "nodes": 74.0,
+        "objects": 1912.0,
+        "orphans": 0.0,
+        "post_draw_connections": 1,
+        "pre_draw_connections": 0,
+        "registered_light_slots": 3,
+        "registered_view_slots": 3,
+        "resources": 144.0
+      },
+      "run": 1
+    },
+    {
+      "cycle": 0,
+      "idle": {
+        "close_connections": 1,
+        "live_registered_lights": 0,
+        "live_registered_views": 0,
+        "nodes": 1.0,
+        "objects": 1698.0,
+        "orphans": 0.0,
+        "post_draw_connections": 0,
+        "pre_draw_connections": 0,
+        "registered_light_slots": 3,
+        "registered_view_slots": 3,
+        "resources": 144.0
+      }
+    },
+    {
+      "after_close": [],
+      "after_frames": [],
+      "cycle": 1,
+      "live": {
+        "close_connections": 2,
+        "live_registered_lights": 2,
+        "live_registered_views": 3,
+        "nodes": 4093.0,
+        "objects": 16399.0,
+        "orphans": 1586.0,
+        "post_draw_connections": 0,
+        "pre_draw_connections": 1,
+        "registered_light_slots": 3,
+        "registered_view_slots": 3,
+        "resources": 5628.0
+      },
+      "menu": {
+        "close_connections": 2,
+        "live_registered_lights": 0,
+        "live_registered_views": 0,
+        "nodes": 74.0,
+        "objects": 1913.0,
+        "orphans": 0.0,
+        "post_draw_connections": 1,
+        "pre_draw_connections": 0,
+        "registered_light_slots": 3,
+        "registered_view_slots": 3,
+        "resources": 144.0
+      },
+      "run": 0
+    },
+    {
+      "after_close": [],
+      "after_frames": [],
+      "cycle": 1,
+      "live": {
+        "close_connections": 2,
+        "live_registered_lights": 2,
+        "live_registered_views": 3,
+        "nodes": 4093.0,
+        "objects": 16390.0,
+        "orphans": 1586.0,
+        "post_draw_connections": 0,
+        "pre_draw_connections": 1,
+        "registered_light_slots": 3,
+        "registered_view_slots": 3,
+        "resources": 5628.0
+      },
+      "menu": {
+        "close_connections": 2,
+        "live_registered_lights": 0,
+        "live_registered_views": 0,
+        "nodes": 74.0,
+        "objects": 1914.0,
+        "orphans": 0.0,
+        "post_draw_connections": 1,
+        "pre_draw_connections": 0,
+        "registered_light_slots": 3,
+        "registered_view_slots": 3,
+        "resources": 144.0
+      },
+      "run": 1
+    },
+    {
+      "cycle": 1,
+      "idle": {
+        "close_connections": 1,
+        "live_registered_lights": 0,
+        "live_registered_views": 0,
+        "nodes": 1.0,
+        "objects": 1700.0,
+        "orphans": 0.0,
+        "post_draw_connections": 0,
+        "pre_draw_connections": 0,
+        "registered_light_slots": 3,
+        "registered_view_slots": 3,
+        "resources": 144.0
+      }
+    },
+    {
+      "after_close": [],
+      "after_frames": [],
+      "cycle": 2,
+      "live": {
+        "close_connections": 2,
+        "live_registered_lights": 2,
+        "live_registered_views": 3,
+        "nodes": 4093.0,
+        "objects": 16409.0,
+        "orphans": 1586.0,
+        "post_draw_connections": 0,
+        "pre_draw_connections": 1,
+        "registered_light_slots": 3,
+        "registered_view_slots": 3,
+        "resources": 5628.0
+      },
+      "menu": {
+        "close_connections": 2,
+        "live_registered_lights": 0,
+        "live_registered_views": 0,
+        "nodes": 74.0,
+        "objects": 1915.0,
+        "orphans": 0.0,
+        "post_draw_connections": 1,
+        "pre_draw_connections": 0,
+        "registered_light_slots": 3,
+        "registered_view_slots": 3,
+        "resources": 144.0
+      },
+      "run": 0
+    },
+    {
+      "after_close": [],
+      "after_frames": [],
+      "cycle": 2,
+      "live": {
+        "close_connections": 2,
+        "live_registered_lights": 2,
+        "live_registered_views": 3,
+        "nodes": 4093.0,
+        "objects": 16410.0,
+        "orphans": 1586.0,
+        "post_draw_connections": 0,
+        "pre_draw_connections": 1,
+        "registered_light_slots": 3,
+        "registered_view_slots": 3,
+        "resources": 5628.0
+      },
+      "menu": {
+        "close_connections": 2,
+        "live_registered_lights": 0,
+        "live_registered_views": 0,
+        "nodes": 74.0,
+        "objects": 1916.0,
+        "orphans": 0.0,
+        "post_draw_connections": 1,
+        "pre_draw_connections": 0,
+        "registered_light_slots": 3,
+        "registered_view_slots": 3,
+        "resources": 144.0
+      },
+      "run": 1
+    },
+    {
+      "cycle": 2,
+      "idle": {
+        "close_connections": 1,
+        "live_registered_lights": 0,
+        "live_registered_views": 0,
+        "nodes": 1.0,
+        "objects": 1702.0,
+        "orphans": 0.0,
+        "post_draw_connections": 0,
+        "pre_draw_connections": 0,
+        "registered_light_slots": 3,
+        "registered_view_slots": 3,
+        "resources": 144.0
+      }
+    }
+  ]
+}

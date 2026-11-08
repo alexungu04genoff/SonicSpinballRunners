@@ -1,0 +1,75 @@
+{
+  "api": "1.4.351",
+  "balls_remaining": 3,
+  "command_line": [
+    "--script",
+    "res://tests/prototype_play_profile.gd"
+  ],
+  "device": "NVIDIA GeForce RTX 4060",
+  "draws_median": 1208,
+  "driver": "vulkan",
+  "duration_ms": 1134.509,
+  "engine": "4.7.2-stable (official)",
+  "finished": false,
+  "input_ticks": 120,
+  "menu_validation_ms": 41713.936,
+  "note": "Input-only Challenge session with HUD, sounds and telemetry. Launches and steers normally; no score grants, teleports or forced clears. Dynamic paths can diverge across runs.",
+  "objects_median": 2011,
+  "physics_ticks": 120,
+  "pipelines": {
+    "canvas": 5.0,
+    "draw": 55.0,
+    "mesh": 66.0,
+    "specialization": 112.0,
+    "surface": 64.0
+  },
+  "practice": false,
+  "ready_ms": 35348.335,
+  "ready_pipelines": {
+    "canvas": 5.0,
+    "draw": 54.0,
+    "mesh": 66.0,
+    "specialization": 111.0,
+    "surface": 63.0
+  },
+  "rebuilds": 0,
+  "render_cpu_ms_median": 2.03900002273917,
+  "render_gpu_ms_median": 0.739000007510185,
+  "renderer": "forward_plus",
+  "resident_peak": 2,
+  "score": 0,
+  "seed": 2957279574,
+  "startup_frames": {
+    "count": 13146,
+    "frames_over_100_ms": 10,
+    "frames_over_50_ms": 15,
+    "max_ms": 5854.503,
+    "median_ms": 0.861,
+    "p95_ms": 2.523,
+    "p99_ms": 3.636
+  },
+  "theme": "green_hill",
+  "timing": {
+    "count": 110,
+    "frames_over_100_ms": 2,
+    "frames_over_50_ms": 3,
+    "max_ms": 193.057,
+    "median_ms": 6.18,
+    "p95_ms": 12.729,
+    "p99_ms": 104.638
+  },
+  "user_arguments": [
+    "--profile-seconds=1",
+    "--profile-theme=green_hill",
+    "--profile-output=res://test-results/lifecycle-audit/play-profile.json"
+  ],
+  "waiting_ms": 0.0,
+  "window_size": [
+    1280,
+    900
+  ],
+  "world_size": [
+    673,
+    473
+  ]
+}

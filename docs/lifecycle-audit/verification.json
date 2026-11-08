@@ -1,0 +1,242 @@
+{
+  "date": "2026-11-08",
+  "base_commit": "0d5934a10772f59d5d327bb5bbed79dc4f2ad2e8",
+  "context": "Current working tree with unrelated local Acts and art preserved",
+  "suites": 32,
+  "checks": 8596.0,
+  "assertion_failures": 0,
+  "child_reload_checks": 6,
+  "additional_lifecycle_checks": 33,
+  "rows": [
+    {
+      "suite": "authored_gimmick_regression",
+      "checks": 93,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-authored_gimmick_regression.log",
+      "sha256": "BA4999474FA9EAF773CE0AB6302B0AA475B57976D64EFF749E6C09BD1217D29E"
+    },
+    {
+      "suite": "pinball_mechanics_regression",
+      "checks": 58,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-pinball_mechanics_regression.log",
+      "sha256": "3BB26FC8168574963A6176D07448E5C6160C0388ED8D5FE2AB5E95B5A5104B35"
+    },
+    {
+      "suite": "soft_retry_regression",
+      "checks": 62,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-soft_retry_regression.log",
+      "sha256": "A2AA9E526BB7AD5C9D9A6D68B2313699D76EFDE1C53CF598023AB169C6D09D64"
+    },
+    {
+      "suite": "ramp_height_theme_regression",
+      "checks": 92,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-ramp_height_theme_regression.log",
+      "sha256": "7AF6053F8314D2AE8953C0E81BD56D05A471C232CB8B11320BE2F1C3CC8BA8D3"
+    },
+    {
+      "suite": "theme_texture_regression",
+      "checks": 284,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-theme_texture_regression.log",
+      "sha256": "9C3681408F30F1362EE19534BB9C2D52F005F6B9FD318680D7FD8340D7B87CFA"
+    },
+    {
+      "suite": "endless_reuse_regression",
+      "checks": 127,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-endless_reuse_regression.log",
+      "sha256": "DDD4F1B5CFA9261FEDA35DBC1B2BE9FC0691A5369F4B1EF81D045291B67A52EE"
+    },
+    {
+      "suite": "scorecraft_regression",
+      "checks": 29,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-scorecraft_regression.log",
+      "sha256": "AFEAD29B423E538D8CDCB7DC6248217629CECB17D69DE4741D3A52A4EAFC116C"
+    },
+    {
+      "suite": "buddy_scoring_regression",
+      "checks": 70,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-buddy_scoring_regression.log",
+      "sha256": "379383D5C815F83A7CF0062EB99BD5930B67A93A14D379937E1A92CBBDC2FF81"
+    },
+    {
+      "suite": "enemy_regression",
+      "checks": 50,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-enemy_regression.log",
+      "sha256": "33F50E9D660B0A0518C47A4458C65AF11F6D1B6CD029C7AB844037F0B26CA6D1"
+    },
+    {
+      "suite": "authored_main_game_regression",
+      "checks": 70,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-authored_main_game_regression.log",
+      "sha256": "42CF822B7428954FA4980D24978AD5BF4C1853CC0B9932F2C5F97B1023311FE7"
+    },
+    {
+      "suite": "traversal_authoring_regression",
+      "checks": 36,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-traversal_authoring_regression.log",
+      "sha256": "6736294D6A56FA999F9A050F021428BACE9E00F02A4100B61414B6818A9E43BF"
+    },
+    {
+      "suite": "traversal_prototype_regression",
+      "checks": 20,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-traversal_prototype_regression.log",
+      "sha256": "4AEBB3443A0E0DF03118464E4F191087FF909349B6CD271D72D85D1F72C0D140"
+    },
+    {
+      "suite": "flipper_contact_response_regression",
+      "checks": 208,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-flipper_contact_response_regression.log",
+      "sha256": "A56E728F06AF13E58291D412556B26BFC2627A724383920431DB1DBCF67C5F24"
+    },
+    {
+      "suite": "telemetry_evidence_regression",
+      "checks": 30,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-telemetry_evidence_regression.log",
+      "sha256": "47D54AFB96FA50D7EB5159B538E4A85798240933C4B8EFECDA2AD96EA318380D"
+    },
+    {
+      "suite": "prototype_plan_regression",
+      "checks": 41,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-prototype_plan_regression.log",
+      "sha256": "7B4EDD1F39156FF4CD398E5249B569D66451A76E7B0919E54FEB7F142ACE8D22"
+    },
+    {
+      "suite": "prototype_setup_regression",
+      "checks": 16,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-prototype_setup_regression.log",
+      "sha256": "144C67F6DD12674FCAD39B400DBAF35DF90AE5B6DF65EE72DF17B65573960EF8"
+    },
+    {
+      "suite": "prototype_archive_regression",
+      "checks": 34,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-before2-prototype_archive_regression.log",
+      "sha256": "42DFE260FA468CA9DC248B9F871E4EE282C7C3B946C0C14EB46CD3DFF5F2ED33"
+    },
+    {
+      "suite": "foreground_contribution_regression",
+      "checks": 26,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-foreground_contribution_regression.log",
+      "sha256": "630134214E2794BFC8F0722B112579135AC26EDD26CBCAE89DA9821C7BDE5B82"
+    },
+    {
+      "suite": "geometry_bake_regression",
+      "checks": 2842,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-geometry_bake_regression.log",
+      "sha256": "B5D9F059DAE54EE29D6A7A9A9FD38BC7FE1F8C41146623011D1617313D1BA511"
+    },
+    {
+      "suite": "act_geometry_regression",
+      "checks": 3461,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-act_geometry_regression.log",
+      "sha256": "91551CCF1658D12AD595EE801431BBB280954DD682ECC6B74666C889430E25F4"
+    },
+    {
+      "suite": "geometry_density_regression",
+      "checks": 18,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-geometry_density_regression.log",
+      "sha256": "F8519C5F6E3EED349FB3BA6F949A4A780A14A7A80576B4D7A6ECFEC9607E135A"
+    },
+    {
+      "suite": "economy_v1_regression",
+      "checks": 44,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-economy_v1_regression.log",
+      "sha256": "AF7E3EB1646C737A685E5179C2E34D992B26D9999B651E9E3DDF5639A90162A3"
+    },
+    {
+      "suite": "pinball_vocabulary_regression",
+      "checks": 17,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-pinball_vocabulary_regression.log",
+      "sha256": "08179C8C73A76EB97A51D1A9B1334F0FDC328D2C60F5212DD1309344F4D5F2CA"
+    },
+    {
+      "suite": "gimmick_batch_regression",
+      "checks": 103,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-gimmick_batch_regression.log",
+      "sha256": "B10F81FF6865CD52C3E65D4ECBE2C494BB8F821C9985CBC669FCE1B232BD2DE6"
+    },
+    {
+      "suite": "scoring_flow_regression",
+      "checks": 31,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-scoring_flow_regression.log",
+      "sha256": "01D4034D6AA061DCA00E022B8D081F47F897AE382E899584B8B995CC5227BDF1"
+    },
+    {
+      "suite": "rail_rings_regression",
+      "checks": 13,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-rail_rings_regression.log",
+      "sha256": "20945F1F3AAFCBD7E4A04FC3113938A41A8763257BFDB98593170FB8A68915B0"
+    },
+    {
+      "suite": "profile_regression",
+      "checks": 12,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-profile_regression.log",
+      "sha256": "0B8E15601824BF46AFFB265D6E18069D80143ACC20ED9A2C4307430DB6B3E385"
+    },
+    {
+      "suite": "prototype_budget_regression",
+      "checks": 57,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-before2-prototype_budget_regression.log",
+      "sha256": "D6497344D3F63FDE57C50218AA1E2E6A2FD0A94EA7FBD356B8AEC3782B744CCC"
+    },
+    {
+      "suite": "prototype_run_regression",
+      "checks": 143,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-prototype_run_regression.log",
+      "sha256": "18DC74E9616E7969961E300530232125667B19A2C45266E1AE7862F21D9F1BC9"
+    },
+    {
+      "suite": "run_telemetry_regression",
+      "checks": 14,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-run_telemetry_regression.log",
+      "sha256": "08429FADC99BABF872FCD13EDCB4953F94F9B3544D1EE7106A645774ACE7FB38"
+    },
+    {
+      "suite": "prototype_appearance_regression",
+      "checks": 70,
+      "failures": 0,
+      "log": "test-results/regression-debt/lifecycle-prototype_appearance_regression.log",
+      "sha256": "C849D082461A7E63F5A939A82F3E4AB4FABEA742555FF62E6F5CC331AFB25F89"
+    },
+    {
+      "suite": "endless_bake_audit --prototype",
+      "checks": 425,
+      "failures": 0,
+      "log": "test-results/lifecycle-audit/prototype-audit.log",
+      "sha256": "1FB6F7ADFF9A0133606454FA7A482524937D379AA66ABEEFF7075BC54F99AB89"
+    }
+  ],
+  "notes": [
+    "Godot 4.7.2; graphical ownership paths use Forward+/Vulkan.",
+    "No existing assertions or production code changed.",
+    "New lifecycle regression verifies project ownership, not absence of the independently reproduced engine leak.",
+    "Expected malformed-resource/archive-write failures, root-certificate and existing renderer-loader diagnostics remain visible."
+  ]
+}

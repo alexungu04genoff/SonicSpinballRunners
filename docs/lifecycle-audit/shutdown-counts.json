@@ -1,0 +1,533 @@
+{
+  "base_commit": "0d5934a10772f59d5d327bb5bbed79dc4f2ad2e8",
+  "engine": "4.7.2.stable.official.ed1daf0bf",
+  "production_changes": "none",
+  "fixture_changes": "none",
+  "cases": [
+    {
+      "name": "budget_first",
+      "exit_code": 0,
+      "renderer": "Forward+ / Vulkan",
+      "instances": [
+        {
+          "class": "RefCounted",
+          "id": "9223374136456251829",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372826608668785",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223374136489809138",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223374136506586355",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223374136439478128",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223373047614940623",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223373047631717840",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223373047648495057",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223373047665272274",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223373047682049491",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223373047916930521",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223373047866598877",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223373047883376094",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223373047900153311",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223373047933707744",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223373048067925480",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223373048084702697",
+          "references": 0
+        }
+      ],
+      "leaked_count": 17,
+      "stdout": "test-results/regression-debt/lifecycle-before1-prototype_budget_regression.log",
+      "stdout_sha256": "0A247361DBC780E806DF54FCBA0A7E2954D741BE4E9004F752A32D9A2C06010C",
+      "stderr": "test-results/regression-debt/lifecycle-before1-prototype_budget_regression.err",
+      "stderr_sha256": "B0F3D8F0533C9D30A8BA27D52168E6B602694BB4A59B55F4D0B71E0A191364E7"
+    },
+    {
+      "name": "budget_repeat",
+      "exit_code": 0,
+      "renderer": "Forward+ / Vulkan",
+      "instances": [
+        {
+          "class": "RefCounted",
+          "id": "9223372854106525650",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223374272838243551",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223374272855020768",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223374272871797985",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223374272888575202",
+          "references": 0
+        }
+      ],
+      "leaked_count": 5,
+      "stdout": "test-results/regression-debt/lifecycle-before2-prototype_budget_regression.log",
+      "stdout_sha256": "D6497344D3F63FDE57C50218AA1E2E6A2FD0A94EA7FBD356B8AEC3782B744CCC",
+      "stderr": "test-results/regression-debt/lifecycle-before2-prototype_budget_regression.err",
+      "stderr_sha256": "3218C5963B3075A006F6EA479E6DF951AAE6D06F77EA4EEB7DCB9914B04BA6D5"
+    },
+    {
+      "name": "archive_completed",
+      "exit_code": 0,
+      "renderer": "Forward+ / Vulkan",
+      "instances": [
+        {
+          "class": "RefCounted",
+          "id": "9223374895256176835",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223374593283066415",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372822095597595",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223373483470235950",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223373990410594950",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223375396039307549",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223375836307010395",
+          "references": 0
+        }
+      ],
+      "leaked_count": 7,
+      "stdout": "test-results/regression-debt/lifecycle-before2-prototype_archive_regression.log",
+      "stdout_sha256": "42DFE260FA468CA9DC248B9F871E4EE282C7C3B946C0C14EB46CD3DFF5F2ED33",
+      "stderr": "test-results/regression-debt/lifecycle-before2-prototype_archive_regression.err",
+      "stderr_sha256": "2D9DEA287A5DF942343F4718CB9117A4C813B96DD19A3AA00EC72AD4797BDCB6"
+    },
+    {
+      "name": "repeated_sessions",
+      "exit_code": 0,
+      "renderer": "Forward+ / Vulkan",
+      "instances": [
+        {
+          "class": "RefCounted",
+          "id": "9223372589714376570",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223373343028153526",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223374384020859153",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223375166862535014",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223376323114709444",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223377138487407106",
+          "references": 0
+        }
+      ],
+      "leaked_count": 6,
+      "stdout": "test-results/regression-debt/lifecycle-probe-before2-prototype_lifecycle_regression.log",
+      "stdout_sha256": "C17EC65026857342112F740C65A6E149A6E52FC620F5F36326AED8161DAA4BB1",
+      "stderr": "test-results/regression-debt/lifecycle-probe-before2-prototype_lifecycle_regression.err",
+      "stderr_sha256": "DC59B715D18901C795FEA25663956A793DE08DE3AC6F3092DFF70E12CBCD76C8"
+    },
+    {
+      "name": "baked_threaded_first",
+      "exit_code": 0,
+      "renderer": "Forward+ / Vulkan",
+      "instances": [
+        {
+          "class": "RefCounted",
+          "id": "9223372284553595043",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372097722517756",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372225380354367",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372167146637657",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372096044796251",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372101547723112",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372100708862314",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372099635120492",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372103460325774",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372343508732549",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372403336284941",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372130790411400",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372198771690637",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372257508723862",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372316514192708",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372376123641169",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372436404178428",
+          "references": 0
+        }
+      ],
+      "leaked_count": 17,
+      "stdout": "test-results/lifecycle-audit/bake-threaded.log",
+      "stdout_sha256": "F02A684E84C444CA75DA5006DE461C2C81CA6C06E808518D6550814E75F9F0A2",
+      "stderr": "test-results/lifecycle-audit/bake-threaded.err",
+      "stderr_sha256": "5B5B97D791E100AD14A133F44BB31345F344FA5A1CDA2D801258E33C0D682D32"
+    },
+    {
+      "name": "baked_threaded_repeat",
+      "exit_code": 0,
+      "renderer": "Forward+ / Vulkan",
+      "instances": [
+        {
+          "class": "RefCounted",
+          "id": "9223372100541089958",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372103846201549",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372168723695823",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372103527434587",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372104299186526",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372104701839713",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372105775581539",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372223601969579",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372124213742129",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372275376458316",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372328644119221",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372197161077903",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372250143526035",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372303679622467",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372357618372000",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372410147835298",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372381676899851",
+          "references": 0
+        }
+      ],
+      "leaked_count": 17,
+      "stdout": "test-results/lifecycle-audit/final-bake-threaded.log",
+      "stdout_sha256": "2AF8CAE32973522A1FA41AEB736E76B446B732AF5ECCB3A6354B95FEA79E2920",
+      "stderr": "test-results/lifecycle-audit/final-bake-threaded.err",
+      "stderr_sha256": "3A4B51D4985ADBEB648B9A16A2B62E8861A51E3EEF89EC2199D6FFC481D154BC"
+    },
+    {
+      "name": "baked_single_worker",
+      "exit_code": 0,
+      "renderer": "Forward+ / Vulkan",
+      "instances": [],
+      "leaked_count": 0,
+      "stdout": "test-results/lifecycle-audit/final-bake-threaded_single.log",
+      "stdout_sha256": "17DAEAE397BDA8D0A388993F19F0AEAD8F3634CF0C032F0D756B077850F0BEB3",
+      "stderr": "test-results/lifecycle-audit/final-bake-threaded_single.err",
+      "stderr_sha256": "BF31B4763D46EEA056F4DD15A87970E920EC5069DB2A907CD0F343FE2B4303EF"
+    },
+    {
+      "name": "baked_synchronous",
+      "exit_code": 0,
+      "renderer": "Forward+ / Vulkan",
+      "instances": [],
+      "leaked_count": 0,
+      "stdout": "test-results/lifecycle-audit/bake-synchronous.log",
+      "stdout_sha256": "295BC3CFEA92B0C3FC9B107CABF8321DFDB5C29458D41FFE110F9CED788AB21A",
+      "stderr": "test-results/lifecycle-audit/bake-synchronous.err",
+      "stderr_sha256": "F3859BC799A3F45ED07BCE61152086B452E4944933DA42A51665574C59727D5B"
+    },
+    {
+      "name": "baked_plain_thread",
+      "exit_code": 0,
+      "renderer": "Forward+ / Vulkan",
+      "instances": [],
+      "leaked_count": 0,
+      "stdout": "test-results/lifecycle-audit/bake-plain_thread.log",
+      "stdout_sha256": "CBAED7A9C1C8D8374B338D71B19CFC4DA65FFE5852D15AA713301B1324D40308",
+      "stderr": "test-results/lifecycle-audit/bake-plain_thread.err",
+      "stderr_sha256": "3DF8E6D3174AAFC072F0FFB4C5959E15424666FBC2C8AE9D12D79D53E17D64FF"
+    },
+    {
+      "name": "supported_play_profile",
+      "exit_code": 0,
+      "renderer": "Forward+ / Vulkan",
+      "instances": [
+        {
+          "class": "RefCounted",
+          "id": "9223373759958746745",
+          "references": 0
+        }
+      ],
+      "leaked_count": 1,
+      "stdout": "test-results/lifecycle-audit/play-profile.log",
+      "stdout_sha256": "A0FC43CF7E82D5A5580AE14085D291845BA0420F595AEB687A907E62B910F48E",
+      "stderr": "test-results/lifecycle-audit/play-profile.err",
+      "stderr_sha256": "2242382975E88F60F7BF2A64B4D5A979C661AD0A0840B0770A236F43BCDF1BA0"
+    },
+    {
+      "name": "archive_isolated_repeat",
+      "exit_code": 0,
+      "renderer": "Forward+ / Vulkan",
+      "instances": [
+        {
+          "class": "RefCounted",
+          "id": "9223374805095417954",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223375743344445577",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223374493844508579",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223372812683579418",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223375281719354432",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223373459495593498",
+          "references": 0
+        },
+        {
+          "class": "RefCounted",
+          "id": "9223373903152294961",
+          "references": 0
+        }
+      ],
+      "leaked_count": 7,
+      "stdout": "test-results/regression-debt/lifecycle-isolated-prototype_archive_regression.log",
+      "stdout_sha256": "3FB7F785CC4D0E0B06F15FC77037DCA700E26101CC45BB01E9E522A63298EA83",
+      "stderr": "test-results/regression-debt/lifecycle-isolated-prototype_archive_regression.err",
+      "stderr_sha256": "DE4AECDFBCBB03B5980BF4BC6812B1B92FC1137950F9D22E993FD6BB9DA8DFCC"
+    }
+  ],
+  "excluded_attempts": [
+    {
+      "name": "archive_first",
+      "log": "test-results/regression-debt/lifecycle-before1-prototype_archive_regression.log",
+      "reason": "600-second harness timeout under concurrent diagnostics; no completed shutdown count or passing result"
+    },
+    {
+      "name": "initial_probe_prototypes",
+      "reason": "Variant inference parse errors fixed before the recorded completed runs"
+    }
+  ]
+}
