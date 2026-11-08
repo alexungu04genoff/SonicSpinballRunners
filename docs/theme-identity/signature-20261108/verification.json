@@ -1,0 +1,568 @@
+{
+  "date": "2026-11-08",
+  "base_commit": "21f97e358c1bce5bb2d947cf0025740629983b06",
+  "parent_commit": "bbc3237ca303541d9c694716a880e0fb038f8c44",
+  "context": "Working tree with selected local artwork preserved. Headless baseline and focused checks completed before the final graphical phase. Final graphical checks and captures ran after the separate performance chat released its exclusive Godot reservation.",
+  "suites": 32,
+  "checks": 8596,
+  "assertion_failures": 0,
+  "child_reload_checks": 6,
+  "rows": [
+    {
+      "suite": "theme_texture_regression",
+      "checks": 284,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/theme_texture_regression.log",
+      "sha256": "9c3681408f30f1362ee19534bb9c2d52f005f6b9fd318680d7fd8340d7b87cfa"
+    },
+    {
+      "suite": "scorecraft_regression",
+      "checks": 29,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/scorecraft_regression.log",
+      "sha256": "a185bfa56a0deb5b0087886cb2ffa279524acb00b37905ad4f4f7b13feb9daac"
+    },
+    {
+      "suite": "buddy_scoring_regression",
+      "checks": 70,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/buddy_scoring_regression.log",
+      "sha256": "379383d5c815f83a7cf0062eb99bd5930b67a93a14d379937e1a92cbbdc2ff81"
+    },
+    {
+      "suite": "enemy_regression",
+      "checks": 50,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/enemy_regression.log",
+      "sha256": "d7ae27c9e24e5ca5ae3fca377aff2e6636a3d747ad21d78afecb842ca79e6e9d"
+    },
+    {
+      "suite": "authored_main_game_regression",
+      "checks": 70,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/authored_main_game_regression.log",
+      "sha256": "cc5f5f9c9cca88aa6840807555aaf5556447b19523dd868af73466df40e5de12"
+    },
+    {
+      "suite": "traversal_authoring_regression",
+      "checks": 36,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/traversal_authoring_regression.log",
+      "sha256": "6736294d6a56fa999f9a050f021428bace9e00f02a4100b61414b6818a9e43bf"
+    },
+    {
+      "suite": "flipper_contact_response_regression",
+      "checks": 208,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/flipper_contact_response_regression.log",
+      "sha256": "a56e728f06af13e58291d412556b26bfc2627a724383920431db1dbcf67c5f24"
+    },
+    {
+      "suite": "telemetry_evidence_regression",
+      "checks": 30,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/telemetry_evidence_regression.log",
+      "sha256": "3331bdf3f250f1fcb4c93ac3cb90e0ed997c6756dfd6cc969e42a7cf122a2398"
+    },
+    {
+      "suite": "prototype_plan_regression",
+      "checks": 41,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/prototype_plan_regression.log",
+      "sha256": "7b4edd1f39156ff4cd398e5249b569d66451a76e7b0919e54feb7f142ace8d22"
+    },
+    {
+      "suite": "geometry_bake_regression",
+      "checks": 2842,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/geometry_bake_regression.log",
+      "sha256": "b5d9f059dae54ee29d6a7a9a9fd38bc7fe1f8c41146623011d1617313d1ba511"
+    },
+    {
+      "suite": "act_geometry_regression",
+      "checks": 3461,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/act_geometry_regression.log",
+      "sha256": "91551ccf1658d12ad595ee801431bbb280954dd682ecc6b74666c889430e25f4"
+    },
+    {
+      "suite": "geometry_density_regression",
+      "checks": 18,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/geometry_density_regression.log",
+      "sha256": "f8519c5f6e3eed349fb3ba6f949a4a780a14a7a80576b4d7a6ecfec9607e135a"
+    },
+    {
+      "suite": "economy_v1_regression",
+      "checks": 44,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/economy_v1_regression.log",
+      "sha256": "cb96570d24af316945907bc8be4a77c9fdf6e789a6cd2e73cf7a4a8e39fec687"
+    },
+    {
+      "suite": "pinball_vocabulary_regression",
+      "checks": 17,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/pinball_vocabulary_regression.log",
+      "sha256": "08179c8c73a76eb97a51d1a9b1334f0fdc328d2c60f5212dd1309344f4d5f2ca"
+    },
+    {
+      "suite": "gimmick_batch_regression",
+      "checks": 103,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/gimmick_batch_regression.log",
+      "sha256": "2ad22c1a857b28eefbaa148a083b00d095c317225989d718d05ed68590fc69c8"
+    },
+    {
+      "suite": "scoring_flow_regression",
+      "checks": 31,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/scoring_flow_regression.log",
+      "sha256": "cc4a63494dc5f08b4bd94d4e83d20152bf71d6ae45374b1a764bc00f54ede864"
+    },
+    {
+      "suite": "rail_rings_regression",
+      "checks": 13,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/rail_rings_regression.log",
+      "sha256": "20945f1f3aafcbd7e4a04fc3113938a41a8763257bfdb98593170fb8a68915b0"
+    },
+    {
+      "suite": "profile_regression",
+      "checks": 12,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/profile_regression.log",
+      "sha256": "0b8e15601824bf46affb265d6e18069d80143acc20ed9a2c4307430db6b3e385"
+    },
+    {
+      "suite": "run_telemetry_regression",
+      "checks": 14,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/run_telemetry_regression.log",
+      "sha256": "08429fadc99babf872fcd13edcb4953f94f9b3544d1ee7106a645774ace7fb38"
+    },
+    {
+      "suite": "authored_gimmick_regression",
+      "checks": 93,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/authored_gimmick_regression.log",
+      "sha256": "14970fa80582a6d1e430566d57a12fcbd196c8e782c596eaa92b83ddc33c44df"
+    },
+    {
+      "suite": "pinball_mechanics_regression",
+      "checks": 58,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/pinball_mechanics_regression.log",
+      "sha256": "79d3e303ac2f84aea9c7ed8b0e813fb7d0b3662d7ec8c0388d14170b0060b4fd"
+    },
+    {
+      "suite": "soft_retry_regression",
+      "checks": 62,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/soft_retry_regression.log",
+      "sha256": "30801db17145ca6635931e1dfec3d439b978cacb72699d9813fb4aa621085eec"
+    },
+    {
+      "suite": "ramp_height_theme_regression",
+      "checks": 92,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/ramp_height_theme_regression.log",
+      "sha256": "f1a4820ef69eb9c5da0ec60767dbdcc4e60430fefb3fe322a2d7f37deb24ca08"
+    },
+    {
+      "suite": "endless_reuse_regression",
+      "checks": 127,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/endless_reuse_regression.log",
+      "sha256": "2da5b8a2e8065bb20400a6c7d584c249d67c5976215bb8839c43189dda4990ec"
+    },
+    {
+      "suite": "traversal_prototype_regression",
+      "checks": 20,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/traversal_prototype_regression.log",
+      "sha256": "a3f452dc02a32ba27fa3f24ca8fab4de7defa89f674c03b20fad9263c89d1be7"
+    },
+    {
+      "suite": "prototype_setup_regression",
+      "checks": 16,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/prototype_setup_regression.log",
+      "sha256": "144c67f6dd12674fcad39b400dbaf35df90ae5b6df65ee72df17b65573960ef8"
+    },
+    {
+      "suite": "prototype_archive_regression",
+      "checks": 34,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/prototype_archive_regression.log",
+      "sha256": "6125c173ef6fec42e096df1928104198e19b532cdce735eb1b8bd8f890faa489"
+    },
+    {
+      "suite": "foreground_contribution_regression",
+      "checks": 26,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/foreground_contribution_regression.log",
+      "sha256": "9d52bdebaa6dd73da4be9f17461e9730d6a22ee3bc376d8f4a83bae776a55af0"
+    },
+    {
+      "suite": "prototype_budget_regression",
+      "checks": 57,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/prototype_budget_regression.log",
+      "sha256": "783ce7f8e2fdb4ffe5c95bd060897b889e54eb021cd958bd1662f5123e3ba2ff"
+    },
+    {
+      "suite": "prototype_run_regression",
+      "checks": 143,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/prototype_run_regression.log",
+      "sha256": "9c66fe9090b6a7f6c91d0ec5b5a4ab6ffffcfce95b50e2267482d1e8d3737b56"
+    },
+    {
+      "suite": "prototype_appearance_regression",
+      "checks": 70,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/prototype_appearance_regression.log",
+      "sha256": "89787570b329298746969a7a9be348bfd15b01ff90ea9fb657f73ec2e67113e6"
+    },
+    {
+      "suite": "endless_bake_audit --prototype",
+      "checks": 425,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/prototype-audit.log",
+      "sha256": "1fb6f7adff9a0133606454fa7a482524937d379aa66abeeff7075bc54f99ab89"
+    }
+  ],
+  "focused": [
+    {
+      "suite": "landmark_theme_regression",
+      "checks": 387,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/landmark_theme_regression.log",
+      "sha256": "ecd8e5c757bd101d5d53f58ab284c245a4284f0ac859b808fe95992b0125100f"
+    },
+    {
+      "suite": "decor_regression",
+      "checks": 46,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/decor_regression.log",
+      "sha256": "d9264ab6c63ef23e3c024b9999e6420bb1cb0a19cf0fcedf43e4eb3b7e5b1a66"
+    },
+    {
+      "suite": "rooftop_decor_regression",
+      "checks": 91,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/rooftop_decor_regression.log",
+      "sha256": "4456aa0391df170b40779ea0c09d80d12ddc71b9191b5f5d57691c71d90c36c2"
+    },
+    {
+      "suite": "casino_decor_regression",
+      "checks": 95,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/casino_decor_regression.log",
+      "sha256": "67b0279d832b29dc56164b0f8f3ca8023f3b382e0318934538a6c88cfd0a5d6d"
+    },
+    {
+      "suite": "sanctuary_decor_regression",
+      "checks": 95,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/sanctuary_decor_regression.log",
+      "sha256": "50d1a45a2fa6a5c1f52c0c4de967fc6bc213fd90f3451eb38344c047129e0eee"
+    },
+    {
+      "suite": "ice_cap_decor_regression",
+      "checks": 95,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/ice_cap_decor_regression.log",
+      "sha256": "4ce5c2e492cf131c8b8f97d0356ea893653976cc3b6e9e8b8e73192cf0b428ab"
+    },
+    {
+      "suite": "lava_reef_decor_regression",
+      "checks": 103,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/lava_reef_decor_regression.log",
+      "sha256": "96e5758d3950fe10781364d446ed2bc468a1b03bd71772b68c8c30214d636713"
+    },
+    {
+      "suite": "aquarium_park_decor_regression",
+      "checks": 95,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/aquarium_park_decor_regression.log",
+      "sha256": "c80f5bf55472cbc6467fc06a61180e17114391437fecfde716c0ee46e1524003"
+    },
+    {
+      "suite": "scenery_regression",
+      "checks": 7647,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/checks/scenery_regression.log",
+      "sha256": "f15ac69ae3a4cdde65787ee4dad7efc709899f9b735d4641cf6494bd60aea984"
+    }
+  ],
+  "endless": {
+    "suite": "endless_bake_audit --pool",
+    "checks": 489,
+    "failures": 0,
+    "exit": 0,
+    "log": "test-results/theme-signature/endless-audit.log",
+    "sha256": "977395096fe843fe14303df4e57fb07de63d238996e7e97382b0e32a54b4f072"
+  },
+  "captures": [
+    {
+      "suite": "before-validated",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/before-validated/regression.log",
+      "sha256": "b6d151b527068070f37edcb2afe6bdf37ec89d3bfa4bb1744a3d7752c77fa5ea",
+      "themes": [
+        "green_hill",
+        "chemical_plant",
+        "rooftop_run",
+        "casino_night",
+        "sky_sanctuary",
+        "ice_cap",
+        "lava_reef",
+        "aquarium_park"
+      ],
+      "fallback_builds": 0
+    },
+    {
+      "suite": "before-edge",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/before-edge/regression.log",
+      "sha256": "7d475fef33cbb29754fa730ea584ec492a2c6612a86148d6bae139697a9b535c",
+      "themes": [
+        "green_hill",
+        "chemical_plant",
+        "rooftop_run",
+        "casino_night",
+        "sky_sanctuary",
+        "ice_cap",
+        "lava_reef",
+        "aquarium_park"
+      ],
+      "fallback_builds": 0
+    },
+    {
+      "suite": "before-hero",
+      "checks": 55,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/before-hero/regression.log",
+      "sha256": "85b23a6a820550c88547f7d226a634f9f9768244263b0d7f6034206f2a046f86",
+      "themes": [
+        "chemical_plant",
+        "ice_cap",
+        "lava_reef"
+      ],
+      "fallback_builds": 0
+    },
+    {
+      "suite": "after",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/after/regression.log",
+      "sha256": "cf0054b60130c4ef83f7281b8a9a2e91e39bc0cb82ed2a6cd906ce0c30668136",
+      "themes": [
+        "green_hill",
+        "chemical_plant",
+        "rooftop_run",
+        "casino_night",
+        "sky_sanctuary",
+        "ice_cap",
+        "lava_reef",
+        "aquarium_park"
+      ],
+      "fallback_builds": 0
+    },
+    {
+      "suite": "after-edge",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/after-edge/regression.log",
+      "sha256": "7128112251e2101d0688c1aaf39b9e9898063a53785a413a89479409d51f8654",
+      "themes": [
+        "green_hill",
+        "chemical_plant",
+        "rooftop_run",
+        "casino_night",
+        "sky_sanctuary",
+        "ice_cap",
+        "lava_reef",
+        "aquarium_park"
+      ],
+      "fallback_builds": 0
+    },
+    {
+      "suite": "after-hero",
+      "checks": 55,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-signature/after-hero/regression.log",
+      "sha256": "2a17b278e3846d4f187a7d0c2b10535e8a3bc5358bcc5aa984ee55599b5b8eff",
+      "themes": [
+        "chemical_plant",
+        "ice_cap",
+        "lava_reef"
+      ],
+      "fallback_builds": 0
+    }
+  ],
+  "scoped_source": {
+    "base_commit": "afb75de18d3de8d702a516a69b42ae4edcbd022c",
+    "checks": [
+      {
+        "log": "E:\\Sonic Spinball Runners\\test-results\\theme-signature\\scoped-import.log",
+        "summary": [],
+        "suite": "scoped-import",
+        "exit": 0,
+        "sha256": "16320D7AD72DE6C987A9213C87834792349103775ADAA9D7C05A6DC70AA259F5"
+      },
+      {
+        "log": "E:\\Sonic Spinball Runners\\test-results\\theme-signature\\scoped-landmark_theme_regression.log",
+        "summary": [
+          "RESULT | Landmark themes | 387 checks | 0 failures"
+        ],
+        "suite": "scoped-landmark_theme_regression",
+        "exit": 0,
+        "sha256": "ECD8E5C757BD101D5D53F58AB284C245A4284F0AC859B808FE95992B0125100F"
+      },
+      {
+        "log": "E:\\Sonic Spinball Runners\\test-results\\theme-signature\\scoped-ice_cap_decor_regression.log",
+        "summary": [
+          "RESULT | Ice Cap decor | 95 checks | 0 failures"
+        ],
+        "suite": "scoped-ice_cap_decor_regression",
+        "exit": 0,
+        "sha256": "4CE5C2E492CF131C8B8F97D0356EA893653976CC3B6E9E8B8E73192CF0B428AB"
+      },
+      {
+        "log": "E:\\Sonic Spinball Runners\\test-results\\theme-signature\\scoped-lava_reef_decor_regression.log",
+        "summary": [
+          "RESULT | Lava Reef decor | 103 checks | 0 failures"
+        ],
+        "suite": "scoped-lava_reef_decor_regression",
+        "exit": 0,
+        "sha256": "96E5758D3950FE10781364D446ED2BC468A1B03BD71772B68C8C30214D636713"
+      },
+      {
+        "log": "E:\\Sonic Spinball Runners\\test-results\\theme-signature\\scoped-geometry_density_regression.log",
+        "summary": [
+          "GEOMETRY_DENSITY | flower_triangles=96 checks=18 failures=0"
+        ],
+        "suite": "scoped-geometry_density_regression",
+        "exit": 0,
+        "sha256": "F8519C5F6E3EED349FB3BA6F949A4A780A14A7A80576B4D7A6ECFEC9607E135A"
+      },
+      {
+        "log": "E:\\Sonic Spinball Runners\\test-results\\theme-signature\\scoped-bake-chemical_plant.log",
+        "summary": [
+          "ACT_BAKE_COMPLETE | Acts=1 variants=1"
+        ],
+        "suite": "scoped-bake-chemical_plant",
+        "exit": 0,
+        "sha256": "7B931E8B4642D6D175DA05DAC1E02673E257A145A00DD66B50A2D41161E79A71"
+      },
+      {
+        "log": "E:\\Sonic Spinball Runners\\test-results\\theme-signature\\scoped-bake-ice_cap.log",
+        "summary": [
+          "ACT_BAKE_COMPLETE | Acts=1 variants=1"
+        ],
+        "suite": "scoped-bake-ice_cap",
+        "exit": 0,
+        "sha256": "E633984953957C7E1DDCC490D384C2D40CF3C9820BB32BA10C00CF3AFF78EF75"
+      },
+      {
+        "log": "E:\\Sonic Spinball Runners\\test-results\\theme-signature\\scoped-bake-lava_reef.log",
+        "summary": [
+          "ACT_BAKE_COMPLETE | Acts=1 variants=1"
+        ],
+        "suite": "scoped-bake-lava_reef",
+        "exit": 0,
+        "sha256": "D79CCDE7C09D1AE6F433315A83B504A85514F1E884873E089CB79D51C8F2E5EF"
+      }
+    ],
+    "context": "Committed base plus only the three presentation constructors and this pass’s tests; no separately owned selected-art source changes."
+  },
+  "diagnostics": [
+    "The full 56-variant Endless baker exited 0 after ACT_BAKE_COMPLETE and reported one N13RendererDummy9DummyMeshE RID allocation at shutdown. The exact diagnostic also exists in pre-pass final-prototype_run_regression.log and final-prototype_budget_regression.log (16:20 local). Subsequent freshness audits passed.",
+    "Traversal Prototype initially reported 11 checks / 1 failure because its separate diagnostic fixture bake predated the concurrent rendering-policy fingerprint change. Rebuilt only that fixture; the rerun passed all 20 checks. No test assertion was changed.",
+    "The geometry bake suite was rerun after the Chemical unit-mesh sharing refinement; only its final 2842 checks are counted.",
+    "Earlier restricted headless runs retain Windows certificate diagnostics. Selected Casino raw-image warnings and intentional negative-fixture/archive diagnostics are distinguished from assertion failures."
+  ],
+  "limitations": [
+    "Recipe counts are not visible-frame submissions or GPU timings.",
+    "No new animation or lights.",
+    "Motion readability and art quality require human judgment."
+  ],
+  "bakes": [
+    {
+      "acts": 5,
+      "variants": 40,
+      "log": "test-results/theme-signature/final-bake-prototype.log",
+      "sha256": "11f29ce3d9cc6b758da23f3ae33bf55afd8b6adefd6546cbca042cf1df49b01b"
+    },
+    {
+      "acts": 7,
+      "variants": 56,
+      "log": "test-results/theme-signature/final-bake-endless.log",
+      "sha256": "8a4de0a91da2a803ebdb70e80770b29c1416f3e8d8aaf6f4bd20a29a42a2a2f1"
+    }
+  ],
+  "real_play": {
+    "theme": "lava_reef",
+    "input_ticks": 3600,
+    "physics_ticks": 120,
+    "score": 755,
+    "rebuilds": 0,
+    "resident_peak": 3,
+    "context": "Input-only Challenge session; timing values are not used as a performance comparison.",
+    "log": "test-results/theme-signature/play-profile.json",
+    "sha256": "26302e43877b7689a116ad381aa156609870fde0a2bb659dfca17e414866f16c"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "purpose": "Human composition review, not automated recognition or art-quality certification",
+  "rows": 2,
+  "order": [
+    "green_hill",
+    "chemical_plant",
+    "rooftop_run",
+    "casino_night",
+    "sky_sanctuary",
+    "ice_cap",
+    "lava_reef",
+    "aquarium_park"
+  ],
+  "hud_mask": {
+    "height": 260,
+    "x": 0,
+    "width": 570,
+    "y": 0
+  },
+  "grayscale": "Weighted grayscale (0.2126 R + 0.7152 G + 0.0722 B), diagnostic copies only",
+  "columns": 4,
+  "source_crop": {
+    "height": 1000,
+    "x": 0,
+    "width": 1440,
+    "y": 0
+  },
+  "tile_size": {
+    "height": 200,
+    "width": 288
+  }
+}

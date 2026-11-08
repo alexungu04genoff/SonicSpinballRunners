@@ -46,6 +46,7 @@ func primitive(kind: String) -> Mesh:
  if kind == "box": result = BoxMesh.new()
  elif kind == "gem": result = _gem_mesh()
  elif kind == "boulder": result = _boulder_mesh()
+ elif kind in ["rift_shell", "rift_channels"]: result = _rift_mesh(kind == "rift_channels")
  else:
   var cylinder := CylinderMesh.new()
   cylinder.top_radius = 0.0 if kind == "cone" else (0.72 if kind == "rock" else 1.0)
@@ -56,6 +57,47 @@ func primitive(kind: String) -> Mesh:
   result = cylinder
  meshes[kind] = result
  return result
+
+func _rift_mesh(channels: bool) -> ArrayMesh:
+ # A single six-sided caldera with broad molten cracks. The cracks follow the
+ # same planar faces as the shell and wrap three sides for edge-on authored slots.
+ # Static heat material only: no new shader, animation binding, light or particle.
+ var surface := SurfaceTool.new()
+ surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+ for i in 6:
+  var a := Vector3(cos(TAU * i / 6.0), 0, sin(TAU * i / 6.0))
+  var b := Vector3(cos(TAU * (i + 1) / 6.0), 0, sin(TAU * (i + 1) / 6.0))
+  var high_a := a * 0.55 + Vector3.UP
+  var high_b := b * 0.55 + Vector3.UP
+  var inner_a := a * 0.30 + Vector3.UP
+  var inner_b := b * 0.30 + Vector3.UP
+  var low_a := a * 0.22 + Vector3.UP * 0.86
+  var low_b := b * 0.22 + Vector3.UP * 0.86
+  var faces: Array = []
+  if channels:
+   faces.append([Vector3.UP * 0.86, low_a, low_b])
+   if i % 2 == 0:
+    var normal := (a + b).normalized() * 0.012
+    for step in 3:
+     var quad: Array[Vector3] = []
+     for corner: Vector2i in [Vector2i(0, step), Vector2i(0, step + 1), Vector2i(1, step + 1), Vector2i(1, step)]:
+      var t := corner.y / 3.0
+      var center := 0.50 + (0.10 if corner.y % 2 else -0.06)
+      var half_width := lerpf(0.19, 0.13, t)
+      var point := a.lerp(b, center + (-half_width if corner.x == 0 else half_width))
+      quad.append(point * lerpf(1.0, 0.55, t) + Vector3.UP * t + normal)
+     faces.append([quad[0], quad[2], quad[1]])
+     faces.append([quad[0], quad[3], quad[2]])
+  else:
+   faces = [[a, b, high_a], [b, high_b, high_a],
+    [high_a, high_b, inner_a], [high_b, inner_b, inner_a],
+    [inner_a, inner_b, low_a], [inner_b, low_b, low_a]]
+  for triangle: Array in faces:
+   var normal: Vector3 = (triangle[2] - triangle[0]).cross(triangle[1] - triangle[0]).normalized()
+   for vertex: Vector3 in triangle:
+    surface.set_normal(normal)
+    surface.add_vertex(vertex)
+ return surface.commit()
 
 func _boulder_mesh() -> ArrayMesh:
  var surface := SurfaceTool.new()
@@ -221,9 +263,12 @@ func build_variant(variant: String) -> Node3D:
    crystal(root,Vector3(0.14,0.12,0.12),0.67,0.14,-0.18)
   "rift_crown":
    box(root,"basalt",Vector3(0,0.09,0),Vector3(3.0,0.18,1.0))
-   for i in 9:
-    column(root,Vector3((i-4)*0.31,0.18,0),1.75-abs(i-4)*0.30,0.17)
-   for i in 5: crystal(root,Vector3((i-2)*0.27,0.21,0.28),1.62-abs(i-2)*0.45,0.11,(2-i)*0.12)
+   # One dark volcanic mass and its orange clefts own the silhouette. Two large
+   # crystals retain the mineral vocabulary without rebuilding the old picket wall.
+   piece(root,"rift_shell","deep",Vector3(0,0.18,0),Vector3(0.96,1.72,0.47))
+   piece(root,"rift_channels","heat",Vector3(0,0.18,0),Vector3(0.96,1.72,0.47)).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+   for side: int in [-1,1]:
+    crystal(root,Vector3(side*1.03,0.18,0),1.08,0.25,side*-0.16)
    pipe(root,Vector3(-1.35,0.31,-0.28),Vector3(1.35,0.31,-0.28),0.07)
   "mine_viaduct":
    box(root,"basalt",Vector3(0,0.07,0),Vector3(3.0,0.14,1.0))

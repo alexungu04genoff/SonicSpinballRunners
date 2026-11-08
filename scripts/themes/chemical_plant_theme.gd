@@ -10,6 +10,7 @@ var _blue: StandardMaterial3D
 var _cyan: StandardMaterial3D
 var _signal: StandardMaterial3D
 var _yellow: StandardMaterial3D
+var _vessel_meshes: Dictionary = {}
 
 func _init() -> void:
  theme_id = "chemical_plant"
@@ -129,34 +130,48 @@ func build_study(p: Node3D, parent: Node3D, origin: Vector3) -> void:
  _silo(p, parent, Vector3(1.0, 0, -0.85), 0.25, 0.85, 1)
 
 func _silo(p: Node3D, parent: Node3D, base: Vector3, radius: float, height: float, variant: int) -> void:
- var cylinder := CylinderMesh.new()
- cylinder.top_radius = radius
- cylinder.bottom_radius = radius
- cylinder.height = height
- cylinder.radial_segments = 10
- cylinder.rings = 1
- p.mesh_node(cylinder, _blue if variant % 2 == 0 else _dark, base + Vector3.UP * height * 0.5, parent)
- for fraction: float in [0.08, 0.78, 0.96]:
-  var collar := CylinderMesh.new()
-  collar.top_radius = radius * 1.08
-  collar.bottom_radius = radius * 1.08
-  collar.height = height * 0.045
-  collar.radial_segments = 10
-  collar.rings = 1
-  p.mesh_node(collar, _steel, base + Vector3.UP * height * fraction, parent)
- for i in 5:
-  var angle := TAU * float(i) / 5.0
-  var radial := Vector3(cos(angle), 0, sin(angle)) * radius * 1.015
-  var panel := _box(p, parent, base + radial + Vector3.UP * height * 0.52, Vector3(radius * 0.24, height * 0.36, 0.035), _cyan if variant % 2 == 0 else _signal)
-  panel.rotation.y = -angle + PI * 0.5
- var cap := CylinderMesh.new()
- cap.bottom_radius = radius
- cap.top_radius = radius * 0.6
- cap.height = height * 0.13
- cap.radial_segments = 10
- cap.rings = 1
- p.mesh_node(cap, _steel, base + Vector3.UP * height * 1.065, parent)
- _box(p, parent, base + Vector3.UP * height * 1.17, Vector3(radius * 0.19, 0.10, radius * 0.19), _signal)
+ # A pinched chemical vessel replaces the generic straight silo. Broad shoulders,
+ # an exposed fluid mass and two pipe handles read from either side of the Act.
+ # Every piece stays inside the existing 1.08-radius scenery clearance envelope.
+ for band: Vector3 in [Vector3(0.16, 0.32, 1.0), Vector3(0.54, 0.44, 0.60), Vector3(0.86, 0.20, 1.0)]:
+  var mat: Material = _signal if band.z < 0.7 else (_blue if band.x < 0.5 else _yellow)
+  _vessel_piece(p, parent, "body", base + Vector3.UP * height * band.x, Vector3(radius * band.z, height * band.y, radius * band.z), mat)
+ for fraction: float in [0.08, 0.32, 0.76, 0.96]:
+  _vessel_piece(p, parent, "body", base + Vector3.UP * height * fraction, Vector3(radius * 1.08, height * 0.045, radius * 1.08), _cyan if fraction in [0.32, 0.76] else _steel)
+ for side: int in [-1, 1]:
+  var a := base + Vector3(side * radius * 0.55, height * 0.35, 0)
+  var b := base + Vector3(side * radius * 0.89, height * 0.42, 0)
+  var c := base + Vector3(side * radius * 0.89, height * 0.66, 0)
+  var d := base + Vector3(side * radius * 0.55, height * 0.73, 0)
+  for segment: Array in [[a, b], [b, c], [c, d]]:
+   var pipe: MeshInstance3D = _vessel_piece(p, parent, "handle", (segment[0] + segment[1]) * 0.5, Vector3(radius * 0.15, segment[0].distance_to(segment[1]), radius * 0.15), _blue if variant % 2 == 0 else _dark)
+   pipe.quaternion = Quaternion(Vector3.UP, (segment[1] - segment[0]).normalized())
+ # Four large hazard blocks wrap the shoulder; no little labels or valve swarm.
+ for i in 4:
+  var angle := TAU * (i + 0.5) / 4.0
+  var radial := Vector3(cos(angle), 0, sin(angle)) * radius * 0.98
+  var stripe := _vessel_piece(p, parent, "stripe", base + radial + Vector3.UP * height * 0.86, Vector3(radius * 0.35, height * 0.17, radius * 0.04), _dark)
+  stripe.rotation.y = -angle + PI * 0.5
+ _vessel_piece(p, parent, "cap", base + Vector3.UP * height * 1.065, Vector3(radius, height * 0.13, radius), _steel)
+ _vessel_piece(p, parent, "stripe", base + Vector3.UP * height * 1.17, Vector3(radius * 0.19, 0.10, radius * 0.19), _signal)
+
+func _vessel_piece(p: Node3D, parent: Node3D, kind: String, at: Vector3, size: Vector3, mat: Material) -> MeshInstance3D:
+ # Unit meshes let the existing static batcher combine differently sized tanks.
+ # Sizes live on transforms; there is no additional runtime batching system.
+ if not _vessel_meshes.has(kind):
+  if kind == "stripe":
+   _vessel_meshes[kind] = BoxMesh.new()
+  else:
+   var cylinder := CylinderMesh.new()
+   cylinder.top_radius = 0.6 if kind == "cap" else 1.0
+   cylinder.bottom_radius = 1.0
+   cylinder.height = 1.0
+   cylinder.radial_segments = 8 if kind == "handle" else 10
+   cylinder.rings = 1
+   _vessel_meshes[kind] = cylinder
+ var mesh: MeshInstance3D = p.mesh_node(_vessel_meshes[kind], mat, at, parent)
+ mesh.scale = size
+ return mesh
 
 func _box(p: Node3D, parent: Node3D, at: Vector3, size: Vector3, mat: Material) -> MeshInstance3D:
  var box := BoxMesh.new()

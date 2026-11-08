@@ -52,6 +52,28 @@ func _initialize() -> void:
   var face := (vertices[i+2]-vertices[i]).cross(vertices[i+1]-vertices[i]).normalized()
   outward = outward and center.dot(face) > 0.0 and face.dot(normals[i]) > 0.99
  check(outward, "Opaque boulder faces point outward without backface holes")
+ for kind: String in ["rift_shell", "rift_channels"]:
+  var mesh: ArrayMesh = skin.primitive(kind)
+  check(mesh == skin.primitive(kind), "Caldera instances share " + kind)
+  var data := mesh.surface_get_arrays(0)
+  var points: PackedVector3Array = data[Mesh.ARRAY_VERTEX]
+  var directions: PackedVector3Array = data[Mesh.ARRAY_NORMAL]
+  var valid := points.size() == directions.size()
+  for index in range(0, points.size(), 3):
+   var face := (points[index+2]-points[index]).cross(points[index+1]-points[index])
+   valid = valid and face.is_finite() and face.length_squared() > 0.00000001
+   valid = valid and face.normalized().dot(directions[index]) > 0.99
+  check(valid, "Caldera faces have finite clockwise geometry and matching normals: " + kind)
+  check(points.size() / 3 <= (36 if kind == "rift_shell" else 24), "Caldera keeps its small static mesh budget: " + kind)
+  if kind == "rift_shell":
+   var facing := true
+   for sector in 6:
+    var first := sector * 18
+    var radial := Vector3(points[first].x, 0, points[first].z)
+    facing = facing and radial.dot(directions[first]) > 0.0
+    facing = facing and directions[first + 6].y > 0.99
+    facing = facing and radial.dot(directions[first + 12]) < 0.0
+   check(facing, "Caldera outer walls, upper rim and inner cavity face their visible sides")
  # Exercise the actual placement path at a non-round authored angle.
  var p := Presentation.new()
  p.set_theme_definition(theme)

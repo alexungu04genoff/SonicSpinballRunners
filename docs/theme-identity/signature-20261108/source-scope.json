@@ -1,0 +1,32 @@
+{
+  "starting_commit": "21f97e358c1bce5bb2d947cf0025740629983b06",
+  "parent_commit": "bbc3237ca303541d9c694716a880e0fb038f8c44",
+  "capture_context": "Selected working-tree art; separately owned local materials/textures are preserved and excluded from this source commit.",
+  "supplemental_before": "Isolated before-source snapshot; only these three constructors restored to pre-pass versions. Source import and disk recipes validated before capture. Git provenance alone describes the parent checkout, not the reconstructed file contents.",
+  "files": [
+    {
+      "path": "scripts/themes/chemical_plant_theme.gd",
+      "before_sha256": "b20f00d11f82673c87c7db6447a6139f9c19ddb2bdf91f160064b2b311433a03",
+      "working_after_sha256": "18ba14c8222a8eadc574459351a4a66d8d0e7194094af13f1ad789a32866757a",
+      "scoped_export_sha256": "fe4af659d3548d9f08cd664124ae74b7ff451600119f1aa1b5b5dc2bb080fbbe"
+    },
+    {
+      "path": "scripts/decor/ice_cap_decor.gd",
+      "before_sha256": "c6f44ba5d4998419c1b89094b82ff464ac6d3e6748097fe0af464e75c21be47d",
+      "working_after_sha256": "d2ff09ff096a7d345f38fdfb9dd37c691c9ccd4a2641490526be95d6ed35e1f2",
+      "scoped_export_sha256": "d2ff09ff096a7d345f38fdfb9dd37c691c9ccd4a2641490526be95d6ed35e1f2"
+    },
+    {
+      "path": "scripts/decor/lava_reef_decor.gd",
+      "before_sha256": "cadcafdf4c533a1fe4fba3d73613ef8535e2e0dd683f532ab097da064e0e557b",
+      "working_after_sha256": "11097fb30b48bd964f475bc4a32fa5aa20fcd617ec10ddc96857bb24000c9732",
+      "scoped_export_sha256": "11097fb30b48bd964f475bc4a32fa5aa20fcd617ec10ddc96857bb24000c9732"
+    }
+  ],
+  "animation": {
+    "added_nodes": 0,
+    "added_bindings": 0,
+    "added_lights": 0,
+    "new_animation_cost": "No animation introduced; no GPU timing claim."
+  }
+}

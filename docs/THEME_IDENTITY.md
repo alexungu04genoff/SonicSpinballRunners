@@ -109,3 +109,68 @@ Re-ran the supported **32 suites / 8,596 checks / zero assertion failures**, plu
 Focused presentation checks passed again: landmarks 387, Rooftop 91, Casino 95, Sanctuary 95 and Aquarium 95. Density 18 and geometry bake 2,842 also passed and are already counted in the baseline. No test assertion or supported count was weakened. Restricted headless runs retain the known Windows root-certificate diagnostic; dummy-renderer diagnostics, deliberate malformed-resource/archive-write failures and existing ObjectDB cleanup warnings remain distinguished from assertion failures. Final graphical captures completed without script/engine errors.
 
 An exported copy of the exact staged source also completed a fresh editor import and the landmark/Rooftop/Casino/Sanctuary/Aquarium/density suites (387/91/95/95/95/18 checks, zero failures). This verifies that the scoped commit runs without separately owned uncommitted art code. Its shipped base artwork is not substituted for the selected working-tree artwork in the canonical review evidence. Pre-commit comparison confirmed all original tracked production diffs were preserved unchanged.
+
+## Stronger signature pass — 2026-11
+
+This second pass asks a different question: can the Zones be distinguished immediately at gameplay distance, within the already established fictional 1999 art language? It is not another density or realism-reduction pass. The starting main commit was the lifecycle audit, `21f97e358c1bce5bb2d947cf0025740629983b06`. Selected local artwork and published atmosphere edits remain part of the working-tree evidence, not newly owned assets.
+
+### Audit and decisions
+
+The initial audit used fresh validated Prototype disk bakes for all eight themes at spawn `(400, 500)` and the existing supplemental camera target `(570, 500)`. Both sets passed 135 authority/freshness checks. The camera's projection, zoom, angle and gameplay behavior were unchanged. The supplemental target reveals peripheral scenery but also exposes edge-on authored landmarks; the long landmark in the reference Act has a quarter-turn placement. A broad silhouette must work in that orientation, not only in a front-facing prop gallery.
+
+| Theme | Gameplay-distance assessment | Decision and identity hierarchy |
+| --- | --- | --- |
+| Green Hill | Strong control: checker cliffs, turf, loop opening, palm silhouette and sunflower remain distinct at small size. | **Unchanged.** No evidence justified manufacturing a new hero. |
+| Chemical Plant | The authored reactor and broad pipes were strong. The enormous external silo still read as a generic straight industrial cylinder with thin indicator slits. | **Strengthened.** A pinched magenta vessel, wide yellow hazard shoulder, cyan collars and two chunky pipe handles turn the existing large tank into an obvious chemical machine. Existing reactor/arch props, reservoir, selected textures and factory background remain. |
+| Rooftop Run | Terracotta roof masses, pale architecture, clock and adjacent tower establish a strong skyline in the alternate view. The clock is partially clipped at spawn. | **Unchanged.** Composition across two ordinary camera positions supports the existing clock; another enlargement or more miniature architecture would not help. |
+| Casino Night | The palace star, stepped building, reel tower and luminous palms provide recognizable shape groups, beyond the selected surface colors. | **Unchanged after reassessment.** The previous star solved the important blank face. No additional marquee animation or ornament. |
+| Sky Sanctuary | Monumental stone, open arches/columns and floating masonry/cloud masses distinguish it from Rooftop's roof-and-clock architecture. | **Unchanged.** Preserve existing pointed vegetation and faceted clouds. Motion remains a human review question. |
+| Ice Cap | Materials and atmosphere were coherent, but the hero was seven similar thin shards. Edge-on placement turned the row into a narrow picket shape. | **Strengthened.** Three broad crystal blades, led by one deep central prism, read as one glacier crown. The existing snow plinth, smaller crystals, mountains, arch, lake and aurora remain. |
+| Lava Reef | The old crown repeated nine stacks of small boulders and five shards. It had no singular molten feature and shared Ice's spiky-row structure. | **Strengthened.** One dark six-sided caldera with a real crater and three broad orange clefts replaces the stacked wall. Two larger crystals and the existing purple pipe retain the mineral/mining vocabulary. |
+| Aquarium Park | Giant fish, glass tanks, curved roofs and lanterns already form a distinct whimsical aquatic vocabulary. Some fish faces disappear when viewed edge-on. | **Unchanged.** The existing fish population is sufficient. No composition issue warranted more fish or a camera change. |
+
+Macro identity comes from the new external Chemical vessel and the contrasting Ice/Lava hero masses. Mid-scale identity remains the existing pipes, smaller crystals, mineral formations and theme architecture. Color and emission support those shapes. No small-prop population was expanded to compensate for a weak anchor.
+
+### Implementation boundaries and cost
+
+Only three production constructor files change: Chemical's theme-local silo, Ice's `glacier_crown`, and Lava's `rift_crown`. Authored landmark pools, fixed indices, placement transforms and shared footprint envelopes remain intact. Chemical's vessel stays within the previous 1.08-radius clearance envelope; Ice/Lava keep the same three-by-one-cell bases. No Acts, terrain contours, collision shapes, mechanics, physics, scoring, Buddies, character actions, Goal logic, cameras, selected textures, shader programs or atmosphere values are changed by this task.
+
+Chemical reuses unit cylinders, cap and box meshes so the existing static batcher can combine differently sized vessels. An initial trial created a separate sized mesh for each part; accounting exposed the avoidable submission cost, so that construction was replaced before final evidence. There is no new batching architecture. Ice replaces fourteen crystal mesh pieces with six. Lava replaces the stacked boulder assembly with two cached custom meshes: a 36-triangle shell and a 24-triangle static molten insert. Its winding regression checks visible outer walls, the upper rim and inner cavity, as well as finite geometry and shared resources.
+
+**No animated signature was introduced.** Added animation bindings, animated nodes and lights: zero. Existing aurora, water, lava and other environmental effects remain. The new Lava clefts use the existing static heat material, with shadows disabled on the insert. No GPU-time or FPS improvement is inferred from mesh counts.
+
+Final recipe accounting is recorded in [metrics.json](theme-identity/signature-20261108/metrics.json). Counts include off-camera instances and retained shadow geometry, not only visible-frame work. Shared backgrounds are counted once, separately from each Act, and remain unchanged.
+
+| Reference Act | Baked triangles, before → after | Mesh instances, before → after | Mesh nodes, before → after | All recipe records, before → after |
+| --- | ---: | ---: | ---: | ---: |
+| Chemical Plant | 50,877 → 52,701 (+1,824) | 694 → 726 (+32) | 597 → 620 (+23) | 703 → 726 (+23) |
+| Ice Cap | 47,505 → 46,977 (−528) | 509 → 493 (−16) | 368 → 356 (−12) | 526 → 509 (−17) |
+| Lava Reef | 53,259 → 48,663 (−4,596) | 613 → 539 (−74) | 392 → 390 (−2) | 500 → 498 (−2) |
+
+Mesh instances include every repeated MultiMesh transform. Mesh nodes count mesh-bearing recipe records after batching; they are not GPU draw calls. This distinction matters particularly for Lava: its old boulders already batched well, so removing 74 repeated pieces saves only two mesh nodes. Ice's individual crown falls from 16 source mesh pieces / 554 triangles to 8 / 290; Lava's falls from 47 / 2,646 to 10 / 348. Each appears twice in the reference Act. Every Act recipe retains 15 animation bindings.
+
+### Evidence and review limits
+
+The [signature evidence index](theme-identity/signature-20261108/README.md) links native before/after gameplay frames, alternate camera views, native detail crops, small before/after thumbnails, final eight-theme sheets and label-free color/grayscale sheets. Originals remain 1440 × 1000. Pair assembly does not rescale their gameplay pixels. Grayscale and HUD masking apply only to diagnostic copies; production appearance is not altered. This is human composition evidence, not automated recognition or art-quality certification.
+
+The ordinary spawn frame remains the primary test and still clips parts of some heroes. No attempt was made to fit every landmark into every frame. Additional canonical camera targets expose the changed anchors without changing camera behavior. A source snapshot under `test-results/theme-signature/before-source` retains selected artwork and restores only the three pre-pass constructors for supplemental before captures. Failed sandbox attempts and the first Lava winding trial are retained locally and excluded from final evidence.
+
+A concurrent renderer investigation corrected Godot's MSAA precompilation hint between the initial before captures and final verification. Actual captured quality remains 4× MSAA at 100% scale in both states. The supplemental before snapshot uses the current common rendering policy; only the three theme constructors are restored. The renderer fix belongs to its separate commit, and small framebuffer differences in unchanged controls are not attributed to this art pass.
+
+Remaining human review questions:
+
+- Chemical's unchanged distant factory blocks are still generic support architecture; the new vessel, pipes, hazard bands and reservoir carry recognition. Its glowing floor bars can still compete with Rings in motion.
+- Ice still reads as general winter scenery where an Act exposes neither the crown nor the mountains/aurora. The new crown is a stronger hero tier, not a promise that every view contains an icon.
+- Lava's crater is deliberately graphic and very simple. Judge whether its dark mass feels like the same playful stage vocabulary in motion. Warm hardware versus floor contrast remains unchanged.
+- Rooftop clocks and Aquarium fish can be clipped or edge-on. Review camera travel across more Acts before adjusting scenery placement further.
+- Sky cloud facets during panning remain unresolved by still images. No smoothing was applied.
+
+### Signature verification
+
+The supported baseline passed **32 suites / 8,596 checks / zero assertion failures**, plus the geometry suite's six fresh-process reload checks. The separate focused theme/decor suites passed 1,007 checks, and the existing scenery regression passed 7,647 checks covering deterministic placement, bounded local scenery and gameplay isolation. The final geometry-bake rerun passed 2,842 checks after the unit-mesh refinement; that result is already included in the baseline rather than counted twice. [Verification receipts](theme-identity/signature-20261108/verification.json) include suite names and local log hashes.
+
+Rebuilt all 40 Prototype and 56 Endless variants against the current shared source. Their freshness audits passed 425 and 489 checks respectively; the Prototype audit is already inside the 32-suite baseline. All six canonical capture sets passed: two eight-theme before sets and two eight-theme after sets at 135 checks each, plus the three-theme before/after hero sets at 55 each. Every final capture uses validated disk resources, with zero fallback builds. The exporter also verified matching gameplay/camera state, atmosphere, graphics, selected texture pixels and renderer metadata. Native pairs, detail crops, thumbnail comparisons and final sheets were visually inspected.
+
+A normal input-only Lava Challenge run completed 3,600 physics ticks at 120 Hz, scored 755 and retained at most three Acts, with zero fallback builds. Its timing values are not used as a performance comparison. An isolated export of committed base `afb75de` plus only this pass's scoped source/tests also passed a fresh import, 603 focused checks and one valid bake for each changed theme. This checks independence from separately owned local artwork; it is not substituted for the selected-art capture source.
+
+One initial Traversal Prototype run failed because its separate test fixture bake predated the concurrent rendering-policy fingerprint change. Rebuilding that fixture restored all 20 checks; no assertion was weakened. The full Endless baker completed with exit code zero and emitted one `RendererDummy::DummyMesh` allocation diagnostic at shutdown, matching a pre-pass diagnostic preserved in earlier regression logs. Subsequent disk audits passed. Earlier restricted headless runs retain Windows certificate diagnostics; selected Casino raw-image warnings and intentional negative-fixture/archive errors remain distinguished from assertion failures. Final graphical capture logs contain no script or engine errors.

@@ -24,6 +24,7 @@ static func counts(mesh: Mesh) -> Dictionary:
 
 static func add(target: Dictionary, mesh: Mesh, multiplier: int, shadow: int) -> void:
  var size := counts(mesh)
+ target.mesh_nodes += 1
  target.mesh_instances += multiplier
  target.vertices += size.vertices * multiplier
  target.triangles += size.triangles * multiplier
@@ -33,7 +34,7 @@ static func add(target: Dictionary, mesh: Mesh, multiplier: int, shadow: int) ->
   target.shadow_only_triangles += size.triangles * multiplier
 
 static func empty() -> Dictionary:
- return {"vertices": 0, "triangles": 0, "shadow_triangles": 0, "shadow_only_triangles": 0, "mesh_instances": 0}
+ return {"vertices": 0, "triangles": 0, "shadow_triangles": 0, "shadow_only_triangles": 0, "mesh_instances": 0, "mesh_nodes": 0}
 
 static func tree_counts(node: Node, convert := false) -> Dictionary:
  var total := empty()
@@ -82,12 +83,18 @@ static func recipe_counts(recipe: Resource) -> Dictionary:
  return total
 
 func run() -> void:
+ var selected: Array = Themes.IDS.duplicate()
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--output="): output = argument.trim_prefix("--output=")
   if argument.begins_with("--act="): act = argument.trim_prefix("--act=")
+  if argument.begins_with("--themes="): selected = Array(argument.trim_prefix("--themes=").split(","))
+ if selected.is_empty() or not selected.all(func(id: String): return id in Themes.IDS):
+  push_error("Density audit requires registered themes.")
+  quit(1)
+  return
  var report := {"act": act, "themes": {}, "complete": true}
  var document: Resource = Document.load_document(act).document
- for theme: String in Themes.IDS:
+ for theme: String in selected:
   var p := Presentation.new()
   p.set_theme_definition(Themes.create(theme))
   var variants := {}

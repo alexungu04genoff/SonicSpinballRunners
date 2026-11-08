@@ -1,5 +1,7 @@
 # Eight-theme production identity review
 
+The newer [stronger-signature review](signature-20261108/README.md) builds on this shared-era pass. It includes Chemical/Ice/Lava changes, multiple gameplay-camera views, native pairs, and label-free color/grayscale thumbnails. The first-pass history and evidence below are preserved.
+
 Final review: **2026-11-08**, against baseline `6a723e68`. See [the audit, changes and verification](../THEME_IDENTITY.md). These are actual Prototype captures with validated disk bakes, current selected artwork and matching Act/camera/atmosphere/settings. The commit preserves separately owned uncommitted artwork; the capture provenance records that dependency.
 
 ## Four calibration themes

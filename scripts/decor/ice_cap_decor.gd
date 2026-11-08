@@ -146,8 +146,11 @@ func build_variant(variant: String) -> Node3D:
   "glacier_crown":
    box(root, "deep", Vector3(0, 0.09, 0), Vector3(3.0, 0.18, 1.0))
    piece(root, "sphere", "snow", Vector3(0, 0.19, 0), Vector3(1.48, 0.12, 0.48))
-   for i in 7:
-    crystal(root, Vector3((i - 3) * 0.36, 0.20, sin(i * 2.0) * 0.08), 2.15 - abs(i - 3) * 0.45, 0.19, (3 - i) * 0.09, i % 2 == 0)
+   # Three broad blades form one crown, instead of a row of seven thin shards.
+   # The deep central prism remains legible when an authored slot is edge-on.
+   crystal(root, Vector3(0, 0.20, 0), 2.15, 0.53, 0.0)
+   for side: int in [-1, 1]:
+    crystal(root, Vector3(side * 0.62, 0.20, 0), 1.45, 0.30, side * -0.32, false)
   "frozen_bridge":
    box(root, "deep", Vector3(0, 0.07, 0), Vector3(3.0, 0.14, 1.0))
    arch(root, Vector3(0, 0.14, 0), 2.7, 1.22, 0.65)

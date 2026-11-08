@@ -1,0 +1,29 @@
+[
+  {
+    "scale": 1,
+    "width": 660,
+    "source": "chemical_plant-edge",
+    "y": 260,
+    "name": "vessel",
+    "x": 780,
+    "height": 740
+  },
+  {
+    "scale": 1,
+    "width": 700,
+    "source": "ice_cap-hero",
+    "y": 0,
+    "name": "crown",
+    "x": 580,
+    "height": 900
+  },
+  {
+    "scale": 1,
+    "width": 700,
+    "source": "lava_reef-hero",
+    "y": 0,
+    "name": "caldera",
+    "x": 580,
+    "height": 900
+  }
+]

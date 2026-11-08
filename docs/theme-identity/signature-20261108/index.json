@@ -1,0 +1,325 @@
+[
+  {
+    "pixel_scale": 1,
+    "pair": "green_hill-spawn-pair.png",
+    "originals": [
+      {
+        "sha256": "04C3FAD02EA8D0D03DB88B0EC7D608D58CB4E3D50687FD6464E66DAE4FA23180",
+        "path": "green_hill-spawn-before.png",
+        "source": "before-validated/green_hill.png"
+      },
+      {
+        "sha256": "0F3EA77C16605E24562E6181BB1FAEB65B4C563E58A572C61C765615CC30177A",
+        "path": "green_hill-spawn-after.png",
+        "source": "after/green_hill.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "chemical_plant-spawn-pair.png",
+    "originals": [
+      {
+        "sha256": "0CC15AFAC156CDF866D2D47E6D2758E066E64BC3CFE636A8B0032C89C93CE6FA",
+        "path": "chemical_plant-spawn-before.png",
+        "source": "before-validated/chemical_plant.png"
+      },
+      {
+        "sha256": "0BFCB0D0AF693E2329D121F81BBEDB9D03E99E1BD1D7021DB61FF8AE7C7C7B96",
+        "path": "chemical_plant-spawn-after.png",
+        "source": "after/chemical_plant.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "rooftop_run-spawn-pair.png",
+    "originals": [
+      {
+        "sha256": "4A6D89C480C3F4A1AF223CD86EB33DD29FB37FBFFA5953D432FE5EC3FCF4264F",
+        "path": "rooftop_run-spawn-before.png",
+        "source": "before-validated/rooftop_run.png"
+      },
+      {
+        "sha256": "9FFA9F6BE4E0625AA1BB9EBC1C617695150AD6FAB4BD363A8F0418BD6EE929AE",
+        "path": "rooftop_run-spawn-after.png",
+        "source": "after/rooftop_run.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "casino_night-spawn-pair.png",
+    "originals": [
+      {
+        "sha256": "AFD6F05C47D12F2B416266EB0637E46CAB48B2D05158BE97687B237F79750FF2",
+        "path": "casino_night-spawn-before.png",
+        "source": "before-validated/casino_night.png"
+      },
+      {
+        "sha256": "B2CB01AE3623EB2BFAC6D287B592B79F116AA98F621A4CA05DB05632A51CA9D4",
+        "path": "casino_night-spawn-after.png",
+        "source": "after/casino_night.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "sky_sanctuary-spawn-pair.png",
+    "originals": [
+      {
+        "sha256": "D51EF3C8C758C39B17AF2B44797A2E78D8501E9F5EBDB5A7043FCA83F739988B",
+        "path": "sky_sanctuary-spawn-before.png",
+        "source": "before-validated/sky_sanctuary.png"
+      },
+      {
+        "sha256": "E37E014DC390F937E049C431948EA26D05D9BAAB833404D8D39958B26FC6C3F5",
+        "path": "sky_sanctuary-spawn-after.png",
+        "source": "after/sky_sanctuary.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "ice_cap-spawn-pair.png",
+    "originals": [
+      {
+        "sha256": "EB95FA76ED68F03B794B2E008E70CDE176ACDDAEA330CDCFB882A377D173937F",
+        "path": "ice_cap-spawn-before.png",
+        "source": "before-validated/ice_cap.png"
+      },
+      {
+        "sha256": "E99AE3AEFDBBDA930E03F5ACC0B3689DAC0BB86065C95788DD16BE7D80D7235C",
+        "path": "ice_cap-spawn-after.png",
+        "source": "after/ice_cap.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "lava_reef-spawn-pair.png",
+    "originals": [
+      {
+        "sha256": "DCE2E4372F1B4CED4D48F9F3630FEF1590D3CC9D78FCAEF4774C73D282F2BCBA",
+        "path": "lava_reef-spawn-before.png",
+        "source": "before-validated/lava_reef.png"
+      },
+      {
+        "sha256": "3EC97F1CD146766D1239BE89B49BB832A6063D1F10FA8346C69A7CC0F42DDC9B",
+        "path": "lava_reef-spawn-after.png",
+        "source": "after/lava_reef.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "aquarium_park-spawn-pair.png",
+    "originals": [
+      {
+        "sha256": "48E4E8D6735902DD2C4BA67AE2117D83F5A390769DC797EF346EA45F6B4922E6",
+        "path": "aquarium_park-spawn-before.png",
+        "source": "before-validated/aquarium_park.png"
+      },
+      {
+        "sha256": "116A9EAC8E2BFAFBA37FDDE79C78433F1AF5BD3E2BC1F056B1AAAB9D01FE77A9",
+        "path": "aquarium_park-spawn-after.png",
+        "source": "after/aquarium_park.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "green_hill-edge-pair.png",
+    "originals": [
+      {
+        "sha256": "D75188711F75924F20D74E393E54649014538E6405005B4BF2D80EDCD5AADF07",
+        "path": "green_hill-edge-before.png",
+        "source": "before-edge/green_hill.png"
+      },
+      {
+        "sha256": "29444AA6876B91F2621B8B13B6F4D8C7CBE1A669BA412D1B14CBACEAC01AF98F",
+        "path": "green_hill-edge-after.png",
+        "source": "after-edge/green_hill.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "chemical_plant-edge-pair.png",
+    "originals": [
+      {
+        "sha256": "4919CF1B7ED7B443553393D2A447F6BDB4042F6C9451E2590C1D740EA39628A6",
+        "path": "chemical_plant-edge-before.png",
+        "source": "before-edge/chemical_plant.png"
+      },
+      {
+        "sha256": "D79F44981E25E02BE3C243F93EC6FB16D6D0D2B48C2D013C902B19A9C8C9FC1E",
+        "path": "chemical_plant-edge-after.png",
+        "source": "after-edge/chemical_plant.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "rooftop_run-edge-pair.png",
+    "originals": [
+      {
+        "sha256": "E69E1A91704FC6BAC1C25853ACD91FB6770DBA842630DD0A9B0DFEA7507499D1",
+        "path": "rooftop_run-edge-before.png",
+        "source": "before-edge/rooftop_run.png"
+      },
+      {
+        "sha256": "A53CFB27C9F7B994D9EB641608B7028DF8B805077B35B6B78A2D351024B2A9C6",
+        "path": "rooftop_run-edge-after.png",
+        "source": "after-edge/rooftop_run.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "casino_night-edge-pair.png",
+    "originals": [
+      {
+        "sha256": "87C1B2334180A7B99743C9E841475DEC1F9CC5E1B9750FF92465EAE714DFD758",
+        "path": "casino_night-edge-before.png",
+        "source": "before-edge/casino_night.png"
+      },
+      {
+        "sha256": "5858806D5EB263F8B2AF43460FB4DDFE683D2BC4AB8678E092774FDDEB92A3B5",
+        "path": "casino_night-edge-after.png",
+        "source": "after-edge/casino_night.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "sky_sanctuary-edge-pair.png",
+    "originals": [
+      {
+        "sha256": "DB806E9560223C9145EF022C000B28C41E3B012CAE31284B685B4F78CF911B89",
+        "path": "sky_sanctuary-edge-before.png",
+        "source": "before-edge/sky_sanctuary.png"
+      },
+      {
+        "sha256": "8559596DB8474C4E004C9AB82B79F430BB4C39D02C3C4B403431B2D6368096ED",
+        "path": "sky_sanctuary-edge-after.png",
+        "source": "after-edge/sky_sanctuary.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "ice_cap-edge-pair.png",
+    "originals": [
+      {
+        "sha256": "B736433B8A400F05DE4E8C35454982ED096D75FEA1A8EF510B5BD4BDCE6095B4",
+        "path": "ice_cap-edge-before.png",
+        "source": "before-edge/ice_cap.png"
+      },
+      {
+        "sha256": "9D7D8A06EF486D3B5C93F00C5A471973FF876D27980FF83EEA3F2878C8F6DA47",
+        "path": "ice_cap-edge-after.png",
+        "source": "after-edge/ice_cap.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "lava_reef-edge-pair.png",
+    "originals": [
+      {
+        "sha256": "2B61F21C67CFD049908215F5F5638E82A7FC0D99E63F32DB20E5BA0AAC48F45A",
+        "path": "lava_reef-edge-before.png",
+        "source": "before-edge/lava_reef.png"
+      },
+      {
+        "sha256": "6EB619F4C319D1BA42D73BBF4D8BC142E4D067DEE162AC3623B009085D6B44A8",
+        "path": "lava_reef-edge-after.png",
+        "source": "after-edge/lava_reef.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "aquarium_park-edge-pair.png",
+    "originals": [
+      {
+        "sha256": "690C0D26CEA36E6685F89244C2D74C8D954E253C3C43FB78FF533CE433C3C49D",
+        "path": "aquarium_park-edge-before.png",
+        "source": "before-edge/aquarium_park.png"
+      },
+      {
+        "sha256": "2587D8868F2418B05796C5CAA85B8211906B7D40AF5DE89D4DBE31A3DEFA6B6B",
+        "path": "aquarium_park-edge-after.png",
+        "source": "after-edge/aquarium_park.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "chemical_plant-hero-pair.png",
+    "originals": [
+      {
+        "sha256": "85478E3F2D06D65C01FD7CB11D593ED4E2C6693CD172C783949447BFBA752CE6",
+        "path": "chemical_plant-hero-before.png",
+        "source": "before-hero/chemical_plant.png"
+      },
+      {
+        "sha256": "5D2467F33ABE4367F1E86B83FD42DBD34EC6A0D1E69DA8228B9065058CEF350B",
+        "path": "chemical_plant-hero-after.png",
+        "source": "after-hero/chemical_plant.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "ice_cap-hero-pair.png",
+    "originals": [
+      {
+        "sha256": "6CCED1EBEE11587D931F0FCC801F2156CC902A419012115C6EB6E5E9BB87522E",
+        "path": "ice_cap-hero-before.png",
+        "source": "before-hero/ice_cap.png"
+      },
+      {
+        "sha256": "61C5273FFB3804A7211C1BA48D39575D8AC10F8A94EC2B7541A2A0D4ABE67256",
+        "path": "ice_cap-hero-after.png",
+        "source": "after-hero/ice_cap.png"
+      }
+    ],
+    "header_height": 60
+  },
+  {
+    "pixel_scale": 1,
+    "pair": "lava_reef-hero-pair.png",
+    "originals": [
+      {
+        "sha256": "08F1503733C9F5AA7E712BA95335B94453FA5D238610A3F32C82C24E1D63CFF0",
+        "path": "lava_reef-hero-before.png",
+        "source": "before-hero/lava_reef.png"
+      },
+      {
+        "sha256": "CE4113FC06ECE2E7FCF186F3F142D975C1A4BA8387343DF2DF07EFE16AA747E2",
+        "path": "lava_reef-hero-after.png",
+        "source": "after-hero/lava_reef.png"
+      }
+    ],
+    "header_height": 60
+  }
+]
