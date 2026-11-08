@@ -16,6 +16,9 @@ const ReviewPanel = preload("res://scripts/act_editor/act_review_panel.gd")
 const EXAMPLE_PATH := "res://data/acts/curve_garden.tres"
 const DEFAULT_ACT_DIRECTORY := "res://data/acts"
 const HISTORY_LIMIT := 100
+const SelectionClipboard = preload("res://scripts/act_editor/selection_clipboard.gd")
+var _selection_clipboard: Dictionary = {}
+var _paste_count := 0
 
 var document: Resource
 var canvas: Control
@@ -654,6 +657,10 @@ func _build_ui() -> void:
 	handedness_field.item_selected.connect(_change_handedness)
 	object_properties.add_child(handedness_field)
 	_button(object_properties, "duplicate", "Duplicate", duplicate_selected, "Ctrl+D • duplicate selected terrain, gameplay object or ring trail")
+	var clipboard_buttons := HBoxContainer.new()
+	object_properties.add_child(clipboard_buttons)
+	_button(clipboard_buttons, "copy", "Copy", copy_selected, "Ctrl+C • copy selected terrain, gameplay, decor and ring patterns")
+	_button(clipboard_buttons, "paste", "Paste", paste_selected, "Ctrl+V • paste with fresh identities; copied internal switch links follow their new objects")
 	mechanics_properties = HFlowContainer.new()
 	mechanics_properties.add_theme_constant_override("h_separation", 10)
 	inspector.add_child(mechanics_properties)
@@ -670,7 +677,7 @@ func _build_ui() -> void:
 	status_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	column.add_child(status_label)
 	var help := Label.new()
-	help.text = "Ctrl-click terrain multi-select   R rotate   H / V terrain flip   Ctrl+D duplicate   Alt free move / cycle overlaps   Wheel zoom   Middle-drag pan"
+	help.text = "Ctrl-click multi-select   Ctrl+C / Ctrl+V copy / paste   Shift+wheel size   Alt free move / cycle overlaps   Wheel zoom   Middle-drag pan"
 	help.add_theme_font_size_override("font_size", 12)
 	help.add_theme_color_override("font_color", Color("8aa5ba"))
 	help.visible = false
@@ -929,7 +936,7 @@ func _select_decor_variant(index: int) -> void:
 		_refresh()
 
 func _commit_decor_position() -> void:
-	if _refreshing or canvas.selected_decor_index < 0: return
+	if _refreshing or canvas.selected_decor_index < 0 or _active_decor().is_empty(): return
 	var position: Vector2 = _active_decor().position
 	for axis in 2:
 		var value := decor_position_fields[axis].text.strip_edges()
@@ -1513,6 +1520,39 @@ func duplicate_selected() -> void:
 	canvas.select_gameplay(document.gameplay_objects.size() - 1)
 	_refresh()
 
+func copy_selected() -> void:
+	if composite_preview_active: return
+	var copied := SelectionClipboard.capture(document, canvas.object_selection())
+	if copied.is_empty():
+		_set_status("Select terrain, gameplay objects, decor or ring patterns to copy.")
+		return
+	_selection_clipboard = copied
+	_paste_count = 0
+	buttons.paste.disabled = false
+	_set_status("Copied %d items. Ctrl+V pastes a fresh selection; complete copied switch banks keep their internal links." % copied.count)
+
+func paste_selected() -> void:
+	if composite_preview_active or _selection_clipboard.is_empty(): return
+	var candidate: Resource = document.copy_document()
+	var offset: Vector2 = Vector2.ONE * float(document.cell_size) * canvas.terrain_snap_step * (_paste_count + 1)
+	var result := SelectionClipboard.append_to(candidate, _selection_clipboard, offset)
+	if not result.error.is_empty():
+		_set_status("Paste unchanged: " + result.error)
+		return
+	canvas.cancel_gesture()
+	_record_edit()
+	document.placements = candidate.placements
+	document.gameplay_objects = candidate.gameplay_objects
+	document.decor_slots = candidate.decor_slots
+	document.ring_trails = candidate.ring_trails
+	document.switch_banks = candidate.switch_banks
+	_paste_count += 1
+	canvas.show_gameplay = true
+	canvas.show_decor = true
+	canvas.set_object_selection(result.selection)
+	_refresh()
+	_set_status("Pasted %d items · drag to move · Alt frees snapping · Ctrl+Z undoes the whole paste" % _selection_clipboard.count)
+
 func rotate_active() -> void:
 	if not _active_decor().is_empty():
 		_set_decor_property("rotation_degrees", float(_active_decor().rotation_degrees) + 15.0)
@@ -1952,6 +1992,8 @@ func _refresh() -> void:
 	gameplay_visible_field.set_pressed_no_signal(canvas.show_gameplay)
 	for button: Button in buttons.values():
 		button.disabled = false
+	buttons.copy.disabled = composite_preview_active or canvas.selection_count() == 0
+	buttons.paste.disabled = composite_preview_active or _selection_clipboard.is_empty()
 	title_field.text = document.title
 	cell_size_field.set_value_no_signal(document.cell_size)
 	grid_width_field.set_value_no_signal(document.grid_size.x)
@@ -2179,6 +2221,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			KEY_D:
 				if typing: return
 				duplicate_selected()
+			KEY_C:
+				if typing: return
+				copy_selected()
+			KEY_V:
+				if typing: return
+				paste_selected()
 			_: return
 	elif typing:
 		return
@@ -2263,11 +2311,10 @@ func _refresh_mechanics_properties() -> void:
 			else:
 				item.position = at
 				_refresh())
-	if not canvas.gameplay_brush.is_empty():
-		var hint := Label.new()
-		hint.text = "Preview only · click the map to place.\nShift + wheel resizes supported objects."
-		hint.add_theme_font_size_override("font_size", 11)
-		mechanics_properties.add_child(hint)
+	var hint := Label.new()
+	hint.text = ("Preview only · click the map to place.\n" if not canvas.gameplay_brush.is_empty() else "") + "Shift + wheel: " + Objects.size_label(item.type) + "\nAlt: free placement / movement"
+	hint.add_theme_font_size_override("font_size", 11)
+	mechanics_properties.add_child(hint)
 	if item.type in ["left_flipper", "right_flipper", "round_bumper", "triangle_bumper"]:
 		var baseline := Label.new()
 		var profile: Resource = preload("res://data/balanced.tres")
@@ -2393,7 +2440,7 @@ func _refresh_mechanics_properties() -> void:
 		detail_label.text = "Bright rubber is the active face. Rotation aims the fixed-speed launch; back and ends rebound passively."
 	if item.type == "drop_target_bank":
 		detail_label.text = "Drag a row to place a Bank. Move/rotate as one object. Targets drop independently; reset delay 0 keeps the Bank down."
-	if item.type == "spring":
+	if not item.is_empty():
 		var profile := OptionButton.new()
 		profile.add_item("Arc: Balanced")
 		profile.add_item("Arc: Floaty")
@@ -2403,7 +2450,7 @@ func _refresh_mechanics_properties() -> void:
 			canvas.trajectory_gravity_scale = selected_profile.gravity_scale
 			canvas.queue_redraw())
 		mechanics_properties.add_child(profile)
-		detail_label.text = "Instant launch · Color is cosmetic · Arc: 2 seconds, no collisions / steering / modifiers · Dots every 0.25 s"
+		if item.type == "spring": detail_label.text = "Instant launch · Color is cosmetic · Guide follows launch speed and selected profile · No later collisions or steering"
 	if item.type == "magnetic_field":
 		var mode := OptionButton.new()
 		mode.add_item("Attract")
@@ -2653,28 +2700,75 @@ func verify_document() -> void:
 	verify_dialog.popup_centered(Vector2i(720, 360))
 
 func _scale_preview(direction: float) -> void:
-	var active := _active_gameplay()
-	if active.get("type") == "buzz_bomber":
-		var props := Objects.properties(active)
-		var endpoints := Vector2(clampf(float(props.patrol_left) - direction * 10.0, -2000.0, 0.0), clampf(float(props.patrol_right) + direction * 10.0, 0.0, 2000.0))
-		if canvas.gameplay_brush.is_empty():
-			set_enemy_patrol(canvas.selected_gameplay_index, endpoints)
-		else:
-			props.patrol_left = endpoints.x
-			props.patrol_right = endpoints.y
-			active.properties = props
-			_refresh()
-		_set_status("Buzz patrol: %.1f px wide · Shift + wheel changes length; model size stays unchanged" % (endpoints.y - endpoints.x))
+	if composite_preview_active: return
+	if not canvas._rail_draft.is_empty():
+		canvas._rail_draft["properties"] = Objects.resized_properties(canvas._rail_draft, direction)
+		canvas.queue_redraw()
 		return
-	if canvas.gameplay_brush.is_empty(): return
-	var item: Dictionary = canvas.gameplay_brush
-	var key: String = {"one_way_gate": "width", "spinner": "width", "magnetic_field": "radius", "round_bumper": "scale", "triangle_bumper": "scale", "switch_target": "scale"}.get(item.type, "")
-	if key.is_empty(): return
-	var limits: Array = Objects.property_limits(item.type)[key]
-	var step := 0.1 if key == "scale" else 5.0
-	var value := clampf(float(Objects.properties(item)[key]) + step * direction, limits[0], limits[1])
-	set_gameplay_property(key, value)
-	_set_status("Preview %s: %s %.2f · Shift + wheel resizes; click to place" % [Objects.get_definition(item.type).label, key, value])
+	if canvas._bank_dragging or canvas._patrol_dragging or canvas._rail_drag >= 0 or canvas._teleporter_index >= 0 or canvas._group_dragging or canvas._decor_drag_index >= 0 or canvas._gameplay_drag_index >= 0 or canvas._drag_index >= 0 or not canvas._ring_mode.is_empty():
+		_set_status("Finish the current drag before resizing with Shift + wheel.")
+		return
+	if not canvas.gameplay_brush.is_empty():
+		var item: Dictionary = canvas.gameplay_brush
+		item["properties"] = Objects.resized_properties(item, direction)
+		_refresh()
+		_set_status("%s · Shift + wheel changes %s · Alt frees placement" % [Objects.get_definition(item.type).label, Objects.size_label(item.type)])
+		return
+	if not canvas.decor_brush.is_empty():
+		_set_decor_property("scale", clampf(float(canvas.decor_brush.get("scale", 1.0)) + direction * 0.01, 0.85, 1.15))
+		return
+	if not canvas.brush.is_empty():
+		_transform_active("full_size" if direction > 0 else "half_size")
+		return
+	if canvas.marker_tool == "goal" or canvas.selected_marker == "goal":
+		goal_size_field.value = clampf(document.goal_diameter_cells + direction * 0.05, 0.25, 8.0)
+		return
+	if not canvas.selected_connector.is_empty():
+		var kind: String = canvas.selected_connector
+		var span: Dictionary = document.get_connector(kind)
+		set_connector(kind, span.start_x, clampi(span.width + int(direction), 1, document.grid_size.x - span.start_x))
+		return
+	if canvas.ring_tool:
+		if canvas.ring_kind == "ellipse":
+			canvas.ring_radii = (canvas.ring_radii * pow(1.1, direction)).clamp(Vector2.ONE, Vector2.ONE * 10000.0)
+			_refresh()
+		else: _change_ring_spacing(clampf(canvas.ring_spacing_cells + direction * 0.05, 0.1, 4.0))
+		return
+	if canvas.selection_count() == 0:
+		_set_status("Select an object or brush to resize. Spawn and Activation are position markers; connectors use whole cells.")
+		return
+	var candidate: Resource = document.copy_document()
+	for index: int in canvas.selected_gameplay_indices:
+		candidate.gameplay_objects[index]["properties"] = Objects.resized_properties(candidate.gameplay_objects[index], direction)
+	for index: int in canvas.selected_decor_indices:
+		var slot: Dictionary = candidate.decor_slots[index]
+		slot["scale"] = clampf(float(slot.get("scale", 1.0)) + direction * 0.01, 0.85, 1.15)
+		slot.erase("placement_source")
+	for index: int in canvas.selected_ring_indices:
+		var trail: Dictionary = candidate.ring_trails[index]
+		var center: Vector2 = (trail.start + trail.end) * 0.5
+		var extent: Vector2 = (trail.end - trail.start) * 0.5 * pow(1.1, direction)
+		trail.start = center - extent
+		trail.end = center + extent
+		# A one-ring trail has no extent; its wheel control adjusts future spacing.
+		if extent.is_zero_approx(): trail.spacing = maxf(1.0, float(trail.spacing) + direction * 2.5)
+	for index: int in canvas.selected_indices:
+		var piece: Dictionary = candidate.placements[index]
+		piece["terrain_scale"] = 1.0 if direction > 0 else 0.5
+	var errors: PackedStringArray = candidate.validation_errors()
+	if not errors.is_empty():
+		_set_status("Size unchanged: " + errors[0])
+		return
+	if candidate.fingerprint() == document.fingerprint():
+		_set_status("Size limit reached. Terrain supports 0.5× / 1×; other objects use their inspector limits.")
+		return
+	_record_edit()
+	document.placements = candidate.placements
+	document.gameplay_objects = candidate.gameplay_objects
+	document.decor_slots = candidate.decor_slots
+	document.ring_trails = candidate.ring_trails
+	_refresh()
+	_set_status("Resized selection · anchors preserved · Ctrl+Z undoes · Shift + wheel adjusts size")
 
 
 func _bake_current() -> void:

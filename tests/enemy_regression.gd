@@ -81,17 +81,17 @@ func run() -> void:
  var zoom_before: float = editor.canvas._cell_pixels
  pointer(Vector2(200, 300), true, MOUSE_BUTTON_WHEEL_UP, true)
  var wheel_props: Dictionary = editor.document.gameplay_objects[0].properties
- check(wheel_props.patrol_left == -10 and wheel_props.patrol_right == 10 and wheel_props.scale == 1 and editor.canvas._cell_pixels == zoom_before, "Shift-wheel widens a selected patrol without changing model scale or zoom")
+ check(wheel_props.patrol_left == 0 and wheel_props.patrol_right == 0 and is_equal_approx(wheel_props.scale, 1.1) and editor.canvas._cell_pixels == zoom_before, "Shift-wheel sizes the selected enemy without changing its patrol or zoom")
  editor.undo()
- check(editor.document.gameplay_objects[0].properties.patrol_left == 0 and editor.document.gameplay_objects[0].properties.patrol_right == 0, "One wheel notch is one Undo step")
+ check(editor.document.gameplay_objects[0].properties.scale == 1.0 and editor.document.gameplay_objects[0].properties.patrol_right == 0, "One wheel notch is one Undo step")
  editor.redo()
- check(editor.document.gameplay_objects[0].properties.patrol_right == 10, "Redo restores the wheel patrol edit")
+ check(is_equal_approx(editor.document.gameplay_objects[0].properties.scale, 1.1), "Redo restores the wheel size edit")
  for i in 2: pointer(Vector2(200, 300), true, MOUSE_BUTTON_WHEEL_DOWN, true)
- check(editor.document.gameplay_objects[0].properties.patrol_left == 0 and editor.document.gameplay_objects[0].properties.patrol_right == 0, "Wheel shortening stops at a stationary zero-length patrol")
+ check(is_equal_approx(editor.document.gameplay_objects[0].properties.scale, 0.9) and editor.document.gameplay_objects[0].properties.patrol_right == 0, "Wheel sizing leaves a stationary patrol unchanged")
  editor.choose_gameplay("buzz_bomber")
  var object_count: int = editor.document.gameplay_objects.size()
  pointer(Vector2(400, 300), true, MOUSE_BUTTON_WHEEL_UP, true)
- check(editor.canvas.gameplay_brush.properties.patrol_left == -70 and editor.canvas.gameplay_brush.properties.patrol_right == 70 and editor.document.gameplay_objects.size() == object_count, "Shift-wheel also adjusts the placement brush without placing an enemy")
+ check(editor.canvas.gameplay_brush.properties.patrol_left == -60 and editor.canvas.gameplay_brush.properties.patrol_right == 60 and is_equal_approx(editor.canvas.gameplay_brush.properties.scale, 1.1) and editor.document.gameplay_objects.size() == object_count, "Shift-wheel also sizes the brush without placing an enemy or changing its patrol")
  editor.free()
 
  game = load("res://scenes/playground.tscn").instantiate()

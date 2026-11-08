@@ -158,6 +158,9 @@ var _gameplay_drag_moved := false
 var _drop_gameplay_brush: Dictionary = {}
 var _pending_cycle_target: Dictionary = {}
 var _alt_held := false
+var _handle_last_pointer := Vector2.ZERO
+var _guide_cache_key := ""
+var _guide_cache: Array[Dictionary] = []
 var _marker_drag_kind := ""
 var _marker_drag_start_pointer := Vector2.ZERO
 var _marker_drag_last_pointer := Vector2.ZERO
@@ -448,7 +451,9 @@ func _draw_decor_slot(slot: Dictionary, selected: bool, ghost: bool) -> void:
  var label: String = "◆" if slot.slot_type == "landmark" else slot.slot_type.left(1).to_upper()
  draw_string(ThemeDB.fallback_font, center + Vector2(-3, 3), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("101a25"))
 
-func _update_decor_drag(pointer: Vector2, alt: bool) -> void:
+func _update_decor_drag(pointer: Vector2, alt: bool, force := false) -> void:
+ if not force and pointer.distance_squared_to(_handle_last_pointer) <= POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS: return
+ _handle_last_pointer = pointer
  var delta := screen_to_local_pixels(pointer) - _decor_drag_start
  if not _decor_drag_moved and delta.length() * _cell_pixels / _local_cell_size() < 3: return
  _decor_drag_moved = true
@@ -724,12 +729,15 @@ func _draw() -> void:
    Shapes.set_placement_position(selected, _drag_anchor)
   _draw_piece(selected, true, false)
   _draw_footprint(selected, Color(SELECTION_COLOR, 0.55))
+  if selection_count() == 1 and not preview_active:
+   _draw_launch_range({"type": "terrain", "placement": selected})
  var active_brush := _drop_brush if not _drop_brush.is_empty() else brush
  if not preview_active and (_hovering or not _drop_brush.is_empty()) and _inside_grid(_cursor_position) and _valid_stamp(active_brush):
   var ghost := active_brush.duplicate(true)
   Shapes.set_placement_position(ghost, legal_anchor_for(ghost, screen_to_grid(_cursor_position), _alt_held))
   _draw_piece(ghost, false, true)
   _draw_footprint(ghost, Color(0.75, 0.91, 1.0, 0.5))
+  _draw_launch_range({"type": "terrain", "placement": ghost})
  _draw_gameplay_objects()
  _draw_rings()
  _draw_decor()
@@ -953,7 +961,6 @@ func _draw_gameplay_objects() -> void:
   if index == _gameplay_drag_index and _gameplay_drag_moved:
    point = _gameplay_drag_position
   ObjectPreview.draw_object(self, placement, local_pixels_to_screen(point), scale_factor, _local_cell_size(), selected_gameplay_indices.has(index))
-  if placement.type == "spring" and selected_gameplay_indices.has(index) and selection_count() == 1: _draw_spring_trajectory(placement)
  if selection_count() == 1 and selected_gameplay_index >= 0 and selected_gameplay_index < objects.size():
   var placement: Dictionary = objects[selected_gameplay_index]
   var point: Vector2 = _gameplay_drag_position if selected_gameplay_index == _gameplay_drag_index and _gameplay_drag_moved else placement.position
@@ -961,34 +968,26 @@ func _draw_gameplay_objects() -> void:
   if _patrol_dragging and selected_gameplay_index == _patrol_index: shown = _patrol_preview.duplicate(true)
   if selected_gameplay_index == _teleporter_index: shown = _teleporter_preview.duplicate(true)
   shown.position = point
-  _draw_launch_range(shown)
   if _rail_drag >= 0: shown.properties.points = _rail_preview
+  _draw_launch_range(shown)
   ObjectPreview.draw_object(self, shown, local_pixels_to_screen(point), scale_factor, _local_cell_size(), true)
  if _bank_dragging:
+  _draw_launch_range(_bank_preview)
   ObjectPreview.draw_object(self, _bank_preview, local_pixels_to_screen(_bank_preview.position), scale_factor, _local_cell_size(), true, true)
  if not _rail_draft.is_empty():
+  _draw_launch_range(_rail_draft)
   ObjectPreview.draw_object(self, _rail_draft, local_pixels_to_screen(_rail_draft.position), scale_factor, _local_cell_size(), true, true)
  if _patrol_dragging and _patrol_index < 0:
+  _draw_launch_range(_patrol_preview)
   ObjectPreview.draw_object(self, _patrol_preview, local_pixels_to_screen(_patrol_preview.position), scale_factor, _local_cell_size(), true, true)
  var active_brush := _drop_gameplay_brush if not _drop_gameplay_brush.is_empty() else gameplay_brush
  if not _bank_dragging and not _patrol_dragging and _rail_draft.is_empty() and (_hovering or not _drop_gameplay_brush.is_empty()) and _inside_grid(_cursor_position) and _valid_gameplay_stamp(active_brush):
   var point := legal_gameplay_position(screen_to_local_pixels(_cursor_position), _alt_held)
   ObjectPreview.draw_object(self, active_brush, local_pixels_to_screen(point), scale_factor, _local_cell_size(), false, true)
-  if active_brush.type == "spring":
-   var shown := active_brush.duplicate(true)
-   shown.position = point
-   _draw_spring_trajectory(shown)
-  elif active_brush.type in ["left_flipper", "right_flipper", "round_bumper", "triangle_bumper"]:
-   var shown := active_brush.duplicate(true)
-   shown.position = point
-   _draw_launch_range(shown)
+  var shown := active_brush.duplicate(true)
+  shown.position = point
+  _draw_launch_range(shown)
  _draw_bank_links()
-
-func _draw_spring_trajectory(item: Dictionary) -> void:
- var points := Objects.spring_trajectory(item, trajectory_gravity_scale, Objects.Dimensions.BALL_RADIUS_CELLS * _local_cell_size())
- for i in points.size(): points[i] = local_pixels_to_screen(points[i])
- draw_polyline(points, Color(1.0, 0.8, 0.3, 0.65), 1.5, true)
- for i in range(0, points.size(), 10): draw_circle(points[i], 2.5, Color("ffd24e"))
 
 func _draw_bank_links() -> void:
  var positions := {}
@@ -1163,8 +1162,7 @@ func _input(event: InputEvent) -> void:
   _alt_held = event.alt_pressed
  else:
   return
- if not _drop_gameplay_brush.is_empty():
-  queue_redraw()
+ queue_redraw()
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -1184,7 +1182,20 @@ func _gui_input(event: InputEvent) -> void:
   return
  if event is InputEventKey and event.keycode == KEY_ALT:
   _alt_held = event.pressed
-  if _group_dragging:
+  if _alt_held and (_teleporter_index >= 0 or _patrol_dragging or _rail_drag >= 0):
+   var motion := InputEventMouseMotion.new()
+   motion.position = _handle_last_pointer
+   motion.alt_pressed = true
+   if _teleporter_index >= 0: _teleporter_input(motion)
+   elif _patrol_dragging: _patrol_input(motion)
+   else: _rail_input(motion)
+  elif _alt_held and _decor_drag_index >= 0:
+   _update_decor_drag(_handle_last_pointer, true, true)
+  elif _alt_held and _drag_index >= 0 and _drag_moved:
+   _update_drag(_cursor_position, true, true)
+  elif _alt_held and _bank_dragging:
+   _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, legal_gameplay_position(screen_to_local_pixels(_cursor_position), true))
+  elif _group_dragging:
    if _alt_held: _update_group_drag(_cursor_position, true, true)
   elif not _ring_mode.is_empty():
    if _alt_held and _ring_moved: _update_ring_drag(_cursor_position, true, true)
@@ -1270,10 +1281,7 @@ func _gui_input(event: InputEvent) -> void:
     grab_focus()
    accept_event()
   elif event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
-   var selected_buzz: bool = selected_gameplay_index >= 0 and selected_gameplay_index < _gameplay_objects().size() and _gameplay_objects()[selected_gameplay_index].type == "buzz_bomber"
-   if event.shift_pressed and (gameplay_brush.get("type") == "buzz_bomber" or (gameplay_brush.is_empty() and selected_buzz)):
-    preview_scale_requested.emit(1.0 if event.button_index == MOUSE_BUTTON_WHEEL_UP else -1.0)
-   elif event.shift_pressed and not gameplay_brush.is_empty() and gameplay_brush.type in ["one_way_gate", "spinner", "switch_target", "magnetic_field", "round_bumper", "triangle_bumper"]:
+   if event.shift_pressed:
     preview_scale_requested.emit(1.0 if event.button_index == MOUSE_BUTTON_WHEEL_UP else -1.0)
    else:
     _zoom_at(event.position, 1.12 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0 / 1.12)
@@ -1284,11 +1292,14 @@ func _gui_input(event: InputEvent) -> void:
     _begin_primary(event.position, event.alt_pressed, event.ctrl_pressed or event.meta_pressed)
    else:
     if _bank_dragging:
-     _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed))
+     if event.position.distance_squared_to(_handle_last_pointer) > POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
+      _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed))
     elif _box_selecting:
      _box_end = event.position
     elif _group_dragging:
      _update_group_drag(event.position, event.alt_pressed)
+    elif _decor_drag_index >= 0:
+     _update_decor_drag(event.position, event.alt_pressed)
     elif not _ring_mode.is_empty():
      _update_ring_drag(event.position, event.alt_pressed)
     elif not _marker_drag_kind.is_empty():
@@ -1311,6 +1322,7 @@ func _gui_input(event: InputEvent) -> void:
    _view_origin += event.relative
    _view_adjusted = true
   elif _bank_dragging:
+   _handle_last_pointer = event.position
    _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed))
   elif _box_selecting:
    _box_end = event.position
@@ -1398,6 +1410,7 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
  if gameplay_brush.get("type") == "drop_target_bank":
   if _inside_grid(pointer):
    _bank_dragging = true
+   _handle_last_pointer = pointer
    _bank_start = legal_gameplay_position(screen_to_local_pixels(pointer), cycle_overlaps)
    _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, _bank_start)
   return
@@ -1491,6 +1504,7 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
  _pending_cycle_target = click_target
  if not target.is_empty():
   if target.kind == "decor":
+   _handle_last_pointer = pointer
    _decor_drag_index = target.index
    _decor_drag_start = screen_to_local_pixels(pointer)
    _decor_drag_original = document.decor_slots[target.index].position
@@ -1672,12 +1686,12 @@ func _finish_cycle_click() -> void:
  _select_hit_target(target)
 
 
-func _update_drag(pointer: Vector2, free_move: bool = false) -> void:
+func _update_drag(pointer: Vector2, free_move: bool = false, force := false) -> void:
  var placements := _placements()
  if _drag_index >= placements.size():
   cancel_gesture()
   return
- if pointer.distance_squared_to(_drag_last_pointer) <= POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
+ if not force and pointer.distance_squared_to(_drag_last_pointer) <= POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
   return
  _drag_last_pointer = pointer
  var delta := screen_to_grid(pointer) - _drag_start_pointer
@@ -1807,7 +1821,7 @@ func _end_gameplay_drag() -> void:
 
 func _set_gameplay_status(point: Vector2) -> void:
  var mode := "FREE MOVE" if _alt_held else "SNAP ON"
- _set_status("%s · Anchor (%.2f, %.2f) px · Alt frees gameplay position; terrain always snaps." % [mode, point.x, point.y])
+ _set_status("%s · Anchor (%.2f, %.2f) px · Alt frees placement · Shift + wheel resizes" % [mode, point.x, point.y])
 
 
 func _begin_connector_drag(kind: String, pointer: Vector2, mode: String) -> void:
@@ -2063,7 +2077,7 @@ func _set_status(message: String) -> void:
   status_changed.emit(message)
 
 func _rail_input(event: InputEvent) -> bool:
- if not show_gameplay or selection_count() > 1: return false
+ if document == null or preview_active or not show_gameplay or selection_count() > 1: return false
  if not _rail_draft.is_empty() and ((event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE) or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT)):
   _rail_draft = {}
   queue_redraw()
@@ -2096,6 +2110,7 @@ func _rail_input(event: InputEvent) -> bool:
      points.remove_at(nearest)
      rail_points_changed.emit(points)
    elif nearest >= 0:
+    _handle_last_pointer = event.position
     _rail_drag = nearest
     _rail_preview = points.duplicate()
    elif points.size() < (Objects.MAX_POSTS if item.type == "lane_barrier" else 64):
@@ -2116,6 +2131,7 @@ func _rail_input(event: InputEvent) -> bool:
   queue_redraw()
   return true
  if event is InputEventMouseMotion and _rail_drag >= 0:
+  _handle_last_pointer = event.position
   _rail_preview[_rail_drag] = (legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed) - Vector2(item.position)).rotated(-deg_to_rad(float(item.rotation_degrees)))
   queue_redraw()
   return true
@@ -2129,7 +2145,10 @@ func _teleporter_input(event: InputEvent) -> bool:
    queue_redraw()
    return true
   if event is InputEventMouseMotion or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed):
-   var offset := (legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed) - Vector2(_teleporter_preview.position)).rotated(-deg_to_rad(float(_teleporter_preview.rotation_degrees)))
+   var offset := Vector2(_teleporter_preview.properties.exit_x, _teleporter_preview.properties.exit_y)
+   if event is InputEventMouseMotion or event.position.distance_squared_to(_handle_last_pointer) > POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
+    offset = (legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed) - Vector2(_teleporter_preview.position)).rotated(-deg_to_rad(float(_teleporter_preview.rotation_degrees)))
+   _handle_last_pointer = event.position
    _teleporter_preview.properties.exit_x = offset.x
    _teleporter_preview.properties.exit_y = offset.y
    if event is InputEventMouseButton:
@@ -2145,6 +2164,7 @@ func _teleporter_input(event: InputEvent) -> bool:
  if item.type != "teleporter": return false
  if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and local_pixels_to_screen(Objects.teleporter_exit(item)).distance_to(event.position) <= 12.0:
   _teleporter_index = selected_gameplay_index
+  _handle_last_pointer = event.position
   _teleporter_preview = item.duplicate(true)
   _teleporter_preview.properties = Objects.properties(item)
   grab_focus()
@@ -2159,13 +2179,15 @@ func _patrol_input(event: InputEvent) -> bool:
    queue_redraw()
    return true
   if event is InputEventMouseMotion or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed):
-   var x := legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed).x - float(_patrol_preview.position.x)
-   if _patrol_index < 0:
-    _patrol_preview.properties.patrol_left = clampf(x, -2000, 0)
-    _patrol_preview.properties.patrol_right = clampf(x, 0, 2000)
-   else:
-    if _patrol_side == "auto": _patrol_side = "left" if x < 0 else "right"
-    _patrol_preview.properties["patrol_" + _patrol_side] = clampf(x, -2000, 0) if _patrol_side == "left" else clampf(x, 0, 2000)
+   if event is InputEventMouseMotion or event.position.distance_squared_to(_handle_last_pointer) > POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
+    var x := legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed).x - float(_patrol_preview.position.x)
+    if _patrol_index < 0:
+     _patrol_preview.properties.patrol_left = clampf(x, -2000, 0)
+     _patrol_preview.properties.patrol_right = clampf(x, 0, 2000)
+    else:
+     if _patrol_side == "auto": _patrol_side = "left" if x < 0 else "right"
+     _patrol_preview.properties["patrol_" + _patrol_side] = clampf(x, -2000, 0) if _patrol_side == "left" else clampf(x, 0, 2000)
+   _handle_last_pointer = event.position
    if event is InputEventMouseButton:
     var edited := _patrol_preview.duplicate(true)
     var index := _patrol_index
@@ -2184,6 +2206,7 @@ func _patrol_input(event: InputEvent) -> bool:
    _begin_patrol_edit(index, "auto")
    return _patrol_input(event)
  if not event is InputEventMouseButton or not event.pressed or event.button_index != MOUSE_BUTTON_LEFT: return false
+ _handle_last_pointer = event.position
  if not gameplay_brush.is_empty() and gameplay_brush.get("type") != "buzz_bomber": return false
  var edit_index := -1
  var edit_side := "auto"
@@ -2239,23 +2262,29 @@ func _begin_patrol_edit(index: int, side: String) -> void:
  queue_redraw()
 
 func _draw_launch_range(item: Dictionary) -> void:
- if item.get("type") not in ["left_flipper", "right_flipper", "round_bumper", "triangle_bumper"]: return
  var is_flipper: bool = item.type in ["left_flipper", "right_flipper"]
+ var profile: Resource = PhysicsTuning.FLOATY if is_equal_approx(trajectory_gravity_scale, PhysicsTuning.FLOATY.gravity_scale) else PhysicsTuning.BALANCED
+ var stats := PhysicsTuning.resolve(profile, {}, [])
  var shots: Array[Dictionary] = []
  if is_flipper:
   var context := {"document": document, "index": selected_gameplay_index, "target": launch_contact_fraction} if launch_from_spawn else {}
-  _launch_probe.request(item, _local_cell_size(), {}, context)
+  _launch_probe.request(item, _local_cell_size(), stats, context)
   if not _launch_probe.busy:
    for shot: Dictionary in _launch_probe.shots:
     if launch_from_spawn or launch_timing_variants or shot.label == "Typical": shots.append(shot)
  else:
-  shots = LaunchPreview.shots(item, _local_cell_size())
+  var key := var_to_bytes([item, _local_cell_size(), stats]).hex_encode()
+  if key != _guide_cache_key:
+   _guide_cache_key = key
+   _guide_cache = LaunchPreview.shots(item, _local_cell_size(), stats)
+  shots = _guide_cache
  for i in shots.size():
   var points := LaunchPreview.trajectory(shots[i])
   for j in points.size():
    points[j] = local_pixels_to_screen(points[j] + (Vector2(item.position) if is_flipper else Vector2.ZERO))
-  var color := Color(1.0, 0.84, 0.42, 0.55) if i % 2 == 0 else Color(0.44, 0.9, 0.84, 0.55)
-  var width := 1.0
+  if points.size() < 2: continue
+  var color := Color(1.0, 0.84, 0.42, 0.8) if i % 2 == 0 else Color(0.44, 0.9, 0.84, 0.8)
+  var width := 1.5
   if is_flipper:
    color = {"Spawn": Color("70e5d5"), "Typical": Color("70e5d5"), "Early": Color("ffd76b"), "Late": Color("cea3f2")}[shots[i].label]
    width = 2.0 if shots[i].label in ["Typical", "Spawn"] else 1.0
@@ -2263,9 +2292,16 @@ func _draw_launch_range(item: Dictionary) -> void:
   if approach.size() > 1:
    for j in approach.size(): approach[j] = local_pixels_to_screen(approach[j] + Vector2(item.position))
    draw_polyline(approach, Color(0.44, 0.9, 0.84, 0.3), 1.0, true)
+  draw_polyline(points, Color(0.02, 0.05, 0.09, 0.55), width + 2.0, true)
   draw_polyline(points, color, width, true)
- var title := "BASE SONIC · gold: min rebound / teal: max rebound"
- var detail := "Incoming speed sets rebound · no tangent momentum or obstacles"
+  for j in range(10, points.size(), 20):
+   var back := (points[j - 1] - points[j]).normalized() * 6.0
+   draw_line(points[j], points[j] + back.rotated(0.5), color, 1.5, true)
+   draw_line(points[j], points[j] + back.rotated(-0.5), color, 1.5, true)
+  draw_circle(points[0], 3.0, color)
+ var label: String = "Terrain" if item.type == "terrain" else Objects.get_definition(item.type).label
+ var title := "%s · %s" % [label, profile.display_name]
+ var detail := LaunchPreview.description(item.type)
  if is_flipper:
   title = "BASE SONIC · typical falling catch"
   if launch_timing_variants: title = "BASE SONIC · teal: typical / gold: early / purple: late"
@@ -2276,10 +2312,12 @@ func _draw_launch_range(item: Dictionary) -> void:
    if not shots.is_empty(): title += " · hit %.0f%%" % (shots[0].actual_fraction * 100.0)
   if _launch_probe.busy: detail = "Simulating ball contact…"
   elif shots.is_empty(): detail = _launch_probe.status
+  title += " · " + str(profile.display_name)
  # Screen-space legend stays readable even when the estimated apex is outside the map.
- draw_style_box(_launch_legend_style(), Rect2(8, size.y - 50, 500, 42))
- draw_string(get_theme_default_font(), Vector2(16, size.y - 34), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color("dcebf2"))
- draw_string(get_theme_default_font(), Vector2(16, size.y - 16), detail, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("9cb3c6"))
+ draw_style_box(_launch_legend_style(), Rect2(8, size.y - 68, minf(570, size.x - 16), 60))
+ draw_string(get_theme_default_font(), Vector2(16, size.y - 51), title, HORIZONTAL_ALIGNMENT_LEFT, size.x - 32, 12, Color("dcebf2"))
+ draw_string(get_theme_default_font(), Vector2(16, size.y - 34), detail, HORIZONTAL_ALIGNMENT_LEFT, size.x - 32, 11, Color("b3cadb"))
+ draw_string(get_theme_default_font(), Vector2(16, size.y - 17), "Example paths · free flight after contact · no later obstacles or steering", HORIZONTAL_ALIGNMENT_LEFT, size.x - 32, 11, Color("9cb3c6"))
 
 func _launch_legend_style() -> StyleBoxFlat:
  var style := StyleBoxFlat.new()

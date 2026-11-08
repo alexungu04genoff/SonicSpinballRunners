@@ -1,5 +1,21 @@
 # Act Geometry Editor
 
+## Current interaction controls — 2026-11-08
+
+**Shift + wheel** resizes every Gameplay type, both the placement brush and selected objects. It changes the dimensions used by collision and presentation, preserves anchors/IDs/angles, and never zooms. Bumpers, switches and Buzz change size; paddles change length; Gates, Springs, Slingshots, Spinners and Dash Panels change width; fields and Teleporters change radius; Drop Banks change target spacing; rails scale their control points and width; Lane Barriers scale their post positions and radius. Buzz patrol length still uses **Shift-drag** or endpoint handles. Inspector limits and geometry validation still apply.
+
+The same gesture changes terrain between its supported **0.5× / 1×** sizes, Decor scale within **0.85–1.15×**, a ring pattern's extent around its center, Goal diameter, and a selected connector's whole-cell width. A line-ring brush or a one-ring pattern changes spacing; ring collection size remains fixed. Mixed selections resize around each object's existing anchor in one undo step. Spawn and Activation are position metadata, not scalable physical objects. Entry/Exit remain whole-cell structural connectors; Alt does not make them fractional.
+
+**Alt** frees terrain, Gameplay, Decor, ring endpoints, lifecycle positions, rail/post control points, Teleporter OUT and Buzz patrol handles. Pressing Alt after a drag starts also works. Releasing it without moving the pointer preserves the free position through mouse-up. Alt-click cycles overlapping items; Ctrl+Alt-click includes covered items in a selection.
+
+**Ctrl+C / Ctrl+V**, or **Copy / Paste** in Properties, copy a single object or a mixed/box selection of terrain, Gameplay, Decor and ring patterns. Each paste is one undo step, selects the new objects, and offsets the saved snapshot by another snap step diagonally. Terrain bounds clamp the entire group together. New object, ring, Decor and bank IDs prevent shared progress. Fully copied Switch Banks retain links among copied objects; links to uncopied originals are omitted. The clipboard survives New/Load in the same editor session. Singleton Act lifecycle markers are not part of this object clipboard. Text fields retain ordinary text copy/paste.
+
+Selected objects and placement ghosts show directional trajectory guides with a readable legend. Springs and active Slingshots use their authored launch speed; Dash Panels, magnetic fields and enemy contacts use shared runtime response helpers. Rails integrate slope, height and drag, including rollback. Teleporters show the outgoing arc, passive hardware shows representative rebounds, and sensors explicitly show pass-through. Terrain samples up to three exposed edges. Flippers retain production contact probes and their spawn/typical-catch controls. The Gameplay inspector offers Balanced/Floaty for all guides. Incoming-speed examples use 300 px/s (rail entry honors any higher minimum), not a guaranteed player shot. Later obstacles, steering and live session modifiers are excluded; these guides do not prove reachability.
+
+Checks: `editor_interaction_regression.gd` exercises the complete palette, late-Alt gestures, save/load, mixed clipboard identity/link handling and guide math, with optional rendered captures. Existing gameplay, pinball, bank, enemy, box-selection, composite and flipper-probe regressions cover their respective paths. Manual review should focus on guide readability at the preferred zoom and flipper timing in Play Act.
+
+The current controls above supersede narrower controls described in the historical format milestones below.
+
 **Act scoring (format 15):** Act Markers now exposes an optional Score Target. Rings supports independent timed respawns and opt-in Bonus Racks; Spinner Goals and repeatable Switch Banks use the shared score pipeline. See [Act scoring, settings, examples and migration](ACT_SCORING.md).
 
 **Current authored gimmicks (format 13):** Gameplay now includes one-way gates, colored switches/banks, instant springs and scalable bumpers. The separate **Rings** tab offers line and circle/ellipse drawing with optional fill. **Pinball Example** opens the switch/gate/spring objective as an editable copy. See [controls, lifecycle, format and verification](AUTHORED_GIMMICKS.md); historical format notes below describe earlier milestones.
@@ -8,13 +24,13 @@ This standalone scene edits **one Act**, initially **12 columns × 12 rows**, wi
 
 ## Launch
 
-Double-click **Act Geometry Editor.cmd**, or open `scenes/act_geometry_editor.tscn` in Godot and press **F6**. F5 still launches the playground.
+Double-click **Act Geometry Editor.cmd**, or open `scenes/act_geometry_editor.tscn` in Godot and press **F6**. F5 opens Prototype; editor Play launches the current Act through Prototype.
 
 ```powershell
 & 'C:\Program Files\Godot\Godot.exe' --path 'E:\Sonic Spinball Runners' res://scenes/act_geometry_editor.tscn
 ```
 
-The Windows launcher uses the project's working ANGLE backend. For another Godot installation, run `scripts/act_editor/launch.ps1 -GodotPath 'D:\Tools\Godot.exe'`.
+The Windows launcher uses Forward+/Vulkan. For another Godot installation, run `scripts/act_editor/launch.ps1 -GodotPath 'D:\Tools\Godot.exe'`.
 
 ## Build an Act
 
@@ -39,6 +55,8 @@ The Windows launcher uses the project's working ANGLE backend. For another Godot
 | Cycle terrain, gameplay objects and lifecycle markers under the cursor | Alt-click without dragging |
 | Toggle terrain in a multi-selection / reach covered terrain | Ctrl-click / Ctrl+Alt-click |
 | Duplicate a single terrain piece, gameplay object or ring trail | Ctrl+D or Duplicate |
+| Copy / paste selected objects, including mixed selections | Ctrl+C / Ctrl+V or Copy / Paste |
+| Resize the brush or selected objects within supported limits | Shift+mouse wheel |
 | Undo / redo | Ctrl+Z / Ctrl+Y or Ctrl+Shift+Z |
 | Zoom / pan / restore overview | Mouse wheel / middle-drag / Fit Grid |
 | New / Load / Save / Save As | Ctrl+N / Ctrl+O / Ctrl+S / Ctrl+Shift+S |

@@ -111,11 +111,18 @@ func check_selection() -> void:
 	check(editor.canvas.selected_indices == [2, 0], "Ctrl+Alt pointer adds a completely covered terrain piece")
 	await click_at(grid_position(Vector2(4.3, 5.6)), true)
 	check(editor.canvas.selected_indices == [2, 0, 1] and editor.canvas.selected_index == 1, "Ctrl pointer retains all selected highlight indices and updates the primary selection")
-	check(editor.mode_label.text.contains("3 terrain pieces") and editor.buttons.rotate.disabled and editor.buttons.duplicate.disabled, "Multiselection UI identifies all three pieces and prevents ambiguous transforms")
+	check(editor.canvas.selection_count() == 3 and editor.mode_label.text.contains("3") and editor.buttons.rotate.disabled and editor.buttons.duplicate.disabled, "Multiselection UI identifies all three pieces and prevents ambiguous transforms")
 	var multiple_before: String = editor.document.fingerprint()
+	var pieces_before: Array = editor.document.placements.duplicate(true)
 	await press_key(KEY_RIGHT)
+	var group_moved := true
+	for index: int in editor.canvas.selected_indices:
+		group_moved = group_moved and Shapes.placement_position(editor.document.placements[index]) == Shapes.placement_position(pieces_before[index]) + Vector2.RIGHT * editor.canvas.terrain_snap_step
+	var after_nudge: String = editor.document.fingerprint()
 	await press_key(KEY_R)
-	check(editor.document.fingerprint() == multiple_before, "Nudges and rotation do not partially edit a multiselection")
+	check(group_moved and editor.document.fingerprint() == after_nudge, "Nudges move the whole selection; rotation never partially edits it")
+	editor.undo()
+	check(editor.document.fingerprint() == multiple_before, "One undo restores the entire group nudge")
 	await click_at(grid_position(Vector2(4.3, 5.6)), true)
 	check(editor.canvas.selected_indices == [2, 0], "Ctrl pointer toggles a selected terrain piece off")
 	await click_at(grid_position(Vector2(10, 2)))
@@ -520,6 +527,7 @@ func capture_preview() -> void:
 
 func run() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results"))
+	root.size = Vector2i(1440, 1000)
 	root.gui_embed_subwindows = true
 	editor = EditorScene.instantiate()
 	root.add_child(editor)

@@ -140,6 +140,40 @@ static func properties(placement: Dictionary) -> Dictionary:
  result.merge(placement.get("properties", {}), true)
  return result
 
+static func size_label(type: String) -> String:
+ return {"left_flipper": "length", "right_flipper": "length", "drop_target_bank": "target spacing",
+  "elevated_rail": "path and width", "lane_barrier": "posts and spacing", "diverter": "length",
+  "teleporter": "radius", "magnetic_field": "radius", "buzz_bomber": "size",
+  "round_bumper": "size", "triangle_bumper": "size", "switch_target": "size", "wall_switch": "size"}.get(type, "width")
+
+static func resized_properties(item: Dictionary, direction: float) -> Dictionary:
+ # Use the dimensions already consumed by runtime collision and presentation.
+ # Never add a cosmetic Node scale that leaves the physical footprint behind.
+ var props := properties(item)
+ var type: String = item.type
+ if type in ["elevated_rail", "lane_barrier"]:
+  var points: PackedVector2Array = props.points.duplicate()
+  var key := "width" if type == "elevated_rail" else "post_radius"
+  var limits: Array = property_limits(type)[key]
+  var current := float(props[key])
+  props[key] = clampf(current * pow(1.1, direction), float(limits[0]), float(limits[1]))
+  var factor := float(props[key]) / current
+  for i in points.size(): points[i] *= factor
+  props.points = points
+ else:
+  var key: String = {"left_flipper": "length_multiplier", "right_flipper": "length_multiplier",
+   "drop_target_bank": "spacing", "diverter": "length", "teleporter": "radius",
+   "magnetic_field": "radius", "buzz_bomber": "scale", "round_bumper": "scale",
+   "triangle_bumper": "scale", "switch_target": "scale", "wall_switch": "scale"}.get(type, "width")
+  var limits: Array = property_limits(type)[key]
+  var minimum := float(limits[0])
+  if type == "drop_target_bank": minimum = maxf(minimum, float(props.target_size) + 2.0)
+  var step := 0.1 if key in ["scale", "length_multiplier"] else 5.0
+  props[key] = clampf(float(props[key]) + step * direction, minimum, float(limits[1]))
+ var candidate := item.duplicate(true)
+ candidate.properties = props
+ return props if property_errors(candidate).is_empty() else properties(item)
+
 static func property_limits(type: String) -> Dictionary:
  match type:
   "left_flipper", "right_flipper": return {"length_multiplier": [1.0, 2.0]}

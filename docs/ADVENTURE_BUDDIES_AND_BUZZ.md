@@ -69,7 +69,7 @@ Choose **Gameplay → Enemy · Buzz Bomber**. Click for the default ±60 px patr
 
 Patrol defaults: **65 px/s**, **0.65 s** initial/end-point hover, then horizontal travel and reversal. Route offsets remain horizontal and independent of visual scale.
 
-**Shift + mouse wheel** also adjusts patrol length on a selected Buzz Bomber or the active Buzz placement brush. Wheel up extends each endpoint by 10 px; wheel down retracts each toward the anchor, stopping at zero. Endpoint limits remain ±2,000 px. Each selected-object notch is one Undo/Redo step. This gesture changes neither model scale nor canvas zoom; ordinary wheel zoom and existing Shift-drag/endpoint controls remain available.
+**Shift + mouse wheel** changes Buzz size by 0.1× per notch on a selected enemy or the active placement brush, within 0.35–2.5×. Sensor and model scale together. Patrol endpoints and canvas zoom remain unchanged. Each selected-object notch is one Undo/Redo step. Patrol length uses Shift-drag or endpoint handles, with endpoint limits of ±2,000 px. This unified sizing gesture supersedes the older Shift-wheel patrol shortcut; see [current editor controls](ACT_GEOMETRY_EDITOR.md#current-interaction-controls--2026-11-08).
 
 `data/acts/buzz_bomber_test.tres` contains four targets: an easy descending target under spawn, a side target, an underside target above a launch spring, and a patrol target. Open it in the Act Editor or launch standalone with `-- --act res://data/acts/buzz_bomber_test.tres`. It is outside the production `Authored/` pool. No enemies were mass-placed in production Acts.
 

@@ -1,5 +1,13 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Make the editor pleasant — 2026-11-08
+
+Alex asked for Shift sizing everywhere, reliable Alt freedom, readable trajectory arcs, then Ctrl+C/Ctrl+V. All eighteen Gameplay types now share Shift-wheel sizing through their real authored dimensions. Buzz wheel sizes the enemy; Shift-drag still owns patrol length. Terrain keeps its existing half/full sizes, Decor its existing limits, and structural connectors stay whole-cell. Spawn/Activation are points/lines, not secretly resizable physics.
+
+Late-Alt dragging now works for terrain, Decor and specialized handles too. Teleporter OUT, patrol endpoints and drag-placed Banks no longer snap back merely because Alt was released first. Mixed clipboard pastes preserve geometry, assign fresh identities and reconnect only fully copied objectives to copied targets. Copy survives New/Load within the editor session; each paste gets one undo.
+
+Gold/teal guides now cover actual launchers, passive rebounds, rail rollback and magnetic flybys. Sensors say pass-through; no invented switch/spinner bounce. The selected profile and sample-speed assumptions are visible. These are authored-shot examples, not a pathfinding proof. Gameplay physics and production Acts stay untouched. See [the current controls and limits](ACT_GEOMETRY_EDITOR.md#current-interaction-controls--2026-11-08).
+
 ## The ghost is in the loader — 2026-11-08
 
 The [lifecycle audit](LIFECYCLE_AUDIT.md) traced the recurring zero-reference RefCounted warnings to Godot 4.7.2's threaded ResourceLoader path. Six normal disk-loaded runs released their tracked Game/Act/atmosphere/recipe owners, returned to one Node and zero orphans, and left no live device-registration targets. But total ObjectDB count still rose by one per run: this is an engine allocation leak, not harmless exit noise. Loading a bake without any Session reproduces the signature; synchronous and ordinary-Thread controls isolate the worker-pool path. We did not change production cleanup or loader scheduling, hide diagnostics, or unload resident Acts early. The new probes keep the distinction measurable. Graphics defaults, art, gameplay and archive behavior remain untouched.

@@ -182,7 +182,7 @@ func close_to(actual: Vector2, expected: Vector2) -> bool:
 
 func check_initial_placement() -> void:
 	check(editor.document.gameplay_objects.is_empty() and editor.document.placements.is_empty(), "New Act keeps separate empty terrain and gameplay arrays")
-	check(editor.gameplay_buttons.size() == 10 and editor.palette_tabs.get_tab_title(0) == "Terrain" and editor.palette_tabs.get_tab_title(1) == "Gameplay", "Ten gameplay types have a separate discoverable palette tab")
+	check(editor.gameplay_buttons.size() == Objects.definitions().size() and editor.palette_tabs.get_tab_title(0) == "Terrain" and editor.palette_tabs.get_tab_title(1) == "Gameplay", "Every gameplay type has a separate discoverable palette tab")
 	var probes := [
 		{"id": "round_bumper", "cursor": Vector2(119.3, 129.9), "position": Vector2(100, 150)},
 		{"id": "triangle_bumper", "cursor": Vector2(217.4, 123.6), "position": Vector2(200, 100)},
