@@ -53,6 +53,13 @@ func _initialize() -> void:
  water.shader = Shader.new()
  water.shader.code = "shader_type spatial; void fragment() { NORMAL=normalize(NORMAL+vec3(sin(TIME)*0.1,0,0)); }"
  check(assets.share(water) == water, "Unrelated animated normal shaders remain untouched")
+ for tag: String in ["sky_selected", "ice_selected", "lava_selected", "aquarium_selected"]:
+  var selected: ShaderMaterial = source.duplicate()
+  selected.set_meta(tag, true)
+  var retained: ShaderMaterial = assets.share(selected)
+  check(retained.shader.code.contains(assets.FlatSurfaces.RELIEF_INCLUDE), "Approved selected relief remains in the baked shader: " + tag)
+  check(retained.get_shader_parameter("relief_normal") is Texture2D, "Approved selected normal texture survives sharing: " + tag)
+  check(retained.get_meta(tag, false), "Selected policy tag survives sharing: " + tag)
  var turf_path := "res://scripts/themes/green_hill_turf.gdshader"
  if ResourceLoader.exists(turf_path):
   var turf := ShaderMaterial.new()

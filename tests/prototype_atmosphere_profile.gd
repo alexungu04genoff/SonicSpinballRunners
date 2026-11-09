@@ -13,8 +13,16 @@ func run() -> void:
   return
  output = "res://test-results/atmosphere-signatures/performance"
  var baseline := "res://test-results/atmosphere-signatures/source-before/data/atmospheres"
+ var themes: Array = ["chemical_plant", "casino_night"]
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--baseline-atmospheres="): baseline = argument.trim_prefix("--baseline-atmospheres=")
+  if argument.begins_with("--output="): output = argument.trim_prefix("--output=")
+  if argument.begins_with("--themes="): themes = Array(argument.trim_prefix("--themes=").split(","))
+ for theme: String in themes:
+  if theme not in Fixture.Registry.IDS:
+   push_error("Unknown profile theme: " + theme)
+   quit(1)
+   return
  DirAccess.make_dir_recursive_absolute(output)
  preload("res://scripts/rendering_options.gd").settings_path = output.path_join("isolated-graphics.cfg")
  root.size = Vector2i(1440, 1000)
@@ -23,7 +31,7 @@ func run() -> void:
  Engine.max_fps = 0
  DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
  samples = 360
- for theme: String in ["chemical_plant", "casino_night"]:
+ for theme: String in themes:
   var config := ConfigFile.new()
   if config.load(baseline.path_join(theme + ".cfg")) != OK:
    push_error("Missing explicit baseline atmosphere: " + theme)
@@ -49,6 +57,7 @@ func run() -> void:
    atmosphere.apply_properties(values, atmosphere.environment, atmosphere.sun)
    atmosphere.bindings.apply(float(values.get("emission", 1.0)))
    atmosphere.bindings.apply_palette(values, atmosphere.sun, true)
+   preload("res://scripts/atmosphere/directional_fog.gd").apply(game.backgrounds[0].layer.camera, values)
    for property: String in atmosphere.LIGHT_FIELDS: atmosphere.lighting[property] = atmosphere.sun.get(property)
    atmosphere.lighting.quaternion = atmosphere.sun.quaternion
    atmosphere.sun.shadow_enabled = false

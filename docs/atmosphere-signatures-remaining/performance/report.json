@@ -1,0 +1,649 @@
+{
+  "api": "1.4.351",
+  "command_line": [
+    "--script",
+    "res://tests/prototype_atmosphere_profile.gd"
+  ],
+  "device": "NVIDIA GeForce RTX 4060",
+  "driver": "vulkan",
+  "engine": "4.7.2-stable (official)",
+  "fixture": "res://data/acts/Authored/First Try Smooth Decor.tres",
+  "note": "ABBA settled viewport timers; shader caches were not cleared. No screenshot readback in timed blocks. Values alone change; no new optional fog/glow path.",
+  "preparation": [
+    {
+      "apply_cpu_ms": 2.026,
+      "theme": "sky_sanctuary",
+      "variant": "before"
+    },
+    {
+      "apply_cpu_ms": 1.25,
+      "theme": "sky_sanctuary",
+      "variant": "after"
+    },
+    {
+      "apply_cpu_ms": 1.19,
+      "theme": "sky_sanctuary",
+      "variant": "after"
+    },
+    {
+      "apply_cpu_ms": 1.972,
+      "theme": "sky_sanctuary",
+      "variant": "before"
+    },
+    {
+      "apply_cpu_ms": 1.409,
+      "theme": "ice_cap",
+      "variant": "before"
+    },
+    {
+      "apply_cpu_ms": 1.45,
+      "theme": "ice_cap",
+      "variant": "after"
+    },
+    {
+      "apply_cpu_ms": 1.56,
+      "theme": "ice_cap",
+      "variant": "after"
+    },
+    {
+      "apply_cpu_ms": 1.437,
+      "theme": "ice_cap",
+      "variant": "before"
+    },
+    {
+      "apply_cpu_ms": 1.944,
+      "theme": "lava_reef",
+      "variant": "before"
+    },
+    {
+      "apply_cpu_ms": 1.981,
+      "theme": "lava_reef",
+      "variant": "after"
+    },
+    {
+      "apply_cpu_ms": 1.865,
+      "theme": "lava_reef",
+      "variant": "after"
+    },
+    {
+      "apply_cpu_ms": 1.928,
+      "theme": "lava_reef",
+      "variant": "before"
+    },
+    {
+      "apply_cpu_ms": 2.019,
+      "theme": "aquarium_park",
+      "variant": "before"
+    },
+    {
+      "apply_cpu_ms": 2.01,
+      "theme": "aquarium_park",
+      "variant": "after"
+    },
+    {
+      "apply_cpu_ms": 2.055,
+      "theme": "aquarium_park",
+      "variant": "after"
+    },
+    {
+      "apply_cpu_ms": 2.021,
+      "theme": "aquarium_park",
+      "variant": "before"
+    }
+  ],
+  "renderer": "forward_plus",
+  "results": [
+    {
+      "active_materials": 65,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 670,
+      "draw_calls_p95": 670,
+      "frame_ms_median": 4.817,
+      "frame_ms_p95": 5.925,
+      "pass": 0,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 12.0,
+        "specialization": 66.0,
+        "surface": 51.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 12.0,
+        "specialization": 66.0,
+        "surface": 51.0
+      },
+      "render_cpu_ms_median": 1.79399994760752,
+      "render_cpu_ms_p95": 2.08100005984306,
+      "render_gpu_ms_median": 0.86999998614192,
+      "render_gpu_ms_p95": 0.883000016212463,
+      "rendered_objects_median": 1093,
+      "rendered_objects_p95": 1093,
+      "resources_median": 1244.0,
+      "resources_p95": 1244.0,
+      "theme": "sky_sanctuary",
+      "variant": "before",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 65,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 665,
+      "draw_calls_p95": 665,
+      "frame_ms_median": 4.743,
+      "frame_ms_p95": 6.625,
+      "pass": 1,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 12.0,
+        "specialization": 66.0,
+        "surface": 51.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 12.0,
+        "specialization": 66.0,
+        "surface": 51.0
+      },
+      "render_cpu_ms_median": 1.76099997013807,
+      "render_cpu_ms_p95": 2.24000005424023,
+      "render_gpu_ms_median": 0.856999978423119,
+      "render_gpu_ms_p95": 0.867999985814095,
+      "rendered_objects_median": 1092,
+      "rendered_objects_p95": 1092,
+      "resources_median": 1244.0,
+      "resources_p95": 1244.0,
+      "theme": "sky_sanctuary",
+      "variant": "after",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 65,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 665,
+      "draw_calls_p95": 665,
+      "frame_ms_median": 3.045,
+      "frame_ms_p95": 5.059,
+      "pass": 2,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 12.0,
+        "specialization": 66.0,
+        "surface": 51.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 12.0,
+        "specialization": 66.0,
+        "surface": 51.0
+      },
+      "render_cpu_ms_median": 1.10899997875094,
+      "render_cpu_ms_p95": 1.90200001001358,
+      "render_gpu_ms_median": 0.855999998748302,
+      "render_gpu_ms_p95": 0.86700002104044,
+      "rendered_objects_median": 1092,
+      "rendered_objects_p95": 1092,
+      "resources_median": 1244.0,
+      "resources_p95": 1244.0,
+      "theme": "sky_sanctuary",
+      "variant": "after",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 65,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 670,
+      "draw_calls_p95": 670,
+      "frame_ms_median": 4.686,
+      "frame_ms_p95": 5.452,
+      "pass": 3,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 12.0,
+        "specialization": 66.0,
+        "surface": 51.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 12.0,
+        "specialization": 66.0,
+        "surface": 51.0
+      },
+      "render_cpu_ms_median": 1.75199999660254,
+      "render_cpu_ms_p95": 2.02099996060133,
+      "render_gpu_ms_median": 0.869999974966049,
+      "render_gpu_ms_p95": 0.877999987453222,
+      "rendered_objects_median": 1093,
+      "rendered_objects_p95": 1093,
+      "resources_median": 1244.0,
+      "resources_p95": 1244.0,
+      "theme": "sky_sanctuary",
+      "variant": "before",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 64,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 516,
+      "draw_calls_p95": 516,
+      "frame_ms_median": 2.605,
+      "frame_ms_p95": 3.44,
+      "pass": 0,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 24.0,
+        "specialization": 137.0,
+        "surface": 96.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 24.0,
+        "specialization": 137.0,
+        "surface": 96.0
+      },
+      "render_cpu_ms_median": 0.942000031471252,
+      "render_cpu_ms_p95": 1.2419999986887,
+      "render_gpu_ms_median": 0.806000005453825,
+      "render_gpu_ms_p95": 0.814000006765127,
+      "rendered_objects_median": 1067,
+      "rendered_objects_p95": 1067,
+      "resources_median": 1299.0,
+      "resources_p95": 1299.0,
+      "theme": "ice_cap",
+      "variant": "before",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 64,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 516,
+      "draw_calls_p95": 516,
+      "frame_ms_median": 2.648,
+      "frame_ms_p95": 4.3,
+      "pass": 1,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 24.0,
+        "specialization": 137.0,
+        "surface": 96.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 24.0,
+        "specialization": 137.0,
+        "surface": 96.0
+      },
+      "render_cpu_ms_median": 0.956999979913235,
+      "render_cpu_ms_p95": 1.45300000160933,
+      "render_gpu_ms_median": 0.836999997496605,
+      "render_gpu_ms_p95": 0.843999996781349,
+      "rendered_objects_median": 1067,
+      "rendered_objects_p95": 1067,
+      "resources_median": 1299.0,
+      "resources_p95": 1299.0,
+      "theme": "ice_cap",
+      "variant": "after",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 64,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 516,
+      "draw_calls_p95": 516,
+      "frame_ms_median": 2.524,
+      "frame_ms_p95": 2.896,
+      "pass": 2,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 24.0,
+        "specialization": 137.0,
+        "surface": 96.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 24.0,
+        "specialization": 137.0,
+        "surface": 96.0
+      },
+      "render_cpu_ms_median": 0.922999985516071,
+      "render_cpu_ms_p95": 1.06699997931719,
+      "render_gpu_ms_median": 0.807999996468425,
+      "render_gpu_ms_p95": 0.814000006765127,
+      "rendered_objects_median": 1067,
+      "rendered_objects_p95": 1067,
+      "resources_median": 1299.0,
+      "resources_p95": 1299.0,
+      "theme": "ice_cap",
+      "variant": "after",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 64,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 516,
+      "draw_calls_p95": 516,
+      "frame_ms_median": 2.528,
+      "frame_ms_p95": 2.846,
+      "pass": 3,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 24.0,
+        "specialization": 137.0,
+        "surface": 96.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 24.0,
+        "specialization": 137.0,
+        "surface": 96.0
+      },
+      "render_cpu_ms_median": 0.9239999987185,
+      "render_cpu_ms_p95": 1.04499997571111,
+      "render_gpu_ms_median": 0.816000003367662,
+      "render_gpu_ms_p95": 0.825999978929758,
+      "rendered_objects_median": 1067,
+      "rendered_objects_p95": 1067,
+      "resources_median": 1299.0,
+      "resources_p95": 1299.0,
+      "theme": "ice_cap",
+      "variant": "before",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 68,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 584,
+      "draw_calls_p95": 584,
+      "frame_ms_median": 2.716,
+      "frame_ms_p95": 3.518,
+      "pass": 0,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 36.0,
+        "specialization": 221.0,
+        "surface": 158.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 36.0,
+        "specialization": 221.0,
+        "surface": 158.0
+      },
+      "render_cpu_ms_median": 1.00400000810623,
+      "render_cpu_ms_p95": 1.28100000321865,
+      "render_gpu_ms_median": 0.907999988645315,
+      "render_gpu_ms_p95": 0.912000011652708,
+      "rendered_objects_median": 1180,
+      "rendered_objects_p95": 1180,
+      "resources_median": 1321.0,
+      "resources_p95": 1321.0,
+      "theme": "lava_reef",
+      "variant": "before",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 68,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 584,
+      "draw_calls_p95": 584,
+      "frame_ms_median": 2.876,
+      "frame_ms_p95": 4.307,
+      "pass": 1,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 36.0,
+        "specialization": 221.0,
+        "surface": 158.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 36.0,
+        "specialization": 221.0,
+        "surface": 158.0
+      },
+      "render_cpu_ms_median": 1.05599997192621,
+      "render_cpu_ms_p95": 1.66100003570318,
+      "render_gpu_ms_median": 0.910000022500753,
+      "render_gpu_ms_p95": 0.917999994009733,
+      "rendered_objects_median": 1180,
+      "rendered_objects_p95": 1180,
+      "resources_median": 1321.0,
+      "resources_p95": 1321.0,
+      "theme": "lava_reef",
+      "variant": "after",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 68,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 584,
+      "draw_calls_p95": 584,
+      "frame_ms_median": 2.752,
+      "frame_ms_p95": 3.294,
+      "pass": 2,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 36.0,
+        "specialization": 221.0,
+        "surface": 158.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 36.0,
+        "specialization": 221.0,
+        "surface": 158.0
+      },
+      "render_cpu_ms_median": 1.01899999752641,
+      "render_cpu_ms_p95": 1.16100001707673,
+      "render_gpu_ms_median": 0.914999987930059,
+      "render_gpu_ms_p95": 0.919000025838614,
+      "rendered_objects_median": 1180,
+      "rendered_objects_p95": 1180,
+      "resources_median": 1321.0,
+      "resources_p95": 1321.0,
+      "theme": "lava_reef",
+      "variant": "after",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 68,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 584,
+      "draw_calls_p95": 584,
+      "frame_ms_median": 3.509,
+      "frame_ms_p95": 5.669,
+      "pass": 3,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 36.0,
+        "specialization": 221.0,
+        "surface": 158.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 36.0,
+        "specialization": 221.0,
+        "surface": 158.0
+      },
+      "render_cpu_ms_median": 1.22700004279613,
+      "render_cpu_ms_p95": 2.16500005871058,
+      "render_gpu_ms_median": 0.943999990820885,
+      "render_gpu_ms_p95": 1.00200000777841,
+      "rendered_objects_median": 1180,
+      "rendered_objects_p95": 1180,
+      "resources_median": 1321.0,
+      "resources_p95": 1321.0,
+      "theme": "lava_reef",
+      "variant": "before",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 69,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 606,
+      "draw_calls_p95": 606,
+      "frame_ms_median": 2.909,
+      "frame_ms_p95": 3.435,
+      "pass": 0,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 52.0,
+        "specialization": 289.0,
+        "surface": 200.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 52.0,
+        "specialization": 289.0,
+        "surface": 200.0
+      },
+      "render_cpu_ms_median": 1.16100000590086,
+      "render_cpu_ms_p95": 1.35700003430247,
+      "render_gpu_ms_median": 0.867999998852611,
+      "render_gpu_ms_p95": 0.918000027537346,
+      "rendered_objects_median": 1934,
+      "rendered_objects_p95": 1934,
+      "resources_median": 1635.0,
+      "resources_p95": 1635.0,
+      "theme": "aquarium_park",
+      "variant": "before",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 69,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 606,
+      "draw_calls_p95": 606,
+      "frame_ms_median": 2.924,
+      "frame_ms_p95": 3.873,
+      "pass": 1,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 52.0,
+        "specialization": 289.0,
+        "surface": 200.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 52.0,
+        "specialization": 289.0,
+        "surface": 200.0
+      },
+      "render_cpu_ms_median": 1.16899998486042,
+      "render_cpu_ms_p95": 1.50600001960993,
+      "render_gpu_ms_median": 0.924999997019768,
+      "render_gpu_ms_p95": 0.941000021994114,
+      "rendered_objects_median": 1934,
+      "rendered_objects_p95": 1934,
+      "resources_median": 1635.0,
+      "resources_p95": 1635.0,
+      "theme": "aquarium_park",
+      "variant": "after",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 69,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 606,
+      "draw_calls_p95": 606,
+      "frame_ms_median": 3.053,
+      "frame_ms_p95": 4.131,
+      "pass": 2,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 52.0,
+        "specialization": 289.0,
+        "surface": 200.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 52.0,
+        "specialization": 289.0,
+        "surface": 200.0
+      },
+      "render_cpu_ms_median": 1.2020000256598,
+      "render_cpu_ms_p95": 1.71999996900558,
+      "render_gpu_ms_median": 0.932999990880489,
+      "render_gpu_ms_p95": 0.948000036180019,
+      "rendered_objects_median": 1934,
+      "rendered_objects_p95": 1934,
+      "resources_median": 1635.0,
+      "resources_p95": 1635.0,
+      "theme": "aquarium_park",
+      "variant": "after",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 69,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 606,
+      "draw_calls_p95": 606,
+      "frame_ms_median": 3.012,
+      "frame_ms_p95": 4.254,
+      "pass": 3,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 52.0,
+        "specialization": 289.0,
+        "surface": 200.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 52.0,
+        "specialization": 289.0,
+        "surface": 200.0
+      },
+      "render_cpu_ms_median": 1.18400001898408,
+      "render_cpu_ms_p95": 1.72700001299381,
+      "render_gpu_ms_median": 0.931000016629696,
+      "render_gpu_ms_p95": 0.946000017225742,
+      "rendered_objects_median": 1934,
+      "rendered_objects_p95": 1934,
+      "resources_median": 1635.0,
+      "resources_p95": 1635.0,
+      "theme": "aquarium_park",
+      "variant": "before",
+      "world_size": "(682, 473)"
+    }
+  ],
+  "retro": "Unmodified production N64/VHS/CRT stack via --retro=production",
+  "samples_per_block": 360,
+  "user_arguments": [
+    "--retro=production",
+    "--themes=sky_sanctuary,ice_cap,lava_reef,aquarium_park",
+    "--baseline-atmospheres=res://docs/atmosphere-signatures-remaining/baseline-atmospheres",
+    "--output=res://test-results/atmosphere-signatures-remaining/performance"
+  ]
+}

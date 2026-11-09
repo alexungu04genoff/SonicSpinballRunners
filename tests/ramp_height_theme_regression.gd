@@ -63,6 +63,7 @@ func run() -> void:
   check(visual.has_node("SidePipes") == (theme == "chemical_plant"), "Side pipes belong only to Chemical Plant: " + theme)
   var counts := {}
   var border_uvs := true
+  var border_materials := true
   for child: Node in visual.get_children():
    if not child.has_meta("rail_surface"): continue
    var role: String = child.get_meta("rail_surface")
@@ -75,9 +76,18 @@ func run() -> void:
      low = minf(low, point.x)
      high = maxf(high, point.x)
      border_uvs = border_uvs and point.is_finite() and point.y in [0.0, 1.0]
-    border_uvs = border_uvs and high - low > 1.0 and child.material_override is ShaderMaterial
+    border_uvs = border_uvs and high - low > 1.0
+    var material: Material = child.material_override
+    if theme == "ice_cap":
+     # The approved Ice guards use plain matte snow, while retaining the same route chart.
+     border_materials = border_materials and material is StandardMaterial3D and material.get_meta("ice_cap_snow_railguard", false)
+     if material is StandardMaterial3D:
+      border_materials = border_materials and material.albedo_texture == null
+    else:
+     border_materials = border_materials and material is ShaderMaterial
   check(counts.get("Deck", 0) == 1 and counts.get("EdgeCap", 0) == 2 and counts.get("Fascia", 0) == 2 and counts.get("InnerEdge", 0) == 2 and counts.get("Underside", 0) == 1, "Both ramp ledges, both fascia faces and underside exist: " + theme)
-  check(border_uvs, "Both textured ramp borders span width and follow route distance: " + theme)
+  check(border_uvs, "Both ramp border charts span width and follow route distance: " + theme)
+  check(border_materials, "Ramp guards retain the approved plain-snow or textured material: " + theme)
   var definition: RefCounted = game.presentation.theme_definition
   check(definition.floor_border_material != null and definition.top_border_material != null and definition.floor_border_width > 0 and definition.top_border_width > 0, "Floor and wall ledge borders are enabled: " + theme)
   check(not game.presentation.terrain_root.find_children("TopSurfaceBorder", "MeshInstance3D", true, false).is_empty() and not game.presentation.terrain_root.find_children("FloorPathBorder", "MeshInstance3D", true, false).is_empty(), "Authored walls and floor contain rendered border meshes: " + theme)

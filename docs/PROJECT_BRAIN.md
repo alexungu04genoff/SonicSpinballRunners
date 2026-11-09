@@ -1,5 +1,13 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Remaining atmosphere identities after the texture pass — 2026-11-09
+
+Alex finished the selected textures and reopened Sky Sanctuary, Ice Cap, Lava Reef and Aquarium Park for atmosphere work. Retro stays on in normal play and remains the final appearance gate. Bro kept every selected albedo, normal strength, roughness response, plain Ice guard and scenery shape. Sky now has cleaner high-altitude light and steeper shadows; Ice keeps brilliant blue-white snow with less expanded glare; Lava gets cooler fill and deeper cavern/magma contrast; Aquarium gets a smaller lagoon-depth and highlight adjustment. The first four Defaults and every named variant stay as they were.
+
+This is four Default dictionaries, not another lighting system. Ordinary fog stays off; Lava's existing directional fog is lighter. No extra lights, viewports, passes, global hue trick, camera or gameplay change. The [remaining-theme audit](atmosphere-signatures-remaining/README.md) includes the pre-edit review, native before/after comparisons at three gameplay tiers with both Retro modes, runtime checks and limitations. The older blanket-flat bake test and textured-Ice-guard assertion now match Alex's approved material policy without relaxing collision, UV or recipe freshness checks. Human motion review still matters: pale Sky/Ice backgrounds, warm Lava hardware, Aquarium's blue character/deck, and existing cloud facets.
+
+All 96 recipes and the 32-suite baseline pass; four real transition pairs pass 366 checks with zero fallback. The current revised-material checkout has 12 hardware-palette failures and four Ice runtime hue failures, reproduced with the pre-edit Defaults. These differ from the historical first pass's 18/two counts below and remain open. The timing diagnostic overlapped two older Aquarium review windows, so its small GPU deltas are not isolated performance evidence.
+
 ## Ice Cap materials are current — Phases 4–5, 2026-11-09
 
 Alex approved the remaining phases after the tiny floor-density correction. The lower snow/ice pattern now repeats at 7.2 world units; upper snow stays at 8. The ramp is brighter pale ice, guards are plain matte snow, and the diamond trim is narrower and quieter. Nine selected albedos remain unchanged during the depth pass. Bro added restrained structural normals from the same snow, prism, block and bough shapes, with aligned response maps separating matte snow from reflective ice. Height PNGs are references only; no parallax or geometry changes. The retained 10C crystal shader stays unchanged. Reflection uses the existing sky, without new probes or CPU update loops.

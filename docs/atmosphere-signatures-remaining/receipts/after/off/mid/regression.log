@@ -1,0 +1,31 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | sky_sanctuary | nodes=34 | instantiate_ms=5.481 | graphics_ms=54.502 | retire_ms=0.362
+ENDLESS_DISK_WARM | sky_sanctuary | nodes=9 | instantiate_ms=0.503 | graphics_ms=7.298 | retire_ms=0.166
+ENDLESS_DISK_WARM | sky_sanctuary | nodes=496 | instantiate_ms=43.285 | graphics_ms=48.771 | retire_ms=6.288
+ENDLESS_PREPARED | sky_sanctuary:0 | source=disk | ms=923.09 | GPU warm frames=18 | cached=1 | geometry loaded=11 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Untitled Act
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | ice_cap | nodes=46 | instantiate_ms=4.271 | graphics_ms=89.402 | retire_ms=0.468
+ENDLESS_DISK_WARM | ice_cap | nodes=7 | instantiate_ms=0.455 | graphics_ms=21.1 | retire_ms=0.159
+ENDLESS_DISK_WARM | ice_cap | nodes=522 | instantiate_ms=53.424 | graphics_ms=62.947 | retire_ms=1.749
+ENDLESS_PREPARED | ice_cap:0 | source=disk | ms=874.568 | GPU warm frames=22 | cached=1 | geometry loaded=11 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Untitled Act
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | lava_reef | nodes=64 | instantiate_ms=14.083 | graphics_ms=109.881 | retire_ms=0.61
+ENDLESS_DISK_WARM | lava_reef | nodes=26 | instantiate_ms=0.822 | graphics_ms=0.667 | retire_ms=0.224
+ENDLESS_DISK_WARM | lava_reef | nodes=498 | instantiate_ms=44.888 | graphics_ms=61.462 | retire_ms=14.601
+ENDLESS_PREPARED | lava_reef:0 | source=disk | ms=826.111 | GPU warm frames=24 | cached=1 | geometry loaded=11 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Untitled Act
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | aquarium_park | nodes=40 | instantiate_ms=4.901 | graphics_ms=88.585 | retire_ms=0.429
+ENDLESS_DISK_WARM | aquarium_park | nodes=50 | instantiate_ms=1.556 | graphics_ms=35.196 | retire_ms=0.447
+ENDLESS_DISK_WARM | aquarium_park | nodes=816 | instantiate_ms=86.664 | graphics_ms=95.929 | retire_ms=2.892
+ENDLESS_PREPARED | aquarium_park:0 | source=disk | ms=902.316 | GPU warm frames=27 | cached=1 | geometry loaded=11 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Untitled Act
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+RESULT | Prototype appearance regression | 83 checks | 0 failures

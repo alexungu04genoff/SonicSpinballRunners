@@ -1,0 +1,17 @@
+{
+  "note": "Same current material source and disk recipes; only Ice Default restored to exact pre-edit bytes for baseline, then restored to final bytes in finally.",
+  "restored_sha256": "6F76B7F9B2DA4149642B5A160FC39D8E34E22D29AEAADF09D1DFF090D0B2D9F7",
+  "before": [
+    "ERROR: Next Zone owns shifted terrain",
+    "ERROR: Next Zone owns shifted terrain",
+    "ERROR: Next Zone owns shifted terrain",
+    "ERROR: Next Zone owns shifted terrain"
+  ],
+  "identical": true,
+  "after": [
+    "ERROR: Next Zone owns shifted terrain",
+    "ERROR: Next Zone owns shifted terrain",
+    "ERROR: Next Zone owns shifted terrain",
+    "ERROR: Next Zone owns shifted terrain"
+  ]
+}

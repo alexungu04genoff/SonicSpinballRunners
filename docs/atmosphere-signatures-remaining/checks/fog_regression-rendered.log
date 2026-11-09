@@ -1,0 +1,8 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060
+
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+GREEN_HILL_READY | Enter roll in | Q/E flippers | arrows steer | F1 physics tuning | F4 retro filter | O overview | C study
+LIGHTING_LAB_READY | forward_plus | VSync 0 | FPS cap 0 | F6 controls | wheel zoom | middle-drag pan | O follow/overview
+AUTHORED_MAIN_READY | Load 172.87 ms | Terrain 23.90 ms | Objects 0.97 ms | Rings 0.24 ms | Presentation 2498.90 ms | Ready 4239.31 ms
+FOG_REGRESSION | checks=31 failures=0

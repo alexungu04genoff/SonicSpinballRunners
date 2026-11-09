@@ -1,0 +1,31 @@
+{
+  "identical": true,
+  "after": [
+    "ERROR: ice_cap cosmetic slot responds: palette/snow_tint",
+    "ERROR: ice_cap cosmetic slot responds: palette/snow_tint",
+    "ERROR: ice_cap cosmetic slot responds: palette/snow_tint",
+    "ERROR: ice_cap cosmetic slot responds: palette/snow_tint",
+    "ERROR: ice_cap cosmetic slot responds: palette/snow_tint",
+    "ERROR: ice_cap cosmetic slot responds: palette/snow_tint",
+    "ERROR: ice_cap cosmetic slot responds: palette/ice_tint",
+    "ERROR: ice_cap cosmetic slot responds: palette/ice_tint",
+    "ERROR: lava_reef cosmetic slot responds: palette/metal_tint",
+    "ERROR: lava_reef cosmetic slot responds: palette/metal_tint",
+    "ERROR: aquarium_park cosmetic slot responds: palette/architecture_tint",
+    "ERROR: aquarium_park cosmetic slot responds: palette/architecture_tint"
+  ],
+  "before": [
+    "ERROR: ice_cap cosmetic slot responds: palette/snow_tint",
+    "ERROR: ice_cap cosmetic slot responds: palette/snow_tint",
+    "ERROR: ice_cap cosmetic slot responds: palette/snow_tint",
+    "ERROR: ice_cap cosmetic slot responds: palette/snow_tint",
+    "ERROR: ice_cap cosmetic slot responds: palette/snow_tint",
+    "ERROR: ice_cap cosmetic slot responds: palette/snow_tint",
+    "ERROR: ice_cap cosmetic slot responds: palette/ice_tint",
+    "ERROR: ice_cap cosmetic slot responds: palette/ice_tint",
+    "ERROR: lava_reef cosmetic slot responds: palette/metal_tint",
+    "ERROR: lava_reef cosmetic slot responds: palette/metal_tint",
+    "ERROR: aquarium_park cosmetic slot responds: palette/architecture_tint",
+    "ERROR: aquarium_park cosmetic slot responds: palette/architecture_tint"
+  ]
+}

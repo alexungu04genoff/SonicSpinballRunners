@@ -1,14 +1,18 @@
 [CmdletBinding()]
 param(
     [string]$EvidenceRoot = 'test-results/atmosphere-signatures',
-    [string]$OutputDirectory = 'docs/atmosphere-signatures'
+    [string]$OutputDirectory = 'docs/atmosphere-signatures',
+    [string[]]$Themes = @('green_hill', 'chemical_plant', 'rooftop_run', 'casino_night'),
+    [string[]]$ChangedThemes = @('chemical_plant', 'casino_night'),
+    [switch]$UniformLayout
 )
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 $root = (Resolve-Path -LiteralPath $EvidenceRoot).Path
 $destination = [IO.Path]::GetFullPath($OutputDirectory)
-$themes = @('green_hill', 'chemical_plant', 'rooftop_run', 'casino_night')
-$changed = @('chemical_plant', 'casino_night')
+if ($Themes.Count -ne 4 -or @($Themes | Select-Object -Unique).Count -ne 4) { throw 'This sheet requires four unique themes.' }
+if (@($ChangedThemes | Where-Object { $_ -notin $Themes }).Count) { throw 'Changed themes must belong to the sheet.' }
+$changed = $ChangedThemes
 $rows = [Collections.Generic.List[object]]::new()
 $font = [Drawing.Font]::new('Segoe UI', 18)
 function Folder([string]$relative) {
@@ -17,7 +21,8 @@ function Folder([string]$relative) {
     return $path
 }
 function Batch([string]$stage, [string]$mode, [string]$tier) {
-    $relative = if ($stage -eq 'before') {
+    $relative = if ($UniformLayout) { "$stage/$mode/$tier" }
+    elseif ($stage -eq 'before') {
         if ($mode -eq 'off' -and $tier -in @('spawn', 'mid')) { "baseline/$mode/$tier" }
         else { "before-four/$mode/$tier" }
     } else { "trial1/$mode/$tier" }
@@ -100,4 +105,4 @@ foreach ($mode in @('production','off')) {
 }
 $font.Dispose()
 $rows | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath "$destination/pair-verification.json" -Encoding utf8NoBOM
-Write-Output "Verified and exported $($rows.Count) matched records. Controls explicitly reuse unchanged baseline images."
+Write-Output "Verified and exported $($rows.Count) matched records. Any unchanged controls explicitly reuse baseline images."

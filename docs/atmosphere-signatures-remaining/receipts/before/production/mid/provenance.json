@@ -1,0 +1,12 @@
+{
+  "scope": "Current working tree, including uncommitted art",
+  "act": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
+  "worktree": [
+    " M tests/endless_bake_audit.gd",
+    " M tests/flat_surfaces_regression.gd",
+    " M tests/prototype_atmosphere_profile.gd",
+    " M tests/prototype_atmosphere_transition.gd",
+    " M tools/export_atmosphere_signatures.ps1"
+  ],
+  "head": "4e2406d3f0c74c73f10d3a2212c89630275e42de"
+}

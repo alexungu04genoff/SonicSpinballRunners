@@ -4,11 +4,15 @@ The production model is **Act geometry × Theme × Atmosphere Variant**. Geometr
 
 ## Production Default atmosphere signatures — 2026-11-09
 
-The follow-up identity pass covers Green Hill, Chemical Plant, Rooftop Run and Casino Night. Alex deferred the other four themes until their texture rework and confirmed that production Retro remains on. OFF captures are lighting diagnostics only.
+The first identity pass covered Green Hill, Chemical Plant, Rooftop Run and Casino Night. Alex initially deferred the other four themes until their texture rework, then requested the remaining pass after those materials landed. Production Retro remains on. OFF captures are lighting diagnostics only.
 
 Chemical's Default now has darker cool fill, deeper reservoir/horizon tones and tighter floor-lamp halos, reducing broad yellow spill against Rings. Casino's Default uses darker violet surroundings, steeper sun direction and localized neon against its readable blue deck. Green Hill's cheerful daylight and Rooftop's cream/terracotta afternoon already fit their targets and are deliberately unchanged. Existing named variants, hue controls, exposure, gameplay materials and device graphics settings remain intact. Fog stays off; no new rendering path is enabled.
 
 The [four-theme audit and evidence](atmosphere-signatures/README.md) records old/new character, exact deltas, matched 1:1 Prototype comparisons at three camera tiers with Retro ON/OFF, streamed transitions, timing and verification. Chemical's sampled GPU cost is unchanged; Casino's approximately +0.03 ms is smaller than baseline variation. Alex still needs to judge moving Rings over Chemical lamps and the blue character on Casino's blue deck. These signatures supersede the earlier broad-halo direction for Chemical below; historical authoring notes remain for context.
+
+The [remaining four-theme pass](atmosphere-signatures-remaining/README.md) starts from the revised selected textures and retains their approved structural normals. Sky Sanctuary now uses cleaner, less-yellow sunlight, cooler fill and a steeper key over its jade/cream ruins. Ice Cap reduces light energy and decorative glow so Retro retains more bright blue-white snow detail. Lava Reef lowers and cools its ambient fill, deepens cavern/magma darks and restrains its existing directional fog and glow. Aquarium Park makes a smaller adjustment: deeper lagoon tones, less ambient wash and contained decorative highlights while retaining the bright red/blue architecture. Exact changes and native comparisons are linked in that audit.
+
+Only the four saved Default value dictionaries change. Exposure, tonemapper, all named variants, the first four Defaults, gameplay material palettes and device quality remain intact. Ordinary fog stays off. Lava's existing directional fog remains enabled with lower density; no optional render path, light or viewport is added. Readability in motion remains a playtest question, particularly Rings on pale Sky/Ice stone and snow, warm Lava targets, and the blue character over Aquarium's blue insets.
 
 ## Ownership and storage
 

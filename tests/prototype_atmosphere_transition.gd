@@ -23,8 +23,18 @@ func frames(count: int) -> void:
  for index in count: await process_frame
 
 func run() -> void:
+ var pairs: Array = [["green_hill", "casino_night"], ["chemical_plant", "rooftop_run"], ["chemical_plant", "casino_night"]]
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--output="): output = argument.trim_prefix("--output=")
+  if argument.begins_with("--pairs="):
+   pairs.clear()
+   for pair: String in argument.trim_prefix("--pairs=").split(","):
+    var themes := pair.split(":")
+    if themes.size() != 2 or themes[0] == themes[1] or themes[0] not in Fixture.Registry.IDS or themes[1] not in Fixture.Registry.IDS:
+     push_error("Expected two different registered themes per transition pair: " + pair)
+     quit(1)
+     return
+    pairs.append(Array(themes))
  if DisplayServer.get_name() == "headless":
   push_error("Transition appearance review requires a graphical renderer.")
   quit(1)
@@ -33,7 +43,7 @@ func run() -> void:
  root.gui_disable_input = true
  DirAccess.make_dir_recursive_absolute(output)
  Options.settings_path = output.path_join("isolated-graphics.cfg")
- for pair: Array in [["green_hill", "casino_night"], ["chemical_plant", "rooftop_run"], ["chemical_plant", "casino_night"]]:
+ for pair: Array in pairs:
   await inspect_pair(pair)
  FileAccess.open(output.path_join("manifest.json"), FileAccess.WRITE).store_string(JSON.stringify({
   "complete": failures == 0, "checks": checks, "failures": failures, "records": records,
@@ -128,7 +138,14 @@ func inspect_pair(pair: Array) -> void:
   check(is_equal_approx(weight, smoothstep(0.0, 1.0, position_fraction)), "Real camera-distance blend reaches expected weight")
   check(is_equal_approx(environment.tonemap_exposure, lerpf(before.environment.tonemap_exposure, after.environment.tonemap_exposure, weight)), "Exposure interpolates without a midpoint pop")
   check(environment.ambient_light_color.is_equal_approx(before.environment.ambient_light_color.lerp(after.environment.ambient_light_color, weight)), "Ambient color interpolates")
-  check(not environment.fog_enabled, "Scoped clean-air Defaults do not create a fog wall")
+  check(environment.fog_enabled == (before.environment.fog_enabled or after.environment.fog_enabled), "Ordinary fog enablement follows the two endpoints")
+  var fog_a := float(before.values.get("directional_fog/density", 0.65)) if before.values.get("directional_fog/enabled", false) else 0.0
+  var fog_b := float(after.values.get("directional_fog/density", 0.65)) if after.values.get("directional_fog/enabled", false) else 0.0
+  var expected_density := lerpf(fog_a, fog_b, weight)
+  var fog_quad: MeshInstance3D = game.presentation.camera.get_node_or_null("DirectionalFog")
+  check((fog_quad != null and fog_quad.visible) == (expected_density > 0.0), "Directional fog visibility follows interpolated density")
+  if expected_density > 0.0 and fog_quad != null:
+   check(is_equal_approx(float(fog_quad.material_override.get_shader_parameter("fog_density")), expected_density), "Directional fog fades continuously between enabled and disabled Zones")
   check(is_equal_approx(environment.glow_intensity, lerpf(before.environment.glow_intensity, after.environment.glow_intensity, weight)), "Glow intensity interpolates")
   check(before.values == own_values[0] and after.values == own_values[1], "Blending does not rewrite Zone palette values")
   await frames(12)
@@ -137,7 +154,9 @@ func inspect_pair(pair: Array) -> void:
   check(root.get_texture().get_image().save_png(output.path_join(filename)) == OK, "Save transition frame")
   receipt.samples.append({"position_fraction": position_fraction, "blend": weight, "image": filename,
    "camera": str(game.presentation.camera.global_transform), "exposure": environment.tonemap_exposure,
-   "glow": environment.glow_intensity, "retro": game.retro_filter.selected_effects.duplicate()})
+   "glow": environment.glow_intensity, "directional_fog_density": expected_density,
+   "directional_fog_visible": fog_quad != null and fog_quad.visible,
+   "retro": game.retro_filter.selected_effects.duplicate()})
  check(identity == [game.ball.get_instance_id(), game.presentation.camera.get_instance_id()], "Transition preserves gameplay identities")
  check(gameplay == [game.ball.position, game.ball.linear_velocity, game.score, game.act_score, game.active_sequence], "Evidence camera does not advance gameplay")
  check(game.library.fallback_builds == 0, "No source fallback in transitions")

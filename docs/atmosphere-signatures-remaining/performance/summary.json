@@ -1,0 +1,68 @@
+{
+  "device": "NVIDIA GeForce RTX 4060",
+  "isolated": false,
+  "samples_per_block": 360,
+  "reason": "Two pre-existing Aquarium texture review processes remained open; not stopped by this task. Timings are diagnostic only and cannot establish a causal cost difference.",
+  "rows": [
+    {
+      "theme": "sky_sanctuary",
+      "before_gpu_median_mean_ms": 0.8699999805539844,
+      "before_draws": 670,
+      "measured_block_pipeline_counters_stable": true,
+      "after_gpu_median_mean_ms": 0.8564999885857105,
+      "materials": [
+        65
+      ],
+      "resources": [
+        1244.0
+      ],
+      "after_draws": 665,
+      "delta_ms": -0.013499991968273894
+    },
+    {
+      "theme": "ice_cap",
+      "before_gpu_median_mean_ms": 0.8110000044107435,
+      "before_draws": 516,
+      "measured_block_pipeline_counters_stable": true,
+      "after_gpu_median_mean_ms": 0.8224999969825151,
+      "materials": [
+        64
+      ],
+      "resources": [
+        1299.0
+      ],
+      "after_draws": 516,
+      "delta_ms": 0.011499992571771589
+    },
+    {
+      "theme": "lava_reef",
+      "before_gpu_median_mean_ms": 0.9259999897330999,
+      "before_draws": 584,
+      "measured_block_pipeline_counters_stable": true,
+      "after_gpu_median_mean_ms": 0.912500005215406,
+      "materials": [
+        68
+      ],
+      "resources": [
+        1321.0
+      ],
+      "after_draws": 584,
+      "delta_ms": -0.013499984517693964
+    },
+    {
+      "theme": "aquarium_park",
+      "before_gpu_median_mean_ms": 0.8995000077411535,
+      "before_draws": 606,
+      "measured_block_pipeline_counters_stable": true,
+      "after_gpu_median_mean_ms": 0.9289999939501286,
+      "materials": [
+        69
+      ],
+      "resources": [
+        1635.0
+      ],
+      "after_draws": 606,
+      "delta_ms": 0.029499986208975093
+    }
+  ]
+}

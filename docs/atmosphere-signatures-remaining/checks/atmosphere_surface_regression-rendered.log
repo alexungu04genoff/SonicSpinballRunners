@@ -1,0 +1,16 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060
+
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+GREEN_HILL_READY | Enter roll in | Q/E flippers | arrows steer | F1 physics tuning | F4 retro filter | O overview | C study
+LIGHTING_LAB_READY | forward_plus | VSync 0 | FPS cap 0 | F6 controls | wheel zoom | middle-drag pan | O follow/overview
+AUTHORED_MAIN_READY | Load 146.97 ms | Terrain 14.51 ms | Objects 0.66 ms | Rings 0.19 ms | Presentation 2532.80 ms | Ready 4188.95 ms
+ATMOSPHERE_SURFACES | green_hill | { "terrain_ground": 1, "terrain_walls": 2, "terrain_borders": 1, "terrain_upper": 1, "terrain_ledges": 1, "decor": 44, "foliage": 124, "": 17 }
+ATMOSPHERE_SURFACES | chemical_plant | { "terrain_walls": 2, "terrain_upper": 1, "terrain_ground": 1, "terrain_borders": 1, "terrain_ledges": 1, "decor": 10 }
+ATMOSPHERE_SURFACES | rooftop_run | { "terrain_walls": 2, "terrain_ground": 1, "foliage": 4, "terrain_borders": 11, "terrain_upper": 1, "terrain_ledges": 1, "decor": 12, "": 6 }
+ATMOSPHERE_SURFACES | casino_night | { "terrain_walls": 2, "terrain_ground": 1, "terrain_borders": 1, "terrain_upper": 1, "terrain_ledges": 1, "decor": 12, "": 2 }
+ATMOSPHERE_SURFACES | sky_sanctuary | { "terrain_walls": 3, "terrain_ground": 1, "terrain_borders": 1, "terrain_upper": 1, "terrain_ledges": 1, "decor": 8, "foliage": 4, "": 4 }
+ATMOSPHERE_SURFACES | ice_cap | { "terrain_walls": 3, "terrain_ground": 1, "foliage": 3, "terrain_borders": 1, "terrain_upper": 1, "terrain_ledges": 1, "decor": 7, "": 2 }
+ATMOSPHERE_SURFACES | lava_reef | { "terrain_walls": 3, "terrain_ground": 1, "terrain_borders": 1, "terrain_upper": 1, "terrain_ledges": 1, "decor": 12 }
+ATMOSPHERE_SURFACES | aquarium_park | { "terrain_walls": 3, "terrain_ground": 1, "foliage": 4, "terrain_borders": 1, "terrain_upper": 1, "terrain_ledges": 1, "decor": 12 }
+ATMOSPHERE_SURFACES_RESULT | checks=1631 failures=0

@@ -1,0 +1,220 @@
+{
+  "aquarium_park": [
+    {
+      "field": "emission",
+      "after": "0.72",
+      "before": "0.8"
+    },
+    {
+      "field": "env/ambient_light_color",
+      "after": "Color(0.52, 0.78, 0.92, 1)",
+      "before": "Color(0.67843137, 0.84313725, 0.92156863, 1)"
+    },
+    {
+      "field": "env/ambient_light_energy",
+      "after": "0.56",
+      "before": "0.7"
+    },
+    {
+      "field": "env/glow_hdr_threshold",
+      "after": "1.2",
+      "before": "1.0"
+    },
+    {
+      "field": "env/glow_intensity",
+      "after": "0.40",
+      "before": "0.52"
+    },
+    {
+      "field": "palette/lagoon_deep",
+      "after": "Color(0.035, 0.18, 0.34, 1)",
+      "before": "Color(0.07058824, 0.29803922, 0.44705882, 1)"
+    },
+    {
+      "field": "palette/lagoon_wave",
+      "after": "Color(0.07, 0.42, 0.62, 1)",
+      "before": "Color(0.12941176, 0.52549020, 0.63529412, 1)"
+    },
+    {
+      "field": "palette/water_reflection",
+      "after": "Color(0.45, 0.72, 0.86, 1)",
+      "before": "Color(0.54117647, 0.74901961, 0.84705882, 1)"
+    },
+    {
+      "field": "sun/light_color",
+      "after": "Color(0.86, 0.94, 1.0, 1)",
+      "before": "Color(0.76078431, 0.90588235, 0.96470588, 1)"
+    },
+    {
+      "field": "sun/light_energy",
+      "after": "0.80",
+      "before": "0.78"
+    }
+  ],
+  "ice_cap": [
+    {
+      "field": "emission",
+      "after": "0.5",
+      "before": "0.65"
+    },
+    {
+      "field": "env/ambient_light_color",
+      "after": "Color(0.64, 0.80, 0.98, 1)",
+      "before": "Color(0.74509804, 0.86274510, 0.96078431, 1)"
+    },
+    {
+      "field": "env/ambient_light_energy",
+      "after": "0.38",
+      "before": "0.52"
+    },
+    {
+      "field": "env/glow_hdr_threshold",
+      "after": "1.2",
+      "before": "1.1"
+    },
+    {
+      "field": "env/glow_intensity",
+      "after": "0.08",
+      "before": "0.13"
+    },
+    {
+      "field": "palette/ice_upper",
+      "after": "Color(0.16, 0.42, 0.72, 1)",
+      "before": "Color(0.21176471, 0.49803922, 0.74117647, 1)"
+    },
+    {
+      "field": "sun/light_color",
+      "after": "Color(0.95, 0.98, 1.0, 1)",
+      "before": "Color(1.00000000, 0.97647059, 0.92941176, 1)"
+    },
+    {
+      "field": "sun/light_energy",
+      "after": "0.65",
+      "before": "0.8"
+    }
+  ],
+  "lava_reef": [
+    {
+      "field": "directional_fog/color",
+      "after": "Color(0.40, 0.16, 0.10, 1)",
+      "before": "Color(0.61568627, 0.28235294, 0.20392157, 1)"
+    },
+    {
+      "field": "directional_fog/density",
+      "after": "0.12",
+      "before": "0.16"
+    },
+    {
+      "field": "env/ambient_light_color",
+      "after": "Color(0.55, 0.60, 0.78, 1)",
+      "before": "Color(0.76078431, 0.66274510, 0.64705882, 1)"
+    },
+    {
+      "field": "env/ambient_light_energy",
+      "after": "0.40",
+      "before": "0.62"
+    },
+    {
+      "field": "env/background_color",
+      "after": "Color(0.025, 0.015, 0.04, 1)",
+      "before": "Color(0.05490196, 0.02745098, 0.05490196, 1)"
+    },
+    {
+      "field": "env/glow_hdr_threshold",
+      "after": "1.25",
+      "before": "1.1"
+    },
+    {
+      "field": "env/glow_intensity",
+      "after": "0.40",
+      "before": "0.56"
+    },
+    {
+      "field": "palette/cavern_bounce",
+      "after": "Color(0.54, 0.18, 0.09, 1)",
+      "before": "Color(0.70980392, 0.32549020, 0.17254902, 1)"
+    },
+    {
+      "field": "palette/cavern_deep",
+      "after": "Color(0.035, 0.025, 0.07, 1)",
+      "before": "Color(0.08627451, 0.14117647, 0.12941176, 1)"
+    },
+    {
+      "field": "palette/magma_core",
+      "after": "Color(1.0, 0.73, 0.36, 1)",
+      "before": "Color(1.00000000, 0.83529412, 0.54901961, 1)"
+    },
+    {
+      "field": "palette/magma_crust",
+      "after": "Color(0.10, 0.07, 0.14, 1)",
+      "before": "Color(0.20784314, 0.12549020, 0.16078431, 1)"
+    },
+    {
+      "field": "palette/magma_dark",
+      "after": "Color(0.34, 0.06, 0.035, 1)",
+      "before": "Color(0.50588235, 0.14117647, 0.07843137, 1)"
+    },
+    {
+      "field": "sun/light_energy",
+      "after": "0.62",
+      "before": "0.75"
+    }
+  ],
+  "sky_sanctuary": [
+    {
+      "field": "env/ambient_light_color",
+      "after": "Color(0.62, 0.78, 0.98, 1)",
+      "before": "Color(0.72549020, 0.85098039, 0.92156863, 1)"
+    },
+    {
+      "field": "env/ambient_light_energy",
+      "after": "0.36",
+      "before": "0.4"
+    },
+    {
+      "field": "palette/bank_highlight",
+      "after": "Color(0.83, 0.91, 0.97, 1)",
+      "before": "Color(0.71764706, 0.80784314, 0.84313725, 1)"
+    },
+    {
+      "field": "palette/bank_shadow",
+      "after": "Color(0.32, 0.52, 0.73, 1)",
+      "before": "Color(0.45490196, 0.56470588, 0.66666667, 1)"
+    },
+    {
+      "field": "palette/ruin_haze",
+      "after": "Color(0.62, 0.79, 0.93, 1)",
+      "before": "Color(0.69803922, 0.82352941, 0.86666667, 1)"
+    },
+    {
+      "field": "palette/sea_highlight",
+      "after": "Color(0.78, 0.89, 0.97, 1)",
+      "before": "Color(0.65882353, 0.78431373, 0.87450980, 1)"
+    },
+    {
+      "field": "palette/sea_shadow",
+      "after": "Color(0.25, 0.48, 0.72, 1)",
+      "before": "Color(0.36470588, 0.55686275, 0.67843137, 1)"
+    },
+    {
+      "field": "sun/light_color",
+      "after": "Color(1.0, 0.98, 0.94, 1)",
+      "before": "Color(1.00000000, 0.94117647, 0.78823529, 1)"
+    },
+    {
+      "field": "sun/light_energy",
+      "after": "0.78",
+      "before": "0.83"
+    },
+    {
+      "field": "sun_pitch",
+      "after": "-62.0",
+      "before": "-48.0"
+    },
+    {
+      "field": "sun_yaw",
+      "after": "-18.0",
+      "before": "-35.0"
+    }
+  ]
+}

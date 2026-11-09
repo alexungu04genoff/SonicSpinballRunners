@@ -1,0 +1,106 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+GREEN_HILL_READY | Enter roll in | Q/E flippers | arrows steer | F1 physics tuning | F4 retro filter | O overview | C study
+AUTHORED_MAIN_READY | Load 2.39 ms | Terrain 0.21 ms | Objects 6.66 ms | Rings 0.29 ms | Presentation 185.54 ms | Ready 541.35 ms
+PASS | Existing sandbox still loads with deck clearance checks
+PASS | New rails default to a gentler 40-pixel peak
+PASS | Height 20.0 remains valid authored data
+PASS | Height 20.0 works above clear table space
+PASS | Height 20.0 survives Save and Load exactly
+PASS | Height 20.0 respects the actual 32.5-pixel terrain plus deck and air gap
+PASS | Height 30.0 remains valid authored data
+PASS | Height 30.0 works above clear table space
+PASS | Height 30.0 survives Save and Load exactly
+PASS | Height 30.0 respects the actual 32.5-pixel terrain plus deck and air gap
+PASS | Height 40.0 remains valid authored data
+PASS | Height 40.0 works above clear table space
+PASS | Height 40.0 survives Save and Load exactly
+PASS | Height 40.0 respects the actual 32.5-pixel terrain plus deck and air gap
+PASS | 20-pixel rail clears a small authored bumper
+PASS | Low rail cannot visually cut through a bumper
+PASS | Ramp selects theme green_hill
+PASS | Ramp has themed deck, edge thickness and restrained entry marker: green_hill
+PASS | Theme switch preserves ball, mechanics and exact rail route: green_hill
+PASS | Ramp theme remains collisionless: green_hill
+PASS | Side pipes belong only to Chemical Plant: green_hill
+PASS | Both ramp ledges, both fascia faces and underside exist: green_hill
+PASS | Both ramp border charts span width and follow route distance: green_hill
+PASS | Ramp guards retain the approved plain-snow or textured material: green_hill
+PASS | Floor and wall ledge borders are enabled: green_hill
+PASS | Authored walls and floor contain rendered border meshes: green_hill
+PASS | Ramp selects theme chemical_plant
+PASS | Ramp has themed deck, edge thickness and restrained entry marker: chemical_plant
+PASS | Theme switch preserves ball, mechanics and exact rail route: chemical_plant
+PASS | Ramp theme remains collisionless: chemical_plant
+PASS | Side pipes belong only to Chemical Plant: chemical_plant
+PASS | Both ramp ledges, both fascia faces and underside exist: chemical_plant
+PASS | Both ramp border charts span width and follow route distance: chemical_plant
+PASS | Ramp guards retain the approved plain-snow or textured material: chemical_plant
+PASS | Floor and wall ledge borders are enabled: chemical_plant
+PASS | Authored walls and floor contain rendered border meshes: chemical_plant
+PASS | Chemical ramp owns a separate material using the current theme shader and ramp atmosphere category
+PASS | Chemical ramp retains the authoritative theme deck texture
+PASS | Chemical ramp texture matches current selected artwork (or the shipped base artwork when no selection exists)
+PASS | Both blue pipes, metal couplings and yellow/cyan details use eight batched meshes
+PASS | Ramp selects theme rooftop_run
+PASS | Ramp has themed deck, edge thickness and restrained entry marker: rooftop_run
+PASS | Theme switch preserves ball, mechanics and exact rail route: rooftop_run
+PASS | Ramp theme remains collisionless: rooftop_run
+PASS | Side pipes belong only to Chemical Plant: rooftop_run
+PASS | Both ramp ledges, both fascia faces and underside exist: rooftop_run
+PASS | Both ramp border charts span width and follow route distance: rooftop_run
+PASS | Ramp guards retain the approved plain-snow or textured material: rooftop_run
+PASS | Floor and wall ledge borders are enabled: rooftop_run
+PASS | Authored walls and floor contain rendered border meshes: rooftop_run
+PASS | Ramp selects theme casino_night
+PASS | Ramp has themed deck, edge thickness and restrained entry marker: casino_night
+PASS | Theme switch preserves ball, mechanics and exact rail route: casino_night
+PASS | Ramp theme remains collisionless: casino_night
+PASS | Side pipes belong only to Chemical Plant: casino_night
+PASS | Both ramp ledges, both fascia faces and underside exist: casino_night
+PASS | Both ramp border charts span width and follow route distance: casino_night
+PASS | Ramp guards retain the approved plain-snow or textured material: casino_night
+PASS | Floor and wall ledge borders are enabled: casino_night
+PASS | Authored walls and floor contain rendered border meshes: casino_night
+PASS | Ramp selects theme sky_sanctuary
+PASS | Ramp has themed deck, edge thickness and restrained entry marker: sky_sanctuary
+PASS | Theme switch preserves ball, mechanics and exact rail route: sky_sanctuary
+PASS | Ramp theme remains collisionless: sky_sanctuary
+PASS | Side pipes belong only to Chemical Plant: sky_sanctuary
+PASS | Both ramp ledges, both fascia faces and underside exist: sky_sanctuary
+PASS | Both ramp border charts span width and follow route distance: sky_sanctuary
+PASS | Ramp guards retain the approved plain-snow or textured material: sky_sanctuary
+PASS | Floor and wall ledge borders are enabled: sky_sanctuary
+PASS | Authored walls and floor contain rendered border meshes: sky_sanctuary
+PASS | Ramp selects theme ice_cap
+PASS | Ramp has themed deck, edge thickness and restrained entry marker: ice_cap
+PASS | Theme switch preserves ball, mechanics and exact rail route: ice_cap
+PASS | Ramp theme remains collisionless: ice_cap
+PASS | Side pipes belong only to Chemical Plant: ice_cap
+PASS | Both ramp ledges, both fascia faces and underside exist: ice_cap
+PASS | Both ramp border charts span width and follow route distance: ice_cap
+PASS | Ramp guards retain the approved plain-snow or textured material: ice_cap
+PASS | Floor and wall ledge borders are enabled: ice_cap
+PASS | Authored walls and floor contain rendered border meshes: ice_cap
+PASS | Ramp selects theme lava_reef
+PASS | Ramp has themed deck, edge thickness and restrained entry marker: lava_reef
+PASS | Theme switch preserves ball, mechanics and exact rail route: lava_reef
+PASS | Ramp theme remains collisionless: lava_reef
+PASS | Side pipes belong only to Chemical Plant: lava_reef
+PASS | Both ramp ledges, both fascia faces and underside exist: lava_reef
+PASS | Both ramp border charts span width and follow route distance: lava_reef
+PASS | Ramp guards retain the approved plain-snow or textured material: lava_reef
+PASS | Floor and wall ledge borders are enabled: lava_reef
+PASS | Authored walls and floor contain rendered border meshes: lava_reef
+PASS | Ramp selects theme aquarium_park
+PASS | Ramp has themed deck, edge thickness and restrained entry marker: aquarium_park
+PASS | Theme switch preserves ball, mechanics and exact rail route: aquarium_park
+PASS | Ramp theme remains collisionless: aquarium_park
+PASS | Side pipes belong only to Chemical Plant: aquarium_park
+PASS | Both ramp ledges, both fascia faces and underside exist: aquarium_park
+PASS | Both ramp border charts span width and follow route distance: aquarium_park
+PASS | Ramp guards retain the approved plain-snow or textured material: aquarium_park
+PASS | Floor and wall ledge borders are enabled: aquarium_park
+PASS | Authored walls and floor contain rendered border meshes: aquarium_park
+RESULT | Ramp height and themes | 100 checks | 0 failures
