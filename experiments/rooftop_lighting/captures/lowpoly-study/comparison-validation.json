@@ -1,0 +1,11 @@
+{
+  "checks": "PASS",
+  "geometry_camera_captures": 16,
+  "comparison_lighting_projection_match": true,
+  "zero_strength_floor_rgb_mae": {
+    "beveled-block": 0.0003880803880803881,
+    "faceted-stone": 0.0003880803880803881
+  },
+  "ball_interior_max_rgb_difference": 0.0,
+  "ball_mask_pixels": 70
+}

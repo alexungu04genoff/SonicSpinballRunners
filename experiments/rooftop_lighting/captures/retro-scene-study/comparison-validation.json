@@ -1,0 +1,74 @@
+{
+  "checks": "PASS",
+  "same_cameras_lighting_exposure_strengths_settings": true,
+  "same_motion_trajectory_and_VHS_phase": true,
+  "sequences": 8,
+  "total_frames": 1440,
+  "video_fps": 30,
+  "video_seconds": 6,
+  "camera_motion_seconds": 4,
+  "fixed_camera_fixed_filter_time_pixel_identical": true,
+  "broad_material_response": {
+    "beveled": {
+      "normal_lowpass_mean_abs_rgb_difference": 1.040167748917749,
+      "retro_lowpass_mean_abs_rgb_difference": 0.8696951659451659,
+      "normal_retro_lowpass_response_correlation": 0.8535642064890949
+    },
+    "faceted": {
+      "normal_lowpass_mean_abs_rgb_difference": 1.246787518037518,
+      "retro_lowpass_mean_abs_rgb_difference": 1.0917027417027416,
+      "normal_retro_lowpass_response_correlation": 0.8923503540091607
+    },
+    "hybrid": {
+      "normal_lowpass_mean_abs_rgb_difference": 1.1459758297258298,
+      "retro_lowpass_mean_abs_rgb_difference": 0.9950847763347763,
+      "normal_retro_lowpass_response_correlation": 0.8862665700722916
+    }
+  },
+  "stationary_camera_temporal_noise": {
+    "normal-none": {
+      "stationary_camera_mean_frame_difference_rgb": 0.0,
+      "max_frame_difference_rgb": 0.0
+    },
+    "normal-beveled": {
+      "stationary_camera_mean_frame_difference_rgb": 0.0,
+      "max_frame_difference_rgb": 0.0
+    },
+    "normal-faceted": {
+      "stationary_camera_mean_frame_difference_rgb": 0.0,
+      "max_frame_difference_rgb": 0.0
+    },
+    "normal-hybrid": {
+      "stationary_camera_mean_frame_difference_rgb": 0.0,
+      "max_frame_difference_rgb": 0.0
+    },
+    "retro-none": {
+      "stationary_camera_mean_frame_difference_rgb": 3.7602836510230757,
+      "max_frame_difference_rgb": 3.8849689960479736
+    },
+    "retro-beveled": {
+      "stationary_camera_mean_frame_difference_rgb": 3.7727074458681304,
+      "max_frame_difference_rgb": 3.8973913192749023
+    },
+    "retro-faceted": {
+      "stationary_camera_mean_frame_difference_rgb": 3.7736879052786994,
+      "max_frame_difference_rgb": 3.9003312587738037
+    },
+    "retro-hybrid": {
+      "stationary_camera_mean_frame_difference_rgb": 3.772000658101049,
+      "max_frame_difference_rgb": 3.8956658840179443
+    }
+  },
+  "moving_material_difference_change_per_3_frames_not_a_shimmer_score": {
+    "normal": {
+      "beveled": 2.610072258191231,
+      "faceted": 1.9054343303044636,
+      "hybrid": 2.0962422291437783
+    },
+    "retro": {
+      "beveled": 1.5495987274707892,
+      "faceted": 1.3745355606079102,
+      "hybrid": 1.384848299698952
+    }
+  }
+}

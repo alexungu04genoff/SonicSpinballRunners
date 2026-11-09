@@ -1,0 +1,12 @@
+{
+  "source": "assets\\textures\\rooftop_run\\floor.png",
+  "source_sha256": "67ae264a4b130fb996054f4200e861303ddb27a58e193e0a431c4835aaf2e058",
+  "size": 1024,
+  "repeat_world": 4.0,
+  "normal_bake_relief_world": 0.05,
+  "normal_convention": "OpenGL +X +Y +Z; green points up the image",
+  "grout_max": 0.00392156862745098,
+  "centre_min": 0.996078431372549,
+  "shoulder_mean": 0.6137254901960784,
+  "checks": "PASS"
+}

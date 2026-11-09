@@ -1,0 +1,166 @@
+{
+  "close-convex-normal": {
+    "camera": "[X: (0.997459, 0.0, -0.071247), Y: (-0.041342, 0.814432, -0.578784), Z: (0.058026, 0.580259, 0.812362), O: (4.75, 1.02, 5.6)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "height_strength": 0.0,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "normal_strength": 1.0,
+    "size": "(1280, 690)"
+  },
+  "close-convex-parallax": {
+    "camera": "[X: (0.997459, 0.0, -0.071247), Y: (-0.041342, 0.814432, -0.578784), Z: (0.058026, 0.580259, 0.812362), O: (4.75, 1.02, 5.6)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "height_strength": 0.04,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "normal_strength": 1.0,
+    "size": "(1280, 690)"
+  },
+  "close-lighting-only": {
+    "camera": "[X: (0.997459, 0.0, -0.071247), Y: (-0.041342, 0.814432, -0.578784), Z: (0.058026, 0.580259, 0.812362), O: (4.75, 1.02, 5.6)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "height_strength": 0.0,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "normal_strength": 0.0,
+    "size": "(1280, 690)"
+  },
+  "close-normal-only": {
+    "camera": "[X: (0.997459, 0.0, -0.071247), Y: (-0.041342, 0.814432, -0.578784), Z: (0.058026, 0.580259, 0.812362), O: (4.75, 1.02, 5.6)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "height_strength": 0.0,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "normal_strength": 0.45,
+    "size": "(1280, 690)"
+  },
+  "document": "a204817046d3ba1432a57f1cd3eeca3d196faaac72393c199a1464d12ca78fe0",
+  "failures": 0,
+  "floor_slots": 2,
+  "normal-zero": {
+    "camera": "[X: (0.997459, 0.0, -0.071247), Y: (-0.041342, 0.814432, -0.578784), Z: (0.058026, 0.580259, 0.812362), O: (4.75, 1.02, 5.6)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "height_strength": 0.0,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "normal_strength": 0.0,
+    "size": "(1280, 690)"
+  },
+  "overview-convex-normal": {
+    "camera": "[X: (0.997054, 0.0, -0.076697), Y: (-0.045165, 0.808219, -0.587147), Z: (0.061988, 0.588882, 0.805838), O: (3.4, 3.95, 9.35)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "height_strength": 0.0,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "normal_strength": 1.0,
+    "size": "(1280, 690)"
+  },
+  "overview-convex-parallax": {
+    "camera": "[X: (0.997054, 0.0, -0.076697), Y: (-0.045165, 0.808219, -0.587147), Z: (0.061988, 0.588882, 0.805838), O: (3.4, 3.95, 9.35)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "height_strength": 0.04,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "normal_strength": 1.0,
+    "size": "(1280, 690)"
+  },
+  "overview-lighting-only": {
+    "camera": "[X: (0.997054, 0.0, -0.076697), Y: (-0.045165, 0.808219, -0.587147), Z: (0.061988, 0.588882, 0.805838), O: (3.4, 3.95, 9.35)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "height_strength": 0.0,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "normal_strength": 0.0,
+    "size": "(1280, 690)"
+  },
+  "overview-normal-only": {
+    "camera": "[X: (0.997054, 0.0, -0.076697), Y: (-0.045165, 0.808219, -0.587147), Z: (0.061988, 0.588882, 0.805838), O: (3.4, 3.95, 9.35)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "height_strength": 0.0,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "normal_strength": 0.45,
+    "size": "(1280, 690)"
+  },
+  "parallax-zero": {
+    "camera": "[X: (0.997459, 0.0, -0.071247), Y: (-0.041342, 0.814432, -0.578784), Z: (0.058026, 0.580259, 0.812362), O: (4.75, 1.02, 5.6)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "height_strength": 0.0,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "normal_strength": 1.0,
+    "size": "(1280, 690)"
+  },
+  "renderer": "gl_compatibility"
+}

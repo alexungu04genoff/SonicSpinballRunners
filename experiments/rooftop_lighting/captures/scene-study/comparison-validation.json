@@ -1,0 +1,9 @@
+{
+  "checks": "PASS",
+  "geometry_camera_captures": 14,
+  "lighting_camera_projection_match": true,
+  "zero_strength_whole_image_rgb_mae": 0.013698294082125605,
+  "guard_response_pixels_over_2_rgb": 4566,
+  "ball_interior_max_rgb_difference": 0.0,
+  "source_albedos_unchanged": true
+}

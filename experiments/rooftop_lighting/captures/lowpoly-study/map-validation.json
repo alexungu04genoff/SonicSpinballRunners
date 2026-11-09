@@ -1,0 +1,40 @@
+{
+  "source_sha256": "67ae264a4b130fb996054f4200e861303ddb27a58e193e0a431c4835aaf2e058",
+  "checks": "PASS",
+  "facet_regions_per_top": 4,
+  "source_albedo_changed": false,
+  "presets": {
+    "block-diagnostic": {
+      "normal_strength": 1.0,
+      "mortar_depth": 1.0,
+      "detail_intensity": 1.0,
+      "variation": 0.25,
+      "peak_height_world": 0.03208359375,
+      "height_preview_white_world": 0.033
+    },
+    "block-gameplay": {
+      "normal_strength": 0.55,
+      "mortar_depth": 0.65,
+      "detail_intensity": 0.65,
+      "variation": 0.15,
+      "peak_height_world": 0.011171930859375002,
+      "height_preview_white_world": 0.033
+    },
+    "faceted-diagnostic": {
+      "normal_strength": 1.0,
+      "mortar_depth": 1.0,
+      "detail_intensity": 1.0,
+      "variation": 0.25,
+      "peak_height_world": 0.05294345703125,
+      "height_preview_white_world": 0.055
+    },
+    "faceted-gameplay": {
+      "normal_strength": 0.55,
+      "mortar_depth": 0.65,
+      "detail_intensity": 0.65,
+      "variation": 0.15,
+      "peak_height_world": 0.018391048952557967,
+      "height_preview_white_world": 0.055
+    }
+  }
+}

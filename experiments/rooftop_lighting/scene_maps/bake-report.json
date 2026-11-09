@@ -1,0 +1,112 @@
+{
+  "source_hashes": {
+    "facade.png": "2f9b90f992b41e12848a2920eeefc7c3b9a01b33f6abc114a3654a253560ece0",
+    "floor-border.png": "cae59d30200dd474fc342e1f8b380055c01af04d956ce00541160d112ffac1c5",
+    "floor.png": "67ae264a4b130fb996054f4200e861303ddb27a58e193e0a431c4835aaf2e058",
+    "ramp.png": "c3e0ce1c90774bdfa568c25edd674420754680a381f812a86844016415e5fc2f",
+    "top-border.png": "ce070dac3a517d614ebef3cffaf94c8d735f3667705533625f59058698027c3c",
+    "top.png": "de2ec2cd63048be8c26b2e09db5e25156240f991238f5d6372579a78c0bff454",
+    "wall.png": "83e65662ec86a50a05baa847adc609b7a50e13c0e5d8ec50badf02398a0db7cd"
+  },
+  "maps": {
+    "top_beveled": {
+      "size": [
+        1024,
+        1024
+      ],
+      "masked_graphics_pixels": 0
+    },
+    "top_faceted": {
+      "size": [
+        1024,
+        1024
+      ],
+      "masked_graphics_pixels": 0
+    },
+    "ramp_beveled": {
+      "size": [
+        256,
+        256
+      ],
+      "masked_graphics_pixels": 0
+    },
+    "ramp_faceted": {
+      "size": [
+        256,
+        256
+      ],
+      "masked_graphics_pixels": 0
+    },
+    "border_beveled": {
+      "size": [
+        512,
+        128
+      ],
+      "masked_graphics_pixels": 0
+    },
+    "border_faceted": {
+      "size": [
+        512,
+        128
+      ],
+      "masked_graphics_pixels": 0
+    },
+    "wall_beveled": {
+      "size": [
+        1024,
+        512
+      ],
+      "masked_graphics_pixels": 35840
+    },
+    "wall_faceted": {
+      "size": [
+        1024,
+        512
+      ],
+      "masked_graphics_pixels": 35840
+    },
+    "facade_beveled": {
+      "size": [
+        1024,
+        512
+      ],
+      "masked_graphics_pixels": 205848
+    },
+    "facade_faceted": {
+      "size": [
+        1024,
+        512
+      ],
+      "masked_graphics_pixels": 205848
+    },
+    "guard_beveled": {
+      "size": [
+        512,
+        128
+      ],
+      "masked_graphics_pixels": 0
+    },
+    "guard_faceted": {
+      "size": [
+        512,
+        128
+      ],
+      "masked_graphics_pixels": 0
+    },
+    "block_beveled": {
+      "size": [
+        768,
+        512
+      ],
+      "masked_graphics_pixels": 0
+    },
+    "block_faceted": {
+      "size": [
+        768,
+        512
+      ],
+      "masked_graphics_pixels": 0
+    }
+  },
+  "checks": "PASS: normalized OpenGL normals; flat facade graphics; original albedos unchanged"
+}

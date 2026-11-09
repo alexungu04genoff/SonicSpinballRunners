@@ -1,0 +1,421 @@
+{
+  "close-beveled": {
+    "camera": "[X: (0.997459, 0.0, -0.071247), Y: (-0.041342, 0.814432, -0.578784), Z: (0.058026, 0.580259, 0.812362), O: (4.75, 1.02, 5.6)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "mode": "Beveled",
+    "normal_strengths": {
+      "border": 0.25,
+      "facade": 0.55,
+      "floor": 1.0,
+      "guard": 0.22,
+      "ramp": 0.65,
+      "stone": 0.65,
+      "support": 0.25,
+      "top": 0.85,
+      "trim": 0.3,
+      "wall": 0.65
+    },
+    "projection": 0,
+    "size": "(1280, 690)"
+  },
+  "close-faceted": {
+    "camera": "[X: (0.997459, 0.0, -0.071247), Y: (-0.041342, 0.814432, -0.578784), Z: (0.058026, 0.580259, 0.812362), O: (4.75, 1.02, 5.6)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "mode": "Faceted",
+    "normal_strengths": {
+      "border": 0.25,
+      "facade": 0.55,
+      "floor": 1.0,
+      "guard": 0.22,
+      "ramp": 0.65,
+      "stone": 0.65,
+      "support": 0.25,
+      "top": 0.85,
+      "trim": 0.3,
+      "wall": 0.65
+    },
+    "projection": 0,
+    "size": "(1280, 690)"
+  },
+  "close-hybrid": {
+    "camera": "[X: (0.997459, 0.0, -0.071247), Y: (-0.041342, 0.814432, -0.578784), Z: (0.058026, 0.580259, 0.812362), O: (4.75, 1.02, 5.6)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "mode": "Hybrid",
+    "normal_strengths": {
+      "border": 0.25,
+      "facade": 0.55,
+      "floor": 1.0,
+      "guard": 0.22,
+      "ramp": 0.65,
+      "stone": 0.65,
+      "support": 0.25,
+      "top": 0.85,
+      "trim": 0.3,
+      "wall": 0.65
+    },
+    "projection": 0,
+    "size": "(1280, 690)"
+  },
+  "close-none": {
+    "camera": "[X: (0.997459, 0.0, -0.071247), Y: (-0.041342, 0.814432, -0.578784), Z: (0.058026, 0.580259, 0.812362), O: (4.75, 1.02, 5.6)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "mode": "None",
+    "normal_strengths": {
+      "border": 0.25,
+      "facade": 0.55,
+      "floor": 1.0,
+      "guard": 0.22,
+      "ramp": 0.65,
+      "stone": 0.65,
+      "support": 0.25,
+      "top": 0.85,
+      "trim": 0.3,
+      "wall": 0.65
+    },
+    "projection": 0,
+    "size": "(1280, 690)"
+  },
+  "coverage": {
+    "border": 8,
+    "facade": 1,
+    "floor": 2,
+    "guard": 4,
+    "ramp": 1,
+    "stone": 70,
+    "support": 8,
+    "top": 5,
+    "trim": 75,
+    "wall": 6
+  },
+  "document": "a204817046d3ba1432a57f1cd3eeca3d196faaac72393c199a1464d12ca78fe0",
+  "failures": 0,
+  "gameplay-beveled": {
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 6.359195, 8.585999)]",
+    "fov": 52.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "mode": "Beveled",
+    "normal_strengths": {
+      "border": 0.25,
+      "facade": 0.55,
+      "floor": 1.0,
+      "guard": 0.22,
+      "ramp": 0.65,
+      "stone": 0.65,
+      "support": 0.25,
+      "top": 0.85,
+      "trim": 0.3,
+      "wall": 0.65
+    },
+    "projection": 0,
+    "size": "(1280, 690)"
+  },
+  "gameplay-faceted": {
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 6.359195, 8.585999)]",
+    "fov": 52.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "mode": "Faceted",
+    "normal_strengths": {
+      "border": 0.25,
+      "facade": 0.55,
+      "floor": 1.0,
+      "guard": 0.22,
+      "ramp": 0.65,
+      "stone": 0.65,
+      "support": 0.25,
+      "top": 0.85,
+      "trim": 0.3,
+      "wall": 0.65
+    },
+    "projection": 0,
+    "size": "(1280, 690)"
+  },
+  "gameplay-hybrid": {
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 6.359195, 8.585999)]",
+    "fov": 52.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "mode": "Hybrid",
+    "normal_strengths": {
+      "border": 0.25,
+      "facade": 0.55,
+      "floor": 1.0,
+      "guard": 0.22,
+      "ramp": 0.65,
+      "stone": 0.65,
+      "support": 0.25,
+      "top": 0.85,
+      "trim": 0.3,
+      "wall": 0.65
+    },
+    "projection": 0,
+    "size": "(1280, 690)"
+  },
+  "gameplay-none": {
+    "camera": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 6.359195, 8.585999)]",
+    "fov": 52.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "mode": "None",
+    "normal_strengths": {
+      "border": 0.25,
+      "facade": 0.55,
+      "floor": 1.0,
+      "guard": 0.22,
+      "ramp": 0.65,
+      "stone": 0.65,
+      "support": 0.25,
+      "top": 0.85,
+      "trim": 0.3,
+      "wall": 0.65
+    },
+    "projection": 0,
+    "size": "(1280, 690)"
+  },
+  "guards-only": {
+    "camera": "[X: (0.997459, 0.0, -0.071247), Y: (-0.041342, 0.814432, -0.578784), Z: (0.058026, 0.580259, 0.812362), O: (4.75, 1.02, 5.6)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "mode": "Hybrid",
+    "normal_strengths": {
+      "border": 0.0,
+      "facade": 0.0,
+      "floor": 0.0,
+      "guard": 0.22,
+      "ramp": 0.0,
+      "stone": 0.0,
+      "support": 0.0,
+      "top": 0.0,
+      "trim": 0.0,
+      "wall": 0.0
+    },
+    "projection": 0,
+    "size": "(1280, 690)"
+  },
+  "overview-beveled": {
+    "camera": "[X: (0.997054, 0.0, -0.076697), Y: (-0.045165, 0.808219, -0.587147), Z: (0.061988, 0.588882, 0.805838), O: (3.4, 3.95, 9.35)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "mode": "Beveled",
+    "normal_strengths": {
+      "border": 0.25,
+      "facade": 0.55,
+      "floor": 1.0,
+      "guard": 0.22,
+      "ramp": 0.65,
+      "stone": 0.65,
+      "support": 0.25,
+      "top": 0.85,
+      "trim": 0.3,
+      "wall": 0.65
+    },
+    "projection": 0,
+    "size": "(1280, 690)"
+  },
+  "overview-faceted": {
+    "camera": "[X: (0.997054, 0.0, -0.076697), Y: (-0.045165, 0.808219, -0.587147), Z: (0.061988, 0.588882, 0.805838), O: (3.4, 3.95, 9.35)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "mode": "Faceted",
+    "normal_strengths": {
+      "border": 0.25,
+      "facade": 0.55,
+      "floor": 1.0,
+      "guard": 0.22,
+      "ramp": 0.65,
+      "stone": 0.65,
+      "support": 0.25,
+      "top": 0.85,
+      "trim": 0.3,
+      "wall": 0.65
+    },
+    "projection": 0,
+    "size": "(1280, 690)"
+  },
+  "overview-hybrid": {
+    "camera": "[X: (0.997054, 0.0, -0.076697), Y: (-0.045165, 0.808219, -0.587147), Z: (0.061988, 0.588882, 0.805838), O: (3.4, 3.95, 9.35)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "mode": "Hybrid",
+    "normal_strengths": {
+      "border": 0.25,
+      "facade": 0.55,
+      "floor": 1.0,
+      "guard": 0.22,
+      "ramp": 0.65,
+      "stone": 0.65,
+      "support": 0.25,
+      "top": 0.85,
+      "trim": 0.3,
+      "wall": 0.65
+    },
+    "projection": 0,
+    "size": "(1280, 690)"
+  },
+  "overview-none": {
+    "camera": "[X: (0.997054, 0.0, -0.076697), Y: (-0.045165, 0.808219, -0.587147), Z: (0.061988, 0.588882, 0.805838), O: (3.4, 3.95, 9.35)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "mode": "None",
+    "normal_strengths": {
+      "border": 0.25,
+      "facade": 0.55,
+      "floor": 1.0,
+      "guard": 0.22,
+      "ramp": 0.65,
+      "stone": 0.65,
+      "support": 0.25,
+      "top": 0.85,
+      "trim": 0.3,
+      "wall": 0.65
+    },
+    "projection": 0,
+    "size": "(1280, 690)"
+  },
+  "renderer": "gl_compatibility",
+  "strengths": {
+    "border": 0.25,
+    "facade": 0.55,
+    "floor": 1.0,
+    "guard": 0.22,
+    "ramp": 0.65,
+    "stone": 0.65,
+    "support": 0.25,
+    "top": 0.85,
+    "trim": 0.3,
+    "wall": 0.65
+  },
+  "zero-strength": {
+    "camera": "[X: (0.997459, 0.0, -0.071247), Y: (-0.041342, 0.814432, -0.578784), Z: (0.058026, 0.580259, 0.812362), O: (4.75, 1.02, 5.6)]",
+    "fov": 44.0,
+    "geometry_camera_unchanged": true,
+    "gpu_ms": null,
+    "lighting": [
+      "(-42.0, -61.99999, 0.0)",
+      1.05,
+      0.28,
+      0.85,
+      1.0
+    ],
+    "mode": "Hybrid",
+    "normal_strengths": {
+      "border": 0.0,
+      "facade": 0.0,
+      "floor": 0.0,
+      "guard": 0.0,
+      "ramp": 0.0,
+      "stone": 0.0,
+      "support": 0.0,
+      "top": 0.0,
+      "trim": 0.0,
+      "wall": 0.0
+    },
+    "projection": 0,
+    "size": "(1280, 690)"
+  }
+}

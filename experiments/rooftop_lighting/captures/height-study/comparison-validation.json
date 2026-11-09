@@ -1,0 +1,7 @@
+{
+  "same_lighting_and_camera_within_both_sets": true,
+  "capture_checks": 10,
+  "flat_vs_zero_normal_rgb_mae": 0.0003880803880803881,
+  "normal_vs_zero_parallax_rgb_mae": 0.0,
+  "checks": "PASS"
+}
