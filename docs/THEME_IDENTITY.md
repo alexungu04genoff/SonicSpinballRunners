@@ -1,5 +1,9 @@
 # Theme identity: one imaginary SEGA game
 
+## Current visual-strength review — 2026-11-09
+
+The [fresh post-texture audit](visual-strength-20261109/README.md) re-evaluates all eight current production themes from two canonical gameplay positions each, with production Retro and current Default atmospheres. **All eight remain unchanged.** Materials, playable-surface separation and existing mid-scale/hero shapes provide enough identity; no extra scenery or landmark removal is justified by this set. Sky's pale constructed stone/green accents, Ice's snow/ice/dark-wall separation, Lava's broad volcanic facets and Aquarium's red architecture/pale stone/blue-inset hierarchy are authoritative. The normal comparison, label-free thumbnails, native frames, verification and limited motion questions live in that audit. Earlier sections below preserve historical decisions, not standing instructions to strengthen those themes again.
+
 **Confirmed direction — 2026-11-04.** Imagine all eight themes as Sonic 1 / early-classic 2D stage concepts, translated together by one late-Saturn / early-Dreamcast modeling team. Actual release chronology does not set a theme's detail budget. Original Zones provide motif vocabulary, not assets to reproduce.
 
 The [geometry density hierarchy](GEOMETRIC_DENSITY.md) remains authoritative. This is a silhouette and motif pass, not another polygon reduction. Modern Hybrid materials, lighting, filtering, shaders and atmosphere remain useful. Shapes must still make sense without microtexture.

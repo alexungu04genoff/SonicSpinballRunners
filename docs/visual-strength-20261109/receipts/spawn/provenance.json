@@ -1,0 +1,9 @@
+{
+  "scope": "Current working tree, including uncommitted art",
+  "worktree": [
+    " M scripts/portable_editor.gd",
+    " M tools/export_authoring_tools.ps1"
+  ],
+  "act": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
+  "head": "a1c110781aa4bb7003940060c221575b5a607d0b"
+}

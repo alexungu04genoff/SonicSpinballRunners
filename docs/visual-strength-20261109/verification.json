@@ -1,0 +1,112 @@
+{
+  "thumbnail_frame_size": [
+    360,
+    250
+  ],
+  "views": [
+    {
+      "theme": "green_hill",
+      "tier": "spawn",
+      "image": "frames/spawn/green_hill.png",
+      "sha256": "52D89B4FF0CE680A8138DE97F5BA757D33DA704C226B051B39E05251D0F6D502"
+    },
+    {
+      "theme": "chemical_plant",
+      "tier": "spawn",
+      "image": "frames/spawn/chemical_plant.png",
+      "sha256": "DC7B1114BD0AB91D5C74E4D9753747C1E1315EA530915995B1DB109F954C14C9"
+    },
+    {
+      "theme": "casino_night",
+      "tier": "spawn",
+      "image": "frames/spawn/casino_night.png",
+      "sha256": "A3174BB45DEEA3361F54641808762E0A934BD75EB5595E65D5D96591E208FBFC"
+    },
+    {
+      "theme": "rooftop_run",
+      "tier": "spawn",
+      "image": "frames/spawn/rooftop_run.png",
+      "sha256": "06C2E00827C117E3E1F35EC30A50EBEDE04720C9881EFEB726E6FAD4436BBFEB"
+    },
+    {
+      "theme": "sky_sanctuary",
+      "tier": "spawn",
+      "image": "frames/spawn/sky_sanctuary.png",
+      "sha256": "39CC2FFAA4C5EE773EFD4C090C29867FFF8518BB393D65F58700FFD43D1B0466"
+    },
+    {
+      "theme": "ice_cap",
+      "tier": "spawn",
+      "image": "frames/spawn/ice_cap.png",
+      "sha256": "3F9C6520A95BD512EBC15539F804A58CF755631952EA43FC36E73320D5D1F970"
+    },
+    {
+      "theme": "lava_reef",
+      "tier": "spawn",
+      "image": "frames/spawn/lava_reef.png",
+      "sha256": "46FBAFA882A7BABC9ABB365D19F00640C25D09D23A9C29B1AE654E4EAC7FE407"
+    },
+    {
+      "theme": "aquarium_park",
+      "tier": "spawn",
+      "image": "frames/spawn/aquarium_park.png",
+      "sha256": "7434DB9693CC0CF1D561746E925AEDF4826D1171A2D2BCBF897E67C5BACE6CD2"
+    },
+    {
+      "theme": "green_hill",
+      "tier": "mid",
+      "image": "frames/mid/green_hill.png",
+      "sha256": "515A90238C08DE3260842FE6FA3324D51A44C4E5B1FCE8FE53A56B3E72CD91F3"
+    },
+    {
+      "theme": "chemical_plant",
+      "tier": "mid",
+      "image": "frames/mid/chemical_plant.png",
+      "sha256": "BA01CDBBD914FC362B8E918249B19FB36E89D64506542148122B805E7510092F"
+    },
+    {
+      "theme": "casino_night",
+      "tier": "mid",
+      "image": "frames/mid/casino_night.png",
+      "sha256": "446B9023A3E0A106C814B01EE54253A890C861F39CD537D32EC40E25C1FFA90C"
+    },
+    {
+      "theme": "rooftop_run",
+      "tier": "mid",
+      "image": "frames/mid/rooftop_run.png",
+      "sha256": "AC0ED71391E234F8533544207F4924BA3AAA473EB052DBCC6C57F25EA5318482"
+    },
+    {
+      "theme": "sky_sanctuary",
+      "tier": "mid",
+      "image": "frames/mid/sky_sanctuary.png",
+      "sha256": "BD31C760E731D3D72358929DB2357BE50BE646451EED1F21ACA933563709674D"
+    },
+    {
+      "theme": "ice_cap",
+      "tier": "mid",
+      "image": "frames/mid/ice_cap.png",
+      "sha256": "C89B47176198B89FBABB1A0EE163BFBADADA317C73EF0C8AEDEFAFD4A113EBB9"
+    },
+    {
+      "theme": "lava_reef",
+      "tier": "mid",
+      "image": "frames/mid/lava_reef.png",
+      "sha256": "0450A5B34F6D8CFE1407A6C677CE86084E24B815886F158D6DE0FDDC360FC2B6"
+    },
+    {
+      "theme": "aquarium_park",
+      "tier": "mid",
+      "image": "frames/mid/aquarium_park.png",
+      "sha256": "A87CF2961A843AF64B5CC7AA542397DA1AD11D807C2C45ED49044087F33C5E2B"
+    }
+  ],
+  "production_changes": [],
+  "cross_view_sources_graphics_atmosphere_matched": true,
+  "thumbnail_hud_mask": [
+    0,
+    0,
+    570,
+    255
+  ]
+}

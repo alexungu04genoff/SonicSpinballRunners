@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Fresh eyes after the material overhaul — 2026-11-09
+
+Alex asked for a new eight-Zone strength review, not another round of props. Bro reviewed two current canonical Prototype positions per theme with production Retro and the approved Defaults. All eight already carry their identity. Sky reads as pale constructed sanctuary stone with green accents; Ice separates snow, ice and darker frozen walls; Lava's broad plates read as physical volcanic rock; Aquarium stays red park architecture around pale stone and blue insets. Green Hill remains the clean baseline, and Chemical/Casino/Rooftop have enough machinery, theatrical forms and city architecture. No visual production edits retained. See [the fresh audit and two comparison sheets](visual-strength-20261109/README.md). The remaining questions concern tracking moving Rings/Sonic and Lava's partially occluded Goal, not missing decorations. Earlier coverage/signature passes are history, not a mandate to keep adding things.
+
 ## Remaining atmosphere identities after the texture pass — 2026-11-09
 
 Alex finished the selected textures and reopened Sky Sanctuary, Ice Cap, Lava Reef and Aquarium Park for atmosphere work. Retro stays on in normal play and remains the final appearance gate. Bro kept every selected albedo, normal strength, roughness response, plain Ice guard and scenery shape. Sky now has cleaner high-altitude light and steeper shadows; Ice keeps brilliant blue-white snow with less expanded glare; Lava gets cooler fill and deeper cavern/magma contrast; Aquarium gets a smaller lagoon-depth and highlight adjustment. The first four Defaults and every named variant stay as they were.

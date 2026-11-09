@@ -1,0 +1,68 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060
+
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | green_hill | nodes=40 | instantiate_ms=136.864 | graphics_ms=142.214 | retire_ms=2.162
+ENDLESS_DISK_WARM | green_hill | nodes=19 | instantiate_ms=1.394 | graphics_ms=15.908 | retire_ms=0.591
+ENDLESS_DISK_WARM | green_hill | nodes=563 | instantiate_ms=395.614 | graphics_ms=170.308 | retire_ms=13.202
+ENDLESS_PREPARED | green_hill:0 | source=disk | ms=2627.84 | GPU warm frames=21 | cached=1 | geometry loaded=15 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Untitled Act
+ENDLESS_READY | seed=18 | Acts=1 | cached variants=1 | normal pinball controls
+PROTOTYPE_APPEARANCE | green_hill | {"act_score":0,"ball":"(400.0, 500.0)","camera_fov":52.0,"camera_projection":0,"camera_settings":{"dead_zone_x":18.0,"dead_zone_y":12.0,"horizontal_response":2.0,"look_ahead":0.0,"max_speed":4000.0,"screen_margin_y":0.22,"screen_target_y":0.55,"vertical_response":28.0,"zoom":1.3},"camera_size":1.0,"camera_transform":"[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 2.115734, 4.045638)]","document":"c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba","goal_unlocked":false,"rings":0,"score":0,"serve_pending":true,"velocity":"(0.0, 0.0)"}
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | chemical_plant | nodes=36 | instantiate_ms=155.807 | graphics_ms=125.36 | retire_ms=0.745
+ENDLESS_DISK_WARM | chemical_plant | nodes=36 | instantiate_ms=1.247 | graphics_ms=16.217 | retire_ms=1.613
+ENDLESS_DISK_WARM | chemical_plant | nodes=726 | instantiate_ms=235.102 | graphics_ms=218.988 | retire_ms=2.856
+ENDLESS_PREPARED | chemical_plant:0 | source=disk | ms=1442.494 | GPU warm frames=25 | cached=1 | geometry loaded=11 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Untitled Act
+ENDLESS_READY | seed=18 | Acts=1 | cached variants=1 | normal pinball controls
+PROTOTYPE_APPEARANCE | chemical_plant | {"act_score":0,"ball":"(400.0, 500.0)","camera_fov":52.0,"camera_projection":0,"camera_settings":{"dead_zone_x":18.0,"dead_zone_y":12.0,"horizontal_response":2.0,"look_ahead":0.0,"max_speed":4000.0,"screen_margin_y":0.22,"screen_target_y":0.55,"vertical_response":28.0,"zoom":1.3},"camera_size":1.0,"camera_transform":"[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 2.115734, 4.045638)]","document":"c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba","goal_unlocked":false,"rings":0,"score":0,"serve_pending":true,"velocity":"(0.0, 0.0)"}
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | rooftop_run | nodes=42 | instantiate_ms=116.666 | graphics_ms=149.272 | retire_ms=2.066
+ENDLESS_DISK_WARM | rooftop_run | nodes=39 | instantiate_ms=11.099 | graphics_ms=63.957 | retire_ms=1.872
+ENDLESS_DISK_WARM | rooftop_run | nodes=546 | instantiate_ms=170.688 | graphics_ms=167.083 | retire_ms=2.292
+ENDLESS_PREPARED | rooftop_run:0 | source=disk | ms=1393.169 | GPU warm frames=23 | cached=1 | geometry loaded=11 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Untitled Act
+ENDLESS_READY | seed=18 | Acts=1 | cached variants=1 | normal pinball controls
+PROTOTYPE_APPEARANCE | rooftop_run | {"act_score":0,"ball":"(400.0, 500.0)","camera_fov":52.0,"camera_projection":0,"camera_settings":{"dead_zone_x":18.0,"dead_zone_y":12.0,"horizontal_response":2.0,"look_ahead":0.0,"max_speed":4000.0,"screen_margin_y":0.22,"screen_target_y":0.55,"vertical_response":28.0,"zoom":1.3},"camera_size":1.0,"camera_transform":"[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 2.115734, 4.045638)]","document":"c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba","goal_unlocked":false,"rings":0,"score":0,"serve_pending":true,"velocity":"(0.0, 0.0)"}
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | casino_night | nodes=32 | instantiate_ms=98.323 | graphics_ms=116.53 | retire_ms=1.876
+ENDLESS_DISK_WARM | casino_night | nodes=33 | instantiate_ms=53.052 | graphics_ms=36.85 | retire_ms=1.708
+ENDLESS_DISK_WARM | casino_night | nodes=587 | instantiate_ms=303.124 | graphics_ms=166.786 | retire_ms=2.041
+ENDLESS_PREPARED | casino_night:0 | source=disk | ms=1510.225 | GPU warm frames=21 | cached=1 | geometry loaded=11 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Untitled Act
+ENDLESS_READY | seed=18 | Acts=1 | cached variants=1 | normal pinball controls
+PROTOTYPE_APPEARANCE | casino_night | {"act_score":0,"ball":"(400.0, 500.0)","camera_fov":52.0,"camera_projection":0,"camera_settings":{"dead_zone_x":18.0,"dead_zone_y":12.0,"horizontal_response":2.0,"look_ahead":0.0,"max_speed":4000.0,"screen_margin_y":0.22,"screen_target_y":0.55,"vertical_response":28.0,"zoom":1.3},"camera_size":1.0,"camera_transform":"[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 2.115734, 4.045638)]","document":"c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba","goal_unlocked":false,"rings":0,"score":0,"serve_pending":true,"velocity":"(0.0, 0.0)"}
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | sky_sanctuary | nodes=34 | instantiate_ms=74.092 | graphics_ms=108.464 | retire_ms=1.039
+ENDLESS_DISK_WARM | sky_sanctuary | nodes=9 | instantiate_ms=0.646 | graphics_ms=18.649 | retire_ms=0.5
+ENDLESS_DISK_WARM | sky_sanctuary | nodes=496 | instantiate_ms=123.033 | graphics_ms=134.033 | retire_ms=2.092
+ENDLESS_PREPARED | sky_sanctuary:0 | source=disk | ms=1116.499 | GPU warm frames=18 | cached=1 | geometry loaded=11 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Untitled Act
+ENDLESS_READY | seed=18 | Acts=1 | cached variants=1 | normal pinball controls
+PROTOTYPE_APPEARANCE | sky_sanctuary | {"act_score":0,"ball":"(400.0, 500.0)","camera_fov":52.0,"camera_projection":0,"camera_settings":{"dead_zone_x":18.0,"dead_zone_y":12.0,"horizontal_response":2.0,"look_ahead":0.0,"max_speed":4000.0,"screen_margin_y":0.22,"screen_target_y":0.55,"vertical_response":28.0,"zoom":1.3},"camera_size":1.0,"camera_transform":"[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 2.115734, 4.045638)]","document":"c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba","goal_unlocked":false,"rings":0,"score":0,"serve_pending":true,"velocity":"(0.0, 0.0)"}
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | ice_cap | nodes=46 | instantiate_ms=162.088 | graphics_ms=168.777 | retire_ms=2.228
+ENDLESS_DISK_WARM | ice_cap | nodes=7 | instantiate_ms=1.283 | graphics_ms=39.357 | retire_ms=0.427
+ENDLESS_DISK_WARM | ice_cap | nodes=522 | instantiate_ms=202.308 | graphics_ms=150.876 | retire_ms=2.146
+ENDLESS_PREPARED | ice_cap:0 | source=disk | ms=1409.0 | GPU warm frames=22 | cached=1 | geometry loaded=11 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Untitled Act
+ENDLESS_READY | seed=18 | Acts=1 | cached variants=1 | normal pinball controls
+PROTOTYPE_APPEARANCE | ice_cap | {"act_score":0,"ball":"(400.0, 500.0)","camera_fov":52.0,"camera_projection":0,"camera_settings":{"dead_zone_x":18.0,"dead_zone_y":12.0,"horizontal_response":2.0,"look_ahead":0.0,"max_speed":4000.0,"screen_margin_y":0.22,"screen_target_y":0.55,"vertical_response":28.0,"zoom":1.3},"camera_size":1.0,"camera_transform":"[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 2.115734, 4.045638)]","document":"c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba","goal_unlocked":false,"rings":0,"score":0,"serve_pending":true,"velocity":"(0.0, 0.0)"}
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | lava_reef | nodes=64 | instantiate_ms=102.074 | graphics_ms=213.563 | retire_ms=16.919
+ENDLESS_DISK_WARM | lava_reef | nodes=26 | instantiate_ms=4.483 | graphics_ms=41.636 | retire_ms=0.731
+ENDLESS_DISK_WARM | lava_reef | nodes=498 | instantiate_ms=173.49 | graphics_ms=150.23 | retire_ms=1.807
+ENDLESS_PREPARED | lava_reef:0 | source=disk | ms=1324.559 | GPU warm frames=24 | cached=1 | geometry loaded=11 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Untitled Act
+ENDLESS_READY | seed=18 | Acts=1 | cached variants=1 | normal pinball controls
+PROTOTYPE_APPEARANCE | lava_reef | {"act_score":0,"ball":"(400.0, 500.0)","camera_fov":52.0,"camera_projection":0,"camera_settings":{"dead_zone_x":18.0,"dead_zone_y":12.0,"horizontal_response":2.0,"look_ahead":0.0,"max_speed":4000.0,"screen_margin_y":0.22,"screen_target_y":0.55,"vertical_response":28.0,"zoom":1.3},"camera_size":1.0,"camera_transform":"[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 2.115734, 4.045638)]","document":"c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba","goal_unlocked":false,"rings":0,"score":0,"serve_pending":true,"velocity":"(0.0, 0.0)"}
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | aquarium_park | nodes=40 | instantiate_ms=111.949 | graphics_ms=152.418 | retire_ms=1.617
+ENDLESS_DISK_WARM | aquarium_park | nodes=50 | instantiate_ms=5.388 | graphics_ms=87.389 | retire_ms=1.464
+ENDLESS_DISK_WARM | aquarium_park | nodes=816 | instantiate_ms=363.099 | graphics_ms=217.38 | retire_ms=15.652
+ENDLESS_PREPARED | aquarium_park:0 | source=disk | ms=1612.115 | GPU warm frames=27 | cached=1 | geometry loaded=11 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Untitled Act
+ENDLESS_READY | seed=18 | Acts=1 | cached variants=1 | normal pinball controls
+PROTOTYPE_APPEARANCE | aquarium_park | {"act_score":0,"ball":"(400.0, 500.0)","camera_fov":52.0,"camera_projection":0,"camera_settings":{"dead_zone_x":18.0,"dead_zone_y":12.0,"horizontal_response":2.0,"look_ahead":0.0,"max_speed":4000.0,"screen_margin_y":0.22,"screen_target_y":0.55,"vertical_response":28.0,"zoom":1.3},"camera_size":1.0,"camera_transform":"[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 2.115734, 4.045638)]","document":"c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba","goal_unlocked":false,"rings":0,"score":0,"serve_pending":true,"velocity":"(0.0, 0.0)"}
+RESULT | Prototype appearance | 8 captures | 0 failures

@@ -1,0 +1,11 @@
+{
+  "scope": "Current working tree, including uncommitted art",
+  "worktree": [
+    " M docs/PORTABLE_AUTHORING_TOOLS.md",
+    " M scripts/portable_editor.gd",
+    " M tools/export_authoring_tools.ps1",
+    "?? docs/visual-strength-20261109/"
+  ],
+  "act": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\First Try Smooth Decor.tres",
+  "head": "a1c110781aa4bb7003940060c221575b5a607d0b"
+}
