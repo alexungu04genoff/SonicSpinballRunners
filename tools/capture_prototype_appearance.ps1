@@ -6,7 +6,9 @@ param(
     [switch]$SkipBake,
     [ValidateSet('green_hill', 'chemical_plant', 'rooftop_run', 'casino_night', 'sky_sanctuary', 'ice_cap', 'lava_reef', 'aquarium_park')]
     [string[]]$Themes = @(),
-    [string]$CameraTarget = ''
+    [string]$CameraTarget = '',
+    [ValidateSet('off', 'production')]
+    [string]$Retro = 'off'
 )
 $ErrorActionPreference = 'Stop'
 if (($Themes | Select-Object -Unique).Count -ne $Themes.Count) { throw 'Theme selection must not contain duplicates.' }
@@ -63,8 +65,8 @@ if (-not $SkipBake) {
         Invoke-Godot 'bake' ($common + @('--headless', 'res://scenes/act_baker.tscn', '--', ('"--act={0}"' -f $ActPath)))
     }
 }
-$selection = @()
-if ($Themes.Count) { $selection = @('--themes=' + ($Themes -join ',')) }
+$selection = @('--retro=' + $Retro)
+if ($Themes.Count) { $selection += '--themes=' + ($Themes -join ',') }
 if ($CameraTarget) { $selection += '--camera-target=' + $CameraTarget }
 Invoke-Godot 'capture' ($common + @('--rendering-method', 'forward_plus', '--rendering-driver', 'vulkan', '--script', 'res://tests/prototype_appearance_capture.gd', '--', '--seed=18', ('"--act={0}"' -f $ActPath), ('"--output={0}"' -f $output)) + $selection)
 $after = Source-Hashes

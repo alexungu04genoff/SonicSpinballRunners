@@ -55,7 +55,13 @@ func open(tree: SceneTree, path: String, theme: String, output: String) -> bool:
  game.set_physics_process(false)
  game.ball.freeze = true
  game.auto_launch_time = -1.0
- game.retro_filter.set_preset(0)
+ var retro := "off"
+ for argument: String in OS.get_cmdline_user_args():
+  if argument.begins_with("--retro="): retro = argument.trim_prefix("--retro=")
+ if retro not in ["off", "production"]:
+  error = "Retro capture mode must be off or production."
+  return false
+ game.retro_filter.set_effects(game.retro_filter.settings.default_effects if retro == "production" else [])
  # Startup FPS is not a performance sample and makes otherwise matched frames noisy.
  game.fps_label.hide()
  var camera_target: Vector2 = game.ball.position
@@ -82,7 +88,10 @@ func open(tree: SceneTree, path: String, theme: String, output: String) -> bool:
   "library": game.library.get_script().resource_path, "disk_acts": game.library.visual_bake_hits,
   "disk_themes": game.library.theme_bake_hits, "fallback_builds": game.library.fallback_builds,
   "surface_detail": act_bake.surface_detail, "seed": game.run_seed,
-  "fps_counter_hidden": true, "renderer": Report.metadata()}
+  "fps_counter_hidden": true, "retro_mode": retro,
+  "retro_effects": game.retro_filter.selected_effects.duplicate(),
+  "retro_settings_sha256": FileAccess.get_sha256("res://data/retro_settings.tres"),
+  "renderer": Report.metadata()}
  error = authority_error()
  return error.is_empty()
 

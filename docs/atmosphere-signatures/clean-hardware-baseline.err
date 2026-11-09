@@ -1,0 +1,90 @@
+ERROR: ice_cap cosmetic slot responds: palette/ice_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)
+ERROR: ice_cap cosmetic slot responds: palette/snow_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)
+ERROR: ice_cap cosmetic slot responds: palette/ice_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)
+ERROR: ice_cap cosmetic slot responds: palette/snow_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)
+ERROR: ice_cap cosmetic slot responds: palette/ice_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)
+ERROR: ice_cap cosmetic slot responds: palette/ice_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)
+ERROR: lava_reef cosmetic slot responds: palette/metal_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)
+ERROR: lava_reef cosmetic slot responds: palette/metal_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)
+ERROR: lava_reef cosmetic slot responds: palette/metal_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)
+ERROR: lava_reef cosmetic slot responds: palette/metal_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)
+ERROR: lava_reef cosmetic slot responds: palette/metal_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)
+ERROR: lava_reef cosmetic slot responds: palette/metal_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)
+ERROR: aquarium_park cosmetic slot responds: palette/architecture_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)
+ERROR: aquarium_park cosmetic slot responds: palette/architecture_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)
+ERROR: aquarium_park cosmetic slot responds: palette/architecture_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)
+ERROR: aquarium_park cosmetic slot responds: palette/architecture_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)
+ERROR: aquarium_park cosmetic slot responds: palette/architecture_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)
+ERROR: aquarium_park cosmetic slot responds: palette/architecture_tint
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (res://tests/hardware_palette_regression.gd:12)
+       [1] run (res://tests/hardware_palette_regression.gd:49)

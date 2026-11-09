@@ -1,0 +1,335 @@
+{
+  "api": "1.4.351",
+  "command_line": [
+    "--script",
+    "res://tests/prototype_atmosphere_profile.gd"
+  ],
+  "device": "NVIDIA GeForce RTX 4060",
+  "driver": "vulkan",
+  "engine": "4.7.2-stable (official)",
+  "fixture": "res://data/acts/Authored/First Try Smooth Decor.tres",
+  "note": "ABBA settled viewport timers; shader caches were not cleared. No screenshot readback in timed blocks. Values alone change; no new optional fog/glow path.",
+  "preparation": [
+    {
+      "apply_cpu_ms": 1.35,
+      "theme": "chemical_plant",
+      "variant": "before"
+    },
+    {
+      "apply_cpu_ms": 1.4,
+      "theme": "chemical_plant",
+      "variant": "after"
+    },
+    {
+      "apply_cpu_ms": 1.431,
+      "theme": "chemical_plant",
+      "variant": "after"
+    },
+    {
+      "apply_cpu_ms": 1.369,
+      "theme": "chemical_plant",
+      "variant": "before"
+    },
+    {
+      "apply_cpu_ms": 1.697,
+      "theme": "casino_night",
+      "variant": "before"
+    },
+    {
+      "apply_cpu_ms": 1.902,
+      "theme": "casino_night",
+      "variant": "after"
+    },
+    {
+      "apply_cpu_ms": 1.729,
+      "theme": "casino_night",
+      "variant": "after"
+    },
+    {
+      "apply_cpu_ms": 1.797,
+      "theme": "casino_night",
+      "variant": "before"
+    }
+  ],
+  "renderer": "forward_plus",
+  "results": [
+    {
+      "active_materials": 65,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 491,
+      "draw_calls_p95": 491,
+      "frame_ms_median": 2.677,
+      "frame_ms_p95": 3.111,
+      "pass": 0,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 18.0,
+        "specialization": 85.0,
+        "surface": 58.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 18.0,
+        "specialization": 85.0,
+        "surface": 58.0
+      },
+      "render_cpu_ms_median": 0.980999983847141,
+      "render_cpu_ms_p95": 1.11600002646446,
+      "render_gpu_ms_median": 0.834000002592802,
+      "render_gpu_ms_p95": 0.8519999794662,
+      "rendered_objects_median": 1217,
+      "rendered_objects_p95": 1217,
+      "resources_median": 1526.0,
+      "resources_p95": 1526.0,
+      "theme": "chemical_plant",
+      "variant": "before",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 65,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 491,
+      "draw_calls_p95": 491,
+      "frame_ms_median": 2.6,
+      "frame_ms_p95": 2.948,
+      "pass": 1,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 18.0,
+        "specialization": 85.0,
+        "surface": 58.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 18.0,
+        "specialization": 85.0,
+        "surface": 58.0
+      },
+      "render_cpu_ms_median": 0.962999984622002,
+      "render_cpu_ms_p95": 1.09199998155236,
+      "render_gpu_ms_median": 0.83399997279048,
+      "render_gpu_ms_p95": 0.871000021696091,
+      "rendered_objects_median": 1217,
+      "rendered_objects_p95": 1217,
+      "resources_median": 1526.0,
+      "resources_p95": 1526.0,
+      "theme": "chemical_plant",
+      "variant": "after",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 65,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 491,
+      "draw_calls_p95": 491,
+      "frame_ms_median": 2.587,
+      "frame_ms_p95": 2.883,
+      "pass": 2,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 18.0,
+        "specialization": 85.0,
+        "surface": 58.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 18.0,
+        "specialization": 85.0,
+        "surface": 58.0
+      },
+      "render_cpu_ms_median": 0.961000017821789,
+      "render_cpu_ms_p95": 1.06100000813603,
+      "render_gpu_ms_median": 0.831000011414289,
+      "render_gpu_ms_p95": 0.847000028938055,
+      "rendered_objects_median": 1217,
+      "rendered_objects_p95": 1217,
+      "resources_median": 1526.0,
+      "resources_p95": 1526.0,
+      "theme": "chemical_plant",
+      "variant": "after",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 65,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 491,
+      "draw_calls_p95": 491,
+      "frame_ms_median": 2.72,
+      "frame_ms_p95": 3.74,
+      "pass": 3,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 18.0,
+        "specialization": 85.0,
+        "surface": 58.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 18.0,
+        "specialization": 85.0,
+        "surface": 58.0
+      },
+      "render_cpu_ms_median": 1.00199999660254,
+      "render_cpu_ms_p95": 1.43399996310472,
+      "render_gpu_ms_median": 0.831999998539686,
+      "render_gpu_ms_p95": 0.846000012010336,
+      "rendered_objects_median": 1217,
+      "rendered_objects_p95": 1217,
+      "resources_median": 1526.0,
+      "resources_p95": 1526.0,
+      "theme": "chemical_plant",
+      "variant": "before",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 67,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 668,
+      "draw_calls_p95": 668,
+      "frame_ms_median": 2.94,
+      "frame_ms_p95": 4.282,
+      "pass": 0,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 36.0,
+        "specialization": 147.0,
+        "surface": 90.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 36.0,
+        "specialization": 147.0,
+        "surface": 90.0
+      },
+      "render_cpu_ms_median": 1.1340000256896,
+      "render_cpu_ms_p95": 1.62300002574921,
+      "render_gpu_ms_median": 0.799999993294477,
+      "render_gpu_ms_p95": 0.88399999588728,
+      "rendered_objects_median": 1352,
+      "rendered_objects_p95": 1352,
+      "resources_median": 1357.0,
+      "resources_p95": 1357.0,
+      "theme": "casino_night",
+      "variant": "before",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 67,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 657,
+      "draw_calls_p95": 657,
+      "frame_ms_median": 2.848,
+      "frame_ms_p95": 4.036,
+      "pass": 1,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 36.0,
+        "specialization": 147.0,
+        "surface": 90.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 36.0,
+        "specialization": 147.0,
+        "surface": 90.0
+      },
+      "render_cpu_ms_median": 1.10000002756715,
+      "render_cpu_ms_p95": 1.40100000798702,
+      "render_gpu_ms_median": 0.870999980717897,
+      "render_gpu_ms_p95": 0.876999992877245,
+      "rendered_objects_median": 1349,
+      "rendered_objects_p95": 1349,
+      "resources_median": 1357.0,
+      "resources_p95": 1357.0,
+      "theme": "casino_night",
+      "variant": "after",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 67,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 657,
+      "draw_calls_p95": 657,
+      "frame_ms_median": 2.924,
+      "frame_ms_p95": 3.939,
+      "pass": 2,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 36.0,
+        "specialization": 147.0,
+        "surface": 90.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 36.0,
+        "specialization": 147.0,
+        "surface": 90.0
+      },
+      "render_cpu_ms_median": 1.13000000268221,
+      "render_cpu_ms_p95": 1.51199998706579,
+      "render_gpu_ms_median": 0.864999998360872,
+      "render_gpu_ms_p95": 0.874000031501055,
+      "rendered_objects_median": 1349,
+      "rendered_objects_p95": 1349,
+      "resources_median": 1357.0,
+      "resources_p95": 1357.0,
+      "theme": "casino_night",
+      "variant": "after",
+      "world_size": "(682, 473)"
+    },
+    {
+      "active_materials": 67,
+      "camera": "Transform3D(1, 0, 0, 0, 0.6427876, 0.7660445, 0, -0.7660445, 0.6427876, 4, 2.115734, 6.545638)",
+      "draw_calls_median": 668,
+      "draw_calls_p95": 668,
+      "frame_ms_median": 2.945,
+      "frame_ms_p95": 3.707,
+      "pass": 3,
+      "pipelines_after": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 36.0,
+        "specialization": 147.0,
+        "surface": 90.0
+      },
+      "pipelines_before": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 36.0,
+        "specialization": 147.0,
+        "surface": 90.0
+      },
+      "render_cpu_ms_median": 1.12900002300739,
+      "render_cpu_ms_p95": 1.56199999898672,
+      "render_gpu_ms_median": 0.877999980002642,
+      "render_gpu_ms_p95": 0.891000024974346,
+      "rendered_objects_median": 1352,
+      "rendered_objects_p95": 1352,
+      "resources_median": 1357.0,
+      "resources_p95": 1357.0,
+      "theme": "casino_night",
+      "variant": "before",
+      "world_size": "(682, 473)"
+    }
+  ],
+  "retro": "Unmodified production N64/VHS/CRT stack via --retro=production",
+  "samples_per_block": 360,
+  "user_arguments": [
+    "--retro=production",
+    "--seed=18"
+  ]
+}

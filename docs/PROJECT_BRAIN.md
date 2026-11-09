@@ -1,5 +1,11 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Production atmosphere identity with Retro on — 2026-11-09
+
+Alex narrowed the next atmosphere pass to Green Hill, Chemical Plant, Rooftop and Casino; the other four wait for texture rework. Retro stays on in normal play and is the final appearance gate. Bro kept Green Hill's cheerful daylight and Rooftop's cream/terracotta afternoon. Chemical now has darker cool fill, deeper reservoir/horizon colors and much tighter floor-lamp spill. Casino gets darker violet surroundings, steeper shadows and more localized neon. Existing Default values do the work; no new rendering system, geometry, gameplay material or device-quality change. Named variants and the local art work are preserved.
+
+The [audit and matched evidence](atmosphere-signatures/README.md) use actual disk-loaded Prototype, three gameplay tiers and both Retro modes. OFF is only diagnostic. Real Zone seams pass 237 checks. The 32-suite baseline and all 96 recipes pass. Extra tests expose 18 hardware-palette failures in deferred Ice/Lava/Aquarium and two Ice runtime hue failures, all reproduced on untouched main. Chemical's measured GPU cost is unchanged and Casino's small +0.03 ms delta sits inside the sampled baseline spread. Alex still owns motion review, especially Rings crossing Chemical's yellow lamps and the blue character on Casino's blue deck.
+
 ## Tell Vulkan which MSAA we actually use — 2026-11-08
 
 Bro found a concrete first-use mismatch: Godot 4.7.2 precompiles scene pipelines using the project's global MSAA hint, while SSR only declared 4× on its SubViewports. The missing project setting meant preparation targeted 1×. We now declare 4× up front and keep the hint aligned with the existing unsaved diagnostic controls. Visual quality and gameplay do not change.

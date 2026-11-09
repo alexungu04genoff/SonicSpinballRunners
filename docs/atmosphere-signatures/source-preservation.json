@@ -1,0 +1,107 @@
+[
+  {
+    "file": "Play Green Hill.cmd",
+    "unchanged": true,
+    "sha256": "F7D9E48D9CDB2E6F2FE9D9E24814587375A9868B56FA6EAC8742CA7786B3C067"
+  },
+  {
+    "file": "data/acts/Experiments/Traversal Diagnostic.tres",
+    "unchanged": true,
+    "sha256": "B42E7DC74FF1CF18C60F2B923CB97BF7A27341260F3FA57C04AEB8AE4D65DF7E"
+  },
+  {
+    "file": "data/atmospheres/green_hill.cfg",
+    "unchanged": true,
+    "sha256": "743131D45C4E1ED537E6DD093BE426043E36556AE849F550309E7652FF948A12"
+  },
+  {
+    "file": "data/atmospheres/rooftop_run.cfg",
+    "unchanged": true,
+    "sha256": "B79B6C64D927178054ABE795649230D60CDCC4FEC0D08701DC140384615EF4CC"
+  },
+  {
+    "file": "docs/CASINO_NIGHT.md",
+    "unchanged": true,
+    "sha256": "5855B2605A2D3073BBDE417F4958F4E01D0C790AACF30587DC3F83BB29AF782B"
+  },
+  {
+    "file": "docs/GAME_DESIGN.md",
+    "unchanged": true,
+    "sha256": "A17F9FE431E91CC1A8B7766E89FC1C97C4CA12E80221A6370FF63AF215821714"
+  },
+  {
+    "file": "docs/PRODUCTION_APPEARANCE.md",
+    "unchanged": true,
+    "sha256": "7F4B61DC3B66B1E13EC5AE1BE7CA12471E7D43A229AEE80FF7229D859063FF48"
+  },
+  {
+    "file": "experiments/pinball_vocabulary/study_16.tres",
+    "unchanged": true,
+    "sha256": "AB549285E96FD732BABC8B92C1F2B9EAAEF5E6999CCB0C736A433A636D5B9311"
+  },
+  {
+    "file": "experiments/visual_lab/launch.ps1",
+    "unchanged": true,
+    "sha256": "12450993697E330807B283F3E6E83D8C7ADC07053E202AE3652E533BB02F44BB"
+  },
+  {
+    "file": "experiments/visual_lab/visual_lab.gd",
+    "unchanged": true,
+    "sha256": "2EE7FEE7DEB43BB2A36B9410744C7F92564BD182B46F801A13F156B6968A2255"
+  },
+  {
+    "file": "project.godot",
+    "unchanged": true,
+    "sha256": "5A0E9166FFC1C39DABCDEB5329ACE14074C3F57F4BCE15A1BC441B905F6D45FD"
+  },
+  {
+    "file": "scripts/authored_act/mechanics_presentation.gd",
+    "unchanged": true,
+    "sha256": "FD58DD7613400495984F0DC0F0DCC1BD4FAC44AA23C286F288BDE93B50542FEA"
+  },
+  {
+    "file": "scripts/decor/casino_night_decor.gd",
+    "unchanged": true,
+    "sha256": "3667F3EE0614536BD9249972F5918A15BC1BD4032AFACC0AC3C9C989B6C15B0E"
+  },
+  {
+    "file": "scripts/decor/chemical_plant_decor.gd",
+    "unchanged": true,
+    "sha256": "598C4667B8633D489F9C6CDECFD79E050F455F40BA8A7275948D51426D7C2384"
+  },
+  {
+    "file": "scripts/decor/rooftop_run_decor.gd",
+    "unchanged": true,
+    "sha256": "A236A6616166341C680C21AA4931FF233D990A2799A398D159371E637271D3A0"
+  },
+  {
+    "file": "scripts/themes/casino_night_theme.gd",
+    "unchanged": true,
+    "sha256": "DEE09EB671E9D0D4EF6C2B3C1B556CED9CD1A04D7DDFB29CD2F550B931231804"
+  },
+  {
+    "file": "scripts/themes/chemical_plant_theme.gd",
+    "unchanged": true,
+    "sha256": "4A5CB652712AB3DF51182AFE37D6AD8B45E79E067D5190C80A29BDFD2C910635"
+  },
+  {
+    "file": "scripts/themes/green_hill_theme.gd",
+    "unchanged": true,
+    "sha256": "F3D34FDA447C9F0DA6C9852ECA6EB1223E1871D4CED4ABA3D247F2B3CB110B07"
+  },
+  {
+    "file": "scripts/themes/green_hill_wall.gdshader",
+    "unchanged": true,
+    "sha256": "10B634E932DD28FB342972737E39A19625D66E3DB4D2B071DD52A1C2D092A1DF"
+  },
+  {
+    "file": "scripts/themes/rooftop_run_theme.gd",
+    "unchanged": true,
+    "sha256": "E32AD91C1B91F5CA38D0BDE96DE746CC898791DDD36E717EF5C6CED02B48C6BF"
+  },
+  {
+    "file": "scripts/themes/themed_presentation.gd",
+    "unchanged": true,
+    "sha256": "ACB5C4B4F7B1C2CBB65ACB5A2DCC93ACCB654044E2E5C365F6E47A17547CBD39"
+  }
+]

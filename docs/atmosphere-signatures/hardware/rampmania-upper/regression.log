@@ -1,0 +1,31 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | green_hill | nodes=40 | instantiate_ms=18.59 | graphics_ms=62.24 | retire_ms=0.412
+ENDLESS_DISK_WARM | green_hill | nodes=19 | instantiate_ms=0.633 | graphics_ms=7.433 | retire_ms=0.276
+ENDLESS_DISK_WARM | green_hill | nodes=583 | instantiate_ms=50.772 | graphics_ms=69.088 | retire_ms=6.542
+ENDLESS_PREPARED | green_hill:0 | source=disk | ms=883.146 | GPU warm frames=22 | cached=1 | geometry loaded=24 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Switch Court — Open the Sky Lane
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | chemical_plant | nodes=36 | instantiate_ms=11.754 | graphics_ms=62.141 | retire_ms=0.383
+ENDLESS_DISK_WARM | chemical_plant | nodes=36 | instantiate_ms=0.896 | graphics_ms=14.349 | retire_ms=0.344
+ENDLESS_DISK_WARM | chemical_plant | nodes=575 | instantiate_ms=50.439 | graphics_ms=69.419 | retire_ms=6.556
+ENDLESS_PREPARED | chemical_plant:0 | source=disk | ms=682.82 | GPU warm frames=23 | cached=1 | geometry loaded=19 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Switch Court — Open the Sky Lane
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | rooftop_run | nodes=42 | instantiate_ms=1.161 | graphics_ms=65.973 | retire_ms=0.433
+ENDLESS_DISK_WARM | rooftop_run | nodes=39 | instantiate_ms=1.028 | graphics_ms=14.415 | retire_ms=0.346
+ENDLESS_DISK_WARM | rooftop_run | nodes=508 | instantiate_ms=43.219 | graphics_ms=62.946 | retire_ms=6.251
+ENDLESS_PREPARED | rooftop_run:0 | source=disk | ms=678.635 | GPU warm frames=23 | cached=1 | geometry loaded=19 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Switch Court — Open the Sky Lane
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | casino_night | nodes=32 | instantiate_ms=4.485 | graphics_ms=55.05 | retire_ms=0.362
+ENDLESS_DISK_WARM | casino_night | nodes=33 | instantiate_ms=0.961 | graphics_ms=16.569 | retire_ms=0.407
+ENDLESS_DISK_WARM | casino_night | nodes=498 | instantiate_ms=37.197 | graphics_ms=61.938 | retire_ms=6.246
+ENDLESS_PREPARED | casino_night:0 | source=disk | ms=760.316 | GPU warm frames=21 | cached=1 | geometry loaded=19 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Switch Court — Open the Sky Lane
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+RESULT | Prototype appearance regression | 83 checks | 0 failures

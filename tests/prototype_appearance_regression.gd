@@ -69,7 +69,7 @@ func run() -> void:
   if not manifest.is_empty():
    check(manifest.has(theme), "Manifest includes " + theme)
    if manifest.has(theme):
-    for key: String in ["source_sha256", "pipeline_fingerprint", "scenery_fingerprint", "act_bake_sha256", "theme_bake_sha256", "atmosphere"]:
+    for key: String in ["source_sha256", "pipeline_fingerprint", "scenery_fingerprint", "act_bake_sha256", "theme_bake_sha256", "atmosphere", "retro_mode", "retro_effects", "retro_settings_sha256"]:
      # JSON stores Color/Vector values as strings and numeric values as floats.
      var serialized: Variant = JSON.parse_string(JSON.stringify(fixture.receipt[key]))
      check(manifest[theme][key] == serialized, "Whole comparison still current: " + theme + " / " + key)

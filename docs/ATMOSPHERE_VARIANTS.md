@@ -2,6 +2,14 @@
 
 The production model is **Act geometry × Theme × Atmosphere Variant**. Geometry and material topology still bake only as Act × Theme, including that Act/theme's scenery sidecar. Atmosphere is applied to those reusable recipes at runtime. Production does not read `user://lighting_lab_presets.cfg`.
 
+## Production Default atmosphere signatures — 2026-11-09
+
+The follow-up identity pass covers Green Hill, Chemical Plant, Rooftop Run and Casino Night. Alex deferred the other four themes until their texture rework and confirmed that production Retro remains on. OFF captures are lighting diagnostics only.
+
+Chemical's Default now has darker cool fill, deeper reservoir/horizon tones and tighter floor-lamp halos, reducing broad yellow spill against Rings. Casino's Default uses darker violet surroundings, steeper sun direction and localized neon against its readable blue deck. Green Hill's cheerful daylight and Rooftop's cream/terracotta afternoon already fit their targets and are deliberately unchanged. Existing named variants, hue controls, exposure, gameplay materials and device graphics settings remain intact. Fog stays off; no new rendering path is enabled.
+
+The [four-theme audit and evidence](atmosphere-signatures/README.md) records old/new character, exact deltas, matched 1:1 Prototype comparisons at three camera tiers with Retro ON/OFF, streamed transitions, timing and verification. Chemical's sampled GPU cost is unchanged; Casino's approximately +0.03 ms is smaller than baseline variation. Alex still needs to judge moving Rings over Chemical lamps and the blue character on Casino's blue deck. These signatures supersede the earlier broad-halo direction for Chemical below; historical authoring notes remain for context.
+
 ## Ownership and storage
 
 `data/atmospheres/<theme_id>.cfg` is version-1, inspectable project data. Each section has a stable ID, display name, enabled flag, weight and a dictionary of atmosphere overrides. Colors remain native ConfigFile `Color` values. There are no copied Theme resources, geometry references or serialized percentages. Both export scripts include these files.

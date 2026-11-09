@@ -1,0 +1,489 @@
+{
+  "date": "2026-11-09",
+  "starting_main": "6c06cc0c128a8a8148e4c4630b0adee1915095e8",
+  "scope": [
+    "green_hill",
+    "chemical_plant",
+    "rooftop_run",
+    "casino_night"
+  ],
+  "production_retro": "ON; N64/VHS/CRT settings unchanged",
+  "baseline_suites": 32,
+  "baseline_checks": 8593.0,
+  "baseline_assertion_failures": 0.0,
+  "child_reload_checks": 6,
+  "baseline": [
+    {
+      "exit": 0,
+      "log_sha256": "9C3681408F30F1362EE19534BB9C2D52F005F6B9FD318680D7FD8340D7B87CFA",
+      "log": "test-results/atmosphere-signatures/checks/theme_texture_regression.log",
+      "checks": 284,
+      "stderr_sha256": "D41CE04A493C8A0C5B9E1EA070065D1FBE118A01DE07765FBD991DB0A01A8D92",
+      "suite": "theme_texture_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "F58F567385293A889C094E343EBB3782693BD3618452C458C5216ADDE03AA147",
+      "log": "test-results/atmosphere-signatures/checks/scorecraft_regression.log",
+      "checks": 29,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "scorecraft_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "379383D5C815F83A7CF0062EB99BD5930B67A93A14D379937E1A92CBBDC2FF81",
+      "log": "test-results/atmosphere-signatures/checks/buddy_scoring_regression.log",
+      "checks": 70,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "buddy_scoring_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "308A579D599366B734BBFA1A23B5B60B6BAAB2B6CFEDB37AD2B7C706CF30EBC2",
+      "log": "test-results/atmosphere-signatures/checks/enemy_regression.log",
+      "checks": 50,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "enemy_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "ED13B3529534D72B6BB6038AF80DC234C585BAE4E03E76605C5F97CA394C1D5A",
+      "log": "test-results/atmosphere-signatures/checks/authored_main_game_regression.log",
+      "checks": 70,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "authored_main_game_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "6736294D6A56FA999F9A050F021428BACE9E00F02A4100B61414B6818A9E43BF",
+      "log": "test-results/atmosphere-signatures/checks/traversal_authoring_regression.log",
+      "checks": 36,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "traversal_authoring_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "A56E728F06AF13E58291D412556B26BFC2627A724383920431DB1DBCF67C5F24",
+      "log": "test-results/atmosphere-signatures/checks/flipper_contact_response_regression.log",
+      "checks": 208,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "flipper_contact_response_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "C809A1287FC039582BAD6EB64894F06AA9A09B8EC11F6D7073A3C284597B3029",
+      "log": "test-results/atmosphere-signatures/checks/telemetry_evidence_regression.log",
+      "checks": 30,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "telemetry_evidence_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "7B4EDD1F39156FF4CD398E5249B569D66451A76E7B0919E54FEB7F142ACE8D22",
+      "log": "test-results/atmosphere-signatures/checks/prototype_plan_regression.log",
+      "checks": 41,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "prototype_plan_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "B5D9F059DAE54EE29D6A7A9A9FD38BC7FE1F8C41146623011D1617313D1BA511",
+      "log": "test-results/atmosphere-signatures/checks/geometry_bake_regression.log",
+      "checks": 2842,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "geometry_bake_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "1231EEECC528D53E2504AB6BE0A9B1E26EAB5D69AA0BE35911FCF22D27818E04",
+      "log": "test-results/atmosphere-signatures/checks/act_geometry_regression.log",
+      "checks": 3461,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "act_geometry_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "F8519C5F6E3EED349FB3BA6F949A4A780A14A7A80576B4D7A6ECFEC9607E135A",
+      "log": "test-results/atmosphere-signatures/checks/geometry_density_regression.log",
+      "checks": 18,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "geometry_density_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "AFCB382B275316975ED9663D9E04CB61B1A159028B3B25CAAE27B39EC521841A",
+      "log": "test-results/atmosphere-signatures/checks/economy_v1_regression.log",
+      "checks": 44,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "economy_v1_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "08179C8C73A76EB97A51D1A9B1334F0FDC328D2C60F5212DD1309344F4D5F2CA",
+      "count_basis": "PASS output lines",
+      "checks": 17,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "log": "test-results/atmosphere-signatures/checks/pinball_vocabulary_regression.log",
+      "suite": "pinball_vocabulary_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "8F7B1E278C0DE322A4B0946F98611BBDDB84C7FDF827B7C8CB22433381881DD3",
+      "log": "test-results/atmosphere-signatures/checks/gimmick_batch_regression.log",
+      "checks": 103,
+      "stderr_sha256": "3294B009E7B5F42733E899643E82046AD01A5250ED5DCAD048A6E5557816472A",
+      "suite": "gimmick_batch_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "52AC4D80C6D3D97873AB9B657F1B027F00EC69F127286E027796C400BCAE11B1",
+      "log": "test-results/atmosphere-signatures/checks/scoring_flow_regression.log",
+      "checks": 31,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "scoring_flow_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "20945F1F3AAFCBD7E4A04FC3113938A41A8763257BFDB98593170FB8A68915B0",
+      "log": "test-results/atmosphere-signatures/checks/rail_rings_regression.log",
+      "checks": 13,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "rail_rings_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "0B8E15601824BF46AFFB265D6E18069D80143ACC20ED9A2C4307430DB6B3E385",
+      "count_basis": "12 explicit check calls in unchanged source",
+      "checks": 12,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "log": "test-results/atmosphere-signatures/checks/profile_regression.log",
+      "suite": "profile_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "08429FADC99BABF872FCD13EDCB4953F94F9B3544D1EE7106A645774ACE7FB38",
+      "log": "test-results/atmosphere-signatures/checks/run_telemetry_regression.log",
+      "checks": 14,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "run_telemetry_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "35FF7BA8579009D75595A4A86A40B9E932A7E0B63457D4879D7504CE984B67EC",
+      "log": "test-results/atmosphere-signatures/checks/authored_gimmick_regression.log",
+      "checks": 93,
+      "stderr_sha256": "F457B7C06C9A8556C2B051571EC33F4EF116F81A764ECA7A07A950B1C4F4F376",
+      "suite": "authored_gimmick_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "359D0A2C90D5340D3573D75D843C416771FB8E67915CA654787AED13C4DA7D57",
+      "log": "test-results/atmosphere-signatures/checks/pinball_mechanics_regression.log",
+      "checks": 58,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "pinball_mechanics_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "4E0206459A628DF27ADBEDAD8274C519449F9F948E9985C6A951058DF3B655FE",
+      "log": "test-results/atmosphere-signatures/checks/soft_retry_regression.log",
+      "checks": 62,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "soft_retry_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "0855468BF2F5D02567FB23580D47514F49718A00B59E5F3CCF9C4C0D1629F61A",
+      "log": "test-results/atmosphere-signatures/checks/ramp_height_theme_regression.log",
+      "checks": 92,
+      "stderr_sha256": "8BB596C68BC215D21994770FB59B15EE52CAA23FD078FD3492435137D407DC3A",
+      "suite": "ramp_height_theme_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "CF7719AA57BBD3A8389BED11377B86C2A745414B262E5967B1D73F5950DB9E04",
+      "log": "test-results/atmosphere-signatures/checks/endless_reuse_regression.log",
+      "checks": 127,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "endless_reuse_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "A1BDC302B2B106587D6750C32D17626768CE9FE6CB86B468EA06EA281F1FF5EF",
+      "log": "test-results/atmosphere-signatures/checks/traversal_prototype_regression.log",
+      "checks": 20,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "traversal_prototype_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "839B81B560C1B077C3B16EC8767BD522F00082FFCC50ED688DF3B73A87B16827",
+      "log": "test-results/atmosphere-signatures/checks/prototype_setup_regression.log",
+      "checks": 16,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "prototype_setup_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "E568823A40E03CEFE1AC52500B6090BD48C67D828591C0F51EF501DAABD4336D",
+      "log": "test-results/atmosphere-signatures/checks/prototype_archive_regression.log",
+      "checks": 33,
+      "stderr_sha256": "F748A1B6E6B3082CB66D204D1092B148FF25E6AA534DB7FCF70488FCB67DC453",
+      "suite": "prototype_archive_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "85F6B7D3A3E0C928F02A866837A017306AFD4EB33B8D493688A57CD870B8995A",
+      "log": "test-results/atmosphere-signatures/checks/foreground_contribution_regression.log",
+      "checks": 26,
+      "stderr_sha256": "1732D3BC3FCE98B6D1865FD01CDE0118577709055411C7642C837C385076527F",
+      "suite": "foreground_contribution_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "7822F86E6E14B02775D58A0EBA01327B29DF0769927EB957C65DC3D849EBFAD0",
+      "log": "test-results/atmosphere-signatures/checks/prototype_budget_regression.log",
+      "checks": 56,
+      "stderr_sha256": "1732D3BC3FCE98B6D1865FD01CDE0118577709055411C7642C837C385076527F",
+      "suite": "prototype_budget_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "F1E5A74385B44426B3E4A75EB84797BF62648490F7C6656086E85163581ED064",
+      "log": "test-results/atmosphere-signatures/checks/prototype_run_regression.log",
+      "checks": 142,
+      "stderr_sha256": "DFE79B8D9D63C8CEDB79A75C2B4440F15C8121BD0210A0BED6982AFF9DAA5B8B",
+      "suite": "prototype_run_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "D2B431613EEF557569A0E1553F05B70880369E5852AA569A707EA621D5798AAC",
+      "log": "test-results/atmosphere-signatures/checks/prototype_appearance_regression.log",
+      "checks": 70,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "prototype_appearance_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "1FB6F7ADFF9A0133606454FA7A482524937D379AA66ABEEFF7075BC54F99AB89",
+      "log": "test-results/atmosphere-signatures/checks/endless_bake_audit.log",
+      "checks": 425,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "endless_bake_audit",
+      "failures": 0
+    }
+  ],
+  "focused": [
+    {
+      "exit": 0,
+      "log_sha256": "D154621072ABFB1A413BC5F53C024661E86B2DFE2D100A3EF1090480A598B542",
+      "log": "test-results/atmosphere-signatures/checks/atmosphere_variants_regression.log",
+      "checks": 440,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "atmosphere_variants_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "5504E58FC5D97D5F0115BA4523508DFF63EEA8B8CF3E9E9AF6ADC520DDBD3517",
+      "log": "test-results/atmosphere-signatures/checks/atmosphere_color_ranges_regression.log",
+      "checks": 24,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "atmosphere_color_ranges_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "7A4D6FFA36B2759D78BA7881EB2A0AE93322AED094B6215933AA78D062114403",
+      "log": "test-results/atmosphere-signatures/checks/local_palette_regression.log",
+      "checks": 397,
+      "stderr_sha256": "E82EF46F3EDFEF234E83E333A31D4C22A485BD97D2DA6AC7408BDA26FDF0843E",
+      "suite": "local_palette_regression",
+      "failures": 0
+    },
+    {
+      "exit": 1,
+      "log_sha256": "7DB83B935A9245AA5E989480FB3B0BC5E7BF43C1FB8CFB770C050AE5508D8780",
+      "log": "test-results/atmosphere-signatures/checks/hardware_palette_regression.log",
+      "checks": 465,
+      "stderr_sha256": "2ACADA63FD2003E137D393E97E3CBB0E072EFE763EA9AAEBE67C318512F9B99D",
+      "suite": "hardware_palette_regression",
+      "failures": 18
+    },
+    {
+      "exit": 0,
+      "log_sha256": "C2FF79F1867B68E387AD0DF7DEB81FC93C1F965796573E234C53377190E1127E",
+      "log": "test-results/atmosphere-signatures/checks/atmosphere_variants_regression-rendered.log",
+      "checks": 461,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "atmosphere_variants_regression-rendered",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "26880ACEA3B276DD18DDB7B1DDFEAF22F0597D781D10338997F4E73C25757537",
+      "log": "test-results/atmosphere-signatures/checks/atmosphere_glow_regression-rendered.log",
+      "checks": 299,
+      "stderr_sha256": "5ADB86626B88D17B469631E9C7BFB984CF833CD43419D4D824487A5094777540",
+      "suite": "atmosphere_glow_regression-rendered",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "B1B8F5B05BC9103448202720AED76BDCFD92637017B576F72ADA12B99144CDF1",
+      "log": "test-results/atmosphere-signatures/checks/atmosphere_defaults_regression-rendered.log",
+      "checks": 774,
+      "stderr_sha256": "5FFEBF2E8603026B1C079B64ACFC24741F79807210BDC7A74AE656B5AB2EB4E5",
+      "suite": "atmosphere_defaults_regression-rendered",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "E999E5C65849826B566AC78D44683B5CAE7FC26F13ABB71654E99A1B20D12F6F",
+      "log": "test-results/atmosphere-signatures/checks/atmosphere_surface_regression-retry.log",
+      "checks": 1617,
+      "stderr_sha256": "87A2C33E9B2F9CBCC507CE76C944A0BD53B67936E94BFF9CDE3B8CF5A7242071",
+      "suite": "atmosphere_surface_regression-retry",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "45084B269A87D70260256F6B3CD4A4DB161BA6F5FA890CDBC905D112C716ECFE",
+      "log": "test-results/atmosphere-signatures/checks/fog_regression-rendered.log",
+      "checks": 31,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "fog_regression-rendered",
+      "failures": 0
+    },
+    {
+      "exit": 1,
+      "log_sha256": "9968C5F8FD4B8B03B7B119DB72FC96674C0FEEBA1AE53E6E032DC88FC7BF6C34",
+      "log": "test-results/atmosphere-signatures/checks/atmosphere_runtime_regression-final.log",
+      "checks": 87,
+      "stderr_sha256": "B09D525637E758F153D96A8F07061FB6EEBF30179175B263EF6BA20273B56CE1",
+      "suite": "atmosphere_runtime_regression-final",
+      "failures": 2
+    },
+    {
+      "exit": 0,
+      "log_sha256": "977395096FE843FE14303DF4E57FB07DE63D238996E7E97382B0E32A54B4F072",
+      "log": "test-results/atmosphere-signatures/checks/endless_bake_audit-final.log",
+      "checks": 489,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "endless_bake_audit-final",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "2C8E1C519C7A72C81E4ADCA142E4AA647B2B22A5A190503C9BD3D786A0F6935E",
+      "log": "docs/atmosphere-signatures/transitions/verification.log",
+      "checks": 237,
+      "stderr_sha256": "23F60E542FF9A09A2B8F942AC0D8006DEC22BBF92F6FDCFA1562F5D46B28F1FE",
+      "suite": "prototype_atmosphere_transition",
+      "failures": 0
+    }
+  ],
+  "clean_source": [
+    {
+      "exit": 0,
+      "log_sha256": "D154621072ABFB1A413BC5F53C024661E86B2DFE2D100A3EF1090480A598B542",
+      "log": "test-results/atmosphere-signatures/clean-atmosphere_variants_regression.log",
+      "checks": 440,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "clean-atmosphere_variants_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "5504E58FC5D97D5F0115BA4523508DFF63EEA8B8CF3E9E9AF6ADC520DDBD3517",
+      "log": "test-results/atmosphere-signatures/clean-atmosphere_color_ranges_regression.log",
+      "checks": 24,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "clean-atmosphere_color_ranges_regression",
+      "failures": 0
+    },
+    {
+      "exit": 0,
+      "log_sha256": "7D7021C3B06005511BCCC1ED896D4AF737E712521C0A559A773A0E1F69D115EC",
+      "log": "test-results/atmosphere-signatures/clean-local_palette_regression-final.log",
+      "checks": 391,
+      "stderr_sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "suite": "clean-local_palette_regression-final",
+      "failures": 0
+    },
+    {
+      "exit": 1,
+      "log_sha256": "901C1B6A6C387ACE063C8239D357A666B1EA0DE90B6110AA645BB5E74324E45E",
+      "log": "test-results/atmosphere-signatures/clean-hardware_palette_regression-final.log",
+      "checks": 465,
+      "stderr_sha256": "06876A11E298A17C436B63AF8C6E8046A9083BC767911AA5C380C42D21897A22",
+      "suite": "clean-hardware_palette_regression-final",
+      "failures": 18
+    },
+    {
+      "exit": 1,
+      "log_sha256": "CCC4D0BAC01FB3956411A82DFE1A877E5EFA9464A903D46B905E8D7629C052C7",
+      "log": "test-results/atmosphere-signatures/clean-hardware-baseline.log",
+      "checks": 465,
+      "stderr_sha256": "06876A11E298A17C436B63AF8C6E8046A9083BC767911AA5C380C42D21897A22",
+      "suite": "clean-hardware-baseline",
+      "failures": 18
+    },
+    {
+      "exit": 1,
+      "log_sha256": "14087776BFDCB6DE32EFD329D2EBA184F79C855287A96E4D9DCB08018B75AB29",
+      "log": "test-results/atmosphere-signatures/clean-runtime-baseline.log",
+      "checks": 87,
+      "stderr_sha256": "B09D525637E758F153D96A8F07061FB6EEBF30179175B263EF6BA20273B56CE1",
+      "suite": "clean-runtime-baseline",
+      "failures": 2
+    }
+  ],
+  "packaged_registries": "All eight load; exit 0",
+  "known_failures": [
+    "18 hardware palette cosmetic-response assertions in deferred Ice/Lava/Aquarium reproduce on untouched starting main.",
+    "2 legacy runtime Ice hue assertions reproduce on untouched starting main; private ownership and transition assertions pass."
+  ],
+  "rejected_attempts": [
+    "Initial sandbox capture lacked cache/log write access.",
+    "Superseded partial eight-theme upper capture.",
+    "Surface suite requires renderer: first headless invocation rejected.",
+    "First rendered surface run hit Vulkan device loss; fresh process at 60 FPS passed 1617 checks."
+  ],
+  "notes": [
+    "Prototype archive/budget/run check counts vary with run outcomes; tests were not changed.",
+    "Existing ObjectDB/resource cleanup diagnostics remain.",
+    "Clean export required third_party before valid runs; preliminary missing-dependency attempts excluded."
+  ]
+}
