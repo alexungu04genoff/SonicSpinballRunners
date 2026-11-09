@@ -1,0 +1,17 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | chemical_plant | nodes=36 | instantiate_ms=23.865 | graphics_ms=62.162 | retire_ms=0.422
+ENDLESS_DISK_WARM | chemical_plant | nodes=36 | instantiate_ms=0.896 | graphics_ms=14.37 | retire_ms=0.355
+ENDLESS_DISK_WARM | chemical_plant | nodes=1244 | instantiate_ms=140.462 | graphics_ms=127.782 | retire_ms=37.106
+ENDLESS_PREPARED | chemical_plant:0 | source=disk | ms=989.607 | GPU warm frames=31 | cached=1 | geometry loaded=11 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Untitled Act
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | ice_cap | nodes=40 | instantiate_ms=10.741 | graphics_ms=62.114 | retire_ms=0.409
+ENDLESS_DISK_WARM | ice_cap | nodes=7 | instantiate_ms=0.459 | graphics_ms=7.226 | retire_ms=0.126
+ENDLESS_DISK_WARM | ice_cap | nodes=817 | instantiate_ms=70.924 | graphics_ms=63.066 | retire_ms=6.575
+ENDLESS_PREPARED | ice_cap:0 | source=disk | ms=721.521 | GPU warm frames=21 | cached=1 | geometry loaded=11 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Untitled Act
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+RESULT | Prototype appearance regression | 39 checks | 0 failures

@@ -86,18 +86,27 @@ func build_background(p: Node3D) -> void:
  var water := PlaneMesh.new()
  water.size = Vector2(180, 180)
  p.mesh_node(water, _shader(LIQUID), center + Vector3(0, -2.45, 0), root)
- # Far processing district: broad silhouettes, sparse strips, no noisy windows.
+ # The shared Zone backdrop starts 1200 pixels before its first Act. Keep this
+ # low processing district near its downstream water, where upper gameplay
+ # views can expose it. It is a simpler tier than the local hero vessels.
  for i in 5:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  var height := 3.5 + float((i * 7) % 5) * 0.65
-  var at := Vector3(center.x + (i - 2) * 4.0, -2.0, p.table_bounds.position.y * p.SCALE - 7.0 - (i % 2) * 3.0)
-  _box(p, root, at + Vector3(0, height * 0.5, 0), Vector3(1.6, height, 1.7), _dark)
-  for row in 3:
-   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-   _box(p, root, at + Vector3(0, 0.7 + row * 0.8, 0.865), Vector3(1.35, 0.04, 0.025), _signal if i % 3 == 0 else _cyan)
-  var stack := at + Vector3(0.3, height, 0)
-  _pipe(p, root, stack, stack + Vector3(0, 1.3, 0), 0.20, _steel)
-  _box(p, root, stack + Vector3(0, 1.35, 0), Vector3(0.17, 0.10, 0.17), _signal)
+  var height := 1.6 + float((i * 7) % 3) * 0.35
+  var district := Node3D.new()
+  root.add_child(district)
+  district.position = Vector3(center.x + (i - 2) * 1.8, -1.3, center.z + 1.0 - (i % 2) * 0.3)
+  district.scale = Vector3.ONE * 0.45
+  var at := Vector3.ZERO
+  # Two broad risers and one bridge leave an unmistakable open pipe profile.
+  for side: int in [-1, 1]:
+   _vessel_piece(p, district, "handle", at + Vector3(side * 0.62, height * 0.5, 0), Vector3(0.32, height, 0.32), _blue)
+   _vessel_piece(p, district, "body", at + Vector3(side * 0.62, height * 0.72, 0), Vector3(0.40, 0.18, 0.40), _cyan)
+   _vessel_piece(p, district, "stripe", at + Vector3(side * 0.62, 0.16, 0), Vector3(0.85, 0.32, 0.85), _yellow)
+  var bridge := _vessel_piece(p, district, "handle", at + Vector3.UP * height, Vector3(0.32, 1.24, 0.32), _blue)
+  bridge.rotation.z = PI * 0.5
+  _vessel_piece(p, district, "body", at + Vector3(0, height * 0.43, -0.28), Vector3(0.46, height * 0.66, 0.46), _signal)
+ for mesh: GeometryInstance3D in root.find_children("*", "GeometryInstance3D", true, false):
+  mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 func build_edges(p: Node3D) -> void:
  # One tank and a short pipe run on each side follow the local bend. Long

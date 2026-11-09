@@ -1,0 +1,126 @@
+{
+  "acts": [
+    {
+      "authored_title": "Untitled Act",
+      "decor_slots": 29,
+      "fingerprint": "c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba",
+      "path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "source_sha256": "91c1dd949734dea6ef241204abaa8c7b48f6d9191572844942204b7ff1cb4e91",
+      "spawn": [
+        400.0,
+        500.0
+      ],
+      "targets": {
+        "mid": [
+          300.0,
+          250.0
+        ],
+        "upper": [
+          350.0,
+          125.0
+        ]
+      },
+      "title": "First Try Smooth Decor"
+    },
+    {
+      "authored_title": "Switch Court — Open the Sky Lane",
+      "decor_slots": 0,
+      "fingerprint": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0",
+      "path": "res://data/acts/Authored/RampMania.tres",
+      "source_sha256": "703d4f06c0fc015e1844cc8230d2639fe0ab94853c877185ce3161990e1d1436",
+      "spawn": [
+        200.0,
+        700.0
+      ],
+      "targets": {
+        "mid": [
+          200.0,
+          400.0
+        ],
+        "upper": [
+          250.0,
+          150.0
+        ]
+      },
+      "title": "RampMania"
+    },
+    {
+      "authored_title": "Untitled Act",
+      "decor_slots": 48,
+      "fingerprint": "d526b99a5c4a89e2f57c5eebf55cf8f0e494a8b2924af56ed5ede4bb91b3e640",
+      "path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "source_sha256": "d48b5082a22673637358f0f9d5214a0659fddef270fb561d7be370be0d017cbf",
+      "spawn": [
+        114.693939208984,
+        526.1787109375
+      ],
+      "targets": {
+        "mid": [
+          249.489593505859,
+          279.014312744141
+        ],
+        "upper": [
+          294.394287109375,
+          117.088806152344
+        ]
+      },
+      "title": "Reverse C Spring"
+    },
+    {
+      "authored_title": "Untitled Act",
+      "decor_slots": 60,
+      "fingerprint": "89c2d6d10b201695d078066282f7490901cdabaa076ddc229b7f4019220e8dd7",
+      "path": "res://data/acts/Authored/Secret Entry.tres",
+      "source_sha256": "c4208c15d23eb1bd23805e8c46701ad10ce7559b71d41274232909b6c4b2be17",
+      "spawn": [
+        100.0,
+        537.0
+      ],
+      "targets": {
+        "mid": [
+          500.0,
+          300.0
+        ],
+        "upper": [
+          334.0,
+          126.0
+        ]
+      },
+      "title": "Secret Entry"
+    },
+    {
+      "authored_title": "Untitled Act",
+      "decor_slots": 44,
+      "fingerprint": "f6f91de027384aa1450b100a2e85206645bc5924a0b31ce0b81de2bc72cb2c78",
+      "path": "res://data/acts/Authored/SpringUp.tres",
+      "source_sha256": "f3e9324e34ba95c4cc2f270506a6e12daabda28589c964ad646c3da7027795a9",
+      "spawn": [
+        309.992309570313,
+        548.81591796875
+      ],
+      "targets": {
+        "mid": [
+          300.0,
+          250.0
+        ],
+        "upper": [
+          258.328857421875,
+          125.410049438477
+        ]
+      },
+      "title": "SpringUp"
+    }
+  ],
+  "target_policy": "Spawn uses the canonical camera. Mid/upper targets use actual authored hardware nearest the central 50%/20% terrain bands. Evidence-only; visually review each framing before accepting it.",
+  "themes": [
+    "green_hill",
+    "chemical_plant",
+    "rooftop_run",
+    "casino_night",
+    "sky_sanctuary",
+    "ice_cap",
+    "lava_reef",
+    "aquarium_park"
+  ],
+  "view_count": 120
+}

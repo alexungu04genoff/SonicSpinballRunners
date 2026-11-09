@@ -1,0 +1,3765 @@
+{
+  "scope": "CPU recipe accounting, including off-camera instances. Mesh-bearing nodes are a submission proxy, not GPU draw calls. Shared background counted once per theme, not once per Act.",
+  "rows": [
+    {
+      "act_name": "First Try Smooth Decor",
+      "theme": "green_hill",
+      "act": {
+        "triangles": {
+          "before": 45387,
+          "after": 45387,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 612,
+          "after": 612,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 436,
+          "after": 436,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 27244,
+          "after": 27244,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 15,
+          "after": 15,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 37,
+            "instances": 213,
+            "records_after": 563,
+            "records_before": 742,
+            "removed_nodes": 216,
+            "source_meshes": 612
+          },
+          "after": {
+            "batches": 37,
+            "instances": 213,
+            "records_after": 563,
+            "records_before": 742,
+            "removed_nodes": 216,
+            "source_meshes": 612
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 866,
+          "after": 866,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 16,
+          "after": 16,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 16,
+          "after": 16,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 864,
+          "after": 864,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 19,
+            "records_before": 19,
+            "removed_nodes": 0,
+            "source_meshes": 16
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 19,
+            "records_before": 19,
+            "removed_nodes": 0,
+            "source_meshes": 16
+          }
+        }
+      }
+    },
+    {
+      "act_name": "First Try Smooth Decor",
+      "theme": "chemical_plant",
+      "act": {
+        "triangles": {
+          "before": 52701,
+          "after": 52701,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 726,
+          "after": 726,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 620,
+          "after": 620,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 25372,
+          "after": 25372,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 15,
+          "after": 15,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 27,
+            "instances": 133,
+            "records_after": 726,
+            "records_before": 832,
+            "removed_nodes": 133,
+            "source_meshes": 726
+          },
+          "after": {
+            "batches": 27,
+            "instances": 133,
+            "records_after": 726,
+            "records_before": 832,
+            "removed_nodes": 133,
+            "source_meshes": 726
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 542,
+          "after": 1742,
+          "delta": 1200
+        },
+        "mesh_instances": {
+          "before": 31,
+          "after": 41,
+          "delta": 10
+        },
+        "mesh_nodes": {
+          "before": 21,
+          "after": 31,
+          "delta": 10
+        },
+        "shadow_triangles": {
+          "before": 542,
+          "after": 0,
+          "delta": -542
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 5,
+            "instances": 15,
+            "records_after": 21,
+            "records_before": 31,
+            "removed_nodes": 15,
+            "source_meshes": 31
+          },
+          "after": {
+            "batches": 5,
+            "instances": 15,
+            "records_after": 36,
+            "records_before": 46,
+            "removed_nodes": 15,
+            "source_meshes": 41
+          }
+        }
+      }
+    },
+    {
+      "act_name": "First Try Smooth Decor",
+      "theme": "rooftop_run",
+      "act": {
+        "triangles": {
+          "before": 72557,
+          "after": 72557,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 674,
+          "after": 674,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 433,
+          "after": 433,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 29404,
+          "after": 29404,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 15,
+          "after": 15,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 28,
+            "instances": 177,
+            "records_after": 546,
+            "records_before": 703,
+            "removed_nodes": 185,
+            "source_meshes": 574
+          },
+          "after": {
+            "batches": 28,
+            "instances": 177,
+            "records_after": 546,
+            "records_before": 703,
+            "removed_nodes": 185,
+            "source_meshes": 574
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 2440,
+          "after": 2440,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 170,
+          "after": 170,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 38,
+          "after": 38,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 2440,
+          "after": 2440,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 39,
+            "records_before": 39,
+            "removed_nodes": 0,
+            "source_meshes": 2
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 39,
+            "records_before": 39,
+            "removed_nodes": 0,
+            "source_meshes": 2
+          }
+        }
+      }
+    },
+    {
+      "act_name": "First Try Smooth Decor",
+      "theme": "casino_night",
+      "act": {
+        "triangles": {
+          "before": 52929,
+          "after": 52929,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 863,
+          "after": 863,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 475,
+          "after": 475,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 32272,
+          "after": 32272,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 15,
+          "after": 15,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 51,
+            "instances": 258,
+            "records_after": 587,
+            "records_before": 797,
+            "removed_nodes": 261,
+            "source_meshes": 665
+          },
+          "after": {
+            "batches": 51,
+            "instances": 258,
+            "records_after": 587,
+            "records_before": 797,
+            "removed_nodes": 261,
+            "source_meshes": 665
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 3176,
+          "after": 3176,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 169,
+          "after": 169,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 27,
+          "after": 27,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 3176,
+          "after": 3176,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 4,
+            "instances": 20,
+            "records_after": 33,
+            "records_before": 49,
+            "removed_nodes": 20,
+            "source_meshes": 28
+          },
+          "after": {
+            "batches": 4,
+            "instances": 20,
+            "records_after": 33,
+            "records_before": 49,
+            "removed_nodes": 20,
+            "source_meshes": 28
+          }
+        }
+      }
+    },
+    {
+      "act_name": "First Try Smooth Decor",
+      "theme": "sky_sanctuary",
+      "act": {
+        "triangles": {
+          "before": 58815,
+          "after": 58815,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 974,
+          "after": 974,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 377,
+          "after": 377,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 35408,
+          "after": 35408,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 15,
+          "after": 15,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 60,
+            "instances": 411,
+            "records_after": 496,
+            "records_before": 847,
+            "removed_nodes": 411,
+            "source_meshes": 719
+          },
+          "after": {
+            "batches": 60,
+            "instances": 411,
+            "records_after": 496,
+            "records_before": 847,
+            "removed_nodes": 411,
+            "source_meshes": 719
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 11762,
+          "after": 11762,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 185,
+          "after": 185,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 6,
+          "after": 6,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 9,
+            "records_before": 9,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 9,
+            "records_before": 9,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          }
+        }
+      }
+    },
+    {
+      "act_name": "First Try Smooth Decor",
+      "theme": "ice_cap",
+      "act": {
+        "triangles": {
+          "before": 46977,
+          "after": 46977,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 493,
+          "after": 493,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 356,
+          "after": 356,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 28770,
+          "after": 28770,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 15,
+          "after": 15,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 19,
+            "instances": 113,
+            "records_after": 509,
+            "records_before": 609,
+            "removed_nodes": 119,
+            "source_meshes": 438
+          },
+          "after": {
+            "batches": 19,
+            "instances": 113,
+            "records_after": 509,
+            "records_before": 609,
+            "removed_nodes": 119,
+            "source_meshes": 438
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 1164,
+          "after": 1404,
+          "delta": 240
+        },
+        "mesh_instances": {
+          "before": 49,
+          "after": 61,
+          "delta": 12
+        },
+        "mesh_nodes": {
+          "before": 2,
+          "after": 5,
+          "delta": 3
+        },
+        "shadow_triangles": {
+          "before": 12,
+          "after": 12,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 3,
+            "records_before": 3,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 7,
+            "records_before": 7,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          }
+        }
+      }
+    },
+    {
+      "act_name": "First Try Smooth Decor",
+      "theme": "lava_reef",
+      "act": {
+        "triangles": {
+          "before": 48663,
+          "after": 48663,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 539,
+          "after": 539,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 390,
+          "after": 390,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 33388,
+          "after": 33388,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 15,
+          "after": 15,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 24,
+            "instances": 173,
+            "records_after": 498,
+            "records_before": 647,
+            "removed_nodes": 173,
+            "source_meshes": 539
+          },
+          "after": {
+            "batches": 24,
+            "instances": 173,
+            "records_after": 498,
+            "records_before": 647,
+            "removed_nodes": 173,
+            "source_meshes": 539
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 29070,
+          "after": 29070,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 607,
+          "after": 607,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 21,
+          "after": 21,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 26,
+            "records_before": 26,
+            "removed_nodes": 0,
+            "source_meshes": 3
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 26,
+            "records_before": 26,
+            "removed_nodes": 0,
+            "source_meshes": 3
+          }
+        }
+      }
+    },
+    {
+      "act_name": "First Try Smooth Decor",
+      "theme": "aquarium_park",
+      "act": {
+        "triangles": {
+          "before": 56033,
+          "after": 56033,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 904,
+          "after": 904,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 700,
+          "after": 700,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 35936,
+          "after": 35936,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 15,
+          "after": 15,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 29,
+            "instances": 233,
+            "records_after": 816,
+            "records_before": 1020,
+            "removed_nodes": 233,
+            "source_meshes": 904
+          },
+          "after": {
+            "batches": 29,
+            "instances": 233,
+            "records_after": 816,
+            "records_before": 1020,
+            "removed_nodes": 233,
+            "source_meshes": 904
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 29966,
+          "after": 29966,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1198,
+          "after": 1198,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 44,
+          "after": 44,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 336,
+          "after": 336,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 2,
+            "instances": 10,
+            "records_after": 48,
+            "records_before": 56,
+            "removed_nodes": 10,
+            "source_meshes": 34
+          },
+          "after": {
+            "batches": 2,
+            "instances": 10,
+            "records_after": 48,
+            "records_before": 56,
+            "removed_nodes": 10,
+            "source_meshes": 34
+          }
+        }
+      }
+    },
+    {
+      "act_name": "RampMania",
+      "theme": "green_hill",
+      "act": {
+        "triangles": {
+          "before": 49736,
+          "after": 49736,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 525,
+          "after": 525,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 486,
+          "after": 486,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 29868,
+          "after": 29868,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 29,
+          "after": 29,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 7,
+            "instances": 46,
+            "records_after": 583,
+            "records_before": 622,
+            "removed_nodes": 46,
+            "source_meshes": 525
+          },
+          "after": {
+            "batches": 7,
+            "instances": 46,
+            "records_after": 583,
+            "records_before": 622,
+            "removed_nodes": 46,
+            "source_meshes": 525
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 866,
+          "after": 866,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 16,
+          "after": 16,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 16,
+          "after": 16,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 864,
+          "after": 864,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 19,
+            "records_before": 19,
+            "removed_nodes": 0,
+            "source_meshes": 16
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 19,
+            "records_before": 19,
+            "removed_nodes": 0,
+            "source_meshes": 16
+          }
+        }
+      }
+    },
+    {
+      "act_name": "RampMania",
+      "theme": "chemical_plant",
+      "act": {
+        "triangles": {
+          "before": 58758,
+          "after": 58758,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 518,
+          "after": 518,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 489,
+          "after": 489,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 37572,
+          "after": 37572,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 29,
+          "after": 29,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 8,
+            "instances": 37,
+            "records_after": 575,
+            "records_before": 604,
+            "removed_nodes": 37,
+            "source_meshes": 518
+          },
+          "after": {
+            "batches": 8,
+            "instances": 37,
+            "records_after": 575,
+            "records_before": 604,
+            "removed_nodes": 37,
+            "source_meshes": 518
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 542,
+          "after": 1742,
+          "delta": 1200
+        },
+        "mesh_instances": {
+          "before": 31,
+          "after": 41,
+          "delta": 10
+        },
+        "mesh_nodes": {
+          "before": 21,
+          "after": 31,
+          "delta": 10
+        },
+        "shadow_triangles": {
+          "before": 542,
+          "after": 0,
+          "delta": -542
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 5,
+            "instances": 15,
+            "records_after": 21,
+            "records_before": 31,
+            "removed_nodes": 15,
+            "source_meshes": 31
+          },
+          "after": {
+            "batches": 5,
+            "instances": 15,
+            "records_after": 36,
+            "records_before": 46,
+            "removed_nodes": 15,
+            "source_meshes": 41
+          }
+        }
+      }
+    },
+    {
+      "act_name": "RampMania",
+      "theme": "rooftop_run",
+      "act": {
+        "triangles": {
+          "before": 93304,
+          "after": 93304,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 515,
+          "after": 515,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 423,
+          "after": 423,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 29988,
+          "after": 29988,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 29,
+          "after": 29,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 508,
+            "records_before": 508,
+            "removed_nodes": 0,
+            "source_meshes": 415
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 508,
+            "records_before": 508,
+            "removed_nodes": 0,
+            "source_meshes": 415
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 2440,
+          "after": 2440,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 170,
+          "after": 170,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 38,
+          "after": 38,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 2440,
+          "after": 2440,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 39,
+            "records_before": 39,
+            "removed_nodes": 0,
+            "source_meshes": 2
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 39,
+            "records_before": 39,
+            "removed_nodes": 0,
+            "source_meshes": 2
+          }
+        }
+      }
+    },
+    {
+      "act_name": "RampMania",
+      "theme": "casino_night",
+      "act": {
+        "triangles": {
+          "before": 51930,
+          "after": 51930,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 594,
+          "after": 594,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 413,
+          "after": 413,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 30060,
+          "after": 30060,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 29,
+          "after": 29,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 498,
+            "records_before": 498,
+            "removed_nodes": 0,
+            "source_meshes": 396
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 498,
+            "records_before": 498,
+            "removed_nodes": 0,
+            "source_meshes": 396
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 3176,
+          "after": 3176,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 169,
+          "after": 169,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 27,
+          "after": 27,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 3176,
+          "after": 3176,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 4,
+            "instances": 20,
+            "records_after": 33,
+            "records_before": 49,
+            "removed_nodes": 20,
+            "source_meshes": 28
+          },
+          "after": {
+            "batches": 4,
+            "instances": 20,
+            "records_after": 33,
+            "records_before": 49,
+            "removed_nodes": 20,
+            "source_meshes": 28
+          }
+        }
+      }
+    },
+    {
+      "act_name": "RampMania",
+      "theme": "sky_sanctuary",
+      "act": {
+        "triangles": {
+          "before": 56536,
+          "after": 56536,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 723,
+          "after": 723,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 405,
+          "after": 405,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 29860,
+          "after": 29860,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 29,
+          "after": 29,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 490,
+            "records_before": 490,
+            "removed_nodes": 0,
+            "source_meshes": 396
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 490,
+            "records_before": 490,
+            "removed_nodes": 0,
+            "source_meshes": 396
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 11762,
+          "after": 11762,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 185,
+          "after": 185,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 6,
+          "after": 6,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 9,
+            "records_before": 9,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 9,
+            "records_before": 9,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          }
+        }
+      }
+    },
+    {
+      "act_name": "RampMania",
+      "theme": "ice_cap",
+      "act": {
+        "triangles": {
+          "before": 49645,
+          "after": 49645,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 463,
+          "after": 463,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 411,
+          "after": 411,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 29860,
+          "after": 29860,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 29,
+          "after": 29,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 498,
+            "records_before": 498,
+            "removed_nodes": 0,
+            "source_meshes": 398
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 498,
+            "records_before": 498,
+            "removed_nodes": 0,
+            "source_meshes": 398
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 1164,
+          "after": 1404,
+          "delta": 240
+        },
+        "mesh_instances": {
+          "before": 49,
+          "after": 61,
+          "delta": 12
+        },
+        "mesh_nodes": {
+          "before": 2,
+          "after": 5,
+          "delta": 3
+        },
+        "shadow_triangles": {
+          "before": 12,
+          "after": 12,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 3,
+            "records_before": 3,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 7,
+            "records_before": 7,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          }
+        }
+      }
+    },
+    {
+      "act_name": "RampMania",
+      "theme": "lava_reef",
+      "act": {
+        "triangles": {
+          "before": 46604,
+          "after": 46604,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 403,
+          "after": 403,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 403,
+          "after": 403,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 30252,
+          "after": 30252,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 29,
+          "after": 29,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 487,
+            "records_before": 487,
+            "removed_nodes": 0,
+            "source_meshes": 403
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 487,
+            "records_before": 487,
+            "removed_nodes": 0,
+            "source_meshes": 403
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 29070,
+          "after": 29070,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 607,
+          "after": 607,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 21,
+          "after": 21,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 26,
+            "records_before": 26,
+            "removed_nodes": 0,
+            "source_meshes": 3
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 26,
+            "records_before": 26,
+            "removed_nodes": 0,
+            "source_meshes": 3
+          }
+        }
+      }
+    },
+    {
+      "act_name": "RampMania",
+      "theme": "aquarium_park",
+      "act": {
+        "triangles": {
+          "before": 47010,
+          "after": 47010,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 407,
+          "after": 407,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 407,
+          "after": 407,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 30012,
+          "after": 30012,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 29,
+          "after": 29,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 491,
+            "records_before": 491,
+            "removed_nodes": 0,
+            "source_meshes": 407
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 491,
+            "records_before": 491,
+            "removed_nodes": 0,
+            "source_meshes": 407
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 29966,
+          "after": 29966,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1198,
+          "after": 1198,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 44,
+          "after": 44,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 336,
+          "after": 336,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 2,
+            "instances": 10,
+            "records_after": 48,
+            "records_before": 56,
+            "removed_nodes": 10,
+            "source_meshes": 34
+          },
+          "after": {
+            "batches": 2,
+            "instances": 10,
+            "records_after": 48,
+            "records_before": 56,
+            "removed_nodes": 10,
+            "source_meshes": 34
+          }
+        }
+      }
+    },
+    {
+      "act_name": "Reverse C Spring",
+      "theme": "green_hill",
+      "act": {
+        "triangles": {
+          "before": 49801,
+          "after": 49801,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 912,
+          "after": 912,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 644,
+          "after": 644,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 35731,
+          "after": 35731,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 26,
+          "after": 26,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 45,
+            "instances": 313,
+            "records_after": 858,
+            "records_before": 1133,
+            "removed_nodes": 320,
+            "source_meshes": 912
+          },
+          "after": {
+            "batches": 45,
+            "instances": 313,
+            "records_after": 858,
+            "records_before": 1133,
+            "removed_nodes": 320,
+            "source_meshes": 912
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 866,
+          "after": 866,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 16,
+          "after": 16,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 16,
+          "after": 16,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 864,
+          "after": 864,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 19,
+            "records_before": 19,
+            "removed_nodes": 0,
+            "source_meshes": 16
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 19,
+            "records_before": 19,
+            "removed_nodes": 0,
+            "source_meshes": 16
+          }
+        }
+      }
+    },
+    {
+      "act_name": "Reverse C Spring",
+      "theme": "chemical_plant",
+      "act": {
+        "triangles": {
+          "before": 57515,
+          "after": 57515,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1024,
+          "after": 1024,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 857,
+          "after": 857,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 27719,
+          "after": 27719,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 20,
+          "after": 20,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 38,
+            "instances": 205,
+            "records_after": 1013,
+            "records_before": 1180,
+            "removed_nodes": 205,
+            "source_meshes": 1024
+          },
+          "after": {
+            "batches": 38,
+            "instances": 205,
+            "records_after": 1013,
+            "records_before": 1180,
+            "removed_nodes": 205,
+            "source_meshes": 1024
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 542,
+          "after": 1742,
+          "delta": 1200
+        },
+        "mesh_instances": {
+          "before": 31,
+          "after": 41,
+          "delta": 10
+        },
+        "mesh_nodes": {
+          "before": 21,
+          "after": 31,
+          "delta": 10
+        },
+        "shadow_triangles": {
+          "before": 542,
+          "after": 0,
+          "delta": -542
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 5,
+            "instances": 15,
+            "records_after": 21,
+            "records_before": 31,
+            "removed_nodes": 15,
+            "source_meshes": 31
+          },
+          "after": {
+            "batches": 5,
+            "instances": 15,
+            "records_after": 36,
+            "records_before": 46,
+            "removed_nodes": 15,
+            "source_meshes": 41
+          }
+        }
+      }
+    },
+    {
+      "act_name": "Reverse C Spring",
+      "theme": "rooftop_run",
+      "act": {
+        "triangles": {
+          "before": 65663,
+          "after": 65663,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 852,
+          "after": 852,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 614,
+          "after": 614,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 32231,
+          "after": 32231,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 20,
+          "after": 20,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 29,
+            "instances": 175,
+            "records_after": 775,
+            "records_before": 925,
+            "removed_nodes": 179,
+            "source_meshes": 752
+          },
+          "after": {
+            "batches": 29,
+            "instances": 175,
+            "records_after": 775,
+            "records_before": 925,
+            "removed_nodes": 179,
+            "source_meshes": 752
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 2440,
+          "after": 2440,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 170,
+          "after": 170,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 38,
+          "after": 38,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 2440,
+          "after": 2440,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 39,
+            "records_before": 39,
+            "removed_nodes": 0,
+            "source_meshes": 2
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 39,
+            "records_before": 39,
+            "removed_nodes": 0,
+            "source_meshes": 2
+          }
+        }
+      }
+    },
+    {
+      "act_name": "Reverse C Spring",
+      "theme": "casino_night",
+      "act": {
+        "triangles": {
+          "before": 54155,
+          "after": 54155,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1152,
+          "after": 1152,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 547,
+          "after": 547,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 37787,
+          "after": 37787,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 20,
+          "after": 20,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 79,
+            "instances": 503,
+            "records_after": 711,
+            "records_before": 1146,
+            "removed_nodes": 514,
+            "source_meshes": 954
+          },
+          "after": {
+            "batches": 79,
+            "instances": 503,
+            "records_after": 711,
+            "records_before": 1146,
+            "removed_nodes": 514,
+            "source_meshes": 954
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 3176,
+          "after": 3176,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 169,
+          "after": 169,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 27,
+          "after": 27,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 3176,
+          "after": 3176,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 4,
+            "instances": 20,
+            "records_after": 33,
+            "records_before": 49,
+            "removed_nodes": 20,
+            "source_meshes": 28
+          },
+          "after": {
+            "batches": 4,
+            "instances": 20,
+            "records_after": 33,
+            "records_before": 49,
+            "removed_nodes": 20,
+            "source_meshes": 28
+          }
+        }
+      }
+    },
+    {
+      "act_name": "Reverse C Spring",
+      "theme": "sky_sanctuary",
+      "act": {
+        "triangles": {
+          "before": 58713,
+          "after": 58713,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1238,
+          "after": 1238,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 424,
+          "after": 424,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 39539,
+          "after": 39539,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 20,
+          "after": 20,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 76,
+            "instances": 644,
+            "records_after": 599,
+            "records_before": 1167,
+            "removed_nodes": 644,
+            "source_meshes": 983
+          },
+          "after": {
+            "batches": 76,
+            "instances": 644,
+            "records_after": 599,
+            "records_before": 1167,
+            "removed_nodes": 644,
+            "source_meshes": 983
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 11762,
+          "after": 11762,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 185,
+          "after": 185,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 6,
+          "after": 6,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 9,
+            "records_before": 9,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 9,
+            "records_before": 9,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          }
+        }
+      }
+    },
+    {
+      "act_name": "Reverse C Spring",
+      "theme": "ice_cap",
+      "act": {
+        "triangles": {
+          "before": 49971,
+          "after": 49971,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 689,
+          "after": 689,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 394,
+          "after": 394,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 36053,
+          "after": 36053,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 20,
+          "after": 20,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 43,
+            "instances": 295,
+            "records_after": 584,
+            "records_before": 851,
+            "removed_nodes": 310,
+            "source_meshes": 634
+          },
+          "after": {
+            "batches": 43,
+            "instances": 295,
+            "records_after": 584,
+            "records_before": 851,
+            "removed_nodes": 310,
+            "source_meshes": 634
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 1164,
+          "after": 1404,
+          "delta": 240
+        },
+        "mesh_instances": {
+          "before": 49,
+          "after": 61,
+          "delta": 12
+        },
+        "mesh_nodes": {
+          "before": 2,
+          "after": 5,
+          "delta": 3
+        },
+        "shadow_triangles": {
+          "before": 12,
+          "after": 12,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 3,
+            "records_before": 3,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 7,
+            "records_before": 7,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          }
+        }
+      }
+    },
+    {
+      "act_name": "Reverse C Spring",
+      "theme": "lava_reef",
+      "act": {
+        "triangles": {
+          "before": 54813,
+          "after": 54813,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 797,
+          "after": 797,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 465,
+          "after": 465,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 43795,
+          "after": 43795,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 20,
+          "after": 20,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 38,
+            "instances": 370,
+            "records_after": 624,
+            "records_before": 956,
+            "removed_nodes": 370,
+            "source_meshes": 797
+          },
+          "after": {
+            "batches": 38,
+            "instances": 370,
+            "records_after": 624,
+            "records_before": 956,
+            "removed_nodes": 370,
+            "source_meshes": 797
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 29070,
+          "after": 29070,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 607,
+          "after": 607,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 21,
+          "after": 21,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 26,
+            "records_before": 26,
+            "removed_nodes": 0,
+            "source_meshes": 3
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 26,
+            "records_before": 26,
+            "removed_nodes": 0,
+            "source_meshes": 3
+          }
+        }
+      }
+    },
+    {
+      "act_name": "Reverse C Spring",
+      "theme": "aquarium_park",
+      "act": {
+        "triangles": {
+          "before": 57685,
+          "after": 57685,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1193,
+          "after": 1193,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 939,
+          "after": 939,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 40591,
+          "after": 40591,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 20,
+          "after": 20,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 42,
+            "instances": 296,
+            "records_after": 1109,
+            "records_before": 1363,
+            "removed_nodes": 296,
+            "source_meshes": 1193
+          },
+          "after": {
+            "batches": 42,
+            "instances": 296,
+            "records_after": 1109,
+            "records_before": 1363,
+            "removed_nodes": 296,
+            "source_meshes": 1193
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 29966,
+          "after": 29966,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1198,
+          "after": 1198,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 44,
+          "after": 44,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 336,
+          "after": 336,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 2,
+            "instances": 10,
+            "records_after": 48,
+            "records_before": 56,
+            "removed_nodes": 10,
+            "source_meshes": 34
+          },
+          "after": {
+            "batches": 2,
+            "instances": 10,
+            "records_after": 48,
+            "records_before": 56,
+            "removed_nodes": 10,
+            "source_meshes": 34
+          }
+        }
+      }
+    },
+    {
+      "act_name": "Secret Entry",
+      "theme": "green_hill",
+      "act": {
+        "triangles": {
+          "before": 65161,
+          "after": 65161,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1214,
+          "after": 1214,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 700,
+          "after": 700,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 40831,
+          "after": 40831,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 29,
+          "after": 29,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 61,
+            "instances": 575,
+            "records_after": 933,
+            "records_before": 1483,
+            "removed_nodes": 611,
+            "source_meshes": 1214
+          },
+          "after": {
+            "batches": 61,
+            "instances": 575,
+            "records_after": 933,
+            "records_before": 1483,
+            "removed_nodes": 611,
+            "source_meshes": 1214
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 866,
+          "after": 866,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 16,
+          "after": 16,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 16,
+          "after": 16,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 864,
+          "after": 864,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 19,
+            "records_before": 19,
+            "removed_nodes": 0,
+            "source_meshes": 16
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 19,
+            "records_before": 19,
+            "removed_nodes": 0,
+            "source_meshes": 16
+          }
+        }
+      }
+    },
+    {
+      "act_name": "Secret Entry",
+      "theme": "chemical_plant",
+      "act": {
+        "triangles": {
+          "before": 78437,
+          "after": 78437,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1225,
+          "after": 1225,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 1045,
+          "after": 1045,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 37247,
+          "after": 37247,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 26,
+          "after": 26,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 35,
+            "instances": 215,
+            "records_after": 1244,
+            "records_before": 1424,
+            "removed_nodes": 215,
+            "source_meshes": 1225
+          },
+          "after": {
+            "batches": 35,
+            "instances": 215,
+            "records_after": 1244,
+            "records_before": 1424,
+            "removed_nodes": 215,
+            "source_meshes": 1225
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 542,
+          "after": 1742,
+          "delta": 1200
+        },
+        "mesh_instances": {
+          "before": 31,
+          "after": 41,
+          "delta": 10
+        },
+        "mesh_nodes": {
+          "before": 21,
+          "after": 31,
+          "delta": 10
+        },
+        "shadow_triangles": {
+          "before": 542,
+          "after": 0,
+          "delta": -542
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 5,
+            "instances": 15,
+            "records_after": 21,
+            "records_before": 31,
+            "removed_nodes": 15,
+            "source_meshes": 31
+          },
+          "after": {
+            "batches": 5,
+            "instances": 15,
+            "records_after": 36,
+            "records_before": 46,
+            "removed_nodes": 15,
+            "source_meshes": 41
+          }
+        }
+      }
+    },
+    {
+      "act_name": "Secret Entry",
+      "theme": "rooftop_run",
+      "act": {
+        "triangles": {
+          "before": 130027,
+          "after": 130027,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1010,
+          "after": 1010,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 724,
+          "after": 724,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 39811,
+          "after": 39811,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 26,
+          "after": 26,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 35,
+            "instances": 229,
+            "records_after": 927,
+            "records_before": 1125,
+            "removed_nodes": 233,
+            "source_meshes": 910
+          },
+          "after": {
+            "batches": 35,
+            "instances": 229,
+            "records_after": 927,
+            "records_before": 1125,
+            "removed_nodes": 233,
+            "source_meshes": 910
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 2440,
+          "after": 2440,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 170,
+          "after": 170,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 38,
+          "after": 38,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 2440,
+          "after": 2440,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 39,
+            "records_before": 39,
+            "removed_nodes": 0,
+            "source_meshes": 2
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 39,
+            "records_before": 39,
+            "removed_nodes": 0,
+            "source_meshes": 2
+          }
+        }
+      }
+    },
+    {
+      "act_name": "Secret Entry",
+      "theme": "casino_night",
+      "act": {
+        "triangles": {
+          "before": 73419,
+          "after": 73419,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1361,
+          "after": 1361,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 750,
+          "after": 750,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 47361,
+          "after": 47361,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 26,
+          "after": 26,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 87,
+            "instances": 517,
+            "records_after": 956,
+            "records_before": 1390,
+            "removed_nodes": 521,
+            "source_meshes": 1163
+          },
+          "after": {
+            "batches": 87,
+            "instances": 517,
+            "records_after": 956,
+            "records_before": 1390,
+            "removed_nodes": 521,
+            "source_meshes": 1163
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 3176,
+          "after": 3176,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 169,
+          "after": 169,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 27,
+          "after": 27,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 3176,
+          "after": 3176,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 4,
+            "instances": 20,
+            "records_after": 33,
+            "records_before": 49,
+            "removed_nodes": 20,
+            "source_meshes": 28
+          },
+          "after": {
+            "batches": 4,
+            "instances": 20,
+            "records_after": 33,
+            "records_before": 49,
+            "removed_nodes": 20,
+            "source_meshes": 28
+          }
+        }
+      }
+    },
+    {
+      "act_name": "Secret Entry",
+      "theme": "sky_sanctuary",
+      "act": {
+        "triangles": {
+          "before": 72805,
+          "after": 72805,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1363,
+          "after": 1363,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 585,
+          "after": 585,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 44363,
+          "after": 44363,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 26,
+          "after": 26,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 74,
+            "instances": 606,
+            "records_after": 818,
+            "records_before": 1350,
+            "removed_nodes": 606,
+            "source_meshes": 1108
+          },
+          "after": {
+            "batches": 74,
+            "instances": 606,
+            "records_after": 818,
+            "records_before": 1350,
+            "removed_nodes": 606,
+            "source_meshes": 1108
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 11762,
+          "after": 11762,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 185,
+          "after": 185,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 6,
+          "after": 6,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 9,
+            "records_before": 9,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 9,
+            "records_before": 9,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          }
+        }
+      }
+    },
+    {
+      "act_name": "Secret Entry",
+      "theme": "ice_cap",
+      "act": {
+        "triangles": {
+          "before": 67043,
+          "after": 67043,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 845,
+          "after": 845,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 560,
+          "after": 560,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 43435,
+          "after": 43435,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 26,
+          "after": 26,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 40,
+            "instances": 282,
+            "records_after": 817,
+            "records_before": 1070,
+            "removed_nodes": 293,
+            "source_meshes": 790
+          },
+          "after": {
+            "batches": 40,
+            "instances": 282,
+            "records_after": 817,
+            "records_before": 1070,
+            "removed_nodes": 293,
+            "source_meshes": 790
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 1164,
+          "after": 1404,
+          "delta": 240
+        },
+        "mesh_instances": {
+          "before": 49,
+          "after": 61,
+          "delta": 12
+        },
+        "mesh_nodes": {
+          "before": 2,
+          "after": 5,
+          "delta": 3
+        },
+        "shadow_triangles": {
+          "before": 12,
+          "after": 12,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 3,
+            "records_before": 3,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 7,
+            "records_before": 7,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          }
+        }
+      }
+    },
+    {
+      "act_name": "Secret Entry",
+      "theme": "lava_reef",
+      "act": {
+        "triangles": {
+          "before": 77407,
+          "after": 77407,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1047,
+          "after": 1047,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 678,
+          "after": 678,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 57121,
+          "after": 57121,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 26,
+          "after": 26,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 42,
+            "instances": 411,
+            "records_after": 883,
+            "records_before": 1252,
+            "removed_nodes": 411,
+            "source_meshes": 1047
+          },
+          "after": {
+            "batches": 42,
+            "instances": 411,
+            "records_after": 883,
+            "records_before": 1252,
+            "removed_nodes": 411,
+            "source_meshes": 1047
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 29070,
+          "after": 29070,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 607,
+          "after": 607,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 21,
+          "after": 21,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 26,
+            "records_before": 26,
+            "removed_nodes": 0,
+            "source_meshes": 3
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 26,
+            "records_before": 26,
+            "removed_nodes": 0,
+            "source_meshes": 3
+          }
+        }
+      }
+    },
+    {
+      "act_name": "Secret Entry",
+      "theme": "aquarium_park",
+      "act": {
+        "triangles": {
+          "before": 75691,
+          "after": 75691,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1444,
+          "after": 1444,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 1157,
+          "after": 1157,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 49339,
+          "after": 49339,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 26,
+          "after": 26,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 43,
+            "instances": 330,
+            "records_after": 1373,
+            "records_before": 1660,
+            "removed_nodes": 330,
+            "source_meshes": 1444
+          },
+          "after": {
+            "batches": 43,
+            "instances": 330,
+            "records_after": 1373,
+            "records_before": 1660,
+            "removed_nodes": 330,
+            "source_meshes": 1444
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 29966,
+          "after": 29966,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1198,
+          "after": 1198,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 44,
+          "after": 44,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 336,
+          "after": 336,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 2,
+            "instances": 10,
+            "records_after": 48,
+            "records_before": 56,
+            "removed_nodes": 10,
+            "source_meshes": 34
+          },
+          "after": {
+            "batches": 2,
+            "instances": 10,
+            "records_after": 48,
+            "records_before": 56,
+            "removed_nodes": 10,
+            "source_meshes": 34
+          }
+        }
+      }
+    },
+    {
+      "act_name": "SpringUp",
+      "theme": "green_hill",
+      "act": {
+        "triangles": {
+          "before": 47797,
+          "after": 47797,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 826,
+          "after": 826,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 553,
+          "after": 553,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 31992,
+          "after": 31992,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 23,
+          "after": 23,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 33,
+            "instances": 306,
+            "records_after": 741,
+            "records_before": 1030,
+            "removed_nodes": 322,
+            "source_meshes": 826
+          },
+          "after": {
+            "batches": 33,
+            "instances": 306,
+            "records_after": 741,
+            "records_before": 1030,
+            "removed_nodes": 322,
+            "source_meshes": 826
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 866,
+          "after": 866,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 16,
+          "after": 16,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 16,
+          "after": 16,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 864,
+          "after": 864,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 19,
+            "records_before": 19,
+            "removed_nodes": 0,
+            "source_meshes": 16
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 19,
+            "records_before": 19,
+            "removed_nodes": 0,
+            "source_meshes": 16
+          }
+        }
+      }
+    },
+    {
+      "act_name": "SpringUp",
+      "theme": "chemical_plant",
+      "act": {
+        "triangles": {
+          "before": 54997,
+          "after": 54997,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 883,
+          "after": 883,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 802,
+          "after": 802,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 27986,
+          "after": 27986,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 20,
+          "after": 20,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 24,
+            "instances": 105,
+            "records_after": 953,
+            "records_before": 1034,
+            "removed_nodes": 105,
+            "source_meshes": 883
+          },
+          "after": {
+            "batches": 24,
+            "instances": 105,
+            "records_after": 953,
+            "records_before": 1034,
+            "removed_nodes": 105,
+            "source_meshes": 883
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 542,
+          "after": 1742,
+          "delta": 1200
+        },
+        "mesh_instances": {
+          "before": 31,
+          "after": 41,
+          "delta": 10
+        },
+        "mesh_nodes": {
+          "before": 21,
+          "after": 31,
+          "delta": 10
+        },
+        "shadow_triangles": {
+          "before": 542,
+          "after": 0,
+          "delta": -542
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 5,
+            "instances": 15,
+            "records_after": 21,
+            "records_before": 31,
+            "removed_nodes": 15,
+            "source_meshes": 31
+          },
+          "after": {
+            "batches": 5,
+            "instances": 15,
+            "records_after": 36,
+            "records_before": 46,
+            "removed_nodes": 15,
+            "source_meshes": 41
+          }
+        }
+      }
+    },
+    {
+      "act_name": "SpringUp",
+      "theme": "rooftop_run",
+      "act": {
+        "triangles": {
+          "before": 73259,
+          "after": 73259,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 765,
+          "after": 765,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 556,
+          "after": 556,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 32898,
+          "after": 32898,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 20,
+          "after": 20,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 29,
+            "instances": 146,
+            "records_after": 710,
+            "records_before": 831,
+            "removed_nodes": 150,
+            "source_meshes": 665
+          },
+          "after": {
+            "batches": 29,
+            "instances": 146,
+            "records_after": 710,
+            "records_before": 831,
+            "removed_nodes": 150,
+            "source_meshes": 665
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 2440,
+          "after": 2440,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 170,
+          "after": 170,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 38,
+          "after": 38,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 2440,
+          "after": 2440,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 39,
+            "records_before": 39,
+            "removed_nodes": 0,
+            "source_meshes": 2
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 39,
+            "records_before": 39,
+            "removed_nodes": 0,
+            "source_meshes": 2
+          }
+        }
+      }
+    },
+    {
+      "act_name": "SpringUp",
+      "theme": "casino_night",
+      "act": {
+        "triangles": {
+          "before": 56763,
+          "after": 56763,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1138,
+          "after": 1138,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 630,
+          "after": 630,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 38632,
+          "after": 38632,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 20,
+          "after": 20,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 63,
+            "instances": 390,
+            "records_after": 787,
+            "records_before": 1121,
+            "removed_nodes": 397,
+            "source_meshes": 940
+          },
+          "after": {
+            "batches": 63,
+            "instances": 390,
+            "records_after": 787,
+            "records_before": 1121,
+            "removed_nodes": 397,
+            "source_meshes": 940
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 3176,
+          "after": 3176,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 169,
+          "after": 169,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 27,
+          "after": 27,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 3176,
+          "after": 3176,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 4,
+            "instances": 20,
+            "records_after": 33,
+            "records_before": 49,
+            "removed_nodes": 20,
+            "source_meshes": 28
+          },
+          "after": {
+            "batches": 4,
+            "instances": 20,
+            "records_after": 33,
+            "records_before": 49,
+            "removed_nodes": 20,
+            "source_meshes": 28
+          }
+        }
+      }
+    },
+    {
+      "act_name": "SpringUp",
+      "theme": "sky_sanctuary",
+      "act": {
+        "triangles": {
+          "before": 58943,
+          "after": 58943,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1126,
+          "after": 1126,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 435,
+          "after": 435,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 38098,
+          "after": 38098,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 20,
+          "after": 20,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 67,
+            "instances": 512,
+            "records_after": 613,
+            "records_before": 1058,
+            "removed_nodes": 512,
+            "source_meshes": 871
+          },
+          "after": {
+            "batches": 67,
+            "instances": 512,
+            "records_after": 613,
+            "records_before": 1058,
+            "removed_nodes": 512,
+            "source_meshes": 871
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 11762,
+          "after": 11762,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 185,
+          "after": 185,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 6,
+          "after": 6,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 9,
+            "records_before": 9,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 9,
+            "records_before": 9,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          }
+        }
+      }
+    },
+    {
+      "act_name": "SpringUp",
+      "theme": "ice_cap",
+      "act": {
+        "triangles": {
+          "before": 51119,
+          "after": 51119,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 652,
+          "after": 652,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 430,
+          "after": 430,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 35438,
+          "after": 35438,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 20,
+          "after": 20,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 32,
+            "instances": 211,
+            "records_after": 622,
+            "records_before": 801,
+            "removed_nodes": 211,
+            "source_meshes": 597
+          },
+          "after": {
+            "batches": 32,
+            "instances": 211,
+            "records_after": 622,
+            "records_before": 801,
+            "removed_nodes": 211,
+            "source_meshes": 597
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 1164,
+          "after": 1404,
+          "delta": 240
+        },
+        "mesh_instances": {
+          "before": 49,
+          "after": 61,
+          "delta": 12
+        },
+        "mesh_nodes": {
+          "before": 2,
+          "after": 5,
+          "delta": 3
+        },
+        "shadow_triangles": {
+          "before": 12,
+          "after": 12,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 3,
+            "records_before": 3,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 7,
+            "records_before": 7,
+            "removed_nodes": 0,
+            "source_meshes": 1
+          }
+        }
+      }
+    },
+    {
+      "act_name": "SpringUp",
+      "theme": "lava_reef",
+      "act": {
+        "triangles": {
+          "before": 59557,
+          "after": 59557,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 777,
+          "after": 777,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 477,
+          "after": 477,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 46868,
+          "after": 46868,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 20,
+          "after": 20,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 39,
+            "instances": 339,
+            "records_after": 631,
+            "records_before": 931,
+            "removed_nodes": 339,
+            "source_meshes": 777
+          },
+          "after": {
+            "batches": 39,
+            "instances": 339,
+            "records_after": 631,
+            "records_before": 931,
+            "removed_nodes": 339,
+            "source_meshes": 777
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 29070,
+          "after": 29070,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 607,
+          "after": 607,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 21,
+          "after": 21,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 26,
+            "records_before": 26,
+            "removed_nodes": 0,
+            "source_meshes": 3
+          },
+          "after": {
+            "batches": 0,
+            "instances": 0,
+            "records_after": 26,
+            "records_before": 26,
+            "removed_nodes": 0,
+            "source_meshes": 3
+          }
+        }
+      }
+    },
+    {
+      "act_name": "SpringUp",
+      "theme": "aquarium_park",
+      "act": {
+        "triangles": {
+          "before": 56029,
+          "after": 56029,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1069,
+          "after": 1069,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 923,
+          "after": 923,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 38642,
+          "after": 38642,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 20,
+          "after": 20,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 32,
+            "instances": 178,
+            "records_after": 1086,
+            "records_before": 1232,
+            "removed_nodes": 178,
+            "source_meshes": 1069
+          },
+          "after": {
+            "batches": 32,
+            "instances": 178,
+            "records_after": 1086,
+            "records_before": 1232,
+            "removed_nodes": 178,
+            "source_meshes": 1069
+          }
+        }
+      },
+      "background": {
+        "triangles": {
+          "before": 29966,
+          "after": 29966,
+          "delta": 0
+        },
+        "mesh_instances": {
+          "before": 1198,
+          "after": 1198,
+          "delta": 0
+        },
+        "mesh_nodes": {
+          "before": 44,
+          "after": 44,
+          "delta": 0
+        },
+        "shadow_triangles": {
+          "before": 336,
+          "after": 336,
+          "delta": 0
+        },
+        "animation_bindings": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "batch_stats": {
+          "before": {
+            "batches": 2,
+            "instances": 10,
+            "records_after": 48,
+            "records_before": 56,
+            "removed_nodes": 10,
+            "source_meshes": 34
+          },
+          "after": {
+            "batches": 2,
+            "instances": 10,
+            "records_after": 48,
+            "records_before": 56,
+            "removed_nodes": 10,
+            "source_meshes": 34
+          }
+        }
+      }
+    }
+  ]
+}

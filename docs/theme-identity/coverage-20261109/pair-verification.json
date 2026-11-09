@@ -1,0 +1,251 @@
+{
+  "pairs": 30,
+  "unchanged_control_views_reused": 90,
+  "native_size": [
+    1440,
+    1000
+  ],
+  "fallback_builds": 0,
+  "rows": [
+    {
+      "act": "First Try Smooth Decor",
+      "tier": "spawn",
+      "theme": "chemical_plant",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "tier": "spawn",
+      "theme": "ice_cap",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "tier": "mid",
+      "theme": "chemical_plant",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "tier": "mid",
+      "theme": "ice_cap",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "tier": "upper",
+      "theme": "chemical_plant",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "tier": "upper",
+      "theme": "ice_cap",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "RampMania",
+      "tier": "spawn",
+      "theme": "chemical_plant",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "RampMania",
+      "tier": "spawn",
+      "theme": "ice_cap",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "RampMania",
+      "tier": "mid",
+      "theme": "chemical_plant",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "RampMania",
+      "tier": "mid",
+      "theme": "ice_cap",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "RampMania",
+      "tier": "upper",
+      "theme": "chemical_plant",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "RampMania",
+      "tier": "upper",
+      "theme": "ice_cap",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "Reverse C Spring",
+      "tier": "spawn",
+      "theme": "chemical_plant",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "Reverse C Spring",
+      "tier": "spawn",
+      "theme": "ice_cap",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "Reverse C Spring",
+      "tier": "mid",
+      "theme": "chemical_plant",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "Reverse C Spring",
+      "tier": "mid",
+      "theme": "ice_cap",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "Reverse C Spring",
+      "tier": "upper",
+      "theme": "chemical_plant",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "Reverse C Spring",
+      "tier": "upper",
+      "theme": "ice_cap",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "Secret Entry",
+      "tier": "spawn",
+      "theme": "chemical_plant",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "Secret Entry",
+      "tier": "spawn",
+      "theme": "ice_cap",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "Secret Entry",
+      "tier": "mid",
+      "theme": "chemical_plant",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "Secret Entry",
+      "tier": "mid",
+      "theme": "ice_cap",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "Secret Entry",
+      "tier": "upper",
+      "theme": "chemical_plant",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "Secret Entry",
+      "tier": "upper",
+      "theme": "ice_cap",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "SpringUp",
+      "tier": "spawn",
+      "theme": "chemical_plant",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "SpringUp",
+      "tier": "spawn",
+      "theme": "ice_cap",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "SpringUp",
+      "tier": "mid",
+      "theme": "chemical_plant",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "SpringUp",
+      "tier": "mid",
+      "theme": "ice_cap",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "SpringUp",
+      "tier": "upper",
+      "theme": "chemical_plant",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    },
+    {
+      "act": "SpringUp",
+      "tier": "upper",
+      "theme": "ice_cap",
+      "state_equal": true,
+      "appearance_inputs_equal": true,
+      "fallback_builds": 0
+    }
+  ]
+}

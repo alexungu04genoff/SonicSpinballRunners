@@ -1,0 +1,2289 @@
+{
+  "summary": {
+    "views": 120,
+    "method": "Manual visual annotations of canonical gameplay stills. Counts are review aids, not recognition scores or pass thresholds. Identifiable clipped heroes count; small support props do not. Mid counts list motif families, including broad surface patterns; they do not count mesh objects.",
+    "before": {
+      "hero_visible": 37,
+      "at_least_two_mid_motif_families": 99,
+      "identifiable_far_silhouette": 8,
+      "primarily_color_or_texture": 21
+    },
+    "after": {
+      "hero_visible": 37,
+      "at_least_two_mid_motif_families": 99,
+      "identifiable_far_silhouette": 18,
+      "primarily_color_or_texture": 20
+    }
+  },
+  "rows": [
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "green_hill",
+      "tier": "spawn",
+      "hero": "clipped loop",
+      "mid_motifs": [
+        "checker cliff faces",
+        "segmented palms / flowers"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "green_hill",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "checker cliff faces",
+        "segmented palms / flowers"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "green_hill",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "checker cliff faces",
+        "segmented palms / flowers"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "chemical_plant",
+      "tier": "spawn",
+      "hero": "clipped vessel",
+      "mid_motifs": [
+        "fat pipes and collars",
+        "reactors / hazard machinery"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "chemical_plant",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "fat pipes and collars",
+        "reactors / hazard machinery"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "chemical_plant",
+      "tier": "upper",
+      "hero": "clipped vessel",
+      "mid_motifs": [
+        "fat pipes and collars",
+        "reactors / hazard machinery"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible. Far factory is absent from this gameplay framing.",
+      "after_far_motifs": [
+        "paired pipe bridges, cyan collars and magenta reservoirs"
+      ],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Identifiable far silhouette now visible; foreground hero and mid motifs unchanged."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "rooftop_run",
+      "tier": "spawn",
+      "hero": "clipped clock",
+      "mid_motifs": [
+        "terracotta roof masses",
+        "stucco arches / awnings"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Clock may be absent/clipped; roofs, stucco and arches still identify the town.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "rooftop_run",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "terracotta roof masses",
+        "stucco arches / awnings"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Clock may be absent/clipped; roofs, stucco and arches still identify the town.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "rooftop_run",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "terracotta roof masses",
+        "stucco arches / awnings"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Clock may be absent/clipped; roofs, stucco and arches still identify the town.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "casino_night",
+      "tier": "spawn",
+      "hero": "clipped star frame",
+      "mid_motifs": [
+        "neon stars / frames",
+        "reel and arcade forms"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "casino_night",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "neon stars / frames",
+        "reel and arcade forms"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "casino_night",
+      "tier": "upper",
+      "hero": "clipped star frame",
+      "mid_motifs": [
+        "neon stars / frames",
+        "reel and arcade forms"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "sky_sanctuary",
+      "tier": "spawn",
+      "hero": "clipped monument",
+      "mid_motifs": [
+        "broken stone arches / columns",
+        "slab fragments and restrained vines"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "sky_sanctuary",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "broken stone arches / columns",
+        "slab fragments and restrained vines"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "sky_sanctuary",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "broken stone arches / columns",
+        "slab fragments and restrained vines"
+      ],
+      "far_motifs": [
+        "cloud mass"
+      ],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [
+        "cloud mass"
+      ],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "ice_cap",
+      "tier": "spawn",
+      "hero": "clipped crystal crown",
+      "mid_motifs": [
+        "faceted ice walls / shards",
+        "snow-capped frozen arches / pines"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "ice_cap",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "faceted ice walls / shards",
+        "snow-capped frozen arches / pines"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "ice_cap",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "faceted ice walls / shards",
+        "snow-capped frozen arches / pines"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [
+        "two angular snow-capped frozen gates"
+      ],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Identifiable far silhouette now visible; foreground hero and mid motifs unchanged."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "lava_reef",
+      "tier": "spawn",
+      "hero": "clipped caldera",
+      "mid_motifs": [
+        "rock masses / broad clefts",
+        "crystals / industrial remnants"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "lava_reef",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "rock masses / broad clefts",
+        "crystals / industrial remnants"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "lava_reef",
+      "tier": "upper",
+      "hero": "clipped caldera",
+      "mid_motifs": [
+        "rock masses / broad clefts",
+        "crystals / industrial remnants"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "aquarium_park",
+      "tier": "spawn",
+      "hero": "edge-on fish",
+      "mid_motifs": [
+        "glass tubes / curved architecture",
+        "lanterns / coral"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Fish may be absent/edge-on; tubes, curved roofs and lanterns carry the park.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "aquarium_park",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "glass tubes / curved architecture",
+        "lanterns / coral"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Fish may be absent/edge-on; tubes, curved roofs and lanterns carry the park.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "First Try Smooth Decor",
+      "act_path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "theme": "aquarium_park",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "glass tubes / curved architecture",
+        "lanterns / coral"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Fish may be absent/edge-on; tubes, curved roofs and lanterns carry the park.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "green_hill",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "clear, pattern-led",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it. Checker/grass patterns carry recognition.",
+      "after_far_motifs": [],
+      "after_reads": "clear, pattern-led",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "green_hill",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "clear, pattern-led",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it. Checker/grass patterns carry recognition.",
+      "after_far_motifs": [],
+      "after_reads": "clear, pattern-led",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "green_hill",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "clear, pattern-led",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it. Checker/grass patterns carry recognition.",
+      "after_far_motifs": [],
+      "after_reads": "clear, pattern-led",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "chemical_plant",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [
+        "fat pipe guards",
+        "oversized pipe collars"
+      ],
+      "far_motifs": [],
+      "reads": "clear, machinery-led",
+      "primarily_color_or_texture": false,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it.",
+      "after_far_motifs": [],
+      "after_reads": "clear, machinery-led",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "chemical_plant",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "fat pipe guards",
+        "oversized pipe collars"
+      ],
+      "far_motifs": [],
+      "reads": "clear, machinery-led",
+      "primarily_color_or_texture": false,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it.",
+      "after_far_motifs": [],
+      "after_reads": "clear, machinery-led",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "chemical_plant",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "fat pipe guards",
+        "oversized pipe collars"
+      ],
+      "far_motifs": [],
+      "reads": "clear, machinery-led",
+      "primarily_color_or_texture": false,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it. Far factory is absent from this gameplay framing.",
+      "after_far_motifs": [
+        "paired pipe bridges, cyan collars and magenta reservoirs"
+      ],
+      "after_reads": "clear, machinery-led",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Identifiable far silhouette now visible; foreground hero and mid motifs unchanged."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "rooftop_run",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "partial",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it.",
+      "after_far_motifs": [],
+      "after_reads": "partial",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "rooftop_run",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "partial",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it.",
+      "after_far_motifs": [],
+      "after_reads": "partial",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "rooftop_run",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "partial",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it.",
+      "after_far_motifs": [],
+      "after_reads": "partial",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "casino_night",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "clear, pattern-led",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it. Card faces carry recognition; not a shape-only success.",
+      "after_far_motifs": [],
+      "after_reads": "clear, pattern-led",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "casino_night",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "clear, pattern-led",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it. Card faces carry recognition; not a shape-only success.",
+      "after_far_motifs": [],
+      "after_reads": "clear, pattern-led",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "casino_night",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "clear, pattern-led",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it. Card faces carry recognition; not a shape-only success.",
+      "after_far_motifs": [],
+      "after_reads": "clear, pattern-led",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "sky_sanctuary",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "partial",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it.",
+      "after_far_motifs": [],
+      "after_reads": "partial",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "sky_sanctuary",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "partial",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it.",
+      "after_far_motifs": [],
+      "after_reads": "partial",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "sky_sanctuary",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [
+        "cloud mass"
+      ],
+      "reads": "partial",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it.",
+      "after_far_motifs": [
+        "cloud mass"
+      ],
+      "after_reads": "partial",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "ice_cap",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "partial",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it.",
+      "after_far_motifs": [],
+      "after_reads": "partial",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "ice_cap",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "partial",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it.",
+      "after_far_motifs": [],
+      "after_reads": "partial",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "ice_cap",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "partial",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it.",
+      "after_far_motifs": [
+        "two angular snow-capped frozen gates"
+      ],
+      "after_reads": "clear, far-supported",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Identifiable far silhouette now visible; foreground hero and mid motifs unchanged."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "lava_reef",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "clear, pattern-led",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it. Rock/lava patterns carry recognition; industrial remnants absent.",
+      "after_far_motifs": [],
+      "after_reads": "clear, pattern-led",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "lava_reef",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "clear, pattern-led",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it. Rock/lava patterns carry recognition; industrial remnants absent.",
+      "after_far_motifs": [],
+      "after_reads": "clear, pattern-led",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "lava_reef",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "clear, pattern-led",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it. Rock/lava patterns carry recognition; industrial remnants absent.",
+      "after_far_motifs": [],
+      "after_reads": "clear, pattern-led",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "aquarium_park",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "partial",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it.",
+      "after_far_motifs": [],
+      "after_reads": "partial",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "aquarium_park",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "partial",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it.",
+      "after_far_motifs": [],
+      "after_reads": "partial",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "RampMania",
+      "act_path": "res://data/acts/Authored/RampMania.tres",
+      "theme": "aquarium_park",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [],
+      "far_motifs": [],
+      "reads": "partial",
+      "primarily_color_or_texture": true,
+      "weakness": "No authored decor slots. Course fills the frame; supporting scenery is outside it.",
+      "after_far_motifs": [],
+      "after_reads": "partial",
+      "after_primarily_color_or_texture": true,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "green_hill",
+      "tier": "spawn",
+      "hero": "clipped loop",
+      "mid_motifs": [
+        "checker cliff faces",
+        "segmented palms / flowers"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "green_hill",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "checker cliff faces",
+        "segmented palms / flowers"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "green_hill",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "checker cliff faces",
+        "segmented palms / flowers"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "chemical_plant",
+      "tier": "spawn",
+      "hero": "clipped vessel",
+      "mid_motifs": [
+        "fat pipes and collars",
+        "reactors / hazard machinery"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "chemical_plant",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "fat pipes and collars",
+        "reactors / hazard machinery"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "chemical_plant",
+      "tier": "upper",
+      "hero": "vessel",
+      "mid_motifs": [
+        "fat pipes and collars",
+        "reactors / hazard machinery"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible. Far factory is absent from this gameplay framing.",
+      "after_far_motifs": [
+        "paired pipe bridges, cyan collars and magenta reservoirs"
+      ],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Identifiable far silhouette now visible; foreground hero and mid motifs unchanged."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "rooftop_run",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [
+        "terracotta roof masses",
+        "stucco arches / awnings"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Clock may be absent/clipped; roofs, stucco and arches still identify the town.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "rooftop_run",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "terracotta roof masses",
+        "stucco arches / awnings"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Clock may be absent/clipped; roofs, stucco and arches still identify the town.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "rooftop_run",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "terracotta roof masses",
+        "stucco arches / awnings"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Clock may be absent/clipped; roofs, stucco and arches still identify the town.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "casino_night",
+      "tier": "spawn",
+      "hero": "clipped star frame",
+      "mid_motifs": [
+        "neon stars / frames",
+        "reel and arcade forms"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "casino_night",
+      "tier": "mid",
+      "hero": "star frame",
+      "mid_motifs": [
+        "neon stars / frames",
+        "reel and arcade forms"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "casino_night",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "neon stars / frames",
+        "reel and arcade forms"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "sky_sanctuary",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [
+        "broken stone arches / columns",
+        "slab fragments and restrained vines"
+      ],
+      "far_motifs": [
+        "cloud mass"
+      ],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [
+        "cloud mass"
+      ],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "sky_sanctuary",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "broken stone arches / columns",
+        "slab fragments and restrained vines"
+      ],
+      "far_motifs": [
+        "cloud mass"
+      ],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [
+        "cloud mass"
+      ],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "sky_sanctuary",
+      "tier": "upper",
+      "hero": "broken ring monument",
+      "mid_motifs": [
+        "broken stone arches / columns",
+        "slab fragments and restrained vines"
+      ],
+      "far_motifs": [
+        "cloud mass"
+      ],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [
+        "cloud mass"
+      ],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "ice_cap",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [
+        "faceted ice walls / shards",
+        "snow-capped frozen arches / pines"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "ice_cap",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "faceted ice walls / shards",
+        "snow-capped frozen arches / pines"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "ice_cap",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "faceted ice walls / shards",
+        "snow-capped frozen arches / pines"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [
+        "two angular snow-capped frozen gates"
+      ],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Identifiable far silhouette now visible; foreground hero and mid motifs unchanged."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "lava_reef",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [
+        "rock masses / broad clefts",
+        "crystals / industrial remnants"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "lava_reef",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "rock masses / broad clefts",
+        "crystals / industrial remnants"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "lava_reef",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "rock masses / broad clefts",
+        "crystals / industrial remnants"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "aquarium_park",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [
+        "glass tubes / curved architecture",
+        "lanterns / coral"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Fish may be absent/edge-on; tubes, curved roofs and lanterns carry the park.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "aquarium_park",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "glass tubes / curved architecture",
+        "lanterns / coral"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Fish may be absent/edge-on; tubes, curved roofs and lanterns carry the park.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Reverse C Spring",
+      "act_path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "theme": "aquarium_park",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "glass tubes / curved architecture",
+        "lanterns / coral"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Fish may be absent/edge-on; tubes, curved roofs and lanterns carry the park.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "green_hill",
+      "tier": "spawn",
+      "hero": "clipped loop",
+      "mid_motifs": [
+        "checker cliff faces",
+        "segmented palms / flowers"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "green_hill",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "checker cliff faces",
+        "segmented palms / flowers"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "green_hill",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "checker cliff faces",
+        "segmented palms / flowers"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "chemical_plant",
+      "tier": "spawn",
+      "hero": "clipped vessel",
+      "mid_motifs": [
+        "fat pipes and collars",
+        "reactors / hazard machinery"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "chemical_plant",
+      "tier": "mid",
+      "hero": "clipped vessel",
+      "mid_motifs": [
+        "fat pipes and collars",
+        "reactors / hazard machinery"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "chemical_plant",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "pipe/elbow silhouettes",
+        "pump blocks / hazard shoulders"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible. Far factory is absent from this gameplay framing.",
+      "after_far_motifs": [
+        "paired pipe bridges, cyan collars and magenta reservoirs"
+      ],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Identifiable far silhouette now visible; foreground hero and mid motifs unchanged."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "rooftop_run",
+      "tier": "spawn",
+      "hero": "clipped clock",
+      "mid_motifs": [
+        "terracotta roof masses",
+        "stucco arches / awnings"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Clock may be absent/clipped; roofs, stucco and arches still identify the town.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "rooftop_run",
+      "tier": "mid",
+      "hero": "clipped clock",
+      "mid_motifs": [
+        "terracotta roof masses",
+        "stucco arches / awnings"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Clock may be absent/clipped; roofs, stucco and arches still identify the town.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "rooftop_run",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "terracotta roof masses",
+        "stucco arches / awnings"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Clock may be absent/clipped; roofs, stucco and arches still identify the town.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "casino_night",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [
+        "neon stars / frames",
+        "reel and arcade forms"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "casino_night",
+      "tier": "mid",
+      "hero": "clipped star frame",
+      "mid_motifs": [
+        "neon stars / frames",
+        "reel and arcade forms"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "casino_night",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "neon palm silhouette",
+        "paneled arcade cornice"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "sky_sanctuary",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [
+        "broken stone arches / columns",
+        "slab fragments and restrained vines"
+      ],
+      "far_motifs": [
+        "cloud mass"
+      ],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [
+        "cloud mass"
+      ],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "sky_sanctuary",
+      "tier": "mid",
+      "hero": "clipped monument",
+      "mid_motifs": [
+        "broken stone arches / columns",
+        "slab fragments and restrained vines"
+      ],
+      "far_motifs": [
+        "cloud mass"
+      ],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [
+        "cloud mass"
+      ],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "sky_sanctuary",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "short stone column base",
+        "vines on masonry"
+      ],
+      "far_motifs": [
+        "cloud mass"
+      ],
+      "reads": "partial",
+      "primarily_color_or_texture": false,
+      "weakness": "Main monument is heavily clipped; paving dominates the center.",
+      "after_far_motifs": [
+        "cloud mass"
+      ],
+      "after_reads": "partial",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "ice_cap",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [
+        "faceted ice walls / shards",
+        "snow-capped frozen arches / pines"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "ice_cap",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "faceted ice walls / shards",
+        "snow-capped frozen arches / pines"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "ice_cap",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "faceted ice banks",
+        "small shards / snow cairns"
+      ],
+      "far_motifs": [],
+      "reads": "partial",
+      "primarily_color_or_texture": false,
+      "weakness": "Snow banks and small shards remain; no crown or major mountain silhouette.",
+      "after_far_motifs": [
+        "two angular snow-capped frozen gates"
+      ],
+      "after_reads": "clear, far-supported",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Identifiable far silhouette now visible; foreground hero and mid motifs unchanged."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "lava_reef",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [
+        "rock masses / broad clefts",
+        "crystals / industrial remnants"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "lava_reef",
+      "tier": "mid",
+      "hero": "clipped caldera",
+      "mid_motifs": [
+        "rock masses / broad clefts",
+        "crystals / industrial remnants"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "lava_reef",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "rock masses / broad clefts",
+        "crystals / industrial remnants"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "aquarium_park",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [
+        "glass tubes / curved architecture",
+        "lanterns / coral"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Fish may be absent/edge-on; tubes, curved roofs and lanterns carry the park.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "aquarium_park",
+      "tier": "mid",
+      "hero": "edge-on fish",
+      "mid_motifs": [
+        "glass tubes / curved architecture",
+        "lanterns / coral"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Fish may be absent/edge-on; tubes, curved roofs and lanterns carry the park.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "Secret Entry",
+      "act_path": "res://data/acts/Authored/Secret Entry.tres",
+      "theme": "aquarium_park",
+      "tier": "upper",
+      "hero": "absent",
+      "mid_motifs": [
+        "glass tubes / curved architecture",
+        "lanterns / coral"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Fish may be absent/edge-on; tubes, curved roofs and lanterns carry the park.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "green_hill",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [
+        "checker cliff faces",
+        "segmented palms / flowers"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "green_hill",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "checker cliff faces",
+        "segmented palms / flowers"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "green_hill",
+      "tier": "upper",
+      "hero": "loop",
+      "mid_motifs": [
+        "checker cliff faces",
+        "segmented palms / flowers"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "chemical_plant",
+      "tier": "spawn",
+      "hero": "clipped vessel",
+      "mid_motifs": [
+        "fat pipes and collars",
+        "reactors / hazard machinery"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "chemical_plant",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "fat pipes and collars",
+        "reactors / hazard machinery"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "chemical_plant",
+      "tier": "upper",
+      "hero": "vessel",
+      "mid_motifs": [
+        "fat pipes and collars",
+        "reactors / hazard machinery"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible. Far factory is absent from this gameplay framing.",
+      "after_far_motifs": [
+        "paired pipe bridges, cyan collars and magenta reservoirs"
+      ],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Identifiable far silhouette now visible; foreground hero and mid motifs unchanged."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "rooftop_run",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [
+        "terracotta roof masses",
+        "stucco arches / awnings"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Clock may be absent/clipped; roofs, stucco and arches still identify the town.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "rooftop_run",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "terracotta roof masses",
+        "stucco arches / awnings"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Clock may be absent/clipped; roofs, stucco and arches still identify the town.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "rooftop_run",
+      "tier": "upper",
+      "hero": "clipped clock",
+      "mid_motifs": [
+        "terracotta roof masses",
+        "stucco arches / awnings"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Clock may be absent/clipped; roofs, stucco and arches still identify the town.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "casino_night",
+      "tier": "spawn",
+      "hero": "clipped star frame",
+      "mid_motifs": [
+        "neon stars / frames",
+        "reel and arcade forms"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "casino_night",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "neon stars / frames",
+        "reel and arcade forms"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "casino_night",
+      "tier": "upper",
+      "hero": "clipped star frame",
+      "mid_motifs": [
+        "neon stars / frames",
+        "reel and arcade forms"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "sky_sanctuary",
+      "tier": "spawn",
+      "hero": "clipped monument",
+      "mid_motifs": [
+        "broken stone arches / columns",
+        "slab fragments and restrained vines"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "sky_sanctuary",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "broken stone arches / columns",
+        "slab fragments and restrained vines"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "sky_sanctuary",
+      "tier": "upper",
+      "hero": "clipped monument",
+      "mid_motifs": [
+        "broken stone arches / columns",
+        "slab fragments and restrained vines"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "ice_cap",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [
+        "faceted ice walls / shards",
+        "snow-capped frozen arches / pines"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "ice_cap",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "faceted ice walls / shards",
+        "snow-capped frozen arches / pines"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "ice_cap",
+      "tier": "upper",
+      "hero": "crystal crown",
+      "mid_motifs": [
+        "faceted ice walls / shards",
+        "snow-capped frozen arches / pines"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [
+        "two angular snow-capped frozen gates"
+      ],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Identifiable far silhouette now visible; foreground hero and mid motifs unchanged."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "lava_reef",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [
+        "rock masses / broad clefts",
+        "crystals / industrial remnants"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "lava_reef",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "rock masses / broad clefts",
+        "crystals / industrial remnants"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "lava_reef",
+      "tier": "upper",
+      "hero": "clipped caldera",
+      "mid_motifs": [
+        "rock masses / broad clefts",
+        "crystals / industrial remnants"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Primary landmark is not required; supporting vocabulary remains visible.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "aquarium_park",
+      "tier": "spawn",
+      "hero": "absent",
+      "mid_motifs": [
+        "glass tubes / curved architecture",
+        "lanterns / coral"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Fish may be absent/edge-on; tubes, curved roofs and lanterns carry the park.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "aquarium_park",
+      "tier": "mid",
+      "hero": "absent",
+      "mid_motifs": [
+        "glass tubes / curved architecture",
+        "lanterns / coral"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Fish may be absent/edge-on; tubes, curved roofs and lanterns carry the park.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    },
+    {
+      "act": "SpringUp",
+      "act_path": "res://data/acts/Authored/SpringUp.tres",
+      "theme": "aquarium_park",
+      "tier": "upper",
+      "hero": "fish",
+      "mid_motifs": [
+        "glass tubes / curved architecture",
+        "lanterns / coral"
+      ],
+      "far_motifs": [],
+      "reads": "clear",
+      "primarily_color_or_texture": false,
+      "weakness": "Fish may be absent/edge-on; tubes, curved roofs and lanterns carry the park.",
+      "after_far_motifs": [],
+      "after_reads": "clear",
+      "after_primarily_color_or_texture": false,
+      "after_note": "Unchanged source/control, or no visible benefit claimed at this target."
+    }
+  ]
+}

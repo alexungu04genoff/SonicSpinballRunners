@@ -1,0 +1,557 @@
+{
+  "authority": "Prototype",
+  "captures": [
+    {
+      "act": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\RampMania.tres",
+      "act_bake": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\RampMania.bake/chemical_plant.res",
+      "act_bake_sha256": "0c7a6f55607049b55f5267e79f78ef089477e8cc5f17d228008b550ea9f0998c",
+      "act_fingerprint": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0",
+      "atmosphere": {
+        "enabled": true,
+        "id": "default",
+        "name": "Default",
+        "values": {
+          "brightness/terrain_ground": 0.68,
+          "directional_fog/enabled": false,
+          "emission": 0.55,
+          "env/adjustment_enabled": true,
+          "env/adjustment_saturation": 1.04,
+          "env/ambient_light_color": "(0.651, 0.749, 0.9176, 1.0)",
+          "env/ambient_light_energy": 0.68,
+          "env/ambient_light_sky_contribution": 0.0,
+          "env/fog_enabled": false,
+          "env/glow_bloom": 0.0,
+          "env/glow_enabled": true,
+          "env/glow_hdr_threshold": 0.85,
+          "env/glow_intensity": 0.62,
+          "env/glow_levels/3": 0.12,
+          "env/glow_levels/5": 0.85,
+          "env/glow_levels/7": 0.35,
+          "env/glow_normalized": true,
+          "env/glow_strength": 1.3,
+          "env/tonemap_exposure": 1.03,
+          "env/tonemap_mode": 0,
+          "override/terrain_ground": true,
+          "palette/industrial_cyan": "(0.1569, 0.8118, 1.0, 1.0)",
+          "palette/reservoir_deep": "(0.1098, 0.0863, 0.302, 1.0)",
+          "palette/reservoir_ripple": "(0.3882, 0.2314, 0.5137, 1.0)",
+          "palette/signal_pink": "(1.0, 0.2863, 0.5529, 1.0)",
+          "saturation/terrain_ground": 1.13,
+          "sky/ground_bottom_color": "(0.0667, 0.102, 0.2157, 1.0)",
+          "sky/ground_curve": 0.2,
+          "sky/ground_horizon_color": "(0.3373, 0.1922, 0.3098, 1.0)",
+          "sky/sky_curve": 0.2,
+          "sky/sky_horizon_color": "(0.3373, 0.1922, 0.3098, 1.0)",
+          "sky/sky_top_color": "(0.0314, 0.051, 0.1608, 1.0)",
+          "sun/light_angular_distance": 0.0,
+          "sun/light_color": "(0.7804, 0.8667, 1.0, 1.0)",
+          "sun/light_energy": 0.85,
+          "sun/light_specular": 0.8,
+          "sun/shadow_bias": 0.02,
+          "sun/shadow_enabled": true,
+          "sun/shadow_normal_bias": 0.55,
+          "sun/shadow_opacity": 0.85,
+          "sun_pitch": -58.0,
+          "sun_yaw": -32.0,
+          "surface_halo_spread": 1.35
+        },
+        "weight": 1.0
+      },
+      "authority": "Prototype",
+      "current_texture_matches": [
+        {
+          "rgba8_sha256": "9e150adf303e99dc334dda34267722d37459fbba5db89d7681eefd151105e89a",
+          "runtime_texture": "res://data/endless/assets.bake/81dd8e454eed12066951afa395688379ad709c20990b93bb56d32fbd8f0cd2f6.res",
+          "source": "res://assets/textures/chemical_plant/selected/1C_ao.png",
+          "source_sha256": "01817231d5b8fd36e593bb6b2b0bfc8e8bce7c1375ca1a72e2766922fc2bef87"
+        },
+        {
+          "rgba8_sha256": "514a9d6a6578489be04974524c810bc8f24cf20d37e539288e460cbea9b1b58e",
+          "runtime_texture": "res://data/endless/assets.bake/eb9d756f05b135cac7e72c878f94838b6537d9e28f28073ea58a59b094462333.res",
+          "source": "res://assets/textures/chemical_plant/selected/1C_metallic.png",
+          "source_sha256": "057c5148a4e39daa0ec7fbbeb7378385d7cca0c4138c12f2d58c90b2c901e9b8"
+        },
+        {
+          "rgba8_sha256": "a141034831749556cf15dc82f4cfb2e28575bc90d3ad82771dab204bcded5eff",
+          "runtime_texture": "res://data/endless/assets.bake/9f7f57ae7569c7cc875b8bb99c7818fc71c7b40cb2161174ee63ac3d28c014ff.res",
+          "source": "res://assets/textures/chemical_plant/selected/1C_roughness.png",
+          "source_sha256": "31f18d23c44f4ddc9a54057dfe1cad9f6aaace6aaedcdc5f9a1b6ca2e54ca5a3"
+        },
+        {
+          "rgba8_sha256": "6645ef4c53246823d35ce1d0d11021d18b5de410826b0e9b5209d23a24864588",
+          "runtime_texture": "res://data/endless/assets.bake/4970067a9abbee1eec7cc52427789af6a18bb4d4a851f124496c27aefa57d920.res",
+          "source": "res://assets/textures/chemical_plant/selected/2A.png",
+          "source_sha256": "88a82aad8361e00f762ebbb6e476b5df7300050bb7ac0bb603cec1cdea981a1a"
+        },
+        {
+          "rgba8_sha256": "df44153be337e5c41126b5e4c10b245e17b5f5b4989c14bd336788606a2b15c1",
+          "runtime_texture": "res://data/endless/assets.bake/d63ca0be816b312ad309dd48df01e14fd507319e2ae4e1e93ae2b377dc9b654f.res",
+          "source": "res://assets/textures/chemical_plant/selected/2A_ao.png",
+          "source_sha256": "472433eeff76cb777d0dd50410b0487008da7f598305cfe180cd262a991e5a94"
+        },
+        {
+          "rgba8_sha256": "f02bd4693d415d90dc827859f51c393d7076d184ae5fd4bdeb9386dfe3191998",
+          "runtime_texture": "res://data/endless/assets.bake/9a856b8f6ae06c944fc76a8e1b426e10c2b6afb5862c3ae74eb8805147f78220.res",
+          "source": "res://assets/textures/chemical_plant/selected/2A_metallic.png",
+          "source_sha256": "c66197965cf52284f0f70970e7d850db2e46c9705343afacd50e2445ebd2311f"
+        },
+        {
+          "rgba8_sha256": "0ca3a2138123ffa33c2e314e2d17e665e38a0fc741a9ca921e6c978668bd12ad",
+          "runtime_texture": "res://data/endless/assets.bake/b7566326608310e8f00fabc59d937c900378e4f5d66c3c53986ac655bb4bf661.res",
+          "source": "res://assets/textures/chemical_plant/selected/2A_roughness.png",
+          "source_sha256": "d13815759368e72c095b768d7890b21cf78b896f29ee623b23b12cdbe4822c5b"
+        },
+        {
+          "rgba8_sha256": "943c76f27e37f6a34bf5ee9f407cf543aedd615b003ce242db2e8260c3887f84",
+          "runtime_texture": "res://data/endless/assets.bake/b5700874611347d00125ca5efe8d398eb0e6d8678109b5c841c16f7fedca2bc2.res",
+          "source": "res://assets/textures/chemical_plant/selected/3C_ao.png",
+          "source_sha256": "e5ea3ac13b4b40907cf4ba31af9289f3f5cb6929a52889be26a7c081a9b14aa7"
+        },
+        {
+          "rgba8_sha256": "151b2af38713f849e4c3663023efc37272cf7f5c70bc74b7b446f8dbc2c52d43",
+          "runtime_texture": "res://data/endless/assets.bake/07415bf50bb91660cc4019a50e6301f0025797ab379f0f7ecf7fb286e1909a13.res",
+          "source": "res://assets/textures/chemical_plant/selected/3C_metallic.png",
+          "source_sha256": "446c257cbf75231d3350f62735fcf73e4c1c6e2c317d661ed80e3d285416ae5f"
+        },
+        {
+          "rgba8_sha256": "93be99ebd1b319db3026f9815930c7a80587cee88a44a82312521c2ae40fc85a",
+          "runtime_texture": "res://data/endless/assets.bake/3f02219a6e7e2d952491227fc5e84c835e90c338ac994b3b17daa9599af81327.res",
+          "source": "res://assets/textures/chemical_plant/selected/3C_roughness.png",
+          "source_sha256": "a6bb3fb6c9e42ad2d01e06ff376f80c4f7814fe23843666de1928639394815cb"
+        },
+        {
+          "rgba8_sha256": "e22335cc284a180b5f6031ee3a01ebd44055c75999a03e41dd930868ad62d6fa",
+          "runtime_texture": "res://data/endless/assets.bake/dfdb74747a934a2bb8e8d2402c314a44e50a967145666880862dfc57cb9e9fa4.res",
+          "source": "res://assets/textures/chemical_plant/selected/5A.png",
+          "source_sha256": "f0e38138ad8389db0bd4a633f5213c4130059ba3895edacfbf7fe202d07e7afb"
+        },
+        {
+          "rgba8_sha256": "702d77570b512a571109b363892db6fa0987f75e746e8043eb35899ba0d1b63e",
+          "runtime_texture": "res://data/endless/assets.bake/3604de5a1c1609272b4b1b486bcc3cd3dff3c55f3ddba1fe0ae9b085ec5c72b5.res",
+          "source": "res://assets/textures/chemical_plant/selected/5A_ao.png",
+          "source_sha256": "d97cb48873c07652e82d3c2cc39cb0c29d8f41a50a012b14133bb68fb5a90897"
+        },
+        {
+          "rgba8_sha256": "9d1968223379f6960625bbf1ac028836fdd428a5901a30208e6cb03638d94427",
+          "runtime_texture": "res://data/endless/assets.bake/6c18bee92f9c3e3264f8522d21271570108c97bb835ac27dbc179798db3dafb9.res",
+          "source": "res://assets/textures/chemical_plant/selected/5A_metallic.png",
+          "source_sha256": "83f28c410d5603c56400f853af44f83fe1c780eab23d2f187aeef518b3d021db"
+        },
+        {
+          "rgba8_sha256": "49527cdb11d1ccbac7954a247fc30640404d8facd68653731541df2a3b1b4cab",
+          "runtime_texture": "res://data/endless/assets.bake/3a946a8842471e2dee1d06ba3d39f82fd2898a9f65790d36444eb25cf30f9554.res",
+          "source": "res://assets/textures/chemical_plant/selected/5A_roughness.png",
+          "source_sha256": "3157e48bcebaf0d643a29cd5c517127e413f0acec55f49474fcab7e39d079709"
+        },
+        {
+          "rgba8_sha256": "2b7ddda86f6d7fa6c17ee32cd4a19027870389668a57e806793a57181e5f8fd9",
+          "runtime_texture": "res://data/endless/assets.bake/28352cfebf5825d1abff2bb2bdacbb85542c0ac0ae3193a5a06f01650603341f.res",
+          "source": "res://assets/textures/chemical_plant/selected/6B.png",
+          "source_sha256": "e44d6dcb1525e8f61344dc9569c473457a032f9e2a761fe5749d669656deaa02"
+        },
+        {
+          "rgba8_sha256": "d245c0d1120fdbe48fdca9f95c3682cbeea78150628139b6a1dbf8150b9223b9",
+          "runtime_texture": "res://data/endless/assets.bake/0071acb60749c87949bea88995ec82d7d871b34a8e3069b4c1fd50662ad4c8dd.res",
+          "source": "res://assets/textures/chemical_plant/selected/6B_ao.png",
+          "source_sha256": "7698028b4f74a684621d74a52faa6b41e11388b4d4f26d25acfdd6a3ddc5af7c"
+        },
+        {
+          "rgba8_sha256": "b1047b53121fc5e5d66c2fef7515d2563e3694a842edaeb3d162b68da8cd5e9d",
+          "runtime_texture": "res://data/endless/assets.bake/da1dd4dd3baa63539062f46b2ddea3b48bd016255e36aba6b936db1017f8cdd0.res",
+          "source": "res://assets/textures/chemical_plant/selected/6B_metallic.png",
+          "source_sha256": "c4db8fa99b737345926f521f73106faee48b7138fbcc39f843f02c88545b3964"
+        },
+        {
+          "rgba8_sha256": "55cac7f6533cce532c8ea62838f8186f5bbdd7dcd874f70f19d7e62839927b2e",
+          "runtime_texture": "res://data/endless/assets.bake/a6297314f5ce7fac481fc548395a7404c74541c25fa41d5085690e9e1eb22bc6.res",
+          "source": "res://assets/textures/chemical_plant/selected/6B_roughness.png",
+          "source_sha256": "0ffa60433a336bdab16963c1a692223a2c298f9c3e0d75c6cdcbf711bd81d425"
+        },
+        {
+          "rgba8_sha256": "add8185c5384d830bf268555b94d0bbb3e965c4d4e7e7a03b404d760b844dc62",
+          "runtime_texture": "res://data/endless/assets.bake/2e74c077f3c0118f8ad2abaa253fdf74ec81ff79e2814d0aa44964d570ce8056.res",
+          "source": "res://assets/textures/chemical_plant/selected/7C-yellow.png",
+          "source_sha256": "c9b292300c8380fd0a78c7278acf18e762af9e0efdf8af11d6a153e76c2639bb"
+        },
+        {
+          "rgba8_sha256": "992f7456a3677a278abbab3f6d28cfabe96d83cba0011bd6e0b5e1ea27216e98",
+          "runtime_texture": "res://data/endless/assets.bake/eec131fc5d2b3a5e7b7c21ffceb837f1aecb044a4307073299cb9f11b8c3422d.res",
+          "source": "res://assets/textures/chemical_plant/selected/7C-yellow_ao.png",
+          "source_sha256": "b1b1b804659e99de162c16c499fc868d783966574fef8c42030a5359e99fbefb"
+        },
+        {
+          "rgba8_sha256": "5acce77b33eccf3f43c4bc1c12a0a5ca2ccfbd88e26297dae099d9faddb625f9",
+          "runtime_texture": "res://data/endless/assets.bake/f820216a81d91a21ac091968bb8f00708968fc9bcf6463ba8880e5de98d2a383.res",
+          "source": "res://assets/textures/chemical_plant/selected/7C-yellow_metallic.png",
+          "source_sha256": "615785fecd301bb863a0df47b05a25810d5b48ba0e4be7ad98f6105f3583e949"
+        },
+        {
+          "rgba8_sha256": "628f6c4b0e0f546a2a4050595fc3b770539a0e1045facf8a8f0b5e47020e5820",
+          "runtime_texture": "res://data/endless/assets.bake/7fd703042e6631010f987d396a21ae65006b7d3ed949c9ca31955ebac54d547d.res",
+          "source": "res://assets/textures/chemical_plant/selected/7C-yellow_roughness.png",
+          "source_sha256": "8436aeea92d26d90db9c675397b66837764611573aa53908f7058b5e0cad8f7a"
+        },
+        {
+          "rgba8_sha256": "c1853f9a205dacf59e6d76459dd05b7ac311d9a3d7aee12b50e176fc2c75b0cb",
+          "runtime_texture": "res://data/endless/assets.bake/2e25dce78ee14703b57805c8269c7636699c80554a1239f958ae378b1bd30989.res",
+          "source": "res://assets/textures/chemical_plant/selected/8B.png",
+          "source_sha256": "8531743a769127e3f72e57e968dceef14b723ee14b211d2e8de5a4b3da1670a5"
+        },
+        {
+          "rgba8_sha256": "df44153be337e5c41126b5e4c10b245e17b5f5b4989c14bd336788606a2b15c1",
+          "runtime_texture": "res://data/endless/assets.bake/d63ca0be816b312ad309dd48df01e14fd507319e2ae4e1e93ae2b377dc9b654f.res",
+          "source": "res://assets/textures/chemical_plant/selected/8B_ao.png",
+          "source_sha256": "472433eeff76cb777d0dd50410b0487008da7f598305cfe180cd262a991e5a94"
+        },
+        {
+          "rgba8_sha256": "870816805ce6cf935fe7b260f695b54dfb37c7a90fd56a8a3b38e020aa33a421",
+          "runtime_texture": "res://data/endless/assets.bake/a4cdf12d3d1bd1745137dd88df18ddbda3428f7ede6076313774ca97164c2330.res",
+          "source": "res://assets/textures/chemical_plant/selected/8B_metallic.png",
+          "source_sha256": "464a1728dd66d5b541f3bc76d6bb58f1db015548998d41d61ff00022149786a2"
+        },
+        {
+          "rgba8_sha256": "a891dc70cbed18c74f21ba2fb5f96a2f243e23fb035b2273dc59a0bc82eee97a",
+          "runtime_texture": "res://data/endless/assets.bake/015fd5e0d1f5d72ae124335d9334176c5e34315d0f73c8c5efb08f8e79eaa6b9.res",
+          "source": "res://assets/textures/chemical_plant/selected/8B_roughness.png",
+          "source_sha256": "041c885a2336e426a96a8422cb212ecc4cb861b0eb6119b7f66a1faabc71dab9"
+        },
+        {
+          "rgba8_sha256": "0d5ab88245dab4623bf1f06dce4a58f331cc711f327761c66893154783626f47",
+          "runtime_texture": "res://data/endless/assets.bake/4bebe5f9eda5906d1a4157a8e0ae8c4e27d8de331285ae217569180c20d1da13.res",
+          "source": "res://assets/textures/chemical_plant/selected/9C_ao.png",
+          "source_sha256": "ae5430b568230c8788d44d4a0bd14f9955c015ed8591e656a3492940e847d50c"
+        },
+        {
+          "rgba8_sha256": "847d08cd40ec6b70550baef24d55d0d620601fc3b559426ccc990a88af3d3bbb",
+          "runtime_texture": "res://data/endless/assets.bake/3c69c0779ca8d8275dee0df6f3b9a0613d5a5955612c0e68bcf3339bf8e52242.res",
+          "source": "res://assets/textures/chemical_plant/selected/9C_metallic.png",
+          "source_sha256": "7e88d7c6d7e2a9eacc776d68157dd7196ab153111debfb1051eb525ab937a49b"
+        },
+        {
+          "rgba8_sha256": "620f099da9f264b14ad99e796f5a54532f08a9ef5179394ce34c80b95cfcf561",
+          "runtime_texture": "res://data/endless/assets.bake/0b0fd5f633c8d1e4c5d5c315e0e6d78b1b47bbe60b999b37ae1c08441fa6ccf5.res",
+          "source": "res://assets/textures/chemical_plant/selected/9C_roughness.png",
+          "source_sha256": "e35a428bdb5ec04f9d9be8a768ddb522699615ad311cbc4d9bc85668400caf8b"
+        }
+      ],
+      "disk_acts": 1,
+      "disk_themes": 1,
+      "fallback_builds": 0,
+      "fps_counter_hidden": true,
+      "graphics": {
+        "fxaa": 0,
+        "msaa_3d": 2,
+        "project_shadow_filter": 3,
+        "retro": [],
+        "scale_3d": 1.0,
+        "shadow_atlas": 8192,
+        "shadow_cascades": 4,
+        "smooth_shadows": false,
+        "window_size": "(1440, 1000)",
+        "world_size": "(1296, 900)"
+      },
+      "image": "chemical_plant.png",
+      "library": "res://scripts/endless/template_library.gd",
+      "pipeline_fingerprint": "a55c178a967be1182432e817e7ad5580e64a84506fb06aac3a7a2b4dc2a911d5",
+      "renderer": {
+        "api": "1.4.351",
+        "command_line": [
+          "--script",
+          "res://tests/prototype_appearance_capture.gd"
+        ],
+        "device": "NVIDIA GeForce RTX 4060",
+        "driver": "vulkan",
+        "engine": "4.7.2-stable (official)",
+        "renderer": "forward_plus",
+        "user_arguments": [
+          "--seed=18",
+          "--act=E:\\Sonic Spinball Runners\\data\\acts\\Authored\\RampMania.tres",
+          "--output=E:\\Sonic Spinball Runners\\test-results\\theme-coverage\\after\\rampmania\\spawn",
+          "--themes=chemical_plant,ice_cap"
+        ]
+      },
+      "scene": "res://scenes/prototype_run.tscn",
+      "scenery_fingerprint": "4f98871f697bec4209c9ab04777ae1bbdf37928512cb85e2cffbf894f10aca27",
+      "seed": 18,
+      "source_sha256": "703d4f06c0fc015e1844cc8230d2639fe0ab94853c877185ce3161990e1d1436",
+      "state": {
+        "act_score": 0,
+        "ball": "(200.0, 700.0)",
+        "camera_fov": 52.0,
+        "camera_projection": 0,
+        "camera_settings": {
+          "dead_zone_x": 18.0,
+          "dead_zone_y": 12.0,
+          "horizontal_response": 2.0,
+          "look_ahead": 0.0,
+          "max_speed": 4000.0,
+          "screen_margin_y": 0.22,
+          "screen_target_y": 0.55,
+          "vertical_response": 28.0,
+          "zoom": 1.3
+        },
+        "camera_size": 1.0,
+        "camera_transform": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (2.0, 2.115734, 8.545638)]",
+        "document": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0",
+        "goal_unlocked": false,
+        "rings": 0,
+        "score": 0,
+        "serve_pending": true,
+        "velocity": "(0.0, 0.0)"
+      },
+      "surface_detail": "flat",
+      "theme": "chemical_plant",
+      "theme_bake": "res://data/endless/themes.bake/chemical_plant.res",
+      "theme_bake_sha256": "85ed4aa20922cbe63a1761ce795dd7e7563112c0def14f07c22cbff531cae778"
+    },
+    {
+      "act": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\RampMania.tres",
+      "act_bake": "E:\\Sonic Spinball Runners\\data\\acts\\Authored\\RampMania.bake/ice_cap.res",
+      "act_bake_sha256": "a48b01425f091fe91701d4fdb1b0966c1c8e5609284e89ae3391d81ef79de229",
+      "act_fingerprint": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0",
+      "atmosphere": {
+        "enabled": true,
+        "id": "default",
+        "name": "Default",
+        "values": {
+          "directional_fog/enabled": false,
+          "emission": 0.65,
+          "env/ambient_light_color": "(0.7451, 0.8627, 0.9608, 1.0)",
+          "env/ambient_light_energy": 0.52,
+          "env/ambient_light_sky_contribution": 0.0,
+          "env/fog_enabled": false,
+          "env/glow_bloom": 0.0,
+          "env/glow_enabled": true,
+          "env/glow_hdr_threshold": 1.1,
+          "env/glow_intensity": 0.13,
+          "env/glow_levels/3": 0.2,
+          "env/glow_levels/5": 0.8,
+          "env/glow_levels/7": 0.25,
+          "env/glow_normalized": true,
+          "env/glow_strength": 1.15,
+          "env/tonemap_exposure": 1.0,
+          "env/tonemap_mode": 0,
+          "palette/aurora_strength": 0.0,
+          "palette/crystal_tint": "(0.8824, 0.9686, 1.0, 1.0)",
+          "palette/ice_horizon": "(0.7647, 0.898, 0.9569, 1.0)",
+          "palette/ice_sky_glow": "(0.0941, 0.1686, 0.2314, 1.0)",
+          "palette/ice_upper": "(0.2118, 0.498, 0.7412, 1.0)",
+          "palette/lake_base": "(0.2196, 0.498, 0.6353, 1.0)",
+          "palette/lake_reflection": "(0.6471, 0.851, 0.9098, 1.0)",
+          "palette/star_intensity": 0.0,
+          "sun/light_angular_distance": 0.0,
+          "sun/light_color": "(1.0, 0.9765, 0.9294, 1.0)",
+          "sun/light_energy": 0.8,
+          "sun/light_specular": 0.7,
+          "sun/shadow_bias": 0.02,
+          "sun/shadow_enabled": true,
+          "sun/shadow_normal_bias": 0.55,
+          "sun/shadow_opacity": 0.85,
+          "sun_pitch": -52.0,
+          "sun_yaw": -35.0,
+          "surface_halo_spread": 1.0
+        },
+        "weight": 1.0
+      },
+      "authority": "Prototype",
+      "current_texture_matches": [
+        {
+          "rgba8_sha256": "3200378f28759b1af9730e69e42fc66b1d999f3fcc1d47c4aa6fe1c18cb5a9b0",
+          "runtime_texture": "res://assets/textures/ice_cap/facade-emission.png",
+          "source": "res://assets/textures/ice_cap/facade-emission.png",
+          "source_sha256": "0487cabd1661e5e30dd4fd045b48195b21a2286d491f07080c2daf70821784cb"
+        },
+        {
+          "rgba8_sha256": "b6fb8d5956798a81e618bbac8f4389b875cc79c7e1f90cddbb3477357838507e",
+          "runtime_texture": "res://assets/textures/ice_cap/facade-surface.png",
+          "source": "res://assets/textures/ice_cap/facade-surface.png",
+          "source_sha256": "9a5542272d3a2deaa0b580dad8ef4a3226846d7c7e028c6f9bf83ee82e120b27"
+        },
+        {
+          "rgba8_sha256": "08ce5b367f59daff8692de4b05f80e29925ded54fc289d3e607bdf6523fbb772",
+          "runtime_texture": "res://assets/textures/ice_cap/facade.png",
+          "source": "res://assets/textures/ice_cap/facade.png",
+          "source_sha256": "9229d90ff6e4072d1124700ffc445989662e2738724eb10840e2a3b16172b6b6"
+        },
+        {
+          "rgba8_sha256": "f4dffadbfeefadb071f3d5d0d178c2542ce36da9f32df8ff87004b3190b4ed07",
+          "runtime_texture": "res://assets/textures/ice_cap/top-border-emission.png",
+          "source": "res://assets/textures/ice_cap/floor-border-emission.png",
+          "source_sha256": "622081394684e592bc892ffa5d74038302df51b6d9450271827724197349db4d"
+        },
+        {
+          "rgba8_sha256": "782ddd1aaa09c90b8fb8fa55ea12355205e42bc3ef52e39ab212b91a6e96f6e6",
+          "runtime_texture": "res://assets/textures/ice_cap/top-border-surface.png",
+          "source": "res://assets/textures/ice_cap/floor-border-surface.png",
+          "source_sha256": "e556e2f0a0e9b5aa2310b7e5c9652466268bcb9db5a4a63684bda1bdbbbfcdde"
+        },
+        {
+          "rgba8_sha256": "3a82fdcf38059f69f09c2e7e3d1c955f6676d9cd4ca57c59b5f43da94cf72882",
+          "runtime_texture": "res://assets/textures/ice_cap/top-border.png",
+          "source": "res://assets/textures/ice_cap/floor-border.png",
+          "source_sha256": "6ad453e6aa8657a70af3e4d141d4a07e554c906645a9dc6720a533508f06535d"
+        },
+        {
+          "rgba8_sha256": "e4bc5692bf30ae8d0d4f3245e181e5b30b8e532acd157f4f0cb516979129e8c5",
+          "runtime_texture": "res://assets/textures/ice_cap/ramp-emission.png",
+          "source": "res://assets/textures/ice_cap/floor-emission.png",
+          "source_sha256": "d6423b0b2264cbf90558b8c013f8f34979000cb266d939859ef96c8d0da4f436"
+        },
+        {
+          "rgba8_sha256": "341cfdbd466433fdba3cc7f9ffa5e1a1a79666ec3fef6e682cb0a564db7c1827",
+          "runtime_texture": "res://assets/textures/ice_cap/ramp-surface.png",
+          "source": "res://assets/textures/ice_cap/floor-surface.png",
+          "source_sha256": "92282e5610941c4188fdbe6e5af0d929797e2185b3921d7ac2d6717ec3d4f2b9"
+        },
+        {
+          "rgba8_sha256": "a0c37648094c8713085fdecbffe22744a0fb85c5bfd82975f129ffcf1c0d5361",
+          "runtime_texture": "res://assets/textures/ice_cap/ramp.png",
+          "source": "res://assets/textures/ice_cap/floor.png",
+          "source_sha256": "0a20efc163415b5bc4a700e2ce660306400e9290a3f3d0626ee7253607e02e23"
+        },
+        {
+          "rgba8_sha256": "e4bc5692bf30ae8d0d4f3245e181e5b30b8e532acd157f4f0cb516979129e8c5",
+          "runtime_texture": "res://assets/textures/ice_cap/ramp-emission.png",
+          "source": "res://assets/textures/ice_cap/ramp-emission.png",
+          "source_sha256": "d6423b0b2264cbf90558b8c013f8f34979000cb266d939859ef96c8d0da4f436"
+        },
+        {
+          "rgba8_sha256": "341cfdbd466433fdba3cc7f9ffa5e1a1a79666ec3fef6e682cb0a564db7c1827",
+          "runtime_texture": "res://assets/textures/ice_cap/ramp-surface.png",
+          "source": "res://assets/textures/ice_cap/ramp-surface.png",
+          "source_sha256": "92282e5610941c4188fdbe6e5af0d929797e2185b3921d7ac2d6717ec3d4f2b9"
+        },
+        {
+          "rgba8_sha256": "a0c37648094c8713085fdecbffe22744a0fb85c5bfd82975f129ffcf1c0d5361",
+          "runtime_texture": "res://assets/textures/ice_cap/ramp.png",
+          "source": "res://assets/textures/ice_cap/ramp.png",
+          "source_sha256": "0a20efc163415b5bc4a700e2ce660306400e9290a3f3d0626ee7253607e02e23"
+        },
+        {
+          "rgba8_sha256": "f4dffadbfeefadb071f3d5d0d178c2542ce36da9f32df8ff87004b3190b4ed07",
+          "runtime_texture": "res://assets/textures/ice_cap/top-border-emission.png",
+          "source": "res://assets/textures/ice_cap/top-border-emission.png",
+          "source_sha256": "622081394684e592bc892ffa5d74038302df51b6d9450271827724197349db4d"
+        },
+        {
+          "rgba8_sha256": "782ddd1aaa09c90b8fb8fa55ea12355205e42bc3ef52e39ab212b91a6e96f6e6",
+          "runtime_texture": "res://assets/textures/ice_cap/top-border-surface.png",
+          "source": "res://assets/textures/ice_cap/top-border-surface.png",
+          "source_sha256": "e556e2f0a0e9b5aa2310b7e5c9652466268bcb9db5a4a63684bda1bdbbbfcdde"
+        },
+        {
+          "rgba8_sha256": "3a82fdcf38059f69f09c2e7e3d1c955f6676d9cd4ca57c59b5f43da94cf72882",
+          "runtime_texture": "res://assets/textures/ice_cap/top-border.png",
+          "source": "res://assets/textures/ice_cap/top-border.png",
+          "source_sha256": "6ad453e6aa8657a70af3e4d141d4a07e554c906645a9dc6720a533508f06535d"
+        },
+        {
+          "rgba8_sha256": "1c09d6bea688b06e432de5c82de561148dcc2f125658d8f11ad72d0fc3afa100",
+          "runtime_texture": "res://assets/textures/ice_cap/top-emission.png",
+          "source": "res://assets/textures/ice_cap/top-emission.png",
+          "source_sha256": "5fa62f357450577eb95c3b85af7b660b2f8f4ada6abfc7cea4a1e1a8a9526298"
+        },
+        {
+          "rgba8_sha256": "0ad520f9ed25c332b9bad9dddb9dcbb9719f20bf30785ae28899a35146ce027d",
+          "runtime_texture": "res://assets/textures/ice_cap/top-surface.png",
+          "source": "res://assets/textures/ice_cap/top-surface.png",
+          "source_sha256": "04e4a514f5a99be5bcc6b645e7f1dbc8ba55ff04debbcb8d4e1cd7f57681e060"
+        },
+        {
+          "rgba8_sha256": "079a63e496d2e608def938290ea5d30e19fc5e2f5272c8118036d2ac77445e66",
+          "runtime_texture": "res://assets/textures/ice_cap/top.png",
+          "source": "res://assets/textures/ice_cap/top.png",
+          "source_sha256": "1652235139e8f1fecc9779948a4ce211dd03edc7ac3a6fab9eefc60b1318019c"
+        },
+        {
+          "rgba8_sha256": "f9182e569a6c3e11e36467220c902856b0a7dc63afa35ffa77cc096852d7981e",
+          "runtime_texture": "res://assets/textures/ice_cap/wall-emission.png",
+          "source": "res://assets/textures/ice_cap/wall-emission.png",
+          "source_sha256": "d336e7acef2fa492406af79e4d2c7e8ea691bba290eeeec1391d136176f4205e"
+        },
+        {
+          "rgba8_sha256": "b6fb8d5956798a81e618bbac8f4389b875cc79c7e1f90cddbb3477357838507e",
+          "runtime_texture": "res://assets/textures/ice_cap/facade-surface.png",
+          "source": "res://assets/textures/ice_cap/wall-surface.png",
+          "source_sha256": "9a5542272d3a2deaa0b580dad8ef4a3226846d7c7e028c6f9bf83ee82e120b27"
+        },
+        {
+          "rgba8_sha256": "4ed37af3b3be25b610eb6530711b979759fa3187ddbdf8ce858caab949b28063",
+          "runtime_texture": "res://assets/textures/ice_cap/wall.png",
+          "source": "res://assets/textures/ice_cap/wall.png",
+          "source_sha256": "279a2bd4a3d5e82be3a6e137514b983e4053259c72aabaf72c4d575a9a71d417"
+        }
+      ],
+      "disk_acts": 1,
+      "disk_themes": 1,
+      "fallback_builds": 0,
+      "fps_counter_hidden": true,
+      "graphics": {
+        "fxaa": 0,
+        "msaa_3d": 2,
+        "project_shadow_filter": 3,
+        "retro": [],
+        "scale_3d": 1.0,
+        "shadow_atlas": 8192,
+        "shadow_cascades": 4,
+        "smooth_shadows": false,
+        "window_size": "(1440, 1000)",
+        "world_size": "(1296, 900)"
+      },
+      "image": "ice_cap.png",
+      "library": "res://scripts/endless/template_library.gd",
+      "pipeline_fingerprint": "bc3658f379bdb1ac3acf6f3fb707d45dfb801ecf5d70c02a00d2be14dd98ad35",
+      "renderer": {
+        "api": "1.4.351",
+        "command_line": [
+          "--script",
+          "res://tests/prototype_appearance_capture.gd"
+        ],
+        "device": "NVIDIA GeForce RTX 4060",
+        "driver": "vulkan",
+        "engine": "4.7.2-stable (official)",
+        "renderer": "forward_plus",
+        "user_arguments": [
+          "--seed=18",
+          "--act=E:\\Sonic Spinball Runners\\data\\acts\\Authored\\RampMania.tres",
+          "--output=E:\\Sonic Spinball Runners\\test-results\\theme-coverage\\after\\rampmania\\spawn",
+          "--themes=chemical_plant,ice_cap"
+        ]
+      },
+      "scene": "res://scenes/prototype_run.tscn",
+      "scenery_fingerprint": "4f98871f697bec4209c9ab04777ae1bbdf37928512cb85e2cffbf894f10aca27",
+      "seed": 18,
+      "source_sha256": "703d4f06c0fc015e1844cc8230d2639fe0ab94853c877185ce3161990e1d1436",
+      "state": {
+        "act_score": 0,
+        "ball": "(200.0, 700.0)",
+        "camera_fov": 52.0,
+        "camera_projection": 0,
+        "camera_settings": {
+          "dead_zone_x": 18.0,
+          "dead_zone_y": 12.0,
+          "horizontal_response": 2.0,
+          "look_ahead": 0.0,
+          "max_speed": 4000.0,
+          "screen_margin_y": 0.22,
+          "screen_target_y": 0.55,
+          "vertical_response": 28.0,
+          "zoom": 1.3
+        },
+        "camera_size": 1.0,
+        "camera_transform": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (2.0, 2.115734, 8.545638)]",
+        "document": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0",
+        "goal_unlocked": false,
+        "rings": 0,
+        "score": 0,
+        "serve_pending": true,
+        "velocity": "(0.0, 0.0)"
+      },
+      "surface_detail": "flat",
+      "theme": "ice_cap",
+      "theme_bake": "res://data/endless/themes.bake/ice_cap.res",
+      "theme_bake_sha256": "5862dc30195762f3ab7358e89b9290087725eed0df7a9d160f827015c5026585"
+    }
+  ],
+  "complete": true
+}

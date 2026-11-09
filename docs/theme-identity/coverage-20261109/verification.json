@@ -1,0 +1,1017 @@
+{
+  "date": "2026-11-09",
+  "parent_commit": "943892179061383afdf9a190039c2d5a2d4a0d05",
+  "context": "Current working tree with unrelated selected artwork preserved. Source commit scopes Chemical to build_background only; Ice changes only its far construction/helper. No existing test assertions changed.",
+  "suites": 32,
+  "checks": 8596,
+  "assertion_failures": 0,
+  "child_reload_checks": 6,
+  "rows": [
+    {
+      "suite": "theme_texture_regression",
+      "checks": 284,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/theme_texture_regression.log",
+      "sha256": "9c3681408f30f1362ee19534bb9c2d52f005f6b9fd318680d7fd8340d7b87cfa",
+      "stderr_sha256": "d41ce04a493c8a0c5b9e1ea070065d1fbe118a01de07765fbd991db0a01a8d92"
+    },
+    {
+      "suite": "scorecraft_regression",
+      "checks": 29,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/scorecraft_regression.log",
+      "sha256": "9172b7aee15a83c173ddf6a3ed605dfd39abbaf1ab64bb0349c41163736dd7a1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "buddy_scoring_regression",
+      "checks": 70,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/buddy_scoring_regression.log",
+      "sha256": "379383d5c815f83a7cf0062eb99bd5930b67a93a14d379937e1a92cbbdc2ff81",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "enemy_regression",
+      "checks": 50,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/enemy_regression.log",
+      "sha256": "c876542728e827556cab5dda0d04a23facd33379429229e4e4c343256fc4ed10",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "authored_main_game_regression",
+      "checks": 70,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/authored_main_game_regression.log",
+      "sha256": "7edab454eac906cf3a3b67a448823c6ee1cf81516353fa684923962db01b1a7e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "traversal_authoring_regression",
+      "checks": 36,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/traversal_authoring_regression.log",
+      "sha256": "6736294d6a56fa999f9a050f021428bace9e00f02a4100b61414b6818a9e43bf",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "flipper_contact_response_regression",
+      "checks": 208,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/flipper_contact_response_regression.log",
+      "sha256": "a56e728f06af13e58291d412556b26bfc2627a724383920431db1dbcf67c5f24",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "telemetry_evidence_regression",
+      "checks": 30,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/telemetry_evidence_regression.log",
+      "sha256": "bc9eeb1a65fa1eb1e9bcf109ad9ad7546cf8314b827fc8719436ca32a0ed4391",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "prototype_plan_regression",
+      "checks": 41,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/prototype_plan_regression.log",
+      "sha256": "7b4edd1f39156ff4cd398e5249b569d66451a76e7b0919e54feb7f142ace8d22",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "geometry_bake_regression",
+      "checks": 2842,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/geometry_bake_regression.log",
+      "sha256": "b5d9f059dae54ee29d6a7a9a9fd38bc7fe1f8c41146623011d1617313d1ba511",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "act_geometry_regression",
+      "checks": 3461,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/act_geometry_regression.log",
+      "sha256": "1231eeecc528d53e2504ab6be0a9b1e26eab5d69aa0be35911fcf22d27818e04",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "geometry_density_regression",
+      "checks": 18,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/geometry_density_regression.log",
+      "sha256": "f8519c5f6e3eed349fb3ba6f949a4a780a14a7a80576b4d7a6ecfec9607e135a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "economy_v1_regression",
+      "checks": 44,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/economy_v1_regression.log",
+      "sha256": "94c30965abbe92a4c37ed5ff1716c46a51a6e8ef491d060a5de6c111d6817945",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "pinball_vocabulary_regression",
+      "checks": 17,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/pinball_vocabulary_regression.log",
+      "sha256": "08179c8c73a76eb97a51d1a9b1334f0fdc328d2c60f5212dd1309344f4d5f2ca",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "gimmick_batch_regression",
+      "checks": 103,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/gimmick_batch_regression.log",
+      "sha256": "c1189d3771ea8e8684150efd40f13eafb28f320336b8578a5a421d42bfa3757f",
+      "stderr_sha256": "3294b009e7b5f42733e899643e82046ad01a5250ed5dcad048a6e5557816472a"
+    },
+    {
+      "suite": "scoring_flow_regression",
+      "checks": 31,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/scoring_flow_regression.log",
+      "sha256": "718975f13a2eba7a7a5b7d9606dc04b1d45367fb1eb8de85275b3b666b845642",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "rail_rings_regression",
+      "checks": 13,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/rail_rings_regression.log",
+      "sha256": "20945f1f3aafcbd7e4a04fc3113938a41a8763257bfdb98593170fb8a68915b0",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "profile_regression",
+      "checks": 12,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/profile_regression.log",
+      "sha256": "0b8e15601824bf46affb265d6e18069d80143acc20ed9a2c4307430db6b3e385",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "run_telemetry_regression",
+      "checks": 14,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/run_telemetry_regression.log",
+      "sha256": "08429fadc99babf872fcd13edcb4953f94f9b3544d1ee7106a645774ace7fb38",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "authored_gimmick_regression",
+      "checks": 93,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/authored_gimmick_regression.log",
+      "sha256": "25f9cb101491e407559ba920a04b2e5c2e77de6a4e8da3538cdf5f0ec186d2fc",
+      "stderr_sha256": "f457b7c06c9a8556c2b051571ec33f4ef116f81a764eca7a07a950b1c4f4f376"
+    },
+    {
+      "suite": "pinball_mechanics_regression",
+      "checks": 58,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/pinball_mechanics_regression.log",
+      "sha256": "d2b6e89d8a719932b449b1206f883f17c86ceb291890eb60f1efd5071b23d80b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "soft_retry_regression",
+      "checks": 62,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/soft_retry_regression.log",
+      "sha256": "227c1f2a7f37058dfa3ef2d57217814b566f409c0da330f5e794d607e069fdb8",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "ramp_height_theme_regression",
+      "checks": 92,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/ramp_height_theme_regression.log",
+      "sha256": "86a54ff4a40c82d0997e23c5aa175209c7c9490e37f8bf17a67470895e410b17",
+      "stderr_sha256": "8bb596c68bc215d21994770fb59b15ee52caa23fd078fd3492435137d407dc3a"
+    },
+    {
+      "suite": "endless_reuse_regression",
+      "checks": 127,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/endless_reuse_regression.log",
+      "sha256": "2d089a109208a8ebcab32d99781ac148f34555480defe42f7e2acb967275e7bc",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "traversal_prototype_regression",
+      "checks": 20,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/traversal_prototype_regression.log",
+      "sha256": "de9c35fab439e85e09473c61e90c0d19abe04cb52575be1c60736ba7e000b7f1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "prototype_setup_regression",
+      "checks": 16,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/prototype_setup_regression.log",
+      "sha256": "144c67f6dd12674fcad39b400dbaf35df90ae5b6df65ee72df17b65573960ef8",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "prototype_archive_regression",
+      "checks": 34,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/prototype_archive_regression.log",
+      "sha256": "d06488e7aae16ca486882f25779a7e881a835a75e04b77090b6d260c5b8b0008",
+      "stderr_sha256": "4230c8b1197c1116b4bad153a7869ee08148576d6cfb4b94cbb4f6fb3b861834"
+    },
+    {
+      "suite": "foreground_contribution_regression",
+      "checks": 26,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/foreground_contribution_regression.log",
+      "sha256": "7a33f8814347eb3850560abec928f8fc72ccb6adc368f83c20d68c4c73dbdf71",
+      "stderr_sha256": "1732d3bc3fce98b6d1865fd01cde0118577709055411c7642c837c385076527f"
+    },
+    {
+      "suite": "prototype_budget_regression",
+      "checks": 57,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/prototype_budget_regression.log",
+      "sha256": "21ca77e5a57ee24f5267b8cd5c48aff535e34f723cc363548ffa68992d672783",
+      "stderr_sha256": "1732d3bc3fce98b6d1865fd01cde0118577709055411c7642c837c385076527f"
+    },
+    {
+      "suite": "prototype_run_regression",
+      "checks": 143,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/prototype_run_regression.log",
+      "sha256": "719155d20c8e793b99c130c8a1c3fe3a2f0acc885fb43599301a0a96deaeed79",
+      "stderr_sha256": "dfe79b8d9d63c8cedb79a75c2b4440f15c8121bd0210a0bed6982aff9daa5b8b"
+    },
+    {
+      "suite": "prototype_appearance_regression",
+      "checks": 70,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/prototype_appearance_regression.log",
+      "sha256": "249134b1784ce84aae3bf1328a11a845f986b52c703f1826cbc3a9dafd04efca",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "endless_bake_audit --prototype",
+      "checks": 425,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/prototype-audit.log",
+      "sha256": "1fb6f7adff9a0133606454fa7a482524937d379aa66abeeff7075bc54f99ab89",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "focused": [
+    {
+      "suite": "landmark_theme_regression",
+      "checks": 387,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/landmark_theme_regression.log",
+      "sha256": "ecd8e5c757bd101d5d53f58ab284c245a4284f0ac859b808fe95992b0125100f",
+      "stderr_sha256": "90f0e4b3d203a4289da962bae0aafc2606a581a11d29f8e0f52a5d3b1c34db29"
+    },
+    {
+      "suite": "decor_regression",
+      "checks": 46,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/decor_regression.log",
+      "sha256": "d9264ab6c63ef23e3c024b9999e6420bb1cb0a19cf0fcedf43e4eb3b7e5b1a66",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "rooftop_decor_regression",
+      "checks": 91,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/rooftop_decor_regression.log",
+      "sha256": "4456aa0391df170b40779ea0c09d80d12ddc71b9191b5f5d57691c71d90c36c2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "casino_decor_regression",
+      "checks": 95,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/casino_decor_regression.log",
+      "sha256": "67b0279d832b29dc56164b0f8f3ca8023f3b382e0318934538a6c88cfd0a5d6d",
+      "stderr_sha256": "0fd5d263658084d13e4d85b21a263cbc510c38404816fbe392385c791cdefc3b"
+    },
+    {
+      "suite": "sanctuary_decor_regression",
+      "checks": 95,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/sanctuary_decor_regression.log",
+      "sha256": "50d1a45a2fa6a5c1f52c0c4de967fc6bc213fd90f3451eb38344c047129e0eee",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "ice_cap_decor_regression",
+      "checks": 95,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/ice_cap_decor_regression.log",
+      "sha256": "4ce5c2e492cf131c8b8f97d0356ea893653976cc3b6e9e8b8e73192cf0b428ab",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "lava_reef_decor_regression",
+      "checks": 103,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/lava_reef_decor_regression.log",
+      "sha256": "96e5758d3950fe10781364d446ed2bc468a1b03bd71772b68c8c30214d636713",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "aquarium_park_decor_regression",
+      "checks": 95,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/aquarium_park_decor_regression.log",
+      "sha256": "c80f5bf55472cbc6467fc06a61180e17114391437fecfde716c0ee46e1524003",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "scenery_regression",
+      "checks": 7347,
+      "failures": 0,
+      "exit": 0,
+      "log": "test-results/theme-coverage/checks/scenery_regression.log",
+      "sha256": "dbbd7e425edd42abcaa0166dffc9ec6a60b5e45437299ba541f7d8c91705fd02",
+      "stderr_sha256": "8c2313efbfdd3536f92763e05841ab1a497a0f3141cd002eb8cb12bc0e6676f4"
+    }
+  ],
+  "endless": {
+    "suite": "endless_bake_audit --pool",
+    "checks": 489,
+    "failures": 0,
+    "exit": 0,
+    "log": "test-results/theme-coverage/endless-audit.log",
+    "sha256": "977395096fe843fe14303df4e57fb07de63d238996e7e97382b0e32a54b4f072",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "bakes": [
+    {
+      "pool": "prototype",
+      "theme": "chemical_plant",
+      "acts": 5,
+      "variants": 5,
+      "log": "test-results/theme-coverage/bake-prototype-chemical_plant.log",
+      "sha256": "8aabd46f8e842bbbce135d815f7d34e55b7051ff1afe01f740449fe4d942d5ef"
+    },
+    {
+      "pool": "endless",
+      "theme": "chemical_plant",
+      "acts": 7,
+      "variants": 7,
+      "log": "test-results/theme-coverage/bake-endless-chemical_plant.log",
+      "sha256": "ff82172df76debf3715f9fc74734f95952ba32bc0122752c4c83270f1ac1483a"
+    },
+    {
+      "pool": "prototype",
+      "theme": "ice_cap",
+      "acts": 5,
+      "variants": 5,
+      "log": "test-results/theme-coverage/bake-prototype-ice_cap.log",
+      "sha256": "93779b4a16e7019b34d0162d3d9d14e3e9a7cf01659f90edeb0f664ad5f2463a"
+    },
+    {
+      "pool": "endless",
+      "theme": "ice_cap",
+      "acts": 7,
+      "variants": 7,
+      "log": "test-results/theme-coverage/bake-endless-ice_cap.log",
+      "sha256": "962919970e332849716a7cbbba191b2475efd5760fdb782f961907d8eddde95b"
+    }
+  ],
+  "captures": [
+    {
+      "suite": "receipts/first-try-smooth-decor/spawn/before/manifest.json",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/first-try-smooth-decor/spawn/before/regression.log",
+      "sha256": "e4c1c2e316eadddbc12b7df252d608736a6f2ee5e4f229cb0c3b58483feb0b63",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/first-try-smooth-decor/spawn/after/manifest.json",
+      "checks": 39,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/first-try-smooth-decor/spawn/after/regression.log",
+      "sha256": "7099e72a2d222f46d179f56c1f486f2ba370ea99e4ebf49898f08ba2a3e9d32c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/first-try-smooth-decor/mid/before/manifest.json",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/first-try-smooth-decor/mid/before/regression.log",
+      "sha256": "84f2dd68dafa76c1d14c1605989ea46d75563672797798f3714d656338ccb74c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/first-try-smooth-decor/mid/after/manifest.json",
+      "checks": 39,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/first-try-smooth-decor/mid/after/regression.log",
+      "sha256": "e6d54538d88059448d6e3d5d6ca3bb65ad89f5f4101a10ea261f9c10ba78d3c7",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/first-try-smooth-decor/upper/before/manifest.json",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/first-try-smooth-decor/upper/before/regression.log",
+      "sha256": "0a26bfe76c18c010ad462732a335cd82f152e3a1716b313d81ddf6eb22a3a0ac",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/first-try-smooth-decor/upper/after/manifest.json",
+      "checks": 39,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/first-try-smooth-decor/upper/after/regression.log",
+      "sha256": "cdfe960690e76355c01fd8aa133beee0b1675167be618e9842291a7054cacefc",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/rampmania/spawn/before/manifest.json",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/rampmania/spawn/before/regression.log",
+      "sha256": "ebea1479fadd3d5f678c92279516ab00d31c4b05fe0a0556d0ab06b9211cd110",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/rampmania/spawn/after/manifest.json",
+      "checks": 39,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/rampmania/spawn/after/regression.log",
+      "sha256": "eaa301e674b7b046d0a8699f28cae72cd67ebbe1bb3fa565c08622f7f7c5bd1c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/rampmania/mid/before/manifest.json",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/rampmania/mid/before/regression.log",
+      "sha256": "45f7117927849222701bb16abfcad629f0587db0e3857dd6e8b8a57ca79cba24",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/rampmania/mid/after/manifest.json",
+      "checks": 39,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/rampmania/mid/after/regression.log",
+      "sha256": "9ecb0e6e393248349af96e8fe44d7ffc1c2fbd1325978fe0c19d9b9681fdc82a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/rampmania/upper/before/manifest.json",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/rampmania/upper/before/regression.log",
+      "sha256": "9044a6abe307467387a6ff90a4327d2e4ba571da16b8d793b2033d99cb8a65de",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/rampmania/upper/after/manifest.json",
+      "checks": 39,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/rampmania/upper/after/regression.log",
+      "sha256": "fdbe50db6ca85618571a8b0e7469715cd2b49e7ca757b96da92f184c58c7894d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/reverse-c-spring/spawn/before/manifest.json",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/reverse-c-spring/spawn/before/regression.log",
+      "sha256": "1cb7353d7839426edf8fe3b399953f595820d3244ce612179c75fc33da71c1da",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/reverse-c-spring/spawn/after/manifest.json",
+      "checks": 39,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/reverse-c-spring/spawn/after/regression.log",
+      "sha256": "5bad045cea70c340165e22b68c98484ce561527c1853119151db2d038dbd30e1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/reverse-c-spring/mid/before/manifest.json",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/reverse-c-spring/mid/before/regression.log",
+      "sha256": "bffcffd1ab602c13b3071cbb7961290e2dc31348227436a5ce039e172ad163d9",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/reverse-c-spring/mid/after/manifest.json",
+      "checks": 39,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/reverse-c-spring/mid/after/regression.log",
+      "sha256": "2f1a8faa8cab5dacb1906bd9935a3ae87d8df2379ac7619e7219785e32b803d4",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/reverse-c-spring/upper/before/manifest.json",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/reverse-c-spring/upper/before/regression.log",
+      "sha256": "121bfeb13aa8c81b49c6f863696b9e8dfd13636beecc37316eef385715fbd009",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/reverse-c-spring/upper/after/manifest.json",
+      "checks": 39,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/reverse-c-spring/upper/after/regression.log",
+      "sha256": "4de74cf56b7b78213bd438c5d7f0a4c550a2deb79e94e31605ecc12f3b7ccaa3",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/secret-entry/spawn/before/manifest.json",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/secret-entry/spawn/before/regression.log",
+      "sha256": "43004ce14c42073856db9f2ae729de034df68820348fa3b9be8436dea986225a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/secret-entry/spawn/after/manifest.json",
+      "checks": 39,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/secret-entry/spawn/after/regression.log",
+      "sha256": "b28d8613a614f304b96b241acd1512aa3a58b060fcf408b87f67edbd0b072c0c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/secret-entry/mid/before/manifest.json",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/secret-entry/mid/before/regression.log",
+      "sha256": "1cb4e150ef22af79616e10bd4c7709d1b434bb3b18eddb9398c1157b2cb4cef6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/secret-entry/mid/after/manifest.json",
+      "checks": 39,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/secret-entry/mid/after/regression.log",
+      "sha256": "126bb2130352673606f6a5857dc729942411ef085f93cc0a9cfb7c4212b3c7e4",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/secret-entry/upper/before/manifest.json",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/secret-entry/upper/before/regression.log",
+      "sha256": "bbefa919949d953c6141a3cdab6797ad190dceed230bdf6303bb2e165829c3b6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/secret-entry/upper/after/manifest.json",
+      "checks": 39,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/secret-entry/upper/after/regression.log",
+      "sha256": "084e235b448c760f14f17250419658d476ed266138c9be8bd0b8864afbbfdb9b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/springup/spawn/before/manifest.json",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/springup/spawn/before/regression.log",
+      "sha256": "3dda412ea1961e591274fbd23419b89e309c54e5459a4b556177ea8a8f0330bc",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/springup/spawn/after/manifest.json",
+      "checks": 39,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/springup/spawn/after/regression.log",
+      "sha256": "79b4a55e738c89b8b3444576ddaa614f9e14935cda35edd859607a9543b3aa42",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/springup/mid/before/manifest.json",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/springup/mid/before/regression.log",
+      "sha256": "7250459fe4b5675c5e03e2f7255e2983cf95e6cc93ac7f44de640cc132f12a82",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/springup/mid/after/manifest.json",
+      "checks": 39,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/springup/mid/after/regression.log",
+      "sha256": "72a680e795d6ee2386e2814d426c15776d1703a99837eae561f6055467f05eff",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/springup/upper/before/manifest.json",
+      "checks": 135,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/springup/upper/before/regression.log",
+      "sha256": "f0134596b7e2365c365b807e3ba8589de83b2c19e64d0cf3e4f93ef2d5f33cb6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "suite": "receipts/springup/upper/after/manifest.json",
+      "checks": 39,
+      "failures": 0,
+      "exit": 0,
+      "log": "docs/theme-identity/coverage-20261109/receipts/springup/upper/after/regression.log",
+      "sha256": "c7d25b8d081ebe4220ae8b44240358566cf3a71a2da62756b82d754af4ba5053",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "pair_verification": {
+    "pairs": 30,
+    "unchanged_control_views_reused": 90,
+    "native_size": [
+      1440,
+      1000
+    ],
+    "fallback_builds": 0,
+    "rows": [
+      {
+        "act": "First Try Smooth Decor",
+        "tier": "spawn",
+        "theme": "chemical_plant",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "First Try Smooth Decor",
+        "tier": "spawn",
+        "theme": "ice_cap",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "First Try Smooth Decor",
+        "tier": "mid",
+        "theme": "chemical_plant",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "First Try Smooth Decor",
+        "tier": "mid",
+        "theme": "ice_cap",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "First Try Smooth Decor",
+        "tier": "upper",
+        "theme": "chemical_plant",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "First Try Smooth Decor",
+        "tier": "upper",
+        "theme": "ice_cap",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "RampMania",
+        "tier": "spawn",
+        "theme": "chemical_plant",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "RampMania",
+        "tier": "spawn",
+        "theme": "ice_cap",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "RampMania",
+        "tier": "mid",
+        "theme": "chemical_plant",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "RampMania",
+        "tier": "mid",
+        "theme": "ice_cap",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "RampMania",
+        "tier": "upper",
+        "theme": "chemical_plant",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "RampMania",
+        "tier": "upper",
+        "theme": "ice_cap",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "Reverse C Spring",
+        "tier": "spawn",
+        "theme": "chemical_plant",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "Reverse C Spring",
+        "tier": "spawn",
+        "theme": "ice_cap",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "Reverse C Spring",
+        "tier": "mid",
+        "theme": "chemical_plant",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "Reverse C Spring",
+        "tier": "mid",
+        "theme": "ice_cap",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "Reverse C Spring",
+        "tier": "upper",
+        "theme": "chemical_plant",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "Reverse C Spring",
+        "tier": "upper",
+        "theme": "ice_cap",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "Secret Entry",
+        "tier": "spawn",
+        "theme": "chemical_plant",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "Secret Entry",
+        "tier": "spawn",
+        "theme": "ice_cap",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "Secret Entry",
+        "tier": "mid",
+        "theme": "chemical_plant",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "Secret Entry",
+        "tier": "mid",
+        "theme": "ice_cap",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "Secret Entry",
+        "tier": "upper",
+        "theme": "chemical_plant",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "Secret Entry",
+        "tier": "upper",
+        "theme": "ice_cap",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "SpringUp",
+        "tier": "spawn",
+        "theme": "chemical_plant",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "SpringUp",
+        "tier": "spawn",
+        "theme": "ice_cap",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "SpringUp",
+        "tier": "mid",
+        "theme": "chemical_plant",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "SpringUp",
+        "tier": "mid",
+        "theme": "ice_cap",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "SpringUp",
+        "tier": "upper",
+        "theme": "chemical_plant",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      },
+      {
+        "act": "SpringUp",
+        "tier": "upper",
+        "theme": "ice_cap",
+        "state_equal": true,
+        "appearance_inputs_equal": true,
+        "fallback_builds": 0
+      }
+    ]
+  },
+  "scoped_source": {
+    "base_commit": "943892179061383afdf9a190039c2d5a2d4a0d05",
+    "checks": [
+      {
+        "summary": [],
+        "suite": "scoped-import",
+        "sha256": "AA69FC1933E5BBD5317F8741A4221C15D0F3CCFDAC38727508F00FDC7B909135",
+        "exit": 0,
+        "log": "E:\\Sonic Spinball Runners\\test-results\\theme-coverage\\scoped-import.log"
+      },
+      {
+        "summary": [
+          "RESULT | Landmark themes | 387 checks | 0 failures"
+        ],
+        "suite": "scoped-landmark_theme_regression",
+        "sha256": "ECD8E5C757BD101D5D53F58AB284C245A4284F0AC859B808FE95992B0125100F",
+        "exit": 0,
+        "log": "E:\\Sonic Spinball Runners\\test-results\\theme-coverage\\scoped-landmark_theme_regression.log"
+      },
+      {
+        "summary": [
+          "RESULT | Ice Cap decor | 95 checks | 0 failures"
+        ],
+        "suite": "scoped-ice_cap_decor_regression",
+        "sha256": "4CE5C2E492CF131C8B8F97D0356EA893653976CC3B6E9E8B8E73192CF0B428AB",
+        "exit": 0,
+        "log": "E:\\Sonic Spinball Runners\\test-results\\theme-coverage\\scoped-ice_cap_decor_regression.log"
+      },
+      {
+        "summary": [
+          "GEOMETRY_DENSITY | flower_triangles=96 checks=18 failures=0"
+        ],
+        "suite": "scoped-geometry_density_regression",
+        "sha256": "F8519C5F6E3EED349FB3BA6F949A4A780A14A7A80576B4D7A6ECFEC9607E135A",
+        "exit": 0,
+        "log": "E:\\Sonic Spinball Runners\\test-results\\theme-coverage\\scoped-geometry_density_regression.log"
+      },
+      {
+        "summary": [
+          "ACT_BAKE_COMPLETE | Acts=1 variants=1"
+        ],
+        "suite": "scoped-bake-chemical_plant",
+        "sha256": "8E2CA2C396510334920D823DBDB10110C0284CC66E341B879C6FC257C12AA16C",
+        "exit": 0,
+        "log": "E:\\Sonic Spinball Runners\\test-results\\theme-coverage\\scoped-bake-chemical_plant.log"
+      },
+      {
+        "summary": [
+          "ACT_BAKE_COMPLETE | Acts=1 variants=1"
+        ],
+        "suite": "scoped-bake-ice_cap",
+        "sha256": "09244802283B9F3E37B568543FC881AA382D39890D5CB466386FF0A41FB14D15",
+        "exit": 0,
+        "log": "E:\\Sonic Spinball Runners\\test-results\\theme-coverage\\scoped-bake-ice_cap.log"
+      }
+    ],
+    "context": "Fresh HEAD export plus only owned scenery changes, independently of unrelated local artwork. Fresh import, 500 focused assertions and one bake per changed theme passed."
+  },
+  "diagnostics": [
+    "Intentional malformed-resource and archive-write failures remain in their negative-fixture logs; zero assertion failures.",
+    "Existing selected Casino raw-image warnings and documented Godot resource-loader shutdown diagnostics remain visible in logs.",
+    "The separately baked traversal fixture was refreshed before this run; all 20 Traversal Prototype checks passed on the first current run."
+  ],
+  "limitations": [
+    "No GPU timing or measured draw-call claim.",
+    "Six unchanged control themes explicitly reuse baseline images.",
+    "Still-image coverage does not certify motion readability.",
+    "decor_runtime_smoke.gd remains separate historical test debt."
+  ]
+}

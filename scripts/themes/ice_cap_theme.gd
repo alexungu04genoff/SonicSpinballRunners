@@ -51,6 +51,18 @@ func build_background(p: Node3D) -> void:
  lake_mat.set_shader_parameter("center", Vector2(center.x, center.z))
  lake.material_override = lake_mat
  _snow(root, center, width, length)
+ # Two low frozen gates sit in the shared backdrop's downstream lake. Their
+ # open, snow-capped profiles support upper views without repeating the crown.
+ var gates := Node3D.new()
+ root.add_child(gates)
+ for side: int in [-1, 1]:
+  var gate := Node3D.new()
+  gates.add_child(gate)
+  _frozen_frame(gate, 2.8)
+  gate.rotation.y = PI * 0.5
+  gate.scale = Vector3.ONE * 0.45
+  gate.position = center + Vector3(side * 1.5, -1.6, 1.0)
+ await _batch(gates, p)
 
 func build_edges(p: Node3D) -> void:
  var root := Node3D.new()
@@ -106,6 +118,18 @@ func build_edges(p: Node3D) -> void:
   ribbon.rotation.y = PI * 0.5
   ribbon.scale = Vector3(ribbon_span / 110.0, 0.22, 0.22)
   aurora.add_child(ribbon)
+
+func _frozen_frame(root: Node3D, height: float) -> void:
+ # A broad sloping lintel and two ice fins read as frozen architecture. Shared
+ # library meshes/materials feed the existing landscape batcher.
+ for side: int in [-1, 1]:
+  var fin: MeshInstance3D = _library.piece(root, "facet", "ice", Vector3(0, height * 0.48, side * 0.9), Vector3(0.65, height, 0.65))
+  fin.rotation.x = side * 0.12
+  _library.box(root, "snow", Vector3(0, height * 0.91, side * 0.9), Vector3(0.76, 0.24, 0.76))
+ var lintel: MeshInstance3D = _library.box(root, "ice", Vector3(0, height, 0), Vector3(0.75, 0.50, 2.45))
+ lintel.rotation.x = -0.12
+ var cap: MeshInstance3D = _library.box(root, "snow", Vector3(0, height + 0.29, 0), Vector3(0.82, 0.12, 2.5))
+ cap.rotation.x = -0.12
 
 func _mountain(root: Node3D, at: Vector3, height: float, radius: float, mat: StandardMaterial3D) -> void:
  # Asymmetric ridge facets with irregular snowlines, rather than stacked cones.

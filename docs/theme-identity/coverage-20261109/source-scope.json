@@ -1,0 +1,45 @@
+{
+  "parent_commit": "943892179061383afdf9a190039c2d5a2d4a0d05",
+  "capture_context": "Selected local working-tree art, preserved and excluded from the scoped source commit.",
+  "files": [
+    {
+      "path": "scripts/themes/chemical_plant_theme.gd",
+      "before_sha256": "18ba14c8222a8eadc574459351a4a66d8d0e7194094af13f1ad789a32866757a",
+      "working_after_sha256": "4a5cb652712ab3df51182afe37d6ad8b45e79e067d5190c80a29bdfd2c910635",
+      "scoped_after_sha256": "5cb702cbc2fa46dc2533ecbca0fcfb7903a5cb12427e4db91402481e8254412b"
+    },
+    {
+      "path": "scripts/themes/ice_cap_theme.gd",
+      "before_sha256": "9a13edec374a213ceed19b16b0f60557f845c851325aed20711639be1a2ba544",
+      "working_after_sha256": "223054405f51ddda301a1399bf567d1e9ce9ff01588cab140d1b4b3534a7ec97",
+      "scoped_after_sha256": "223054405f51ddda301a1399bf567d1e9ce9ff01588cab140d1b4b3534a7ec97"
+    }
+  ],
+  "authored_acts": [
+    {
+      "path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "sha256": "91c1dd949734dea6ef241204abaa8c7b48f6d9191572844942204b7ff1cb4e91",
+      "fingerprint": "c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba"
+    },
+    {
+      "path": "res://data/acts/Authored/RampMania.tres",
+      "sha256": "703d4f06c0fc015e1844cc8230d2639fe0ab94853c877185ce3161990e1d1436",
+      "fingerprint": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0"
+    },
+    {
+      "path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "sha256": "d48b5082a22673637358f0f9d5214a0659fddef270fb561d7be370be0d017cbf",
+      "fingerprint": "d526b99a5c4a89e2f57c5eebf55cf8f0e494a8b2924af56ed5ede4bb91b3e640"
+    },
+    {
+      "path": "res://data/acts/Authored/Secret Entry.tres",
+      "sha256": "c4208c15d23eb1bd23805e8c46701ad10ce7559b71d41274232909b6c4b2be17",
+      "fingerprint": "89c2d6d10b201695d078066282f7490901cdabaa076ddc229b7f4019220e8dd7"
+    },
+    {
+      "path": "res://data/acts/Authored/SpringUp.tres",
+      "sha256": "f3e9324e34ba95c4cc2f270506a6e12daabda28589c964ad646c3da7027795a9",
+      "fingerprint": "f6f91de027384aa1450b100a2e85206645bc5924a0b31ce0b81de2bc72cb2c78"
+    }
+  ]
+}
