@@ -17,6 +17,12 @@ func _ready() -> void:
 		scene = "res://experiments/lighting_lab/lighting_lab.tscn"
 	if "--portable-play" in arguments:
 		scene = "res://scenes/prototype_run.tscn"
+	elif "--portable-endless" in arguments:
+		scene = "res://scenes/endless_runner.tscn"
+	elif "--portable-atmosphere" in arguments:
+		scene = "res://experiments/lighting_lab/lighting_lab.tscn"
+	elif "--portable-visual" in arguments:
+		scene = "res://experiments/visual_lab/visual_lab.tscn"
 	elif "--portable-bake" in arguments:
 		scene = "res://scenes/act_baker.tscn"
 	elif "--portable-smoke" in arguments:

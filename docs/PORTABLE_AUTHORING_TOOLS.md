@@ -4,6 +4,31 @@ Extract the ZIP into a writable folder on a Windows x64 PC with a Vulkan-capable
 graphics driver. Keep **Geometry Editor.exe** and **Atmosphere Lab.exe** together.
 Neither executable needs Godot or the repository installed.
 
+## Full portable suite
+
+The `-FullSuite` option in `tools/export_authoring_tools.ps1` also packages the
+current validated Prototype and Endless recipes. Build it after both supported
+bake pools pass their audits. The exporter checks the snapshot and the packaged
+recipes, including source assets needed for fingerprint validation.
+
+- **Play Prototype.cmd** opens the normal run menu with bundled disk bakes.
+- **Play Endless.cmd** opens the separate streaming stress test with disk bakes.
+- **Visual Lab.cmd** opens character and presentation tuning.
+- **Geometry Editor.exe** and **Atmosphere Lab.exe** retain editable workspaces.
+- **Play Prototype source.cmd** uses the bundled pool with source construction
+  for diagnostics. It does not replace that pool with external edited Acts.
+
+Use the editor's **Play** button for saved edits. Prototype and Endless retain
+their bundled production pools. Normal Retro settings are included unchanged.
+Extract the entire ZIP before launching; retain the shared Acts and Atmospheres
+folders when moving work between computers. No public release is made by building
+this local package.
+
+Embedded packages cannot rewrite their bundled bake resources. For editing and
+rebaking both playable pools, use the writable [Work Suite](WORK_SUITE.md).
+Build it with `tools/package_work_suite.ps1 -SnapshotPath <imported-snapshot>
+-OutputDirectory <new-folder>`, then validate and archive the complete folder.
+
 On first launch, the tools create shared **Acts** and **Atmospheres** folders
 beside the EXEs, copying the included Acts, scenery sidecars and production
 atmospheres. Later launches only add missing files; existing edits are preserved.
@@ -81,8 +106,9 @@ settings in both runs. Wait until preparation settles, then compare the same
 served-ball view, joins and overview. Restart repeats the seed. The ordinary
 executables use conservative foreground contribution by default.
 
-These portable comparisons construct their resident Acts from the bundled source
-(`--no-bakes`), because the authoring ZIP intentionally excludes disk recipes.
+These portable comparisons explicitly construct their resident Acts from the
+bundled source (`--no-bakes`). The ordinary authoring ZIP excludes disk recipes;
+the full suite includes them for its normal Prototype and Endless launchers.
 The same contribution policy runs on source-built and disk-baked Acts. The
 standard repository Prototype still requires its validated disk bakes. Standalone
 editor Play loads only one Act, so it is a control workload rather than the main

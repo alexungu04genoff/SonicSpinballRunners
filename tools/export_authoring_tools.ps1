@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [string]$GodotPath = 'C:\Program Files\Godot\Godot.exe',
-    [Parameter(Mandatory = $true)][string]$WindowsTemplate
+    [Parameter(Mandatory = $true)][string]$WindowsTemplate,
+    [switch]$FullSuite
 )
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
@@ -11,7 +12,8 @@ $output = Join-Path $repo "test-results\authoring-tools\Sonic Spinball Authoring
 $template = (Resolve-Path -LiteralPath $WindowsTemplate).Path.Replace('\', '/')
 New-Item -ItemType Directory -Path $build, $output | Out-Null
 foreach ($folder in @('assets', 'data', 'scenes', 'scripts', 'experiments', 'tests', 'third_party')) {
-    & robocopy (Join-Path $repo $folder) (Join-Path $build $folder) /E /XD '*.bake' /NFL /NDL /NJH /NJS /NP | Out-Null
+    $excluded = if ($FullSuite) { @() } else { @('/XD', '*.bake') }
+    & robocopy (Join-Path $repo $folder) (Join-Path $build $folder) /E @excluded /NFL /NDL /NJH /NJS /NP | Out-Null
     if ($LASTEXITCODE -ge 8) { throw "Could not snapshot $folder" }
 }
 $project = Get-Content -LiteralPath (Join-Path $repo 'project.godot') -Raw
@@ -30,8 +32,8 @@ name="AuthoringTools"
 platform="Windows Desktop"
 runnable=true
 export_filter="all_resources"
-include_filter="assets/**/*.png,data/**/*.scenery.cfg,data/atmospheres/*.cfg"
-exclude_filter="addons/prototype_export/*,*.bake/*"
+include_filter="assets/**/*.png,assets/**/*.md,scripts/**/*.gd,scripts/**/*.gdshader,scripts/**/*.gdshaderinc,data/**/*.scenery.cfg,data/atmospheres/*.cfg"
+exclude_filter="addons/prototype_export/*$(if (-not $FullSuite) { ',*.bake/*' } else { ',experiments/**/*.png,experiments/**/*.jpg,experiments/**/*.webp' })"
 script_export_mode=0
 
 [preset.0.options]
@@ -64,7 +66,16 @@ try {
     $env:LOCALAPPDATA = $profile
     $common = @('--headless', '--path', ('"{0}"' -f $build))
     Invoke-BuildStep 'import' ($common + @('--import'))
+    if ($FullSuite) {
+        Invoke-BuildStep 'audit-prototype' ($common + @('--script', 'res://tests/endless_bake_audit.gd', '--', '--prototype'))
+        Invoke-BuildStep 'audit-endless' ($common + @('--script', 'res://tests/endless_bake_audit.gd'))
+    }
     Invoke-BuildStep 'geometry-export' ($common + @('--export-release', 'AuthoringTools', ('"{0}"' -f (Join-Path $output 'Geometry Editor.exe'))))
+    if ($FullSuite) {
+        $package = @('--headless', '--main-pack', ('"{0}"' -f (Join-Path $output 'Geometry Editor.exe')), '--script', 'res://tests/endless_bake_audit.gd')
+        Invoke-BuildStep 'package-prototype' ($package + @('--', '--prototype'))
+        Invoke-BuildStep 'package-endless' $package
+    }
     [IO.File]::WriteAllText((Join-Path $build 'project.godot'), $project.Replace('default_tool="geometry"', 'default_tool="atmosphere"'))
     Invoke-BuildStep 'atmosphere-export' ($common + @('--export-release', 'AuthoringTools', ('"{0}"' -f (Join-Path $output 'Atmosphere Lab.exe'))))
 } finally {
@@ -78,7 +89,21 @@ foreach ($policy in @('legacy', 'conservative')) {
 }
 $pixelLauncher = "@echo off`r`n`"%~dp0Geometry Editor.exe`" -- --portable-play --no-bakes --seed=18 --atmosphere=green_hill:default --pixel-controls --world-msaa=4 --world-scale=100 %*`r`n"
 [IO.File]::WriteAllText((Join-Path $output 'Compare Prototype pixels.cmd'), $pixelLauncher)
-Compress-Archive -LiteralPath (Join-Path $output 'Geometry Editor.exe'), (Join-Path $output 'Atmosphere Lab.exe'), (Join-Path $output 'Read me.md'), (Join-Path $output 'Compare Prototype legacy.cmd'), (Join-Path $output 'Compare Prototype conservative.cmd'), (Join-Path $output 'Compare Prototype pixels.cmd') -DestinationPath "$output.zip"
+if (-not $FullSuite) {
+    Compress-Archive -LiteralPath (Join-Path $output 'Geometry Editor.exe'), (Join-Path $output 'Atmosphere Lab.exe'), (Join-Path $output 'Read me.md'), (Join-Path $output 'Compare Prototype legacy.cmd'), (Join-Path $output 'Compare Prototype conservative.cmd'), (Join-Path $output 'Compare Prototype pixels.cmd') -DestinationPath "$output.zip"
+}
+if ($FullSuite) {
+    $routes = [ordered]@{
+        'Play Prototype' = '--portable-play'
+        'Play Endless' = '--portable-endless'
+        'Visual Lab' = '--portable-visual'
+        'Play Prototype source' = '--portable-play --no-bakes'
+    }
+    foreach ($name in $routes.Keys) {
+        [IO.File]::WriteAllText((Join-Path $output "$name.cmd"), "@echo off`r`ncd /d `"%~dp0`"`r`n`"%~dp0Geometry Editor.exe`" -- $($routes[$name]) %*`r`n")
+    }
+    Compress-Archive -Path (Join-Path $output '*') -DestinationPath "$output.zip" -Force
+}
 Write-Output "Build: $output"
 Write-Output "Archive: $output.zip"
 Write-Output "Logs: $build"

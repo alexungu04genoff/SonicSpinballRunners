@@ -15,7 +15,7 @@ func run() -> void:
 		get_tree().quit(1)
 		return
 	var target := OS.get_user_data_dir().path_join("portable-smoke-%d.tres" % Time.get_ticks_usec())
-	if not editor.load_from("res://data/acts/Experiments/Traversal Diagnostic.tres"):
+	if not editor.load_from("res://tests/fixtures/traversal_diagnostic.tres"):
 		print("PORTABLE_EDITOR_SMOKE: bundled Act load failed: ", editor.error_dialog.dialog_text)
 		get_tree().quit(1)
 		return
