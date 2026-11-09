@@ -1,0 +1,13 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060
+
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | ice_cap | nodes=46 | instantiate_ms=1550.772 | graphics_ms=7863.913 | retire_ms=8.94
+ENDLESS_DISK_WARM | ice_cap | nodes=7 | instantiate_ms=7.554 | graphics_ms=97.989 | retire_ms=0.523
+ENDLESS_DISK_WARM | ice_cap | nodes=498 | instantiate_ms=310.962 | graphics_ms=167.133 | retire_ms=16.651
+ENDLESS_PREPARED | ice_cap:0 | source=disk | ms=17188.278 | GPU warm frames=23 | cached=1 | geometry loaded=19 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Switch Court — Open the Sky Lane
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+ENDLESS_SLOW_FRAME | zone=1 ms=584.027 build_ms=0.026 | theme prefetch=
+ENDLESS_SLOW_FRAME | zone=1 ms=335.228 build_ms=0.019 | theme prefetch=
+ICE_ALBEDO_REVIEW | complete=true | selected bindings=["11A", "12B", "7B", "8A", "1A", "9A", "2B", "5A", "3A", "6A"] | source current=true

@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=3]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_od7do"]
+
+[resource]
+script = ExtResource("1_od7do")
+format_version = 17
+library_version = 2
+gameplay_objects = [{
+"object_id": "obj_cd2ae5429216e280e5048f0b",
+"position": Vector2(250, 400),
+"properties": {
+"initial_state": "a",
+"length": PackedByteArray(3, 0, 0, 0, 0, 0, 180, 66),
+"state_a_angle": PackedByteArray(3, 0, 0, 0, 0, 0, 12, 194),
+"state_b_angle": PackedByteArray(3, 0, 0, 0, 0, 0, 12, 66)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "diverter"
+}, {
+"object_id": "obj_bff199ec934e5ab57af89c8b",
+"position": Vector2(250, 450),
+"properties": {
+"boost_strength": PackedByteArray(3, 0, 0, 0, 0, 0, 175, 67),
+"directional_influence": PackedByteArray(3, 0, 0, 0, 0, 0, 140, 66),
+"speed_cap": PackedByteArray(3, 0, 0, 0, 0, 0, 22, 69),
+"width": PackedByteArray(3, 0, 0, 0, 0, 0, 72, 66)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "dash_panel"
+}]
+entry_start_x = 4
+entry_width = 2
+activation_y = PackedByteArray(3, 0, 0, 0, 0, 128, 9, 68)
+spawn_position = Vector2(250, 450)
+goal_position = Vector2(200, 100)

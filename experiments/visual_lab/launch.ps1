@@ -5,6 +5,7 @@ param(
     [string]$GraphicsBackend = 'Forward',
     [ValidateSet('Sonic', 'Tails', 'Knuckles', 'Shadow')]
     [string]$Character = 'Sonic',
+    [switch]$RooftopMaterials,
     [ValidateSet('gameplay', 'overview', 'idle', 'jump', 'trick', 'roll', 'reel', 'homing', 'impact', 'fly')]
     [string]$Capture,
     [switch]$Sequence,
@@ -104,6 +105,9 @@ Write-Host "Graphics backend: $GraphicsBackend ($renderingDriver)"
 Write-Host "Game log: $gameLog"
 $launchArguments = @('--path', $repoRoot, '--rendering-method', $renderingMethod, '--rendering-driver', $renderingDriver, '--log-file', $gameLog, $scenePath)
 $userArguments = @("--character=$($Character.ToLowerInvariant())")
+if ($RooftopMaterials) {
+    $userArguments += @('--theme=rooftop_run', '--act', 'res://data/acts/Third complex.tres', '--material-review-fullscreen')
+}
 if ($Capture) {
     $launchArguments = @('--fixed-fps', '60') + $launchArguments
     $userArguments += @("--capture=$Capture", "--capture-frames=$CaptureFrames")

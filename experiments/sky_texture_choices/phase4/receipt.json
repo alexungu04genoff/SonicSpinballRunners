@@ -1,0 +1,256 @@
+{
+  "act": "res://data/acts/Authored/First Try Smooth Decor.tres",
+  "act_bake": "res://data/acts/Authored/First Try Smooth Decor.bake/sky_sanctuary.res",
+  "act_bake_sha256": "da3e6e6383f701a7c3a9a86ce41cf5116eb248d26a5d16f2282fa8594b76a229",
+  "act_fingerprint": "c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba",
+  "atmosphere": {
+    "enabled": true,
+    "id": "default",
+    "name": "Default",
+    "values": {
+      "directional_fog/enabled": false,
+      "emission": 0.75,
+      "env/ambient_light_color": "(0.7255, 0.851, 0.9216, 1.0)",
+      "env/ambient_light_energy": 0.4,
+      "env/ambient_light_sky_contribution": 0.0,
+      "env/fog_enabled": false,
+      "env/glow_bloom": 0.0,
+      "env/glow_enabled": true,
+      "env/glow_hdr_threshold": 1.1,
+      "env/glow_intensity": 0.17,
+      "env/glow_levels/3": 0.2,
+      "env/glow_levels/5": 0.8,
+      "env/glow_levels/7": 0.25,
+      "env/glow_normalized": true,
+      "env/glow_strength": 1.15,
+      "env/tonemap_exposure": 1.02,
+      "env/tonemap_mode": 0,
+      "palette/bank_highlight": "(0.7176, 0.8078, 0.8431, 1.0)",
+      "palette/bank_shadow": "(0.4549, 0.5647, 0.6667, 1.0)",
+      "palette/ruin_haze": "(0.698, 0.8235, 0.8667, 1.0)",
+      "palette/sea_highlight": "(0.6588, 0.7843, 0.8745, 1.0)",
+      "palette/sea_shadow": "(0.3647, 0.5569, 0.6784, 1.0)",
+      "sky/ground_bottom_color": "(0.6, 0.7804, 0.8667, 1.0)",
+      "sky/ground_curve": 0.2,
+      "sky/ground_horizon_color": "(0.7882, 0.9059, 0.9412, 1.0)",
+      "sky/sky_curve": 0.2,
+      "sky/sky_horizon_color": "(0.7882, 0.9059, 0.9412, 1.0)",
+      "sky/sky_top_color": "(0.2235, 0.5412, 0.7686, 1.0)",
+      "sun/light_angular_distance": 0.0,
+      "sun/light_color": "(1.0, 0.9412, 0.7882, 1.0)",
+      "sun/light_energy": 0.83,
+      "sun/light_specular": 0.8,
+      "sun/shadow_bias": 0.02,
+      "sun/shadow_enabled": true,
+      "sun/shadow_normal_bias": 0.55,
+      "sun/shadow_opacity": 0.85,
+      "sun_pitch": -48.0,
+      "sun_yaw": -35.0,
+      "surface_halo_spread": 1.0
+    },
+    "weight": 1.0
+  },
+  "authority": "Prototype",
+  "bound_material_controls": 12,
+  "disk_acts": 1,
+  "disk_themes": 1,
+  "fallback_builds": 0,
+  "fps_counter_hidden": true,
+  "hud_hidden": true,
+  "library": "res://scripts/endless/template_library.gd",
+  "pipeline_fingerprint": "66c86b9236025c495a7a7b97420a34079c05bddc1289d4c12c45f1aa931759b2",
+  "relief": true,
+  "renderer": {
+    "api": "1.4.351",
+    "command_line": [
+      "--script",
+      "res://experiments/sky_texture_choices/capture_production.gd"
+    ],
+    "device": "NVIDIA GeForce RTX 4060",
+    "driver": "vulkan",
+    "engine": "4.7.2-stable (official)",
+    "renderer": "forward_plus",
+    "user_arguments": [
+      "--retro=production",
+      "--seed=18",
+      "--response-review"
+    ]
+  },
+  "retro_effects": [
+    2,
+    4,
+    3
+  ],
+  "retro_mode": "production",
+  "retro_settings_sha256": "0291745db30c7ddcdfac70db02795cefba0f072b030d52d3ace07f8c900618e0",
+  "scene": "res://scenes/prototype_run.tscn",
+  "scenery_fingerprint": "4f98871f697bec4209c9ab04777ae1bbdf37928512cb85e2cffbf894f10aca27",
+  "seed": 18,
+  "source_sha256": "91c1dd949734dea6ef241204abaa8c7b48f6d9191572844942204b7ff1cb4e91",
+  "surface_detail": "selected_relief",
+  "textures": [
+    {
+      "rgba8_sha256": "244ed8d9293c001ce78322f23eab29a29a0be254cd743c8279787ca4344b5237",
+      "runtime_texture": "res://data/endless/assets.bake/8226ed5824c9e9dea4fdc3b739d07a8aac2090c53b6f5f890c07efa63903d75f.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/1A.png",
+      "source_sha256": "445961eaf3176733b683ac4dadfd8314127bbf5374f7bde6af51a79a29112604"
+    },
+    {
+      "rgba8_sha256": "b46e47436459e181d66240c919dda9f9e68368712bc38f60d8517da2e568060f",
+      "runtime_texture": "res://data/endless/assets.bake/5cc09083c2425cb6a6bcbc646d78247bc285dc047b5ebea4563998c714f5f04e.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/1A_normal.png",
+      "source_sha256": "8650170103931209b418557a1d3ba28459d9bbd38b5cfedbaa6a462a2aedd8a9"
+    },
+    {
+      "rgba8_sha256": "10238ef2f41a07e4d98ed067cf965119cfcf7cc4bf3a571170e8ec0d59e471c1",
+      "runtime_texture": "res://data/endless/assets.bake/e82c3bc803c26a650013b7995f237f78af1c89ede985f2d5ed1b71fb64a17caf.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/1A_roughness.png",
+      "source_sha256": "3bdc0089627c3a02b438e8a3244872293685554e01acbeb42d0f0549331a6bdd"
+    },
+    {
+      "rgba8_sha256": "6fa63a9438c5c4c88074d6ed440c6ca103a55cda67a405297cc8b454d32185be",
+      "runtime_texture": "res://data/endless/assets.bake/f6c8f29900c58e1b75a5a4ca1473a1318d2fe83e91d325e1c93b684632d940d5.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/2B.png",
+      "source_sha256": "5079cf27e04615b8b409d42f3d27e3521e99aea2548c219e77c8ce57abfcc560"
+    },
+    {
+      "rgba8_sha256": "5daca182d2e269b18b623366bfdba56948680c005c4d8db286f15af69af8b1f1",
+      "runtime_texture": "res://data/endless/assets.bake/d8dfe86586814fd83e9d3a614e84e8afbe97ff4c2a76174b54415e6f67e43114.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/2B_normal.png",
+      "source_sha256": "fdaf53797d4cfa17e222f7c629685ccb4f3dfb9470a483c25970a027a1778676"
+    },
+    {
+      "rgba8_sha256": "c68eb69f29ecad2b8700c91243bb0bbf123aca1e381fb3922c9cf0444ffe8793",
+      "runtime_texture": "res://data/endless/assets.bake/de55ceb2d8339747f65534221f736720da934032af6e22313f6752d65c7bc497.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/2B_roughness.png",
+      "source_sha256": "7efd2799f49b272607e95d031e3a06913493f6eb543b7c23e9ed1c4452449a99"
+    },
+    {
+      "rgba8_sha256": "dacd723d79c1a2f57da81da167724c74b88f36f5b263df851fa8a910dfa7f1bd",
+      "runtime_texture": "res://data/endless/assets.bake/63c138caebe84e9409d1e95c746844456799e75aa9f6d8fd2fff2c060b68aff5.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/3B.png",
+      "source_sha256": "0323793f8ce835e5b4835df2e2cdcc47e0c9af039606d005962bfb883a38a04b"
+    },
+    {
+      "rgba8_sha256": "b7c68c7fea6800ec72ce0809df872787c1dcb0577608ce6b6e557c743fe12caa",
+      "runtime_texture": "res://data/endless/assets.bake/8511c4d2ffd75107ae648d33dbcd763bb94627309ce206d7da1a788e82ec0268.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/3B_normal.png",
+      "source_sha256": "d30271ebf83ae77c91041991b06b1f6573b9ec35cc32e301899eabee79093af6"
+    },
+    {
+      "rgba8_sha256": "65d8146e5f4323f0312282f54a23c95442c969481eb335fe634e19c4a7e1807b",
+      "runtime_texture": "res://data/endless/assets.bake/f74918d3895a7b81398c6007198a21d832720144eafeeec48fcd8d769da75987.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/3B_roughness.png",
+      "source_sha256": "f06110a065e0e224ad9c700b0c4ad6d963576d0c31b340a95ca247f9132f58de"
+    },
+    {
+      "rgba8_sha256": "3b05d3b5542c0a68a48b9efb9ef59bdbcf137b352da42b1eae29000bd6b9047d",
+      "runtime_texture": "res://data/endless/assets.bake/d5f8d521339511fb17822d11fe12309bc069f644d55f84b6fc9c22f24fbaf43e.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/5A.png",
+      "source_sha256": "a6dc5e97b1721fd8b4ada1c87313e608fea5368f8e4c030d3d6fcbed2b43bcf9"
+    },
+    {
+      "rgba8_sha256": "fcb75b5ec00d93ab603efec3e5d1b9952cc89c8ae945ece7dc05f80b63a62837",
+      "runtime_texture": "res://data/endless/assets.bake/4ee7bb141b56b3e623cd7a79c82d4b5e6f930cce6ff316c7803a846d465af497.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/5A_normal.png",
+      "source_sha256": "f0372537905fe5d56b17aa7aaf293c8255548716b148f9ac20e80fd28c0c174e"
+    },
+    {
+      "rgba8_sha256": "1a843740f2f3d2376ac37762d86d5808ab60b37163b160c903e566a7cab78862",
+      "runtime_texture": "res://data/endless/assets.bake/749d68c42e65ee2e778090c43184052930658c5f7fecf01dc076cff6a0cd7049.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/5A_roughness.png",
+      "source_sha256": "915f2dffcc7f074b826e0d132c63690e7003d06abfc5ed351154e9cf92e31932"
+    },
+    {
+      "rgba8_sha256": "6fa63a9438c5c4c88074d6ed440c6ca103a55cda67a405297cc8b454d32185be",
+      "runtime_texture": "res://data/endless/assets.bake/f6c8f29900c58e1b75a5a4ca1473a1318d2fe83e91d325e1c93b684632d940d5.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/6A.png",
+      "source_sha256": "5079cf27e04615b8b409d42f3d27e3521e99aea2548c219e77c8ce57abfcc560"
+    },
+    {
+      "rgba8_sha256": "5daca182d2e269b18b623366bfdba56948680c005c4d8db286f15af69af8b1f1",
+      "runtime_texture": "res://data/endless/assets.bake/d8dfe86586814fd83e9d3a614e84e8afbe97ff4c2a76174b54415e6f67e43114.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/6A_normal.png",
+      "source_sha256": "fdaf53797d4cfa17e222f7c629685ccb4f3dfb9470a483c25970a027a1778676"
+    },
+    {
+      "rgba8_sha256": "c68eb69f29ecad2b8700c91243bb0bbf123aca1e381fb3922c9cf0444ffe8793",
+      "runtime_texture": "res://data/endless/assets.bake/de55ceb2d8339747f65534221f736720da934032af6e22313f6752d65c7bc497.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/6A_roughness.png",
+      "source_sha256": "7efd2799f49b272607e95d031e3a06913493f6eb543b7c23e9ed1c4452449a99"
+    },
+    {
+      "rgba8_sha256": "a60f3c7fa000789212e2de9d0b16f97f403fd62e3414fc95e8f6ea29e99d485d",
+      "runtime_texture": "res://data/endless/assets.bake/a297ff987ea6553ba4867fbec395cffcdc9884db5742ebe2d09b2d9712c75b70.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/9B.png",
+      "source_sha256": "5d43865f9c7292fa920a05ca4098cd4f963e60a4d9176590f087b37da0a20418"
+    },
+    {
+      "rgba8_sha256": "9be69bc014ea2fad239ab5b150898e4ccf1bb114c0e99d17f1a37ab6a3ba211d",
+      "runtime_texture": "res://data/endless/assets.bake/3ad392715b7699ec75c36807f9953c6445bfa81ea98b658e169ce08c9f679fcf.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/9B_normal.png",
+      "source_sha256": "ee674921bf09cb67ad55ae76061bb1bd3bd9803b1a9ccca17e638fc7e9595d70"
+    },
+    {
+      "rgba8_sha256": "65d8146e5f4323f0312282f54a23c95442c969481eb335fe634e19c4a7e1807b",
+      "runtime_texture": "res://data/endless/assets.bake/f74918d3895a7b81398c6007198a21d832720144eafeeec48fcd8d769da75987.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/9B_roughness.png",
+      "source_sha256": "f06110a065e0e224ad9c700b0c4ad6d963576d0c31b340a95ca247f9132f58de"
+    }
+  ],
+  "theme": "sky_sanctuary",
+  "theme_bake": "res://data/endless/themes.bake/sky_sanctuary.res",
+  "theme_bake_sha256": "9085312bfb99f19c9b6eb321e5abc9f4a97e3aa0f4c9dd9576e62618d33333ca",
+  "views": {
+    "gameplay": {
+      "act_score": 0,
+      "ball": "(400.0, 500.0)",
+      "camera_fov": 52.0,
+      "camera_projection": 0,
+      "camera_settings": {
+        "dead_zone_x": 18.0,
+        "dead_zone_y": 12.0,
+        "horizontal_response": 2.0,
+        "look_ahead": 0.0,
+        "max_speed": 4000.0,
+        "screen_margin_y": 0.22,
+        "screen_target_y": 0.55,
+        "vertical_response": 28.0,
+        "zoom": 1.3
+      },
+      "camera_size": 1.0,
+      "camera_transform": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (4.0, 2.115734, 6.545638)]",
+      "document": "c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba",
+      "goal_unlocked": false,
+      "rings": 0,
+      "score": 0,
+      "serve_pending": true,
+      "velocity": "(0.0, 0.0)"
+    },
+    "wall": {
+      "act_score": 0,
+      "ball": "(400.0, 500.0)",
+      "camera_fov": 52.0,
+      "camera_projection": 0,
+      "camera_settings": {
+        "dead_zone_x": 18.0,
+        "dead_zone_y": 12.0,
+        "horizontal_response": 2.0,
+        "look_ahead": 0.0,
+        "max_speed": 4000.0,
+        "screen_margin_y": 0.22,
+        "screen_target_y": 0.55,
+        "vertical_response": 28.0,
+        "zoom": 1.3
+      },
+      "camera_size": 1.0,
+      "camera_transform": "[X: (0.263117, 0.0, 0.964764), Y: (0.380928, 0.91875, -0.103889), Z: (-0.886377, 0.39484, 0.241739), O: (3.7, 0.65, 4.8)]",
+      "document": "c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba",
+      "goal_unlocked": false,
+      "rings": 0,
+      "score": 0,
+      "serve_pending": true,
+      "velocity": "(0.0, 0.0)"
+    }
+  }
+}

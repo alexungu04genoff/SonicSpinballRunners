@@ -1,0 +1,72 @@
+{
+  "phase": 2,
+  "status": "awaiting_approval_before_integration",
+  "selections": [
+    "1A",
+    "2B",
+    "3A",
+    "5A",
+    "6A",
+    "7B",
+    "8A",
+    "9A",
+    "10C",
+    "11A",
+    "12B"
+  ],
+  "retained_current": "scripts/themes/ice_crystal.gdshader",
+  "retained_sha256": "C023B6672A57DB5AD656720C225DD5F44DEED70C684F7CB9C1245A7AB7AEDA87",
+  "production_modified": false,
+  "assets": [
+    {
+      "id": "1A",
+      "path": "experiments\\ice_texture_refined\\1A.png",
+      "sha256": "CAD02A7CEB8EC5AB790059FC4E478BE438A10559E08296C7C92067F0472E2517"
+    },
+    {
+      "id": "2B",
+      "path": "experiments\\ice_texture_refined\\2B.png",
+      "sha256": "79EADAD7475DC654379ED25A207FA28BFB02380904841F516302F64B30CAA575"
+    },
+    {
+      "id": "3A",
+      "path": "experiments\\ice_texture_refined\\3A.png",
+      "sha256": "C87BF8399A6AA40D7AB3FADADC27CD6EEB9EEBE76D3C1C9E26BFC484421FC0CA"
+    },
+    {
+      "id": "5A",
+      "path": "experiments\\ice_texture_refined\\5A.png",
+      "sha256": "FEEECE23061D34F8CB7A3E9E12C916060BD228508537FF0F97C29C3E0F80C49B"
+    },
+    {
+      "id": "6A",
+      "path": "experiments\\ice_texture_refined\\6A.png",
+      "sha256": "6686517D28BDB64965A4D62A1978715B1F07AF5EC9DE68F96C72B6C0DDED0A7D"
+    },
+    {
+      "id": "7B",
+      "path": "experiments\\ice_texture_refined\\7B.png",
+      "sha256": "2F03E8DCBEB03654B2C83B816675238BB812D253F6323BE0C79252B073749C11"
+    },
+    {
+      "id": "8A",
+      "path": "experiments\\ice_texture_refined\\8A.png",
+      "sha256": "DB5FD8E64FBE5FD1E8CB4FD13145511C549896497944295C95459F3EF22540B2"
+    },
+    {
+      "id": "9A",
+      "path": "experiments\\ice_texture_refined\\9A.png",
+      "sha256": "4C39F4857D65497C4726C7BF4C150882399823B1FDB0E76746D7D6C2CF4C9607"
+    },
+    {
+      "id": "11A",
+      "path": "experiments\\ice_texture_refined\\11A.png",
+      "sha256": "2E61146DAD619B238D69E841C6EF731D61FAA6E5CD574F4B9672CF0E7F3178F9"
+    },
+    {
+      "id": "12B",
+      "path": "experiments\\ice_texture_refined\\12B.png",
+      "sha256": "E6AB7EA2B9F4FBEAEE6733ED3352EC5E6B1F6E819429E511D6787669B2BE5181"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "phase": 5,
+  "locked_concepts": {
+    "1": "v4/1A.png",
+    "2": "v2/2B.png",
+    "3": "v2/3B.png",
+    "5": "v4/5A.png",
+    "6": "v2/6A.png",
+    "7": "v2/7B.png",
+    "8": "v2/8A.png",
+    "9": "v2/9B.png"
+  },
+  "pending": {
+    "10": "No user vote recorded",
+    "11": "No user vote recorded"
+  },
+  "omitted": [4],
+  "refinement_output": "refined/manifest.json",
+  "next_gate": "None; approved set is canonical",
+  "albedo_mapping_approved": true,
+  "response_source": "refined/response.gdshaderinc",
+  "response_manifest": "refined/response-manifest.json",
+  "integration_authorized": true,
+  "production_review_assets": "res://assets/textures/sky_sanctuary/selected/",
+  "canonical_approval": true,
+  "status": "current",
+  "canonical_receipt": "canonical/receipt.json",
+  "verified_bakes": {"prototype": 5, "endless": 7},
+  "authoring_controls": "Visual Lab, Sky Sanctuary, F8: Material detail and Normal strength"
+}

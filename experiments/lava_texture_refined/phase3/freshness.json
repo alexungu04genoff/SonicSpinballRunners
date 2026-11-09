@@ -1,0 +1,31 @@
+{
+  "acts": [
+    {
+      "current": true,
+      "path": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "pipeline": "af2974bdf37e1993eabc8fb6b8cd5dcc66da76846ffa621c8c35d91d72325afb"
+    },
+    {
+      "current": true,
+      "path": "res://data/acts/Authored/RampMania.tres",
+      "pipeline": "af2974bdf37e1993eabc8fb6b8cd5dcc66da76846ffa621c8c35d91d72325afb"
+    },
+    {
+      "current": true,
+      "path": "res://data/acts/Authored/Reverse C Spring.tres",
+      "pipeline": "af2974bdf37e1993eabc8fb6b8cd5dcc66da76846ffa621c8c35d91d72325afb"
+    },
+    {
+      "current": true,
+      "path": "res://data/acts/Authored/Secret Entry.tres",
+      "pipeline": "af2974bdf37e1993eabc8fb6b8cd5dcc66da76846ffa621c8c35d91d72325afb"
+    },
+    {
+      "current": true,
+      "path": "res://data/acts/Authored/SpringUp.tres",
+      "pipeline": "af2974bdf37e1993eabc8fb6b8cd5dcc66da76846ffa621c8c35d91d72325afb"
+    }
+  ],
+  "current_pipeline": "af2974bdf37e1993eabc8fb6b8cd5dcc66da76846ffa621c8c35d91d72325afb",
+  "theme_pipeline": "af2974bdf37e1993eabc8fb6b8cd5dcc66da76846ffa621c8c35d91d72325afb"
+}

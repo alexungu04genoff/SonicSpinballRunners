@@ -4,9 +4,9 @@ When asking what the current game looks like, use **Prototype**. Visual Lab and 
 
 ## Canonical eight-theme comparison
 
-The current snapshot includes the [geometric density pass](GEOMETRIC_DENSITY.md). Its before/after and 64/24/16 loop comparisons use this same production fixture.
+The latest [theme identity pass](THEME_IDENTITY.md) uses this fixture and provides [full-resolution matched comparisons](theme-identity/README.md). The snapshot below is the earlier [geometric density baseline](GEOMETRIC_DENSITY.md); its before/after and 64/24/16 loop comparisons also use this fixture.
 
-![Matched Prototype production appearances](production-appearance/eight-themes.png)
+![Matched Prototype appearances at the geometry-density milestone](production-appearance/eight-themes.png)
 
 [Capture receipts](production-appearance/manifest.json) — 2026-11-04, current working-tree art, Godot 4.7.2, Forward+/Vulkan on RTX 4060. This snapshot includes uncommitted selected artwork; rerun the command below to inspect newer source.
 

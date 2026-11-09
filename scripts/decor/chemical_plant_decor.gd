@@ -92,6 +92,9 @@ func _piece(root: Node3D, kind: String, color: String, at: Vector3, size: Vector
  piece.position = at
  piece.scale = size
  piece.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+ if color in ["steel","dark","blue","yellow","black"] and size.length() > 0.30:
+  piece.set_meta("chemical_shadow_candidate",true)
+  piece.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
  root.add_child(piece)
  return piece
 

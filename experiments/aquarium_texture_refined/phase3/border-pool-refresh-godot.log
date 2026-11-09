@@ -1,0 +1,52 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060
+ERROR: Can't create shader cache folder, no shader caching will happen: user://
+   at: RendererCompositorRD (servers/rendering/renderer_rd/renderer_compositor_rd.cpp:337)
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+WARNING: Cannot load graphics settings: Can't open file
+   at: push_warning (core/variant/variant_utility.cpp:1033)
+   GDScript backtrace (most recent call first):
+       [0] _load_settings (res://scripts/rendering_options.gd:127)
+       [1] register_view (res://scripts/rendering_options.gd:90)
+       [2] bake (res://scripts/endless/act_baker.gd:68)
+       [3] _ready (res://scripts/endless/act_baker.gd:53)
+ENDLESS_PREPARE_SLICE | shared objects ms=54.479
+ENDLESS_PREPARE_SLICE | shared objects ms=62.015
+ENDLESS_PREPARE_SLICE | shared objects ms=32.899
+ENDLESS_PREPARE_SLICE | shared objects ms=30.799
+ENDLESS_PREPARE_SLICE | shared objects ms=29.557
+ENDLESS_PREPARE_SLICE | shared objects ms=29.976
+ENDLESS_PREPARE_SLICE | shared objects ms=44.846
+ENDLESS_PREPARE_SLICE | shared objects ms=34.198
+ENDLESS_PREPARE_SLICE | shared objects ms=33.628
+ENDLESS_PREPARE_SLICE | environment ms=70.798
+ENDLESS_BATCHED | aquarium_park:0 | Act={ "records_before": 1363, "records_after": 1111, "source_meshes": 1193, "instances": 293, "batches": 41, "removed_nodes": 293 } | theme={ "records_before": 58, "records_after": 50, "source_meshes": 34, "instances": 10, "batches": 2, "removed_nodes": 10 }
+ACT_BAKED | res://data/acts/Authored/Reverse C Spring.bake/aquarium_park.res | jobs=7
+ENDLESS_PREPARED | aquarium_park:0 | source=offline | ms=15715.556 | GPU warm frames=0 | cached=1 | geometry loaded=0 | geometry generated=7
+ENDLESS_PREPARE_SLICE | shared objects ms=29.455
+ENDLESS_PREPARE_SLICE | shared objects ms=29.205
+ENDLESS_PREPARE_SLICE | shared objects ms=24.312
+ENDLESS_PREPARE_SLICE | shared objects ms=22.295
+ENDLESS_PREPARE_SLICE | shared objects ms=25.062
+ENDLESS_PREPARE_SLICE | shared objects ms=53.463
+ENDLESS_PREPARE_SLICE | shared objects ms=52.495
+ENDLESS_PREPARE_SLICE | shared objects ms=44.879
+ENDLESS_PREPARE_SLICE | environment ms=47.03
+ENDLESS_BATCHED | aquarium_park:1 | Act={ "records_before": 1660, "records_after": 1375, "source_meshes": 1444, "instances": 327, "batches": 42, "removed_nodes": 327 } | theme={ "records_before": 58, "records_after": 50, "source_meshes": 34, "instances": 10, "batches": 2, "removed_nodes": 10 }
+ACT_BAKED | res://data/acts/Authored/Secret Entry.bake/aquarium_park.res | jobs=11
+ENDLESS_PREPARED | aquarium_park:1 | source=offline | ms=15111.153 | GPU warm frames=0 | cached=2 | geometry loaded=0 | geometry generated=11
+ENDLESS_PREPARE_SLICE | shared objects ms=24.728
+ENDLESS_PREPARE_SLICE | shared objects ms=24.629
+ENDLESS_PREPARE_SLICE | shared objects ms=23.436
+ENDLESS_PREPARE_SLICE | shared objects ms=33.335
+ENDLESS_PREPARE_SLICE | shared objects ms=25.166
+ENDLESS_PREPARE_SLICE | shared objects ms=22.982
+ENDLESS_PREPARE_SLICE | shared objects ms=23.937
+ENDLESS_PREPARE_SLICE | shared objects ms=51.006
+ENDLESS_PREPARE_SLICE | environment ms=45.2
+ENDLESS_BATCHED | aquarium_park:2 | Act={ "records_before": 1232, "records_after": 1088, "source_meshes": 1069, "instances": 175, "batches": 31, "removed_nodes": 175 } | theme={ "records_before": 58, "records_after": 50, "source_meshes": 34, "instances": 10, "batches": 2, "removed_nodes": 10 }
+ACT_BAKED | res://data/acts/Authored/SpringUp.bake/aquarium_park.res | jobs=9
+ENDLESS_PREPARED | aquarium_park:2 | source=offline | ms=9979.849 | GPU warm frames=0 | cached=3 | geometry loaded=0 | geometry generated=9
+ACT_BAKE_COMPLETE | Acts=3 variants=3

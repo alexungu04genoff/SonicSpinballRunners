@@ -136,6 +136,7 @@ func _build(theme_id: String, id: int) -> void:
   baked.scenery_fingerprint = Bake.ScenerySettings.signature_for(scenery) if theme_id in Bake.ScenerySettings.THEMES else "fixed"
   baked.pipeline_fingerprint = fingerprint
   baked.theme_id = theme_id
+  baked.surface_detail = "selected_relief" if theme_id in ["sky_sanctuary","aquarium_park","ice_cap","lava_reef"] else "flat"
   # Full recipes already contain their meshes. The old raw-geometry dictionary
   # was never used by disk-only play and duplicated data in every sidecar.
   baked.geometry_job_count = p.computed_jobs
@@ -170,6 +171,7 @@ func _build(theme_id: String, id: int) -> void:
   var theme_bake := Bake.new()
   theme_bake.kind = "theme"
   theme_bake.theme_id = theme_id
+  theme_bake.surface_detail = "selected_relief" if theme_id in ["sky_sanctuary","aquarium_park","ice_cap","lava_reef"] else "flat"
   theme_bake.pipeline_fingerprint = fingerprint
   theme_bake.visual_recipe = backgrounds[theme_id]
   theme_bake.environment = environments[theme_id]

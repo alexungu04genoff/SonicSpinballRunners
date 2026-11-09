@@ -1,0 +1,114 @@
+{
+  "status": "provisional_review_with_denser_floor_and_snow_guards",
+  "selections": [
+    "1A",
+    "2B",
+    "3A",
+    "5A",
+    "6A",
+    "7B",
+    "8A",
+    "9A",
+    "10C",
+    "11A",
+    "12B"
+  ],
+  "source": "experiments/ice_texture_refined/response.gdshader",
+  "response": "R roughness, G specular, B structural ice mask",
+  "reflection_source": "existing static environment sky",
+  "per_frame_cpu_additions": "none",
+  "generated_normals": false,
+  "generated_height": false,
+  "commits": false,
+  "assets": [
+    {
+      "file": "11A.png",
+      "sha256": "2E61146DAD619B238D69E841C6EF731D61FAA6E5CD574F4B9672CF0E7F3178F9"
+    },
+    {
+      "file": "12B-response.png",
+      "sha256": "A62C17D65D7698A117DD0455F420C5950E098240156DBBB925B4BCF91388EA40"
+    },
+    {
+      "file": "12B.png",
+      "sha256": "E6AB7EA2B9F4FBEAEE6733ED3352EC5E6B1F6E819429E511D6787669B2BE5181"
+    },
+    {
+      "file": "1A-response.png",
+      "sha256": "76BBC15A743CBB58F63214F22AB7F0A13EAF6DEE844A56418E2716F761D3F947"
+    },
+    {
+      "file": "1A.png",
+      "sha256": "EFEA2F94E41CAE556CD392051CACBBA613CA0C8489B4C5BB662E3DAF34E654F4"
+    },
+    {
+      "file": "2B-response.png",
+      "sha256": "916EEE0444848294BED1A73B11093FEA93502A076D31081DB2B664F6B1E5A5A7"
+    },
+    {
+      "file": "2B.png",
+      "sha256": "2CEE60BBEF68E4BE73F591D3A2B1F3623257BB6641956D32DBE344353606F7C6"
+    },
+    {
+      "file": "3A-response.png",
+      "sha256": "58C8962AE20C7C415B3A51357F6AFB956EBE692003CFECFBDCB10C11D06C7EA3"
+    },
+    {
+      "file": "3A.png",
+      "sha256": "DE8A62B2566CE32AF9DBED5E93B95DAEC3224667CA9A86A7D0FE0327814D2AF1"
+    },
+    {
+      "file": "5A-response.png",
+      "sha256": "53906DCBB71E3AF755261B749FE9A90B15BC15F18A5F553F8B71D10EB1787D69"
+    },
+    {
+      "file": "5A.png",
+      "sha256": "A72CBFAC43FABC87ACDC6C8281982A47B10969C6FD921BACE70AC102F9AA11D2"
+    },
+    {
+      "file": "6A-response.png",
+      "sha256": "5B2D19B3E26E8FDFF3E179331F73D8194025DCF2D6AD27CA30A34F261393FFF5"
+    },
+    {
+      "file": "6A.png",
+      "sha256": "E6E22D61299EFD4530EFD3BAD38F5460B1762BF48278A26F909CE7E8FFC38E64"
+    },
+    {
+      "file": "7B-response.png",
+      "sha256": "5A7AA64843F5691FBDBDC9DF5130E6D324E15CD59DC722E079717F0A005A7D5C"
+    },
+    {
+      "file": "7B.png",
+      "sha256": "3CE397FA1376C9A5C73EB0A610607140E6132AB60EA71109555062979D11CB80"
+    },
+    {
+      "file": "8A-response.png",
+      "sha256": "294A689BE59BED2E3776AD486F983CE08A438C35E077E5F2A695F8FC39A4473D"
+    },
+    {
+      "file": "8A.png",
+      "sha256": "412BC7683F69F2E8B7F1C33A8258036261012E66EF4639863626124EF7488AE0"
+    },
+    {
+      "file": "9A-response.png",
+      "sha256": "C967F53FCE385FFE7BC5941706E090E821406C2CB169B7291B656255C80DBB10"
+    },
+    {
+      "file": "9A.png",
+      "sha256": "AD3872FC3ED96587572F22026C18D6E9DB510BAF92A638B6FC55BD0EAFE1634A"
+    }
+  ],
+  "retained_crystal_sha256": "C023B6672A57DB5AD656720C225DD5F44DEED70C684F7CB9C1245A7AB7AEDA87",
+  "active_textured_roles": [
+    "1A",
+    "2B",
+    "3A",
+    "5A",
+    "6A",
+    "7B",
+    "9A",
+    "11A",
+    "12B"
+  ],
+  "role_8_override": "Existing matte snow on caps, inner faces and outer fascia; 8A is unbound."
+}

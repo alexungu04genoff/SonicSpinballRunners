@@ -1,0 +1,107 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060
+
+ENDLESS_PREPARE_SLICE | shared objects ms=40.907
+ENDLESS_PREPARE_SLICE | shared objects ms=34.093
+ENDLESS_PREPARE_SLICE | shared objects ms=27.45
+ENDLESS_PREPARE_SLICE | shared objects ms=24.981
+ENDLESS_PREPARE_SLICE | shared objects ms=27.156
+ENDLESS_PREPARE_SLICE | shared objects ms=27.398
+ENDLESS_PREPARE_SLICE | shared objects ms=26.216
+ENDLESS_PREPARE_SLICE | shared objects ms=20.689
+ENDLESS_PREPARE_SLICE | shared objects ms=20.416
+ENDLESS_PREPARE_SLICE | shared objects ms=21.612
+ENDLESS_PREPARE_SLICE | environment ms=47.663
+ENDLESS_PREPARE_SLICE | background ms=68.004
+ENDLESS_BATCHED | ice_cap:0 | Act={ "records_before": 155, "records_after": 155, "source_meshes": 108, "instances": 0, "batches": 0, "removed_nodes": 0 } | theme={ "records_before": 7, "records_after": 7, "source_meshes": 1, "instances": 0, "batches": 0, "removed_nodes": 0 }
+ACT_BAKED | res://data/endless/second_simple.bake/ice_cap.res | jobs=9
+ENDLESS_PREPARED | ice_cap:0 | source=offline | ms=5317.661 | GPU warm frames=0 | cached=1 | geometry loaded=0 | geometry generated=9
+ENDLESS_PREPARE_SLICE | shared objects ms=27.524
+ENDLESS_PREPARE_SLICE | shared objects ms=23.31
+ENDLESS_PREPARE_SLICE | shared objects ms=27.728
+ENDLESS_PREPARE_SLICE | shared objects ms=26.038
+ENDLESS_PREPARE_SLICE | shared objects ms=25.936
+ENDLESS_PREPARE_SLICE | shared objects ms=24.584
+ENDLESS_PREPARE_SLICE | shared objects ms=27.999
+ENDLESS_PREPARE_SLICE | shared objects ms=25.442
+ENDLESS_PREPARE_SLICE | shared objects ms=21.283
+ENDLESS_PREPARE_SLICE | shared objects ms=22.333
+ENDLESS_PREPARE_SLICE | environment ms=44.933
+ENDLESS_PREPARE_SLICE | local scenery ms=20.971
+ENDLESS_PREPARE_SLICE | local scenery ms=21.67
+ENDLESS_BATCHED | ice_cap:1 | Act={ "records_before": 799, "records_after": 619, "source_meshes": 567, "instances": 209, "batches": 29, "removed_nodes": 209 } | theme={ "records_before": 7, "records_after": 7, "source_meshes": 1, "instances": 0, "batches": 0, "removed_nodes": 0 }
+ACT_BAKED | res://data/endless/third_complex.bake/ice_cap.res | jobs=13
+ENDLESS_PREPARED | ice_cap:1 | source=offline | ms=10396.636 | GPU warm frames=0 | cached=2 | geometry loaded=0 | geometry generated=13
+ENDLESS_PREPARE_SLICE | shared objects ms=39.115
+ENDLESS_PREPARE_SLICE | shared objects ms=39.666
+ENDLESS_PREPARE_SLICE | shared objects ms=34.532
+ENDLESS_PREPARE_SLICE | shared objects ms=38.628
+ENDLESS_PREPARE_SLICE | shared objects ms=42.097
+ENDLESS_PREPARE_SLICE | shared objects ms=39.122
+ENDLESS_PREPARE_SLICE | shared objects ms=34.579
+ENDLESS_PREPARE_SLICE | shared objects ms=48.332
+ENDLESS_PREPARE_SLICE | shared objects ms=36.963
+ENDLESS_PREPARE_SLICE | shared objects ms=27.755
+ENDLESS_PREPARE_SLICE | shared objects ms=30.837
+ENDLESS_PREPARE_SLICE | shared objects ms=31.375
+ENDLESS_PREPARE_SLICE | environment ms=46.635
+ENDLESS_BATCHED | ice_cap:2 | Act={ "records_before": 550, "records_after": 463, "source_meshes": 391, "instances": 98, "batches": 17, "removed_nodes": 104 } | theme={ "records_before": 7, "records_after": 7, "source_meshes": 1, "instances": 0, "batches": 0, "removed_nodes": 0 }
+ACT_BAKED | res://data/endless/first_try_smooth_decor.bake/ice_cap.res | jobs=11
+ENDLESS_PREPARED | ice_cap:2 | source=offline | ms=7468.547 | GPU warm frames=0 | cached=3 | geometry loaded=0 | geometry generated=11
+ENDLESS_PREPARE_SLICE | shared objects ms=31.089
+ENDLESS_PREPARE_SLICE | shared objects ms=27.245
+ENDLESS_PREPARE_SLICE | shared objects ms=26.325
+ENDLESS_PREPARE_SLICE | shared objects ms=26.176
+ENDLESS_PREPARE_SLICE | shared objects ms=25.701
+ENDLESS_PREPARE_SLICE | shared objects ms=53.342
+ENDLESS_PREPARE_SLICE | shared objects ms=22.858
+ENDLESS_PREPARE_SLICE | shared objects ms=53.716
+ENDLESS_PREPARE_SLICE | shared objects ms=21.163
+ENDLESS_PREPARE_SLICE | environment ms=42.002
+ENDLESS_BATCHED | ice_cap:3 | Act={ "records_before": 478, "records_after": 478, "source_meshes": 381, "instances": 0, "batches": 0, "removed_nodes": 0 } | theme={ "records_before": 7, "records_after": 7, "source_meshes": 1, "instances": 0, "batches": 0, "removed_nodes": 0 }
+ACT_BAKED | res://data/endless/ramp_mania.bake/ice_cap.res | jobs=19
+ENDLESS_PREPARED | ice_cap:3 | source=offline | ms=6805.356 | GPU warm frames=0 | cached=4 | geometry loaded=0 | geometry generated=19
+ENDLESS_PREPARE_SLICE | shared objects ms=24.58
+ENDLESS_PREPARE_SLICE | shared objects ms=23.74
+ENDLESS_PREPARE_SLICE | shared objects ms=26.685
+ENDLESS_PREPARE_SLICE | shared objects ms=28.466
+ENDLESS_PREPARE_SLICE | shared objects ms=24.437
+ENDLESS_PREPARE_SLICE | shared objects ms=41.511
+ENDLESS_PREPARE_SLICE | shared objects ms=40.669
+ENDLESS_PREPARE_SLICE | shared objects ms=25.218
+ENDLESS_PREPARE_SLICE | environment ms=41.414
+ENDLESS_BATCHED | ice_cap:4 | Act={ "records_before": 820, "records_after": 575, "source_meshes": 609, "instances": 268, "batches": 38, "removed_nodes": 283 } | theme={ "records_before": 7, "records_after": 7, "source_meshes": 1, "instances": 0, "batches": 0, "removed_nodes": 0 }
+ACT_BAKED | res://data/endless/reverse_c_spring.bake/ice_cap.res | jobs=7
+ENDLESS_PREPARED | ice_cap:4 | source=offline | ms=7899.293 | GPU warm frames=0 | cached=5 | geometry loaded=0 | geometry generated=7
+ENDLESS_PREPARE_SLICE | shared objects ms=31.551
+ENDLESS_PREPARE_SLICE | shared objects ms=26.09
+ENDLESS_PREPARE_SLICE | shared objects ms=36.757
+ENDLESS_PREPARE_SLICE | shared objects ms=28.259
+ENDLESS_PREPARE_SLICE | shared objects ms=30.087
+ENDLESS_PREPARE_SLICE | shared objects ms=53.76
+ENDLESS_PREPARE_SLICE | shared objects ms=30.002
+ENDLESS_PREPARE_SLICE | shared objects ms=42.208
+ENDLESS_PREPARE_SLICE | shared objects ms=42.736
+ENDLESS_PREPARE_SLICE | shared objects ms=66.323
+ENDLESS_PREPARE_SLICE | shared objects ms=37.528
+ENDLESS_PREPARE_SLICE | shared objects ms=54.646
+ENDLESS_PREPARE_SLICE | environment ms=42.077
+ENDLESS_BATCHED | ice_cap:5 | Act={ "records_before": 1007, "records_after": 785, "source_meshes": 736, "instances": 246, "batches": 35, "removed_nodes": 257 } | theme={ "records_before": 7, "records_after": 7, "source_meshes": 1, "instances": 0, "batches": 0, "removed_nodes": 0 }
+ACT_BAKED | res://data/endless/secret_entry.bake/ice_cap.res | jobs=11
+ENDLESS_PREPARED | ice_cap:5 | source=offline | ms=12150.541 | GPU warm frames=0 | cached=6 | geometry loaded=0 | geometry generated=11
+ENDLESS_PREPARE_SLICE | shared objects ms=29.333
+ENDLESS_PREPARE_SLICE | shared objects ms=28.178
+ENDLESS_PREPARE_SLICE | shared objects ms=29.587
+ENDLESS_PREPARE_SLICE | shared objects ms=25.486
+ENDLESS_PREPARE_SLICE | shared objects ms=26.344
+ENDLESS_PREPARE_SLICE | shared objects ms=34.164
+ENDLESS_PREPARE_SLICE | shared objects ms=25.844
+ENDLESS_PREPARE_SLICE | shared objects ms=27.212
+ENDLESS_PREPARE_SLICE | shared objects ms=27.494
+ENDLESS_PREPARE_SLICE | shared objects ms=59.584
+ENDLESS_PREPARE_SLICE | shared objects ms=25.497
+ENDLESS_PREPARE_SLICE | environment ms=41.666
+ENDLESS_BATCHED | ice_cap:6 | Act={ "records_before": 739, "records_after": 577, "source_meshes": 544, "instances": 190, "batches": 28, "removed_nodes": 190 } | theme={ "records_before": 7, "records_after": 7, "source_meshes": 1, "instances": 0, "batches": 0, "removed_nodes": 0 }
+ACT_BAKED | res://data/endless/spring_up.bake/ice_cap.res | jobs=9
+ENDLESS_PREPARED | ice_cap:6 | source=offline | ms=8049.169 | GPU warm frames=0 | cached=7 | geometry loaded=0 | geometry generated=9
+ACT_BAKE_COMPLETE | Acts=7 variants=7

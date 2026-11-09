@@ -1,0 +1,86 @@
+{
+  "height_source": "Procedural structural definitions; no albedo sampling",
+  "items": [
+    {
+      "albedo_sha256": "3db710fa767e6851986706dc788a345544e8dbaa8ab591dd4d6bbafade8e27f8",
+      "cavity": "res://assets/textures/lava_reef/selected/1C_cavity.png",
+      "height_reference": "res://experiments/lava_texture_refined/response/1C_height.png",
+      "height_reference_range": 0.12,
+      "id": "1C",
+      "normal": "res://assets/textures/lava_reef/selected/1C_normal.png",
+      "repeat_world": "(3.809524, 3.809524)",
+      "roughness": "res://assets/textures/lava_reef/selected/1C_roughness.png"
+    },
+    {
+      "albedo_sha256": "7ef8e84634912041fa05f2e5777ab773d22cacb9d4bef9a0b7b007bb64930d68",
+      "cavity": "",
+      "height_reference": "res://experiments/lava_texture_refined/response/2A_height.png",
+      "height_reference_range": 0.065,
+      "id": "2A",
+      "normal": "res://assets/textures/lava_reef/selected/2A_normal.png",
+      "repeat_world": "(1.0, 0.07)",
+      "roughness": "res://assets/textures/lava_reef/selected/2A_roughness.png"
+    },
+    {
+      "albedo_sha256": "686d9675df5565d4da752ce16b0b7fc60c46b97bf58667a81a896707e6f0b930",
+      "cavity": "",
+      "height_reference": "res://experiments/lava_texture_refined/response/3B_height.png",
+      "height_reference_range": 0.065,
+      "id": "3B",
+      "normal": "res://assets/textures/lava_reef/selected/3B_normal.png",
+      "repeat_world": "(3.2, 1.6)",
+      "roughness": "res://assets/textures/lava_reef/selected/3B_roughness.png"
+    },
+    {
+      "albedo_sha256": "78571807c33540e6278c45532636eb30b1453c0123c31170b0e45e8e235cbf67",
+      "cavity": "res://assets/textures/lava_reef/selected/5B_cavity.png",
+      "height_reference": "res://experiments/lava_texture_refined/response/5B_height.png",
+      "height_reference_range": 0.065,
+      "id": "5B",
+      "normal": "res://assets/textures/lava_reef/selected/5B_normal.png",
+      "repeat_world": "(1.6, 1.6)",
+      "roughness": "res://assets/textures/lava_reef/selected/5B_roughness.png"
+    },
+    {
+      "albedo_sha256": "45d284bdd27c7bb5e0fd716e8b7118fe19d0ef5dbfe19432aec5e9eadd19050e",
+      "cavity": "",
+      "height_reference": "res://experiments/lava_texture_refined/response/6B_height.png",
+      "height_reference_range": 0.065,
+      "id": "6B",
+      "normal": "res://assets/textures/lava_reef/selected/6B_normal.png",
+      "repeat_world": "(1.0, 0.05)",
+      "roughness": "res://assets/textures/lava_reef/selected/6B_roughness.png"
+    },
+    {
+      "albedo_sha256": "86481a7964f7d0bf25bce5d3a41f9291b69059a47364b0ea72e1bda3b6c4ab1f",
+      "cavity": "",
+      "height_reference": "res://experiments/lava_texture_refined/response/7A_height.png",
+      "height_reference_range": 0.065,
+      "id": "7A",
+      "normal": "res://assets/textures/lava_reef/selected/7A_normal.png",
+      "repeat_world": "(1.6, 1.6)",
+      "roughness": "res://assets/textures/lava_reef/selected/7A_roughness.png"
+    },
+    {
+      "albedo_sha256": "c61fdfe7e81b524ff3ee360e3a7e0409e3391a47faab89c8c04d7bb9e4dd885b",
+      "cavity": "",
+      "height_reference": "res://experiments/lava_texture_refined/response/8B_height.png",
+      "height_reference_range": 0.065,
+      "id": "8B",
+      "normal": "res://assets/textures/lava_reef/selected/8B_normal.png",
+      "repeat_world": "(1.0, 0.12)",
+      "roughness": "res://assets/textures/lava_reef/selected/8B_roughness.png"
+    },
+    {
+      "albedo_sha256": "e0edf83effd3cbc94de6ef3efa7c73fdf193661f58b67e244154376fc908389d",
+      "cavity": "",
+      "height_reference": "res://experiments/lava_texture_refined/response/9B_height.png",
+      "height_reference_range": 0.065,
+      "id": "9B",
+      "normal": "res://assets/textures/lava_reef/selected/9B_normal.png",
+      "repeat_world": "(3.2, 1.6)",
+      "roughness": "res://assets/textures/lava_reef/selected/9B_roughness.png"
+    }
+  ],
+  "normal_convention": "OpenGL"
+}

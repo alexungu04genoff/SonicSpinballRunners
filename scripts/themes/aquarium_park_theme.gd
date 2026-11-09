@@ -1,13 +1,29 @@
 extends "res://scripts/themes/theme_definition.gd"
 ## A lantern-lit park above a lagoon. No gameplay water or theme-specific physics.
 const Decor = preload("res://scripts/decor/aquarium_park_decor.gd")
+const Selected = preload("res://scripts/themes/aquarium_selected_materials.gd")
 var _library: RefCounted
+var _ramp_deck_material: Material
+var _ramp_guard_material: Material
 
 func _init() -> void:
  theme_id = "aquarium_park"
  display_name = "Aquarium Park"
  edge_trim_color = Color("a3bdb8")
- _apply_texture_set()
+ # Canonical selected set; preserve the approved physical border widths.
+ floor_border_width=4.0
+ top_border_width=2.0
+ # Equal floor axes preserve square blue inset modules.
+ floor_material=Selected.surface("1-mixed-floor",0,Vector2(3.6,3.6))
+ top_material=Selected.surface("5A-red",0,Vector2(1.8,1.8))
+ side_material=Selected.surface("3B",5,Vector2(Selected.WALL_REPEAT,.325))
+ cliff_material=Selected.surface("9A",1,Vector2(2.4,1.925))
+ # Border U repeats every .48 world units; preserve the 4:1 artwork aspect.
+ var border_repeat := floor_border_width*.01*4.0/.48
+ floor_border_material=Selected.surface("2A-red-gold-studs",2,Vector2(border_repeat,1.0))
+ top_border_material=Selected.surface("6A-red",2,Vector2(3.75,1.0))
+ _ramp_deck_material=Selected.surface("7B",3,Vector2(1.0,1.2))
+ _ramp_guard_material=Selected.surface("8A",6,Vector2(.72,1.0))
  _library = Decor.new(null)
 
 func _shader(source: Shader) -> ShaderMaterial:
@@ -186,7 +202,10 @@ func _batch(root: Node3D, scheduler: Node = null) -> void:
   root.add_child(instance)
 
 func ramp_materials() -> Dictionary:
- return {"deck":_texture_ramp(),"edge":_library.materials.gold,"support":_library.materials.wood,"accent":_library.materials.cyan}
+ return {"deck":_ramp_deck_material,"edge":_ramp_guard_material,"fascia":_ramp_guard_material,"border":_ramp_guard_material,"support":_library.materials.wood,"accent":_library.materials.cyan}
+
+func wrap_wall_mesh(mesh: ArrayMesh, outline: PackedVector2Array) -> ArrayMesh:
+ return Selected.wrap_wall_mesh(mesh,outline)
 
 func build_study(_p: Node3D, parent: Node3D, origin: Vector3) -> void:
  parent.position = origin

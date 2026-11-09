@@ -1,0 +1,88 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060
+ERROR: Can't create shader cache folder, no shader caching will happen: user://
+   at: RendererCompositorRD (servers/rendering/renderer_rd/renderer_compositor_rd.cpp:337)
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+WARNING: Cannot load graphics settings: Can't open file
+   at: push_warning (core/variant/variant_utility.cpp:1033)
+   GDScript backtrace (most recent call first):
+       [0] _load_settings (res://scripts/rendering_options.gd:127)
+       [1] register_view (res://scripts/rendering_options.gd:90)
+       [2] bake (res://scripts/endless/act_baker.gd:68)
+       [3] _ready (res://scripts/endless/act_baker.gd:53)
+ENDLESS_PREPARE_SLICE | shared objects ms=35.352
+ENDLESS_PREPARE_SLICE | shared objects ms=26.052
+ENDLESS_PREPARE_SLICE | shared objects ms=27.268
+ENDLESS_PREPARE_SLICE | shared objects ms=26.628
+ENDLESS_PREPARE_SLICE | shared objects ms=37.7
+ENDLESS_PREPARE_SLICE | shared objects ms=46.146
+ENDLESS_PREPARE_SLICE | shared objects ms=47.141
+ENDLESS_PREPARE_SLICE | shared objects ms=46.981
+ENDLESS_PREPARE_SLICE | shared objects ms=34.858
+ENDLESS_PREPARE_SLICE | shared objects ms=31.289
+ENDLESS_PREPARE_SLICE | shared objects ms=28.888
+ENDLESS_PREPARE_SLICE | shared objects ms=30.416
+ENDLESS_PREPARE_SLICE | environment ms=70.635
+ENDLESS_BATCHED | aquarium_park:0 | Act={ "records_before": 1020, "records_after": 816, "source_meshes": 904, "instances": 233, "batches": 29, "removed_nodes": 233 } | theme={ "records_before": 58, "records_after": 50, "source_meshes": 34, "instances": 10, "batches": 2, "removed_nodes": 10 }
+ACT_BAKED | res://data/acts/Authored/First Try Smooth Decor.bake/aquarium_park.res | jobs=11
+ENDLESS_PREPARED | aquarium_park:0 | source=offline | ms=14006.965 | GPU warm frames=0 | cached=1 | geometry loaded=0 | geometry generated=11
+ENDLESS_PREPARE_SLICE | shared objects ms=44.343
+ENDLESS_PREPARE_SLICE | shared objects ms=23.74
+ENDLESS_PREPARE_SLICE | shared objects ms=24.624
+ENDLESS_PREPARE_SLICE | shared objects ms=26.408
+ENDLESS_PREPARE_SLICE | shared objects ms=28.359
+ENDLESS_PREPARE_SLICE | shared objects ms=56.438
+ENDLESS_PREPARE_SLICE | shared objects ms=20.89
+ENDLESS_PREPARE_SLICE | shared objects ms=58.353
+ENDLESS_PREPARE_SLICE | shared objects ms=20.13
+ENDLESS_PREPARE_SLICE | shared objects ms=21.195
+ENDLESS_PREPARE_SLICE | shared objects ms=22.529
+ENDLESS_PREPARE_SLICE | environment ms=42.686
+ENDLESS_BATCHED | aquarium_park:1 | Act={ "records_before": 491, "records_after": 491, "source_meshes": 407, "instances": 0, "batches": 0, "removed_nodes": 0 } | theme={ "records_before": 58, "records_after": 50, "source_meshes": 34, "instances": 10, "batches": 2, "removed_nodes": 10 }
+ACT_BAKED | res://data/acts/Authored/RampMania.bake/aquarium_park.res | jobs=19
+ENDLESS_PREPARED | aquarium_park:1 | source=offline | ms=7714.048 | GPU warm frames=0 | cached=2 | geometry loaded=0 | geometry generated=19
+ENDLESS_PREPARE_SLICE | shared objects ms=27.969
+ENDLESS_PREPARE_SLICE | shared objects ms=25.597
+ENDLESS_PREPARE_SLICE | shared objects ms=25.425
+ENDLESS_PREPARE_SLICE | shared objects ms=31.928
+ENDLESS_PREPARE_SLICE | shared objects ms=38.103
+ENDLESS_PREPARE_SLICE | shared objects ms=29.968
+ENDLESS_PREPARE_SLICE | shared objects ms=41.488
+ENDLESS_PREPARE_SLICE | shared objects ms=40.116
+ENDLESS_PREPARE_SLICE | shared objects ms=29.808
+ENDLESS_PREPARE_SLICE | environment ms=52.976
+ENDLESS_BATCHED | aquarium_park:2 | Act={ "records_before": 1363, "records_after": 1111, "source_meshes": 1193, "instances": 293, "batches": 41, "removed_nodes": 293 } | theme={ "records_before": 58, "records_after": 50, "source_meshes": 34, "instances": 10, "batches": 2, "removed_nodes": 10 }
+ACT_BAKED | res://data/acts/Authored/Reverse C Spring.bake/aquarium_park.res | jobs=7
+ENDLESS_PREPARED | aquarium_park:2 | source=offline | ms=12578.067 | GPU warm frames=0 | cached=3 | geometry loaded=0 | geometry generated=7
+ENDLESS_PREPARE_SLICE | shared objects ms=27.641
+ENDLESS_PREPARE_SLICE | shared objects ms=28.868
+ENDLESS_PREPARE_SLICE | shared objects ms=41.063
+ENDLESS_PREPARE_SLICE | shared objects ms=30.403
+ENDLESS_PREPARE_SLICE | shared objects ms=28.07
+ENDLESS_PREPARE_SLICE | shared objects ms=71.002
+ENDLESS_PREPARE_SLICE | shared objects ms=33.085
+ENDLESS_PREPARE_SLICE | shared objects ms=25.453
+ENDLESS_PREPARE_SLICE | shared objects ms=23.934
+ENDLESS_PREPARE_SLICE | shared objects ms=54.212
+ENDLESS_PREPARE_SLICE | shared objects ms=25.227
+ENDLESS_PREPARE_SLICE | shared objects ms=43.792
+ENDLESS_PREPARE_SLICE | environment ms=46.079
+ENDLESS_BATCHED | aquarium_park:3 | Act={ "records_before": 1660, "records_after": 1375, "source_meshes": 1444, "instances": 327, "batches": 42, "removed_nodes": 327 } | theme={ "records_before": 58, "records_after": 50, "source_meshes": 34, "instances": 10, "batches": 2, "removed_nodes": 10 }
+ACT_BAKED | res://data/acts/Authored/Secret Entry.bake/aquarium_park.res | jobs=11
+ENDLESS_PREPARED | aquarium_park:3 | source=offline | ms=15265.349 | GPU warm frames=0 | cached=4 | geometry loaded=0 | geometry generated=11
+ENDLESS_PREPARE_SLICE | shared objects ms=23.301
+ENDLESS_PREPARE_SLICE | shared objects ms=22.839
+ENDLESS_PREPARE_SLICE | shared objects ms=25.332
+ENDLESS_PREPARE_SLICE | shared objects ms=23.767
+ENDLESS_PREPARE_SLICE | shared objects ms=25.567
+ENDLESS_PREPARE_SLICE | shared objects ms=24.634
+ENDLESS_PREPARE_SLICE | shared objects ms=20.818
+ENDLESS_PREPARE_SLICE | shared objects ms=53.14
+ENDLESS_PREPARE_SLICE | shared objects ms=20.134
+ENDLESS_PREPARE_SLICE | environment ms=44.308
+ENDLESS_BATCHED | aquarium_park:4 | Act={ "records_before": 1232, "records_after": 1088, "source_meshes": 1069, "instances": 175, "batches": 31, "removed_nodes": 175 } | theme={ "records_before": 58, "records_after": 50, "source_meshes": 34, "instances": 10, "batches": 2, "removed_nodes": 10 }
+ACT_BAKED | res://data/acts/Authored/SpringUp.bake/aquarium_park.res | jobs=9
+ENDLESS_PREPARED | aquarium_park:4 | source=offline | ms=10908.068 | GPU warm frames=0 | cached=5 | geometry loaded=0 | geometry generated=9
+ACT_BAKE_COMPLETE | Acts=5 variants=5

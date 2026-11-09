@@ -1,0 +1,582 @@
+{
+  "act": "res://data/acts/Authored/RampMania.tres",
+  "act_bake": "res://data/acts/Authored/RampMania.bake/ice_cap.res",
+  "act_bake_sha256": "35e257352c6d154007091a76570d1bcf65a72b1c645eca244e91c123f49fc57a",
+  "act_fingerprint": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0",
+  "active_material_slots": [
+    {
+      "id": "11A",
+      "mapping": null,
+      "material": "",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/Zone0Backdrop/@SubViewport@1121/@Node3D@1125/EndlessAct0LocalScenery/@Node3D@1103/@Node3D@1104/@MultiMeshInstance3D@1109",
+      "parameter": "surface_texture",
+      "repeat_size": "<null>",
+      "runtime_texture": "res://data/endless/assets.bake/42cb583d365b5e187c3f976e1cbfe6e26fc75a3164dea7df06ab368cf3d344a0.res"
+    },
+    {
+      "id": "12B",
+      "mapping": null,
+      "material": "",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/Zone0Backdrop/@SubViewport@1121/@Node3D@1125/@Node3D@1577/@MeshInstance3D@1578",
+      "parameter": "albedo_texture",
+      "repeat_size": "<null>",
+      "runtime_texture": "res://data/endless/assets.bake/d4c6bf50f023c961d12b2736727054e541693580535f1ccae50b3c800e5ae930.res"
+    },
+    {
+      "id": "7B",
+      "mapping": 3,
+      "material": "Ice Cap 7B albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@767/@Node3D@768/@MeshInstance3D@769",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.8)",
+      "runtime_texture": "res://data/endless/assets.bake/0353d4b1b53535d16200e8c126409fb3f351d349d57c68a1230ef38a1cd56123.res"
+    },
+    {
+      "id": "8A",
+      "mapping": 2,
+      "material": "Ice Cap 8A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@767/@Node3D@768/@MeshInstance3D@770",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5dbbe744f910a364799554c48e155dad1ef121081860750145b77ff785bae6b2.res"
+    },
+    {
+      "id": "8A",
+      "mapping": 2,
+      "material": "Ice Cap 8A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@767/@Node3D@768/@MeshInstance3D@771",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5dbbe744f910a364799554c48e155dad1ef121081860750145b77ff785bae6b2.res"
+    },
+    {
+      "id": "8A",
+      "mapping": 2,
+      "material": "Ice Cap 8A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@767/@Node3D@768/@MeshInstance3D@772",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5dbbe744f910a364799554c48e155dad1ef121081860750145b77ff785bae6b2.res"
+    },
+    {
+      "id": "8A",
+      "mapping": 2,
+      "material": "Ice Cap 8A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@767/@Node3D@768/@MeshInstance3D@773",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5dbbe744f910a364799554c48e155dad1ef121081860750145b77ff785bae6b2.res"
+    },
+    {
+      "id": "8A",
+      "mapping": 2,
+      "material": "Ice Cap 8A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@767/@Node3D@768/@MeshInstance3D@774",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5dbbe744f910a364799554c48e155dad1ef121081860750145b77ff785bae6b2.res"
+    },
+    {
+      "id": "8A",
+      "mapping": 2,
+      "material": "Ice Cap 8A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@767/@Node3D@768/@MeshInstance3D@775",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5dbbe744f910a364799554c48e155dad1ef121081860750145b77ff785bae6b2.res"
+    },
+    {
+      "id": "7B",
+      "mapping": 3,
+      "material": "Ice Cap 7B albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@784/@Node3D@785/@MeshInstance3D@786",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.8)",
+      "runtime_texture": "res://data/endless/assets.bake/0353d4b1b53535d16200e8c126409fb3f351d349d57c68a1230ef38a1cd56123.res"
+    },
+    {
+      "id": "8A",
+      "mapping": 2,
+      "material": "Ice Cap 8A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@784/@Node3D@785/@MeshInstance3D@787",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5dbbe744f910a364799554c48e155dad1ef121081860750145b77ff785bae6b2.res"
+    },
+    {
+      "id": "8A",
+      "mapping": 2,
+      "material": "Ice Cap 8A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@784/@Node3D@785/@MeshInstance3D@788",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5dbbe744f910a364799554c48e155dad1ef121081860750145b77ff785bae6b2.res"
+    },
+    {
+      "id": "8A",
+      "mapping": 2,
+      "material": "Ice Cap 8A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@784/@Node3D@785/@MeshInstance3D@789",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5dbbe744f910a364799554c48e155dad1ef121081860750145b77ff785bae6b2.res"
+    },
+    {
+      "id": "8A",
+      "mapping": 2,
+      "material": "Ice Cap 8A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@784/@Node3D@785/@MeshInstance3D@790",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5dbbe744f910a364799554c48e155dad1ef121081860750145b77ff785bae6b2.res"
+    },
+    {
+      "id": "8A",
+      "mapping": 2,
+      "material": "Ice Cap 8A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@784/@Node3D@785/@MeshInstance3D@791",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5dbbe744f910a364799554c48e155dad1ef121081860750145b77ff785bae6b2.res"
+    },
+    {
+      "id": "8A",
+      "mapping": 2,
+      "material": "Ice Cap 8A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@784/@Node3D@785/@MeshInstance3D@792",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5dbbe744f910a364799554c48e155dad1ef121081860750145b77ff785bae6b2.res"
+    },
+    {
+      "id": "1A",
+      "mapping": 0,
+      "material": "Ice Cap 1A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@Node3D@1083/@MeshInstance3D@1084/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(8.0, 8.0)",
+      "runtime_texture": "res://data/endless/assets.bake/504ba0e4caf52fb1a614e9ac1a227eca35447810ed701375dc6b43e338157c68.res"
+    },
+    {
+      "id": "9A",
+      "mapping": 1,
+      "material": "Ice Cap 9A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@Node3D@1083/@MeshInstance3D@1085/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.8, 1.6)",
+      "runtime_texture": "res://data/endless/assets.bake/fa247222382b63a5d27e1064912dd7514461f8fe380c90b6e8d02a9e930e07b1.res"
+    },
+    {
+      "id": "2B",
+      "mapping": 2,
+      "material": "Ice Cap 2B albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@Node3D@1083/@MeshInstance3D@1086/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/4c0a9151f2eee0395d2b1c998305035176e9bbb1fc43207745183520884f501b.res"
+    },
+    {
+      "id": "5A",
+      "mapping": 0,
+      "material": "Ice Cap 5A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1087/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(8.0, 8.0)",
+      "runtime_texture": "res://data/endless/assets.bake/c52be335c1753cdca10bc3528327800b563c66d6f2717677fde75b3f545e2966.res"
+    },
+    {
+      "id": "3A",
+      "mapping": 5,
+      "material": "Ice Cap 3A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1087/surface1",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.8, 0.9)",
+      "runtime_texture": "res://data/endless/assets.bake/57d000748907e3a7498fe2e1e60d3faac7254ee8b34b718958d27781f6e3bd9a.res"
+    },
+    {
+      "id": "6A",
+      "mapping": 2,
+      "material": "Ice Cap 6A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1087/@MeshInstance3D@1088/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5479dbcb0929f893714b405d3f1aeb516f650a3b815f07b72cf248b2d6f7d1db.res"
+    },
+    {
+      "id": "5A",
+      "mapping": 0,
+      "material": "Ice Cap 5A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1089/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(8.0, 8.0)",
+      "runtime_texture": "res://data/endless/assets.bake/c52be335c1753cdca10bc3528327800b563c66d6f2717677fde75b3f545e2966.res"
+    },
+    {
+      "id": "3A",
+      "mapping": 5,
+      "material": "Ice Cap 3A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1089/surface1",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.8, 0.9)",
+      "runtime_texture": "res://data/endless/assets.bake/57d000748907e3a7498fe2e1e60d3faac7254ee8b34b718958d27781f6e3bd9a.res"
+    },
+    {
+      "id": "6A",
+      "mapping": 2,
+      "material": "Ice Cap 6A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1089/@MeshInstance3D@1090/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5479dbcb0929f893714b405d3f1aeb516f650a3b815f07b72cf248b2d6f7d1db.res"
+    },
+    {
+      "id": "5A",
+      "mapping": 0,
+      "material": "Ice Cap 5A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1091/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(8.0, 8.0)",
+      "runtime_texture": "res://data/endless/assets.bake/c52be335c1753cdca10bc3528327800b563c66d6f2717677fde75b3f545e2966.res"
+    },
+    {
+      "id": "3A",
+      "mapping": 5,
+      "material": "Ice Cap 3A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1091/surface1",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.8, 0.9)",
+      "runtime_texture": "res://data/endless/assets.bake/57d000748907e3a7498fe2e1e60d3faac7254ee8b34b718958d27781f6e3bd9a.res"
+    },
+    {
+      "id": "6A",
+      "mapping": 2,
+      "material": "Ice Cap 6A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1091/@MeshInstance3D@1092/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5479dbcb0929f893714b405d3f1aeb516f650a3b815f07b72cf248b2d6f7d1db.res"
+    },
+    {
+      "id": "5A",
+      "mapping": 0,
+      "material": "Ice Cap 5A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1093/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(8.0, 8.0)",
+      "runtime_texture": "res://data/endless/assets.bake/c52be335c1753cdca10bc3528327800b563c66d6f2717677fde75b3f545e2966.res"
+    },
+    {
+      "id": "3A",
+      "mapping": 5,
+      "material": "Ice Cap 3A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1093/surface1",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.8, 0.9)",
+      "runtime_texture": "res://data/endless/assets.bake/57d000748907e3a7498fe2e1e60d3faac7254ee8b34b718958d27781f6e3bd9a.res"
+    },
+    {
+      "id": "6A",
+      "mapping": 2,
+      "material": "Ice Cap 6A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1093/@MeshInstance3D@1094/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5479dbcb0929f893714b405d3f1aeb516f650a3b815f07b72cf248b2d6f7d1db.res"
+    },
+    {
+      "id": "5A",
+      "mapping": 0,
+      "material": "Ice Cap 5A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1095/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(8.0, 8.0)",
+      "runtime_texture": "res://data/endless/assets.bake/c52be335c1753cdca10bc3528327800b563c66d6f2717677fde75b3f545e2966.res"
+    },
+    {
+      "id": "3A",
+      "mapping": 5,
+      "material": "Ice Cap 3A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1095/surface1",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.8, 0.9)",
+      "runtime_texture": "res://data/endless/assets.bake/57d000748907e3a7498fe2e1e60d3faac7254ee8b34b718958d27781f6e3bd9a.res"
+    },
+    {
+      "id": "6A",
+      "mapping": 2,
+      "material": "Ice Cap 6A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1095/@MeshInstance3D@1096/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5479dbcb0929f893714b405d3f1aeb516f650a3b815f07b72cf248b2d6f7d1db.res"
+    },
+    {
+      "id": "5A",
+      "mapping": 0,
+      "material": "Ice Cap 5A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1097/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(8.0, 8.0)",
+      "runtime_texture": "res://data/endless/assets.bake/c52be335c1753cdca10bc3528327800b563c66d6f2717677fde75b3f545e2966.res"
+    },
+    {
+      "id": "3A",
+      "mapping": 5,
+      "material": "Ice Cap 3A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1097/surface1",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.8, 0.9)",
+      "runtime_texture": "res://data/endless/assets.bake/57d000748907e3a7498fe2e1e60d3faac7254ee8b34b718958d27781f6e3bd9a.res"
+    },
+    {
+      "id": "6A",
+      "mapping": 2,
+      "material": "Ice Cap 6A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1097/@MeshInstance3D@1098/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5479dbcb0929f893714b405d3f1aeb516f650a3b815f07b72cf248b2d6f7d1db.res"
+    },
+    {
+      "id": "5A",
+      "mapping": 0,
+      "material": "Ice Cap 5A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1099/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(8.0, 8.0)",
+      "runtime_texture": "res://data/endless/assets.bake/c52be335c1753cdca10bc3528327800b563c66d6f2717677fde75b3f545e2966.res"
+    },
+    {
+      "id": "3A",
+      "mapping": 5,
+      "material": "Ice Cap 3A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1099/surface1",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.8, 0.9)",
+      "runtime_texture": "res://data/endless/assets.bake/57d000748907e3a7498fe2e1e60d3faac7254ee8b34b718958d27781f6e3bd9a.res"
+    },
+    {
+      "id": "6A",
+      "mapping": 2,
+      "material": "Ice Cap 6A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1099/@MeshInstance3D@1100/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5479dbcb0929f893714b405d3f1aeb516f650a3b815f07b72cf248b2d6f7d1db.res"
+    },
+    {
+      "id": "5A",
+      "mapping": 0,
+      "material": "Ice Cap 5A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1101/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(8.0, 8.0)",
+      "runtime_texture": "res://data/endless/assets.bake/c52be335c1753cdca10bc3528327800b563c66d6f2717677fde75b3f545e2966.res"
+    },
+    {
+      "id": "3A",
+      "mapping": 5,
+      "material": "Ice Cap 3A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1101/surface1",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.8, 0.9)",
+      "runtime_texture": "res://data/endless/assets.bake/57d000748907e3a7498fe2e1e60d3faac7254ee8b34b718958d27781f6e3bd9a.res"
+    },
+    {
+      "id": "6A",
+      "mapping": 2,
+      "material": "Ice Cap 6A albedo review",
+      "node": "/root/PrototypeSession/@Node@51/@SubViewportContainer@54/RetroViewportHost/@SubViewport@55/@SubViewportContainer@56/@SubViewport@57/@Node3D@58/EndlessAct0Visual/@Node3D@1082/@MeshInstance3D@1101/@MeshInstance3D@1102/surface0",
+      "parameter": "albedo_texture",
+      "repeat_size": "(1.0, 1.0)",
+      "runtime_texture": "res://data/endless/assets.bake/5479dbcb0929f893714b405d3f1aeb516f650a3b815f07b72cf248b2d6f7d1db.res"
+    }
+  ],
+  "atmosphere": {
+    "enabled": true,
+    "id": "default",
+    "name": "Default",
+    "values": {
+      "directional_fog/enabled": false,
+      "emission": 0.65,
+      "env/ambient_light_color": "(0.7451, 0.8627, 0.9608, 1.0)",
+      "env/ambient_light_energy": 0.52,
+      "env/ambient_light_sky_contribution": 0.0,
+      "env/fog_enabled": false,
+      "env/glow_bloom": 0.0,
+      "env/glow_enabled": true,
+      "env/glow_hdr_threshold": 1.1,
+      "env/glow_intensity": 0.13,
+      "env/glow_levels/3": 0.2,
+      "env/glow_levels/5": 0.8,
+      "env/glow_levels/7": 0.25,
+      "env/glow_normalized": true,
+      "env/glow_strength": 1.15,
+      "env/tonemap_exposure": 1.0,
+      "env/tonemap_mode": 0,
+      "palette/aurora_strength": 0.0,
+      "palette/crystal_tint": "(0.8824, 0.9686, 1.0, 1.0)",
+      "palette/ice_horizon": "(0.7647, 0.898, 0.9569, 1.0)",
+      "palette/ice_sky_glow": "(0.0941, 0.1686, 0.2314, 1.0)",
+      "palette/ice_upper": "(0.2118, 0.498, 0.7412, 1.0)",
+      "palette/lake_base": "(0.2196, 0.498, 0.6353, 1.0)",
+      "palette/lake_reflection": "(0.6471, 0.851, 0.9098, 1.0)",
+      "palette/star_intensity": 0.0,
+      "sun/light_angular_distance": 0.0,
+      "sun/light_color": "(1.0, 0.9765, 0.9294, 1.0)",
+      "sun/light_energy": 0.8,
+      "sun/light_specular": 0.7,
+      "sun/shadow_bias": 0.02,
+      "sun/shadow_enabled": true,
+      "sun/shadow_normal_bias": 0.55,
+      "sun/shadow_opacity": 0.85,
+      "sun_pitch": -52.0,
+      "sun_yaw": -35.0,
+      "surface_halo_spread": 1.0
+    },
+    "weight": 1.0
+  },
+  "authority": "Prototype",
+  "complete": true,
+  "current_act_texture_matches": [
+    {
+      "rgba8_sha256": "120ceb344c5ab680d61a83b51f314b2f99525b7ee6ed3b3f09f68da5140c8067",
+      "runtime_texture": "res://data/endless/assets.bake/42cb583d365b5e187c3f976e1cbfe6e26fc75a3164dea7df06ab368cf3d344a0.res",
+      "source": "res://assets/textures/ice_cap/selected/11A.png",
+      "source_sha256": "2e61146dad619b238d69e841c6ef731d61faa6e5cd574f4b9672cf0e7f3178f9"
+    },
+    {
+      "rgba8_sha256": "246be9c91942d247041f660ddeb22b704825df6ea21c3f7a5d583bd2d7e06722",
+      "runtime_texture": "res://data/endless/assets.bake/504ba0e4caf52fb1a614e9ac1a227eca35447810ed701375dc6b43e338157c68.res",
+      "source": "res://assets/textures/ice_cap/selected/1A.png",
+      "source_sha256": "cad02a7ceb8ec5ab790059fc4e478be438a10559e08296c7c92067f0472e2517"
+    },
+    {
+      "rgba8_sha256": "72b3a675fe784d0a385efe30d1ff2ab0462e4ee839be38ec7cb927392bd904ad",
+      "runtime_texture": "res://data/endless/assets.bake/4c0a9151f2eee0395d2b1c998305035176e9bbb1fc43207745183520884f501b.res",
+      "source": "res://assets/textures/ice_cap/selected/2B.png",
+      "source_sha256": "79eadad7475dc654379ed25a207fa28bfb02380904841f516302f64b30caa575"
+    },
+    {
+      "rgba8_sha256": "508041f52b6ae1e74113845a7b5453cd428776b58896256d9a7d7f45cf183514",
+      "runtime_texture": "res://data/endless/assets.bake/57d000748907e3a7498fe2e1e60d3faac7254ee8b34b718958d27781f6e3bd9a.res",
+      "source": "res://assets/textures/ice_cap/selected/3A.png",
+      "source_sha256": "c87bf8399a6aa40d7ab3fadadc27cd6eeb9eebe76d3c1c9e26bfc484421fc0ca"
+    },
+    {
+      "rgba8_sha256": "0aedbb4b2844a750b7d2e1600d588e9f578061cca96ed46e3f463e025bc70440",
+      "runtime_texture": "res://data/endless/assets.bake/c52be335c1753cdca10bc3528327800b563c66d6f2717677fde75b3f545e2966.res",
+      "source": "res://assets/textures/ice_cap/selected/5A.png",
+      "source_sha256": "feeece23061d34f8cb7a3e9e12c916060bd228508537ff0f97c29c3e0f80c49b"
+    },
+    {
+      "rgba8_sha256": "0ca011ac3594f9cf7fddbd919598ace49259a0011719f7d099160c5eb2e51cbe",
+      "runtime_texture": "res://data/endless/assets.bake/5479dbcb0929f893714b405d3f1aeb516f650a3b815f07b72cf248b2d6f7d1db.res",
+      "source": "res://assets/textures/ice_cap/selected/6A.png",
+      "source_sha256": "6686517d28bdb64965a4d62a1978715b1f07af5ec9de68f96c72b6c0dded0a7d"
+    },
+    {
+      "rgba8_sha256": "7c88d2392cf3f9caff274efcce1ec1a887d66fd5fd42322b40aed2edd209421e",
+      "runtime_texture": "res://data/endless/assets.bake/0353d4b1b53535d16200e8c126409fb3f351d349d57c68a1230ef38a1cd56123.res",
+      "source": "res://assets/textures/ice_cap/selected/7B.png",
+      "source_sha256": "2f03e8dcbeb03654b2c83b816675238bb812d253f6323be0c79252b073749c11"
+    },
+    {
+      "rgba8_sha256": "f435c46301120c030beb644ac8cc9906446e295b0760aec0df7dab660969dc42",
+      "runtime_texture": "res://data/endless/assets.bake/5dbbe744f910a364799554c48e155dad1ef121081860750145b77ff785bae6b2.res",
+      "source": "res://assets/textures/ice_cap/selected/8A.png",
+      "source_sha256": "db5fd8e64fbe5fd1e8cb4fd13145511c549896497944295c95459f3ef22540b2"
+    },
+    {
+      "rgba8_sha256": "60ae2916adc2f0fde44c743cfe38d0a57cae5722ccd66a31d38f84aaf3a9d4d7",
+      "runtime_texture": "res://data/endless/assets.bake/fa247222382b63a5d27e1064912dd7514461f8fe380c90b6e8d02a9e930e07b1.res",
+      "source": "res://assets/textures/ice_cap/selected/9A.png",
+      "source_sha256": "4c39f4857d65497c4726c7bf4c150882399823b1fdb0e76746d7d6c2cf4c9607"
+    }
+  ],
+  "disk_acts": 1,
+  "disk_themes": 1,
+  "fallback_builds": 0,
+  "fps_counter_hidden": true,
+  "generated_relief": false,
+  "hud_hidden": true,
+  "library": "res://scripts/endless/template_library.gd",
+  "pipeline_fingerprint": "435478bfe14ea9b0cb1160b13f698b2e404d5948e82ff5c3848317bb8da346be",
+  "renderer": {
+    "api": "1.4.351",
+    "command_line": [
+      "--script",
+      "res://experiments/ice_texture_refined/review.gd"
+    ],
+    "device": "NVIDIA GeForce RTX 4060",
+    "driver": "vulkan",
+    "engine": "4.7.2-stable (official)",
+    "renderer": "forward_plus",
+    "user_arguments": [
+      "--retro=off",
+      "--act=res://data/acts/Authored/RampMania.tres",
+      "--camera-target=300,350",
+      "--review-label=ramp"
+    ]
+  },
+  "required_ids_for_act": [
+    "1A",
+    "2B",
+    "3A",
+    "5A",
+    "6A",
+    "7B",
+    "8A",
+    "9A",
+    "11A",
+    "12B"
+  ],
+  "retro_effects": [],
+  "retro_mode": "off",
+  "retro_settings_sha256": "0291745db30c7ddcdfac70db02795cefba0f072b030d52d3ace07f8c900618e0",
+  "scene": "res://scenes/prototype_run.tscn",
+  "scenery_fingerprint": "4f98871f697bec4209c9ab04777ae1bbdf37928512cb85e2cffbf894f10aca27",
+  "seed": 3648962628,
+  "selected_ids_bound": [
+    "11A",
+    "12B",
+    "7B",
+    "8A",
+    "1A",
+    "9A",
+    "2B",
+    "5A",
+    "3A",
+    "6A"
+  ],
+  "source_sha256": "703d4f06c0fc015e1844cc8230d2639fe0ab94853c877185ce3161990e1d1436",
+  "state": {
+    "act_score": 0,
+    "ball": "(200.0, 700.0)",
+    "camera_fov": 52.0,
+    "camera_projection": 0,
+    "camera_settings": {
+      "dead_zone_x": 18.0,
+      "dead_zone_y": 12.0,
+      "horizontal_response": 2.0,
+      "look_ahead": 0.0,
+      "max_speed": 4000.0,
+      "screen_margin_y": 0.22,
+      "screen_target_y": 0.55,
+      "vertical_response": 28.0,
+      "zoom": 1.3
+    },
+    "camera_size": 1.0,
+    "camera_transform": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.0, 2.115734, 5.045638)]",
+    "document": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0",
+    "goal_unlocked": false,
+    "rings": 0,
+    "score": 0,
+    "serve_pending": true,
+    "velocity": "(0.0, 0.0)"
+  },
+  "surface_detail": "flat",
+  "theme": "ice_cap",
+  "theme_bake": "res://data/endless/themes.bake/ice_cap.res",
+  "theme_bake_sha256": "1360a6d5067d810b65ce8e99aaa48d37f3c918f6629bc3b0479f8ffa370d79d8"
+}

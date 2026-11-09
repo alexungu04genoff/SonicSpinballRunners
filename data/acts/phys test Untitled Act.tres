@@ -1,0 +1,51 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=3]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1_00jt4"]
+
+[resource]
+script = ExtResource("1_00jt4")
+format_version = 13
+library_version = 2
+gameplay_objects = [{
+"object_id": "obj_62fbd89bc9e8562b1ed77518",
+"position": Vector2(150, 600),
+"properties": {},
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 169, 103, 2, 150, 171, 85, 50, 64),
+"type": "left_flipper"
+}, {
+"object_id": "obj_e3e19c8b3c13891e627358d1",
+"position": Vector2(250, 600),
+"properties": {},
+"rotation_degrees": PackedByteArray(3, 0, 1, 0, 11, 179, 63, 141, 74, 53, 100, 64),
+"type": "right_flipper"
+}, {
+"object_id": "obj_717e9919eecceab2dd88b0a3",
+"position": Vector2(400, 500),
+"properties": {
+"scale": PackedByteArray(3, 0, 0, 0, 0, 0, 32, 64)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "round_bumper"
+}, {
+"object_id": "obj_2701038df9c6e8c34e959b62",
+"position": Vector2(294.42136, 341.96725),
+"properties": {
+"scale": PackedByteArray(3, 0, 0, 0, 0, 0, 128, 63)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "round_bumper"
+}, {
+"object_id": "obj_5c82a7bddb43dd47991647e4",
+"position": Vector2(100, 200),
+"properties": {
+"scale": PackedByteArray(3, 0, 0, 0, 0, 0, 128, 63)
+},
+"rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
+"type": "round_bumper"
+}]
+entry_start_x = 3
+entry_width = 2
+exit_start_x = 4
+exit_width = 2
+activation_y = PackedByteArray(3, 0, 0, 0, 0, 128, 9, 68)
+spawn_position = Vector2(167.73254, 526.2419)

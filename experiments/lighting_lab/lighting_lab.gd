@@ -60,7 +60,7 @@ func _hide_material_controls() -> void:
  # the persistent counter, so retain a single readable overlay here.
  var inherited_fps := get_node_or_null("FrameRateOverlay")
  if inherited_fps is CanvasLayer: inherited_fps.hide()
- for property in ["rooftop_materials", "chemical_materials"]:
+ for property in ["rooftop_materials", "chemical_materials", "aquarium_materials"]:
   var other = get(property)
   if is_instance_valid(other):
    other.hide()

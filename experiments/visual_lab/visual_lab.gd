@@ -7,6 +7,16 @@ const RetroFilter := preload("res://scripts/retro/retro_filter.gd")
 const RetroControls := preload("res://scripts/retro/retro_controls.gd")
 var retro_filter: RetroFilter
 var retro_controls: CanvasLayer
+var rooftop_materials: CanvasLayer
+var chemical_materials: CanvasLayer
+var sanctuary_materials: CanvasLayer
+var lava_materials: CanvasLayer
+var ice_materials: CanvasLayer
+var aquarium_materials: CanvasLayer
+var fps_label: Label
+var _fps_elapsed := 0.0
+var _timing_elapsed := 0.0
+var _print_frame_timing := false
 var view_container: SubViewportContainer
 var debug_open := false
 var play_buttons: HBoxContainer
@@ -23,6 +33,7 @@ var score_feedback_lab: Label
 var view_button: Button
 var pose_buttons: Dictionary = {}
 var close_view := false
+var _photo_hidden_layers: Array[CanvasLayer] = []
 var _pause_before_close := false
 var _capture_kind := ""
 var _capture_frames := 75
@@ -52,6 +63,7 @@ var theme_selector: OptionButton
 var theme_label: Label
 
 func _ready() -> void:
+ _print_frame_timing = "--frame-timing" in OS.get_cmdline_user_args()
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--theme="):
    var requested_theme := argument.trim_prefix("--theme=")
@@ -76,10 +88,31 @@ func _ready() -> void:
  retro_filter.name = "RetroFilter"
  add_child(retro_filter)
  retro_filter.attach(view_container, view)
+ _build_fps_counter()
  retro_controls = RetroControls.new()
  retro_controls.name = "RetroControls"
  add_child(retro_controls)
  retro_controls.install(retro_filter, debug_panel.camera_presets.get_parent(), play_buttons)
+ rooftop_materials = preload("res://experiments/rooftop_lighting/live_materials.gd").new()
+ add_child(rooftop_materials)
+ rooftop_materials.install(self)
+ chemical_materials = preload("res://experiments/chemical_texture_refined/live_controls.gd").new()
+ add_child(chemical_materials)
+ chemical_materials.install(self)
+ sanctuary_materials = preload("res://experiments/sky_texture_choices/live_controls.gd").new()
+ add_child(sanctuary_materials)
+ sanctuary_materials.install(self)
+ lava_materials = preload("res://experiments/lava_texture_refined/live_controls.gd").new()
+ add_child(lava_materials)
+ lava_materials.install(self)
+ ice_materials = preload("res://experiments/ice_texture_refined/live_controls.gd").new()
+ add_child(ice_materials)
+ ice_materials.install(self)
+ aquarium_materials = preload("res://experiments/aquarium_texture_refined/live_controls.gd").new()
+ add_child(aquarium_materials)
+ aquarium_materials.install(self)
+ if _print_frame_timing:
+  call_deferred("_print_scene_counts")
  get_viewport().size_changed.connect(_position_player_hud)
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--capture="):
@@ -100,6 +133,83 @@ func _ready() -> void:
   if not _capture_sequence:
    character.seek_pose(0.55)
  print("GREEN_HILL_READY | Enter roll in | Q/E flippers | arrows steer | F1 physics tuning | F4 retro filter | O overview | C study")
+ if "--material-review-fullscreen" in OS.get_cmdline_user_args():
+  call_deferred("toggle_fullscreen")
+ if "--rooftop-retro-shots" in OS.get_cmdline_user_args():
+  call_deferred("_save_rooftop_retro_shots")
+ if "--rooftop-overview" in OS.get_cmdline_user_args():
+  call_deferred("_open_rooftop_overview")
+
+func _build_fps_counter() -> void:
+ # Draw at native resolution, outside the filtered world viewport.
+ var overlay := CanvasLayer.new()
+ overlay.name = "FrameRateOverlay"
+ overlay.layer = 120
+ add_child(overlay)
+ fps_label = Label.new()
+ fps_label.position = Vector2(8, 4)
+ fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+ fps_label.add_theme_font_size_override("font_size", 12)
+ fps_label.add_theme_color_override("font_color", Color.WHITE)
+ fps_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+ fps_label.add_theme_constant_override("outline_size", 3)
+ fps_label.text = "FPS --"
+ overlay.add_child(fps_label)
+
+func _print_scene_counts() -> void:
+ var counts: Dictionary = {}
+ for mesh: MeshInstance3D in presentation.find_children("*", "MeshInstance3D", true, false):
+  if not mesh.is_visible_in_tree(): continue
+  var parts := str(presentation.get_path_to(mesh)).split("/")
+  var category := parts[0]
+  if parts.size() > 1 and category.ends_with("Terrain"): category += "/" + parts[1]
+  counts[category] = int(counts.get(category, 0)) + 1
+ print("SCENE_MESHES | ", counts)
+
+func _toggle_photo_ui() -> void:
+ if not _photo_hidden_layers.is_empty():
+  for layer in _photo_hidden_layers:
+   if is_instance_valid(layer): layer.show()
+  _photo_hidden_layers.clear()
+  return
+ for layer: Node in find_children("*","CanvasLayer",true,false):
+  if layer!=retro_filter.effect_layer and layer.visible:
+   _photo_hidden_layers.append(layer)
+   layer.hide()
+
+func _open_rooftop_overview() -> void:
+ for frame in 30: await get_tree().process_frame
+ rooftop_materials.detail_camera=false
+ presentation.set_camera_follow(false)
+ retro_filter.set_effects(retro_filter.settings.default_effects)
+ _toggle_photo_ui()
+ for frame in 12: await get_tree().process_frame
+ await RenderingServer.frame_post_draw
+ get_viewport().get_texture().get_image().save_png("res://experiments/rooftop_lighting/screenshots/canonical-retro-overview.png")
+ print("ROOFTOP_OVERVIEW | Share screenshot saved. Scroll to zoom, middle-drag to pan, F9 for UI.")
+
+func _save_rooftop_retro_shots() -> void:
+ # Two requested stills from the actual playable scene and its canonical materials.
+ for frame in 30: await get_tree().process_frame
+ var was_paused := get_tree().paused
+ get_tree().paused = true
+ retro_filter.set_effects(retro_filter.settings.default_effects)
+ var hidden_layers: Array[CanvasLayer]=[]
+ for layer: Node in find_children("*","CanvasLayer",true,false):
+  if layer!=retro_filter.effect_layer and layer.visible:
+   hidden_layers.append(layer)
+   layer.hide()
+ var folder := "res://experiments/rooftop_lighting/screenshots/"
+ for frame in 12: await get_tree().process_frame
+ await RenderingServer.frame_post_draw
+ get_viewport().get_texture().get_image().save_png(folder+"canonical-retro-gameplay.png")
+ rooftop_materials.toggle_detail_camera()
+ for frame in 12: await get_tree().process_frame
+ await RenderingServer.frame_post_draw
+ get_viewport().get_texture().get_image().save_png(folder+"canonical-retro-close.png")
+ for layer in hidden_layers: layer.show()
+ get_tree().paused = was_paused
+ print("ROOFTOP_RETRO_SCREENSHOTS | Gameplay and close-up saved; main game remains open.")
 
 func _build_view() -> void:
  view_container = SubViewportContainer.new()
@@ -143,8 +253,14 @@ func _build_presentation() -> void:
  presentation.add_child(character)
 
 func _rebuild_presentation() -> void:
+ if is_instance_valid(rooftop_materials): rooftop_materials.restore_lighting()
  super._rebuild_presentation()
  character.refresh_playfield()
+ if is_instance_valid(rooftop_materials): rooftop_materials.refresh()
+ if is_instance_valid(sanctuary_materials): sanctuary_materials.refresh()
+ if is_instance_valid(lava_materials): lava_materials.refresh()
+ if is_instance_valid(ice_materials): ice_materials.refresh()
+ if is_instance_valid(aquarium_materials): aquarium_materials.refresh()
  if player_view:
   for overlay: Node3D in _development_overlays():
    overlay.hide()
@@ -466,6 +582,32 @@ func _set_close_view(enabled: bool) -> void:
 
 func _input(event: InputEvent) -> void:
  if event is InputEventKey and event.pressed and not event.echo and not event.alt_pressed and not event.ctrl_pressed and not event.meta_pressed:
+  if event.physical_keycode==KEY_F9 or event.keycode==KEY_F9:
+   _toggle_photo_ui()
+   get_viewport().set_input_as_handled()
+   return
+  if (event.physical_keycode == KEY_O or event.keycode == KEY_O) and not is_source_picker_open():
+   _toggle_overview()
+   get_viewport().set_input_as_handled()
+   return
+  if is_instance_valid(aquarium_materials) and not is_source_picker_open() and aquarium_materials.handle_key(event):
+   get_viewport().set_input_as_handled()
+   return
+  if is_instance_valid(ice_materials) and not is_source_picker_open() and ice_materials.handle_key(event):
+   get_viewport().set_input_as_handled()
+   return
+  if is_instance_valid(lava_materials) and not is_source_picker_open() and lava_materials.handle_key(event):
+   get_viewport().set_input_as_handled()
+   return
+  if is_instance_valid(sanctuary_materials) and not is_source_picker_open() and sanctuary_materials.handle_key(event):
+   get_viewport().set_input_as_handled()
+   return
+  if is_instance_valid(chemical_materials) and not is_source_picker_open() and chemical_materials.handle_key(event):
+   get_viewport().set_input_as_handled()
+   return
+  if is_instance_valid(rooftop_materials) and not is_source_picker_open() and rooftop_materials.handle_key(event):
+   get_viewport().set_input_as_handled()
+   return
   if event.physical_keycode == KEY_F11 or event.keycode == KEY_F11:
    toggle_fullscreen()
    get_viewport().set_input_as_handled()
@@ -566,8 +708,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
   KEY_O: _toggle_overview()
 
 func _toggle_overview() -> void:
- if player_view or close_view:
+ if close_view:
   return
+ if is_instance_valid(rooftop_materials) and rooftop_materials.detail_camera:
+  rooftop_materials.detail_camera = false
+  presentation.set_camera_follow(true)
  presentation.set_camera_follow(not presentation.camera_follow_enabled)
  debug_panel.camera_follow.set_pressed_no_signal(presentation.camera_follow_enabled)
  get_viewport().gui_release_focus()
@@ -614,6 +759,15 @@ func _physics_process(delta: float) -> void:
   super._physics_process(delta)
 
 func _process(_delta: float) -> void:
+ if _print_frame_timing:
+  _timing_elapsed += _delta
+  if _timing_elapsed >= 2.0:
+   _timing_elapsed = 0.0
+   print("FRAME_TIMING | FPS %d | process %.2f ms | physics %.2f ms | draw calls %d | primitives %d" % [Engine.get_frames_per_second(), Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0, Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME)])
+ _fps_elapsed += _delta
+ if is_instance_valid(fps_label) and _fps_elapsed >= 0.25:
+  _fps_elapsed = 0.0
+  fps_label.text = "FPS %d" % Engine.get_frames_per_second()
  if not is_instance_valid(character) or not is_instance_valid(pose_label):
   return
  if player_view:

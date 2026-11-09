@@ -1,0 +1,43 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060
+ERROR: Can't create shader cache folder, no shader caching will happen: user://
+   at: RendererCompositorRD (servers/rendering/renderer_rd/renderer_compositor_rd.cpp:337)
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+WARNING: Cannot load graphics settings: Can't open file
+   at: push_warning (core/variant/variant_utility.cpp:1033)
+   GDScript backtrace (most recent call first):
+       [0] _load_settings (res://scripts/rendering_options.gd:127)
+       [1] register_view (res://scripts/rendering_options.gd:90)
+       [2] bake (res://scripts/endless/act_baker.gd:68)
+       [3] _ready (res://scripts/endless/act_baker.gd:53)
+ENDLESS_PREPARE_SLICE | shared objects ms=29.779
+ENDLESS_PREPARE_SLICE | shared objects ms=31.741
+ENDLESS_PREPARE_SLICE | shared objects ms=32.006
+ENDLESS_PREPARE_SLICE | shared objects ms=33.415
+ENDLESS_PREPARE_SLICE | shared objects ms=38.338
+ENDLESS_PREPARE_SLICE | shared objects ms=31.403
+ENDLESS_PREPARE_SLICE | shared objects ms=30.032
+ENDLESS_PREPARE_SLICE | shared objects ms=25.574
+ENDLESS_PREPARE_SLICE | environment ms=61.126
+ENDLESS_PREPARE_SLICE | background ms=50.689
+ENDLESS_BATCHED | ice_cap:0 | Act={ "records_before": 609, "records_after": 509, "source_meshes": 438, "instances": 113, "batches": 19, "removed_nodes": 119 } | theme={ "records_before": 7, "records_after": 7, "source_meshes": 1, "instances": 0, "batches": 0, "removed_nodes": 0 }
+ACT_BAKED | res://data/acts/Authored/First Try Smooth Decor.bake/ice_cap.res | jobs=11
+ENDLESS_PREPARED | ice_cap:0 | source=offline | ms=9772.455 | GPU warm frames=0 | cached=1 | geometry loaded=0 | geometry generated=11
+ENDLESS_PREPARE_SLICE | shared objects ms=43.123
+ENDLESS_PREPARE_SLICE | shared objects ms=22.819
+ENDLESS_PREPARE_SLICE | shared objects ms=24.37
+ENDLESS_PREPARE_SLICE | shared objects ms=22.793
+ENDLESS_PREPARE_SLICE | shared objects ms=23.042
+ENDLESS_PREPARE_SLICE | shared objects ms=51.877
+ENDLESS_PREPARE_SLICE | shared objects ms=22.297
+ENDLESS_PREPARE_SLICE | shared objects ms=55.726
+ENDLESS_PREPARE_SLICE | shared objects ms=20.213
+ENDLESS_PREPARE_SLICE | shared objects ms=22.416
+ENDLESS_PREPARE_SLICE | shared objects ms=23.141
+ENDLESS_PREPARE_SLICE | environment ms=43.028
+ENDLESS_BATCHED | ice_cap:1 | Act={ "records_before": 498, "records_after": 498, "source_meshes": 398, "instances": 0, "batches": 0, "removed_nodes": 0 } | theme={ "records_before": 7, "records_after": 7, "source_meshes": 1, "instances": 0, "batches": 0, "removed_nodes": 0 }
+ACT_BAKED | res://data/acts/Authored/RampMania.bake/ice_cap.res | jobs=19
+ENDLESS_PREPARED | ice_cap:1 | source=offline | ms=7221.167 | GPU warm frames=0 | cached=2 | geometry loaded=0 | geometry generated=19
+ACT_BAKE_COMPLETE | Acts=2 variants=2

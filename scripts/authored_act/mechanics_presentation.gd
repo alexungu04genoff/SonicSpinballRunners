@@ -110,7 +110,7 @@ func _rail(item: Dictionary) -> void:
   if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
   var border: Material = style.get("border", style.edge)
   await _rail_strip(root, path, width, peak, Vector2(side * 0.44, side * 0.54), Vector2(0.035, 0.035), border if border != null else style.edge, "EdgeCap", border != null and style.has("border"))
-  await _rail_strip(root, path, width, peak, Vector2(side * 0.54, side * 0.54), Vector2(-thickness, 0.035), style.support, "Fascia")
+  await _rail_strip(root, path, width, peak, Vector2(side * 0.54, side * 0.54), Vector2(-thickness, 0.035), style.get("fascia",style.support), "Fascia")
   await _rail_strip(root, path, width, peak, Vector2(side * 0.44, side * 0.44), Vector2(0.0, 0.035), style.edge, "InnerEdge")
  await _rail_strip(root, path, width, peak, Vector2(0.54, -0.54), Vector2(-thickness, -thickness), style.support, "Underside")
  if style.has("pipe"): await _rail_pipes(root, path, width, peak, style)
@@ -145,6 +145,7 @@ func _rail(item: Dictionary) -> void:
  table.mesh_node(marker.commit(), style.accent, Vector3.ZERO, root).name = "EntryArrow"
 
 func _rail_strip(parent: Node3D, path: Dictionary, width: float, peak: float, edges: Vector2, offsets: Vector2, material: Material, label: String, contour_texture := false) -> void:
+ contour_texture = contour_texture or bool(material.get_meta("route_strip_uv",false))
  var surface := SurfaceTool.new()
  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
  for i in path.points.size() - 1:
@@ -206,7 +207,7 @@ func _rail_pipes(parent: Node3D, path: Dictionary, width: float, peak: float, st
    _pipe_section(lights, path, width, peak, side, maxf(start, distance - 0.8), minf(finish, distance + 0.8), 1.16, 2, 4)
    if distance >= float(path.length) - 0.001: break
    distance = minf(float(path.length), distance + 45.0)
-  for entry: Array in [[shell, style.pipe, "BluePipe"], [clamps, style.pipe_clamp, "Couplings"], [frame, style.edge, "YellowStraps"], [lights, style.accent, "CyanIndicators"]]:
+  for entry: Array in [[shell, style.pipe, "BluePipe"], [clamps, style.pipe_clamp, "Couplings"], [frame, style.get("pipe_strap", style.edge), "YellowStraps"], [lights, style.accent, "CyanIndicators"]]:
    if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
    var surface: SurfaceTool = entry[0]
    surface.generate_normals()

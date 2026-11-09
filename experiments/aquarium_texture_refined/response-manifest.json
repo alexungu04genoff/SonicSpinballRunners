@@ -1,0 +1,107 @@
+{
+  "height_usage": "Source reference only; no runtime parallax or displacement",
+  "items": {
+    "1-mixed-floor": {
+      "albedo_sha256": "5324d8b566c22c8f2be03304397ec4c4e6816ca510b6c3027bf15898326dd150",
+      "height_range_world": 0.009,
+      "maps": {
+        "height": "b23416df05de8f05b05cc366bcddc57100ce1fd1443529c569090c138e7f3060",
+        "normal": "0111a760647f7710abd17a5c3493ab1fc2a69141fac048797aace681ef0aeab4",
+        "response": "b186227113e06b3c4f60435fb9bde4adb13fac53a9f88c0b80ce25ad6bca12e0"
+      },
+      "nominal_repeat": "(3.6, 3.6)"
+    },
+    "2A-red-gold-studs": {
+      "albedo_sha256": "318fd993ac882d2306de48867f37ca6e12b366a39b19c1534bd35b2a6e945f74",
+      "height_range_world": 0.0015,
+      "maps": {
+        "height": "d6e4c92c7c721154232a76b557dcf71a4b666dbc11905589e18700746784efb5",
+        "normal": "a1bbbe8cf8a1f0d256bab81d04787581e59dac46d1aa1c1c6db04e9a401673a1",
+        "response": "d5228e4cb1b93ab44fc0d7ffa10c173cf2bfc1e51bee1d50a93d5109a3a73a93"
+      },
+      "nominal_repeat": "(0.16, 0.04)"
+    },
+    "3B": {
+      "albedo_sha256": "b7e0037b1e589cd88e5d82f5aea79d1a07fd0ddb4b266c83c57caee1c18182ea",
+      "height_range_world": 0.007,
+      "maps": {
+        "height": "b7fe1d8d731507ec7f8acfc8ecceb1c8c2b09b458cc1b2b5a1d83c9a87555329",
+        "normal": "f55e301b7cc7798b7b93d7aa84cc8a931dfe343bd80fbbf953ad3e5016e2fc76",
+        "response": "da5d81cf7714d6c3798c21e8058a641dc914c9f8c64f0028b189c023a66f8514"
+      },
+      "nominal_repeat": "(0.64, 0.26)"
+    },
+    "4B": {
+      "albedo_sha256": "05d7999bd374c66674359fad7fe1f35c0e09481e14dc5298ff91869e981259a6",
+      "height_range_world": 0.003,
+      "maps": {
+        "height": "5dec3440bc6561611d3c681aaab08c0a6bb898c24e6493a0fb5bb94546eb780a",
+        "normal": "25507d45c343469a5da75659d9c4ba00050f661332b4000e8ef7d529abe9b351",
+        "response": "44dde25c4458c5e5281d3c030780be649e46de5dc9219cd0718723539a6a991e"
+      },
+      "nominal_repeat": "(0.64, 0.065)"
+    },
+    "5A-red": {
+      "albedo_sha256": "b19478a806216742e231d08e96ac73b2b0784b2f07bb2542cb945fd76de9c7b5",
+      "height_range_world": 0.024,
+      "maps": {
+        "height": "1aa80154c26870557a25390701e932b069c3af9839083f46b29cc58570a745cb",
+        "normal": "e86dcb48233b278a003690e54f7a40a38c10cbcfffad45112bce490a38ed16d3",
+        "response": "7b90a3ac81f0d30eb5a1af164dd1ad4acd02410388340f83d5585dc8e6b4856b"
+      },
+      "nominal_repeat": "(1.8, 1.8)"
+    },
+    "6A-red": {
+      "albedo_sha256": "5a5f2960691321194ac71b9ea7d7e48cef8993d767549132da076c10f219644b",
+      "height_range_world": 0.0015,
+      "maps": {
+        "height": "adefd04aede5f806c146b97ce318385ddd386de5980001f0539b79a45c0b64d0",
+        "normal": "8b6029d456e9ef7fa4c7d668a4ae9ef052ca208be87375d3614d65510a542b82",
+        "response": "f4087ecbc553981ba7113a8be60d1598a4cc0575aee20879098da841ae87a8de"
+      },
+      "nominal_repeat": "(1.8, 0.02)"
+    },
+    "7B": {
+      "albedo_sha256": "e4ed503ef3fbec0c478e6cf24082a9560f0d024a36df4833dd50c55426857fda",
+      "height_range_world": 0.008,
+      "maps": {
+        "height": "11ebdeeeaae293856c1450c4dacfc19f9699ade73e7ac2aee237f3657e4e6d5d",
+        "normal": "035cdeec7cef3c8a1398ddba86aa7b9b881ed9763f0fde3a8142dd7f21a5cfb0",
+        "response": "f740df6a224b5db2fac5d58d5440761cba7ad91295619c8409d764312d2458f5"
+      },
+      "nominal_repeat": "(0.6, 1.2)"
+    },
+    "8A": {
+      "albedo_sha256": "56311a50f444c9fc4051beccc34d9e00bea06b33fadbaeabb2b9b6f652b6f56e",
+      "height_range_world": 0.002,
+      "maps": {
+        "height": "0d512394dd0ba57f0de0a30e31e081d565ea7b3dfecfd7f36005ded028f1de15",
+        "normal": "5f15b968c38362bdf407e959cde827162d998d9a722ed09580e4e764887e7f7d",
+        "response": "7e49995ddc8a601e30f081bb0e9e4680ea04821d48239da71389e6bcd9deaf35"
+      },
+      "nominal_repeat": "(0.72, 0.06)"
+    },
+    "9A": {
+      "albedo_sha256": "24c7748b15e1ef7bad04abe10d347649e0e842a9019c64f6371230298be22000",
+      "height_range_world": 0.02,
+      "maps": {
+        "height": "05a52292b2e8d0b78bf62458556bf3dd3e42edc39e778a540c698dca2ec1dcb7",
+        "normal": "8b6cc19d065429f291decc94096af749a64d452829777bca901a362dfcdaa967",
+        "response": "2354bdb7f9ae1147180f5f55e024cfe86be45cdd3f7de1168e29dd10938e1eab"
+      },
+      "nominal_repeat": "(2.4, 1.925)"
+    }
+  },
+  "normal_convention": "OpenGL",
+  "response_channels": {
+    "b": "unused",
+    "g": "exposed metal only",
+    "r": "roughness"
+  },
+  "source_sha256": {
+    "border_revision/border.gdshader": "2f86e8962062b99282f02ae4387845dc64bfc5f8266936cf9bc31bed70b1d542",
+    "floor_revision/floor.gdshader": "ed2dfc62581a3720e085b4b264ab69258646ce14a010709479dacc21098930c9",
+    "response.gdshaderinc": "08418472a1d79e9ad929f060d618da885b8066cce4f9b68a2a0efc99f19a7ba6",
+    "selected.gdshader": "721a52160913a3874a345661f1dc221f84452d4e6ecaa04c201357c8cb3e431a"
+  }
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "path": "E:\\Sonic Spinball Runners\\assets\\textures\\lava_reef\\floor.png",
+    "unchanged": true
+  },
+  {
+    "path": "E:\\Sonic Spinball Runners\\assets\\textures\\lava_reef\\floor-border.png",
+    "unchanged": true
+  },
+  {
+    "path": "E:\\Sonic Spinball Runners\\assets\\textures\\lava_reef\\wall.png",
+    "unchanged": true
+  },
+  {
+    "path": "E:\\Sonic Spinball Runners\\assets\\textures\\lava_reef\\top.png",
+    "unchanged": true
+  },
+  {
+    "path": "E:\\Sonic Spinball Runners\\assets\\textures\\lava_reef\\top-border.png",
+    "unchanged": true
+  },
+  {
+    "path": "E:\\Sonic Spinball Runners\\assets\\textures\\lava_reef\\ramp.png",
+    "unchanged": true
+  },
+  {
+    "path": "E:\\Sonic Spinball Runners\\assets\\textures\\lava_reef\\facade.png",
+    "unchanged": true
+  },
+  {
+    "path": "E:\\Sonic Spinball Runners\\scripts\\themes\\lava_reef_theme.gd",
+    "unchanged": true
+  },
+  {
+    "path": "E:\\Sonic Spinball Runners\\scripts\\themes\\lava_molten.gdshader",
+    "unchanged": true
+  },
+  {
+    "path": "E:\\Sonic Spinball Runners\\scripts\\themes\\lava_crystal.gdshader",
+    "unchanged": true
+  },
+  {
+    "path": "E:\\Sonic Spinball Runners\\scripts\\decor\\lava_reef_decor.gd",
+    "unchanged": true
+  },
+  {
+    "path": "E:\\Sonic Spinball Runners\\data\\atmospheres\\lava_reef.cfg",
+    "unchanged": true
+  }
+]

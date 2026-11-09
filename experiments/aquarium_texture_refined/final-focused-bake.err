@@ -1,0 +1,94 @@
+ERROR: Can't create shader cache folder, no shader caching will happen: user://
+   at: RendererCompositorRD (servers/rendering/renderer_rd/renderer_compositor_rd.cpp:337)
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+WARNING: Cannot load graphics settings: Can't open file
+   at: push_warning (core/variant/variant_utility.cpp:1033)
+   GDScript backtrace (most recent call first):
+       [0] _load_settings (res://scripts/rendering_options.gd:127)
+       [1] register_view (res://scripts/rendering_options.gd:90)
+       [2] bake (res://scripts/endless/act_baker.gd:68)
+       [3] _ready (res://scripts/endless/act_baker.gd:53)
+ERROR: Printing last known breadcrumbs in reverse order (last executed first).
+Some of them might be inaccurate. Try running with --accurate-breadcrumbs for precise information.
+   at: print_lost_device_info (drivers/vulkan/rendering_device_driver_vulkan.cpp:7012)
+   GDScript backtrace (most recent call first):
+       [0] combine (res://scripts/pinball_mesh_batch.gd:74)
+       [1] flipper (res://scripts/pinball_models.gd:85)
+       [2] _moving_objects (res://scripts/endless/template_presenter.gd:122)
+       [3] stream_checkpoint (res://scripts/endless/template_presenter.gd:20)
+ERROR: Searching last breadcrumb. We've sent up to ID: 174
+ERROR: Last breadcrumb ID found: 174
+ERROR: Last known breadcrumb: BLIT_PASS
+ERROR: Last known breadcrumb: UI_PASS
+ERROR: Last known breadcrumb: BLIT_PASS
+ERROR: Last known breadcrumb: UI_PASS
+ERROR: Last known breadcrumb: BLIT_PASS
+ERROR: Last known breadcrumb: UI_PASS
+ERROR: Last known breadcrumb: BLIT_PASS
+ERROR: Last known breadcrumb: UI_PASS
+
+================================================================
+CrashHandlerException: Program crashed with signal 11
+Engine version: Godot Engine v4.7.2.stable.official (ed1daf0bf001b61586d9930840f2f1394092c079)
+Dumping the backtrace. Please include this when reporting the bug on: https://github.com/godotengine/godot/issues
+Load address: 7ff4fc1a0000
+
+[1] 7ff640274d61 (main+40d4d61) - no debug info in PE/COFF executable
+[2] 7ffa5cdff686 (ntdll.dll+8f686) - no debug info in PE/COFF executable
+[3] 7ffa5ce1517e (ntdll.dll+a517e) - no debug info in PE/COFF executable
+[4] 7ffa5cd8e855 (ntdll.dll+1e855) - no debug info in PE/COFF executable
+[5] 7ffa5ce1416d (ntdll.dll+a416d) - no debug info in PE/COFF executable
+[6] 7ff947fa6a90 (nvoglv64.dll+e86a90) - no debug info in PE/COFF executable
+[7] 7ff63d50e188 (main+136e188) - no debug info in PE/COFF executable
+[8] 7ff63d5105e5 (main+13705e5) - no debug info in PE/COFF executable
+[9] 7ff63f432b8c (main+3292b8c) - no debug info in PE/COFF executable
+[10] 7ff63f433282 (main+3293282) - no debug info in PE/COFF executable
+[11] 7ff63f48c236 (main+32ec236) - no debug info in PE/COFF executable
+[12] 7ff63f492b14 (main+32f2b14) - no debug info in PE/COFF executable
+[13] 7ff63f724b7b (main+3584b7b) - no debug info in PE/COFF executable
+[14] 7ff642263b4f (main+60c3b4f) - no debug info in PE/COFF executable
+[15] 7ff63f5218ed (main+33818ed) - no debug info in PE/COFF executable
+[16] 7ff63f2a4fe3 (main+3104fe3) - no debug info in PE/COFF executable
+[17] 7ff641e26e59 (main+5c86e59) - no debug info in PE/COFF executable
+[18] 7ff63c7ffb6d (main+65fb6d) - no debug info in PE/COFF executable
+[19] 7ff63c6d6139 (main+536139) - no debug info in PE/COFF executable
+[20] 7ff63fd3c471 (main+3b9c471) - no debug info in PE/COFF executable
+[21] 7ff63c8107b0 (main+6707b0) - no debug info in PE/COFF executable
+[22] 7ff63c6d6139 (main+536139) - no debug info in PE/COFF executable
+[23] 7ff63fd3c471 (main+3b9c471) - no debug info in PE/COFF executable
+[24] 7ff63c8107b0 (main+6707b0) - no debug info in PE/COFF executable
+[25] 7ff63c791551 (main+5f1551) - no debug info in PE/COFF executable
+[26] 7ff63c791ac7 (main+5f1ac7) - no debug info in PE/COFF executable
+[27] 7ff64219d282 (main+5ffd282) - no debug info in PE/COFF executable
+[28] 7ff63ffb810f (main+3e1810f) - no debug info in PE/COFF executable
+[29] 7ff63fccd0dd (main+3b2d0dd) - no debug info in PE/COFF executable
+[30] 7ff63fcce4b2 (main+3b2e4b2) - no debug info in PE/COFF executable
+[31] 7ff63ffc519a (main+3e2519a) - no debug info in PE/COFF executable
+[32] 7ff63c7f461d (main+65461d) - no debug info in PE/COFF executable
+[33] 7ff63c791551 (main+5f1551) - no debug info in PE/COFF executable
+[34] 7ff63c791ac7 (main+5f1ac7) - no debug info in PE/COFF executable
+[35] 7ff64219d282 (main+5ffd282) - no debug info in PE/COFF executable
+[36] 7ff63ffb810f (main+3e1810f) - no debug info in PE/COFF executable
+[37] 7ff63fccd0dd (main+3b2d0dd) - no debug info in PE/COFF executable
+[38] 7ff63fcce4b2 (main+3b2e4b2) - no debug info in PE/COFF executable
+[39] 7ff63ffc519a (main+3e2519a) - no debug info in PE/COFF executable
+[40] 7ff63e632714 (main+2492714) - no debug info in PE/COFF executable
+[41] 7ff63c1fda9c (main+5da9c) - no debug info in PE/COFF executable
+[42] 7ff63c1a2ef0 (main+2ef0) - no debug info in PE/COFF executable
+[43] 7ff63c1f2b41 (main+52b41) - no debug info in PE/COFF executable
+[44] 7ff63c1f2b7d (main+52b7d) - no debug info in PE/COFF executable
+[45] 7ff63c1a10c8 (main+10c8) - no debug info in PE/COFF executable
+[46] 7ff63c1a13f5 (main+13f5) - no debug info in PE/COFF executable
+[47] 7ffa5bff257c (kernel32.dll+1257c) - no debug info in PE/COFF executable
+[48] 7ffa5cdcaf07 (ntdll.dll+5af07) - no debug info in PE/COFF executable
+[49] -1 (main+-7ff63c1a0001) - no debug info in PE/COFF executable
+-- END OF C++ BACKTRACE --
+================================================================
+GDScript backtrace (most recent call first):
+    [0] combine (res://scripts/pinball_mesh_batch.gd:74)
+    [1] flipper (res://scripts/pinball_models.gd:85)
+    [2] _moving_objects (res://scripts/endless/template_presenter.gd:122)
+    [3] stream_checkpoint (res://scripts/endless/template_presenter.gd:20)
+-- END OF GDSCRIPT BACKTRACE --
+================================================================

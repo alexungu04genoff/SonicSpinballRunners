@@ -1,0 +1,26 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060
+ERROR: Can't create shader cache folder, no shader caching will happen: user://
+   at: RendererCompositorRD (servers/rendering/renderer_rd/renderer_compositor_rd.cpp:337)
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | aquarium_park | nodes=40 | instantiate_ms=767.03 | graphics_ms=7254.014 | retire_ms=0.97
+ENDLESS_DISK_WARM | aquarium_park | nodes=50 | instantiate_ms=10.474 | graphics_ms=130.977 | retire_ms=1.466
+ENDLESS_DISK_WARM | aquarium_park | nodes=816 | instantiate_ms=530.209 | graphics_ms=218.556 | retire_ms=48.143
+ENDLESS_PREPARED | aquarium_park:0 | source=disk | ms=14655.937 | GPU warm frames=27 | cached=1 | geometry loaded=11 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Untitled Act
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+ENDLESS_SLOW_FRAME | zone=1 ms=221.417 build_ms=0.025 | theme prefetch=
+ENDLESS_SLOW_FRAME | zone=1 ms=937.249 build_ms=0.013 | theme prefetch=
+AQUARIUM_FINAL | gameplay | pass=true | bound controls=12 | changed pixels=0.13784236111111 | missing=[]
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | aquarium_park | nodes=40 | instantiate_ms=375.684 | graphics_ms=139.759 | retire_ms=0.895
+ENDLESS_DISK_WARM | aquarium_park | nodes=50 | instantiate_ms=7.144 | graphics_ms=64.713 | retire_ms=0.999
+ENDLESS_DISK_WARM | aquarium_park | nodes=491 | instantiate_ms=87.924 | graphics_ms=150.171 | retire_ms=1.982
+ENDLESS_PREPARED | aquarium_park:0 | source=disk | ms=1622.486 | GPU warm frames=23 | cached=1 | geometry loaded=19 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Switch Court — Open the Sky Lane
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+ENDLESS_SLOW_FRAME | zone=1 ms=797.225 build_ms=0.014 | theme prefetch=
+AQUARIUM_FINAL | ramp | pass=true | bound controls=26 | changed pixels=0.0743375 | missing=[]

@@ -1,14 +1,26 @@
 extends "res://scripts/themes/theme_definition.gd"
 ## Twilight glacier presentation. No surface properties or gameplay hooks.
 const Decor = preload("res://scripts/decor/ice_cap_decor.gd")
+const Selected = preload("res://scripts/themes/ice_selected_materials.gd")
 var _library: RefCounted
 
 func _init() -> void:
  theme_id = "ice_cap"
  display_name = "Ice Cap"
  edge_trim_color = Color("c6dce7")
- _apply_texture_set()
+ floor_material = Selected.surface("1A", 0, Vector2(7.2, 7.2))
+ floor_border_material = Selected.surface("2B", 2, Vector2.ONE)
+ side_material = Selected.surface("3A", 5, Selected.WALL_REPEAT)
+ top_material = Selected.surface("5A", 0, Vector2(8, 8))
+ top_border_material = Selected.surface("6A", 2, Vector2.ONE)
+ cliff_material = Selected.surface("9A", 1, Vector2(1.8, 1.6))
+ cliff_material.set_shader_parameter("top_height", 0.0)
+ floor_border_width = 6.0
+ top_border_width = 4.0
  _library = Decor.new(null)
+
+func wrap_wall_mesh(mesh: ArrayMesh, outline: PackedVector2Array) -> ArrayMesh:
+ return Selected.wrap_wall_mesh(mesh, outline)
 
 func _shader(source: Shader) -> ShaderMaterial:
  var result := ShaderMaterial.new()
@@ -49,6 +61,14 @@ func build_background(p: Node3D) -> void:
  lake.name = "DarkFrozenLake"
  var lake_mat := _shader(preload("res://scripts/themes/ice_lake.gdshader"))
  lake_mat.set_shader_parameter("center", Vector2(center.x, center.z))
+ lake_mat.set_shader_parameter("albedo_texture", Selected.texture("12B"))
+ lake_mat.set_shader_parameter("response_texture", Selected.texture("12B-response"))
+ lake_mat.set_shader_parameter("use_albedo", true)
+ Selected.configure_detail(lake_mat, "12B")
+ # Keep the existing lake palette control live while showing the selected art
+ # unchanged under the approved default atmosphere's lake color.
+ var lake_reference := Color("387fa2").srgb_to_linear()
+ lake_mat.set_shader_parameter("albedo_tint_reference", Vector3(lake_reference.r, lake_reference.g, lake_reference.b))
  lake.material_override = lake_mat
  _snow(root, center, width, length)
  # Two low frozen gates sit in the shared backdrop's downstream lake. Their
@@ -243,7 +263,11 @@ func _batch(root: Node3D, scheduler: Node = null) -> void:
   root.add_child(instance)
 
 func ramp_materials() -> Dictionary:
- return {"deck": _texture_ramp(), "edge": _library.materials.snow, "support": _library.materials.ice, "accent": _library.materials.glow}
+ # Alex replaced the patterned crystal guards with the existing matte snow.
+ var guard: StandardMaterial3D = _library.materials.snow.duplicate()
+ guard.resource_name = "Ice Cap snow railguard"
+ guard.set_meta("ice_cap_snow_railguard", true)
+ return {"deck": Selected.surface("7B", 3, Vector2(1, 1.8)), "edge": guard, "border": guard, "fascia": guard, "support": _library.materials.ice, "accent": _library.materials.glow}
 
 func build_study(_p: Node3D, parent: Node3D, origin: Vector3) -> void:
  parent.position = origin

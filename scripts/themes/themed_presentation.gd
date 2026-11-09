@@ -257,6 +257,8 @@ func _make_land(outline: PackedVector2Array, depth: float, parent: Node3D, top_h
  var points := outline.duplicate()
  if Geometry2D.is_polygon_clockwise(points):
   points.reverse()
+ if theme_definition.theme_id == "casino_night":
+  theme_definition.set_facade_reference(points)
  var surface := SurfaceTool.new()
  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
  surface.set_material(_grass)
@@ -271,6 +273,9 @@ func _make_land(outline: PackedVector2Array, depth: float, parent: Node3D, top_h
  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
  surface.set_material(_cliff)
  var distance := 0.0
+ var green_hill_distances := PackedFloat32Array()
+ if theme_definition is GreenHillTheme or theme_definition.theme_id == "casino_night":
+  green_hill_distances = theme_definition.wall_distances(points)
  for i: int in points.size():
   var a := map_point(points[i], top_height)
   var b := map_point(points[(i + 1) % points.size()], top_height)
@@ -280,6 +285,9 @@ func _make_land(outline: PackedVector2Array, depth: float, parent: Node3D, top_h
   var bottom_b := b - Vector3.UP * depth
   var vertices: Array[Vector3] = [a, bottom_a, b, b, bottom_a, bottom_b]
   var coords: Array[Vector2] = [Vector2(distance, 0), Vector2(distance, depth), Vector2(distance + segment, 0), Vector2(distance + segment, 0), Vector2(distance, depth), Vector2(distance + segment, depth)]
+  if not green_hill_distances.is_empty():
+   for j in coords.size():
+    coords[j].x = green_hill_distances[i + 1] if j == 2 or j == 3 or j == 5 else green_hill_distances[i]
   for j: int in vertices.size():
    surface.set_normal(outward)
    surface.set_uv(coords[j])
@@ -349,7 +357,8 @@ func _flower(base: Vector3, size: float, target: Node3D = null) -> void:
 
 func ramp_materials() -> Dictionary:
  var result: Dictionary = theme_definition.ramp_materials()
- result["border"] = theme_definition.top_border_material
+ if not result.has("border"):
+  result["border"] = theme_definition.top_border_material
  return result
 
 func _add_border(outline: PackedVector2Array, holes: Array[PackedVector2Array], width: float, height: float, mat: Material, parent: Node3D, label: String) -> void:
@@ -358,6 +367,12 @@ func _add_border(outline: PackedVector2Array, holes: Array[PackedVector2Array], 
  var visual := mesh_node(mesh, null, Vector3.ZERO, parent)
  visual.name = label
  visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+ if theme_definition.theme_id=="rooftop_run" and mat==theme_definition.floor_border_material:
+  # Visible foliage volume only; reuse the contour mesh without touching collision.
+  for material: ShaderMaterial in theme_definition.material_maps.grass_shells():
+   var shell:=mesh_node(mesh,material,Vector3.ZERO,parent)
+   shell.name=label+"GrassLayer"
+   shell.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 func _paddle(length: float, radius: float, height: float, base: float, mat: Material, parent: Node3D) -> void:
  super._paddle(length, radius, height, base, mat, parent)
@@ -368,6 +383,8 @@ func _paddle(length: float, radius: float, height: float, base: float, mat: Mate
 
 func _prism(points: PackedVector2Array, height: float, side_mat: Material, top_mat: Material) -> ArrayMesh:
  var mesh := super._prism(points, height, side_mat, top_mat)
+ if (theme_definition is GreenHillTheme or theme_definition.theme_id in ["casino_night", "sky_sanctuary", "aquarium_park", "ice_cap"]) and side_mat == theme_definition.side_material:
+  mesh = theme_definition.wrap_wall_mesh(mesh, points)
  # Authored terrain adds its own bands after unioning outlines. Generated wall
  # flipper housings bypass that path and need a cap band on their existing mesh.
  if not authored_mode and top_mat == theme_definition.top_material:

@@ -1,0 +1,46 @@
+{
+  "albedo_source_sha256": "e5657b127524e1312a8fad7a7e8a5b992530025a18b4b1e8aaa85c3bf05b77bf",
+  "items": {
+    "1A": {
+      "albedo_sha256": "445961eaf3176733b683ac4dadfd8314127bbf5374f7bde6af51a79a29112604",
+      "height_range_world": 0.012,
+      "nominal_repeat": "(3.2, 3.2)"
+    },
+    "2B": {
+      "albedo_sha256": "5079cf27e04615b8b409d42f3d27e3521e99aea2548c219e77c8ce57abfcc560",
+      "height_range_world": 0.003,
+      "nominal_repeat": "(1.92, 0.08)"
+    },
+    "3B": {
+      "albedo_sha256": "0323793f8ce835e5b4835df2e2cdcc47e0c9af039606d005962bfb883a38a04b",
+      "height_range_world": 0.008,
+      "nominal_repeat": "(1.8, 0.325)"
+    },
+    "5A": {
+      "albedo_sha256": "a6dc5e97b1721fd8b4ada1c87313e608fea5368f8e4c030d3d6fcbed2b43bcf9",
+      "height_range_world": 0.012,
+      "nominal_repeat": "(2.4, 2.4)"
+    },
+    "6A": {
+      "albedo_sha256": "5079cf27e04615b8b409d42f3d27e3521e99aea2548c219e77c8ce57abfcc560",
+      "height_range_world": 0.003,
+      "nominal_repeat": "(1.92, 0.08)"
+    },
+    "7B": {
+      "albedo_sha256": "6acfd802f9670cdb8d8f088cdb1c74f116b5e7c9af62526b81374fa8fd73cf7f",
+      "height_range_world": 0.008,
+      "nominal_repeat": "(0.8, 1.6)"
+    },
+    "8A": {
+      "albedo_sha256": "e3a110a733ebe8eec0a9d20245b66999bf5d3d8b33554990db8fef726e9af142",
+      "height_range_world": 0.004,
+      "nominal_repeat": "(1.92, 0.12)"
+    },
+    "9B": {
+      "albedo_sha256": "5d43865f9c7292fa920a05ca4098cd4f963e60a4d9176590f087b37da0a20418",
+      "height_range_world": 0.03,
+      "nominal_repeat": "(2.4, 1.6)"
+    }
+  },
+  "normal_convention": "OpenGL"
+}

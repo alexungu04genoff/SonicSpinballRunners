@@ -4,6 +4,7 @@ const Density := preload("res://scripts/presentation_density.gd")
 ## Original low-poly aquatic architecture. Every node is presentation only.
 var meshes: Dictionary = {}
 var materials: Dictionary = {}
+var _coral_cluster_index := 0
 
 func _init(_presentation: Node3D) -> void:
  skin_id = "aquarium_park"
@@ -43,6 +44,17 @@ func _init(_presentation: Node3D) -> void:
  roof_material.metallic = 0.2
  Atmosphere.color(roof_material, "roof_tint", "tint")
  materials.roof_tiles = roof_material
+ # Selected 13B is confined to coral clusters. Fish tails still use original coral.
+ for index in 2:
+  var color := Color("4bbecb" if index==0 else "8972bc")
+  var branch: StandardMaterial3D=materials.coral.duplicate()
+  branch.albedo_color=color
+  branch.emission=color
+  Atmosphere.color(branch,"coral","tint")
+  materials["reef_branch_"+str(index)]=branch
+  var stem: StandardMaterial3D=materials.plant.duplicate()
+  stem.albedo_color=color.darkened(.14)
+  materials["reef_stem_"+str(index)]=stem
  for key: String in ["water", "glass"]:
   var mat := ShaderMaterial.new()
   mat.shader = load("res://scripts/themes/aquarium_%s.gdshader" % key)
@@ -139,13 +151,15 @@ func lantern(root: Node3D, at: Vector3, radius: float) -> void:
  bar(root,"gold",at-Vector3.UP*radius*1.2,at-Vector3.UP*radius*1.8,radius*0.12)
 
 func coral(root: Node3D, at: Vector3, height: float) -> void:
- bar(root,"plant",at,at+Vector3.UP*height,height*0.055)
+ var palette := str(_coral_cluster_index%2)
+ _coral_cluster_index+=1
+ bar(root,"reef_stem_"+palette,at,at+Vector3.UP*height,height*0.055)
  for i in 4:
   var side := -1.0 if i%2 == 0 else 1.0
   var joint := at+Vector3(0,height*(0.22+i*0.15),0)
   var tip := joint+Vector3(side*height*(0.36-i*0.05),height*0.22,0.04)
-  bar(root,"coral",joint,tip,height*0.045)
-  bar(root,"coral",tip,tip+Vector3.UP*height*0.16,height*0.035)
+  bar(root,"reef_branch_"+palette,joint,tip,height*0.045)
+  bar(root,"reef_branch_"+palette,tip,tip+Vector3.UP*height*0.16,height*0.035)
 
 func fish(root: Node3D, at: Vector3, length: float, angle: float, depth_scale := 1.0) -> void:
  var group := Node3D.new()

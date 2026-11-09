@@ -1,0 +1,204 @@
+{
+  "act": "res://data/acts/Authored/RampMania.tres",
+  "act_bake": "res://data/acts/Authored/RampMania.bake/aquarium_park.res",
+  "act_bake_sha256": "e3fba71cee45513d5cc14896cc05f04693571f940da9badc8c253a773546438a",
+  "act_fingerprint": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0",
+  "atmosphere": {
+    "enabled": true,
+    "id": "default",
+    "name": "Default",
+    "values": {
+      "directional_fog/enabled": false,
+      "emission": 0.8,
+      "env/ambient_light_color": "(0.6784, 0.8431, 0.9216, 1.0)",
+      "env/ambient_light_energy": 0.7,
+      "env/ambient_light_sky_contribution": 0.0,
+      "env/fog_enabled": false,
+      "env/glow_bloom": 0.0,
+      "env/glow_enabled": true,
+      "env/glow_hdr_threshold": 1.0,
+      "env/glow_intensity": 0.52,
+      "env/glow_levels/3": 0.16,
+      "env/glow_levels/5": 0.8,
+      "env/glow_levels/7": 0.25,
+      "env/glow_normalized": true,
+      "env/glow_strength": 1.2,
+      "env/tonemap_exposure": 1.04,
+      "env/tonemap_mode": 0,
+      "palette/caustic": "(0.2824, 0.8196, 0.8353, 1.0)",
+      "palette/lagoon_deep": "(0.0706, 0.298, 0.4471, 1.0)",
+      "palette/lagoon_wave": "(0.1294, 0.5255, 0.6353, 1.0)",
+      "palette/lantern_emission": "(1.0, 0.6745, 0.2588, 1.0)",
+      "palette/lantern_left": "(1.0, 0.7569, 0.4549, 1.0)",
+      "palette/lantern_paper": "(0.9137, 0.6275, 0.302, 1.0)",
+      "palette/lantern_reflection": "(1.0, 0.7216, 0.3686, 1.0)",
+      "palette/lantern_right": "(1.0, 0.6941, 0.3686, 1.0)",
+      "palette/water_reflection": "(0.5412, 0.749, 0.8471, 1.0)",
+      "sky/ground_bottom_color": "(0.0627, 0.1765, 0.2824, 1.0)",
+      "sky/ground_curve": 0.2,
+      "sky/ground_horizon_color": "(0.1569, 0.3373, 0.4588, 1.0)",
+      "sky/sky_curve": 0.2,
+      "sky/sky_horizon_color": "(0.1569, 0.3373, 0.4588, 1.0)",
+      "sky/sky_top_color": "(0.0235, 0.0902, 0.2078, 1.0)",
+      "sun/light_angular_distance": 0.0,
+      "sun/light_color": "(0.7608, 0.9059, 0.9647, 1.0)",
+      "sun/light_energy": 0.78,
+      "sun/light_specular": 0.8,
+      "sun/shadow_bias": 0.02,
+      "sun/shadow_enabled": true,
+      "sun/shadow_normal_bias": 0.55,
+      "sun/shadow_opacity": 0.85,
+      "sun_pitch": -50.0,
+      "sun_yaw": -30.0,
+      "surface_halo_spread": 1.0
+    },
+    "weight": 1.0
+  },
+  "authority": "Prototype",
+  "current_texture_matches": [
+    {
+      "rgba8_sha256": "f296f2063219058f14fce4ab54576220095bd8f7984374ebcd6da2045599ac21",
+      "runtime_texture": "res://data/endless/assets.bake/d5a39a7285a63aeb981ea2d4f099bf41094dc0b5f459886ad7ea4d0a04a99944.res",
+      "source": "res://assets/textures/aquarium_park/selected/1-mixed-floor.png",
+      "source_sha256": "5324d8b566c22c8f2be03304397ec4c4e6816ca510b6c3027bf15898326dd150"
+    },
+    {
+      "rgba8_sha256": "18ddd67cfee2da8c869d21eb2b8853c43ed0ce3c2e4b3ed875599bc039fff07d",
+      "runtime_texture": "res://data/endless/assets.bake/fa2237e773cd9ca29aac732d2e545cd7eebcc0aa10d51380b618b29003a156f0.res",
+      "source": "res://assets/textures/aquarium_park/selected/2A.png",
+      "source_sha256": "fa4cf8f8dfcf8b76c95c16438bc2431755ebe5bd0e77070db222dae36d0672dd"
+    },
+    {
+      "rgba8_sha256": "0792978a349d88a4aa3c187275b638bbaecff6f995401f045f38e052ddd40821",
+      "runtime_texture": "res://data/endless/assets.bake/22e9614e16533d36170e3036a7c38e35622c9e38d08b37e80416a832261b42f8.res",
+      "source": "res://assets/textures/aquarium_park/selected/3B.png",
+      "source_sha256": "b7e0037b1e589cd88e5d82f5aea79d1a07fd0ddb4b266c83c57caee1c18182ea"
+    },
+    {
+      "rgba8_sha256": "3495a551b7aee55aa312c52448cce37415c0c1fc7c12a4cd8853d9f885ea3738",
+      "runtime_texture": "res://data/endless/assets.bake/22434b1a3c62382a6cb63a23ca009ec5f7fe9228a771cd0257652ce1e8379bab.res",
+      "source": "res://assets/textures/aquarium_park/selected/4B.png",
+      "source_sha256": "05d7999bd374c66674359fad7fe1f35c0e09481e14dc5298ff91869e981259a6"
+    },
+    {
+      "rgba8_sha256": "bdabb5e4231dc6696f3b06d2ef6b1ec8c953bfcdbd3fb9e00f01650326e36652",
+      "runtime_texture": "res://data/endless/assets.bake/9296ce26fc3b9117ab4c6b9c3cddb488d90b542e3ce4672457a703dd1d449fae.res",
+      "source": "res://assets/textures/aquarium_park/selected/5A-red.png",
+      "source_sha256": "b19478a806216742e231d08e96ac73b2b0784b2f07bb2542cb945fd76de9c7b5"
+    },
+    {
+      "rgba8_sha256": "662c529714677869bdeb579db00225b84e08aa77e9b50ce1fad837d61969c376",
+      "runtime_texture": "res://data/endless/assets.bake/148caf68722134546c2f17815e46ff55fb7d46985d3e33236e331de6bf37477e.res",
+      "source": "res://assets/textures/aquarium_park/selected/6A-red.png",
+      "source_sha256": "5a5f2960691321194ac71b9ea7d7e48cef8993d767549132da076c10f219644b"
+    },
+    {
+      "rgba8_sha256": "1a4e0e28eb921177d2bebd1f1011699e01faddfa364c03660811ff0751a1cafb",
+      "runtime_texture": "res://data/endless/assets.bake/e533d1c411011ca137c8aaf9ae34c5b2faf164045e2f4c428671e1d38aca9e4e.res",
+      "source": "res://assets/textures/aquarium_park/selected/7B.png",
+      "source_sha256": "e4ed503ef3fbec0c478e6cf24082a9560f0d024a36df4833dd50c55426857fda"
+    },
+    {
+      "rgba8_sha256": "22fa2eab1b71defe5510b829a98ea9f4e46ff162451057dcbcfce64a00bcf88a",
+      "runtime_texture": "res://data/endless/assets.bake/0eb6087267429a0190ca7853d79a606fd5921f7ee01df852256af4cd93a2944e.res",
+      "source": "res://assets/textures/aquarium_park/selected/8A.png",
+      "source_sha256": "56311a50f444c9fc4051beccc34d9e00bea06b33fadbaeabb2b9b6f652b6f56e"
+    },
+    {
+      "rgba8_sha256": "e2acd15e23320a4abc829e7cbfdf54078af0ac4cd55d2c9ef65af306346317fc",
+      "runtime_texture": "res://data/endless/assets.bake/78b48343a544e0eacac6ff746db73a5edcf20117c215af363741cff24ab9aa2f.res",
+      "source": "res://assets/textures/aquarium_park/selected/9A.png",
+      "source_sha256": "24c7748b15e1ef7bad04abe10d347649e0e842a9019c64f6371230298be22000"
+    }
+  ],
+  "disk_acts": 1,
+  "disk_themes": 1,
+  "fallback_builds": 0,
+  "fps_counter_hidden": true,
+  "hud_hidden": true,
+  "library": "res://scripts/endless/template_library.gd",
+  "pipeline_fingerprint": "621ecb347315de5e9b1f48ccd17c7a31045cab2e66a058fb4bab1bf11acaf6fe",
+  "relief": "Selected albedo-only shader: no normal, height, parallax or generated response maps",
+  "renderer": {
+    "api": "1.4.351",
+    "command_line": [
+      "--script",
+      "res://experiments/aquarium_texture_refined/phase3/review.gd"
+    ],
+    "device": "NVIDIA GeForce RTX 4060",
+    "driver": "vulkan",
+    "engine": "4.7.2-stable (official)",
+    "renderer": "forward_plus",
+    "user_arguments": [
+      "--retro=production",
+      "--act=res://data/acts/Authored/RampMania.tres",
+      "--label=ramps"
+    ]
+  },
+  "retro_effects": [
+    2,
+    4,
+    3
+  ],
+  "retro_mode": "production",
+  "retro_settings_sha256": "0291745db30c7ddcdfac70db02795cefba0f072b030d52d3ace07f8c900618e0",
+  "scene": "res://scenes/prototype_run.tscn",
+  "scenery_fingerprint": "fixed",
+  "seed": 3648962628,
+  "selected_materials": {
+    "0": {
+      "repeat_size": "(3.6, 3.6)",
+      "shader": "res://scripts/themes/aquarium_selected.gdshader"
+    },
+    "1": {
+      "repeat_size": "(2.4, 1.925)",
+      "shader": "res://scripts/themes/aquarium_selected.gdshader"
+    },
+    "2": {
+      "repeat_size": "(3.0, 1.0)",
+      "shader": "res://scripts/themes/aquarium_selected.gdshader"
+    },
+    "3": {
+      "repeat_size": "(1.0, 1.2)",
+      "shader": "res://scripts/themes/aquarium_selected.gdshader"
+    },
+    "5": {
+      "repeat_size": "(0.64, 0.325)",
+      "shader": "res://scripts/themes/aquarium_selected.gdshader"
+    },
+    "6": {
+      "repeat_size": "(0.72, 1.0)",
+      "shader": "res://scripts/themes/aquarium_selected.gdshader"
+    }
+  },
+  "source_sha256": "703d4f06c0fc015e1844cc8230d2639fe0ab94853c877185ce3161990e1d1436",
+  "state": {
+    "act_score": 0,
+    "ball": "(200.0, 700.0)",
+    "camera_fov": 52.0,
+    "camera_projection": 0,
+    "camera_settings": {
+      "dead_zone_x": 18.0,
+      "dead_zone_y": 12.0,
+      "horizontal_response": 2.0,
+      "look_ahead": 0.0,
+      "max_speed": 4000.0,
+      "screen_margin_y": 0.22,
+      "screen_target_y": 0.55,
+      "vertical_response": 28.0,
+      "zoom": 1.3
+    },
+    "camera_size": 1.0,
+    "camera_transform": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (2.0, 2.115734, 8.545638)]",
+    "document": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0",
+    "goal_unlocked": false,
+    "rings": 0,
+    "score": 0,
+    "serve_pending": true,
+    "velocity": "(0.0, 0.0)"
+  },
+  "surface_detail": "flat",
+  "theme": "aquarium_park",
+  "theme_bake": "res://data/endless/themes.bake/aquarium_park.res",
+  "theme_bake_sha256": "543ccbbd9ac5805059977ea98db44d5e878b5cf6ec2d7ae2a8ab339037eb45ae"
+}

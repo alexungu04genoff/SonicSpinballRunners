@@ -1,0 +1,130 @@
+{
+  "act": "res://data/acts/Authored/RampMania.tres",
+  "act_bake": "res://data/acts/Authored/RampMania.bake/lava_reef.res",
+  "act_bake_sha256": "ce29429d4849701efd473358ca499535c70ef7b7d3774c9324caf0012bf8bac6",
+  "act_fingerprint": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0",
+  "atmosphere": {
+    "enabled": true,
+    "id": "default",
+    "name": "Default",
+    "values": {
+      "directional_fog/color": "(0.6157, 0.2824, 0.2039, 1.0)",
+      "directional_fog/curve": 1.8,
+      "directional_fog/density": 0.16,
+      "directional_fog/enabled": true,
+      "directional_fog/length": 1800.0,
+      "directional_fog/start": 420.0,
+      "emission": 0.75,
+      "env/ambient_light_color": "(0.7608, 0.6627, 0.6471, 1.0)",
+      "env/ambient_light_energy": 0.62,
+      "env/ambient_light_sky_contribution": 0.0,
+      "env/background_color": "(0.0549, 0.0275, 0.0549, 1.0)",
+      "env/fog_enabled": false,
+      "env/glow_bloom": 0.0,
+      "env/glow_enabled": true,
+      "env/glow_hdr_threshold": 1.1,
+      "env/glow_intensity": 0.56,
+      "env/glow_levels/3": 0.16,
+      "env/glow_levels/5": 0.8,
+      "env/glow_levels/7": 0.35,
+      "env/glow_normalized": true,
+      "env/glow_strength": 1.25,
+      "env/tonemap_exposure": 1.0,
+      "env/tonemap_mode": 0,
+      "palette/cavern_bounce": "(0.7098, 0.3255, 0.1725, 1.0)",
+      "palette/cavern_deep": "(0.0863, 0.1412, 0.1294, 1.0)",
+      "palette/ember": "(1.0, 0.7647, 0.3804, 1.0)",
+      "palette/magma_core": "(1.0, 0.8353, 0.549, 1.0)",
+      "palette/magma_crust": "(0.2078, 0.1255, 0.1608, 1.0)",
+      "palette/magma_dark": "(0.5059, 0.1412, 0.0784, 1.0)",
+      "palette/magma_hot": "(0.9412, 0.4353, 0.1216, 1.0)",
+      "palette/magma_light": "(1.0, 0.6157, 0.298, 1.0)",
+      "sun/light_angular_distance": 0.0,
+      "sun/light_color": "(1.0, 0.8196, 0.6314, 1.0)",
+      "sun/light_energy": 0.75,
+      "sun/light_specular": 0.8,
+      "sun/shadow_bias": 0.02,
+      "sun/shadow_enabled": true,
+      "sun/shadow_normal_bias": 0.55,
+      "sun/shadow_opacity": 0.85,
+      "sun_pitch": -56.0,
+      "sun_yaw": -30.0,
+      "surface_halo_spread": 1.0
+    },
+    "weight": 1.0
+  },
+  "authority": "Prototype",
+  "disk_acts": 1,
+  "disk_themes": 1,
+  "fallback_builds": 0,
+  "fps_counter_hidden": true,
+  "geometry_disabled_for_normal_diagnostic": true,
+  "library": "res://scripts/endless/template_library.gd",
+  "pipeline_fingerprint": "23bae4251014d05fb4324d93762e0185f0eed30731db60e92d4495672e0068e1",
+  "renderer": {
+    "api": "1.4.351",
+    "command_line": [
+      "--script",
+      "res://experiments/lava_texture_refined/canonical/normal_diagnostic.gd"
+    ],
+    "device": "NVIDIA GeForce RTX 4060",
+    "driver": "vulkan",
+    "engine": "4.7.2-stable (official)",
+    "renderer": "forward_plus",
+    "user_arguments": [
+      "--retro=production"
+    ]
+  },
+  "retro_effects": [
+    2,
+    4,
+    3
+  ],
+  "retro_mode": "production",
+  "retro_settings_sha256": "0291745db30c7ddcdfac70db02795cefba0f072b030d52d3ace07f8c900618e0",
+  "scene": "res://scenes/prototype_run.tscn",
+  "scenery_fingerprint": "fixed",
+  "seed": 3648962628,
+  "source_sha256": "703d4f06c0fc015e1844cc8230d2639fe0ab94853c877185ce3161990e1d1436",
+  "state": {
+    "act_score": 0,
+    "ball": "(200.0, 700.0)",
+    "camera_fov": 52.0,
+    "camera_projection": 0,
+    "camera_settings": {
+      "dead_zone_x": 18.0,
+      "dead_zone_y": 12.0,
+      "horizontal_response": 2.0,
+      "look_ahead": 0.0,
+      "max_speed": 4000.0,
+      "screen_margin_y": 0.22,
+      "screen_target_y": 0.55,
+      "vertical_response": 28.0,
+      "zoom": 1.3
+    },
+    "camera_size": 1.0,
+    "camera_transform": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (2.0, 2.115734, 8.545638)]",
+    "document": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0",
+    "goal_unlocked": false,
+    "rings": 0,
+    "score": 0,
+    "serve_pending": true,
+    "velocity": "(0.0, 0.0)"
+  },
+  "surface_detail": "flat",
+  "theme": "lava_reef",
+  "theme_bake": "res://data/endless/themes.bake/lava_reef.res",
+  "theme_bake_sha256": "387ffd6c207e5a865a6c01a7bad6306ff73268c8e82a97348410b3a284c73744",
+  "variants": [
+    {
+      "depth": 0.0,
+      "name": "normal-only",
+      "normal": 0.85
+    },
+    {
+      "depth": 0.0,
+      "name": "normal-extreme",
+      "normal": 6.0
+    }
+  ]
+}

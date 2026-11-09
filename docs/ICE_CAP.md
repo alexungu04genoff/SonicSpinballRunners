@@ -1,5 +1,17 @@
 # Ice Cap: twilight glacier
 
+## Current materials — 2026-11-09
+
+Alex authorized Phases 4 and 5 after approving the softer trim, brighter ice ramp, plain snow guards and denser lower-floor pattern. The current set is `assets/textures/ice_cap/selected/`: 1A snow/exposed ice, 2B narrow diamonds, 3A crystal walls, 5A upper snow, 6A snowy coping, 7B pale cut-ice ramps, 9A crystal/icicle cliffs, 11A snowy boughs and 12B lake floes. Role 4 is absent; role 8 uses the existing matte snow material. The retained 10C crystal shader is unchanged. Historical 8A files are unbound.
+
+The lower-floor repeat is 7.2 × 7.2 world units, making the approved pattern 10% smaller than the previous 8 × 8 repeat. Upper snow remains 8 × 8. Wall artwork follows whole repeats around the contour; ramps preserve complete deck width and repeat along travel. Snow guards have roughness 0.93 and specular 0.18. Ice response uses the existing environment sky, with no new reflection probes, screen-space reflections or per-frame CPU material updates.
+
+Nine OpenGL normal maps add shallow snow lips, broad crystal facets, cut-ice bevels and bough structure. Normals derive from the same procedural shapes as the approved artwork, never its brightness. Height maps are source references only. Color, response and normals share their mapping; the existing derivative frame handles tangentless and curved meshes. No parallax or geometry/collision changes are involved. The approved albedos, lighting and normal gameplay camera remain intact.
+
+`ice_cap_theme.gd`, `ice_selected_materials.gd`, `ice_selected.gdshader`, `ice_lake.gdshader` and `ice_cap_decor.gd` own the set. The normal launcher and source previews use those bindings; Ice Cap bakes retain their structural response. Visual Lab's **F8** panel exposes **Material detail** and **Normal strength** for actual private/batched materials. Production uses the authored per-role defaults. Current generation and focused review receipts live under `experiments/ice_texture_refined/`; the older implementation and research notes below remain historical where they conflict with this section.
+
+Focused graphical review refreshed five Prototype and seven Endless Ice Cap variants and verified all twelve against the current source/pipeline. Actual Prototype floor and ramp captures use the production Retro stack, no HUD, no runtime fallback, and loaded default materials. The ramp review verifies all nine selected normal bindings and the live detail controls. Approved albedo/response and 10C hashes are unchanged. No headless suite, benchmark, production build, commit or push was performed for this workflow.
+
 Implemented 2026-10-25 as the sixth selectable visual theme. Choose **Ice Cap** in the existing game Theme selector or the Act Editor's decor preview. The same authored Act, generic slots, collision shapes, ball, rings, score state and camera remain authoritative. Ice does **not** change friction or any other physics value.
 
 ## Research and art direction

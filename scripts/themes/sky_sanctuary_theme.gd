@@ -1,16 +1,23 @@
 extends "res://scripts/themes/theme_definition.gd"
 ## A cloudborne ruin skin. All dressing lives outside authoritative Act geometry.
 const Decor = preload("res://scripts/decor/sky_sanctuary_decor.gd")
-const FLOOR = preload("res://scripts/themes/sanctuary_floor.gdshader")
-const WALL = preload("res://scripts/themes/sanctuary_wall.gdshader")
 const CLOUDS = preload("res://scripts/themes/sanctuary_clouds.gdshader")
+const Selected = preload("res://scripts/themes/sanctuary_selected_materials.gd")
 var _library: RefCounted
 
 func _init() -> void:
  theme_id = "sky_sanctuary"
  display_name = "Sky Sanctuary"
  edge_trim_color = Color("b7b68e")
- _apply_texture_set()
+ # Canonical selected set. Keep the approved physical border widths.
+ floor_border_width=7.0
+ top_border_width=5.0
+ floor_material=Selected.surface("1A",0,Vector2(3.2,3.2))
+ top_material=Selected.surface("5A",0,Vector2(2.4,2.4))
+ side_material=Selected.surface("3B",5,Vector2(1.8,0.325))
+ cliff_material=Selected.surface("9B",1,Vector2(2.4,1.6))
+ floor_border_material=Selected.surface("2B",2,Vector2(4.0,1.0))
+ top_border_material=Selected.surface("6A",2,Vector2(4.0,1.0))
  _library = Decor.new(null)
 
 func _shader(source: Shader) -> ShaderMaterial:
@@ -203,5 +210,10 @@ func build_study(_p: Node3D, parent: Node3D, origin: Vector3) -> void:
  for side: int in [-1, 1]: _library.column(parent, Vector3(side, 0.03, -0.9), 1.0, 0.15, true)
 
 func ramp_materials() -> Dictionary:
- return {"deck": _texture_ramp(),
-  "edge": material(Color("c8c4a2")), "support": material(Color("9da98f")), "accent": material(Color("72bfca"))}
+ var guard:=Selected.surface("8A",2,Vector2(4.0,1.0))
+ return {"deck": Selected.surface("7B",3,Vector2(1.0,1.6)),
+  "edge":guard,"border":guard,"fascia":guard,
+  "support":material(Color("9da98f")),"accent":material(Color("72bfca"))}
+
+func wrap_wall_mesh(mesh: ArrayMesh, outline: PackedVector2Array) -> ArrayMesh:
+ return Selected.wrap_wall_mesh(mesh,outline)

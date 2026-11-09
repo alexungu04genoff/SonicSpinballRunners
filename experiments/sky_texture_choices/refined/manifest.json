@@ -1,0 +1,88 @@
+{
+  "phase": 2,
+  "status": "awaiting_visual_approval",
+  "maps": "albedo_only",
+  "integration": false,
+  "items": {
+    "1A": {
+      "file": "1A.png",
+      "size": [
+        512,
+        512
+      ],
+      "repeat_axes": "xy",
+      "sha256": "445961eaf3176733b683ac4dadfd8314127bbf5374f7bde6af51a79a29112604",
+      "review_note": "Blue strips form parallel runs when repeated; path placement waits for Phase 3."
+    },
+    "2B": {
+      "file": "2B.png",
+      "size": [
+        512,
+        128
+      ],
+      "repeat_axes": "x",
+      "sha256": "5079cf27e04615b8b409d42f3d27e3521e99aea2548c219e77c8ce57abfcc560",
+      "review_note": "Lengthwise repeat; stone segments meet at the tile boundary."
+    },
+    "3B": {
+      "file": "3B.png",
+      "size": [
+        512,
+        256
+      ],
+      "repeat_axes": "x",
+      "sha256": "0323793f8ce835e5b4835df2e2cdcc47e0c9af039606d005962bfb883a38a04b",
+      "review_note": "Three whole column modules per tile; horizontal repeat only."
+    },
+    "5A": {
+      "file": "5A.png",
+      "size": [
+        512,
+        512
+      ],
+      "repeat_axes": "xy",
+      "sha256": "a6dc5e97b1721fd8b4ada1c87313e608fea5368f8e4c030d3d6fcbed2b43bcf9",
+      "review_note": "Approved grass islands repeat visibly; roughly 70% stone / 30% turf."
+    },
+    "6A": {
+      "file": "6A.png",
+      "size": [
+        512,
+        128
+      ],
+      "repeat_axes": "x",
+      "sha256": "5079cf27e04615b8b409d42f3d27e3521e99aea2548c219e77c8ce57abfcc560",
+      "review_note": "Shares the selected coping design with 2B; mapping controls physical size."
+    },
+    "7B": {
+      "file": "7B.png",
+      "size": [
+        512,
+        512
+      ],
+      "repeat_axes": "xy",
+      "sha256": "6acfd802f9670cdb8d8f088cdb1c74f116b5e7c9af62526b81374fa8fd73cf7f",
+      "review_note": "Fitted block groups repeat; route direction and scale wait for Phase 3."
+    },
+    "8A": {
+      "file": "8A.png",
+      "size": [
+        512,
+        128
+      ],
+      "repeat_axes": "x",
+      "sha256": "e3a110a733ebe8eec0a9d20245b66999bf5d3d8b33554990db8fef726e9af142",
+      "review_note": "Continuous inset band; horizontal repeat only."
+    },
+    "9B": {
+      "file": "9B.png",
+      "size": [
+        512,
+        256
+      ],
+      "repeat_axes": "x",
+      "sha256": "5d43865f9c7292fa920a05ca4098cd4f963e60a4d9176590f087b37da0a20418",
+      "review_note": "Four complete coffer modules per tile; horizontal repeat only."
+    }
+  }
+}

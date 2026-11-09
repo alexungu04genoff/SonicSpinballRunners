@@ -1,0 +1,86 @@
+[
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\facade-emission.png",
+    "Hash": "0487CABD1661E5E30DD4FD045B48195B21A2286D491F07080C2DAF70821784CB"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\facade-surface.png",
+    "Hash": "9A5542272D3A2DEAA0B580DAD8EF4A3226846D7C7E028C6F9BF83EE82E120B27"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\facade.png",
+    "Hash": "9229D90FF6E4072D1124700FFC445989662E2738724EB10840E2A3B16172B6B6"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\floor-border-emission.png",
+    "Hash": "622081394684E592BC892FFA5D74038302DF51B6D9450271827724197349DB4D"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\floor-border-surface.png",
+    "Hash": "E556E2F0A0E9B5AA2310B7E5C9652466268BCB9DB5A4A63684BDA1BDBBBFCDDE"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\floor-border.png",
+    "Hash": "6AD453E6AA8657A70AF3E4D141D4A07E554C906645A9DC6720A533508F06535D"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\floor-emission.png",
+    "Hash": "D6423B0B2264CBF90558B8C013F8F34979000CB266D939859EF96C8D0DA4F436"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\floor-surface.png",
+    "Hash": "92282E5610941C4188FDBE6E5AF0D929797E2185B3921D7AC2D6717EC3D4F2B9"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\floor.png",
+    "Hash": "0A20EFC163415B5BC4A700E2CE660306400E9290A3F3D0626EE7253607E02E23"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\ramp-emission.png",
+    "Hash": "D6423B0B2264CBF90558B8C013F8F34979000CB266D939859EF96C8D0DA4F436"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\ramp-surface.png",
+    "Hash": "92282E5610941C4188FDBE6E5AF0D929797E2185B3921D7AC2D6717EC3D4F2B9"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\ramp.png",
+    "Hash": "0A20EFC163415B5BC4A700E2CE660306400E9290A3F3D0626EE7253607E02E23"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\top-border-emission.png",
+    "Hash": "622081394684E592BC892FFA5D74038302DF51B6D9450271827724197349DB4D"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\top-border-surface.png",
+    "Hash": "E556E2F0A0E9B5AA2310B7E5C9652466268BCB9DB5A4A63684BDA1BDBBBFCDDE"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\top-border.png",
+    "Hash": "6AD453E6AA8657A70AF3E4D141D4A07E554C906645A9DC6720A533508F06535D"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\top-emission.png",
+    "Hash": "5FA62F357450577EB95C3B85AF7B660B2F8F4ADA6ABFC7CEA4A1E1A8A9526298"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\top-surface.png",
+    "Hash": "04E4A514F5A99BE5BCC6B645E7F1DBC8BA55FF04DEBBCB8D4E1CD7F57681E060"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\top.png",
+    "Hash": "1652235139E8F1FECC9779948A4CE211DD03EDC7AC3A6FAB9EEFC60B1318019C"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\wall-emission.png",
+    "Hash": "D336E7ACEF2FA492406AF79E4D2C7E8EA691BBA290EEEEC1391D136176F4205E"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\wall-surface.png",
+    "Hash": "9A5542272D3A2DEAA0B580DAD8EF4A3226846D7C7E028C6F9BF83EE82E120B27"
+  },
+  {
+    "Path": "E:\\Sonic Spinball Runners\\assets\\textures\\ice_cap\\wall.png",
+    "Hash": "279A2BD4A3D5E82BE3A6E137514B983E4053259C72AABAF72C4D575A9A71D417"
+  }
+]

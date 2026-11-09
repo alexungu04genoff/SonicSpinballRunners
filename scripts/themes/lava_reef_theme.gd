@@ -1,7 +1,10 @@
 extends "res://scripts/themes/theme_definition.gd"
 ## A mineral shelf above a deep volcanic chamber. Presentation only.
 const Decor = preload("res://scripts/decor/lava_reef_decor.gd")
+const Selected = preload("res://scripts/themes/lava_selected_materials.gd")
 var _library: RefCounted
+var _ramp_deck_material: Material
+var _ramp_guard_material: Material
 ## Review opt-in only; the default avoids screen-copy cost and retro shimmer.
 var heat_haze_enabled := OS.get_cmdline_user_args().has("--lava-heat-haze")
 
@@ -9,7 +12,17 @@ func _init() -> void:
  theme_id = "lava_reef"
  display_name = "Lava Reef"
  edge_trim_color = Color("c79855")
- _apply_texture_set()
+ # Canonical selected materials use the same production presenter and disk bake.
+ floor_material=Selected.surface("1C",0,Vector2.ONE*(8.0/2.1))
+ top_material=Selected.surface("5B",0,Vector2(1.6,1.6))
+ side_material=Selected.surface("3B",1,Vector2(3.2,1.6))
+ cliff_material=Selected.surface("9B",1,Vector2(3.2,1.6))
+ floor_border_material=Selected.surface("2A",2,Vector2.ONE)
+ top_border_material=Selected.surface("6B",2,Vector2.ONE)
+ floor_border_width=7.0
+ top_border_width=5.0
+ _ramp_deck_material=Selected.surface("7A",3,Vector2(1.6,1.6))
+ _ramp_guard_material=Selected.surface("8B",6,Vector2.ONE)
  _library = Decor.new(null)
 
 func _shader(source: Shader) -> ShaderMaterial:
@@ -239,7 +252,7 @@ func _batch(root: Node3D, scheduler: Node = null) -> void:
   root.add_child(instance)
 
 func ramp_materials() -> Dictionary:
- return {"deck":_texture_ramp(),"edge":_library.materials.iron,"support":_library.materials.rust,"accent":_library.materials.brass}
+ return {"deck":_ramp_deck_material,"edge":_ramp_guard_material,"fascia":_ramp_guard_material,"border":_ramp_guard_material,"support":_library.materials.rust,"accent":_library.materials.brass}
 
 func build_study(_p: Node3D, parent: Node3D, origin: Vector3) -> void:
  parent.position = origin

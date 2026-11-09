@@ -1,0 +1,18 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060
+ERROR: Can't create shader cache folder, no shader caching will happen: user://
+   at: RendererCompositorRD (servers/rendering/renderer_rd/renderer_compositor_rd.cpp:337)
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | ice_cap | nodes=46 | instantiate_ms=864.215 | graphics_ms=6968.811 | retire_ms=2.586
+ENDLESS_DISK_WARM | ice_cap | nodes=7 | instantiate_ms=5.63 | graphics_ms=78.382 | retire_ms=0.417
+ENDLESS_DISK_WARM | ice_cap | nodes=498 | instantiate_ms=415.835 | graphics_ms=168.517 | retire_ms=14.987
+ENDLESS_PREPARED | ice_cap:0 | source=disk | ms=13836.458 | GPU warm frames=23 | cached=1 | geometry loaded=19 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Switch Court — Open the Sky Lane
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+ENDLESS_SLOW_FRAME | zone=1 ms=287.054 build_ms=0.033 | theme prefetch=
+ENDLESS_SLOW_FRAME | zone=1 ms=342.742 build_ms=0.02 | theme prefetch=
+ENDLESS_SLOW_FRAME | zone=1 ms=1211.782 build_ms=0.012 | theme prefetch=
+ICE_MATERIAL_REVIEW | complete=true | selected bindings=["11A", "12B", "7B", "1A", "9A", "2B", "5A", "3A", "6A"] | source current=true

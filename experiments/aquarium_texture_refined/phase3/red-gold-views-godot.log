@@ -1,0 +1,31 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060
+ERROR: Can't create shader cache folder, no shader caching will happen: user://
+   at: RendererCompositorRD (servers/rendering/renderer_rd/renderer_compositor_rd.cpp:337)
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+VIEW_FRESHNESS | current=3a67dcf836242b937b3e00229fccfe0c16496f3f57c328ffb37abe43fdf17515 act=3a67dcf836242b937b3e00229fccfe0c16496f3f57c328ffb37abe43fdf17515 theme=3a67dcf836242b937b3e00229fccfe0c16496f3f57c328ffb37abe43fdf17515
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | aquarium_park | nodes=40 | instantiate_ms=1359.862 | graphics_ms=15934.797 | retire_ms=33.91
+ENDLESS_DISK_WARM | aquarium_park | nodes=50 | instantiate_ms=52.696 | graphics_ms=216.574 | retire_ms=17.559
+ENDLESS_DISK_WARM | aquarium_park | nodes=816 | instantiate_ms=916.145 | graphics_ms=220.074 | retire_ms=47.049
+ENDLESS_PREPARED | aquarium_park:0 | source=disk | ms=27230.528 | GPU warm frames=27 | cached=1 | geometry loaded=11 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Untitled Act
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+ENDLESS_SLOW_FRAME | zone=1 ms=110.763 build_ms=0.022 | theme prefetch=
+ENDLESS_SLOW_FRAME | zone=1 ms=469.561 build_ms=0.025 | theme prefetch=
+AQUARIUM_VIEW | 01-park-overview | bounds=[P: (0.0, 0.0), S: (600.0, 600.0)] | image=0
+ENDLESS_SLOW_FRAME | zone=1 ms=3337.191 build_ms=0.021 | theme prefetch=
+AQUARIUM_VIEW | 02-borders-and-scenery | bounds=[P: (0.0, 0.0), S: (600.0, 600.0)] | image=0
+VIEW_FRESHNESS | current=3a67dcf836242b937b3e00229fccfe0c16496f3f57c328ffb37abe43fdf17515 act=3a67dcf836242b937b3e00229fccfe0c16496f3f57c328ffb37abe43fdf17515 theme=3a67dcf836242b937b3e00229fccfe0c16496f3f57c328ffb37abe43fdf17515
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | aquarium_park | nodes=40 | instantiate_ms=29.569 | graphics_ms=182.498 | retire_ms=1.873
+ENDLESS_DISK_WARM | aquarium_park | nodes=50 | instantiate_ms=4.288 | graphics_ms=81.863 | retire_ms=2.536
+ENDLESS_DISK_WARM | aquarium_park | nodes=491 | instantiate_ms=318.362 | graphics_ms=150.655 | retire_ms=15.557
+ENDLESS_PREPARED | aquarium_park:0 | source=disk | ms=1869.809 | GPU warm frames=23 | cached=1 | geometry loaded=19 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Switch Court — Open the Sky Lane
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+AQUARIUM_VIEW | 03-ramp-overview | bounds=[P: (0.0, 0.0), S: (600.0, 800.0)] | image=0
+ENDLESS_SLOW_FRAME | zone=1 ms=1884.856 build_ms=0.019 | theme prefetch=
+AQUARIUM_VIEW | 04-ramp-and-objects | bounds=[P: (0.0, 0.0), S: (600.0, 800.0)] | image=0

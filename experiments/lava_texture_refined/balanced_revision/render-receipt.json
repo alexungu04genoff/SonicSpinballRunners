@@ -1,0 +1,27 @@
+{
+  "approved_unchanged": [
+    "3B",
+    "9B"
+  ],
+  "changed": [
+    "1C",
+    "5B"
+  ],
+  "maps": [
+    "albedo"
+  ],
+  "metric": "Mean Rec.709-weighted sRGB signal, not a photometric luminance measurement",
+  "phase": 2,
+  "previous": {
+    "1C": 0.330863082559897,
+    "5B": 0.479071004475252
+  },
+  "production_integration": false,
+  "revised": {
+    "1C": 0.404746816079125,
+    "5B": 0.404778300774803
+  },
+  "rock_gain": 0.92531913186626,
+  "target": 0.404967043517574,
+  "wood_gain": 0.890375267797235
+}

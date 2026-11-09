@@ -1,0 +1,38 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060
+
+ENDLESS_PREPARE_SLICE | shared objects ms=54.136
+ENDLESS_PREPARE_SLICE | shared objects ms=66.973
+ENDLESS_PREPARE_SLICE | shared objects ms=63.142
+ENDLESS_PREPARE_SLICE | shared objects ms=68.204
+ENDLESS_PREPARE_SLICE | shared objects ms=50.806
+ENDLESS_PREPARE_SLICE | shared objects ms=56.672
+ENDLESS_PREPARE_SLICE | shared objects ms=63.034
+ENDLESS_PREPARE_SLICE | shared objects ms=60.282
+ENDLESS_PREPARE_SLICE | shared objects ms=40.004
+ENDLESS_PREPARE_SLICE | shared objects ms=36.616
+ENDLESS_PREPARE_SLICE | shared objects ms=39.928
+ENDLESS_PREPARE_SLICE | shared objects ms=44.469
+ENDLESS_PREPARE_SLICE | environment ms=64.772
+ENDLESS_PREPARE_SLICE | local scenery ms=50.841
+ENDLESS_PREPARE_SLICE | local scenery ms=23.726
+ENDLESS_PREPARE_SLICE | background ms=69.035
+ENDLESS_BATCHED | ice_cap:0 | Act={ "records_before": 609, "records_after": 509, "source_meshes": 438, "instances": 113, "batches": 19, "removed_nodes": 119 } | theme={ "records_before": 7, "records_after": 7, "source_meshes": 1, "instances": 0, "batches": 0, "removed_nodes": 0 }
+ACT_BAKED | res://data/acts/Authored/First Try Smooth Decor.bake/ice_cap.res | jobs=11
+ENDLESS_PREPARED | ice_cap:0 | source=offline | ms=15832.932 | GPU warm frames=0 | cached=1 | geometry loaded=0 | geometry generated=11
+ENDLESS_PREPARE_SLICE | shared objects ms=72.774
+ENDLESS_PREPARE_SLICE | shared objects ms=43.92
+ENDLESS_PREPARE_SLICE | shared objects ms=45.841
+ENDLESS_PREPARE_SLICE | shared objects ms=44.468
+ENDLESS_PREPARE_SLICE | shared objects ms=45.062
+ENDLESS_PREPARE_SLICE | shared objects ms=64.94
+ENDLESS_PREPARE_SLICE | shared objects ms=24.906
+ENDLESS_PREPARE_SLICE | shared objects ms=54.915
+ENDLESS_PREPARE_SLICE | shared objects ms=25.072
+ENDLESS_PREPARE_SLICE | shared objects ms=21.268
+ENDLESS_PREPARE_SLICE | shared objects ms=22.756
+ENDLESS_PREPARE_SLICE | environment ms=43.855
+ENDLESS_BATCHED | ice_cap:1 | Act={ "records_before": 498, "records_after": 498, "source_meshes": 398, "instances": 0, "batches": 0, "removed_nodes": 0 } | theme={ "records_before": 7, "records_after": 7, "source_meshes": 1, "instances": 0, "batches": 0, "removed_nodes": 0 }
+ACT_BAKED | res://data/acts/Authored/RampMania.bake/ice_cap.res | jobs=19
+ENDLESS_PREPARED | ice_cap:1 | source=offline | ms=9061.898 | GPU warm frames=0 | cached=2 | geometry loaded=0 | geometry generated=19
+ACT_BAKE_COMPLETE | Acts=2 variants=2

@@ -1,0 +1,26 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060
+
+VIEW_FRESHNESS | current=2af06061618bcef2bf51eb82d3a44ec6eb280bb1bc94a952977e5140b86deefd act=2af06061618bcef2bf51eb82d3a44ec6eb280bb1bc94a952977e5140b86deefd theme=2af06061618bcef2bf51eb82d3a44ec6eb280bb1bc94a952977e5140b86deefd
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | aquarium_park | nodes=40 | instantiate_ms=1564.1 | graphics_ms=11086.296 | retire_ms=89.809
+ENDLESS_DISK_WARM | aquarium_park | nodes=50 | instantiate_ms=109.594 | graphics_ms=184.142 | retire_ms=16.983
+ENDLESS_DISK_WARM | aquarium_park | nodes=816 | instantiate_ms=780.066 | graphics_ms=219.827 | retire_ms=46.603
+ENDLESS_PREPARED | aquarium_park:0 | source=disk | ms=22095.605 | GPU warm frames=27 | cached=1 | geometry loaded=11 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Untitled Act
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+ENDLESS_SLOW_FRAME | zone=1 ms=324.822 build_ms=0.027 | theme prefetch=
+AQUARIUM_VIEW | 01-park-overview | bounds=[P: (0.0, 0.0), S: (600.0, 600.0)] | image=0
+ENDLESS_SLOW_FRAME | zone=1 ms=2658.817 build_ms=0.085 | theme prefetch=
+AQUARIUM_VIEW | 02-borders-and-scenery | bounds=[P: (0.0, 0.0), S: (600.0, 600.0)] | image=0
+VIEW_FRESHNESS | current=2af06061618bcef2bf51eb82d3a44ec6eb280bb1bc94a952977e5140b86deefd act=2af06061618bcef2bf51eb82d3a44ec6eb280bb1bc94a952977e5140b86deefd theme=2af06061618bcef2bf51eb82d3a44ec6eb280bb1bc94a952977e5140b86deefd
+ACT_ENGINE_READY | Godot 4.7.2-stable (official) | 120 Hz | 2D collisions / 3D presentation
+ENDLESS_DISK_WARM | aquarium_park | nodes=40 | instantiate_ms=4.341 | graphics_ms=182.98 | retire_ms=0.756
+ENDLESS_DISK_WARM | aquarium_park | nodes=50 | instantiate_ms=1.695 | graphics_ms=59.081 | retire_ms=1.595
+ENDLESS_DISK_WARM | aquarium_park | nodes=491 | instantiate_ms=285.811 | graphics_ms=167.141 | retire_ms=15.05
+ENDLESS_PREPARED | aquarium_park:0 | source=disk | ms=1495.261 | GPU warm frames=23 | cached=1 | geometry loaded=19 | geometry generated=0
+ENDLESS_CHECKPOINT | zone=1 act=1 template=Switch Court — Open the Sky Lane
+ENDLESS_READY | seed=3648962628 | Acts=1 | cached variants=1 | normal pinball controls
+AQUARIUM_VIEW | 03-ramp-overview | bounds=[P: (0.0, 0.0), S: (600.0, 800.0)] | image=0
+ENDLESS_SLOW_FRAME | zone=1 ms=2295.184 build_ms=0.018 | theme prefetch=
+AQUARIUM_VIEW | 04-ramp-and-objects | bounds=[P: (0.0, 0.0), S: (600.0, 800.0)] | image=0

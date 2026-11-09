@@ -1,0 +1,29 @@
+{
+  "phase": "Phase 5: current canonical Aquarium set. Alex authorized completing Phase 4 response and Phase 5 handoff after approving the red/gold-stud border.",
+  "production_integrated": true,
+  "response": "Structural OpenGL normals and packed roughness/metal response; unchanged approved albedos. Runtime height, parallax and displacement are off.",
+  "handoff": "../../docs/AQUARIUM_MATERIALS.md",
+  "border_revision": {
+    "role": 2,
+    "request": "Reopen floor border: red with a small gold stud or plain red, based on the supplied Aquarium screenshot.",
+    "options": {"A":"../aquarium_texture_refined/border_revision/2A-red-gold-studs.png","B":"../aquarium_texture_refined/border_revision/2B-plain-red.png","C":"Previous gold-scroll 2A retained as comparison only"},
+    "status": "Alex approved A: red with sparse gold studs. Integrated as 2A-red-gold-studs, replacing the gold-scroll floor border."
+  },
+  "floor_revision": {
+    "request": "Reopen role 1 with broad irregular stone paving and physically square red-framed blue insets, based on the two new source-game screenshots.",
+    "preview": "../aquarium_texture_refined/floor_revision/floor-review.png",
+    "status": "User approved the mixed floor without the brown timber connector and then authorized proceeding with integration.",
+    "mapping_requirement": "Implemented equal 3.6-unit world repeats in both axes, preserving physically square modules on authored Act contours."
+  },
+  "locked": {
+    "1": {"concept": "Irregular stone paving with square serpentine blue insets; no timber connector", "source": "../aquarium_texture_refined/floor_revision/1-mixed-floor.png", "note": "Revises original 5A moved to role 1; mixed-floor revision approved with brown connector removed."},
+    "2": {"concept":"A red with sparse gold studs","source":"../aquarium_texture_refined/border_revision/2A-red-gold-studs.png","note":"Supersedes the original gold-scroll 2A."}, "3": "3B",
+    "4": {"concept": "4B ceramic tile-end frieze", "source": "round2/4B.png"},
+    "5": {"concept": "5A rounded tiles, red", "source": "round2/red/5A.png"},
+    "6": {"concept": "6A matching rounded-tile border, red", "source": "round2/red/6A.png", "note": "User approved the red roof and matching border preview."},
+    "7": "7B", "8": "8A", "9": "9A",
+    "10": "10C", "11": "11C", "12": "12C", "13": "13B"
+  },
+  "preserve": ["lamps", "lanterns", "architectural shapes", "scenery roofs selected as 10C", "gameplay", "collision", "terrain geometry", "camera", "lighting"],
+  "quality": "Early texture-production mockups with source-reference motifs and restrained internal variation; two generation passes maximum per item. No material-response maps in Phase 1."
+}

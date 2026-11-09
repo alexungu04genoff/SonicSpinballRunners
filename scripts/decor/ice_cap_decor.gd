@@ -18,10 +18,15 @@ func _init(_presentation: Node3D) -> void:
  factory = build_variant
  var colors := {"snow": "cfdfeb", "ice": "488caa", "deep": "234560", "rock": "34465c", "pine": "254f57", "trunk": "5e5969", "inset": "167b91", "glow": "68d9ce"}
  for key: String in colors:
+  if key == "pine":
+   var foliage := preload("res://scripts/themes/ice_selected_materials.gd").surface("11A", 6, Vector2.ONE)
+   Atmosphere.foliage(foliage)
+   materials[key] = foliage
+   continue
   var mat := StandardMaterial3D.new()
   mat.albedo_color = Color(colors[key])
   mat.roughness = 0.93 if key in ["snow", "rock", "pine", "trunk"] else 0.19
-  mat.metallic_specular = 0.18 if key == "snow" else 0.7
+  mat.metallic_specular = 0.18 if key in ["snow", "pine"] else 0.7
   if key == "glow":
    mat.emission_enabled = true
    mat.emission = Color(colors[key])

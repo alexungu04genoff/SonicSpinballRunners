@@ -1,0 +1,170 @@
+{
+  "act": "res://data/acts/Authored/RampMania.tres",
+  "act_bake": "res://data/acts/Authored/RampMania.bake/sky_sanctuary.res",
+  "act_bake_sha256": "5590b3029d3a25dd5551b2eda701196a7c7fe50a303ad49ffdfb8d99a88016a6",
+  "act_fingerprint": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0",
+  "atmosphere": {
+    "enabled": true,
+    "id": "default",
+    "name": "Default",
+    "values": {
+      "directional_fog/enabled": false,
+      "emission": 0.75,
+      "env/ambient_light_color": "(0.7255, 0.851, 0.9216, 1.0)",
+      "env/ambient_light_energy": 0.4,
+      "env/ambient_light_sky_contribution": 0.0,
+      "env/fog_enabled": false,
+      "env/glow_bloom": 0.0,
+      "env/glow_enabled": true,
+      "env/glow_hdr_threshold": 1.1,
+      "env/glow_intensity": 0.17,
+      "env/glow_levels/3": 0.2,
+      "env/glow_levels/5": 0.8,
+      "env/glow_levels/7": 0.25,
+      "env/glow_normalized": true,
+      "env/glow_strength": 1.15,
+      "env/tonemap_exposure": 1.02,
+      "env/tonemap_mode": 0,
+      "palette/bank_highlight": "(0.7176, 0.8078, 0.8431, 1.0)",
+      "palette/bank_shadow": "(0.4549, 0.5647, 0.6667, 1.0)",
+      "palette/ruin_haze": "(0.698, 0.8235, 0.8667, 1.0)",
+      "palette/sea_highlight": "(0.6588, 0.7843, 0.8745, 1.0)",
+      "palette/sea_shadow": "(0.3647, 0.5569, 0.6784, 1.0)",
+      "sky/ground_bottom_color": "(0.6, 0.7804, 0.8667, 1.0)",
+      "sky/ground_curve": 0.2,
+      "sky/ground_horizon_color": "(0.7882, 0.9059, 0.9412, 1.0)",
+      "sky/sky_curve": 0.2,
+      "sky/sky_horizon_color": "(0.7882, 0.9059, 0.9412, 1.0)",
+      "sky/sky_top_color": "(0.2235, 0.5412, 0.7686, 1.0)",
+      "sun/light_angular_distance": 0.0,
+      "sun/light_color": "(1.0, 0.9412, 0.7882, 1.0)",
+      "sun/light_energy": 0.83,
+      "sun/light_specular": 0.8,
+      "sun/shadow_bias": 0.02,
+      "sun/shadow_enabled": true,
+      "sun/shadow_normal_bias": 0.55,
+      "sun/shadow_opacity": 0.85,
+      "sun_pitch": -48.0,
+      "sun_yaw": -35.0,
+      "surface_halo_spread": 1.0
+    },
+    "weight": 1.0
+  },
+  "authority": "Prototype",
+  "disk_acts": 1,
+  "disk_themes": 1,
+  "fallback_builds": 0,
+  "fps_counter_hidden": true,
+  "hud_hidden": true,
+  "library": "res://scripts/endless/template_library.gd",
+  "pipeline_fingerprint": "5beb5f0cb831e7cf2633803b457c2f223bd7a31c47c70385e195232e7f2ea8c2",
+  "relief": false,
+  "renderer": {
+    "api": "1.4.351",
+    "command_line": [
+      "--script",
+      "res://experiments/sky_texture_choices/capture_production.gd"
+    ],
+    "device": "NVIDIA GeForce RTX 4060",
+    "driver": "vulkan",
+    "engine": "4.7.2-stable (official)",
+    "renderer": "forward_plus",
+    "user_arguments": [
+      "--retro=production",
+      "--seed=18",
+      "--ramp-review"
+    ]
+  },
+  "retro_effects": [
+    2,
+    4,
+    3
+  ],
+  "retro_mode": "production",
+  "retro_settings_sha256": "0291745db30c7ddcdfac70db02795cefba0f072b030d52d3ace07f8c900618e0",
+  "scene": "res://scenes/prototype_run.tscn",
+  "scenery_fingerprint": "4f98871f697bec4209c9ab04777ae1bbdf37928512cb85e2cffbf894f10aca27",
+  "seed": 18,
+  "source_sha256": "703d4f06c0fc015e1844cc8230d2639fe0ab94853c877185ce3161990e1d1436",
+  "surface_detail": "flat",
+  "textures": [
+    {
+      "rgba8_sha256": "244ed8d9293c001ce78322f23eab29a29a0be254cd743c8279787ca4344b5237",
+      "runtime_texture": "res://data/endless/assets.bake/8226ed5824c9e9dea4fdc3b739d07a8aac2090c53b6f5f890c07efa63903d75f.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/1A.png",
+      "source_sha256": "445961eaf3176733b683ac4dadfd8314127bbf5374f7bde6af51a79a29112604"
+    },
+    {
+      "rgba8_sha256": "6fa63a9438c5c4c88074d6ed440c6ca103a55cda67a405297cc8b454d32185be",
+      "runtime_texture": "res://data/endless/assets.bake/f6c8f29900c58e1b75a5a4ca1473a1318d2fe83e91d325e1c93b684632d940d5.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/2B.png",
+      "source_sha256": "5079cf27e04615b8b409d42f3d27e3521e99aea2548c219e77c8ce57abfcc560"
+    },
+    {
+      "rgba8_sha256": "dacd723d79c1a2f57da81da167724c74b88f36f5b263df851fa8a910dfa7f1bd",
+      "runtime_texture": "res://data/endless/assets.bake/63c138caebe84e9409d1e95c746844456799e75aa9f6d8fd2fff2c060b68aff5.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/3B.png",
+      "source_sha256": "0323793f8ce835e5b4835df2e2cdcc47e0c9af039606d005962bfb883a38a04b"
+    },
+    {
+      "rgba8_sha256": "3b05d3b5542c0a68a48b9efb9ef59bdbcf137b352da42b1eae29000bd6b9047d",
+      "runtime_texture": "res://data/endless/assets.bake/d5f8d521339511fb17822d11fe12309bc069f644d55f84b6fc9c22f24fbaf43e.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/5A.png",
+      "source_sha256": "a6dc5e97b1721fd8b4ada1c87313e608fea5368f8e4c030d3d6fcbed2b43bcf9"
+    },
+    {
+      "rgba8_sha256": "6fa63a9438c5c4c88074d6ed440c6ca103a55cda67a405297cc8b454d32185be",
+      "runtime_texture": "res://data/endless/assets.bake/f6c8f29900c58e1b75a5a4ca1473a1318d2fe83e91d325e1c93b684632d940d5.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/6A.png",
+      "source_sha256": "5079cf27e04615b8b409d42f3d27e3521e99aea2548c219e77c8ce57abfcc560"
+    },
+    {
+      "rgba8_sha256": "ad42c3e1f0a293e74ad0bbce7065533ecc954a4a2e2ed41e7fab4c9e0771c6a1",
+      "runtime_texture": "res://data/endless/assets.bake/6165fe9e67f4437ce73b5fa71e203b63486e6d0a0ed9e61d2277c221ba59540b.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/7B.png",
+      "source_sha256": "6acfd802f9670cdb8d8f088cdb1c74f116b5e7c9af62526b81374fa8fd73cf7f"
+    },
+    {
+      "rgba8_sha256": "99d8c20d2f16f6b2af147a597d14d77d862af8e4bab2356df52f186a92873a79",
+      "runtime_texture": "res://data/endless/assets.bake/ad2d2b20fbaa50c67067db57a1001a5822bbff61bd00068819caf4ac1ef8f586.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/8A.png",
+      "source_sha256": "e3a110a733ebe8eec0a9d20245b66999bf5d3d8b33554990db8fef726e9af142"
+    },
+    {
+      "rgba8_sha256": "a60f3c7fa000789212e2de9d0b16f97f403fd62e3414fc95e8f6ea29e99d485d",
+      "runtime_texture": "res://data/endless/assets.bake/a297ff987ea6553ba4867fbec395cffcdc9884db5742ebe2d09b2d9712c75b70.res",
+      "source": "res://assets/textures/sky_sanctuary/selected/9B.png",
+      "source_sha256": "5d43865f9c7292fa920a05ca4098cd4f963e60a4d9176590f087b37da0a20418"
+    }
+  ],
+  "theme": "sky_sanctuary",
+  "theme_bake": "res://data/endless/themes.bake/sky_sanctuary.res",
+  "theme_bake_sha256": "04686e77c769c493cdd475e96b21e9b27aca75d9e8b6384fd0a818a09a63d407",
+  "views": {
+    "close": {
+      "act_score": 0,
+      "ball": "(200.0, 700.0)",
+      "camera_fov": 52.0,
+      "camera_projection": 0,
+      "camera_settings": {
+        "dead_zone_x": 18.0,
+        "dead_zone_y": 12.0,
+        "horizontal_response": 2.0,
+        "look_ahead": 0.0,
+        "max_speed": 4000.0,
+        "screen_margin_y": 0.22,
+        "screen_target_y": 0.55,
+        "vertical_response": 28.0,
+        "zoom": 1.8
+      },
+      "camera_size": 1.0,
+      "camera_transform": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (3.5, 1.625461, 4.473397)]",
+      "document": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0",
+      "goal_unlocked": false,
+      "rings": 0,
+      "score": 0,
+      "serve_pending": true,
+      "velocity": "(0.0, 0.0)"
+    }
+  }
+}

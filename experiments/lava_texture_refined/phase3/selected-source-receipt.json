@@ -1,0 +1,58 @@
+[
+  {
+    "Id": "1C",
+    "Source": "E:\\Sonic Spinball Runners\\experiments\\lava_texture_refined\\balanced_revision\\1C.png",
+    "Destination": "E:\\Sonic Spinball Runners\\assets\\textures\\lava_reef\\selected\\1C.png",
+    "Hash": "3DB710FA767E6851986706DC788A345544E8DBAA8AB591DD4D6BBAFADE8E27F8",
+    "SourceMatch": true
+  },
+  {
+    "Id": "2A",
+    "Source": "E:\\Sonic Spinball Runners\\experiments\\lava_texture_refined\\2A.png",
+    "Destination": "E:\\Sonic Spinball Runners\\assets\\textures\\lava_reef\\selected\\2A.png",
+    "Hash": "7EF8E84634912041FA05F2E5777AB773D22CACB9D4BEF9A0B7B007BB64930D68",
+    "SourceMatch": true
+  },
+  {
+    "Id": "3B",
+    "Source": "E:\\Sonic Spinball Runners\\experiments\\lava_texture_refined\\3B.png",
+    "Destination": "E:\\Sonic Spinball Runners\\assets\\textures\\lava_reef\\selected\\3B.png",
+    "Hash": "686D9675DF5565D4DA752CE16B0B7FC60C46B97BF58667A81A896707E6F0B930",
+    "SourceMatch": true
+  },
+  {
+    "Id": "5B",
+    "Source": "E:\\Sonic Spinball Runners\\experiments\\lava_texture_refined\\final_revision\\5B.png",
+    "Destination": "E:\\Sonic Spinball Runners\\assets\\textures\\lava_reef\\selected\\5B.png",
+    "Hash": "78571807C33540E6278C45532636EB30B1453C0123C31170B0E45E8E235CBF67",
+    "SourceMatch": true
+  },
+  {
+    "Id": "6B",
+    "Source": "E:\\Sonic Spinball Runners\\experiments\\lava_texture_refined\\6B.png",
+    "Destination": "E:\\Sonic Spinball Runners\\assets\\textures\\lava_reef\\selected\\6B.png",
+    "Hash": "45D284BDD27C7BB5E0FD716E8B7118FE19D0EF5DBFE19432AEC5E9EADD19050E",
+    "SourceMatch": true
+  },
+  {
+    "Id": "7A",
+    "Source": "E:\\Sonic Spinball Runners\\experiments\\lava_texture_refined\\7A.png",
+    "Destination": "E:\\Sonic Spinball Runners\\assets\\textures\\lava_reef\\selected\\7A.png",
+    "Hash": "86481A7964F7D0BF25BCE5D3A41F9291B69059A47364B0EA72E1BDA3B6C4AB1F",
+    "SourceMatch": true
+  },
+  {
+    "Id": "8B",
+    "Source": "E:\\Sonic Spinball Runners\\experiments\\lava_texture_refined\\8B.png",
+    "Destination": "E:\\Sonic Spinball Runners\\assets\\textures\\lava_reef\\selected\\8B.png",
+    "Hash": "C61FDFE7E81B524FF3EE360E3A7E0409E3391A47FAAB89C8C04D7BB9E4DD885B",
+    "SourceMatch": true
+  },
+  {
+    "Id": "9B",
+    "Source": "E:\\Sonic Spinball Runners\\experiments\\lava_texture_refined\\warm_revision\\9B.png",
+    "Destination": "E:\\Sonic Spinball Runners\\assets\\textures\\lava_reef\\selected\\9B.png",
+    "Hash": "E0EDF83EFFD3CBC94DE6EF3EFA7C73FDF193661F58B67E244154376FC908389D",
+    "SourceMatch": true
+  }
+]

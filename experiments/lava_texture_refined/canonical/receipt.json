@@ -1,0 +1,298 @@
+{
+  "act": "res://data/acts/Authored/RampMania.tres",
+  "act_bake": "res://data/acts/Authored/RampMania.bake/lava_reef.res",
+  "act_bake_sha256": "3f0321adb7bc165454b7daec51c18f28042ad70e554f4107b2ce443b51aad243",
+  "act_fingerprint": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0",
+  "albedos_unchanged": true,
+  "atmosphere": {
+    "enabled": true,
+    "id": "default",
+    "name": "Default",
+    "values": {
+      "directional_fog/color": "(0.6157, 0.2824, 0.2039, 1.0)",
+      "directional_fog/curve": 1.8,
+      "directional_fog/density": 0.16,
+      "directional_fog/enabled": true,
+      "directional_fog/length": 1800.0,
+      "directional_fog/start": 420.0,
+      "emission": 0.75,
+      "env/ambient_light_color": "(0.7608, 0.6627, 0.6471, 1.0)",
+      "env/ambient_light_energy": 0.62,
+      "env/ambient_light_sky_contribution": 0.0,
+      "env/background_color": "(0.0549, 0.0275, 0.0549, 1.0)",
+      "env/fog_enabled": false,
+      "env/glow_bloom": 0.0,
+      "env/glow_enabled": true,
+      "env/glow_hdr_threshold": 1.1,
+      "env/glow_intensity": 0.56,
+      "env/glow_levels/3": 0.16,
+      "env/glow_levels/5": 0.8,
+      "env/glow_levels/7": 0.35,
+      "env/glow_normalized": true,
+      "env/glow_strength": 1.25,
+      "env/tonemap_exposure": 1.0,
+      "env/tonemap_mode": 0,
+      "palette/cavern_bounce": "(0.7098, 0.3255, 0.1725, 1.0)",
+      "palette/cavern_deep": "(0.0863, 0.1412, 0.1294, 1.0)",
+      "palette/ember": "(1.0, 0.7647, 0.3804, 1.0)",
+      "palette/magma_core": "(1.0, 0.8353, 0.549, 1.0)",
+      "palette/magma_crust": "(0.2078, 0.1255, 0.1608, 1.0)",
+      "palette/magma_dark": "(0.5059, 0.1412, 0.0784, 1.0)",
+      "palette/magma_hot": "(0.9412, 0.4353, 0.1216, 1.0)",
+      "palette/magma_light": "(1.0, 0.6157, 0.298, 1.0)",
+      "sun/light_angular_distance": 0.0,
+      "sun/light_color": "(1.0, 0.8196, 0.6314, 1.0)",
+      "sun/light_energy": 0.75,
+      "sun/light_specular": 0.8,
+      "sun/shadow_bias": 0.02,
+      "sun/shadow_enabled": true,
+      "sun/shadow_normal_bias": 0.55,
+      "sun/shadow_opacity": 0.85,
+      "sun_pitch": -56.0,
+      "sun_yaw": -30.0,
+      "surface_halo_spread": 1.0
+    },
+    "weight": 1.0
+  },
+  "authority": "Prototype",
+  "bound_materials": 26,
+  "canonical_defaults_verified": true,
+  "current_bakes": [
+    "res://data/acts/Authored/First Try Smooth Decor.tres",
+    "res://data/acts/Authored/RampMania.tres",
+    "res://data/acts/Authored/Reverse C Spring.tres",
+    "res://data/acts/Authored/Secret Entry.tres",
+    "res://data/acts/Authored/SpringUp.tres",
+    "res://data/endless/second_simple.tres",
+    "res://data/endless/third_complex.tres",
+    "res://data/endless/first_try_smooth_decor.tres",
+    "res://data/endless/ramp_mania.tres",
+    "res://data/endless/reverse_c_spring.tres",
+    "res://data/endless/secret_entry.tres",
+    "res://data/endless/spring_up.tres"
+  ],
+  "current_texture_matches": [
+    {
+      "rgba8_sha256": "288430feb448c25da011cad0218943f92590d31998e13a8d50db4715a6892c66",
+      "runtime_texture": "res://data/endless/assets.bake/4e507abf1273d7e3474762a4355b26e2c51318da03e615009e59a64ba1009248.res",
+      "source": "res://assets/textures/lava_reef/selected/1C.png",
+      "source_sha256": "3db710fa767e6851986706dc788a345544e8dbaa8ab591dd4d6bbafade8e27f8"
+    },
+    {
+      "rgba8_sha256": "c49eb0dedda6eaf65d2c8d454aa99823c40cfa261b879baedea394f5a22bd19c",
+      "runtime_texture": "res://data/endless/assets.bake/ee577562804b86e82f0dfe6ee39cc4c386c914db9383249c01f606e279553850.res",
+      "source": "res://assets/textures/lava_reef/selected/1C_cavity.png",
+      "source_sha256": "fa4c3fd66db061b7cbacd725fe027d4049b94d54ded21c246893b22da6f6e72e"
+    },
+    {
+      "rgba8_sha256": "56e2672b12bfbf1e1482ea2709f4d5f89307cdafbe2aeab443bb69ff2180f381",
+      "runtime_texture": "res://data/endless/assets.bake/8eb11c0f7878d59414ad140e37dd34cc8cc7a1ef3469c9eb317d4d8153942305.res",
+      "source": "res://assets/textures/lava_reef/selected/1C_normal.png",
+      "source_sha256": "f6df82a280c28e7a0c3b792547e16358a9bd9ef4e60008db3d3eed4b69a58044"
+    },
+    {
+      "rgba8_sha256": "14ce9fa23672fbc33fdc8cf3f0d6f0547be591184eecdc1fdf3920e0dab69b85",
+      "runtime_texture": "res://data/endless/assets.bake/96200096ce8ce9122a22376a7a754bddb47eff3e731007de23b3a50b4baa48a6.res",
+      "source": "res://assets/textures/lava_reef/selected/1C_roughness.png",
+      "source_sha256": "81827fba9c6e94901b3053533ac041a1e5037250d085592c54373bebe5e84f1a"
+    },
+    {
+      "rgba8_sha256": "f748d114a72b74f950b568288b05ad212443bb44dc034aefa09d5f7ce51d4fbd",
+      "runtime_texture": "res://data/endless/assets.bake/d80cff5f8cff61995dfa26dc9a98d1d6eddf17fd3da8763202b4bc581505dd17.res",
+      "source": "res://assets/textures/lava_reef/selected/2A.png",
+      "source_sha256": "7ef8e84634912041fa05f2e5777ab773d22cacb9d4bef9a0b7b007bb64930d68"
+    },
+    {
+      "rgba8_sha256": "33afee0bc8c65876b3c18e6251d3f249344b03e2874e0892e16f3fcbe866d63d",
+      "runtime_texture": "res://data/endless/assets.bake/f276dfd9cbae551384701c4974a724316b0268166c5bb741b3a4a51f5272de0d.res",
+      "source": "res://assets/textures/lava_reef/selected/2A_normal.png",
+      "source_sha256": "d5d481e02a4ae87c7858f6cc8f774d579a6d323c7792891b81df788867d84000"
+    },
+    {
+      "rgba8_sha256": "16ddfcbeb7563488aea4cf8313eea49db4c9b461a65db9d8a2aba63dfa491dad",
+      "runtime_texture": "res://data/endless/assets.bake/d78dab8402d7cb62a5adc021c47df5b15513f75224801aaa653e443cf5a6fc79.res",
+      "source": "res://assets/textures/lava_reef/selected/2A_roughness.png",
+      "source_sha256": "1acbc3a2175b3a15df2627e16df04a4953dff6fd13d1fbc76231532e5b4e78f0"
+    },
+    {
+      "rgba8_sha256": "5d4f69d3385223b25176d0f677bd50c1572aea17d78da4ccd629dede952db29c",
+      "runtime_texture": "res://data/endless/assets.bake/73a9ec24d6f8865189431b97cd8cdec1eebb8bd88cddc2be9abbb303bf3928bb.res",
+      "source": "res://assets/textures/lava_reef/selected/3B.png",
+      "source_sha256": "686d9675df5565d4da752ce16b0b7fc60c46b97bf58667a81a896707e6f0b930"
+    },
+    {
+      "rgba8_sha256": "2e3b2494747ab2ea458836acfef550f53e07fde14ec244436e33e97b8d907c0c",
+      "runtime_texture": "res://data/endless/assets.bake/3284db2a137b6c831c07ce37de107332dac8cf280ab052385c0787faaa8cfd4c.res",
+      "source": "res://assets/textures/lava_reef/selected/3B_normal.png",
+      "source_sha256": "ea0408bf440edf19c9e914abac82d12059d4ea62b381c651f2333471509cb2ef"
+    },
+    {
+      "rgba8_sha256": "03d4fc9057e92790fd16fcc0f3ed70cf1e717cff034a2578ba9cd39ea2be876f",
+      "runtime_texture": "res://data/endless/assets.bake/452b5bba764d45dbe4ba85138c9c78f8a4764d10f0d9aac5d5ca44de6cba5a35.res",
+      "source": "res://assets/textures/lava_reef/selected/3B_roughness.png",
+      "source_sha256": "285b14484dc3a6382172b1ecc5091008ef7f6d5e17354abebf7e3c65b21b58eb"
+    },
+    {
+      "rgba8_sha256": "283bef9d2dbbcf0b074f57fd3881f68a2183efb07578a80637adebaaca9a63f7",
+      "runtime_texture": "res://data/endless/assets.bake/63f0826198a1c2b0201d5613d5a99e8f008112907e4a190fc704ad466f477d82.res",
+      "source": "res://assets/textures/lava_reef/selected/5B.png",
+      "source_sha256": "78571807c33540e6278c45532636eb30b1453c0123c31170b0e45e8e235cbf67"
+    },
+    {
+      "rgba8_sha256": "a9bdea559c4b7d8555c34bec939770be166eab1c085e3b8684b19f3a17f97e47",
+      "runtime_texture": "res://data/endless/assets.bake/8aed4e751cc5e95e7c9a64bbb061ba99e9d678723db4803220a6faa6f34b4990.res",
+      "source": "res://assets/textures/lava_reef/selected/5B_cavity.png",
+      "source_sha256": "b0d9f78de8e0f7fd7de6738a0b76423ad167b6432edf95857983d7a0092dec01"
+    },
+    {
+      "rgba8_sha256": "dddfc74015accc85bf119673d5518f9d69d95afed96f5839cc9cf470fb5e46b5",
+      "runtime_texture": "res://data/endless/assets.bake/c517a409d6aea3e1786f036844e93cf1ea5f5e1b2487c56f633876ac3ec94e1a.res",
+      "source": "res://assets/textures/lava_reef/selected/5B_normal.png",
+      "source_sha256": "7f23c60d226b661053638e6f3c7cd2dedb88c2e71efcc4f4284326b1b60c5b15"
+    },
+    {
+      "rgba8_sha256": "51c8db52d5283de3a3ee57b8b779446830ac7c9d5f5317e6685ffc752241f450",
+      "runtime_texture": "res://data/endless/assets.bake/94324ab63a7969d4d4debd53513aadcc612291fcf337891e3b996f858e362be4.res",
+      "source": "res://assets/textures/lava_reef/selected/5B_roughness.png",
+      "source_sha256": "dceadd4f3950e9d291fd6ec7d2206100550119d7eb1142b86b2faaf9159fe22a"
+    },
+    {
+      "rgba8_sha256": "ccedeeff9413699d0cdaa63d276ff85faccea8812d8a0e956d750d318a8ff69f",
+      "runtime_texture": "res://data/endless/assets.bake/09aa5f5898fc7af5f13463c25554562135df9b1d820e9ddf8cb2668a1a9ae367.res",
+      "source": "res://assets/textures/lava_reef/selected/6B.png",
+      "source_sha256": "45d284bdd27c7bb5e0fd716e8b7118fe19d0ef5dbfe19432aec5e9eadd19050e"
+    },
+    {
+      "rgba8_sha256": "8fc57fec912f8a381b1045582608daed10776eb39c93f95f6afe829a27c4ebdb",
+      "runtime_texture": "res://data/endless/assets.bake/5ee5c142514d2883cf2ab5057e74439140aebad6aea592c4e842ab4c11af7377.res",
+      "source": "res://assets/textures/lava_reef/selected/6B_normal.png",
+      "source_sha256": "9631cca2fe6e88026be07a549d167765798867f99395a92ba0ca0df6055ab63a"
+    },
+    {
+      "rgba8_sha256": "16ddfcbeb7563488aea4cf8313eea49db4c9b461a65db9d8a2aba63dfa491dad",
+      "runtime_texture": "res://data/endless/assets.bake/d78dab8402d7cb62a5adc021c47df5b15513f75224801aaa653e443cf5a6fc79.res",
+      "source": "res://assets/textures/lava_reef/selected/6B_roughness.png",
+      "source_sha256": "1acbc3a2175b3a15df2627e16df04a4953dff6fd13d1fbc76231532e5b4e78f0"
+    },
+    {
+      "rgba8_sha256": "f90b65ddac8c2c0deacf38555a73997198cf55fd63298ca826a575651e2578b7",
+      "runtime_texture": "res://data/endless/assets.bake/82dae12684d0cab58c3dd975d7b6028f53392158a4c9597515f596a7d9b179e4.res",
+      "source": "res://assets/textures/lava_reef/selected/7A.png",
+      "source_sha256": "86481a7964f7d0bf25bce5d3a41f9291b69059a47364b0ea72e1bda3b6c4ab1f"
+    },
+    {
+      "rgba8_sha256": "db9f32c8bf7ca392e8b53a9b82c694bb9c83161afcf8d432690744d34662a3e6",
+      "runtime_texture": "res://data/endless/assets.bake/c3045755c87165700e5d4126bea7cd6538619ee0b362a3c0508606930db32e7f.res",
+      "source": "res://assets/textures/lava_reef/selected/7A_normal.png",
+      "source_sha256": "2931591d8a2990501e5a985b43b421a4737461df53c01cc6a792ac4cc3754ae0"
+    },
+    {
+      "rgba8_sha256": "73105455ca66fe31893a31affcdaaabab59b18dea1878658c8ebe378a881a186",
+      "runtime_texture": "res://data/endless/assets.bake/8fd8d56862e9b313353cf83f45b42d52b2790e18be9f37b1cba15636ccc98eb9.res",
+      "source": "res://assets/textures/lava_reef/selected/7A_roughness.png",
+      "source_sha256": "b450e6a71bf7962cfab99861499ab67d81e4583865b870c430cbcce0b8197c68"
+    },
+    {
+      "rgba8_sha256": "4c218241e8a0b54881b3d6c10755e224679d17dfdaa3d71adb1f77f913a0471b",
+      "runtime_texture": "res://data/endless/assets.bake/f7cd26b59df63d340f881b53dd5de0da168bd4fb05fc7fce9bd67e0bc7230b50.res",
+      "source": "res://assets/textures/lava_reef/selected/8B.png",
+      "source_sha256": "c61fdfe7e81b524ff3ee360e3a7e0409e3391a47faab89c8c04d7bb9e4dd885b"
+    },
+    {
+      "rgba8_sha256": "7af5a5961a00aba941af8e7331332a5e8b79193db937edb0312954b4f1974f0c",
+      "runtime_texture": "res://data/endless/assets.bake/1db839dd946c655586cb4a4b99b88450abd715de735a43b34314b1c84fec6a78.res",
+      "source": "res://assets/textures/lava_reef/selected/8B_normal.png",
+      "source_sha256": "98e5e80bdc30eeb47b7b0169ec1083516751ac3bf00eaa7d3afb76b742f8b44e"
+    },
+    {
+      "rgba8_sha256": "efa6771e948a8b74f5b6d2f8aec849813f4fbc3f41632e5d8b812df252b164c2",
+      "runtime_texture": "res://data/endless/assets.bake/d92436fefcc7fcb98bae0216fc25842684f44b3ba1147f32158a874b132dd55a.res",
+      "source": "res://assets/textures/lava_reef/selected/8B_roughness.png",
+      "source_sha256": "fd5a135a45992a05caa7d4c50efdd2f5ab72e2a7719e95fdfb45609d43a16a60"
+    },
+    {
+      "rgba8_sha256": "ab51896083cbde77b10550b68783a4840cdccddd3070346fa4d315660b0dd22d",
+      "runtime_texture": "res://data/endless/assets.bake/e65768dd0a735f670720f27cffdd875f36e20f3d4b64070243eaf06b6115105a.res",
+      "source": "res://assets/textures/lava_reef/selected/9B.png",
+      "source_sha256": "e0edf83effd3cbc94de6ef3efa7c73fdf193661f58b67e244154376fc908389d"
+    },
+    {
+      "rgba8_sha256": "1d00bc0b3b870c4411ff9eec39d2942fecbddbbd58f6d411d14e50f8ae4f713a",
+      "runtime_texture": "res://data/endless/assets.bake/c316c1bca535c3859dca3b55dc4d80069962d00fae7d470fbdda0d233aeb243c.res",
+      "source": "res://assets/textures/lava_reef/selected/9B_normal.png",
+      "source_sha256": "8f37f2323148803d45a67c12a37f7998e46bf33974e33de99122bc40fd5c9efc"
+    },
+    {
+      "rgba8_sha256": "eea57509db0c458898965b42e11a9156abfe4ddf7290d5b3b7c0d4585af1636b",
+      "runtime_texture": "res://data/endless/assets.bake/84ef155cc1ac219d18aef67f7caaed4de77fea58f2fa9f70679523dca11d877f.res",
+      "source": "res://assets/textures/lava_reef/selected/9B_roughness.png",
+      "source_sha256": "f15d4a61f81186b57a6eb07512283a988fda79ef3a346311db861f6704b3c639"
+    }
+  ],
+  "disk_acts": 1,
+  "disk_themes": 1,
+  "fallback_builds": 0,
+  "floor_normal_strength": 6.0,
+  "fps_counter_hidden": true,
+  "hud_hidden": true,
+  "library": "res://scripts/endless/template_library.gd",
+  "material_controls_verified": true,
+  "normal_strength": 0.85,
+  "pipeline_fingerprint": "c28e86ce4725305e040f7c6c76ade24c878a411b224fec738e1af31b27a0d305",
+  "recessed_geometry_materials": 0,
+  "renderer": {
+    "api": "1.4.351",
+    "command_line": [
+      "--script",
+      "res://experiments/lava_texture_refined/canonical/review.gd"
+    ],
+    "device": "NVIDIA GeForce RTX 4060",
+    "driver": "vulkan",
+    "engine": "4.7.2-stable (official)",
+    "renderer": "forward_plus",
+    "user_arguments": [
+      "--retro=production",
+      "--final"
+    ]
+  },
+  "retro_effects": [
+    2,
+    4,
+    3
+  ],
+  "retro_mode": "production",
+  "retro_settings_sha256": "0291745db30c7ddcdfac70db02795cefba0f072b030d52d3ace07f8c900618e0",
+  "scene": "res://scenes/prototype_run.tscn",
+  "scenery_fingerprint": "fixed",
+  "seed": 3648962628,
+  "source_sha256": "703d4f06c0fc015e1844cc8230d2639fe0ab94853c877185ce3161990e1d1436",
+  "state": {
+    "act_score": 0,
+    "ball": "(200.0, 700.0)",
+    "camera_fov": 52.0,
+    "camera_projection": 0,
+    "camera_settings": {
+      "dead_zone_x": 18.0,
+      "dead_zone_y": 12.0,
+      "horizontal_response": 2.0,
+      "look_ahead": 0.0,
+      "max_speed": 4000.0,
+      "screen_margin_y": 0.22,
+      "screen_target_y": 0.55,
+      "vertical_response": 28.0,
+      "zoom": 1.3
+    },
+    "camera_size": 1.0,
+    "camera_transform": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (2.0, 2.115734, 8.545638)]",
+    "document": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0",
+    "goal_unlocked": false,
+    "rings": 0,
+    "score": 0,
+    "serve_pending": true,
+    "velocity": "(0.0, 0.0)"
+  },
+  "surface_detail": "selected_relief",
+  "theme": "lava_reef",
+  "theme_bake": "res://data/endless/themes.bake/lava_reef.res",
+  "theme_bake_sha256": "25c971ee6d75c553adfbf44a7281375bba74e3cf1c6ccc3b0eb357d0e3d16bfe"
+}

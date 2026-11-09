@@ -1,0 +1,155 @@
+[
+  {
+    "pixel_scale": 1,
+    "header_height": 60,
+    "originals": [
+      {
+        "sha256": "227C5BE20E655091B5A41ABD5D8878AE96E9CF09BAB9B5327A3E313A934807F6",
+        "path": "green_hill-before.png",
+        "source": "before/green_hill.png"
+      },
+      {
+        "sha256": "C717ED3C76BEF31CC3335257F03D581DC15D50C345FE62160CBBB92653A11346",
+        "path": "green_hill-after.png",
+        "source": "after/green_hill.png"
+      }
+    ],
+    "pair": "green_hill-pair.png"
+  },
+  {
+    "pixel_scale": 1,
+    "header_height": 60,
+    "originals": [
+      {
+        "sha256": "CAEFA7414F72C20F0C1EB88A3E32FAC71CF5BBC561963AEF90AD7975703AD810",
+        "path": "chemical_plant-before.png",
+        "source": "before/chemical_plant.png"
+      },
+      {
+        "sha256": "6A4FBA739E04CB4249B2365050678A800DAD4B49BCCC075D516434822EAF088C",
+        "path": "chemical_plant-after.png",
+        "source": "after/chemical_plant.png"
+      }
+    ],
+    "pair": "chemical_plant-pair.png"
+  },
+  {
+    "pixel_scale": 1,
+    "header_height": 60,
+    "originals": [
+      {
+        "sha256": "74380A5C6A69981ACB4CD6CC6A98516F23BD8EE7B9D4E21E8DE7ED70EA96B2F4",
+        "path": "rooftop_run-before.png",
+        "source": "before/rooftop_run.png"
+      },
+      {
+        "sha256": "4E7D7B7B1E2AA4B3A70291A6089578E545198B32B671D1EEB818935838BA3EAD",
+        "path": "rooftop_run-after.png",
+        "source": "after/rooftop_run.png"
+      }
+    ],
+    "pair": "rooftop_run-pair.png"
+  },
+  {
+    "pixel_scale": 1,
+    "header_height": 60,
+    "originals": [
+      {
+        "sha256": "8797ACDF88A1F114DDDAFE2B18A162D1833887D0C0D7D657AE1BB17D058A2414",
+        "path": "casino_night-before.png",
+        "source": "before/casino_night.png"
+      },
+      {
+        "sha256": "E0C8CE2FC59A2717603B60E8444D49DEBEC49A2298EA0DDDE37C878F6E98A5E0",
+        "path": "casino_night-after.png",
+        "source": "after/casino_night.png"
+      }
+    ],
+    "pair": "casino_night-pair.png"
+  },
+  {
+    "pixel_scale": 1,
+    "header_height": 60,
+    "originals": [
+      {
+        "sha256": "976A61A27F9FE2E2F88FBAAFBE81783D69BDD7B75CEF0C81B29EAA29C895482C",
+        "path": "sky_sanctuary-before.png",
+        "source": "before/sky_sanctuary.png"
+      },
+      {
+        "sha256": "A68104DE435C1F8AA557051AB679F8B2DDEBA5DEFC37F1B0707176DD954DC2D8",
+        "path": "sky_sanctuary-after.png",
+        "source": "after/sky_sanctuary.png"
+      }
+    ],
+    "pair": "sky_sanctuary-pair.png"
+  },
+  {
+    "pixel_scale": 1,
+    "header_height": 60,
+    "originals": [
+      {
+        "sha256": "DAD49A1288D777A485F7225320F894E7203EF6A39A119D26489F46BD78516317",
+        "path": "ice_cap-before.png",
+        "source": "before/ice_cap.png"
+      },
+      {
+        "sha256": "559E94C72ADDDAD2B49831954DF8D99460FF5FDED2E810605D7AE2F1570A083D",
+        "path": "ice_cap-after.png",
+        "source": "after/ice_cap.png"
+      }
+    ],
+    "pair": "ice_cap-pair.png"
+  },
+  {
+    "pixel_scale": 1,
+    "header_height": 60,
+    "originals": [
+      {
+        "sha256": "2C10FA80FBE2B4793BD00895036DE06AAA0BCB93BF1F38BE600E0EC4D7871A6F",
+        "path": "lava_reef-before.png",
+        "source": "before/lava_reef.png"
+      },
+      {
+        "sha256": "85890B3CF1222F9E4CCD042FE4D0E6E225FCA24D3702B31AEF48B4E915F1A37C",
+        "path": "lava_reef-after.png",
+        "source": "after/lava_reef.png"
+      }
+    ],
+    "pair": "lava_reef-pair.png"
+  },
+  {
+    "pixel_scale": 1,
+    "header_height": 60,
+    "originals": [
+      {
+        "sha256": "A54BA3DCDDF3F66471D3E9934B8222C8F943D28A29D89F1A10E658F9AFBF798D",
+        "path": "aquarium_park-before.png",
+        "source": "before/aquarium_park.png"
+      },
+      {
+        "sha256": "DB553D43B9EFDBD902338B630A1DB6459E524A2B4BBDFD14AB905EED2A061DFF",
+        "path": "aquarium_park-after.png",
+        "source": "after/aquarium_park.png"
+      }
+    ],
+    "pair": "aquarium_park-pair.png"
+  },
+  {
+    "pixel_scale": 1,
+    "header_height": 60,
+    "originals": [
+      {
+        "sha256": "9ADD19EC6B73A771E08697449EDD1B964A6943494F4FB4FE9DF7F87169C15718",
+        "path": "sky_sanctuary-sky-edge-before.png",
+        "source": "before-sky-edge/sky_sanctuary.png"
+      },
+      {
+        "sha256": "B70AE00D2441D79D757508636858AF66DC2DF35600244491F2D284623435235E",
+        "path": "sky_sanctuary-sky-edge-after.png",
+        "source": "after-sky-edge/sky_sanctuary.png"
+      }
+    ],
+    "pair": "sky_sanctuary-sky-edge-pair.png"
+  }
+]

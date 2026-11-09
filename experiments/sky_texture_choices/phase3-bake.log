@@ -1,0 +1,31 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060
+ERROR: Can't create shader cache folder, no shader caching will happen: user://
+   at: RendererCompositorRD (servers/rendering/renderer_rd/renderer_compositor_rd.cpp:337)
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+WARNING: Cannot load graphics settings: Can't open file
+   at: push_warning (core/variant/variant_utility.cpp:1033)
+   GDScript backtrace (most recent call first):
+       [0] _load_settings (res://scripts/rendering_options.gd:127)
+       [1] register_view (res://scripts/rendering_options.gd:90)
+       [2] bake (res://scripts/endless/act_baker.gd:68)
+       [3] _ready (res://scripts/endless/act_baker.gd:53)
+ENDLESS_PREPARE_SLICE | shared objects ms=37.97
+ENDLESS_PREPARE_SLICE | shared objects ms=37.43
+ENDLESS_PREPARE_SLICE | shared objects ms=41.181
+ENDLESS_PREPARE_SLICE | shared objects ms=29.592
+ENDLESS_PREPARE_SLICE | shared objects ms=30.752
+ENDLESS_PREPARE_SLICE | shared objects ms=27.878
+ENDLESS_PREPARE_SLICE | shared objects ms=27.821
+ENDLESS_PREPARE_SLICE | shared objects ms=28.563
+ENDLESS_PREPARE_SLICE | shared objects ms=24.975
+ENDLESS_PREPARE_SLICE | shared objects ms=23.797
+ENDLESS_PREPARE_SLICE | shared objects ms=24.337
+ENDLESS_PREPARE_SLICE | shared objects ms=25.91
+ENDLESS_PREPARE_SLICE | environment ms=113.624
+ENDLESS_BATCHED | sky_sanctuary:0 | Act={ "records_before": 847, "records_after": 496, "source_meshes": 719, "instances": 411, "batches": 60, "removed_nodes": 411 } | theme={ "records_before": 9, "records_after": 9, "source_meshes": 1, "instances": 0, "batches": 0, "removed_nodes": 0 }
+ACT_BAKED | res://data/acts/Authored/First Try Smooth Decor.bake/sky_sanctuary.res | jobs=11
+ENDLESS_PREPARED | sky_sanctuary:0 | source=offline | ms=11833.644 | GPU warm frames=0 | cached=1 | geometry loaded=0 | geometry generated=11
+ACT_BAKE_COMPLETE | Acts=1 variants=1

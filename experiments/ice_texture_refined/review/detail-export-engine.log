@@ -1,0 +1,25 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+ERROR: Can't create shader cache folder, no shader caching will happen: user://
+   at: RasterizerGLES3 (drivers/gles3/rasterizer_gles3.cpp:345)
+OpenGL API 3.3.0 NVIDIA 616.64 - Compatibility - Using Device: NVIDIA - NVIDIA GeForce RTX 4060
+
+ERROR: Failed to read the root certificate store.
+   at: get_system_ca_certificates (platform/windows/os_windows.cpp:2582)
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/1A-height.png
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/1A-normal.png
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/2B-height.png
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/2B-normal.png
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/3A-height.png
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/3A-normal.png
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/5A-height.png
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/5A-normal.png
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/6A-height.png
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/6A-normal.png
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/7B-height.png
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/7B-normal.png
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/9A-height.png
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/9A-normal.png
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/11A-height.png
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/11A-normal.png
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/12B-height.png
+ICE_DETAIL_SAVED | res://assets/textures/ice_cap/selected/12B-normal.png

@@ -1,0 +1,293 @@
+{
+  "act": "res://data/acts/Authored/RampMania.tres",
+  "act_bake": "res://data/acts/Authored/RampMania.bake/lava_reef.res",
+  "act_bake_sha256": "907f3d70be66e68ccb05ded2124bf7592b32998110fccb2e24732a88d0dc3fa9",
+  "act_fingerprint": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0",
+  "atmosphere": {
+    "enabled": true,
+    "id": "default",
+    "name": "Default",
+    "values": {
+      "directional_fog/color": "(0.6157, 0.2824, 0.2039, 1.0)",
+      "directional_fog/curve": 1.8,
+      "directional_fog/density": 0.16,
+      "directional_fog/enabled": true,
+      "directional_fog/length": 1800.0,
+      "directional_fog/start": 420.0,
+      "emission": 0.75,
+      "env/ambient_light_color": "(0.7608, 0.6627, 0.6471, 1.0)",
+      "env/ambient_light_energy": 0.62,
+      "env/ambient_light_sky_contribution": 0.0,
+      "env/background_color": "(0.0549, 0.0275, 0.0549, 1.0)",
+      "env/fog_enabled": false,
+      "env/glow_bloom": 0.0,
+      "env/glow_enabled": true,
+      "env/glow_hdr_threshold": 1.1,
+      "env/glow_intensity": 0.56,
+      "env/glow_levels/3": 0.16,
+      "env/glow_levels/5": 0.8,
+      "env/glow_levels/7": 0.35,
+      "env/glow_normalized": true,
+      "env/glow_strength": 1.25,
+      "env/tonemap_exposure": 1.0,
+      "env/tonemap_mode": 0,
+      "palette/cavern_bounce": "(0.7098, 0.3255, 0.1725, 1.0)",
+      "palette/cavern_deep": "(0.0863, 0.1412, 0.1294, 1.0)",
+      "palette/ember": "(1.0, 0.7647, 0.3804, 1.0)",
+      "palette/magma_core": "(1.0, 0.8353, 0.549, 1.0)",
+      "palette/magma_crust": "(0.2078, 0.1255, 0.1608, 1.0)",
+      "palette/magma_dark": "(0.5059, 0.1412, 0.0784, 1.0)",
+      "palette/magma_hot": "(0.9412, 0.4353, 0.1216, 1.0)",
+      "palette/magma_light": "(1.0, 0.6157, 0.298, 1.0)",
+      "sun/light_angular_distance": 0.0,
+      "sun/light_color": "(1.0, 0.8196, 0.6314, 1.0)",
+      "sun/light_energy": 0.75,
+      "sun/light_specular": 0.8,
+      "sun/shadow_bias": 0.02,
+      "sun/shadow_enabled": true,
+      "sun/shadow_normal_bias": 0.55,
+      "sun/shadow_opacity": 0.85,
+      "sun_pitch": -56.0,
+      "sun_yaw": -30.0,
+      "surface_halo_spread": 1.0
+    },
+    "weight": 1.0
+  },
+  "authority": "Prototype",
+  "current_texture_matches": [
+    {
+      "rgba8_sha256": "288430feb448c25da011cad0218943f92590d31998e13a8d50db4715a6892c66",
+      "runtime_texture": "res://data/endless/assets.bake/4e507abf1273d7e3474762a4355b26e2c51318da03e615009e59a64ba1009248.res",
+      "source": "res://assets/textures/lava_reef/selected/1C.png",
+      "source_sha256": "3db710fa767e6851986706dc788a345544e8dbaa8ab591dd4d6bbafade8e27f8"
+    },
+    {
+      "rgba8_sha256": "f748d114a72b74f950b568288b05ad212443bb44dc034aefa09d5f7ce51d4fbd",
+      "runtime_texture": "res://data/endless/assets.bake/d80cff5f8cff61995dfa26dc9a98d1d6eddf17fd3da8763202b4bc581505dd17.res",
+      "source": "res://assets/textures/lava_reef/selected/2A.png",
+      "source_sha256": "7ef8e84634912041fa05f2e5777ab773d22cacb9d4bef9a0b7b007bb64930d68"
+    },
+    {
+      "rgba8_sha256": "5d4f69d3385223b25176d0f677bd50c1572aea17d78da4ccd629dede952db29c",
+      "runtime_texture": "res://data/endless/assets.bake/73a9ec24d6f8865189431b97cd8cdec1eebb8bd88cddc2be9abbb303bf3928bb.res",
+      "source": "res://assets/textures/lava_reef/selected/3B.png",
+      "source_sha256": "686d9675df5565d4da752ce16b0b7fc60c46b97bf58667a81a896707e6f0b930"
+    },
+    {
+      "rgba8_sha256": "283bef9d2dbbcf0b074f57fd3881f68a2183efb07578a80637adebaaca9a63f7",
+      "runtime_texture": "res://data/endless/assets.bake/63f0826198a1c2b0201d5613d5a99e8f008112907e4a190fc704ad466f477d82.res",
+      "source": "res://assets/textures/lava_reef/selected/5B.png",
+      "source_sha256": "78571807c33540e6278c45532636eb30b1453c0123c31170b0e45e8e235cbf67"
+    },
+    {
+      "rgba8_sha256": "ccedeeff9413699d0cdaa63d276ff85faccea8812d8a0e956d750d318a8ff69f",
+      "runtime_texture": "res://data/endless/assets.bake/09aa5f5898fc7af5f13463c25554562135df9b1d820e9ddf8cb2668a1a9ae367.res",
+      "source": "res://assets/textures/lava_reef/selected/6B.png",
+      "source_sha256": "45d284bdd27c7bb5e0fd716e8b7118fe19d0ef5dbfe19432aec5e9eadd19050e"
+    },
+    {
+      "rgba8_sha256": "f90b65ddac8c2c0deacf38555a73997198cf55fd63298ca826a575651e2578b7",
+      "runtime_texture": "res://data/endless/assets.bake/82dae12684d0cab58c3dd975d7b6028f53392158a4c9597515f596a7d9b179e4.res",
+      "source": "res://assets/textures/lava_reef/selected/7A.png",
+      "source_sha256": "86481a7964f7d0bf25bce5d3a41f9291b69059a47364b0ea72e1bda3b6c4ab1f"
+    },
+    {
+      "rgba8_sha256": "4c218241e8a0b54881b3d6c10755e224679d17dfdaa3d71adb1f77f913a0471b",
+      "runtime_texture": "res://data/endless/assets.bake/f7cd26b59df63d340f881b53dd5de0da168bd4fb05fc7fce9bd67e0bc7230b50.res",
+      "source": "res://assets/textures/lava_reef/selected/8B.png",
+      "source_sha256": "c61fdfe7e81b524ff3ee360e3a7e0409e3391a47faab89c8c04d7bb9e4dd885b"
+    },
+    {
+      "rgba8_sha256": "ab51896083cbde77b10550b68783a4840cdccddd3070346fa4d315660b0dd22d",
+      "runtime_texture": "res://data/endless/assets.bake/e65768dd0a735f670720f27cffdd875f36e20f3d4b64070243eaf06b6115105a.res",
+      "source": "res://assets/textures/lava_reef/selected/9B.png",
+      "source_sha256": "e0edf83effd3cbc94de6ef3efa7c73fdf193661f58b67e244154376fc908389d"
+    }
+  ],
+  "disk_acts": 1,
+  "disk_themes": 1,
+  "fallback_builds": 0,
+  "fps_counter_hidden": true,
+  "hud_hidden": true,
+  "library": "res://scripts/endless/template_library.gd",
+  "pipeline_fingerprint": "af2974bdf37e1993eabc8fb6b8cd5dcc66da76846ffa621c8c35d91d72325afb",
+  "relief": "Albedo-only selected shader; no generated material-depth maps",
+  "renderer": {
+    "api": "1.4.351",
+    "command_line": [
+      "--script",
+      "res://experiments/lava_texture_refined/phase3/review.gd"
+    ],
+    "device": "NVIDIA GeForce RTX 4060",
+    "driver": "vulkan",
+    "engine": "4.7.2-stable (official)",
+    "renderer": "forward_plus",
+    "user_arguments": [
+      "--retro=production",
+      "--act=res://data/acts/Authored/RampMania.tres",
+      "--label=ramps"
+    ]
+  },
+  "retro_effects": [
+    2,
+    4,
+    3
+  ],
+  "retro_mode": "production",
+  "retro_settings_sha256": "0291745db30c7ddcdfac70db02795cefba0f072b030d52d3ace07f8c900618e0",
+  "scene": "res://scenes/prototype_run.tscn",
+  "scenery_fingerprint": "fixed",
+  "seed": 3648962628,
+  "selected_materials": [
+    {
+      "mapping": 2,
+      "name": "Lava Reef 6B albedo review",
+      "repeat_size": "(1.0, 1.0)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 1,
+      "name": "Lava Reef 3B albedo review",
+      "repeat_size": "(3.2, 1.6)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 0,
+      "name": "Lava Reef 5B albedo review",
+      "repeat_size": "(1.6, 1.6)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 2,
+      "name": "Lava Reef 2A albedo review",
+      "repeat_size": "(1.0, 1.0)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 1,
+      "name": "Lava Reef 9B albedo review",
+      "repeat_size": "(3.2, 1.6)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 0,
+      "name": "Lava Reef 1C albedo review",
+      "repeat_size": "(3.809524, 3.809524)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 6,
+      "name": "Lava Reef 8B albedo review",
+      "repeat_size": "(1.0, 1.0)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 6,
+      "name": "Lava Reef 8B albedo review",
+      "repeat_size": "(1.0, 1.0)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 6,
+      "name": "Lava Reef 8B albedo review",
+      "repeat_size": "(1.0, 1.0)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 6,
+      "name": "Lava Reef 8B albedo review",
+      "repeat_size": "(1.0, 1.0)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 6,
+      "name": "Lava Reef 8B albedo review",
+      "repeat_size": "(1.0, 1.0)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 6,
+      "name": "Lava Reef 8B albedo review",
+      "repeat_size": "(1.0, 1.0)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 3,
+      "name": "Lava Reef 7A albedo review",
+      "repeat_size": "(1.6, 1.6)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 6,
+      "name": "Lava Reef 8B albedo review",
+      "repeat_size": "(1.0, 1.0)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 6,
+      "name": "Lava Reef 8B albedo review",
+      "repeat_size": "(1.0, 1.0)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 6,
+      "name": "Lava Reef 8B albedo review",
+      "repeat_size": "(1.0, 1.0)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 6,
+      "name": "Lava Reef 8B albedo review",
+      "repeat_size": "(1.0, 1.0)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 6,
+      "name": "Lava Reef 8B albedo review",
+      "repeat_size": "(1.0, 1.0)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 6,
+      "name": "Lava Reef 8B albedo review",
+      "repeat_size": "(1.0, 1.0)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    },
+    {
+      "mapping": 3,
+      "name": "Lava Reef 7A albedo review",
+      "repeat_size": "(1.6, 1.6)",
+      "shader": "res://scripts/themes/lava_selected.gdshader"
+    }
+  ],
+  "source_sha256": "703d4f06c0fc015e1844cc8230d2639fe0ab94853c877185ce3161990e1d1436",
+  "state": {
+    "act_score": 0,
+    "ball": "(200.0, 700.0)",
+    "camera_fov": 52.0,
+    "camera_projection": 0,
+    "camera_settings": {
+      "dead_zone_x": 18.0,
+      "dead_zone_y": 12.0,
+      "horizontal_response": 2.0,
+      "look_ahead": 0.0,
+      "max_speed": 4000.0,
+      "screen_margin_y": 0.22,
+      "screen_target_y": 0.55,
+      "vertical_response": 28.0,
+      "zoom": 1.3
+    },
+    "camera_size": 1.0,
+    "camera_transform": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (2.0, 2.115734, 8.545638)]",
+    "document": "cb23ef41d69b131c4a46e09afca32b1963f6b3dc1f76ed7bd6dbf01f41df43d0",
+    "goal_unlocked": false,
+    "rings": 0,
+    "score": 0,
+    "serve_pending": true,
+    "velocity": "(0.0, 0.0)"
+  },
+  "surface_detail": "flat",
+  "theme": "lava_reef",
+  "theme_bake": "res://data/endless/themes.bake/lava_reef.res",
+  "theme_bake_sha256": "def8d50d9b747840a5bc8d487ea4391ead8dac61bc7f611215e0f6f9bc4ad948"
+}

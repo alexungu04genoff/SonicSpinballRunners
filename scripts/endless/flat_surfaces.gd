@@ -16,6 +16,13 @@ func material(source: Material) -> Material:
   result.heightmap_texture = null
   return result
  if not source is ShaderMaterial or source.shader == null: return source
+ # Selected Sky Sanctuary and Aquarium materials retain their structural response.
+ # Keep the existing flat policy for every unrelated material and theme.
+ if source.get_meta("sky_selected",false) or source.get_meta("aquarium_selected",false): return source
+ # Lava Reef's selected structural response is also approved for normal play.
+ if source.get_meta("lava_selected",false): return source
+ # Ice Cap's canonical snow edges and crystal facets use the same retained path.
+ if source.get_meta("ice_selected",false): return source
  var code: String = source.shader.code
  var flat := code.replace(RELIEF_INCLUDE, FLAT_RELIEF)
  var original_path: String = source.shader.get_meta("atmosphere_source_path", source.shader.resource_path)

@@ -1,0 +1,35 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+Vulkan 1.4.351 - Forward+ - Using Device #0: NVIDIA - NVIDIA GeForce RTX 4060
+
+ENDLESS_PREPARE_SLICE | shared objects ms=36.772
+ENDLESS_PREPARE_SLICE | shared objects ms=31.286
+ENDLESS_PREPARE_SLICE | shared objects ms=40.405
+ENDLESS_PREPARE_SLICE | shared objects ms=41.383
+ENDLESS_PREPARE_SLICE | shared objects ms=28.782
+ENDLESS_PREPARE_SLICE | shared objects ms=37.097
+ENDLESS_PREPARE_SLICE | shared objects ms=43.75
+ENDLESS_PREPARE_SLICE | shared objects ms=30.425
+ENDLESS_PREPARE_SLICE | shared objects ms=29.042
+ENDLESS_PREPARE_SLICE | shared objects ms=22.609
+ENDLESS_PREPARE_SLICE | shared objects ms=32.326
+ENDLESS_PREPARE_SLICE | shared objects ms=35.684
+ENDLESS_PREPARE_SLICE | environment ms=68.442
+ENDLESS_BATCHED | aquarium_park:0 | Act={ "records_before": 1020, "records_after": 816, "source_meshes": 904, "instances": 233, "batches": 29, "removed_nodes": 233 } | theme={ "records_before": 58, "records_after": 50, "source_meshes": 34, "instances": 10, "batches": 2, "removed_nodes": 10 }
+ACT_BAKED | res://data/acts/Authored/First Try Smooth Decor.bake/aquarium_park.res | jobs=11
+ENDLESS_PREPARED | aquarium_park:0 | source=offline | ms=16733.061 | GPU warm frames=0 | cached=1 | geometry loaded=0 | geometry generated=11
+ENDLESS_PREPARE_SLICE | shared objects ms=38.119
+ENDLESS_PREPARE_SLICE | shared objects ms=30.782
+ENDLESS_PREPARE_SLICE | shared objects ms=32.08
+ENDLESS_PREPARE_SLICE | shared objects ms=25.027
+ENDLESS_PREPARE_SLICE | shared objects ms=28.732
+ENDLESS_PREPARE_SLICE | shared objects ms=53.325
+ENDLESS_PREPARE_SLICE | shared objects ms=23.342
+ENDLESS_PREPARE_SLICE | shared objects ms=58.63
+ENDLESS_PREPARE_SLICE | shared objects ms=26.292
+ENDLESS_PREPARE_SLICE | shared objects ms=33.746
+ENDLESS_PREPARE_SLICE | shared objects ms=27.978
+ENDLESS_PREPARE_SLICE | environment ms=43.426
+ENDLESS_BATCHED | aquarium_park:1 | Act={ "records_before": 491, "records_after": 491, "source_meshes": 407, "instances": 0, "batches": 0, "removed_nodes": 0 } | theme={ "records_before": 58, "records_after": 50, "source_meshes": 34, "instances": 10, "batches": 2, "removed_nodes": 10 }
+ACT_BAKED | res://data/acts/Authored/RampMania.bake/aquarium_park.res | jobs=19
+ENDLESS_PREPARED | aquarium_park:1 | source=offline | ms=9423.043 | GPU warm frames=0 | cached=2 | geometry loaded=0 | geometry generated=19
+ACT_BAKE_COMPLETE | Acts=2 variants=2

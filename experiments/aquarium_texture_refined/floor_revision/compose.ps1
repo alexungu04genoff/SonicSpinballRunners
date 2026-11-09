@@ -1,0 +1,28 @@
+Add-Type -AssemblyName System.Drawing
+$ErrorActionPreference='Stop'
+$out=$PSScriptRoot
+$floor=[Drawing.Image]::FromFile((Join-Path $out '1-mixed-floor.png'))
+$panel=[Drawing.Image]::FromFile((Join-Path $out '1-square-blue-panel.png'))
+$repeat=[Drawing.Bitmap]::new(512,1024)
+$rg=[Drawing.Graphics]::FromImage($repeat)
+$rg.DrawImageUnscaled($floor,0,0);$rg.DrawImageUnscaled($floor,0,512)
+$repeat.Save((Join-Path $out 'repeat-floor.png'));$rg.Dispose()
+$board=[Drawing.Bitmap]::new(1200,690)
+$g=[Drawing.Graphics]::FromImage($board)
+$g.Clear([Drawing.ColorTranslator]::FromHtml('#182832'))
+$g.InterpolationMode=[Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+$title=[Drawing.Font]::new('Segoe UI',21,[Drawing.FontStyle]::Bold)
+$font=[Drawing.Font]::new('Segoe UI',14)
+$ink=[Drawing.SolidBrush]::new([Drawing.ColorTranslator]::FromHtml('#eee7d7'))
+$muted=[Drawing.SolidBrush]::new([Drawing.ColorTranslator]::FromHtml('#a7bdc3'))
+$g.DrawString('1 / STONE WALKWAY + SQUARE BLUE INSETS',$title,$ink,20,14)
+$g.DrawString('Top-down floor composition',$font,$muted,20,60)
+$g.DrawString('Length repeat',$font,$muted,558,60)
+$g.DrawString('Square panel detail',$font,$muted,836,60)
+$g.DrawImageUnscaled($floor,20,100)
+$g.DrawImage($repeat,[Drawing.Rectangle]::new(558,100,256,512))
+$g.DrawImage($panel,[Drawing.Rectangle]::new(836,100,344,344))
+$g.DrawString('Phase 2 floor revision only. No perspective, lighting or relief baked into these previews.',$font,$muted,20,636)
+$board.Save((Join-Path $out 'floor-review.png'))
+$g.Dispose();$board.Dispose();$repeat.Dispose();$floor.Dispose();$panel.Dispose()
+$title.Dispose();$font.Dispose();$ink.Dispose();$muted.Dispose()

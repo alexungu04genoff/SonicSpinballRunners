@@ -1,0 +1,11 @@
+{
+  "authority": "Visual Lab authoring controls only",
+  "bound_materials": 7,
+  "checks": [
+    "F8 opens Aquarium panel",
+    "detail-off reaches bindings",
+    "strength signal reaches bindings",
+    "defaults restored and panel hidden"
+  ],
+  "passed": true
+}

@@ -1,0 +1,62 @@
+{
+  "phase": "Phase 5: canonical/current Aquarium materials, following Alex's authorization to finish material response and handoff",
+  "production_directory": "res://assets/textures/aquarium_park/selected/",
+  "production_shader": "res://scripts/themes/aquarium_selected.gdshader",
+  "material_response": {
+    "source": "response.gdshaderinc",
+    "baker": "bake_response.gd",
+    "manifest": "response-manifest.json",
+    "normal_convention": "OpenGL; derivative frames share the albedo mapping on terrain, facades, caps and curved routes",
+    "packed_channels": "R roughness, G exposed-metal mask, B unused; metallic response capped at 0.25 for readable gold under the approved lighting",
+    "height_usage": "Source references only; no runtime height, parallax or displacement",
+    "albedo": "All nine active albedos remain byte-identical to their approved source PNGs",
+    "controls": "Visual Lab F8: Material detail and Normal strength. Bound-material API: aquarium_selected_materials.gd.set_detail(root, enabled, strength).",
+    "current_review": "final_review/receipts.json",
+    "controls_review": "final_review/controls-receipt.json",
+    "handoff": "../../docs/AQUARIUM_MATERIALS.md"
+  },
+  "approved_border_revision": {
+    "selection": "A: red with sparse gold studs",
+    "source": "border_revision/2A-red-gold-studs.png",
+    "production": "res://assets/textures/aquarium_park/selected/2A-red-gold-studs.png",
+    "mapping": "Retains the existing four-physics-pixel border width; horizontal repeat uses width * .01 * 4 / .48 to preserve the source image's 4:1 aspect and round studs.",
+    "review_directory": "phase3/red-gold-border/",
+    "verification": "Historical Phase 3 captures used production Retro and default atmosphere. Every view's pixel evidence matched 2A-red-gold-studs, with zero fallback builds. Response maps were off at that stage; final_review supersedes these images."
+  },
+  "requested_camera_review": {
+    "directory": "phase3/views/",
+    "images": ["01-park-overview.png", "02-borders-and-scenery.png", "03-ramp-overview.png", "04-ramp-and-objects.png"],
+    "receipts": "phase3/views/receipts.json",
+    "verification": "Four graphical Prototype captures from fresh disk bakes; seven selected material matches in the main Act and nine in RampMania, no fallback geometry builds. Production Retro, default atmosphere, HUD hidden. Temporary capture camera changes only.",
+    "border": "These historical captures retain the previous 2A gold-scroll trim. Alex subsequently approved A, red with sparse gold studs."
+  },
+  "floor_revision": {
+    "status": "Approved with brown timber connector removed; supersedes the all-blue floor proposal.",
+    "source": "floor_revision/floor.gdshader",
+    "files": ["floor_revision/1-mixed-floor.png", "floor_revision/1-flagstone.png", "floor_revision/1-square-blue-panel.png"],
+    "layout": "Six by six square modules; broad stone center, blue edge panels and one blue cross-row. No timber connector. This is a composition study, not automatic routing along arbitrary Act edges.",
+    "mapping": "Equal 3.6-unit X/Z world repeats preserve square blue panels; screenshot perspective is not baked into the mapping."
+  },
+  "source": "selected.gdshader; analytic source rebuilt and rendered directly, not enlarged Phase-1 images",
+  "albedos": {
+    "1-mixed-floor": "Approved floor revision; 512x512, equal physical repeat axes, irregular stone and square red-framed blue insets, no brown connector. Earlier 1-from-5A study is superseded.",
+    "2A-red-gold-studs": "512x128, repeat along length only; three sparse gold studs on red. Approved border revision A replaces the original gold-scroll 2A; source is border_revision/border.gdshader.",
+    "3B": "512x256, two complete timber panel modules; repeat along length.",
+    "4B": "512x128, six slate ceramic endcaps; repeat along length. Remains slate as explicitly approved, beneath red roofs.",
+    "5A-red": "512x512, six tile columns and four courses; repeat both axes.",
+    "6A-red": "512x128, same six-column tile rhythm as 5A-red, one course and gold edge; repeat along length.",
+    "7B": "512x512, three paving columns and four courses with red side rails; repeat along ramp length, width fitted to deck.",
+    "8A": "512x128, four gold clasps; repeat along length.",
+    "9A": "512x256, two complete three-by-four lattice modules; repeat along facade length. Do not slice windows at mapped module boundaries."
+  },
+  "13B": {
+    "kind": "Material palette, not a painted branch texture",
+    "cyan": "#4bbecb",
+    "violet": "#8972bc",
+    "stem_darkening": 0.14,
+    "preview": "coral_preview.gd calls existing aquarium_park_decor.gd coral() with local material copies, unshaded albedo view; no gameplay or geometry changes",
+    "integration_constraint": "Apply only to coral/planting instances; the production coral material is also used by fish tails, so do not globally recolor that shared material."
+  },
+  "retained": ["10C scenery roofs", "11C water", "12C aquarium glass", "lamps and lanterns"],
+  "review_limits": "Historical texture sheets assess albedo only. Current final_review captures assess the real Prototype with structural response. Normals affect lighting, not silhouette; no geometry, gameplay or collision changes. No full regression suite or performance benchmark."
+}

@@ -1,0 +1,123 @@
+{
+  "integration": false,
+  "phase": 2,
+  "source_floor": "res://assets/textures/lava_reef/floor.png",
+  "textures": [
+    {
+      "id": "1C",
+      "maps": [
+        "albedo"
+      ],
+      "repeat_count": [
+        2,
+        2
+      ],
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "2A",
+      "maps": [
+        "albedo"
+      ],
+      "repeat_count": [
+        3,
+        1
+      ],
+      "size": [
+        512,
+        128
+      ]
+    },
+    {
+      "id": "3B",
+      "maps": [
+        "albedo"
+      ],
+      "repeat_count": [
+        2,
+        2
+      ],
+      "size": [
+        512,
+        256
+      ]
+    },
+    {
+      "id": "5B",
+      "maps": [
+        "albedo"
+      ],
+      "repeat_count": [
+        2,
+        2
+      ],
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "6B",
+      "maps": [
+        "albedo"
+      ],
+      "repeat_count": [
+        3,
+        1
+      ],
+      "size": [
+        512,
+        128
+      ]
+    },
+    {
+      "id": "7A",
+      "maps": [
+        "albedo"
+      ],
+      "repeat_count": [
+        2,
+        2
+      ],
+      "size": [
+        512,
+        512
+      ]
+    },
+    {
+      "id": "8B",
+      "maps": [
+        "albedo"
+      ],
+      "repeat_count": [
+        3,
+        1
+      ],
+      "size": [
+        512,
+        128
+      ]
+    },
+    {
+      "id": "9B",
+      "maps": [
+        "albedo"
+      ],
+      "repeat_count": [
+        2,
+        2
+      ],
+      "size": [
+        512,
+        256
+      ]
+    }
+  ],
+  "unchanged": [
+    "10C",
+    "11C"
+  ]
+}
