@@ -12,6 +12,9 @@ func run() -> void:
  var themes := PackedStringArray(["green_hill", "rooftop_run", "chemical_plant"])
  var iterations := 150
  var output := "res://test-results/material-collection-cpu.json"
+ var compare_copies := "--compare-material-copies" in OS.get_cmdline_user_args()
+ var conversion_only := "--conversion-only" in OS.get_cmdline_user_args()
+ compare_copies = compare_copies or conversion_only
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--themes="): themes = argument.trim_prefix("--themes=").split(",")
   if argument.begins_with("--iterations="): iterations = int(argument.trim_prefix("--iterations="))
@@ -25,6 +28,8 @@ func run() -> void:
   "scope": "Warm foreground + scenery Runtime.attach elapsed time; excludes loading, node creation, restore, GPU frames and Windows FPS.",
   "act": ACT, "iterations": iterations, "warmup_iterations": 5, "trials": [],
   "bindings_sha256": FileAccess.get_sha256("res://scripts/atmosphere/material_bindings.gd")}
+ report["comparison"] = "material_copies" if compare_copies else "uniform_inspection"
+ if conversion_only: report["scope"] = "Warm _copy time for one real converted material; excludes restore, node creation, GPU frames and Windows FPS."
  for theme: String in themes:
   if theme not in Registry.IDS:
    push_error("Unknown theme: " + theme)
@@ -54,14 +59,38 @@ func run() -> void:
    runtime.bindings.restore()
    runtime.attach(foreground)
    runtime.attach(scenery, false, true)
+  var conversion_source: Material
+  var conversion_scenery := false
+  if conversion_only:
+   for cache: Dictionary in [runtime.bindings.materials, runtime.bindings.scenery_materials]:
+    for source: Material in cache:
+     if source is BaseMaterial3D and cache[source] is ShaderMaterial:
+      conversion_source = source
+      conversion_scenery = runtime.bindings.scenery_materials.has(source)
+      break
+    if conversion_source != null: break
+   if conversion_source == null:
+    push_error("No converted material in this fixture: " + theme)
+    runtime.bindings.restore()
+    foreground.free()
+    scenery.free()
+    sun.free()
+    quit(1)
+    return
   for cached: bool in [false, true, true, false]:
-   runtime.bindings._cache_uniforms = cached
+   runtime.bindings._cache_uniforms = true if compare_copies else cached
+   runtime.bindings._legacy_material_copies = not cached if compare_copies else false
    var samples: Array[float] = []
+   var converted: Material
    for iteration in iterations:
+    converted = null
     runtime.bindings.restore()
     var began := Time.get_ticks_usec()
-    runtime.attach(foreground)
-    runtime.attach(scenery, false, true)
+    if conversion_only:
+     converted = runtime.bindings._copy(conversion_source, conversion_scenery)
+    else:
+     runtime.attach(foreground)
+     runtime.attach(scenery, false, true)
     samples.append((Time.get_ticks_usec() - began) / 1000.0)
    samples.sort()
    var total := 0.0
@@ -70,6 +99,9 @@ func run() -> void:
     "median_ms": samples[samples.size() / 2], "p95_ms": samples[ceili(samples.size() * 0.95) - 1],
     "pipeline_fingerprint": fingerprint, "act_bake_sha256": FileAccess.get_sha256(Bake.path_for(ACT, theme)),
     "theme_bake_sha256": FileAccess.get_sha256(Bake.theme_path(theme))}
+   trial["optimized"] = cached
+   trial["legacy_material_copies"] = runtime.bindings._legacy_material_copies
+   if conversion_only: trial["source_material"] = conversion_source.resource_path
    report.trials.append(trial)
    print("MATERIAL_COLLECTION_CPU | ", JSON.stringify(trial))
   runtime.bindings.restore()

@@ -9,6 +9,11 @@ var failures := 0
 
 class ObservedBindings extends "res://scripts/atmosphere/material_bindings.gd":
  var inspections := 0
+ var direct_conversions := 0
+ func _private_material(source: Material) -> Material:
+  var result := super._private_material(source)
+  if source is BaseMaterial3D and result is ShaderMaterial: direct_conversions += 1
+  return result
  func _control_uniforms(shader: Shader) -> Array:
   if not _cache_uniforms or not _uniform_cache.has(shader): inspections += 1
   return super._control_uniforms(shader)
@@ -70,6 +75,7 @@ func configured(theme: String, environment: Environment, sun: DirectionalLight3D
  var runtime := Runtime.new()
  runtime.bindings = ObservedBindings.new()
  runtime.bindings._cache_uniforms = cached
+ runtime.bindings._legacy_material_copies = not cached
  runtime.configure(theme, {"values": {"emission": 0.73, "hue/decor": 0.13, "brightness/foliage": 1.1,
   "hue/terrain": -0.08, "ranges/enabled": true, "ranges/yellow/hue": 0.03}}, environment, sun)
  return runtime
@@ -102,6 +108,7 @@ func run() -> void:
   check(incremental.bindings.inspections < sync.bindings.inspections, "Shared shader inspection reduces native queries: " + theme)
   check(incremental.bindings._uniform_cache.is_empty(), "Attachment releases the inspection cache: " + theme)
   print("MATERIAL_INSPECTIONS | %s | uncached=%d cached=%d" % [theme, sync.bindings.inspections, incremental.bindings.inspections])
+  print("MATERIAL_DIRECT_CONVERSIONS | %s | avoided_copies=%d" % [theme, incremental.bindings.direct_conversions])
   var edited: Dictionary = sync.values.duplicate(true)
   edited.merge({"emission": 1.41, "hue/terrain": 0.17, "hue/decor": -0.11, "surface_halo_spread": 0.65}, true)
   sun.rotation_degrees = Vector3(-35, 23, 0)
@@ -118,6 +125,7 @@ func run() -> void:
   b.scenery.free()
   sun.free()
  shader_edit_checks()
+ conversion_checks()
  print("RESULT | Stream material staging | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)
 
@@ -148,3 +156,41 @@ func shader_edit_checks() -> void:
  bindings.restore()
  check(bindings._uniform_cache.is_empty() and first.material_override.get_shader_parameter("emission_scale") == 0.75 and second.material_override.get_shader_parameter("radiance") == 2.0, "Restoration releases inspection data and preserves source parameters")
  holder.free()
+
+func conversion_checks() -> void:
+ var texture := ImageTexture.create_from_image(Image.create(2, 2, false, Image.FORMAT_RGBA8))
+ for kind in 7:
+  var source := StandardMaterial3D.new()
+  source.albedo_color = Color(0.3, 0.6, 0.2, 0.7)
+  source.roughness = 0.43
+  source.metallic = 0.17
+  source.uv1_scale = Vector3(2, 3, 1)
+  source.render_priority = 2
+  source.next_pass = StandardMaterial3D.new()
+  source.set_meta("custom_data", {"nested": [Vector3.ONE], "resource": texture})
+  if kind != 0 and kind != 2: source.albedo_texture = texture
+  if kind == 2: source.vertex_color_use_as_albedo = true
+  if kind < 3: source.set_meta("atmosphere_hue", "decor")
+  if kind == 1:
+   source.set_meta("grass_shell_fraction", 0.5)
+   source.set_meta("atmosphere_bindings", {"albedo_color": {"key": "vegetation_tint", "mode": "tint"}})
+   source.uv1_triplanar = true
+   source.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+  if kind in [1, 6]:
+   source.emission_enabled = true
+   source.emission = Color(0.7, 0.2, 0.1)
+   source.emission_energy_multiplier = 1.3
+  if kind == 4: source.set_meta("atmosphere_protected", true)
+  var before := material_state(source)
+  var legacy := ObservedBindings.new()
+  legacy._legacy_material_copies = true
+  var direct := ObservedBindings.new()
+  legacy.begin_theme("green_hill")
+  direct.begin_theme("green_hill")
+  var expected: Material = legacy._copy(source, kind == 3)
+  var actual: Material = direct._copy(source, kind == 3)
+  check(material_state(actual) == material_state(expected), "Conversion, flat/emissive fallback and protected/shared state match: %d" % kind)
+  check(material_state(source) == before and (actual == source) == (expected == source), "Source properties and sharing policy survive conversion: %d" % kind)
+  check(is_same(actual.get_meta("custom_data"), expected.get_meta("custom_data")) and actual.next_pass == expected.next_pass and direct.parameters.size() == legacy.parameters.size(), "Metadata, next pass and emission ownership match: %d" % kind)
+  legacy.restore()
+  direct.restore()

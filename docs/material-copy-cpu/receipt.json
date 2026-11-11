@@ -1,0 +1,870 @@
+{
+  "date": "2026-11-11",
+  "base_commit": "83663a3c4fe2f9f4f1c47c5fc345d152ebe5e866",
+  "scope": "Headless CPU elapsed time; warm conversion/attachment, fresh-process profiles and cold-program diagnostic are separate samples. No Windows FPS or driver compilation claim.",
+  "bindings_sha256": "20e9703ae6a93c3874b6bde75957cb3b77165fad47a0eb1fc0b29c4428adabd7",
+  "warm_whole": {
+    "act": "res://data/acts/Authored/RampMania.tres",
+    "bindings_sha256": "20e9703ae6a93c3874b6bde75957cb3b77165fad47a0eb1fc0b29c4428adabd7",
+    "comparison": "material_copies",
+    "engine": "4.7.2-stable (official)",
+    "headless": true,
+    "iterations": 150,
+    "scope": "Warm foreground + scenery Runtime.attach elapsed time; excludes loading, node creation, restore, GPU frames and Windows FPS.",
+    "trials": [
+      {
+        "act_bake_sha256": "e30cad9e03628522de3117d2df26cf84ce5edea7b4dcc69f6b1d52b281da5789",
+        "cached": false,
+        "legacy_material_copies": true,
+        "mean_ms": 23.7403133333333,
+        "median_ms": 22.878,
+        "optimized": false,
+        "p95_ms": 31.222,
+        "pipeline_fingerprint": "3bb1111b9f0a7d695738a0e9b49572364101122a1851ce55bc8089aab7a1dd68",
+        "theme": "green_hill",
+        "theme_bake_sha256": "c66859fc44d51b124ed1069fb804c6701945eb0fdb3d533633c75b4ed56d6ac7"
+      },
+      {
+        "act_bake_sha256": "e30cad9e03628522de3117d2df26cf84ce5edea7b4dcc69f6b1d52b281da5789",
+        "cached": true,
+        "legacy_material_copies": false,
+        "mean_ms": 22.95584,
+        "median_ms": 22.247,
+        "optimized": true,
+        "p95_ms": 32.24,
+        "pipeline_fingerprint": "3bb1111b9f0a7d695738a0e9b49572364101122a1851ce55bc8089aab7a1dd68",
+        "theme": "green_hill",
+        "theme_bake_sha256": "c66859fc44d51b124ed1069fb804c6701945eb0fdb3d533633c75b4ed56d6ac7"
+      },
+      {
+        "act_bake_sha256": "e30cad9e03628522de3117d2df26cf84ce5edea7b4dcc69f6b1d52b281da5789",
+        "cached": true,
+        "legacy_material_copies": false,
+        "mean_ms": 23.40794,
+        "median_ms": 22.071,
+        "optimized": true,
+        "p95_ms": 33.902,
+        "pipeline_fingerprint": "3bb1111b9f0a7d695738a0e9b49572364101122a1851ce55bc8089aab7a1dd68",
+        "theme": "green_hill",
+        "theme_bake_sha256": "c66859fc44d51b124ed1069fb804c6701945eb0fdb3d533633c75b4ed56d6ac7"
+      },
+      {
+        "act_bake_sha256": "e30cad9e03628522de3117d2df26cf84ce5edea7b4dcc69f6b1d52b281da5789",
+        "cached": false,
+        "legacy_material_copies": true,
+        "mean_ms": 24.14316,
+        "median_ms": 23.051,
+        "optimized": false,
+        "p95_ms": 37.949,
+        "pipeline_fingerprint": "3bb1111b9f0a7d695738a0e9b49572364101122a1851ce55bc8089aab7a1dd68",
+        "theme": "green_hill",
+        "theme_bake_sha256": "c66859fc44d51b124ed1069fb804c6701945eb0fdb3d533633c75b4ed56d6ac7"
+      }
+    ],
+    "warmup_iterations": 5
+  },
+  "warm_single": {
+    "act": "res://data/acts/Authored/RampMania.tres",
+    "bindings_sha256": "20e9703ae6a93c3874b6bde75957cb3b77165fad47a0eb1fc0b29c4428adabd7",
+    "comparison": "material_copies",
+    "engine": "4.7.2-stable (official)",
+    "headless": true,
+    "iterations": 1000,
+    "scope": "Warm _copy time for one real converted material; excludes restore, node creation, GPU frames and Windows FPS.",
+    "trials": [
+      {
+        "act_bake_sha256": "e30cad9e03628522de3117d2df26cf84ce5edea7b4dcc69f6b1d52b281da5789",
+        "cached": false,
+        "legacy_material_copies": true,
+        "mean_ms": 0.432936000000001,
+        "median_ms": 0.348,
+        "optimized": false,
+        "p95_ms": 0.832,
+        "pipeline_fingerprint": "3bb1111b9f0a7d695738a0e9b49572364101122a1851ce55bc8089aab7a1dd68",
+        "source_material": "res://data/acts/Authored/RampMania.bake/green_hill.res::StandardMaterial3D_ym1cy",
+        "theme": "green_hill",
+        "theme_bake_sha256": "c66859fc44d51b124ed1069fb804c6701945eb0fdb3d533633c75b4ed56d6ac7"
+      },
+      {
+        "act_bake_sha256": "e30cad9e03628522de3117d2df26cf84ce5edea7b4dcc69f6b1d52b281da5789",
+        "cached": true,
+        "legacy_material_copies": false,
+        "mean_ms": 0.343532,
+        "median_ms": 0.24,
+        "optimized": true,
+        "p95_ms": 0.817,
+        "pipeline_fingerprint": "3bb1111b9f0a7d695738a0e9b49572364101122a1851ce55bc8089aab7a1dd68",
+        "source_material": "res://data/acts/Authored/RampMania.bake/green_hill.res::StandardMaterial3D_ym1cy",
+        "theme": "green_hill",
+        "theme_bake_sha256": "c66859fc44d51b124ed1069fb804c6701945eb0fdb3d533633c75b4ed56d6ac7"
+      },
+      {
+        "act_bake_sha256": "e30cad9e03628522de3117d2df26cf84ce5edea7b4dcc69f6b1d52b281da5789",
+        "cached": true,
+        "legacy_material_copies": false,
+        "mean_ms": 0.283619999999999,
+        "median_ms": 0.202,
+        "optimized": true,
+        "p95_ms": 0.612,
+        "pipeline_fingerprint": "3bb1111b9f0a7d695738a0e9b49572364101122a1851ce55bc8089aab7a1dd68",
+        "source_material": "res://data/acts/Authored/RampMania.bake/green_hill.res::StandardMaterial3D_ym1cy",
+        "theme": "green_hill",
+        "theme_bake_sha256": "c66859fc44d51b124ed1069fb804c6701945eb0fdb3d533633c75b4ed56d6ac7"
+      },
+      {
+        "act_bake_sha256": "e30cad9e03628522de3117d2df26cf84ce5edea7b4dcc69f6b1d52b281da5789",
+        "cached": false,
+        "legacy_material_copies": true,
+        "mean_ms": 0.462202,
+        "median_ms": 0.362,
+        "optimized": false,
+        "p95_ms": 0.97,
+        "pipeline_fingerprint": "3bb1111b9f0a7d695738a0e9b49572364101122a1851ce55bc8089aab7a1dd68",
+        "source_material": "res://data/acts/Authored/RampMania.bake/green_hill.res::StandardMaterial3D_ym1cy",
+        "theme": "green_hill",
+        "theme_bake_sha256": "c66859fc44d51b124ed1069fb804c6701945eb0fdb3d533633c75b4ed56d6ac7"
+      }
+    ],
+    "warmup_iterations": 5
+  },
+  "profiles": [
+    {
+      "theme": "green_hill",
+      "legacy_material_copies": true,
+      "cached_material_uniforms": true,
+      "ready": true,
+      "fallbacks": 0,
+      "wall_ms": 2692.484,
+      "preparation_frames": 347,
+      "engine": "4.7.2-stable (official)",
+      "cpu": {
+        "cache.release": {
+          "count": 6,
+          "max_ms": 3.032,
+          "total_ms": 3.849
+        },
+        "graphics.queue": {
+          "count": 1888,
+          "max_ms": 0.989,
+          "total_ms": 29.3280000000001
+        },
+        "live.activate": {
+          "count": 3,
+          "max_ms": 1.517,
+          "total_ms": 4.141
+        },
+        "live.atmosphere_foreground": {
+          "count": 3,
+          "max_ms": 107.592,
+          "total_ms": 213.955
+        },
+        "live.atmosphere_scenery": {
+          "count": 3,
+          "max_ms": 22.425,
+          "total_ms": 47.944
+        },
+        "live.background": {
+          "count": 277,
+          "max_ms": 12.306,
+          "total_ms": 13.1119999999999
+        },
+        "live.bind_animations": {
+          "count": 3,
+          "max_ms": 4.181,
+          "total_ms": 8.921
+        },
+        "live.colliders": {
+          "count": 1490,
+          "max_ms": 3.995,
+          "total_ms": 32.4609999999999
+        },
+        "live.contribution_capture": {
+          "count": 3,
+          "max_ms": 16.084,
+          "total_ms": 35.915
+        },
+        "live.objects": {
+          "count": 78,
+          "max_ms": 0.849,
+          "total_ms": 11.293
+        },
+        "live.register": {
+          "count": 3,
+          "max_ms": 3.067,
+          "total_ms": 5.73
+        },
+        "live.visuals": {
+          "count": 2386,
+          "max_ms": 107.636,
+          "total_ms": 359.848999999997
+        },
+        "physics.compile": {
+          "count": 3,
+          "max_ms": 16.188,
+          "total_ms": 34.842
+        },
+        "resource.collect": {
+          "count": 4,
+          "max_ms": 0.031,
+          "total_ms": 0.07
+        },
+        "resource.request": {
+          "count": 4,
+          "max_ms": 0.113,
+          "total_ms": 0.191
+        },
+        "scene.free": {
+          "count": 81,
+          "max_ms": 1.23,
+          "total_ms": 5.487
+        },
+        "scene.node": {
+          "count": 2435,
+          "max_ms": 2.561,
+          "total_ms": 90.1460000000008
+        }
+      }
+    },
+    {
+      "theme": "green_hill",
+      "legacy_material_copies": false,
+      "cached_material_uniforms": true,
+      "ready": true,
+      "fallbacks": 0,
+      "wall_ms": 1950.581,
+      "preparation_frames": 262,
+      "engine": "4.7.2-stable (official)",
+      "cpu": {
+        "cache.release": {
+          "count": 6,
+          "max_ms": 0.015,
+          "total_ms": 0.071
+        },
+        "graphics.queue": {
+          "count": 1888,
+          "max_ms": 1.662,
+          "total_ms": 30.3030000000001
+        },
+        "live.activate": {
+          "count": 3,
+          "max_ms": 1.075,
+          "total_ms": 2.744
+        },
+        "live.atmosphere_foreground": {
+          "count": 3,
+          "max_ms": 62.79,
+          "total_ms": 135.142
+        },
+        "live.atmosphere_scenery": {
+          "count": 3,
+          "max_ms": 15.929,
+          "total_ms": 38.086
+        },
+        "live.background": {
+          "count": 277,
+          "max_ms": 9.813,
+          "total_ms": 10.4099999999999
+        },
+        "live.bind_animations": {
+          "count": 3,
+          "max_ms": 9.061,
+          "total_ms": 12.919
+        },
+        "live.colliders": {
+          "count": 1490,
+          "max_ms": 1.676,
+          "total_ms": 25.494
+        },
+        "live.contribution_capture": {
+          "count": 3,
+          "max_ms": 8.958,
+          "total_ms": 26.414
+        },
+        "live.objects": {
+          "count": 78,
+          "max_ms": 1.66,
+          "total_ms": 9.721
+        },
+        "live.register": {
+          "count": 3,
+          "max_ms": 3.755,
+          "total_ms": 6.847
+        },
+        "live.visuals": {
+          "count": 2386,
+          "max_ms": 62.836,
+          "total_ms": 232.257999999997
+        },
+        "physics.compile": {
+          "count": 3,
+          "max_ms": 9.885,
+          "total_ms": 24.046
+        },
+        "resource.collect": {
+          "count": 4,
+          "max_ms": 0.056,
+          "total_ms": 0.09
+        },
+        "resource.request": {
+          "count": 4,
+          "max_ms": 0.055,
+          "total_ms": 0.134
+        },
+        "scene.free": {
+          "count": 81,
+          "max_ms": 1.029,
+          "total_ms": 3.067
+        },
+        "scene.node": {
+          "count": 2435,
+          "max_ms": 4.241,
+          "total_ms": 64.4230000000006
+        }
+      }
+    },
+    {
+      "theme": "green_hill",
+      "legacy_material_copies": false,
+      "cached_material_uniforms": true,
+      "ready": true,
+      "fallbacks": 0,
+      "wall_ms": 2130.72,
+      "preparation_frames": 280,
+      "engine": "4.7.2-stable (official)",
+      "cpu": {
+        "cache.release": {
+          "count": 6,
+          "max_ms": 0.03,
+          "total_ms": 0.091
+        },
+        "graphics.queue": {
+          "count": 1888,
+          "max_ms": 0.369,
+          "total_ms": 22.5590000000001
+        },
+        "live.activate": {
+          "count": 3,
+          "max_ms": 2.075,
+          "total_ms": 3.425
+        },
+        "live.atmosphere_foreground": {
+          "count": 3,
+          "max_ms": 83.199,
+          "total_ms": 142.29
+        },
+        "live.atmosphere_scenery": {
+          "count": 3,
+          "max_ms": 35.213,
+          "total_ms": 59.902
+        },
+        "live.background": {
+          "count": 277,
+          "max_ms": 11.495,
+          "total_ms": 12.8119999999999
+        },
+        "live.bind_animations": {
+          "count": 3,
+          "max_ms": 2.427,
+          "total_ms": 5.979
+        },
+        "live.colliders": {
+          "count": 1490,
+          "max_ms": 3.647,
+          "total_ms": 31.477
+        },
+        "live.contribution_capture": {
+          "count": 3,
+          "max_ms": 11.036,
+          "total_ms": 27.879
+        },
+        "live.objects": {
+          "count": 78,
+          "max_ms": 0.713,
+          "total_ms": 7.462
+        },
+        "live.register": {
+          "count": 3,
+          "max_ms": 2.886,
+          "total_ms": 7.066
+        },
+        "live.visuals": {
+          "count": 2386,
+          "max_ms": 84.566,
+          "total_ms": 258.494999999997
+        },
+        "physics.compile": {
+          "count": 3,
+          "max_ms": 14.103,
+          "total_ms": 28.271
+        },
+        "resource.collect": {
+          "count": 4,
+          "max_ms": 0.03,
+          "total_ms": 0.061
+        },
+        "resource.request": {
+          "count": 4,
+          "max_ms": 0.043,
+          "total_ms": 0.122
+        },
+        "scene.free": {
+          "count": 81,
+          "max_ms": 1.32,
+          "total_ms": 3.533
+        },
+        "scene.node": {
+          "count": 2435,
+          "max_ms": 2.182,
+          "total_ms": 78.4350000000005
+        }
+      }
+    },
+    {
+      "theme": "green_hill",
+      "legacy_material_copies": true,
+      "cached_material_uniforms": true,
+      "ready": true,
+      "fallbacks": 0,
+      "wall_ms": 2020.922,
+      "preparation_frames": 265,
+      "engine": "4.7.2-stable (official)",
+      "cpu": {
+        "cache.release": {
+          "count": 6,
+          "max_ms": 0.02,
+          "total_ms": 0.079
+        },
+        "graphics.queue": {
+          "count": 1888,
+          "max_ms": 2.212,
+          "total_ms": 29.7790000000001
+        },
+        "live.activate": {
+          "count": 3,
+          "max_ms": 1.414,
+          "total_ms": 2.902
+        },
+        "live.atmosphere_foreground": {
+          "count": 3,
+          "max_ms": 51.382,
+          "total_ms": 122.906
+        },
+        "live.atmosphere_scenery": {
+          "count": 3,
+          "max_ms": 18.293,
+          "total_ms": 42.276
+        },
+        "live.background": {
+          "count": 277,
+          "max_ms": 8.985,
+          "total_ms": 9.7579999999999
+        },
+        "live.bind_animations": {
+          "count": 3,
+          "max_ms": 5.62,
+          "total_ms": 10.957
+        },
+        "live.colliders": {
+          "count": 1490,
+          "max_ms": 3.479,
+          "total_ms": 37.1469999999998
+        },
+        "live.contribution_capture": {
+          "count": 3,
+          "max_ms": 8.807,
+          "total_ms": 25.058
+        },
+        "live.objects": {
+          "count": 78,
+          "max_ms": 0.537,
+          "total_ms": 6.134
+        },
+        "live.register": {
+          "count": 3,
+          "max_ms": 2.836,
+          "total_ms": 6.185
+        },
+        "live.visuals": {
+          "count": 2386,
+          "max_ms": 51.426,
+          "total_ms": 221.505999999997
+        },
+        "physics.compile": {
+          "count": 3,
+          "max_ms": 9.481,
+          "total_ms": 25.591
+        },
+        "resource.collect": {
+          "count": 4,
+          "max_ms": 0.131,
+          "total_ms": 0.204
+        },
+        "resource.request": {
+          "count": 4,
+          "max_ms": 2.406,
+          "total_ms": 2.517
+        },
+        "scene.free": {
+          "count": 81,
+          "max_ms": 1.725,
+          "total_ms": 5.091
+        },
+        "scene.node": {
+          "count": 2435,
+          "max_ms": 3.264,
+          "total_ms": 52.9090000000005
+        }
+      }
+    }
+  ],
+  "tours": [
+    {
+      "act_sha256": "354650b389f23305a53f5fc97fa7346e24df02288a8074c1e0a5b282f9b8a09f",
+      "atomic_attachment": false,
+      "boundary_wait_ms": 0.0,
+      "cached_material_uniforms": true,
+      "cpu": {
+        "cache.release": {
+          "count": 10,
+          "max_ms": 0.157,
+          "total_ms": 0.412
+        },
+        "graphics.queue": {
+          "count": 1739,
+          "max_ms": 1.577,
+          "total_ms": 38.0900000000001
+        },
+        "live.activate": {
+          "count": 5,
+          "max_ms": 3.178,
+          "total_ms": 5.985
+        },
+        "live.atmosphere_foreground": {
+          "count": 5,
+          "max_ms": 72.796,
+          "total_ms": 205.058
+        },
+        "live.atmosphere_scenery": {
+          "count": 5,
+          "max_ms": 18.108,
+          "total_ms": 74.872
+        },
+        "live.background": {
+          "count": 554,
+          "max_ms": 10.299,
+          "total_ms": 13.6109999999998
+        },
+        "live.bind_animations": {
+          "count": 5,
+          "max_ms": 1.627,
+          "total_ms": 2.86
+        },
+        "live.colliders": {
+          "count": 1791,
+          "max_ms": 1.966,
+          "total_ms": 48.9970000000001
+        },
+        "live.contribution_capture": {
+          "count": 5,
+          "max_ms": 10.639,
+          "total_ms": 36.574
+        },
+        "live.objects": {
+          "count": 80,
+          "max_ms": 2.59,
+          "total_ms": 13.546
+        },
+        "live.register": {
+          "count": 5,
+          "max_ms": 0.959,
+          "total_ms": 4.107
+        },
+        "live.retire": {
+          "count": 852,
+          "max_ms": 0.654,
+          "total_ms": 12.771
+        },
+        "live.visuals": {
+          "count": 2938,
+          "max_ms": 72.931,
+          "total_ms": 370.258999999997
+        },
+        "physics.compile": {
+          "count": 5,
+          "max_ms": 28.768,
+          "total_ms": 53.395
+        },
+        "resource.collect": {
+          "count": 6,
+          "max_ms": 0.023,
+          "total_ms": 0.087
+        },
+        "resource.request": {
+          "count": 6,
+          "max_ms": 0.198,
+          "total_ms": 0.453
+        },
+        "scene.free": {
+          "count": 85,
+          "max_ms": 0.82,
+          "total_ms": 4.102
+        },
+        "scene.node": {
+          "count": 3081,
+          "max_ms": 2.693,
+          "total_ms": 137.471
+        }
+      },
+      "engine": "4.7.2-stable (official)",
+      "fallbacks": 0,
+      "legacy_material_copies": true,
+      "max_build_ms": 73.16,
+      "seed": 18,
+      "sequence": 3,
+      "theme": "green_hill",
+      "tour_speed": 400.0
+    },
+    {
+      "act_sha256": "354650b389f23305a53f5fc97fa7346e24df02288a8074c1e0a5b282f9b8a09f",
+      "atomic_attachment": false,
+      "boundary_wait_ms": 0.0,
+      "cached_material_uniforms": true,
+      "cpu": {
+        "cache.release": {
+          "count": 11,
+          "max_ms": 0.14,
+          "total_ms": 0.306
+        },
+        "graphics.queue": {
+          "count": 2385,
+          "max_ms": 2.726,
+          "total_ms": 44.8420000000003
+        },
+        "live.activate": {
+          "count": 6,
+          "max_ms": 2.893,
+          "total_ms": 6.408
+        },
+        "live.atmosphere_foreground": {
+          "count": 6,
+          "max_ms": 52.39,
+          "total_ms": 218.456
+        },
+        "live.atmosphere_scenery": {
+          "count": 6,
+          "max_ms": 17.513,
+          "total_ms": 83.4
+        },
+        "live.background": {
+          "count": 554,
+          "max_ms": 7.947,
+          "total_ms": 10.6719999999998
+        },
+        "live.bind_animations": {
+          "count": 6,
+          "max_ms": 2.976,
+          "total_ms": 5.661
+        },
+        "live.colliders": {
+          "count": 2659,
+          "max_ms": 1.3,
+          "total_ms": 57.2270000000006
+        },
+        "live.contribution_capture": {
+          "count": 6,
+          "max_ms": 11.019,
+          "total_ms": 44.375
+        },
+        "live.objects": {
+          "count": 106,
+          "max_ms": 0.714,
+          "total_ms": 13.895
+        },
+        "live.register": {
+          "count": 6,
+          "max_ms": 1.542,
+          "total_ms": 5.745
+        },
+        "live.retire": {
+          "count": 852,
+          "max_ms": 4.695,
+          "total_ms": 16.554
+        },
+        "live.visuals": {
+          "count": 3812,
+          "max_ms": 52.439,
+          "total_ms": 395.938999999999
+        },
+        "physics.compile": {
+          "count": 5,
+          "max_ms": 12.61,
+          "total_ms": 34.775
+        },
+        "resource.collect": {
+          "count": 6,
+          "max_ms": 0.04,
+          "total_ms": 0.117
+        },
+        "resource.request": {
+          "count": 6,
+          "max_ms": 0.215,
+          "total_ms": 0.508
+        },
+        "scene.free": {
+          "count": 89,
+          "max_ms": 0.941,
+          "total_ms": 4.774
+        },
+        "scene.node": {
+          "count": 3172,
+          "max_ms": 1.781,
+          "total_ms": 91.0830000000007
+        }
+      },
+      "engine": "4.7.2-stable (official)",
+      "fallbacks": 0,
+      "legacy_material_copies": false,
+      "max_build_ms": 53.092,
+      "seed": 18,
+      "sequence": 3,
+      "theme": "green_hill",
+      "tour_speed": 400.0
+    }
+  ],
+  "avoided_copies": {
+    "green_hill": 5,
+    "chemical_plant": 0,
+    "rooftop_run": 0,
+    "casino_night": 1,
+    "sky_sanctuary": 0,
+    "ice_cap": 1,
+    "lava_reef": 0,
+    "aquarium_park": 0
+  },
+  "cold_programs": [
+    {
+      "prepare": {
+        "new_program": {
+          "count": 4,
+          "max_ms": 3.259,
+          "total_ms": 9.709
+        },
+        "reused_or_already_prepared": {
+          "count": 19,
+          "max_ms": 0.245,
+          "total_ms": 0.698
+        }
+      },
+      "theme": "green_hill"
+    },
+    {
+      "prepare": {
+        "new_program": {
+          "count": 4,
+          "max_ms": 2.945,
+          "total_ms": 10.233
+        },
+        "reused_or_already_prepared": {
+          "count": 28,
+          "max_ms": 0.161,
+          "total_ms": 1.08
+        }
+      },
+      "theme": "rooftop_run"
+    },
+    {
+      "prepare": {
+        "new_program": {
+          "count": 1,
+          "max_ms": 6.638,
+          "total_ms": 6.638
+        },
+        "reused_or_already_prepared": {
+          "count": 17,
+          "max_ms": 0.107,
+          "total_ms": 0.649
+        }
+      },
+      "theme": "chemical_plant"
+    }
+  ],
+  "cold_probe_source": "extends SceneTree\nconst Bake = preload(\"res://scripts/endless/geometry_bake.gd\")\nconst Runtime = preload(\"res://scripts/atmosphere/runtime.gd\")\nclass Measured extends \"res://scripts/atmosphere/material_bindings.gd\":\n var stats := {}\n func _measure_prepare(material: Material) -> void:\n  var adapter = preload(\"res://scripts/atmosphere/surface_controls.gd\")\n  var count: int = adapter.shaders.size()\n  var began := Time.get_ticks_usec()\n  adapter.prepare(material)\n  var elapsed := (Time.get_ticks_usec()-began)/1000.0\n  var label := \"new_program\" if adapter.shaders.size() > count else \"reused_or_already_prepared\"\n  var row: Dictionary = stats.get(label,{\"count\":0,\"total_ms\":0.0,\"max_ms\":0.0})\n  row.count += 1\n  row.total_ms += elapsed\n  row.max_ms = maxf(row.max_ms,elapsed)\n  stats[label] = row\n func _register_palette(material: Material) -> void:\n  if material is ShaderMaterial and material.shader != null:\n   var shader_id: String = material.get_meta(\"atmosphere_shader_id\", material.shader.resource_path.get_file().get_basename())\n   if material.has_meta(\"atmosphere_hue\") or material.has_meta(\"atmosphere_ranges_only\") or material.has_meta(\"atmosphere_bindings\") or Palette.SHADERS.has(shader_id):\n    _measure_prepare(material)\n    if material.shader.code.contains(\"atmosphere_shift\") or material.shader.code.contains(\"atmosphere_border_shift\"): range_materials.append(material)\n  _register_tags(material)\n  if material.has_meta(\"atmosphere_hue\") or material.has_meta(\"atmosphere_ranges_only\"):\n   var group: String = material.get_meta(\"atmosphere_hue\", \"\")\n   if material is BaseMaterial3D:\n    hue_parameters.append({\"material\": material, \"group\": group, \"base\": material.albedo_color, \"emission\": material.emission, \"bindings\": material.get_meta(\"atmosphere_bindings\", {})})\n   elif material is ShaderMaterial and (material.shader.code.contains(\"atmosphere_shift\") or material.shader.code.contains(\"atmosphere_border_shift\")):\n    hue_parameters.append({\"material\": material, \"group\": group})\n  if not material is ShaderMaterial or material.shader == null: return\n  var bindings: Dictionary = Palette.SHADERS.get(material.get_meta(\"atmosphere_shader_id\", material.shader.resource_path.get_file().get_basename()), {})\n  for property: String in bindings:\n   var key: String = \"palette/\" + bindings[property]\n   if key not in allowed_keys: continue\n   var base = material.get_shader_parameter(property)\n   if base == null: base = RenderingServer.shader_get_parameter_default(material.shader.get_rid(), property)\n   if base == null:\n    # The dummy renderer cannot supply shader defaults. Rendered regression\n    # checks own palette coverage; headless startup still validates scripts.\n    if DisplayServer.get_name() != \"headless\": push_error(\"Missing atmosphere uniform: \" + property)\n    continue\n   var entry := {\"target\": material, \"property\": property, \"key\": key, \"base\": base, \"shader\": true, \"mode\": \"direct\"}\n   palette_parameters.append(entry)\n   if not palette_originals.has(key): palette_originals[key] = _picker_value(base)\n  for uniform: Dictionary in _control_uniforms(material.shader):\n   if str(uniform.name) == \"fake_light_direction\":\n    var base = material.get_shader_parameter(uniform.name)\n    if base == null: base = RenderingServer.shader_get_parameter_default(material.shader.get_rid(), uniform.name)\n    if base is Vector3: cloud_lights.append({\"material\": material, \"base\": base, \"last\": base})\n\nfunc _initialize() -> void: run.call_deferred()\nfunc run() -> void:\n var results := []\n for theme: String in [\"green_hill\",\"rooftop_run\",\"chemical_plant\"]:\n  var bake: Resource = load(Bake.path_for(\"res://data/acts/Authored/RampMania.tres\",theme))\n  var theme_bake: Resource = load(Bake.theme_path(theme))\n  var foreground := Node3D.new()\n  var scenery := Node3D.new()\n  var sun := DirectionalLight3D.new()\n  root.add_child(foreground)\n  root.add_child(scenery)\n  root.add_child(sun)\n  var nodes: Array[Node] = []\n  for i in bake.visual_recipe.records.size(): bake.visual_recipe.instantiate_one(i,nodes,scenery if bake.visual_recipe.records[i].get(\"background\",false) else foreground)\n  var runtime := Runtime.new()\n  runtime.bindings = Measured.new()\n  runtime.configure(theme,{},theme_bake.environment,sun)\n  runtime.attach(foreground)\n  runtime.attach(scenery,false,true)\n  var result := {\"theme\":theme,\"prepare\":runtime.bindings.stats.duplicate(true)}\n  results.append(result)\n  print(\"COLD_PROGRAM_PROBE | \",JSON.stringify(result))\n  runtime.bindings.restore()\n  foreground.free()\n  scenery.free()\n  sun.free()\n DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(\"res://test-results\"))\n FileAccess.open(\"res://test-results/copy-cold.json\",FileAccess.WRITE).store_string(JSON.stringify(results,\"  \"))\n quit()\n",
+  "cold_probe_instructions": "Save cold_probe_source to a temporary .gd file and run Godot 4.7.2 --headless --path . --script <file>. It copies the current _register_palette body and wraps surface_controls.prepare; output is res://test-results/copy-cold.json.",
+  "validation": {
+    "passing_assertions": 697,
+    "cases": [
+      {
+        "case": "appearance",
+        "checks": 70,
+        "result": "RESULT | Prototype appearance regression | 70 checks | 0 failures"
+      },
+      {
+        "case": "contribution",
+        "checks": 36,
+        "result": "RESULT | foreground contribution | 36 checks | 0 failures"
+      },
+      {
+        "case": "enemy",
+        "checks": 32,
+        "result": "RESULT | Enemy streaming | 32 checks | 0 failures"
+      },
+      {
+        "case": "hud",
+        "checks": 16,
+        "result": "HUD_UPDATE_REGRESSION | 16 checks | 0 failures"
+      },
+      {
+        "case": "manifest",
+        "checks": 30,
+        "result": "ENDLESS_MANIFEST_REGRESSION | checks=30 failures=0"
+      },
+      {
+        "case": "materials",
+        "checks": 112,
+        "result": "RESULT | Stream material staging | 112 checks | 0 failures"
+      },
+      {
+        "case": "rail-stream",
+        "checks": 10,
+        "result": "RESULT | Rail rings streaming | 10 checks | 0 failures"
+      },
+      {
+        "case": "rails",
+        "checks": 13,
+        "result": "RESULT | Rail rings | 13 checks | 0 failures"
+      },
+      {
+        "case": "ranges",
+        "checks": 24,
+        "result": "ATMOSPHERE_COLOR_RANGES | checks=24 failures=0"
+      },
+      {
+        "case": "retirement",
+        "checks": 72,
+        "result": "ENDLESS_RETIREMENT_REGRESSION | checks=72 | failures=0"
+      },
+      {
+        "case": "retry",
+        "checks": 62,
+        "result": "RESULT | Soft retry | 62 checks | 0 failures"
+      },
+      {
+        "case": "reuse",
+        "checks": 130,
+        "result": "ENDLESS_REUSE_REGRESSION | checks=130 failures=0"
+      },
+      {
+        "case": "roof-contribution",
+        "checks": 36,
+        "result": "RESULT | foreground contribution | 36 checks | 0 failures"
+      },
+      {
+        "case": "smoke",
+        "checks": 54,
+        "result": "ENDLESS_SCENE_SMOKE | checks=54 failures=0 max_resident=2 max_build_ms=21.79 max_frame_ms=165.87"
+      }
+    ],
+    "script_or_engine_errors_in_final_suite": 0,
+    "editor_import": "Godot 4.7.2 --headless --editor --import exited 0 without script or engine errors"
+  }
+}

@@ -1,5 +1,16 @@
 # Rendering and streaming performance — 2026-10-30
 
+## Direct private-material conversion — 2026-11-11
+
+Textured/vertex-colored standard materials now convert directly into their
+private shader material, avoiding an intermediate native duplicate. The eight
+RampMania fixtures remove seven temporary copies in total. A sampled conversion
+is about 30% faster; whole Green Hill attachment changes by about 3%, with
+overlapping trial distributions. Both fast tours have zero waits/rebuilds.
+Current bakes remain valid. The cold shader audit confirms that first program
+creation remains a cost after existing cache reuse; Windows driver timing is
+unmeasured. See [the limited scope, checks and receipt](MATERIAL_COPY_CPU.md).
+
 ## Shared material-control inspection — 2026-11-11
 
 Atmosphere attachment now shares each shader's emission/halo/light descriptors

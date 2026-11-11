@@ -5,6 +5,7 @@ const SCALES := ["emission_scale", "neon_strength", "radiance"]
 const HALOS := ["neon_spread", "floor_neon_spread"]
 const Palette := preload("res://scripts/themes/theme_atmosphere.gd")
 const ColorRanges := preload("res://scripts/atmosphere/color_ranges.gd")
+const StandardSurface := preload("res://scripts/atmosphere/standard_surface.gd")
 var slots: Array[Dictionary] = []
 var seen_nodes := {}
 var materials := {}
@@ -20,6 +21,7 @@ var hue_parameters: Array[Dictionary] = []
 var range_materials: Array[ShaderMaterial] = []
 var _uniform_cache := {}
 var _cache_uniforms := "--profile-uncached-materials" not in OS.get_cmdline_user_args()
+var _legacy_material_copies := "--profile-redundant-material-copies" in OS.get_cmdline_user_args()
 const NEON_KEYS := ["industrial_cyan", "signal_pink","neon_pink", "neon_aqua", "neon_mint", "neon_amber", "purple_accent", "window_gold", "marquee", "warm_spill", "blue_spill"]
 const BACKGROUND_KEYS := ["ocean_deep", "ocean_wave", "ocean_reflection", "ocean_sun", "cloud_shadow", "cloud_highlight", "shore_tint", "reservoir_deep", "reservoir_ripple", "canal_deep", "canal_reflection", "distant_haze", "architecture_tint", "skyline_tint", "sea_shadow", "sea_highlight", "bank_shadow", "bank_highlight", "ruin_haze", "lake_base", "lake_reflection", "cavern_tint", "cavern_deep", "lagoon_deep", "lagoon_wave", "water_reflection"]
 
@@ -79,6 +81,14 @@ func _slot(node: GeometryInstance3D, surface: int, material: Material, scenery :
  if surface < 0: node.material_override = copy
  else: (node as MeshInstance3D).set_surface_override_material(surface, copy)
 
+func _private_material(source: Material) -> Material:
+ if not _legacy_material_copies and source is BaseMaterial3D:
+  # Conversion creates the private ShaderMaterial itself. Atmosphere-only
+  # tags are applied below; the converter reads the original surface features.
+  var converted: Material = StandardSurface.copy(source)
+  if converted != source: return converted
+ return source.duplicate()
+
 func _copy(source: Material, scenery := false) -> Material:
  if source.get_meta("atmosphere_protected", false): return source
  var copy: Material = source
@@ -90,7 +100,7 @@ func _copy(source: Material, scenery := false) -> Material:
  # serve gameplay. Keep those copies separate instead of tagging the source.
  var cache: Dictionary = scenery_materials if scenery and not semantic else materials
  if cache.has(source): return cache[source]
- if semantic or scenery: copy = source.duplicate()
+ if semantic or scenery: copy = _private_material(source)
  if Palette.is_foliage(source): Palette.foliage(copy)
  if trim_layer:
   copy.set_meta("atmosphere_hue", "terrain_borders")
@@ -98,7 +108,7 @@ func _copy(source: Material, scenery := false) -> Material:
  if scenery and not semantic:
   copy.set_meta("atmosphere_ranges_only", true)
   copy.set_meta("atmosphere_range_category", "background")
- if (semantic or scenery) and copy is BaseMaterial3D: copy = preload("res://scripts/atmosphere/standard_surface.gd").copy(copy)
+ if _legacy_material_copies and (semantic or scenery) and copy is BaseMaterial3D: copy = StandardSurface.copy(copy)
  if source is BaseMaterial3D and source.emission_enabled:
   if copy == source: copy = source.duplicate()
   parameters.append({"material": copy, "property": "emission_energy" if copy is ShaderMaterial else "emission_energy_multiplier", "base": source.emission_energy_multiplier, "shader": copy is ShaderMaterial})

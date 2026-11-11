@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Skip the material that would immediately be replaced — 2026-11-11
+
+Atmosphere attachment now converts eligible standard materials straight into their private ShaderMaterial. It keeps the required flat/emissive copies and existing source/metadata/next-pass ownership. Only seven redundant native copies occur across the eight RampMania fixtures: five Green Hill, one Casino, one Ice. The sampled conversion is about 30% faster; whole Green Hill attachment is only about 3% lower with overlapping distributions, so this is a small cleanup. Both fast tours keep zero boundary waits/rebuilds. The cold shader audit finds that the existing adapter cache already handles reuse; first native program creation still costs several milliseconds, and Windows driver profiling remains outstanding. Current bakes remain valid. See [the measurements and checks](MATERIAL_COPY_CPU.md).
+
 ## Inspect a shared shader once per attachment — 2026-11-11
 
 Atmosphere bindings now share the emission/halo/fake-light uniform descriptors for each Shader during a synchronous root attachment, keeping descriptor order and reading values from each material. Entry, exit and restoration clear the cache, so later shader/include edits stay live and extra resources do not remain resident. Eight-theme RampMania inspection drops from 367 native queries to 90 with matching material state and live edits. Warm material-attachment means improve about 11% in Green Hill, 22% in Rooftop and 5% in Chemical, but fresh-run maxima still overlap and the full-tour scheduler maximum does not improve. Both fast tour paths have zero waits/rebuilds. Current bakes remain valid; no art, shader program, scheduler or residency change. Earlier dummy-renderer cleanup errors and the threaded-loader leak remain separate, and Windows FPS is unmeasured. See [the receipt and limits](MATERIAL_INSPECTION_CACHE.md).
