@@ -38,6 +38,8 @@ func run() -> void:
  report["atomic_attachment"] = "--profile-atomic-attachment" in OS.get_cmdline_user_args()
  report["cached_material_uniforms"] = "--profile-uncached-materials" not in OS.get_cmdline_user_args()
  report["legacy_material_copies"] = "--profile-redundant-material-copies" in OS.get_cmdline_user_args()
+ report["chunked_materials"] = "--profile-whole-material-attachment" not in OS.get_cmdline_user_args() and not report.atomic_attachment
+ report["game_sha256"] = FileAccess.get_sha256("res://scripts/endless/endless_game.gd")
  report["seed"] = game.run_seed
  report["configuration"] = config.snapshot()
  report["engine"] = Engine.get_version_info().string

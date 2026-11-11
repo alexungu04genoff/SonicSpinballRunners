@@ -1,5 +1,16 @@
 # Rendering and streaming performance — 2026-10-30
 
+## Material attachment slices — 2026-11-11
+
+Live material collection now returns between budgeted steps while the existing
+loader can prepare the immediate queued variant. Startup keeps whole-root
+attachment; cache limits, lookahead and appearance stay current. Repeated Green
+Hill tours reduce maximum live scheduler work from 78.9–88.4 to 15.5–24.4 ms.
+All 12 fixed-theme tours have zero waits/rebuilds. Rooftop scheduler work improves
+in aggregate, but whole-frame results and total preparation time are mixed;
+physics/native operations still spike. Current bakes remain valid. See
+[the complete measurements, tradeoff and checks](MATERIAL_ATTACHMENT_SLICES.md).
+
 ## Spatial rail support shadows — 2026-11-11
 
 Elevated-rail support posts now share shadow-only geometry within small local

@@ -181,12 +181,12 @@ func run() -> void:
  check(not live_hidden.visible, "Authored hidden geometry stays hidden after attachment")
  var staged_steps := 0
  var remains_staged := true
- while live.phase == 2 and staged_steps < 5:
+ while live.phase == 2 and staged_steps < 1000:
   live.step()
   remains_staged = remains_staged and not live.ready and not live.visual.visible and not restored_can_process(live.nodes)
   staged_steps += 1
  check(live.prepared_nodes.is_empty() and live.phase == 3, "Completed attachment releases the staging node list")
- check(staged_steps == 4, "Animation binding, foreground materials, scenery materials and bounds use separate scheduler steps")
+ check(staged_steps >= 6, "Material collection and application yield separately from animation binding and bounds")
  check(remains_staged, "Material preparation and bounds never expose or process a partially ready Act")
  var bird_index: int = recipe.animations[0].index
  var restored: Node = live.nodes[bird_index]
@@ -207,6 +207,22 @@ func run() -> void:
  live_visual.free()
  live_background.free()
  expected_root.free()
+
+ var opening := Act.new()
+ opening.game = host
+ opening.plan = {"zone":0}
+ opening.recipe = Recipe.new()
+ opening.phase = 2
+ opening._finish_phase = 1
+ opening.background_visual = Node3D.new()
+ host.started = false
+ opening.step()
+ opening.step()
+ check(opening._finish_phase == 3 and opening._material_attachment.is_empty(), "Loading-screen materials retain whole-root throughput")
+ host.started = true
+ opening.root.free()
+ opening.visual.free()
+ opening.background_visual.free()
 
  recipe.created_ids.clear()
  await library._warm_recipe(recipe, "fixture", "act", "fixture:1")

@@ -25,6 +25,8 @@ var contribution_warm_until := 0
 var _profile_cpu: Callable
 var _finish_phase := 0
 var _atomic_attachment := "--profile-atomic-attachment" in OS.get_cmdline_user_args()
+var _whole_material_attachment := "--profile-whole-material-attachment" in OS.get_cmdline_user_args()
+var _material_attachment := {}
 
 func _notification(what: int) -> void:
  if what != NOTIFICATION_PREDELETE: return
@@ -107,6 +109,7 @@ func _finish_visual_step() -> void:
 func _finish_stage() -> void:
  var started := Time.get_ticks_usec() if _profile_cpu.is_valid() else 0
  var label: String
+ var completed := true
  match _finish_phase:
   0:
    prepared_nodes.clear()
@@ -116,17 +119,31 @@ func _finish_stage() -> void:
    for animation: Dictionary in recipe.animations: nodes[animation.index].process_mode = Node.PROCESS_MODE_INHERIT
    label = "live.bind_animations"
   1:
-   game.backgrounds[plan.zone].layer.atmosphere.attach(visual)
+   completed = _attach_materials(visual)
    label = "live.atmosphere_foreground"
   2:
-   game.backgrounds[plan.zone].layer.atmosphere.attach(background_visual, false, true)
+   completed = _attach_materials(background_visual, true)
    label = "live.atmosphere_scenery"
   3:
    contribution.capture(self)
    phase = 3
    label = "live.contribution_capture"
- _finish_phase += 1
- if started > 0: _profile_cpu.call(label, started)
+ if completed: _finish_phase += 1
+ if started > 0:
+  _profile_cpu.call(label, started)
+  if game.started: _profile_cpu.call(label.replace("live.", "play."), started)
+
+func _attach_materials(target: Node, scenery := false) -> bool:
+ var atmosphere: RefCounted = game.backgrounds[plan.zone].layer.atmosphere
+ # The loading screen can finish whole roots without extending startup across
+ # extra frames. During play, return between bounded collection slices.
+ if not game.started or _whole_material_attachment or _atomic_attachment:
+  atmosphere.attach(target, false, scenery)
+  return true
+ return atmosphere.attach_step(target, _material_attachment, scenery)
+
+func preparing_materials() -> bool:
+ return phase == 2 and _finish_phase in [1, 2] and not _whole_material_attachment and not _atomic_attachment
 
 func _terrain_step() -> void:
  if index >= source.terrain.size():

@@ -37,28 +37,44 @@ func begin_theme(theme: String) -> void:
 func append_root(root: Node, sky: Material = null, scenery := false) -> void:
  _uniform_cache.clear()
  for node: Node in root.find_children("*", "", true, false):
-  if seen_nodes.has(node.get_instance_id()): continue
-  seen_nodes[node.get_instance_id()] = true
-  if node.has_meta("atmosphere_bindings"): _register_tags(node)
-  if not node is GeometryInstance3D: continue
-  var scenery_surface := scenery
-  var ancestor: Node = node
-  while not scenery_surface and ancestor != null:
-   scenery_surface = ancestor.has_meta("atmosphere_scenery")
-   if ancestor == root: break
-   ancestor = ancestor.get_parent()
-  if node.material_override != null:
-   _slot(node, -1, node.material_override, scenery_surface)
-  elif node is MeshInstance3D and node.mesh != null:
-   for surface in node.mesh.get_surface_count(): _slot(node, surface, node.get_active_material(surface), scenery_surface)
-  elif node is MultiMeshInstance3D and node.multimesh != null and node.multimesh.mesh != null and node.multimesh.mesh.get_surface_count() == 1:
-   _slot(node, -1, node.multimesh.mesh.surface_get_material(0), scenery_surface)
+  _append_node(node, root, scenery)
  # Sky is already a private Lab copy; changing its uniforms invalidates radiance
  # only when a value actually changes. Its shader contains no TIME dependency.
  if sky != null: _register_palette(sky)
  # Inspection is shared only within this synchronous attachment. The next
  # root sees live shader/include edits, and no extra resources stay resident.
  _uniform_cache.clear()
+
+func append_step(pending: Dictionary, budget_usec := 800) -> bool:
+ # Keep the same traversal order and private-material cache across slices.
+ # The same attachment-scoped shader inspection cache spans its slices.
+ if pending.index == 0: _uniform_cache.clear()
+ var deadline := Time.get_ticks_usec() + budget_usec
+ while pending.index < pending.nodes.size():
+  _append_node(pending.nodes[pending.index], pending.root, pending.scenery)
+  pending.index += 1
+  if Time.get_ticks_usec() >= deadline: break
+ var complete: bool = pending.index == pending.nodes.size()
+ if complete: _uniform_cache.clear()
+ return complete
+
+func _append_node(node: Node, root: Node, scenery: bool) -> void:
+ if seen_nodes.has(node.get_instance_id()): return
+ seen_nodes[node.get_instance_id()] = true
+ if node.has_meta("atmosphere_bindings"): _register_tags(node)
+ if not node is GeometryInstance3D: return
+ var scenery_surface := scenery
+ var ancestor: Node = node
+ while not scenery_surface and ancestor != null:
+  scenery_surface = ancestor.has_meta("atmosphere_scenery")
+  if ancestor == root: break
+  ancestor = ancestor.get_parent()
+ if node.material_override != null:
+  _slot(node, -1, node.material_override, scenery_surface)
+ elif node is MeshInstance3D and node.mesh != null:
+  for surface in node.mesh.get_surface_count(): _slot(node, surface, node.get_active_material(surface), scenery_surface)
+ elif node is MultiMeshInstance3D and node.multimesh != null and node.multimesh.mesh != null and node.multimesh.mesh.get_surface_count() == 1:
+  _slot(node, -1, node.multimesh.mesh.surface_get_material(0), scenery_surface)
 
 func _control_uniforms(shader: Shader) -> Array:
  if not _cache_uniforms: return shader.get_shader_uniform_list()

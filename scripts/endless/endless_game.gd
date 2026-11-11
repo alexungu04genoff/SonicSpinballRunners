@@ -225,6 +225,7 @@ func _process(delta: float) -> void:
   var retire_started := Time.get_ticks_usec()
   if is_instance_valid(node): node.free()
   if library.profile_enabled: library._record_cpu("live.retire", retire_started)
+ _prefetch_pending_variant()
  _prefetch_next_theme()
  var steps := 0
  while Time.get_ticks_usec() < deadline and steps < 128:
@@ -256,14 +257,7 @@ func _process(delta: float) -> void:
    # Startup prepares at most two Acts. During play prepare the rest of this Zone and the next Zone.
    if entry.sequence > active_sequence + (5 if started else 1): break
    if not library.has_variant(entry.theme, entry.id):
-    if not library.busy:
-     var protected: Array = [entry]
-     for act: RefCounted in resident: protected.append(act.plan)
-     for index: int in backgrounds:
-      if index >= _background_zone and index <= _background_zone + 1:
-       protected.append({"theme": backgrounds[index].theme, "id": entry.id})
-     if not library.trim(protected, 1, 0 if library.themes.has(entry.theme) else 1): break
-    library.request(entry.theme, entry.id)
+    _request_variant(entry)
     break
    if not library.busy:
     var pinned: Array = [entry]
@@ -366,6 +360,25 @@ func _update_foreground_contribution() -> void:
   foreground_contributing += int(visible_now)
  foreground_update_usec = Time.get_ticks_usec() - began
 
+func _request_variant(entry: Dictionary) -> void:
+ if library.busy: return
+ var protected: Array = [entry]
+ for act: RefCounted in resident: protected.append(act.plan)
+ if building != null: protected.append(building.plan)
+ for index: int in backgrounds:
+  if index >= _background_zone and index <= _background_zone + 1:
+   protected.append({"theme": backgrounds[index].theme, "id": entry.id})
+ if library.trim(protected, 1, 0 if library.themes.has(entry.theme) else 1):
+  library.request(entry.theme, entry.id)
+
+func _prefetch_pending_variant() -> void:
+ # Material slices use the live scheduler while the existing library worker
+ # can prepare the immediate next variant. Keep the same lookahead and limits.
+ if not started or building == null or not building.preparing_materials() or pending.is_empty(): return
+ var entry: Dictionary = pending[0]
+ if entry.sequence > active_sequence + 5 or library.has_variant(entry.theme, entry.id): return
+ _request_variant(entry)
+
 func _prefetch_next_theme() -> void:
  if not started or active == null: return
  for entry: Dictionary in pending:
@@ -385,6 +398,7 @@ func _prefetch_next_theme() -> void:
    # Keep the immediate playable neighbor ready before doing optional theme work.
    var protected: Array = [entry]
    for act: RefCounted in resident: protected.append(act.plan)
+   if building != null: protected.append(building.plan)
    for index: int in backgrounds:
     if index >= _background_zone:
      protected.append({"theme": backgrounds[index].theme, "id": entry.id})

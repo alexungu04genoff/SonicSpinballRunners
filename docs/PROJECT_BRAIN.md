@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Let material setup yield while the next load progresses — 2026-11-11
+
+The latest loading pass keeps startup material attachment whole, then slices live collection with an 800 µs cooperative target and a separate final palette/emission application. The attachment cache survives those slices. The idle library can prepare the first pending variant during collection, with the same lookahead/cache limits and the attaching Act explicitly pinned. Splitting alone caused boundary waits and was rejected. Repeated Green Hill tours reduce maximum live scheduler work from 79–88 to 15–24 ms, and all 12 fixed-theme tours have zero waits/rebuilds. Rooftop's full-frame results remain mixed, including large physics/native-operation spikes; this is not a universal frame-pacing or Windows FPS claim. All 750 targeted assertions pass, including eight-theme material equality and disk authority. Current bakes remain valid; no GI, shader, quality or physics changes. [Receipt, limits and reproduction](MATERIAL_ATTACHMENT_SLICES.md).
+
 ## Keep rail support shadows local — 2026-11-11
 
 The next shadow pass groups eligible elevated-rail posts in 2-unit local cells, keeping distant sections independently culled. Visible meshes/materials, the authoritative route, custom or double-sided deck/guard/pipe surfaces and the entry marker stay on their existing paths. All 24 eight-theme software Forward+/Vulkan comparisons are pixel-identical; overview fixture draws drop 23.0–29.9%, with smaller close-view savings. Fresh RampMania bakes remove 21 caster surfaces per theme. This trades extra shadow geometry and coarser culling inside each small group for fewer submissions; it is not Windows FPS evidence. No GI or quality-setting change. Re-bake Prototype and Endless; recipe format stays version 9. [Measurements and limits](RAIL_SHADOWS.md).

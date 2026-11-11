@@ -28,6 +28,19 @@ func attach(root: Node, include_sky := false, scenery := false) -> void:
  bindings.apply(float(values.get("emission", 1.0)))
  bindings.apply_palette(values, sun, values.has("sun_pitch") or values.has("sun_yaw"))
 
+func attach_step(root: Node, pending: Dictionary, scenery := false, budget_usec := 800) -> bool:
+ # Streamed Acts stay hidden until collection and application both complete.
+ # Source/editor and shared sky attachment keep the synchronous API above.
+ if pending.is_empty():
+  pending.merge({"root":root,"nodes":root.find_children("*", "", true, false),"index":0,"scenery":scenery,"collected":false})
+ if not pending.collected:
+  pending.collected = bindings.append_step(pending, budget_usec)
+  return false
+ bindings.apply(float(values.get("emission", 1.0)))
+ bindings.apply_palette(values, sun, values.has("sun_pitch") or values.has("sun_yaw"))
+ pending.clear()
+ return true
+
 static func apply_properties(source: Dictionary, target: Environment, light: DirectionalLight3D) -> void:
  for key: String in source:
   if key == Fields.LEGACY_SHADOW_MODE: continue

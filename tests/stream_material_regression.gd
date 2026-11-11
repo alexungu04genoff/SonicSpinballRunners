@@ -98,8 +98,14 @@ func run() -> void:
   sync.attach(a.foreground)
   sync.attach(a.scenery, false, true)
   for pair: Array in [[b.foreground, false], [b.scenery, true]]:
-   incremental.attach(pair[0], false, pair[1])
-   await process_frame
+   var pending := {}
+   var steps := 0
+   # A zero time budget deterministically stops after one node. Cross real
+   # frames too, while keeping this state comparison quick in headless runs.
+   while not incremental.attach_step(pair[0], pending, pair[1], 0) and steps < 20000:
+    steps += 1
+    if steps % 32 == 0: await process_frame
+   check(steps >= 1 and pending.is_empty(), "Chunked attachment completes and releases its traversal: " + theme)
   check(snapshot(a.nodes) == snapshot(b.nodes), "Full material properties, program source and uniforms match: " + theme)
   check(sync.bindings.slots.size() == incremental.bindings.slots.size() and sync.bindings.seen_nodes.size() == incremental.bindings.seen_nodes.size(), "Slot and node coverage match: " + theme)
   check(sync.bindings.palette_originals == incremental.bindings.palette_originals, "Palette bases match: " + theme)
@@ -125,6 +131,7 @@ func run() -> void:
   b.scenery.free()
   sun.free()
  shader_edit_checks()
+ pending_edit_checks()
  conversion_checks()
  print("RESULT | Stream material staging | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)
@@ -156,6 +163,46 @@ func shader_edit_checks() -> void:
  bindings.restore()
  check(bindings._uniform_cache.is_empty() and first.material_override.get_shader_parameter("emission_scale") == 0.75 and second.material_override.get_shader_parameter("radiance") == 2.0, "Restoration releases inspection data and preserves source parameters")
  holder.free()
+
+func pending_edit_checks() -> void:
+ var source := StandardMaterial3D.new()
+ source.albedo_color = Color(0.2,0.6,0.3)
+ source.emission_enabled = true
+ source.emission = Color(0.3,0.1,0.2)
+ source.emission_energy_multiplier = 1.2
+ source.set_meta("atmosphere_hue","decor")
+ var holders: Array[Node3D] = []
+ var visuals: Array = []
+ for i in 2:
+  var holder := Node3D.new()
+  root.add_child(holder)
+  holders.append(holder)
+  var nodes: Array[Node] = []
+  for j in 3:
+   var node := MeshInstance3D.new()
+   node.material_override = source
+   holder.add_child(node)
+   nodes.append(node)
+  visuals.append(nodes)
+ var sun := DirectionalLight3D.new()
+ root.add_child(sun)
+ var whole := configured("green_hill",Environment.new(),sun)
+ var sliced := configured("green_hill",Environment.new(),sun)
+ var pending := {}
+ check(not sliced.attach_step(holders[1],pending,false,0),"A partial attachment returns before application")
+ var changed := {"emission":1.8,"hue/decor":0.23,"brightness/decor":0.8}
+ whole.values.merge(changed,true)
+ sliced.values.merge(changed,true)
+ whole.attach(holders[0])
+ for step in 10:
+  if sliced.attach_step(holders[1],pending,false,0): break
+ check(pending.is_empty() and snapshot(visuals[0]) == snapshot(visuals[1]),"Completion applies the latest values after an edit during collection")
+ check(visuals[1][0].material_override == visuals[1][2].material_override and visuals[1][0].material_override != source,"Shared source keeps one private copy across slices")
+ whole.bindings.restore()
+ sliced.bindings.restore()
+ check(visuals[1].all(func(node): return node.material_override == source),"Restoration recovers every slot after chunked attachment")
+ for holder: Node3D in holders: holder.free()
+ sun.free()
 
 func conversion_checks() -> void:
  var texture := ImageTexture.create_from_image(Image.create(2, 2, false, Image.FORMAT_RGBA8))

@@ -1,5 +1,10 @@
 # Act attachment stages — 2026-11-11
 
+The [subsequent material-slicing pass](MATERIAL_ATTACHMENT_SLICES.md) now splits
+live collection further and overlaps the next queued load. It retains this
+four-stage structure and the synchronous startup path. The measurements below
+describe this earlier stage-separation change.
+
 Prototype and Endless previously finalized each Act in one scheduler operation:
 bind animations, collect/apply foreground atmosphere materials, collect/apply
 local scenery materials, and capture foreground contribution bounds. That
