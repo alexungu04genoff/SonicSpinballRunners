@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Give the scheduler a turn between attachment stages — 2026-11-11
+
+Act finalization now returns to the existing scheduler between animation binding, foreground atmosphere, local scenery atmosphere and contribution bounds. Animation roots inherit the disabled staging parent until activation restores their pausable behavior. Current bakes, palette/material ownership, lookahead and residency stay current. Repeated disk-loaded Prototype comparisons reduce worst-job ranges; total preparation time is mixed. A controlled 400 px/s Green Hill tour reduced maximum scheduler work from 105.1 to 64.9 ms, with zero boundary waiting or runtime rebuilds on both paths. Finer per-node collection caused new boundary waits and was rejected. Individual material operations still spike, and Windows FPS remains unmeasured. See [the CPU receipt and limits](ACT_ATTACHMENT_CPU.md).
+
 ## Scan the floor Rings that can actually pay — 2026-11-11
 
 The floor pickup loop now uses cached global indices for the active Act, skipping neighboring Acts and nonempty rail IDs. Rail travel keeps its callback; positions, active flags and eligibility stay live, with the same swept radius math and source ordering. Rack and floor membership share the existing invalidation path. A signal-time owner/resident change uses an ordered fallback so the optimization preserves callback behavior too. All 380 checks and a 4,000-step reference comparison pass. The 160-Ring headless fixture visits 55 floor candidates and cuts RingField tick-method time by about 57% relative to the preceding rack-cache commit; Windows FPS is still unmeasured. Current version-9 bakes remain valid. See [the rules, reproduction and test limitations](RING_PICKUP_CACHE.md).

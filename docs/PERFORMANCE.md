@@ -1,5 +1,17 @@
 # Rendering and streaming performance — 2026-10-30
 
+## Separate Act attachment stages — 2026-11-11
+
+Animation binding, foreground atmosphere, local scenery atmosphere and bounds
+capture now return separately to the existing streaming scheduler. Acts remain
+hidden and disabled until complete. A controlled fast Green Hill tour measured
+maximum scheduler work of 105.1 ms with the previous grouping and 64.9 ms with
+separate stages, with zero boundary waiting or runtime rebuilds in both runs.
+Repeated three-Act Prototype comparisons show smaller worst-job ranges but
+mixed total preparation time; individual material stages can still exceed
+100 ms. Current bakes remain valid. See [the measurements, reproduction and
+limits](ACT_ATTACHMENT_CPU.md); Windows FPS is unmeasured.
+
 ## Cached floor pickup candidates — 2026-11-11
 
 Floor collection now visits the active Act's cached floor indices, retaining

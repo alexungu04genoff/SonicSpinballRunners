@@ -22,6 +22,9 @@ var ring_data: Array[Dictionary] = []
 var game: Node
 var contribution := preload("res://scripts/endless/foreground_contribution.gd").new()
 var contribution_warm_until := 0
+var _profile_cpu: Callable
+var _finish_phase := 0
+var _atomic_attachment := "--profile-atomic-attachment" in OS.get_cmdline_user_args()
 
 func _notification(what: int) -> void:
  if what != NOTIFICATION_PREDELETE: return
@@ -32,6 +35,7 @@ func _notification(what: int) -> void:
 
 func initialize(owner_game: Node, entry: Dictionary, library: Node) -> void:
  game = owner_game
+ if library.profile_enabled: _profile_cpu = library._record_cpu
  plan = entry
  document = library.documents[plan.id]
  source = library.runtimes[plan.id]
@@ -80,15 +84,10 @@ func step() -> void:
      nodes.append(node)
     index += 1
    else:
-    prepared_nodes.clear()
-    recipe.bind_animations(nodes, game.presentation, runtime.mechanics)
-    var atmosphere = game.backgrounds[plan.zone].layer.atmosphere
-    atmosphere.attach(visual)
-    atmosphere.attach(background_visual, false, true)
-    contribution.capture(self)
-    phase = 3
+    _finish_visual_step()
   3:
    # The complete root is already attached; activation has no recursive add_child.
+   for animation: Dictionary in recipe.animations: nodes[animation.index].process_mode = Node.PROCESS_MODE_PAUSABLE
    root.process_mode = Node.PROCESS_MODE_PAUSABLE
    visual.process_mode = Node.PROCESS_MODE_PAUSABLE
    visual.visible = true
@@ -97,6 +96,37 @@ func step() -> void:
    ready = true
    contribution_warm_until = Engine.get_process_frames() + 2
    phase = 4
+
+func _finish_visual_step() -> void:
+ # The unsaved control runs the original combined operation for CPU comparisons.
+ # Normal play returns to the existing scheduler after each complete stage.
+ _finish_stage()
+ if _atomic_attachment:
+  while phase == 2: _finish_stage()
+
+func _finish_stage() -> void:
+ var started := Time.get_ticks_usec() if _profile_cpu.is_valid() else 0
+ var label: String
+ match _finish_phase:
+  0:
+   prepared_nodes.clear()
+   recipe.bind_animations(nodes, game.presentation, runtime.mechanics)
+   # Explicit PAUSABLE animation roots override the disabled staging parent.
+   # Inherit until activation so poses/materials cannot change between stages.
+   for animation: Dictionary in recipe.animations: nodes[animation.index].process_mode = Node.PROCESS_MODE_INHERIT
+   label = "live.bind_animations"
+  1:
+   game.backgrounds[plan.zone].layer.atmosphere.attach(visual)
+   label = "live.atmosphere_foreground"
+  2:
+   game.backgrounds[plan.zone].layer.atmosphere.attach(background_visual, false, true)
+   label = "live.atmosphere_scenery"
+  3:
+   contribution.capture(self)
+   phase = 3
+   label = "live.contribution_capture"
+ _finish_phase += 1
+ if started > 0: _profile_cpu.call(label, started)
 
 func _terrain_step() -> void:
  if index >= source.terrain.size():

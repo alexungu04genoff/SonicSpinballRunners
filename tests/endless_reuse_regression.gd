@@ -179,8 +179,15 @@ func run() -> void:
  var live_hidden: MeshInstance3D = live.nodes[1]
  check(live_hidden.mesh == mesh and live_hidden.material_override == material, "Meshes and materials retain shared resource identity")
  check(not live_hidden.visible, "Authored hidden geometry stays hidden after attachment")
- live.step()
+ var staged_steps := 0
+ var remains_staged := true
+ while live.phase == 2 and staged_steps < 5:
+  live.step()
+  remains_staged = remains_staged and not live.ready and not live.visual.visible and not restored_can_process(live.nodes)
+  staged_steps += 1
  check(live.prepared_nodes.is_empty() and live.phase == 3, "Completed attachment releases the staging node list")
+ check(staged_steps == 4, "Animation binding, foreground materials, scenery materials and bounds use separate scheduler steps")
+ check(remains_staged, "Material preparation and bounds never expose or process a partially ready Act")
  var bird_index: int = recipe.animations[0].index
  var restored: Node = live.nodes[bird_index]
  var values: Dictionary = recipe.animations[0].values
@@ -190,6 +197,7 @@ func run() -> void:
  check(restored.pose.position.y > 0 and is_zero_approx(bird.pose.position.y), "Transferred animation changes only the live visual")
  live.step()
  check(live.ready and live.visual.visible and live.visual.process_mode == Node.PROCESS_MODE_PAUSABLE, "Activation exposes the completed visual")
+ check(recipe.animations.all(func(animation: Dictionary): return live.nodes[animation.index].process_mode == Node.PROCESS_MODE_PAUSABLE), "Activation restores authored pausable animation behavior")
  var live_root: Node = live.root
  var live_visual: Node = live.visual
  var live_background: Node = live.background_visual
@@ -231,3 +239,6 @@ func run() -> void:
  host.free()
  print("ENDLESS_REUSE_REGRESSION | checks=%d failures=%d" % [checks, failures])
  quit(1 if failures else 0)
+
+func restored_can_process(nodes: Array[Node]) -> bool:
+ return nodes.any(func(node: Node): return node.can_process())
