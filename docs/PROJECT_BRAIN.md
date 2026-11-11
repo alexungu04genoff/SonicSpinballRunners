@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Small web optimization pass — 2026-11-11
+
+Prototype now updates its own HUD once after shared streaming, with detail text cached by displayed state, including Chip rescue use. Hidden diagnostics do no formatting; visible stats refresh at 4 Hz without slowing the underlying counters. `docs/.gdignore` keeps review images and CSVs out of Godot imports. Chemical's three separate scalar masks per material are packed losslessly into one RGB response map: roughness/AO/metallic. The 24 original inputs and all approved color/normal artwork stay current; `tools/pack_chemical_masks.gd` regenerates the eight derived maps. Normal bake validation still owns freshness, so re-bake Prototype and Endless after updating. Exact source/mip/bake-bank checks pass on matching 4.7.2; no rendered FPS or visual comparison is claimed. See [the pass and reproduction commands](PERFORMANCE.md#hud-documentation-imports-and-packed-chemical-masks--2026-11-11).
+
 ## Fresh eyes after the material overhaul — 2026-11-09
 
 Alex asked for a new eight-Zone strength review, not another round of props. Bro reviewed two current canonical Prototype positions per theme with production Retro and the approved Defaults. All eight already carry their identity. Sky reads as pale constructed sanctuary stone with green accents; Ice separates snow, ice and darker frozen walls; Lava's broad plates read as physical volcanic rock; Aquarium stays red park architecture around pale stone and blue insets. Green Hill remains the clean baseline, and Chemical/Casino/Rooftop have enough machinery, theatrical forms and city architecture. No visual production edits retained. See [the fresh audit and two comparison sheets](visual-strength-20261109/README.md). The remaining questions concern tracking moving Rings/Sonic and Lava's partially occluded Goal, not missing decorations. Earlier coverage/signature passes are history, not a mandate to keep adding things.

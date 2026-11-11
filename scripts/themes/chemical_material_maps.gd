@@ -25,13 +25,12 @@ func apply(material: ShaderMaterial, id: String, terrain := false) -> ShaderMate
  var code: String = material.shader.code
  var helper := """
 #include "res://scripts/themes/rooftop_normal.gdshaderinc"
-uniform sampler2D detail_roughness : filter_linear_mipmap_anisotropic, repeat_disable;
-uniform sampler2D detail_ao : filter_linear_mipmap_anisotropic, repeat_disable;
-uniform sampler2D detail_metallic : filter_linear_mipmap_anisotropic, repeat_disable;
+// Linear RGB: roughness, ambient occlusion, metallic. Original masks are retained.
+uniform sampler2D detail_response : filter_linear_mipmap_anisotropic, repeat_disable;
 uniform float detail_mix = 1.0;
 vec3 detail_properties(vec2 uv,vec2 wrapped) {
  vec2 dx=dFdx(uv),dy=dFdy(uv);
- return vec3(textureGrad(detail_roughness,wrapped,dx,dy).r,textureGrad(detail_ao,wrapped,dx,dy).r,textureGrad(detail_metallic,wrapped,dx,dy).r);
+ return textureGrad(detail_response,wrapped,dx,dy).rgb;
 }
 """
  if id in ["1C","3C"]:
@@ -108,9 +107,7 @@ vec3 detail_properties(vec2 uv,vec2 wrapped) {
  material.shader=shader
  for key in parameters: material.set_shader_parameter(key,parameters[key])
  material.set_shader_parameter("relief_normal",texture(id,"normal"))
- material.set_shader_parameter("detail_roughness",texture(id,"roughness"))
- material.set_shader_parameter("detail_ao",texture(id,"ao"))
- material.set_shader_parameter("detail_metallic",texture(id,"metallic"))
+ material.set_shader_parameter("detail_response",texture(id,"response"))
  material.set_meta("chemical_relief",float(STRENGTH[id]))
  material.set_meta("chemical_neon",id in ["1C","3C"])
  _update_material(material)

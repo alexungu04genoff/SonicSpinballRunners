@@ -1,5 +1,67 @@
 # Rendering and streaming performance — 2026-10-30
 
+## HUD, documentation imports and packed Chemical masks — 2026-11-11
+
+This pass starts from `8ff074581333ee543495554bd46f5c5a9ce17636`. It keeps the
+current artwork, authored geometry, physics, renderer and device-quality defaults.
+
+Shared streaming now dispatches one `_update_hud()` hook. Prototype overrides the
+hook instead of formatting the Endless HUD and immediately replacing its text.
+The detail string is rebuilt only when its displayed inputs change; Buddy summary
+caching includes rescue use as well as levels. Score, meter, feedback expiry and
+drain/transfer hints still respond on the next process update. Hidden diagnostics
+skip formatting entirely. Visible diagnostics refresh immediately on opening and
+then at 4 Hz; underlying streaming and frame counters continue updating each frame.
+
+`docs/.gdignore` excludes documentation and review assets from Godot's import scan.
+At the starting revision, 405 documentation PNG/JPEGs, about 651 MiB of source files,
+were outside the existing per-folder exclusions. This is an import-work reduction,
+not an FPS or measured editor-startup improvement. Markdown and image files remain
+available to documentation tools and Git.
+
+Chemical Plant's eight selected material roles now use one linear RGB response map
+per role: **R = roughness, G = AO, B = metallic**. The original 24 scalar PNGs remain
+the canonical inputs. Normal maps, albedos, mapping, filtering, response strengths,
+neon and atmosphere are unchanged. `detail_properties()` samples one texture per
+projection instead of three. The editor/baker loads the packed RGB8 image; exported
+source construction uses its lossless, mipmapped import. Normal disk bakes retain
+the same pixels through the existing content-addressed texture bank. The existing
+offline flat-relief policy is unchanged.
+
+The eight packed images contain **11,272,206 bytes**, compared with **45,088,824
+bytes** across the original RGBA8 masks, including all CPU-generated mip levels:
+43.00 MiB to 10.75 MiB, a 75% reduction in that image data. These are CPU image-byte
+counts, not measured physical VRAM savings. Hardware may expand RGB storage, and
+no GPU-time, FPS or overall process-memory improvement is claimed.
+
+After editing any original Chemical scalar masks, run:
+
+```text
+godot --headless --path . --script res://tools/pack_chemical_masks.gd
+godot --headless --path . --editor --import --quit
+godot --headless --path . --script res://tools/pack_chemical_masks.gd -- --check
+```
+
+Commit the derived `*_response.png` files and retain their import settings. The
+packer copies source channel values; it does not regenerate or reinterpret artwork.
+Run **Bake Prototype** and **Bake Endless** after pulling the changed pipeline,
+then use normal Prototype/Endless for rendered appearance and streaming checks.
+
+Matching Godot **4.7.2.stable.official.ed1daf0bf** headless checks passed:
+`hud_update_regression` (16 checks), `chemical_mask_regression` (80 checks), the
+non-writing eight-map pack check, and the editor import. The mask regression checks
+every channel at every mip level, imported/export texture pixels, canonical bake
+serialization and the real terrain/ramp bindings. Existing Buddy (70), run plan
+(41), Scorecraft (29), texture coverage (172) and static batching (111) checks pass.
+The real single-Act Prototype checks pass in Green Hill and Chemical (12 each).
+All five Chemical Prototype and seven Chemical Endless variants bake successfully;
+the headless disk-loaded Prototype authority/freshness fixture passes 14 checks
+with zero fallback rebuilds. Total: **557 checks, zero failures**. An initial
+Scorecraft attempt lacked the expected `test-results/` fixture directory; the
+completed run above created it first. No production fix was needed for that setup.
+Rendered comparisons, GPU allocation and Windows/laptop timings remain separate
+validation work; a graphical launch reports no available X11/Wayland display.
+
 Current Forward+/Vulkan first-use investigation: [VULKAN_FIRST_USE.md](VULKAN_FIRST_USE.md). Godot 4.7.2's global precompilation MSAA hint did not match SSR's 4× SubViewports. The focused audit measures mesh/surface/draw/specialization requests, isolated application caches, quiet startup timings and canonical Prototype appearance. The older renderer measurements below remain historical evidence for their stated workloads.
 
 This pass starts at `77ecd3ff536fd5b8f868bc7994ef2eeb3debac71`. The working tree includes pre-existing local art changes; those are preserved separately from the optimization changes. Local measurements, logs and screenshots are under ignored `test-results/performance-20261030/`.
