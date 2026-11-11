@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Rack clocks know their members — 2026-11-11
+
+The next Ring pass caches rack membership and owner views in RingField. Normal 120 Hz updates visit active racks directly; expiry and respawn touch their members instead of rediscovering groups and rescanning resident Rings. Original dictionaries keep timers and home positions live. Assignment/additions invalidate automatically; resident synchronization explicitly invalidates its same-size bulk edits, and replaced data is released immediately. Pickup order, rail gates, scoring, timing, fades and safety rules stay current. Existing version-9 bakes remain valid. The focused and existing checks pass 359 assertions; a 4,000-step comparison matches old state and signal order. A three-Act headless CPU fixture reduces rack bookkeeping from about 190 to 11 µs and the RingField tick method by 45–48%; this is not Windows FPS evidence. See [the cache contract, checks and repeatable profiler](RING_RACK_CACHE.md).
+
 ## Let Rings spin together — 2026-11-11
 
 The web Ring pass moves shared rotation into a vertex shader for Prototype and Endless. Resting nodes keep fixed CPU transforms; individual pickup flights, resets, rails and owning-root visibility stay with their existing rules. Forward+ already auto-instances ordinary Rings: small manual MultiMeshes increased the fixture's submissions, so that experiment was dropped. The retained path keeps individual culling and automatic instancing, with one basis update per actual shared material. All eight gold materials pass rendered Forward+/Vulkan comparisons at 4× MSAA on software Vulkan; this is shader/instancing evidence, not Windows FPS evidence. Exact mesh-derived bounds keep foreground contribution enabled. Bake version 9 requires fresh Prototype and Endless recipes. `--ring-spin=legacy` provides an unsaved same-bake comparison. See [the implementation, checks and limits](RING_SPIN.md).

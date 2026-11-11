@@ -1,5 +1,15 @@
 # Rendering and streaming performance — 2026-10-30
 
+## Cached Ring rack bookkeeping — 2026-11-11
+
+Rack updates now use cached membership and active-owner views. A 160-Ring,
+three-Act headless comparison reduces rack bookkeeping from roughly 190 to 11 µs
+and the complete RingField tick method by 45–48%. State/signal equivalence and
+359 focused regression checks pass; contact detection, scoring and lifecycle
+timing stay current. Existing current bakes remain valid. See [the method, raw
+CPU samples and limitations](RING_RACK_CACHE.md); these are CPU method timings,
+with Windows frame/FPS profiling still pending.
+
 ## Shared Ring rotation — 2026-11-11
 
 Prototype/Endless now update one shader rotation basis per shared Ring material,

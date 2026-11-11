@@ -440,6 +440,7 @@ func _sync_resident() -> void:
  presentation.ring_visuals.clear()
  _ring_visual_owner_ids.clear()
  presentation.bumper_visuals.clear()
+ ring_field.invalidate_rack_cache()
  ring_field.rings.clear()
  var field := PlayfieldData.new()
  field.source = "authored"

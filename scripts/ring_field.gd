@@ -13,7 +13,13 @@ const RESPAWN_SAFETY_DISTANCE := 128.0
 const RESPAWN_FADE_SECONDS := 0.35
 ## Per-instance geometry; ordinary tables retain their original 12 px ring contact.
 var ring_radius := 12.0
-var rings: Array[Dictionary] = []
+var rings: Array[Dictionary] = []:
+ set(value):
+  rings = value
+  invalidate_rack_cache()
+var _rack_groups: Array[Dictionary] = []
+var _racks_by_owner := {}
+var _rack_cache_size := -1
 var ball: PlaygroundBall
 var tuning: PhysicsTuning
 var previous_ball_position: Vector2
@@ -88,11 +94,45 @@ func add_ring(at: Vector2) -> void:
  var rack := _new_rack(source_id, active_owner_id, 1, RingTrails.scoring_settings({}))
  rack["bounds"] = Rect2(at, Vector2.ZERO)
  rings.append({"home": at, "position": at, "active": true, "rack": rack, "source_id": source_id + ":ring_0"})
+ invalidate_rack_cache()
 
 func add_pattern(trail: Dictionary, source_id: String, owner_id := "", offset := Vector2.ZERO) -> void:
  var pattern := trail.duplicate(true)
  pattern.pattern_id = source_id
  rings.append_array(pattern_records([pattern], owner_id, offset))
+ invalidate_rack_cache()
+
+func invalidate_rack_cache() -> void:
+ # Assignments and add_* handle this automatically. Bulk writers must invalidate
+ # after same-size in-place membership or rack-identity edits (including sync).
+ _rack_groups.clear()
+ _racks_by_owner.clear()
+ _rack_cache_size = -1
+
+func _ensure_rack_cache() -> void:
+ # Size also detects existing callers' direct append/clear operations. Identity
+ # changes need explicit invalidation; checking every Ring each tick defeats it.
+ if _rack_cache_size == rings.size(): return
+ invalidate_rack_cache()
+ var by_id := {}
+ for ring: Dictionary in rings:
+  if not ring.has("rack"): continue
+  var id: String = ring.rack.id
+  if not by_id.has(id):
+   var members: Array[Dictionary] = []
+   var group := {"first": ring, "members": members, "owners": {}}
+   by_id[id] = group
+   _rack_groups.append(group)
+  var group: Dictionary = by_id[id]
+  group.members.append(ring)
+  var owner_id: String = ring.rack.get("owner_id", "")
+  if group.owners.has(owner_id): continue
+  group.owners[owner_id] = true
+  if not _racks_by_owner.has(owner_id): _racks_by_owner[owner_id] = []
+  # Preserve the first eligible rack state even for legacy duplicate IDs, while
+  # its member array retains the original whole-rack hide/restore semantics.
+  _racks_by_owner[owner_id].append({"first": ring, "members": group.members})
+ _rack_cache_size = rings.size()
 
 func reset_rings() -> void:
  for ring: Dictionary in rings:
@@ -125,14 +165,25 @@ static func visibility_alpha(ring: Dictionary) -> float:
 
 func advance_racks(delta: float) -> void:
  if not scoring_enabled or delta <= 0.0: return
- var visited: Dictionary = {}
+ _ensure_rack_cache()
+ var groups: Array = _rack_groups
+ if not active_owner_id.is_empty():
+  if not _racks_by_owner.has(active_owner_id): return
+  groups = _racks_by_owner[active_owner_id]
  var changed := false
- for ring: Dictionary in rings:
-  if not ring_eligible(ring) or not ring.has("rack"): continue
+ for group: Dictionary in groups:
+  var ring: Dictionary = group.first
+  if not ring_eligible(ring):
+   # Legacy bounds can cut through a rack. Its first in-bounds member still
+   # selects the clock; owned Acts take the cached representative directly.
+   var found := false
+   for member: Dictionary in group.members:
+    if ring_eligible(member):
+     ring = member
+     found = true
+     break
+   if not found: continue
   var rack: Dictionary = ring.rack
-  var id: String = rack.id
-  if visited.has(id): continue
-  visited[id] = true
   var expired := false
   if rack.ready:
    if not _safe_to_respawn(rack):
@@ -141,10 +192,9 @@ func advance_racks(delta: float) -> void:
    rack.fade = minf(RESPAWN_FADE_SECONDS, rack.fade + delta)
    if rack.fade < RESPAWN_FADE_SECONDS: continue
    _reset_rack_state(rack)
-   for member: Dictionary in rings:
-    if member.has("rack") and member.rack.id == id:
-     member.position = member.home
-     member.active = true
+   for member: Dictionary in group.members:
+    member.position = member.home
+    member.active = true
    changed = true
    continue
   if rack.respawn_remaining >= 0.0:
@@ -158,8 +208,7 @@ func advance_racks(delta: float) -> void:
   rack.fade = 0.0
   # Hide the entire failed attempt, including its uncollected rings. Waiting and
   # fading are non-collectible states; safety is rechecked throughout the fade.
-  for member: Dictionary in rings:
-   if member.has("rack") and member.rack.id == id: member.active = false
+  for member: Dictionary in group.members: member.active = false
   changed = true
  if changed: rack_reset.emit()
 
