@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Keep the right Acts drawing — 2026-11-11
+
+The web visibility follow-up gives Rooftop's grass an explicit shader/CPU contract. Its existing 7.5 px maximum approved shell heights stay unchanged; shader offsets are bounded to ±25 px, and attachment applies that envelope to Godot's native mesh culler and our cached Act/motion bounds. The exact program, existing shell tag, private atmosphere copies and normal bake conversion are checked together. Unknown deformation still fails open. Ring indices also cache their owning root IDs: a pickup keeps that root visible without waking every neighbor, while stale/missing owners keep the broad safety hold. Loading, drafts, transfers, physics, residency and background fades stay with their existing rules. See [the current contribution policy and checks](FOREGROUND_CONTRIBUTION.md#rooftop-bounds-and-pickup-ownership--2026-11-11). Refresh Rooftop bakes after this source change; Windows rendering/timing remains a separate check.
+
 ## Small web optimization pass — 2026-11-11
 
 Prototype now updates its own HUD once after shared streaming, with detail text cached by displayed state, including Chip rescue use. Hidden diagnostics do no formatting; visible stats refresh at 4 Hz without slowing the underlying counters. `docs/.gdignore` keeps review images and CSVs out of Godot imports. Chemical's three separate scalar masks per material are packed losslessly into one RGB response map: roughness/AO/metallic. The 24 original inputs and all approved color/normal artwork stay current; `tools/pack_chemical_masks.gd` regenerates the eight derived maps. Normal bake validation still owns freshness, so re-bake Prototype and Endless after updating. Exact source/mip/bake-bank checks pass on matching 4.7.2; no rendered FPS or visual comparison is claimed. See [the pass and reproduction commands](PERFORMANCE.md#hud-documentation-imports-and-packed-chemical-masks--2026-11-11).

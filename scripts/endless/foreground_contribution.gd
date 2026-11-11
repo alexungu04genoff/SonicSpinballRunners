@@ -3,6 +3,7 @@ extends RefCounted
 ## Unknown geometry fails open; visibility never changes processing or gameplay state.
 const MechanicsVisual = preload("res://scripts/authored_act/mechanics_presentation.gd")
 const Flicky = preload("res://scripts/decor/island_flicky.gd")
+const GrassBounds = preload("res://scripts/themes/rooftop_grass_bounds.gd")
 const GUARD := 0.25 # 25 table pixels, including halo/shell displacement and edge filtering.
 var bounds := AABB()
 var valid := false
@@ -62,35 +63,47 @@ func _collect(node: Node) -> void:
   if node is MeshInstance3D or node is MultiMeshInstance3D or node is Label3D:
    var box: AABB = node.get_aabb()
    if node.custom_aabb != AABB(): box = box.merge(node.custom_aabb)
-   _include(node.global_transform * box.grow(node.extra_cull_margin))
-   if node is Label3D: _motion(node) # Billboard orientation can change with camera.
    var mesh: Mesh
    if node is MeshInstance3D: mesh = node.mesh
    elif node is MultiMeshInstance3D and node.multimesh != null: mesh = node.multimesh.mesh
-   _check_material(node.material_override)
-   _check_material(node.material_overlay)
+   var displacement := maxf(_check_material(node.material_override), _check_material(node.material_overlay))
    if mesh != null:
     for surface in mesh.get_surface_count():
-     _check_material(node.get_active_material(surface) if node is MeshInstance3D else mesh.surface_get_material(surface))
+     displacement = maxf(displacement, _check_material(node.get_active_material(surface) if node is MeshInstance3D else mesh.surface_get_material(surface)))
+   # The same finite envelope must reach Godot's per-mesh culler, not only this
+   # Act-level test. Set once at attachment; larger authored margins survive.
+   if displacement > node.extra_cull_margin: node.extra_cull_margin = displacement
+   _include(node.global_transform * box.grow(node.extra_cull_margin))
+   if node is Label3D: _motion(node) # Billboard orientation can change with camera.
   else:
    supported = false # Particles/deformation need an explicit finite envelope.
  elif node is Light3D or node is Decal or node is ReflectionProbe or node is AnimationMixer or node is Skeleton3D:
   supported = false
  for child: Node in node.get_children(): _collect(child)
 
-func _check_material(material: Material) -> void:
- if material == null or _materials.has(material): return
- _materials[material] = true
+func _check_material(material: Material) -> float:
+ if material == null: return 0.0
+ if _materials.has(material): return _materials[material]
+ _materials[material] = 0.0
+ var displacement := 0.0
  if material is ShaderMaterial and material.shader != null:
   # Vertex programs are not CPU mesh bounds. Unknown writes fail open. Includes
   # are inspected once too (current palette/normal includes do not move vertices).
   var code: String = material.shader.code
+  var grass_vertex := GrassBounds.vertex_code()
+  if material.has_meta("grass_shell_fraction") and code.contains(grass_vertex):
+   displacement = GrassBounds.MAX_OFFSET
+   # Recognize only the shared clamped program. Remaining code/includes still
+   # undergo the ordinary unknown-deformation check; a tag alone grants nothing.
+   code = code.replace(grass_vertex, "")
   var key: String = material.shader.resource_path.get_base_dir() + "\n" + code
   if not _shader_checks.has(key): _shader_checks[key] = _shader_bounded(code, material.shader.resource_path.get_base_dir(), {})
   if not _shader_checks[key]: supported = false
  elif material is BaseMaterial3D and (material.billboard_mode != BaseMaterial3D.BILLBOARD_DISABLED or material.grow):
   supported = false
- _check_material(material.next_pass)
+ displacement = maxf(displacement, _check_material(material.next_pass))
+ _materials[material] = displacement
+ return displacement
 
 func _shader_bounded(code: String, directory: String, visited: Dictionary) -> bool:
  if not _vertex_write.search_all(code).is_empty(): return false
@@ -106,7 +119,10 @@ func _shader_bounded(code: String, directory: String, visited: Dictionary) -> bo
 
 func _subtree_bounds(node: Node3D) -> AABB:
  var box := AABB(node.global_position, Vector3.ZERO)
- if node is GeometryInstance3D: box = box.merge(node.global_transform * node.get_aabb())
+ if node is GeometryInstance3D:
+  var geometry: AABB = node.get_aabb()
+  if node.custom_aabb != AABB(): geometry = geometry.merge(node.custom_aabb)
+  box = box.merge(node.global_transform * geometry.grow(node.extra_cull_margin))
  for child: Node in node.get_children():
   if child is Node3D: box = box.merge(_subtree_bounds(child))
  return box

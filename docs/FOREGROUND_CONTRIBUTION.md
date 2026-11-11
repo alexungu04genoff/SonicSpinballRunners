@@ -1,5 +1,57 @@
 # Resident foreground contribution
 
+## Rooftop bounds and pickup ownership — 2026-11-11
+
+The follow-up starts from `b55f8c5`. Rooftop grass uses a shared vertex contract
+from `rooftop_grass_bounds.gd`: its signed vertical displacement is clamped to
+0.25 world units (25 table pixels). Approved shells remain below 0.075 units, so
+their positions and all texture/material controls are unchanged. Deliberately
+larger authoring offsets now stop at the declared envelope; increasing that limit
+requires updating the contract and refreshing normal bakes.
+
+Capture recognizes the exact clamped program only when the material carries its
+existing grass-shell tag. Every other vertex write and shader include still goes
+through the original unsupported-deformation check. It raises the mesh's native
+`extra_cull_margin` to the displacement bound once at attachment, preserves larger
+authored margins, and includes that margin in both static and moving bounds. The
+contract survives atmosphere-private shader copies and the normal flat-relief bake
+policy. Unknown or stale shader programs still retain all residents.
+Godot applies the native margin to the local AABB before its world transform
+([4.7.2 renderer source](https://github.com/godotengine/godot/blob/ed1daf0bf/servers/rendering/renderer_scene_cull.cpp#L2054)),
+matching the cached-bound calculation through nonuniform and mirrored transforms.
+
+Ring registration now caches the owning foreground root's instance ID beside each
+Ring visual index. A pickup pins its own root even when the flight leaves that
+Act's cached bounds; it does not pin unrelated neighbors. Multiple flights can pin
+multiple roots. Missing indices, freed owners and owners outside the resident set
+retain every resident. Registration and retirement reuse the existing pickup-reset
+path and rebuild the index map, without adding references that retain old roots.
+Startup, loading, drafts, transfers, newly ready Acts and unknown receivers keep
+their existing broad safety holds. There is no per-frame scene walk or shader read.
+
+`rooftop_grass_bounds_regression.gd` checks generated, atmosphere-adapted and baked
+programs, signed movement bounds, rotated/nonuniform/mirrored transforms, shared
+materials and unknown-deformation rejection. `foreground_contribution_regression.gd`
+also exercises Ring ownership and unknown-owner fallbacks; use `-- --theme=rooftop_run`
+for the Rooftop course, or omit it for Green Hill. Actual rendered appearance and
+GPU-time comparisons remain separate from these headless correctness checks.
+
+Matching Godot **4.7.2 `ed1daf0bf`**, Linux headless: **360 checks pass** across
+grass bounds (18), Green Hill/Rooftop contribution (35 each), Ring presentation
+(16), HUD updates (16), all-theme texture coverage (172), Rooftop disk-loaded
+Prototype authority/freshness (14), and the seed-2 authoring-mode Endless smoke
+(54, three transitions starting in Rooftop). The five Green Hill Prototype, five
+Rooftop Prototype and seven Rooftop Endless variants bake successfully. The final
+editor import and diff checks pass. Source-mode Endless is deliberately launched
+with `--no-bakes`; its preparation timings are not production performance evidence.
+The existing threaded-loader ObjectDB shutdown warnings remain visible in the
+disk-backed contribution runs and are not claimed fixed by this change.
+
+The Ring presentation fixture's four old 75-point assertions also failed on an
+isolated unchanged `b55f8c5` checkout. They now use three times the current public
+Ring award constant, retaining the same animation, reset, event-count and meter
+assertions. No gameplay award was changed to make the fixture pass.
+
 Implemented against `e0691e70a1e22499866ddb5262aafbc88ed0eeab`, with the existing local artwork and authored Acts preserved. This is a presentation policy, not a streaming or physics change.
 
 ## Ownership audit
@@ -28,7 +80,7 @@ An Act contributes if any of the following applies:
 
 1. The diagnostic selects legacy rendering.
 2. It is the active Act.
-3. Startup, boundary loading, Ring pickup flight, Prototype draft/pending activation or spawn transfer requires a safety hold. Newly ready Acts also receive two process frames of grace.
+3. Startup, boundary loading, Prototype draft/pending activation or spawn transfer requires a safety hold. Newly ready Acts also receive two process frames of grace. Ring flights pin their owning roots; unknown owners retain all residents.
 4. Any resident has unsupported/unbounded presentation: all residents remain visible because unknown geometry could also be a shadow receiver.
 5. Its expanded cached presentation AABB intersects the current camera frustum.
 6. Its possible directional-shadow volume intersects that frustum.
@@ -41,7 +93,7 @@ The policy executes from `RenderingServer.frame_pre_draw`, after camera movement
 
 One attachment-time traversal unions transformed mesh/MultiMesh/Label bounds, custom AABBs and culling margins. Separate animation envelopes cover full flipper and Ring rotation, bumper scaling, spinner rotation, Spring/switch movement, Slingshot expansion, Flicky motion and Buzz rotation/death scaling plus its complete **horizontal** patrol. Elevated rails and distant Teleporter endpoints are measured from their actual meshes. No old flipper length, terrain rectangle or rail height is assumed.
 
-An extra 0.25 world units (25 table pixels) provides presentation/filtering tolerance. Unknown geometry, native animation, top-level transforms, lights/probes/decals, billboard/grow materials and detected vertex-deforming shaders fail open. Shader includes are inspected and identical shader checks are cached during attachment. In particular, deforming Rooftop grass shells can retain an Act; this pass does not rewrite that artwork to earn a culling win.
+An extra 0.25 world units (25 table pixels) provides presentation/filtering tolerance. Unknown geometry, native animation, top-level transforms, lights/probes/decals, billboard/grow materials and unsupported vertex-deforming shaders fail open. Shader includes are inspected and identical shader checks are cached during attachment. Rooftop grass has the explicit finite adapter described above; all other vertex deformation still requires its own proven envelope.
 
 For directional shadows:
 

@@ -12,6 +12,7 @@ func check(value: bool, label: String) -> void:
  else: failures += 1; push_error("FAIL | " + label)
 
 func run() -> void:
+ seed(18)
  var world := Node3D.new()
  root.add_child(world)
  var camera := Camera3D.new()
@@ -81,6 +82,8 @@ func run() -> void:
  var config := Run.RunPlan.Configuration.new(["res://data/acts/Authored/RampMania.tres", "res://data/acts/Authored/Reverse C Spring.tres", "res://data/acts/Authored/Secret Entry.tres"])
  config.zone_count = 1
  config.selected_theme_ids = ["green_hill"]
+ for argument: String in OS.get_cmdline_user_args():
+  if argument.begins_with("--theme="): config.selected_theme_ids = [argument.trim_prefix("--theme=")]
  game.run_configuration = config
  root.add_child(game)
  var deadline := Time.get_ticks_msec() + 180000
@@ -106,6 +109,43 @@ func run() -> void:
   check(game.active.visual.visible, "Active Act always contributes")
   check(not neighbor.visual.visible and neighbor.contribution.valid and neighbor.contribution.supported, "Irrelevant next Act is suppressed")
   check(game.resident.has(neighbor) and neighbor.ready and game.hub.runtimes.has(runtime.mechanics) and modes == [neighbor.root.process_mode, neighbor.visual.process_mode, runtime.mechanics.process_mode], "Suppression preserves residency, readiness and gameplay processing")
+  var owners_valid: bool = game._ring_visual_owner_ids.size() == p.ring_visuals.size()
+  for index in p.ring_visuals.size():
+   var owner_root := instance_from_id(game._ring_visual_owner_ids[index]) as Node3D
+   owners_valid = owners_valid and is_instance_valid(owner_root) and owner_root.is_ancestor_of(p.ring_visuals[index])
+  check(owners_valid, "Resident registration maps every Ring index to its actual visual root")
+  var active_ring := game._ring_visual_owner_ids.find(game.active.visual.get_instance_id())
+  p._on_ring_claimed(active_ring)
+  game._update_foreground_contribution()
+  check(game.active.visual.visible and not neighbor.visual.visible, "An active Act pickup does not pin an irrelevant neighbor")
+  var neighbor_ring := game._ring_visual_owner_ids.find(neighbor.visual.get_instance_id())
+  p._on_ring_claimed(neighbor_ring)
+  game._update_foreground_contribution()
+  check(neighbor.visual.visible and neighbor.contribution.reason == "pickup", "An offscreen pickup owner remains visible even outside its cached bounds")
+  p.ring_pickups.clear()
+  game._update_foreground_contribution()
+  check(not neighbor.visual.visible, "Ending pickup flights releases only their owner holds")
+  p.ring_pickups[-1] = {}
+  game._update_foreground_contribution()
+  check(game.resident.all(func(act): return act.visual.visible), "An unknown pickup index fails open")
+  p.ring_pickups.clear()
+  p.ring_pickups["unknown"] = {}
+  game._update_foreground_contribution()
+  check(game.resident.all(func(act): return act.visual.visible), "A malformed pickup key fails open without an index conversion")
+  p.ring_pickups.clear()
+  var original_owner: int = game._ring_visual_owner_ids[neighbor_ring]
+  var retired := Node3D.new()
+  game._ring_visual_owner_ids[neighbor_ring] = retired.get_instance_id()
+  p.ring_pickups[neighbor_ring] = {}
+  game._update_foreground_contribution()
+  check(game.resident.all(func(act): return act.visual.visible), "A pickup owner outside the resident set fails open")
+  retired.free()
+  game._update_foreground_contribution()
+  check(game.resident.all(func(act): return act.visual.visible), "A freed pickup owner fails open without retaining the old root")
+  game._ring_visual_owner_ids[neighbor_ring] = original_owner
+  p.clear_ring_pickups()
+  game._update_foreground_contribution()
+  check(not neighbor.visual.visible, "Resetting flights restores normal contribution checks")
   p.reset_camera(neighbor.bounds().get_center())
   game._update_foreground_contribution()
   check(neighbor.visual.visible, "Looking toward adjacent Act restores its visuals")

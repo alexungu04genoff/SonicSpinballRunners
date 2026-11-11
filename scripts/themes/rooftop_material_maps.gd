@@ -11,6 +11,7 @@ var ao_strength := 0.45
 var special_materials := {}
 var grass_height := 0.075
 const GRASS_LAYERS := 10
+const GrassBounds = preload("res://scripts/themes/rooftop_grass_bounds.gd")
 
 func grass_shells() -> Array[ShaderMaterial]:
  if special_materials.has("grass_shells"): return special_materials.grass_shells
@@ -25,9 +26,7 @@ uniform sampler2D border_texture : source_color, filter_linear_mipmap_anisotropi
 uniform sampler2D height_texture : filter_linear_mipmap_anisotropic, repeat_enable;
 uniform float shell_height=0.01;
 uniform float shell_fraction=0.1;
-void vertex() {
- VERTEX.y+=shell_height;
-}
+%s
 void fragment() {
  vec2 uv=vec2(UV.x*1.5,UV.y*0.375);
  float height=clamp((texture(height_texture,uv).r-0.15)/0.65,0.0,1.0);
@@ -36,7 +35,7 @@ void fragment() {
  ALBEDO=texture(border_texture,uv).rgb*mix(0.78,1.08,shell_fraction);
  ROUGHNESS=0.96;
 }
-"""
+""" % GrassBounds.vertex_code()
   material.shader=shader
   material.set_shader_parameter("border_texture",texture("2A",""))
   material.set_shader_parameter("height_texture",texture("2A","height"))

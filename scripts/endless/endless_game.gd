@@ -57,6 +57,7 @@ var foreground_contributing := 0
 var foreground_update_usec := 0
 var _diagnostics_update := 0.0
 var _hud_detail_state: Array = []
+var _ring_visual_owner_ids := PackedInt64Array()
 
 func _source_paths() -> Array:
  return Plan.PATHS
@@ -326,25 +327,39 @@ func _update_diagnostics(delta: float) -> void:
  diagnostics.text = text + "\n" + scoring_breakdown_text()
 
 func _foreground_safety_hold() -> bool:
- return not started or loading_boundary or not presentation.ring_pickups.is_empty()
+ return not started or loading_boundary
 
 func _update_foreground_contribution() -> void:
  if closing or not is_instance_valid(presentation) or not is_instance_valid(presentation.camera): return
  var began := Time.get_ticks_usec()
  var camera: Camera3D = presentation.camera
  var planes := camera.get_frustum()
+ var pickup_owners := {}
+ var unknown_pickup := false
+ for index: Variant in presentation.ring_pickups:
+  if not index is int or index < 0 or index >= _ring_visual_owner_ids.size():
+   unknown_pickup = true
+   continue
+  var owner_root := instance_from_id(_ring_visual_owner_ids[index]) as Node3D
+  if not is_instance_valid(owner_root): unknown_pickup = true
+  else: pickup_owners[owner_root] = true
  var floor_y := -1.0
  var unknown_receiver := false
+ var resolved_pickup_owners := 0
  for act: RefCounted in resident:
   if act.contribution.valid: floor_y = minf(floor_y, act.contribution.bounds.position.y)
   unknown_receiver = unknown_receiver or not act.contribution.valid or not act.contribution.supported
- var hold := _foreground_safety_hold() or unknown_receiver
+  if pickup_owners.has(act.visual): resolved_pickup_owners += 1
+ # A stale/missing owner is a safety hold, never permission to drop a flight.
+ unknown_pickup = unknown_pickup or resolved_pickup_owners != pickup_owners.size()
+ var hold := _foreground_safety_hold() or unknown_receiver or unknown_pickup
  foreground_contributing = 0
  for act: RefCounted in resident:
   var visible_now := true
   if not foreground_contribution_enabled: act.contribution.reason = "legacy"
   elif act == active: act.contribution.reason = "active"
   elif hold: act.contribution.reason = "safety"
+  elif pickup_owners.has(act.visual): act.contribution.reason = "pickup"
   elif Engine.get_process_frames() <= act.contribution_warm_until: act.contribution.reason = "warming"
   else: visible_now = act.contribution.contributes(planes, presentation._key_light, floor_y, camera)
   if act.visual.visible != visible_now: act.visual.visible = visible_now
@@ -422,6 +437,7 @@ func _sync_resident() -> void:
  presentation.flipper_visuals.clear()
  presentation.flipper_retracted_visuals.clear()
  presentation.ring_visuals.clear()
+ _ring_visual_owner_ids.clear()
  presentation.bumper_visuals.clear()
  ring_field.rings.clear()
  var field := PlayfieldData.new()
@@ -435,7 +451,9 @@ func _sync_resident() -> void:
   flippers.append_array(act.runtime.flippers)
   for index: int in act.recipe.flippers: presentation.flipper_visuals.append(act.nodes[index])
   for index: int in act.recipe.retracted: presentation.flipper_retracted_visuals.append(act.nodes[index])
-  for index: int in act.recipe.rings: presentation.ring_visuals.append(act.nodes[index])
+  for index: int in act.recipe.rings:
+   presentation.ring_visuals.append(act.nodes[index])
+   _ring_visual_owner_ids.append(act.visual.get_instance_id())
   ring_field.rings.append_array(act.ring_data)
   for i: int in act.recipe.bumpers:
    var body: Node2D = act.runtime.objects[i].body
