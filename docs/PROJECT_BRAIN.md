@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Keep rail support shadows local — 2026-11-11
+
+The next shadow pass groups eligible elevated-rail posts in 2-unit local cells, keeping distant sections independently culled. Visible meshes/materials, the authoritative route, custom or double-sided deck/guard/pipe surfaces and the entry marker stay on their existing paths. All 24 eight-theme software Forward+/Vulkan comparisons are pixel-identical; overview fixture draws drop 23.0–29.9%, with smaller close-view savings. Fresh RampMania bakes remove 21 caster surfaces per theme. This trades extra shadow geometry and coarser culling inside each small group for fewer submissions; it is not Windows FPS evidence. No GI or quality-setting change. Re-bake Prototype and Endless; recipe format stays version 9. [Measurements and limits](RAIL_SHADOWS.md).
+
 ## Give rigid gimmicks one shadow per moving part — 2026-11-11
 
 Alex chose shadows and explicitly excluded GI. Gates, switches, springs and routing hardware now combine eligible opaque rigid siblings into shadow-only meshes under their existing parents. Visible source nodes/materials and emitter references remain; Slingshot rubber stays independent. Standard unsupported states fail open. Eight themes × three poses produce pixel-identical Forward+/Vulkan software captures with 30.4–47.3% fewer fixture draws; RampMania caster-surface inventory also falls. All 2,283 targeted assertions pass, and the fast Green Hill tour has zero waits/fallbacks. The full Prototype software capture times out at 180 seconds, so Windows appearance/FPS remains unverified. Extra shadow geometry trades memory for submissions. Re-bake Prototype and Endless; format stays version 9. [Details and receipts](GIMMICK_SHADOWS.md).

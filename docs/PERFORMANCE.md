@@ -1,5 +1,16 @@
 # Rendering and streaming performance — 2026-10-30
 
+## Spatial rail support shadows — 2026-11-11
+
+Elevated-rail support posts now share shadow-only geometry within small local
+cells. Decks, guards, pipes and the entry marker retain their existing paths.
+All 24 eight-theme Forward+/Vulkan comparisons are pixel-identical, with
+23.0–29.9% fewer overview draws and 8.2–14.7% fewer close-view draws in the rail
+fixture. Fresh RampMania bakes have 21 fewer caster surfaces in every theme.
+These are fixture/inventory measurements; Windows FPS is unmeasured. No GI or
+shadow-quality change. Re-bake Prototype and Endless. See
+[the scope, culling tradeoff and evidence](RAIL_SHADOWS.md).
+
 ## Rigid gimmick shadow casters — 2026-11-11
 
 Eligible gates, switches, springs and routing hardware now share shadow geometry

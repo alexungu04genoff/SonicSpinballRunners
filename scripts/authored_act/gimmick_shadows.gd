@@ -1,21 +1,29 @@
 extends RefCounted
-## Only the gimmick builders opt in: their rigid leaves never animate independently.
+## Known hardware builders opt in: their rigid leaves never animate independently.
 ## Each moving/hidden parent keeps its own caster. Visible meshes remain untouched.
 const Batch = preload("res://scripts/pinball_mesh_batch.gd")
 const Detail = preload("res://scripts/endless/visual_detail.gd")
 static var enabled := not "--profile-original-gimmick-shadows" in OS.get_cmdline_user_args()
 
-static func combine(root: Node3D, baked := false, excluded: Array = []) -> int:
+static func combine(root: Node3D, baked := false, excluded: Array = [], cell_size := 0.0) -> int:
  if not enabled: return 0
  var saved := 0
  var groups := {}
  for child: Node in root.get_children():
   if child is Node3D and not child is GeometryInstance3D:
-   saved += combine(child, baked, excluded)
+   saved += combine(child, baked, excluded, cell_size)
   if child in excluded or not Batch._eligible(child): continue
   var source := child as MeshInstance3D
   if source.cast_shadow != GeometryInstance3D.SHADOW_CASTING_SETTING_ON: continue
   var mesh: Mesh = Detail.primitive(source.mesh) if baked and source.mesh is PrimitiveMesh else source.mesh
+  var cell := Vector2i.ZERO
+  if cell_size > 0.0:
+   # Rails keep independently culled sections. Never pull a long deck or pipe
+   # into a group of small posts, even if a future style uses a standard material.
+   var box: AABB = source.transform * mesh.get_aabb()
+   if maxf(box.size.x, box.size.z) > cell_size: continue
+   var center := box.get_center()
+   cell = Vector2i(floori(center.x / cell_size), floori(center.z / cell_size))
   var surfaces: Array[Array] = []
   for index in mesh.get_surface_count():
    if mesh is ArrayMesh and mesh.surface_get_primitive_type(index) != Mesh.PRIMITIVE_TRIANGLES: break
@@ -26,7 +34,7 @@ static func combine(root: Node3D, baked := false, excluded: Array = []) -> int:
   if surfaces.is_empty() or surfaces.size() != mesh.get_surface_count(): continue
   var state := {}
   for property: String in Batch.STATE: state[property] = source.get(property)
-  var key := str(state)
+  var key := str([cell, state])
   if not groups.has(key): groups[key] = {"sources": [], "surfaces": [], "state": state}
   groups[key].sources.append(source)
   groups[key].surfaces.append(surfaces)

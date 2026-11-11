@@ -142,7 +142,11 @@ func _rail(item: Dictionary) -> void:
   var point := RailPath.sample(path, d) + Vector2(-tangent.y, tangent.x) * vertex.x * float(item.properties.width)
   marker.add_vertex(table.map_point(point, RailPath.height(path, d, peak) * table.SCALE + 0.014))
  marker.generate_normals()
- table.mesh_node(marker.commit(), style.accent, Vector3.ZERO, root).name = "EntryArrow"
+ var arrow := table.mesh_node(marker.commit(), style.accent, Vector3.ZERO, root)
+ arrow.name = "EntryArrow"
+ # Keep the sloped marker's original normals; small rigid posts share local cells.
+ if not "--profile-original-rail-shadows" in OS.get_cmdline_user_args():
+  preload("res://scripts/authored_act/gimmick_shadows.gd").combine(root, table.has_method("stream_checkpoint"), [arrow], 2.0)
 
 func _rail_strip(parent: Node3D, path: Dictionary, width: float, peak: float, edges: Vector2, offsets: Vector2, material: Material, label: String, contour_texture := false) -> void:
  contour_texture = contour_texture or bool(material.get_meta("route_strip_uv",false))

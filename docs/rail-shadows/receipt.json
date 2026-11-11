@@ -1,0 +1,1160 @@
+{
+  "cascades": 4,
+  "failures": 0,
+  "metadata": {
+    "api": "1.4.305",
+    "command_line": [
+      "--script",
+      "res://tests/rail_shadow_capture.gd"
+    ],
+    "device": "llvmpipe (LLVM 19.1.7, 256 bits)",
+    "driver": "vulkan",
+    "engine": "4.7.2-stable (official)",
+    "renderer": "forward_plus",
+    "user_arguments": [
+      "--output=/workspace/work/rail-shadow-render-final"
+    ]
+  },
+  "msaa": 4,
+  "results": [
+    {
+      "combined_draws": 75,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 5,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 107,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 5,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "green_hill",
+      "view": 0
+    },
+    {
+      "combined_draws": 29,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 5,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 34,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 5,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "green_hill",
+      "view": 1
+    },
+    {
+      "combined_draws": 29,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 5,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 33,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 5,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "green_hill",
+      "view": 2
+    },
+    {
+      "combined_draws": 107,
+      "combined_inventory": {
+        "casters": 24,
+        "custom": 7,
+        "surfaces": 24,
+        "triangles": 8137
+      },
+      "original_draws": 139,
+      "original_inventory": {
+        "casters": 43,
+        "custom": 7,
+        "surfaces": 43,
+        "triangles": 8137
+      },
+      "pixels_identical": true,
+      "theme": "chemical_plant",
+      "view": 0
+    },
+    {
+      "combined_draws": 45,
+      "combined_inventory": {
+        "casters": 24,
+        "custom": 7,
+        "surfaces": 24,
+        "triangles": 8137
+      },
+      "original_draws": 50,
+      "original_inventory": {
+        "casters": 43,
+        "custom": 7,
+        "surfaces": 43,
+        "triangles": 8137
+      },
+      "pixels_identical": true,
+      "theme": "chemical_plant",
+      "view": 1
+    },
+    {
+      "combined_draws": 45,
+      "combined_inventory": {
+        "casters": 24,
+        "custom": 7,
+        "surfaces": 24,
+        "triangles": 8137
+      },
+      "original_draws": 49,
+      "original_inventory": {
+        "casters": 43,
+        "custom": 7,
+        "surfaces": 43,
+        "triangles": 8137
+      },
+      "pixels_identical": true,
+      "theme": "chemical_plant",
+      "view": 2
+    },
+    {
+      "combined_draws": 75,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 7,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 107,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 7,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "rooftop_run",
+      "view": 0
+    },
+    {
+      "combined_draws": 29,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 7,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 34,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 7,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "rooftop_run",
+      "view": 1
+    },
+    {
+      "combined_draws": 29,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 7,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 33,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 7,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "rooftop_run",
+      "view": 2
+    },
+    {
+      "combined_draws": 75,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 3,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 107,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 3,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "casino_night",
+      "view": 0
+    },
+    {
+      "combined_draws": 29,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 3,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 34,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 3,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "casino_night",
+      "view": 1
+    },
+    {
+      "combined_draws": 29,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 3,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 33,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 3,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "casino_night",
+      "view": 2
+    },
+    {
+      "combined_draws": 75,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 7,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 107,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 7,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "sky_sanctuary",
+      "view": 0
+    },
+    {
+      "combined_draws": 29,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 7,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 34,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 7,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "sky_sanctuary",
+      "view": 1
+    },
+    {
+      "combined_draws": 29,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 7,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 33,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 7,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "sky_sanctuary",
+      "view": 2
+    },
+    {
+      "combined_draws": 75,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 1,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 107,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 1,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "ice_cap",
+      "view": 0
+    },
+    {
+      "combined_draws": 29,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 1,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 34,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 1,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "ice_cap",
+      "view": 1
+    },
+    {
+      "combined_draws": 29,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 1,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 33,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 1,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "ice_cap",
+      "view": 2
+    },
+    {
+      "combined_draws": 75,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 7,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 107,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 7,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "lava_reef",
+      "view": 0
+    },
+    {
+      "combined_draws": 29,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 7,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 34,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 7,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "lava_reef",
+      "view": 1
+    },
+    {
+      "combined_draws": 29,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 7,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 33,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 7,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "lava_reef",
+      "view": 2
+    },
+    {
+      "combined_draws": 75,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 7,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 107,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 7,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "aquarium_park",
+      "view": 0
+    },
+    {
+      "combined_draws": 29,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 7,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 34,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 7,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "aquarium_park",
+      "view": 1
+    },
+    {
+      "combined_draws": 29,
+      "combined_inventory": {
+        "casters": 16,
+        "custom": 7,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original_draws": 33,
+      "original_inventory": {
+        "casters": 35,
+        "custom": 7,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "pixels_identical": true,
+      "theme": "aquarium_park",
+      "view": 2
+    }
+  ],
+  "shadow_atlas": 8192,
+  "baseline_commit": "0344fa82a2ad101f59b54eb006e57267ed072eea",
+  "candidate_source_sha256": {
+    "scripts/authored_act/gimmick_shadows.gd": "1c10415d4b2ae785f1a6e9f87921bed2dd686887077f1701327c07464ab4044a",
+    "scripts/authored_act/mechanics_presentation.gd": "ef0907ef59d2449fb3ed3467979e3ef23589334c1c9606e1dcc02e9805873acd"
+  },
+  "rampmania_bake_inventory": {
+    "green_hill": {
+      "before": {
+        "caster_nodes": 240,
+        "caster_surfaces": 248
+      },
+      "after": {
+        "caster_nodes": 219,
+        "caster_surfaces": 227
+      }
+    },
+    "chemical_plant": {
+      "before": {
+        "caster_nodes": 254,
+        "caster_surfaces": 262
+      },
+      "after": {
+        "caster_nodes": 233,
+        "caster_surfaces": 241
+      }
+    },
+    "rooftop_run": {
+      "before": {
+        "caster_nodes": 236,
+        "caster_surfaces": 244
+      },
+      "after": {
+        "caster_nodes": 215,
+        "caster_surfaces": 223
+      }
+    },
+    "casino_night": {
+      "before": {
+        "caster_nodes": 241,
+        "caster_surfaces": 249
+      },
+      "after": {
+        "caster_nodes": 220,
+        "caster_surfaces": 228
+      }
+    },
+    "sky_sanctuary": {
+      "before": {
+        "caster_nodes": 241,
+        "caster_surfaces": 249
+      },
+      "after": {
+        "caster_nodes": 220,
+        "caster_surfaces": 228
+      }
+    },
+    "ice_cap": {
+      "before": {
+        "caster_nodes": 241,
+        "caster_surfaces": 249
+      },
+      "after": {
+        "caster_nodes": 220,
+        "caster_surfaces": 228
+      }
+    },
+    "lava_reef": {
+      "before": {
+        "caster_nodes": 248,
+        "caster_surfaces": 256
+      },
+      "after": {
+        "caster_nodes": 227,
+        "caster_surfaces": 235
+      }
+    },
+    "aquarium_park": {
+      "before": {
+        "caster_nodes": 236,
+        "caster_surfaces": 244
+      },
+      "after": {
+        "caster_nodes": 215,
+        "caster_surfaces": 223
+      }
+    }
+  },
+  "geometry_checks": 171,
+  "geometry_inventory": [
+    {
+      "combined": {
+        "casters": 13,
+        "custom": 5,
+        "surfaces": 13,
+        "triangles": 417
+      },
+      "original": {
+        "casters": 17,
+        "custom": 5,
+        "surfaces": 17,
+        "triangles": 417
+      },
+      "path": 0,
+      "saved_nodes": 4,
+      "theme": "green_hill"
+    },
+    {
+      "combined": {
+        "casters": 16,
+        "custom": 5,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original": {
+        "casters": 35,
+        "custom": 5,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "path": 1,
+      "saved_nodes": 19,
+      "theme": "green_hill"
+    },
+    {
+      "combined": {
+        "casters": 17,
+        "custom": 5,
+        "surfaces": 17,
+        "triangles": 1201
+      },
+      "original": {
+        "casters": 29,
+        "custom": 5,
+        "surfaces": 29,
+        "triangles": 1201
+      },
+      "path": 2,
+      "saved_nodes": 12,
+      "theme": "green_hill"
+    },
+    {
+      "combined": {
+        "casters": 21,
+        "custom": 7,
+        "surfaces": 21,
+        "triangles": 2313
+      },
+      "original": {
+        "casters": 25,
+        "custom": 7,
+        "surfaces": 25,
+        "triangles": 2313
+      },
+      "path": 0,
+      "saved_nodes": 4,
+      "theme": "chemical_plant"
+    },
+    {
+      "combined": {
+        "casters": 24,
+        "custom": 7,
+        "surfaces": 24,
+        "triangles": 8137
+      },
+      "original": {
+        "casters": 43,
+        "custom": 7,
+        "surfaces": 43,
+        "triangles": 8137
+      },
+      "path": 1,
+      "saved_nodes": 19,
+      "theme": "chemical_plant"
+    },
+    {
+      "combined": {
+        "casters": 25,
+        "custom": 7,
+        "surfaces": 25,
+        "triangles": 6057
+      },
+      "original": {
+        "casters": 37,
+        "custom": 7,
+        "surfaces": 37,
+        "triangles": 6057
+      },
+      "path": 2,
+      "saved_nodes": 12,
+      "theme": "chemical_plant"
+    },
+    {
+      "combined": {
+        "casters": 13,
+        "custom": 7,
+        "surfaces": 13,
+        "triangles": 417
+      },
+      "original": {
+        "casters": 17,
+        "custom": 7,
+        "surfaces": 17,
+        "triangles": 417
+      },
+      "path": 0,
+      "saved_nodes": 4,
+      "theme": "rooftop_run"
+    },
+    {
+      "combined": {
+        "casters": 16,
+        "custom": 7,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original": {
+        "casters": 35,
+        "custom": 7,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "path": 1,
+      "saved_nodes": 19,
+      "theme": "rooftop_run"
+    },
+    {
+      "combined": {
+        "casters": 17,
+        "custom": 7,
+        "surfaces": 17,
+        "triangles": 1201
+      },
+      "original": {
+        "casters": 29,
+        "custom": 7,
+        "surfaces": 29,
+        "triangles": 1201
+      },
+      "path": 2,
+      "saved_nodes": 12,
+      "theme": "rooftop_run"
+    },
+    {
+      "combined": {
+        "casters": 13,
+        "custom": 3,
+        "surfaces": 13,
+        "triangles": 417
+      },
+      "original": {
+        "casters": 17,
+        "custom": 3,
+        "surfaces": 17,
+        "triangles": 417
+      },
+      "path": 0,
+      "saved_nodes": 4,
+      "theme": "casino_night"
+    },
+    {
+      "combined": {
+        "casters": 16,
+        "custom": 3,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original": {
+        "casters": 35,
+        "custom": 3,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "path": 1,
+      "saved_nodes": 19,
+      "theme": "casino_night"
+    },
+    {
+      "combined": {
+        "casters": 17,
+        "custom": 3,
+        "surfaces": 17,
+        "triangles": 1201
+      },
+      "original": {
+        "casters": 29,
+        "custom": 3,
+        "surfaces": 29,
+        "triangles": 1201
+      },
+      "path": 2,
+      "saved_nodes": 12,
+      "theme": "casino_night"
+    },
+    {
+      "combined": {
+        "casters": 13,
+        "custom": 7,
+        "surfaces": 13,
+        "triangles": 417
+      },
+      "original": {
+        "casters": 17,
+        "custom": 7,
+        "surfaces": 17,
+        "triangles": 417
+      },
+      "path": 0,
+      "saved_nodes": 4,
+      "theme": "sky_sanctuary"
+    },
+    {
+      "combined": {
+        "casters": 16,
+        "custom": 7,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original": {
+        "casters": 35,
+        "custom": 7,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "path": 1,
+      "saved_nodes": 19,
+      "theme": "sky_sanctuary"
+    },
+    {
+      "combined": {
+        "casters": 17,
+        "custom": 7,
+        "surfaces": 17,
+        "triangles": 1201
+      },
+      "original": {
+        "casters": 29,
+        "custom": 7,
+        "surfaces": 29,
+        "triangles": 1201
+      },
+      "path": 2,
+      "saved_nodes": 12,
+      "theme": "sky_sanctuary"
+    },
+    {
+      "combined": {
+        "casters": 13,
+        "custom": 1,
+        "surfaces": 13,
+        "triangles": 417
+      },
+      "original": {
+        "casters": 17,
+        "custom": 1,
+        "surfaces": 17,
+        "triangles": 417
+      },
+      "path": 0,
+      "saved_nodes": 4,
+      "theme": "ice_cap"
+    },
+    {
+      "combined": {
+        "casters": 16,
+        "custom": 1,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original": {
+        "casters": 35,
+        "custom": 1,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "path": 1,
+      "saved_nodes": 19,
+      "theme": "ice_cap"
+    },
+    {
+      "combined": {
+        "casters": 17,
+        "custom": 1,
+        "surfaces": 17,
+        "triangles": 1201
+      },
+      "original": {
+        "casters": 29,
+        "custom": 1,
+        "surfaces": 29,
+        "triangles": 1201
+      },
+      "path": 2,
+      "saved_nodes": 12,
+      "theme": "ice_cap"
+    },
+    {
+      "combined": {
+        "casters": 13,
+        "custom": 7,
+        "surfaces": 13,
+        "triangles": 417
+      },
+      "original": {
+        "casters": 17,
+        "custom": 7,
+        "surfaces": 17,
+        "triangles": 417
+      },
+      "path": 0,
+      "saved_nodes": 4,
+      "theme": "lava_reef"
+    },
+    {
+      "combined": {
+        "casters": 16,
+        "custom": 7,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original": {
+        "casters": 35,
+        "custom": 7,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "path": 1,
+      "saved_nodes": 19,
+      "theme": "lava_reef"
+    },
+    {
+      "combined": {
+        "casters": 17,
+        "custom": 7,
+        "surfaces": 17,
+        "triangles": 1201
+      },
+      "original": {
+        "casters": 29,
+        "custom": 7,
+        "surfaces": 29,
+        "triangles": 1201
+      },
+      "path": 2,
+      "saved_nodes": 12,
+      "theme": "lava_reef"
+    },
+    {
+      "combined": {
+        "casters": 13,
+        "custom": 7,
+        "surfaces": 13,
+        "triangles": 417
+      },
+      "original": {
+        "casters": 17,
+        "custom": 7,
+        "surfaces": 17,
+        "triangles": 417
+      },
+      "path": 0,
+      "saved_nodes": 4,
+      "theme": "aquarium_park"
+    },
+    {
+      "combined": {
+        "casters": 16,
+        "custom": 7,
+        "surfaces": 16,
+        "triangles": 1593
+      },
+      "original": {
+        "casters": 35,
+        "custom": 7,
+        "surfaces": 35,
+        "triangles": 1593
+      },
+      "path": 1,
+      "saved_nodes": 19,
+      "theme": "aquarium_park"
+    },
+    {
+      "combined": {
+        "casters": 17,
+        "custom": 7,
+        "surfaces": 17,
+        "triangles": 1201
+      },
+      "original": {
+        "casters": 29,
+        "custom": 7,
+        "surfaces": 29,
+        "triangles": 1201
+      },
+      "path": 2,
+      "saved_nodes": 12,
+      "theme": "aquarium_park"
+    }
+  ],
+  "archived_images": {
+    "green_hill-original-0.png": "b60aa6a9585feddfc6918bb9d4f344a09f92b43d20d0c9fc99b19fa1194364cf",
+    "green_hill-combined-0.png": "b60aa6a9585feddfc6918bb9d4f344a09f92b43d20d0c9fc99b19fa1194364cf",
+    "green_hill-original-2.png": "b0a53cb8a457e05a9674789f14a0ae10d64dc77127e70c40a0969d55fc33b2e4",
+    "green_hill-combined-2.png": "b0a53cb8a457e05a9674789f14a0ae10d64dc77127e70c40a0969d55fc33b2e4"
+  },
+  "checks": {
+    "source": [
+      {
+        "name": "gimmick_shadow_regression",
+        "exit": 0,
+        "seconds": 16.14,
+        "summary": [
+          "GIMMICK_SHADOW_REGRESSION | checks=1450 failures=0"
+        ],
+        "errors": []
+      },
+      {
+        "name": "ramp_height_theme_regression",
+        "exit": 0,
+        "seconds": 5.87,
+        "summary": [
+          "RESULT | Ramp height and themes | 100 checks | 0 failures"
+        ],
+        "errors": []
+      },
+      {
+        "name": "rail_rings_regression",
+        "exit": 0,
+        "seconds": 1.78,
+        "summary": [
+          "RESULT | Rail rings | 13 checks | 0 failures"
+        ],
+        "errors": []
+      },
+      {
+        "name": "device_shadow_regression",
+        "exit": 0,
+        "seconds": 13.3,
+        "summary": [
+          "DEVICE_SHADOWS | checks=135 failures=0"
+        ],
+        "errors": []
+      }
+    ],
+    "bakes": [
+      {
+        "name": "bake-ramp",
+        "exit": 0,
+        "seconds": 46.15,
+        "summary": [
+          "ACT_BAKE_COMPLETE | Acts=1 variants=8"
+        ],
+        "errors": []
+      },
+      {
+        "name": "bake-green_hill-prototype",
+        "exit": 0,
+        "seconds": 45.27,
+        "summary": [
+          "ACT_BAKE_COMPLETE | Acts=5 variants=5"
+        ],
+        "errors": []
+      },
+      {
+        "name": "bake-green_hill-pool",
+        "exit": 0,
+        "seconds": 62.29,
+        "summary": [
+          "ACT_BAKE_COMPLETE | Acts=7 variants=7"
+        ],
+        "errors": []
+      },
+      {
+        "name": "bake-rooftop_run-prototype",
+        "exit": 0,
+        "seconds": 42.87,
+        "summary": [
+          "ACT_BAKE_COMPLETE | Acts=5 variants=5"
+        ],
+        "errors": []
+      },
+      {
+        "name": "bake-rooftop_run-pool",
+        "exit": 0,
+        "seconds": 50.39,
+        "summary": [
+          "ACT_BAKE_COMPLETE | Acts=7 variants=7"
+        ],
+        "errors": []
+      }
+    ],
+    "baked": [
+      {
+        "name": "endless_manifest_regression",
+        "exit": 0,
+        "seconds": 1.19,
+        "summary": [
+          "ENDLESS_MANIFEST_REGRESSION | checks=30 failures=0"
+        ],
+        "errors": []
+      },
+      {
+        "name": "endless_retirement_regression",
+        "exit": 0,
+        "seconds": 1.57,
+        "summary": [
+          "ENDLESS_RETIREMENT_REGRESSION | checks=72 | failures=0"
+        ],
+        "errors": []
+      },
+      {
+        "name": "stream_material_regression",
+        "exit": 0,
+        "seconds": 34.56,
+        "summary": [
+          "RESULT | Stream material staging | 112 checks | 0 failures"
+        ],
+        "errors": []
+      },
+      {
+        "name": "endless_reuse_regression",
+        "exit": 0,
+        "seconds": 1.51,
+        "summary": [
+          "ENDLESS_REUSE_REGRESSION | checks=130 failures=0"
+        ],
+        "errors": []
+      },
+      {
+        "name": "rail-rings-stream",
+        "exit": 0,
+        "seconds": 5.04,
+        "summary": [
+          "RESULT | Rail rings streaming | 10 checks | 0 failures"
+        ],
+        "errors": []
+      },
+      {
+        "name": "appearance",
+        "exit": 0,
+        "seconds": 25.03,
+        "summary": [
+          "RESULT | Prototype appearance regression | 70 checks | 0 failures"
+        ],
+        "errors": []
+      },
+      {
+        "name": "contribution-green_hill",
+        "exit": 0,
+        "seconds": 5.59,
+        "summary": [
+          "RESULT | foreground contribution | 36 checks | 0 failures"
+        ],
+        "errors": []
+      },
+      {
+        "name": "contribution-rooftop_run",
+        "exit": 0,
+        "seconds": 5.08,
+        "summary": [
+          "RESULT | foreground contribution | 36 checks | 0 failures"
+        ],
+        "errors": []
+      }
+    ]
+  },
+  "targeted_assertions": 2365,
+  "timings_are_not_comparative": true,
+  "streaming_tour": {
+    "act_sha256": "354650b389f23305a53f5fc97fa7346e24df02288a8074c1e0a5b282f9b8a09f",
+    "atomic_attachment": false,
+    "boundary_wait_ms": 0.0,
+    "cached_material_uniforms": true,
+    "cpu": {},
+    "engine": "4.7.2-stable (official)",
+    "fallbacks": 0,
+    "legacy_material_copies": false,
+    "max_build_ms": 75.167,
+    "seed": 18,
+    "sequence": 3,
+    "theme": "green_hill",
+    "tour_speed": 400.0
+  }
+}
