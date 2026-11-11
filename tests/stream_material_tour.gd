@@ -31,6 +31,7 @@ func run() -> void:
   if game.loading_boundary: waiting += (now-previous)/1000.0
   previous = now
  var report := {"theme": game.fixed_theme, "seed": game.run_seed, "tour_speed": game.tour_speed, "atomic_attachment": "--profile-atomic-attachment" in OS.get_cmdline_user_args(), "engine": Engine.get_version_info().string, "act_sha256": FileAccess.get_sha256("res://scripts/endless/streamed_act.gd"), "sequence": game.active_sequence, "boundary_wait_ms": waiting, "fallbacks": game.library.fallback_builds,"max_build_ms": game.max_build_ms, "cpu": game.library.profile_cpu.duplicate(true)}
+ report["cached_material_uniforms"] = "--profile-uncached-materials" not in OS.get_cmdline_user_args()
  print("STREAM_BUDGET_TOUR | ",JSON.stringify(report))
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(output).get_base_dir())
  var file := FileAccess.open(output,FileAccess.WRITE)

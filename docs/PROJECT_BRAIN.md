@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Inspect a shared shader once per attachment — 2026-11-11
+
+Atmosphere bindings now share the emission/halo/fake-light uniform descriptors for each Shader during a synchronous root attachment, keeping descriptor order and reading values from each material. Entry, exit and restoration clear the cache, so later shader/include edits stay live and extra resources do not remain resident. Eight-theme RampMania inspection drops from 367 native queries to 90 with matching material state and live edits. Warm material-attachment means improve about 11% in Green Hill, 22% in Rooftop and 5% in Chemical, but fresh-run maxima still overlap and the full-tour scheduler maximum does not improve. Both fast tour paths have zero waits/rebuilds. Current bakes remain valid; no art, shader program, scheduler or residency change. Earlier dummy-renderer cleanup errors and the threaded-loader leak remain separate, and Windows FPS is unmeasured. See [the receipt and limits](MATERIAL_INSPECTION_CACHE.md).
+
 ## Give the scheduler a turn between attachment stages — 2026-11-11
 
 Act finalization now returns to the existing scheduler between animation binding, foreground atmosphere, local scenery atmosphere and contribution bounds. Animation roots inherit the disabled staging parent until activation restores their pausable behavior. Current bakes, palette/material ownership, lookahead and residency stay current. Repeated disk-loaded Prototype comparisons reduce worst-job ranges; total preparation time is mixed. A controlled 400 px/s Green Hill tour reduced maximum scheduler work from 105.1 to 64.9 ms, with zero boundary waiting or runtime rebuilds on both paths. Finer per-node collection caused new boundary waits and was rejected. Individual material operations still spike, and Windows FPS remains unmeasured. See [the CPU receipt and limits](ACT_ATTACHMENT_CPU.md).

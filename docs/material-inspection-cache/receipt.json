@@ -1,0 +1,1291 @@
+{
+  "date": "2026-11-11",
+  "base_commit": "7163aa810912da1043ce6e2c19a214bc0288f937",
+  "scope": "Headless Godot 4.7.2 elapsed main-thread method time; warm fixture and fresh-process integration are separate measurements. No GPU/Windows FPS claim.",
+  "sources": {
+    "scripts/atmosphere/material_bindings.gd": "d0696ac9f2666e5dc0f051b9407fb5bd66ebe0778e74011ae7d32646754a9208",
+    "scripts/atmosphere/surface_controls.gd": "75a01e7aa5785de86b6ac4eb7df430258546647ae53b08778034b00c56e19cda",
+    "scripts/atmosphere/runtime.gd": "a389129cdfca2a35dc216ee0cfd598aca25a33e3f4fddd07404592140b5dd316",
+    "tools/profile_material_collection.gd": "632030dbed9b655a325cb37c40aca926a2033f44d4a0a8dd2ea0450ca71fd679"
+  },
+  "warm_profile": {
+    "act": "res://data/acts/Authored/RampMania.tres",
+    "bindings_sha256": "d0696ac9f2666e5dc0f051b9407fb5bd66ebe0778e74011ae7d32646754a9208",
+    "engine": "4.7.2-stable (official)",
+    "headless": true,
+    "iterations": 150,
+    "scope": "Warm foreground + scenery Runtime.attach elapsed time; excludes loading, node creation, restore, GPU frames and Windows FPS.",
+    "trials": [
+      {
+        "act_bake_sha256": "e30cad9e03628522de3117d2df26cf84ce5edea7b4dcc69f6b1d52b281da5789",
+        "cached": false,
+        "mean_ms": 23.794,
+        "median_ms": 22.547,
+        "p95_ms": 28.191,
+        "pipeline_fingerprint": "3bb1111b9f0a7d695738a0e9b49572364101122a1851ce55bc8089aab7a1dd68",
+        "theme": "green_hill",
+        "theme_bake_sha256": "c66859fc44d51b124ed1069fb804c6701945eb0fdb3d533633c75b4ed56d6ac7"
+      },
+      {
+        "act_bake_sha256": "e30cad9e03628522de3117d2df26cf84ce5edea7b4dcc69f6b1d52b281da5789",
+        "cached": true,
+        "mean_ms": 24.3553066666667,
+        "median_ms": 23.097,
+        "p95_ms": 36.284,
+        "pipeline_fingerprint": "3bb1111b9f0a7d695738a0e9b49572364101122a1851ce55bc8089aab7a1dd68",
+        "theme": "green_hill",
+        "theme_bake_sha256": "c66859fc44d51b124ed1069fb804c6701945eb0fdb3d533633c75b4ed56d6ac7"
+      },
+      {
+        "act_bake_sha256": "e30cad9e03628522de3117d2df26cf84ce5edea7b4dcc69f6b1d52b281da5789",
+        "cached": true,
+        "mean_ms": 24.2545733333333,
+        "median_ms": 22.043,
+        "p95_ms": 39.413,
+        "pipeline_fingerprint": "3bb1111b9f0a7d695738a0e9b49572364101122a1851ce55bc8089aab7a1dd68",
+        "theme": "green_hill",
+        "theme_bake_sha256": "c66859fc44d51b124ed1069fb804c6701945eb0fdb3d533633c75b4ed56d6ac7"
+      },
+      {
+        "act_bake_sha256": "e30cad9e03628522de3117d2df26cf84ce5edea7b4dcc69f6b1d52b281da5789",
+        "cached": false,
+        "mean_ms": 30.71358,
+        "median_ms": 26.89,
+        "p95_ms": 43.336,
+        "pipeline_fingerprint": "3bb1111b9f0a7d695738a0e9b49572364101122a1851ce55bc8089aab7a1dd68",
+        "theme": "green_hill",
+        "theme_bake_sha256": "c66859fc44d51b124ed1069fb804c6701945eb0fdb3d533633c75b4ed56d6ac7"
+      },
+      {
+        "act_bake_sha256": "c8d683b7f8fc0b22afc0b347c49eb951a51a4aef69579c6359a8f5f4a5559570",
+        "cached": false,
+        "mean_ms": 18.6533666666667,
+        "median_ms": 18.349,
+        "p95_ms": 27.247,
+        "pipeline_fingerprint": "342341a7fd9d9e74b0ae775776c97915e3240c70ccd7177b2780df22fee70dae",
+        "theme": "rooftop_run",
+        "theme_bake_sha256": "a52e585b470829080432e3855a19d3d40da1d98c245f8aed6ccc830e07811f7f"
+      },
+      {
+        "act_bake_sha256": "c8d683b7f8fc0b22afc0b347c49eb951a51a4aef69579c6359a8f5f4a5559570",
+        "cached": true,
+        "mean_ms": 14.9415666666667,
+        "median_ms": 13.909,
+        "p95_ms": 20.8,
+        "pipeline_fingerprint": "342341a7fd9d9e74b0ae775776c97915e3240c70ccd7177b2780df22fee70dae",
+        "theme": "rooftop_run",
+        "theme_bake_sha256": "a52e585b470829080432e3855a19d3d40da1d98c245f8aed6ccc830e07811f7f"
+      },
+      {
+        "act_bake_sha256": "c8d683b7f8fc0b22afc0b347c49eb951a51a4aef69579c6359a8f5f4a5559570",
+        "cached": true,
+        "mean_ms": 15.3431466666667,
+        "median_ms": 14.273,
+        "p95_ms": 22.851,
+        "pipeline_fingerprint": "342341a7fd9d9e74b0ae775776c97915e3240c70ccd7177b2780df22fee70dae",
+        "theme": "rooftop_run",
+        "theme_bake_sha256": "a52e585b470829080432e3855a19d3d40da1d98c245f8aed6ccc830e07811f7f"
+      },
+      {
+        "act_bake_sha256": "c8d683b7f8fc0b22afc0b347c49eb951a51a4aef69579c6359a8f5f4a5559570",
+        "cached": false,
+        "mean_ms": 20.39854,
+        "median_ms": 19.156,
+        "p95_ms": 32.131,
+        "pipeline_fingerprint": "342341a7fd9d9e74b0ae775776c97915e3240c70ccd7177b2780df22fee70dae",
+        "theme": "rooftop_run",
+        "theme_bake_sha256": "a52e585b470829080432e3855a19d3d40da1d98c245f8aed6ccc830e07811f7f"
+      },
+      {
+        "act_bake_sha256": "410842c18178455bf206feb3f89c3019611206fd28c7f0b28261537fab7ff506",
+        "cached": false,
+        "mean_ms": 18.4174133333333,
+        "median_ms": 16.78,
+        "p95_ms": 29.096,
+        "pipeline_fingerprint": "c6290008d4f6a84fd31c577469601ddc9a5951425af75b8d7f53ea9110e6c8a1",
+        "theme": "chemical_plant",
+        "theme_bake_sha256": "cb103e1aac72736a30a2c8e3c4e7c0ddb8dc8dd7c2bdf63e252954f4b384f3a9"
+      },
+      {
+        "act_bake_sha256": "410842c18178455bf206feb3f89c3019611206fd28c7f0b28261537fab7ff506",
+        "cached": true,
+        "mean_ms": 15.7303733333333,
+        "median_ms": 14.936,
+        "p95_ms": 23.914,
+        "pipeline_fingerprint": "c6290008d4f6a84fd31c577469601ddc9a5951425af75b8d7f53ea9110e6c8a1",
+        "theme": "chemical_plant",
+        "theme_bake_sha256": "cb103e1aac72736a30a2c8e3c4e7c0ddb8dc8dd7c2bdf63e252954f4b384f3a9"
+      },
+      {
+        "act_bake_sha256": "410842c18178455bf206feb3f89c3019611206fd28c7f0b28261537fab7ff506",
+        "cached": true,
+        "mean_ms": 17.5946133333333,
+        "median_ms": 16.385,
+        "p95_ms": 30.038,
+        "pipeline_fingerprint": "c6290008d4f6a84fd31c577469601ddc9a5951425af75b8d7f53ea9110e6c8a1",
+        "theme": "chemical_plant",
+        "theme_bake_sha256": "cb103e1aac72736a30a2c8e3c4e7c0ddb8dc8dd7c2bdf63e252954f4b384f3a9"
+      },
+      {
+        "act_bake_sha256": "410842c18178455bf206feb3f89c3019611206fd28c7f0b28261537fab7ff506",
+        "cached": false,
+        "mean_ms": 16.54388,
+        "median_ms": 15.691,
+        "p95_ms": 25.971,
+        "pipeline_fingerprint": "c6290008d4f6a84fd31c577469601ddc9a5951425af75b8d7f53ea9110e6c8a1",
+        "theme": "chemical_plant",
+        "theme_bake_sha256": "cb103e1aac72736a30a2c8e3c4e7c0ddb8dc8dd7c2bdf63e252954f4b384f3a9"
+      }
+    ],
+    "warmup_iterations": 5
+  },
+  "native_queries": {
+    "green_hill": {
+      "uncached": 47,
+      "cached": 13
+    },
+    "chemical_plant": {
+      "uncached": 46,
+      "cached": 10
+    },
+    "rooftop_run": {
+      "uncached": 74,
+      "cached": 17
+    },
+    "casino_night": {
+      "uncached": 35,
+      "cached": 11
+    },
+    "sky_sanctuary": {
+      "uncached": 42,
+      "cached": 8
+    },
+    "ice_cap": {
+      "uncached": 39,
+      "cached": 15
+    },
+    "lava_reef": {
+      "uncached": 42,
+      "cached": 8
+    },
+    "aquarium_park": {
+      "uncached": 42,
+      "cached": 8
+    }
+  },
+  "prototype_profiles": [
+    {
+      "file": "material-characterized-live-green_hill-0-uncached.json",
+      "theme": "green_hill",
+      "cached_material_uniforms": false,
+      "ready": true,
+      "error": "",
+      "fallbacks": 0,
+      "wall_ms": 2176.092,
+      "preparation_frames": 290,
+      "engine": "4.7.2-stable (official)",
+      "cpu": {
+        "cache.release": {
+          "count": 6,
+          "max_ms": 0.187,
+          "total_ms": 0.249
+        },
+        "graphics.queue": {
+          "count": 1888,
+          "max_ms": 0.936,
+          "total_ms": 26.5780000000001
+        },
+        "live.activate": {
+          "count": 3,
+          "max_ms": 3.649,
+          "total_ms": 5.157
+        },
+        "live.atmosphere_foreground": {
+          "count": 3,
+          "max_ms": 52.343,
+          "total_ms": 124.343
+        },
+        "live.atmosphere_scenery": {
+          "count": 3,
+          "max_ms": 19.489,
+          "total_ms": 47.105
+        },
+        "live.background": {
+          "count": 277,
+          "max_ms": 12.002,
+          "total_ms": 13.0799999999999
+        },
+        "live.bind_animations": {
+          "count": 3,
+          "max_ms": 2.296,
+          "total_ms": 6.206
+        },
+        "live.colliders": {
+          "count": 1490,
+          "max_ms": 3.465,
+          "total_ms": 29.9079999999998
+        },
+        "live.contribution_capture": {
+          "count": 3,
+          "max_ms": 14.243,
+          "total_ms": 28.942
+        },
+        "live.objects": {
+          "count": 78,
+          "max_ms": 0.771,
+          "total_ms": 10.592
+        },
+        "live.register": {
+          "count": 3,
+          "max_ms": 3.963,
+          "total_ms": 9.227
+        },
+        "live.visuals": {
+          "count": 2386,
+          "max_ms": 52.384,
+          "total_ms": 227.576999999997
+        },
+        "physics.compile": {
+          "count": 3,
+          "max_ms": 12.07,
+          "total_ms": 25.402
+        },
+        "resource.collect": {
+          "count": 4,
+          "max_ms": 0.043,
+          "total_ms": 0.1
+        },
+        "resource.request": {
+          "count": 4,
+          "max_ms": 0.097,
+          "total_ms": 0.182
+        },
+        "scene.free": {
+          "count": 81,
+          "max_ms": 2.343,
+          "total_ms": 4.473
+        },
+        "scene.node": {
+          "count": 2435,
+          "max_ms": 24.678,
+          "total_ms": 92.1760000000013
+        }
+      },
+      "engine_errors": []
+    },
+    {
+      "file": "material-characterized-live-green_hill-1-cached.json",
+      "theme": "green_hill",
+      "cached_material_uniforms": true,
+      "ready": true,
+      "error": "",
+      "fallbacks": 0,
+      "wall_ms": 1851.285,
+      "preparation_frames": 246,
+      "engine": "4.7.2-stable (official)",
+      "cpu": {
+        "cache.release": {
+          "count": 6,
+          "max_ms": 0.014,
+          "total_ms": 0.068
+        },
+        "graphics.queue": {
+          "count": 1888,
+          "max_ms": 1.446,
+          "total_ms": 25.7290000000001
+        },
+        "live.activate": {
+          "count": 3,
+          "max_ms": 1.301,
+          "total_ms": 3.435
+        },
+        "live.atmosphere_foreground": {
+          "count": 3,
+          "max_ms": 50.093,
+          "total_ms": 102.05
+        },
+        "live.atmosphere_scenery": {
+          "count": 3,
+          "max_ms": 16.253,
+          "total_ms": 43.022
+        },
+        "live.background": {
+          "count": 277,
+          "max_ms": 9.559,
+          "total_ms": 10.0839999999999
+        },
+        "live.bind_animations": {
+          "count": 3,
+          "max_ms": 1.738,
+          "total_ms": 4.782
+        },
+        "live.colliders": {
+          "count": 1490,
+          "max_ms": 0.607,
+          "total_ms": 22.1539999999998
+        },
+        "live.contribution_capture": {
+          "count": 3,
+          "max_ms": 10.68,
+          "total_ms": 26.824
+        },
+        "live.objects": {
+          "count": 78,
+          "max_ms": 1.878,
+          "total_ms": 10.163
+        },
+        "live.register": {
+          "count": 3,
+          "max_ms": 3.031,
+          "total_ms": 5.639
+        },
+        "live.visuals": {
+          "count": 2386,
+          "max_ms": 50.14,
+          "total_ms": 197.461999999997
+        },
+        "physics.compile": {
+          "count": 3,
+          "max_ms": 10.353,
+          "total_ms": 19.725
+        },
+        "resource.collect": {
+          "count": 4,
+          "max_ms": 0.03,
+          "total_ms": 0.06
+        },
+        "resource.request": {
+          "count": 4,
+          "max_ms": 0.086,
+          "total_ms": 0.158
+        },
+        "scene.free": {
+          "count": 81,
+          "max_ms": 1.201,
+          "total_ms": 3.168
+        },
+        "scene.node": {
+          "count": 2435,
+          "max_ms": 1.613,
+          "total_ms": 46.3520000000004
+        }
+      },
+      "engine_errors": []
+    },
+    {
+      "file": "material-characterized-live-green_hill-2-cached.json",
+      "theme": "green_hill",
+      "cached_material_uniforms": true,
+      "ready": true,
+      "error": "",
+      "fallbacks": 0,
+      "wall_ms": 1890.887,
+      "preparation_frames": 260,
+      "engine": "4.7.2-stable (official)",
+      "cpu": {
+        "cache.release": {
+          "count": 6,
+          "max_ms": 0.014,
+          "total_ms": 0.065
+        },
+        "graphics.queue": {
+          "count": 1888,
+          "max_ms": 1.318,
+          "total_ms": 25.2040000000001
+        },
+        "live.activate": {
+          "count": 3,
+          "max_ms": 1.475,
+          "total_ms": 2.924
+        },
+        "live.atmosphere_foreground": {
+          "count": 3,
+          "max_ms": 46.628,
+          "total_ms": 108.475
+        },
+        "live.atmosphere_scenery": {
+          "count": 3,
+          "max_ms": 14.924,
+          "total_ms": 34.5
+        },
+        "live.background": {
+          "count": 277,
+          "max_ms": 7.832,
+          "total_ms": 8.33799999999989
+        },
+        "live.bind_animations": {
+          "count": 3,
+          "max_ms": 2.787,
+          "total_ms": 7.113
+        },
+        "live.colliders": {
+          "count": 1490,
+          "max_ms": 0.723,
+          "total_ms": 26.0499999999999
+        },
+        "live.contribution_capture": {
+          "count": 3,
+          "max_ms": 9.484,
+          "total_ms": 24.181
+        },
+        "live.objects": {
+          "count": 78,
+          "max_ms": 0.722,
+          "total_ms": 9.42699999999999
+        },
+        "live.register": {
+          "count": 3,
+          "max_ms": 2.982,
+          "total_ms": 5.838
+        },
+        "live.visuals": {
+          "count": 2386,
+          "max_ms": 46.665,
+          "total_ms": 193.273999999997
+        },
+        "physics.compile": {
+          "count": 3,
+          "max_ms": 8.612,
+          "total_ms": 18.541
+        },
+        "resource.collect": {
+          "count": 4,
+          "max_ms": 0.049,
+          "total_ms": 0.081
+        },
+        "resource.request": {
+          "count": 4,
+          "max_ms": 0.167,
+          "total_ms": 0.249
+        },
+        "scene.free": {
+          "count": 81,
+          "max_ms": 0.977,
+          "total_ms": 2.85
+        },
+        "scene.node": {
+          "count": 2435,
+          "max_ms": 0.987,
+          "total_ms": 65.0160000000003
+        }
+      },
+      "engine_errors": []
+    },
+    {
+      "file": "material-characterized-live-green_hill-3-uncached.json",
+      "theme": "green_hill",
+      "cached_material_uniforms": false,
+      "ready": true,
+      "error": "",
+      "fallbacks": 0,
+      "wall_ms": 1956.459,
+      "preparation_frames": 268,
+      "engine": "4.7.2-stable (official)",
+      "cpu": {
+        "cache.release": {
+          "count": 6,
+          "max_ms": 0.111,
+          "total_ms": 0.287
+        },
+        "graphics.queue": {
+          "count": 1888,
+          "max_ms": 0.326,
+          "total_ms": 21.0750000000001
+        },
+        "live.activate": {
+          "count": 3,
+          "max_ms": 1.5,
+          "total_ms": 2.766
+        },
+        "live.atmosphere_foreground": {
+          "count": 3,
+          "max_ms": 46.888,
+          "total_ms": 111.586
+        },
+        "live.atmosphere_scenery": {
+          "count": 3,
+          "max_ms": 22.691,
+          "total_ms": 43.937
+        },
+        "live.background": {
+          "count": 277,
+          "max_ms": 9.097,
+          "total_ms": 9.65799999999988
+        },
+        "live.bind_animations": {
+          "count": 3,
+          "max_ms": 2.941,
+          "total_ms": 7.226
+        },
+        "live.colliders": {
+          "count": 1490,
+          "max_ms": 0.49,
+          "total_ms": 24.3649999999999
+        },
+        "live.contribution_capture": {
+          "count": 3,
+          "max_ms": 10.607,
+          "total_ms": 28.638
+        },
+        "live.objects": {
+          "count": 78,
+          "max_ms": 0.304,
+          "total_ms": 5.455
+        },
+        "live.register": {
+          "count": 3,
+          "max_ms": 3.308,
+          "total_ms": 6.11
+        },
+        "live.visuals": {
+          "count": 2386,
+          "max_ms": 46.931,
+          "total_ms": 208.358999999998
+        },
+        "physics.compile": {
+          "count": 3,
+          "max_ms": 12.272,
+          "total_ms": 22.894
+        },
+        "resource.collect": {
+          "count": 4,
+          "max_ms": 0.029,
+          "total_ms": 0.06
+        },
+        "resource.request": {
+          "count": 4,
+          "max_ms": 0.072,
+          "total_ms": 0.141
+        },
+        "scene.free": {
+          "count": 81,
+          "max_ms": 0.866,
+          "total_ms": 2.789
+        },
+        "scene.node": {
+          "count": 2435,
+          "max_ms": 1.154,
+          "total_ms": 64.4480000000002
+        }
+      },
+      "engine_errors": []
+    },
+    {
+      "file": "material-characterized-live-rooftop_run-0-uncached.json",
+      "theme": "rooftop_run",
+      "cached_material_uniforms": false,
+      "ready": true,
+      "error": "",
+      "fallbacks": 0,
+      "wall_ms": 2199.817,
+      "preparation_frames": 300,
+      "engine": "4.7.2-stable (official)",
+      "cpu": {
+        "cache.release": {
+          "count": 6,
+          "max_ms": 0.055,
+          "total_ms": 0.12
+        },
+        "graphics.queue": {
+          "count": 1843,
+          "max_ms": 2.096,
+          "total_ms": 29.8400000000001
+        },
+        "live.activate": {
+          "count": 3,
+          "max_ms": 3.1,
+          "total_ms": 4.546
+        },
+        "live.atmosphere_foreground": {
+          "count": 3,
+          "max_ms": 36.825,
+          "total_ms": 90.472
+        },
+        "live.atmosphere_scenery": {
+          "count": 3,
+          "max_ms": 7.143,
+          "total_ms": 18.312
+        },
+        "live.background": {
+          "count": 297,
+          "max_ms": 6.298,
+          "total_ms": 7.12300000000005
+        },
+        "live.bind_animations": {
+          "count": 3,
+          "max_ms": 2.882,
+          "total_ms": 6.887
+        },
+        "live.colliders": {
+          "count": 1490,
+          "max_ms": 1.685,
+          "total_ms": 25.9249999999999
+        },
+        "live.contribution_capture": {
+          "count": 3,
+          "max_ms": 18.192,
+          "total_ms": 35.137
+        },
+        "live.objects": {
+          "count": 78,
+          "max_ms": 3.677,
+          "total_ms": 16.822
+        },
+        "live.register": {
+          "count": 3,
+          "max_ms": 4.14,
+          "total_ms": 8.688
+        },
+        "live.visuals": {
+          "count": 2222,
+          "max_ms": 36.862,
+          "total_ms": 170.022
+        },
+        "physics.compile": {
+          "count": 3,
+          "max_ms": 6.816,
+          "total_ms": 18.687
+        },
+        "resource.collect": {
+          "count": 4,
+          "max_ms": 0.037,
+          "total_ms": 0.071
+        },
+        "resource.request": {
+          "count": 4,
+          "max_ms": 0.24,
+          "total_ms": 0.342
+        },
+        "scene.free": {
+          "count": 103,
+          "max_ms": 1.885,
+          "total_ms": 5.474
+        },
+        "scene.node": {
+          "count": 2293,
+          "max_ms": 7.768,
+          "total_ms": 65.7740000000006
+        }
+      },
+      "engine_errors": []
+    },
+    {
+      "file": "material-characterized-live-rooftop_run-1-cached.json",
+      "theme": "rooftop_run",
+      "cached_material_uniforms": true,
+      "ready": true,
+      "error": "",
+      "fallbacks": 0,
+      "wall_ms": 1792.762,
+      "preparation_frames": 251,
+      "engine": "4.7.2-stable (official)",
+      "cpu": {
+        "cache.release": {
+          "count": 6,
+          "max_ms": 0.017,
+          "total_ms": 0.074
+        },
+        "graphics.queue": {
+          "count": 1843,
+          "max_ms": 2.469,
+          "total_ms": 27.9820000000001
+        },
+        "live.activate": {
+          "count": 3,
+          "max_ms": 2.428,
+          "total_ms": 4.149
+        },
+        "live.atmosphere_foreground": {
+          "count": 3,
+          "max_ms": 23.124,
+          "total_ms": 62.147
+        },
+        "live.atmosphere_scenery": {
+          "count": 3,
+          "max_ms": 7.295,
+          "total_ms": 17.225
+        },
+        "live.background": {
+          "count": 297,
+          "max_ms": 5.435,
+          "total_ms": 6.23600000000006
+        },
+        "live.bind_animations": {
+          "count": 3,
+          "max_ms": 3.854,
+          "total_ms": 6.684
+        },
+        "live.colliders": {
+          "count": 1490,
+          "max_ms": 2.777,
+          "total_ms": 35.23
+        },
+        "live.contribution_capture": {
+          "count": 3,
+          "max_ms": 13.746,
+          "total_ms": 34.102
+        },
+        "live.objects": {
+          "count": 78,
+          "max_ms": 1.777,
+          "total_ms": 9.141
+        },
+        "live.register": {
+          "count": 3,
+          "max_ms": 4.779,
+          "total_ms": 8.015
+        },
+        "live.visuals": {
+          "count": 2222,
+          "max_ms": 23.164,
+          "total_ms": 137.205000000001
+        },
+        "physics.compile": {
+          "count": 3,
+          "max_ms": 9.542,
+          "total_ms": 21.145
+        },
+        "resource.collect": {
+          "count": 4,
+          "max_ms": 0.178,
+          "total_ms": 0.208
+        },
+        "resource.request": {
+          "count": 4,
+          "max_ms": 0.05,
+          "total_ms": 0.119
+        },
+        "scene.free": {
+          "count": 103,
+          "max_ms": 5.809,
+          "total_ms": 9.404
+        },
+        "scene.node": {
+          "count": 2293,
+          "max_ms": 2.242,
+          "total_ms": 48.2590000000005
+        }
+      },
+      "engine_errors": []
+    },
+    {
+      "file": "material-characterized-live-rooftop_run-2-cached.json",
+      "theme": "rooftop_run",
+      "cached_material_uniforms": true,
+      "ready": true,
+      "error": "",
+      "fallbacks": 0,
+      "wall_ms": 1681.888,
+      "preparation_frames": 237,
+      "engine": "4.7.2-stable (official)",
+      "cpu": {
+        "cache.release": {
+          "count": 6,
+          "max_ms": 0.016,
+          "total_ms": 0.072
+        },
+        "graphics.queue": {
+          "count": 1843,
+          "max_ms": 1.365,
+          "total_ms": 26.8770000000001
+        },
+        "live.activate": {
+          "count": 3,
+          "max_ms": 1.15,
+          "total_ms": 2.506
+        },
+        "live.atmosphere_foreground": {
+          "count": 3,
+          "max_ms": 30.244,
+          "total_ms": 67.907
+        },
+        "live.atmosphere_scenery": {
+          "count": 3,
+          "max_ms": 6.715,
+          "total_ms": 15.041
+        },
+        "live.background": {
+          "count": 297,
+          "max_ms": 7.162,
+          "total_ms": 10.1499999999999
+        },
+        "live.bind_animations": {
+          "count": 3,
+          "max_ms": 1.965,
+          "total_ms": 5.18
+        },
+        "live.colliders": {
+          "count": 1490,
+          "max_ms": 1.512,
+          "total_ms": 25.6739999999998
+        },
+        "live.contribution_capture": {
+          "count": 3,
+          "max_ms": 8.568,
+          "total_ms": 23.352
+        },
+        "live.objects": {
+          "count": 78,
+          "max_ms": 0.343,
+          "total_ms": 6.266
+        },
+        "live.register": {
+          "count": 3,
+          "max_ms": 3.754,
+          "total_ms": 7.192
+        },
+        "live.visuals": {
+          "count": 2222,
+          "max_ms": 30.381,
+          "total_ms": 126.727
+        },
+        "physics.compile": {
+          "count": 3,
+          "max_ms": 8.825,
+          "total_ms": 18.44
+        },
+        "resource.collect": {
+          "count": 4,
+          "max_ms": 0.033,
+          "total_ms": 0.064
+        },
+        "resource.request": {
+          "count": 4,
+          "max_ms": 0.298,
+          "total_ms": 0.386
+        },
+        "scene.free": {
+          "count": 103,
+          "max_ms": 1.183,
+          "total_ms": 4.44
+        },
+        "scene.node": {
+          "count": 2293,
+          "max_ms": 4.237,
+          "total_ms": 40.8890000000001
+        }
+      },
+      "engine_errors": []
+    },
+    {
+      "file": "material-characterized-live-rooftop_run-3-uncached.json",
+      "theme": "rooftop_run",
+      "cached_material_uniforms": false,
+      "ready": true,
+      "error": "",
+      "fallbacks": 0,
+      "wall_ms": 1686.56,
+      "preparation_frames": 238,
+      "engine": "4.7.2-stable (official)",
+      "cpu": {
+        "cache.release": {
+          "count": 6,
+          "max_ms": 0.112,
+          "total_ms": 0.213
+        },
+        "graphics.queue": {
+          "count": 1843,
+          "max_ms": 2.25,
+          "total_ms": 27.7290000000001
+        },
+        "live.activate": {
+          "count": 3,
+          "max_ms": 1.249,
+          "total_ms": 2.518
+        },
+        "live.atmosphere_foreground": {
+          "count": 3,
+          "max_ms": 24.567,
+          "total_ms": 62.687
+        },
+        "live.atmosphere_scenery": {
+          "count": 3,
+          "max_ms": 7.221,
+          "total_ms": 15.013
+        },
+        "live.background": {
+          "count": 297,
+          "max_ms": 5.563,
+          "total_ms": 6.33700000000005
+        },
+        "live.bind_animations": {
+          "count": 3,
+          "max_ms": 1.767,
+          "total_ms": 4.749
+        },
+        "live.colliders": {
+          "count": 1490,
+          "max_ms": 0.523,
+          "total_ms": 22.1299999999999
+        },
+        "live.contribution_capture": {
+          "count": 3,
+          "max_ms": 10.217,
+          "total_ms": 25.218
+        },
+        "live.objects": {
+          "count": 78,
+          "max_ms": 2.105,
+          "total_ms": 7.949
+        },
+        "live.register": {
+          "count": 3,
+          "max_ms": 2.405,
+          "total_ms": 5.138
+        },
+        "live.visuals": {
+          "count": 2222,
+          "max_ms": 24.601,
+          "total_ms": 120.821
+        },
+        "physics.compile": {
+          "count": 3,
+          "max_ms": 24.653,
+          "total_ms": 38.138
+        },
+        "resource.collect": {
+          "count": 4,
+          "max_ms": 0.029,
+          "total_ms": 0.068
+        },
+        "resource.request": {
+          "count": 4,
+          "max_ms": 0.051,
+          "total_ms": 0.128
+        },
+        "scene.free": {
+          "count": 103,
+          "max_ms": 1.499,
+          "total_ms": 3.564
+        },
+        "scene.node": {
+          "count": 2293,
+          "max_ms": 4.1,
+          "total_ms": 40.6070000000004
+        }
+      },
+      "engine_errors": []
+    }
+  ],
+  "tours": [
+    {
+      "file": "material-characterized-tour-cached.json",
+      "act_sha256": "354650b389f23305a53f5fc97fa7346e24df02288a8074c1e0a5b282f9b8a09f",
+      "atomic_attachment": false,
+      "boundary_wait_ms": 0.0,
+      "cached_material_uniforms": true,
+      "cpu": {
+        "cache.release": {
+          "count": 11,
+          "max_ms": 0.04,
+          "total_ms": 0.208
+        },
+        "graphics.queue": {
+          "count": 2385,
+          "max_ms": 10.734,
+          "total_ms": 59.6310000000003
+        },
+        "live.activate": {
+          "count": 6,
+          "max_ms": 1.048,
+          "total_ms": 4.459
+        },
+        "live.atmosphere_foreground": {
+          "count": 6,
+          "max_ms": 77.937,
+          "total_ms": 269.476
+        },
+        "live.atmosphere_scenery": {
+          "count": 6,
+          "max_ms": 18.971,
+          "total_ms": 78.72
+        },
+        "live.background": {
+          "count": 554,
+          "max_ms": 21.246,
+          "total_ms": 26.6080000000005
+        },
+        "live.bind_animations": {
+          "count": 6,
+          "max_ms": 3.389,
+          "total_ms": 7.839
+        },
+        "live.colliders": {
+          "count": 2659,
+          "max_ms": 2.528,
+          "total_ms": 71.6450000000007
+        },
+        "live.contribution_capture": {
+          "count": 6,
+          "max_ms": 14.104,
+          "total_ms": 48.077
+        },
+        "live.objects": {
+          "count": 106,
+          "max_ms": 0.813,
+          "total_ms": 14.852
+        },
+        "live.register": {
+          "count": 6,
+          "max_ms": 3.126,
+          "total_ms": 6.825
+        },
+        "live.retire": {
+          "count": 852,
+          "max_ms": 1.217,
+          "total_ms": 10.5720000000001
+        },
+        "live.visuals": {
+          "count": 3812,
+          "max_ms": 77.988,
+          "total_ms": 455.058999999995
+        },
+        "physics.compile": {
+          "count": 5,
+          "max_ms": 11.02,
+          "total_ms": 29.989
+        },
+        "resource.collect": {
+          "count": 6,
+          "max_ms": 0.023,
+          "total_ms": 0.095
+        },
+        "resource.request": {
+          "count": 6,
+          "max_ms": 0.325,
+          "total_ms": 0.511
+        },
+        "scene.free": {
+          "count": 89,
+          "max_ms": 1.21,
+          "total_ms": 4.818
+        },
+        "scene.node": {
+          "count": 3172,
+          "max_ms": 24.233,
+          "total_ms": 111.702
+        }
+      },
+      "engine": "4.7.2-stable (official)",
+      "fallbacks": 0,
+      "max_build_ms": 78.072,
+      "seed": 18,
+      "sequence": 3,
+      "theme": "green_hill",
+      "tour_speed": 400.0,
+      "engine_errors": []
+    },
+    {
+      "file": "material-characterized-tour-uncached.json",
+      "act_sha256": "354650b389f23305a53f5fc97fa7346e24df02288a8074c1e0a5b282f9b8a09f",
+      "atomic_attachment": false,
+      "boundary_wait_ms": 0.0,
+      "cached_material_uniforms": false,
+      "cpu": {
+        "cache.release": {
+          "count": 11,
+          "max_ms": 0.028,
+          "total_ms": 0.193
+        },
+        "graphics.queue": {
+          "count": 2385,
+          "max_ms": 2.961,
+          "total_ms": 54.1600000000002
+        },
+        "live.activate": {
+          "count": 5,
+          "max_ms": 1.13,
+          "total_ms": 4.021
+        },
+        "live.atmosphere_foreground": {
+          "count": 5,
+          "max_ms": 72.501,
+          "total_ms": 223.93
+        },
+        "live.atmosphere_scenery": {
+          "count": 5,
+          "max_ms": 15.642,
+          "total_ms": 63.426
+        },
+        "live.background": {
+          "count": 554,
+          "max_ms": 8.618,
+          "total_ms": 13.7539999999998
+        },
+        "live.bind_animations": {
+          "count": 5,
+          "max_ms": 2.854,
+          "total_ms": 5.59
+        },
+        "live.colliders": {
+          "count": 2363,
+          "max_ms": 9.32,
+          "total_ms": 52.7530000000006
+        },
+        "live.contribution_capture": {
+          "count": 5,
+          "max_ms": 13.968,
+          "total_ms": 45.341
+        },
+        "live.objects": {
+          "count": 80,
+          "max_ms": 5.691,
+          "total_ms": 17.752
+        },
+        "live.register": {
+          "count": 5,
+          "max_ms": 3.072,
+          "total_ms": 6.505
+        },
+        "live.retire": {
+          "count": 852,
+          "max_ms": 2.932,
+          "total_ms": 17.859
+        },
+        "live.visuals": {
+          "count": 2938,
+          "max_ms": 72.562,
+          "total_ms": 384.158999999995
+        },
+        "physics.compile": {
+          "count": 5,
+          "max_ms": 48.656,
+          "total_ms": 72.692
+        },
+        "resource.collect": {
+          "count": 6,
+          "max_ms": 0.027,
+          "total_ms": 0.101
+        },
+        "resource.request": {
+          "count": 6,
+          "max_ms": 0.082,
+          "total_ms": 0.272
+        },
+        "scene.free": {
+          "count": 89,
+          "max_ms": 1.584,
+          "total_ms": 6.191
+        },
+        "scene.node": {
+          "count": 3172,
+          "max_ms": 16.362,
+          "total_ms": 131.076000000001
+        }
+      },
+      "engine": "4.7.2-stable (official)",
+      "fallbacks": 0,
+      "max_build_ms": 73.82,
+      "seed": 18,
+      "sequence": 3,
+      "theme": "green_hill",
+      "tour_speed": 400.0,
+      "engine_errors": []
+    }
+  ],
+  "excluded_engine_error_runs": [
+    {
+      "file": "material-final-live-green_hill-1-cached",
+      "errors": [
+        "ERROR: Parameter \"m\" is null.",
+        "ERROR: Condition \"!F\" is true. Continuing.",
+        "ERROR: Parameter \"m\" is null.",
+        "ERROR: Condition \"!F\" is true. Continuing.",
+        "ERROR: Parameter \"m\" is null.",
+        "ERROR: Condition \"!F\" is true. Continuing.",
+        "ERROR: Condition \"!F\" is true. Continuing.",
+        "ERROR: 1 RID allocations of type 'N13RendererDummy9DummyMeshE' were leaked at exit."
+      ],
+      "excluded_from_timing_comparison": true
+    },
+    {
+      "file": "material-verified-live-green_hill-1-cached",
+      "errors": [
+        "ERROR: 1 RID allocations of type 'N13RendererDummy9DummyMeshE' were leaked at exit."
+      ],
+      "excluded_from_timing_comparison": true
+    }
+  ],
+  "native_query_totals": {
+    "uncached": 367,
+    "cached": 90
+  },
+  "prior_error_evidence": "pickup-cache-rail-stream.log, from the preceding floor pickup pass: dummy mesh_get_surface_count null mesh in template_library._dispose and rail-stream shutdown. Not fixed or suppressed.",
+  "validation": {
+    "passing_assertions": 676,
+    "cases": [
+      {
+        "case": "appearance",
+        "checks": 70,
+        "result": "RESULT | Prototype appearance regression | 70 checks | 0 failures"
+      },
+      {
+        "case": "contribution",
+        "checks": 36,
+        "result": "RESULT | foreground contribution | 36 checks | 0 failures"
+      },
+      {
+        "case": "enemy",
+        "checks": 32,
+        "result": "RESULT | Enemy streaming | 32 checks | 0 failures"
+      },
+      {
+        "case": "hud",
+        "checks": 16,
+        "result": "HUD_UPDATE_REGRESSION | 16 checks | 0 failures"
+      },
+      {
+        "case": "manifest",
+        "checks": 30,
+        "result": "ENDLESS_MANIFEST_REGRESSION | checks=30 failures=0"
+      },
+      {
+        "case": "materials",
+        "checks": 91,
+        "result": "RESULT | Stream material staging | 91 checks | 0 failures"
+      },
+      {
+        "case": "rail-stream",
+        "checks": 10,
+        "result": "RESULT | Rail rings streaming | 10 checks | 0 failures"
+      },
+      {
+        "case": "rails",
+        "checks": 13,
+        "result": "RESULT | Rail rings | 13 checks | 0 failures"
+      },
+      {
+        "case": "ranges",
+        "checks": 24,
+        "result": "ATMOSPHERE_COLOR_RANGES | checks=24 failures=0"
+      },
+      {
+        "case": "retirement",
+        "checks": 72,
+        "result": "ENDLESS_RETIREMENT_REGRESSION | checks=72 | failures=0"
+      },
+      {
+        "case": "retry",
+        "checks": 62,
+        "result": "RESULT | Soft retry | 62 checks | 0 failures"
+      },
+      {
+        "case": "reuse",
+        "checks": 130,
+        "result": "ENDLESS_REUSE_REGRESSION | checks=130 failures=0"
+      },
+      {
+        "case": "roof-contribution",
+        "checks": 36,
+        "result": "RESULT | foreground contribution | 36 checks | 0 failures"
+      },
+      {
+        "case": "smoke",
+        "checks": 54,
+        "result": "ENDLESS_SCENE_SMOKE | checks=54 failures=0 max_resident=2 max_build_ms=23.96 max_frame_ms=135.12"
+      }
+    ],
+    "script_or_engine_errors_in_final_suite": 0,
+    "editor_import": "Godot 4.7.2 headless --editor --import exited 0 without script or engine errors"
+  }
+}

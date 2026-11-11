@@ -1,5 +1,16 @@
 # Rendering and streaming performance — 2026-10-30
 
+## Shared material-control inspection — 2026-11-11
+
+Atmosphere attachment now shares each shader's emission/halo/light descriptors
+within one synchronous root attachment, clearing the cache afterward for live
+edits and resource release. Eight-theme query counts fall from 367 to 90, with
+matching material state. Warm attachment means improve by about 11% in Green
+Hill, 22% in Rooftop and 5% in Chemical; individual trials and fresh-run spikes
+remain mixed. Both fast tours have zero boundary waiting/rebuilds. No new
+rebake is needed. See [the measurements and limits](MATERIAL_INSPECTION_CACHE.md);
+this is CPU method evidence, with Windows FPS still unmeasured.
+
 ## Separate Act attachment stages — 2026-11-11
 
 Animation binding, foreground atmosphere, local scenery atmosphere and bounds

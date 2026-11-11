@@ -36,6 +36,7 @@ func run() -> void:
  report["wall_ms"] = (Time.get_ticks_usec() - began)/1000.0
  report["preparation_frames"] = frames
  report["atomic_attachment"] = "--profile-atomic-attachment" in OS.get_cmdline_user_args()
+ report["cached_material_uniforms"] = "--profile-uncached-materials" not in OS.get_cmdline_user_args()
  report["seed"] = game.run_seed
  report["configuration"] = config.snapshot()
  report["engine"] = Engine.get_version_info().string

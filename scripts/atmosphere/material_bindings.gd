@@ -2,6 +2,7 @@ extends RefCounted
 ## Share private copies for editable emission/palette materials; restore every slot.
 ## Only explicit semantic bindings are editable; changes reuse prepared programs.
 const SCALES := ["emission_scale", "neon_strength", "radiance"]
+const HALOS := ["neon_spread", "floor_neon_spread"]
 const Palette := preload("res://scripts/themes/theme_atmosphere.gd")
 const ColorRanges := preload("res://scripts/atmosphere/color_ranges.gd")
 var slots: Array[Dictionary] = []
@@ -17,6 +18,8 @@ var allowed_keys: Array[String] = []
 var last_palette := {}
 var hue_parameters: Array[Dictionary] = []
 var range_materials: Array[ShaderMaterial] = []
+var _uniform_cache := {}
+var _cache_uniforms := "--profile-uncached-materials" not in OS.get_cmdline_user_args()
 const NEON_KEYS := ["industrial_cyan", "signal_pink","neon_pink", "neon_aqua", "neon_mint", "neon_amber", "purple_accent", "window_gold", "marquee", "warm_spill", "blue_spill"]
 const BACKGROUND_KEYS := ["ocean_deep", "ocean_wave", "ocean_reflection", "ocean_sun", "cloud_shadow", "cloud_highlight", "shore_tint", "reservoir_deep", "reservoir_ripple", "canal_deep", "canal_reflection", "distant_haze", "architecture_tint", "skyline_tint", "sea_shadow", "sea_highlight", "bank_shadow", "bank_highlight", "ruin_haze", "lake_base", "lake_reflection", "cavern_tint", "cavern_deep", "lagoon_deep", "lagoon_wave", "water_reflection"]
 
@@ -30,6 +33,7 @@ func begin_theme(theme: String) -> void:
  for spec: Array in Palette.fields(theme): allowed_keys.append(spec[1])
 
 func append_root(root: Node, sky: Material = null, scenery := false) -> void:
+ _uniform_cache.clear()
  for node: Node in root.find_children("*", "", true, false):
   if seen_nodes.has(node.get_instance_id()): continue
   seen_nodes[node.get_instance_id()] = true
@@ -50,6 +54,21 @@ func append_root(root: Node, sky: Material = null, scenery := false) -> void:
  # Sky is already a private Lab copy; changing its uniforms invalidates radiance
  # only when a value actually changes. Its shader contains no TIME dependency.
  if sky != null: _register_palette(sky)
+ # Inspection is shared only within this synchronous attachment. The next
+ # root sees live shader/include edits, and no extra resources stay resident.
+ _uniform_cache.clear()
+
+func _control_uniforms(shader: Shader) -> Array:
+ if not _cache_uniforms: return shader.get_shader_uniform_list()
+ if not _uniform_cache.has(shader):
+  # Both consumers only inspect emission, halo and fake-light controls. Walk
+  # the complete native list once per shader, rather than per private material.
+  var controls: Array[Dictionary] = []
+  for uniform: Dictionary in shader.get_shader_uniform_list():
+   var name := str(uniform.name)
+   if name in SCALES or name in HALOS or name == "fake_light_direction": controls.append(uniform)
+  _uniform_cache[shader] = controls
+ return _uniform_cache[shader]
 
 func _slot(node: GeometryInstance3D, surface: int, material: Material, scenery := false) -> void:
  if material == null: return
@@ -84,8 +103,8 @@ func _copy(source: Material, scenery := false) -> Material:
   if copy == source: copy = source.duplicate()
   parameters.append({"material": copy, "property": "emission_energy" if copy is ShaderMaterial else "emission_energy_multiplier", "base": source.emission_energy_multiplier, "shader": copy is ShaderMaterial})
  elif source is ShaderMaterial and source.shader != null:
-  for uniform: Dictionary in source.shader.get_shader_uniform_list():
-   if (semantic or scenery) and str(uniform.name) in ["neon_spread", "floor_neon_spread"]:
+  for uniform: Dictionary in _control_uniforms(source.shader):
+   if (semantic or scenery) and str(uniform.name) in HALOS:
     var width = source.get_shader_parameter(uniform.name)
     if width == null: width = RenderingServer.shader_get_parameter_default(source.shader.get_rid(), uniform.name)
     if typeof(width) == TYPE_FLOAT: halo_parameters.append({"material": copy, "property": uniform.name, "base": width})
@@ -127,7 +146,7 @@ func _register_palette(material: Material) -> void:
   var entry := {"target": material, "property": property, "key": key, "base": base, "shader": true, "mode": "direct"}
   palette_parameters.append(entry)
   if not palette_originals.has(key): palette_originals[key] = _picker_value(base)
- for uniform: Dictionary in material.shader.get_shader_uniform_list():
+ for uniform: Dictionary in _control_uniforms(material.shader):
   if str(uniform.name) == "fake_light_direction":
    var base = material.get_shader_parameter(uniform.name)
    if base == null: base = RenderingServer.shader_get_parameter_default(material.shader.get_rid(), uniform.name)
@@ -252,6 +271,7 @@ func restore() -> void:
  scenery_materials.clear()
  hue_parameters.clear()
  range_materials.clear()
+ _uniform_cache.clear()
 
 static func shifted(color: Color, values: Dictionary, group: String, ranges := true) -> Color:
  var hue := float(values.get("hue/" + group, 0.0))
