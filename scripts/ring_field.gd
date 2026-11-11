@@ -19,7 +19,10 @@ var rings: Array[Dictionary] = []:
   invalidate_rack_cache()
 var _rack_groups: Array[Dictionary] = []
 var _racks_by_owner := {}
+var _floor_ring_indices: Array[int] = []
+var _floor_indices_by_owner := {}
 var _rack_cache_size := -1
+var _ring_cache_revision := 0
 var ball: PlaygroundBall
 var tuning: PhysicsTuning
 var previous_ball_position: Vector2
@@ -103,11 +106,14 @@ func add_pattern(trail: Dictionary, source_id: String, owner_id := "", offset :=
  invalidate_rack_cache()
 
 func invalidate_rack_cache() -> void:
- # Assignments and add_* handle this automatically. Bulk writers must invalidate
- # after same-size in-place membership or rack-identity edits (including sync).
+ # Rack groups and floor-pickup indices share membership invalidation. Bulk
+ # writers also invalidate after reordering or editing rack/rail identities.
  _rack_groups.clear()
  _racks_by_owner.clear()
+ _floor_ring_indices.clear()
+ _floor_indices_by_owner.clear()
  _rack_cache_size = -1
+ _ring_cache_revision += 1
 
 func _ensure_rack_cache() -> void:
  # Size also detects existing callers' direct append/clear operations. Identity
@@ -115,7 +121,17 @@ func _ensure_rack_cache() -> void:
  if _rack_cache_size == rings.size(): return
  invalidate_rack_cache()
  var by_id := {}
- for ring: Dictionary in rings:
+ for index in rings.size():
+  var ring: Dictionary = rings[index]
+  # Empty legacy rail tags are floor-claimable, matching claim_ring's guard.
+  if ring.get("rail_id", "") == "":
+   _floor_ring_indices.append(index)
+   if ring.has("rack"):
+    var floor_owner: String = ring.rack.get("owner_id", "")
+    if not _floor_indices_by_owner.has(floor_owner):
+     var owned_indices: Array[int] = []
+     _floor_indices_by_owner[floor_owner] = owned_indices
+    _floor_indices_by_owner[floor_owner].append(index)
   if not ring.has("rack"): continue
   var id: String = ring.rack.id
   if not by_id.has(id):
@@ -257,13 +273,43 @@ func _physics_process(delta: float) -> void:
  # Radius is measured from the swept ball center to the stationary ring center.
  # A disabled or small magnet must never shrink the existing direct-contact pickup.
  var radius := maxf(ball.radius + ring_radius, float(tuning.effective.ring_magnet_radius))
- for i in rings.size():
+ var radius_squared := radius * radius
+ # Zero-delta ticks still collect. Rack-reset callbacks can also replace the
+ # residents after advance_racks(), so ensure membership again before scanning.
+ _ensure_rack_cache()
+ if not _collecting_rail_id.is_empty():
+  _collect_ring_range(0, rings.size(), radius_squared)
+  previous_ball_position = ball.position
+  return
+ var candidates: Array[int] = _floor_ring_indices
+ if not active_owner_id.is_empty():
+  if not _floor_indices_by_owner.has(active_owner_id):
+   previous_ball_position = ball.position
+   return
+  candidates = _floor_indices_by_owner[active_owner_id]
+ var owner := active_owner_id
+ var revision := _ring_cache_revision
+ var count := rings.size()
+ for i: int in candidates:
   var ring: Dictionary = rings[i]
   if not ring.active or not ring_eligible(ring):
    continue
   var closest: Vector2 = Geometry2D.get_closest_point_to_segment(ring.position, previous_ball_position, ball.position)
-  if closest.distance_squared_to(ring.position) <= radius * radius:
+  if closest.distance_squared_to(ring.position) <= radius_squared:
    # Deactivate before notifying score/meter listeners, so overlapping pickup
    # methods and subsequent ticks cannot award this ring twice in one rack.
    claim_ring(i)
+   # Signals can change scoring context or resident membership. Finish that
+   # unusual sweep in its original global-index order using the live records.
+   if active_owner_id != owner or _ring_cache_revision != revision or rings.size() != count or not _collecting_rail_id.is_empty():
+    _collect_ring_range(i + 1, count, radius_squared)
+    break
  previous_ball_position = ball.position
+
+func _collect_ring_range(start: int, end: int, radius_squared: float) -> void:
+ for i in range(start, end):
+  if i >= rings.size(): break
+  var ring: Dictionary = rings[i]
+  if not ring.active or not ring_eligible(ring): continue
+  var closest: Vector2 = Geometry2D.get_closest_point_to_segment(ring.position, previous_ball_position, ball.position)
+  if closest.distance_squared_to(ring.position) <= radius_squared: claim_ring(i)

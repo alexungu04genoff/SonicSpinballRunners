@@ -1,5 +1,15 @@
 # Rendering and streaming performance — 2026-10-30
 
+## Cached floor pickup candidates — 2026-11-11
+
+Floor collection now visits the active Act's cached floor indices, retaining
+the original swept test, pickup ordering and live state. In the three-Act,
+160-Ring headless fixture it visits 55 candidates and reduces RingField tick
+method time from 231–257 to 100–111 µs (about 57%) relative to `a119aa7`.
+All 380 gameplay/cache checks and the 4,000-step reference comparison pass.
+Current bakes remain valid. See [the receipt, signal-time fallback and limits](RING_PICKUP_CACHE.md).
+This is CPU method evidence; Windows FPS remains unmeasured.
+
 ## Cached Ring rack bookkeeping — 2026-11-11
 
 Rack updates now use cached membership and active-owner views. A 160-Ring,

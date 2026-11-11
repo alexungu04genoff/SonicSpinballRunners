@@ -79,7 +79,7 @@ func equivalence(baseline: Script) -> bool:
     11:
      item.ball.position = item.rings[index].position
      item._physics_process(delta)
-  if fields[0].rings != fields[1].rings or events[0] != events[1] or fields[0].previous_ball_position != fields[1].previous_ball_position:
+  if fields[0].rings != fields[1].rings or events[0] != events[1] or fields[0].previous_ball_position != fields[1].previous_ball_position or fields[0].last_pickup_source_id != fields[1].last_pickup_source_id:
    push_error("Equivalence mismatch at tick %d action %d" % [tick, action])
    for item: Node in fields: dispose(item)
    return false
@@ -99,10 +99,15 @@ func profile(baseline: Script) -> void:
  var inventory := records()
  var seen := {}
  var active := {}
+ var floor_count := 0
+ var active_floor_count := 0
  for ring: Dictionary in inventory:
   seen[ring.rack.id] = true
   if ring.rack.owner_id == "owner:0:0": active[ring.rack.id] = true
- report.inventory = {"sources": SOURCES, "resident_rings": inventory.size(), "resident_racks": seen.size(), "active_racks": active.size()}
+  if ring.get("rail_id", "") == "":
+   floor_count += 1
+   if ring.rack.owner_id == "owner:0:0": active_floor_count += 1
+ report.inventory = {"sources": SOURCES, "resident_rings": inventory.size(), "resident_racks": seen.size(), "active_racks": active.size(), "floor_rings": floor_count, "active_floor_rings": active_floor_count}
  report.samples = []
  for armed: bool in [false, true]:
   for method: String in ["advance_racks", "_physics_process"]:
@@ -144,7 +149,7 @@ func run() -> void:
   push_error("Could not compile the supplied RingField baseline.")
   quit(1)
   return
- report = {"baseline_script": baseline_path, "baseline_source_sha256": FileAccess.get_sha256(baseline_path), "engine": Engine.get_version_info().string, "headless": DisplayServer.get_name() == "headless", "processor": OS.get_processor_name(), "scope": "Sequential headless CPU method calls; no rendering or Windows FPS measurement."}
+ report = {"baseline_script": baseline_path, "baseline_source_sha256": FileAccess.get_sha256(baseline_path), "current_source_sha256": FileAccess.get_sha256("res://scripts/ring_field.gd"), "engine": Engine.get_version_info().string, "headless": DisplayServer.get_name() == "headless", "processor": OS.get_processor_name(), "scope": "Sequential headless CPU method calls; no rendering or Windows FPS measurement."}
  if not equivalence(baseline): quit(1); return
  if "--profile" in OS.get_cmdline_user_args(): profile(baseline)
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(output_path).get_base_dir())

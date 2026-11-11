@@ -1,0 +1,173 @@
+{
+  "baseline_script": "/workspace/work/pickup-profile-baseline.gd",
+  "baseline_source_sha256": "a8ddbc23f0d5794a8f4fac0cd2bb7ff7273fa0cd350cfd73d0c8ff637ece5a89",
+  "current_source_sha256": "01d6b995f764466487a9e46ae752a75f6fbaff5ecf8981a26234f218b234484b",
+  "engine": "4.7.2-stable (official)",
+  "equivalence": {
+    "seed": 8112026,
+    "states_and_signal_order_equal": true,
+    "steps": 4000
+  },
+  "headless": true,
+  "inventory": {
+    "active_floor_rings": 55,
+    "active_racks": 6,
+    "floor_rings": 123,
+    "resident_racks": 15,
+    "resident_rings": 160,
+    "sources": [
+      "res://data/acts/Authored/RampMania.tres",
+      "res://data/acts/Authored/Secret Entry.tres",
+      "res://data/acts/Authored/SpringUp.tres"
+    ]
+  },
+  "processor": "AMD EPYC 7763 64-Core Processor",
+  "samples": [
+    {
+      "armed": false,
+      "baseline_median_us": 10.2991666666667,
+      "baseline_us_per_call": [
+        9.23966666666667,
+        8.63633333333333,
+        10.7946666666667,
+        8.948,
+        10.3493333333333,
+        11.7466666666667,
+        10.249,
+        6.39833333333333,
+        10.6143333333333,
+        8.586,
+        13.8973333333333,
+        10.748
+      ],
+      "blocks_per_version": 12,
+      "cached_median_us": 10.533,
+      "cached_us_per_call": [
+        21.0216666666667,
+        11.7963333333333,
+        10.4366666666667,
+        23.1446666666667,
+        9.602,
+        9.34666666666667,
+        27.1236666666667,
+        10.6293333333333,
+        9.74766666666667,
+        10.329,
+        8.54,
+        11.9926666666667
+      ],
+      "calls_per_block": 3000,
+      "method": "advance_racks"
+    },
+    {
+      "armed": false,
+      "baseline_median_us": 231.091,
+      "baseline_us_per_call": [
+        234.106666666667,
+        248.446333333333,
+        218.408666666667,
+        263.523333333333,
+        229.799,
+        250.209,
+        230.310333333333,
+        244.549333333333,
+        231.696333333333,
+        174.544,
+        193.261,
+        230.485666666667
+      ],
+      "blocks_per_version": 12,
+      "cached_median_us": 99.9108333333333,
+      "cached_us_per_call": [
+        121.726333333333,
+        124.218,
+        102.509666666667,
+        93.956,
+        101.966333333333,
+        97.8553333333333,
+        88.4513333333333,
+        103.414333333333,
+        95.8623333333333,
+        94.0656666666667,
+        91.1976666666667,
+        107.902333333333
+      ],
+      "calls_per_block": 3000,
+      "method": "_physics_process"
+    },
+    {
+      "armed": true,
+      "baseline_median_us": 11.7708333333333,
+      "baseline_us_per_call": [
+        15.651,
+        24.374,
+        22.1226666666667,
+        11.312,
+        10.0746666666667,
+        12.1086666666667,
+        10.8346666666667,
+        12.2333333333333,
+        11.6496666666667,
+        10.9853333333333,
+        11.892,
+        11.474
+      ],
+      "blocks_per_version": 12,
+      "cached_median_us": 12.0755,
+      "cached_us_per_call": [
+        14.188,
+        22.4003333333333,
+        13.707,
+        13.286,
+        10.7603333333333,
+        11.7093333333333,
+        7.91433333333333,
+        9.59733333333333,
+        12.4416666666667,
+        13.362,
+        10.366,
+        10.3136666666667
+      ],
+      "calls_per_block": 3000,
+      "method": "advance_racks"
+    },
+    {
+      "armed": true,
+      "baseline_median_us": 257.464333333333,
+      "baseline_us_per_call": [
+        219.889,
+        195.341666666667,
+        192.196666666667,
+        285.652666666667,
+        358.227666666667,
+        290.556333333333,
+        307.398666666667,
+        265.779666666667,
+        239.605666666667,
+        216.128333333333,
+        254.643333333333,
+        260.285333333333
+      ],
+      "blocks_per_version": 12,
+      "cached_median_us": 110.9755,
+      "cached_us_per_call": [
+        84.8723333333333,
+        113.506333333333,
+        107.911333333333,
+        99.5286666666667,
+        82.1933333333333,
+        120.921666666667,
+        153.150666666667,
+        124.981,
+        93.0803333333333,
+        113.81,
+        144.262333333333,
+        108.444666666667
+      ],
+      "calls_per_block": 3000,
+      "method": "_physics_process"
+    }
+  ],
+  "scope": "Sequential headless CPU method calls; no rendering or Windows FPS measurement.",
+  "baseline_commit": "a119aa77258e7d91aa150b9fe8051795de1baa35"
+}

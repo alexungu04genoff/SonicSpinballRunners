@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Scan the floor Rings that can actually pay — 2026-11-11
+
+The floor pickup loop now uses cached global indices for the active Act, skipping neighboring Acts and nonempty rail IDs. Rail travel keeps its callback; positions, active flags and eligibility stay live, with the same swept radius math and source ordering. Rack and floor membership share the existing invalidation path. A signal-time owner/resident change uses an ordered fallback so the optimization preserves callback behavior too. All 380 checks and a 4,000-step reference comparison pass. The 160-Ring headless fixture visits 55 floor candidates and cuts RingField tick-method time by about 57% relative to the preceding rack-cache commit; Windows FPS is still unmeasured. Current version-9 bakes remain valid. See [the rules, reproduction and test limitations](RING_PICKUP_CACHE.md).
+
 ## Rack clocks know their members — 2026-11-11
 
 The next Ring pass caches rack membership and owner views in RingField. Normal 120 Hz updates visit active racks directly; expiry and respawn touch their members instead of rediscovering groups and rescanning resident Rings. Original dictionaries keep timers and home positions live. Assignment/additions invalidate automatically; resident synchronization explicitly invalidates its same-size bulk edits, and replaced data is released immediately. Pickup order, rail gates, scoring, timing, fades and safety rules stay current. Existing version-9 bakes remain valid. The focused and existing checks pass 359 assertions; a 4,000-step comparison matches old state and signal order. A three-Act headless CPU fixture reduces rack bookkeeping from about 190 to 11 µs and the RingField tick method by 45–48%; this is not Windows FPS evidence. See [the cache contract, checks and repeatable profiler](RING_RACK_CACHE.md).

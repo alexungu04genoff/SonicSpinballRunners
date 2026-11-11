@@ -1,5 +1,9 @@
 # Ring rack bookkeeping — 2026-11-11
 
+This records the rack-only pass at `a119aa7`. [Floor pickup candidates](RING_PICKUP_CACHE.md)
+now reuse its membership invalidation; edits to rail tags also require it. A
+profiler run against `9f50556` on newer code measures the cumulative changes.
+
 `RingField.advance_racks()` now caches rack membership and owner views. Each
 120 Hz update visits the active Act's racks directly. Expiration and respawn
 update that rack's cached members. The previous implementation scanned every
