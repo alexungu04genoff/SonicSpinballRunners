@@ -1,5 +1,16 @@
 # Rendering and streaming performance — 2026-10-30
 
+## Rigid gimmick shadow casters — 2026-11-11
+
+Eligible gates, switches, springs and routing hardware now share shadow geometry
+within each rigid parent. Their visible meshes, materials and animated parent
+states are retained; Slingshot rubber and unsupported leaves stay separate.
+The eight-theme Forward+/Vulkan hardware fixture has 30.4–47.3% fewer total draws
+across 24 pixel-identical comparisons. Whole RampMania caster surfaces fall from
+302 to 248 in Green Hill and 314 to 244 in Aquarium. These are fixture/inventory
+results, not whole-game FPS. No GI or shadow-quality change. Re-bake Prototype
+and Endless. See [the evidence and limitations](GIMMICK_SHADOWS.md).
+
 ## Direct private-material conversion — 2026-11-11
 
 Textured/vertex-colored standard materials now convert directly into their

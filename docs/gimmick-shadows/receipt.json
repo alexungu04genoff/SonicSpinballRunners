@@ -1,0 +1,390 @@
+{
+  "cascades": 4,
+  "metadata": {
+    "api": "1.4.305",
+    "command_line": [
+      "--script",
+      "res://tests/gimmick_shadow_capture.gd"
+    ],
+    "device": "llvmpipe (LLVM 19.1.7, 256 bits)",
+    "driver": "vulkan",
+    "engine": "4.7.2-stable (official)",
+    "renderer": "forward_plus",
+    "user_arguments": [
+      "--output=/workspace/work/gimmick-shadow-render-all"
+    ]
+  },
+  "msaa": 4,
+  "results": [
+    {
+      "combined_draws": 161,
+      "original_draws": 258,
+      "pixels_identical": true,
+      "pose": 0,
+      "theme": "green_hill"
+    },
+    {
+      "combined_draws": 143,
+      "original_draws": 234,
+      "pixels_identical": true,
+      "pose": 1,
+      "theme": "green_hill"
+    },
+    {
+      "combined_draws": 133,
+      "original_draws": 191,
+      "pixels_identical": true,
+      "pose": 2,
+      "theme": "green_hill"
+    },
+    {
+      "combined_draws": 149,
+      "original_draws": 264,
+      "pixels_identical": true,
+      "pose": 0,
+      "theme": "chemical_plant"
+    },
+    {
+      "combined_draws": 133,
+      "original_draws": 234,
+      "pixels_identical": true,
+      "pose": 1,
+      "theme": "chemical_plant"
+    },
+    {
+      "combined_draws": 128,
+      "original_draws": 195,
+      "pixels_identical": true,
+      "pose": 2,
+      "theme": "chemical_plant"
+    },
+    {
+      "combined_draws": 153,
+      "original_draws": 288,
+      "pixels_identical": true,
+      "pose": 0,
+      "theme": "rooftop_run"
+    },
+    {
+      "combined_draws": 133,
+      "original_draws": 234,
+      "pixels_identical": true,
+      "pose": 1,
+      "theme": "rooftop_run"
+    },
+    {
+      "combined_draws": 134,
+      "original_draws": 211,
+      "pixels_identical": true,
+      "pose": 2,
+      "theme": "rooftop_run"
+    },
+    {
+      "combined_draws": 154,
+      "original_draws": 261,
+      "pixels_identical": true,
+      "pose": 0,
+      "theme": "casino_night"
+    },
+    {
+      "combined_draws": 133,
+      "original_draws": 234,
+      "pixels_identical": true,
+      "pose": 1,
+      "theme": "casino_night"
+    },
+    {
+      "combined_draws": 130,
+      "original_draws": 193,
+      "pixels_identical": true,
+      "pose": 2,
+      "theme": "casino_night"
+    },
+    {
+      "combined_draws": 155,
+      "original_draws": 294,
+      "pixels_identical": true,
+      "pose": 0,
+      "theme": "aquarium_park"
+    },
+    {
+      "combined_draws": 133,
+      "original_draws": 234,
+      "pixels_identical": true,
+      "pose": 1,
+      "theme": "aquarium_park"
+    },
+    {
+      "combined_draws": 136,
+      "original_draws": 215,
+      "pixels_identical": true,
+      "pose": 2,
+      "theme": "aquarium_park"
+    },
+    {
+      "combined_draws": 154,
+      "original_draws": 261,
+      "pixels_identical": true,
+      "pose": 0,
+      "theme": "sky_sanctuary"
+    },
+    {
+      "combined_draws": 133,
+      "original_draws": 234,
+      "pixels_identical": true,
+      "pose": 1,
+      "theme": "sky_sanctuary"
+    },
+    {
+      "combined_draws": 130,
+      "original_draws": 193,
+      "pixels_identical": true,
+      "pose": 2,
+      "theme": "sky_sanctuary"
+    },
+    {
+      "combined_draws": 154,
+      "original_draws": 261,
+      "pixels_identical": true,
+      "pose": 0,
+      "theme": "ice_cap"
+    },
+    {
+      "combined_draws": 133,
+      "original_draws": 234,
+      "pixels_identical": true,
+      "pose": 1,
+      "theme": "ice_cap"
+    },
+    {
+      "combined_draws": 130,
+      "original_draws": 193,
+      "pixels_identical": true,
+      "pose": 2,
+      "theme": "ice_cap"
+    },
+    {
+      "combined_draws": 175,
+      "original_draws": 282,
+      "pixels_identical": true,
+      "pose": 0,
+      "theme": "lava_reef"
+    },
+    {
+      "combined_draws": 133,
+      "original_draws": 234,
+      "pixels_identical": true,
+      "pose": 1,
+      "theme": "lava_reef"
+    },
+    {
+      "combined_draws": 144,
+      "original_draws": 207,
+      "pixels_identical": true,
+      "pose": 2,
+      "theme": "lava_reef"
+    }
+  ],
+  "shadow_atlas": 8192,
+  "inventory": [
+    {
+      "theme": "green_hill",
+      "original_caster_nodes": 287,
+      "combined_caster_nodes": 240,
+      "original_caster_surfaces": 302,
+      "combined_caster_surfaces": 248,
+      "bounds_before": "[P: (0.0, -1.45, 0.0), S: (6.0, 2.118769, 8.133829)]",
+      "bounds_after": "[P: (0.0, -1.45, 0.0), S: (6.0, 2.118769, 8.133829)]"
+    },
+    {
+      "theme": "chemical_plant",
+      "original_caster_nodes": 305,
+      "combined_caster_nodes": 254,
+      "original_caster_surfaces": 320,
+      "combined_caster_surfaces": 262,
+      "bounds_before": "[P: (0.0, -1.45, 0.0), S: (6.0, 2.19016, 8.133829)]",
+      "bounds_after": "[P: (0.0, -1.45, 0.0), S: (6.0, 2.19016, 8.133829)]"
+    },
+    {
+      "theme": "rooftop_run",
+      "original_caster_nodes": 297,
+      "combined_caster_nodes": 236,
+      "original_caster_surfaces": 312,
+      "combined_caster_surfaces": 244,
+      "bounds_before": "[P: (0.0, -1.45, 0.0), S: (6.0, 2.118769, 8.133829)]",
+      "bounds_after": "[P: (0.0, -1.45, 0.0), S: (6.0, 2.118769, 8.133829)]"
+    },
+    {
+      "theme": "casino_night",
+      "original_caster_nodes": 288,
+      "combined_caster_nodes": 241,
+      "original_caster_surfaces": 303,
+      "combined_caster_surfaces": 249,
+      "bounds_before": "[P: (0.0, -1.45, 0.0), S: (6.0, 2.118769, 8.133829)]",
+      "bounds_after": "[P: (0.0, -1.45, 0.0), S: (6.0, 2.118769, 8.133829)]"
+    },
+    {
+      "theme": "sky_sanctuary",
+      "original_caster_nodes": 288,
+      "combined_caster_nodes": 241,
+      "original_caster_surfaces": 303,
+      "combined_caster_surfaces": 249,
+      "bounds_before": "[P: (0.0, -1.45, 0.0), S: (6.0, 2.118769, 8.133829)]",
+      "bounds_after": "[P: (0.0, -1.45, 0.0), S: (6.0, 2.118769, 8.133829)]"
+    },
+    {
+      "theme": "ice_cap",
+      "original_caster_nodes": 288,
+      "combined_caster_nodes": 241,
+      "original_caster_surfaces": 303,
+      "combined_caster_surfaces": 249,
+      "bounds_before": "[P: (0.0, -1.45, 0.0), S: (6.0, 2.118769, 8.133829)]",
+      "bounds_after": "[P: (0.0, -1.45, 0.0), S: (6.0, 2.118769, 8.133829)]"
+    },
+    {
+      "theme": "lava_reef",
+      "original_caster_nodes": 295,
+      "combined_caster_nodes": 248,
+      "original_caster_surfaces": 310,
+      "combined_caster_surfaces": 256,
+      "bounds_before": "[P: (0.0, -1.45, 0.0), S: (6.0, 2.118769, 8.133829)]",
+      "bounds_after": "[P: (0.0, -1.45, 0.0), S: (6.0, 2.118769, 8.133829)]"
+    },
+    {
+      "theme": "aquarium_park",
+      "original_caster_nodes": 299,
+      "combined_caster_nodes": 236,
+      "original_caster_surfaces": 314,
+      "combined_caster_surfaces": 244,
+      "bounds_before": "[P: (0.0, -1.45, 0.0), S: (6.0, 2.118769, 8.133829)]",
+      "bounds_after": "[P: (0.0, -1.45, 0.0), S: (6.0, 2.118769, 8.133829)]"
+    }
+  ],
+  "baseline_commit": "29093fe563339d8c6b8a5e5ea00706fc13f9f8c8",
+  "limitations": [
+    "Software Vulkan fixture; not Windows FPS or canonical Prototype capture.",
+    "Caster surfaces are inventory, not measured per-frame shadow draws.",
+    "Additional shadow geometry consumes memory; source triangles and normals retained."
+  ],
+  "verification": {
+    "checks": [
+      {
+        "name": "gimmick_geometry",
+        "checks": 1450,
+        "summary": "GIMMICK_SHADOW_REGRESSION | checks=1450 failures=0",
+        "expected_engine_errors": 0,
+        "log_sha256": "338ec9e00fdc662160ac3f3e5ce31ceb204b71931c676e828463c70d13f31a49"
+      },
+      {
+        "name": "pinball_shadows",
+        "checks": 16,
+        "summary": "PINBALL_SHADOW_REGRESSION | checks=16 failures=0",
+        "expected_engine_errors": 0,
+        "log_sha256": "6329b4f7b04d489f5df0bd667f2d09f044b51ec34de25d1317ee16b9ae379d27"
+      },
+      {
+        "name": "authored_gimmicks",
+        "checks": 93,
+        "summary": "RESULT | Authored gimmicks | 93 checks | 0 failures",
+        "expected_engine_errors": 3,
+        "log_sha256": "54fc7af97b0c5ec7e4f23652c1efcc87d40514cbb18caa98f51f7484a4d505f3"
+      },
+      {
+        "name": "routing_gimmicks",
+        "checks": 103,
+        "summary": "RESULT | Gimmick batch | 103 checks | 0 failures",
+        "expected_engine_errors": 0,
+        "log_sha256": "425a031435def5d921fffbfec01bfac2b455636269571e74307d7447eaacf39f"
+      },
+      {
+        "name": "device_shadows",
+        "checks": 135,
+        "summary": "DEVICE_SHADOWS | checks=135 failures=0",
+        "expected_engine_errors": 0,
+        "log_sha256": "8ec3a3a1209fa226f6601291478989cc07fd7a189ebd86633c6125c000ca85cc"
+      },
+      {
+        "name": "warm_manifest",
+        "checks": 30,
+        "summary": "ENDLESS_MANIFEST_REGRESSION | checks=30 failures=0",
+        "expected_engine_errors": 0,
+        "log_sha256": "70eb5853a94e88f3c818e64390524fd83226aadba81aeee79beb45c0f580a272"
+      },
+      {
+        "name": "retirement",
+        "checks": 72,
+        "summary": "ENDLESS_RETIREMENT_REGRESSION | checks=72 | failures=0",
+        "expected_engine_errors": 0,
+        "log_sha256": "211503a2fe5b09eb7199cbbf1031ab91f613c4339a9a0dfecd0cf704a050b8be"
+      },
+      {
+        "name": "materials",
+        "checks": 112,
+        "summary": "RESULT | Stream material staging | 112 checks | 0 failures",
+        "expected_engine_errors": 0,
+        "log_sha256": "e56e8ba1782590772af053f347f065a8080d79ad48bdd842bfb54565f3e2f741"
+      },
+      {
+        "name": "reuse",
+        "checks": 130,
+        "summary": "ENDLESS_REUSE_REGRESSION | checks=130 failures=0",
+        "expected_engine_errors": 0,
+        "log_sha256": "c9fc78317b46c10c9e54608343b7f83c0f4c22a53ca4bdc1e0247a1c1355c064"
+      },
+      {
+        "name": "contribution_green",
+        "checks": 36,
+        "summary": "RESULT | foreground contribution | 36 checks | 0 failures",
+        "expected_engine_errors": 0,
+        "log_sha256": "42e24daad1fa87567c9d4eb8ffe4d6fd1e9b34f1fe9242a1122bcfb605c9a93f"
+      },
+      {
+        "name": "contribution_roof",
+        "checks": 36,
+        "summary": "RESULT | foreground contribution | 36 checks | 0 failures",
+        "expected_engine_errors": 0,
+        "log_sha256": "9780b17f8ea333ca54016deebe6d5193a6f35b53d7c6ef3dbfc0061a38f3737c"
+      },
+      {
+        "name": "appearance_authority",
+        "checks": 70,
+        "summary": "RESULT | Prototype appearance regression | 70 checks | 0 failures",
+        "expected_engine_errors": 0,
+        "log_sha256": "4dce63fa7853c4a535708800f923b2d887a0b30f51af8f2233c2f712d8a3c43a"
+      }
+    ],
+    "total_assertions": 2283,
+    "tour": {
+      "act_sha256": "354650b389f23305a53f5fc97fa7346e24df02288a8074c1e0a5b282f9b8a09f",
+      "atomic_attachment": false,
+      "boundary_wait_ms": 0.0,
+      "cached_material_uniforms": true,
+      "cpu": {},
+      "engine": "4.7.2-stable (official)",
+      "fallbacks": 0,
+      "legacy_material_copies": false,
+      "max_build_ms": 242.816,
+      "seed": 18,
+      "sequence": 3,
+      "theme": "green_hill",
+      "tour_speed": 400.0
+    },
+    "canonical_capture": {
+      "theme": "green_hill",
+      "act": "RampMania",
+      "renderer": "Forward+/Vulkan llvmpipe",
+      "timeout_seconds": 180,
+      "exit_code": 124,
+      "completed": false
+    },
+    "tour_notes": "Headless lifecycle check overlapped software GPU capture. Timing is not an isolated performance comparison. Existing threaded-loader ObjectDB shutdown warning remains.",
+    "bakes": {
+      "RampMania_all_themes": 8,
+      "Green_Hill_Prototype": 5,
+      "Green_Hill_Endless": 7,
+      "Rooftop_Prototype": 5,
+      "Rooftop_Endless": 7
+    },
+    "source_notes": "Authored gimmicks deliberately corrupts a fixture; three expected resource-load errors verify failed reload preserves the live Act."
+  }
+}

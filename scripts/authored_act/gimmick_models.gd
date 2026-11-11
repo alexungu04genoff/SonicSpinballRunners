@@ -2,6 +2,7 @@ extends RefCounted
 ## Original procedural low-poly hardware. This file creates no physics objects.
 const Hardware := preload("res://scripts/atmosphere/hardware_palette.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
+const Shadows = preload("res://scripts/authored_act/gimmick_shadows.gd")
 const STYLES := {
  "green_hill": ["705339", "f5c65c", "69e4a3", "flap"],
  "chemical_plant": ["253549", "e7b54c", "43eeeb", "valve"],
@@ -22,6 +23,13 @@ static func build(p, parent: Node3D, item: Dictionary) -> Dictionary:
  parent.add_child(root)
  var palette: Array = STYLES.get(p._pinball_theme_id(), STYLES.green_hill)
  var style := {"body": Hardware.material(p, "mechanism_body", Color(palette[0])), "trim": Hardware.material(p, "mechanism_trim", Color(palette[1])), "light": Hardware.material(p, "mechanism_light", Color(palette[2]), 1.8), "kind": palette[3]}
+ var entry := _build_parts(p, root, item, style)
+ # Slingshot rubber is the one independently scaled mesh leaf. Other movement
+ # belongs to a parent (gate panel, spring pad, switch pad, diverter arm).
+ Shadows.combine(root, p.has_method("stream_checkpoint"), [entry.rubber] if entry.get("kind") == "slingshot" else [])
+ return entry
+
+static func _build_parts(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dictionary:
  match item.type:
   "one_way_gate": return _gate(p, root, item, style)
   "switch_target": return _switch(p, root, item, style)

@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Give rigid gimmicks one shadow per moving part — 2026-11-11
+
+Alex chose shadows and explicitly excluded GI. Gates, switches, springs and routing hardware now combine eligible opaque rigid siblings into shadow-only meshes under their existing parents. Visible source nodes/materials and emitter references remain; Slingshot rubber stays independent. Standard unsupported states fail open. Eight themes × three poses produce pixel-identical Forward+/Vulkan software captures with 30.4–47.3% fewer fixture draws; RampMania caster-surface inventory also falls. All 2,283 targeted assertions pass, and the fast Green Hill tour has zero waits/fallbacks. The full Prototype software capture times out at 180 seconds, so Windows appearance/FPS remains unverified. Extra shadow geometry trades memory for submissions. Re-bake Prototype and Endless; format stays version 9. [Details and receipts](GIMMICK_SHADOWS.md).
+
 ## Skip the material that would immediately be replaced — 2026-11-11
 
 Atmosphere attachment now converts eligible standard materials straight into their private ShaderMaterial. It keeps the required flat/emissive copies and existing source/metadata/next-pass ownership. Only seven redundant native copies occur across the eight RampMania fixtures: five Green Hill, one Casino, one Ice. The sampled conversion is about 30% faster; whole Green Hill attachment is only about 3% lower with overlapping distributions, so this is a small cleanup. Both fast tours keep zero boundary waits/rebuilds. The cold shader audit finds that the existing adapter cache already handles reuse; first native program creation still costs several milliseconds, and Windows driver profiling remains outstanding. Current bakes remain valid. See [the measurements and checks](MATERIAL_COPY_CPU.md).
