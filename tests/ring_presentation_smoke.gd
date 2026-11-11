@@ -6,6 +6,7 @@ var checks := 0
 var failures := 0
 var events := 0
 const STEP := 1.0 / 120.0
+const PICKUP_SCORE := 3 * Scorecraft.RING_POINTS
 
 func _initialize() -> void:
  call_deferred("run")
@@ -88,7 +89,7 @@ func run() -> void:
  check(events == 0 and presentation.ring_visuals[0].position == home and presentation.ring_visuals[0].visible, "Unclaimed rings stay at home outside magnet radius")
 
  claim_three()
- check(events == 3 and game.score == 75 and game.rings_collected == 3 and game.special_meter == 15 and presentation.ring_pickups.size() == 3 and presentation.ring_visuals[0].visible, "One fast sweep awards three rings immediately while all three visuals remain alive")
+ check(events == 3 and game.score == PICKUP_SCORE and game.rings_collected == 3 and game.special_meter == 15 and presentation.ring_pickups.size() == 3 and presentation.ring_visuals[0].visible, "One fast sweep awards three rings immediately while all three visuals remain alive")
  await capture("claimed")
  presentation._process(0.05)
  var early_distance: float = presentation.ring_visuals[0].position.distance_to(home)
@@ -115,7 +116,7 @@ func run() -> void:
  for i in 3:
   all_arrived = all_arrived and not presentation.ring_visuals[i].visible and presentation.ring_visuals[i].position.is_equal_approx(presentation.ball_visual.position)
  presentation._process(1.0)
- check(all_arrived and presentation.ring_pickups.is_empty() and events == 3 and game.score == 75 and game.special_meter == 15, "All flights reach the current ball at 0.20 seconds and vanish without duplicate rewards")
+ check(all_arrived and presentation.ring_pickups.is_empty() and events == 3 and game.score == PICKUP_SCORE and game.special_meter == 15, "All flights reach the current ball at 0.20 seconds and vanish without duplicate rewards")
  await capture("arrived")
 
  prepare()
@@ -123,13 +124,13 @@ func run() -> void:
  presentation._process(0.08)
  game.reset_ball(false)
  presentation._process(0.01)
- check(presentation.ring_pickups.is_empty() and not presentation.ring_visuals[0].visible and not field.rings[0].active and game.score == 75 and game.rings_collected == 3, "Ball reset clears flights and keeps earned rings instead of flying to serve")
+ check(presentation.ring_pickups.is_empty() and not presentation.ring_visuals[0].visible and not field.rings[0].active and game.score == PICKUP_SCORE and game.rings_collected == 3, "Ball reset clears flights and keeps earned rings instead of flying to serve")
 
  prepare()
  claim_three()
  game.ball.position = Vector2(400, 1460)
  game._physics_process(STEP)
- check(game.respawn_time > 0 and presentation.ring_pickups.is_empty() and not presentation.ring_visuals[0].visible and game.score == 75, "Drain clears active flights without undoing rewards")
+ check(game.respawn_time > 0 and presentation.ring_pickups.is_empty() and not presentation.ring_visuals[0].visible and game.score == PICKUP_SCORE, "Drain clears active flights without undoing rewards")
  for i in 79:
   game._physics_process(STEP)
  check(game.ball.serve_pending and presentation.ring_pickups.is_empty(), "Automatic respawn does not resurrect old flights")
