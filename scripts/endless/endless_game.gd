@@ -432,6 +432,7 @@ func _activate(act: RefCounted, initial := false) -> void:
 
 func _sync_resident() -> void:
  presentation.ring_pickups.clear()
+ presentation.ring_spin.clear()
  presentation.flash_times.clear()
  flippers.clear()
  presentation.flipper_visuals.clear()
@@ -453,6 +454,7 @@ func _sync_resident() -> void:
   for index: int in act.recipe.retracted: presentation.flipper_retracted_visuals.append(act.nodes[index])
   for index: int in act.recipe.rings:
    presentation.ring_visuals.append(act.nodes[index])
+   presentation.ring_spin.append(act.nodes[index])
    _ring_visual_owner_ids.append(act.visual.get_instance_id())
   ring_field.rings.append_array(act.ring_data)
   for i: int in act.recipe.bumpers:

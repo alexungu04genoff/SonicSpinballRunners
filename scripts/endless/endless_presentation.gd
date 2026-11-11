@@ -2,6 +2,7 @@ extends "res://scripts/presentation.gd"
 ## Persistent camera and player presentation; streamed roots own their local art.
 var touring := false
 var tour_focus := Vector2.ZERO
+var ring_spin := RingSpin.new()
 
 func build_authored(_runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
  authored_mode = true
@@ -31,6 +32,7 @@ func _on_ring_claimed(index: int) -> void:
  var visual := ring_visuals[index]
  visual.global_position = map_point(ring_field.rings[index].position, ring_height() + float(ring_field.rings[index].get("height", 0.0)) * SCALE)
  visual.scale = Vector3.ONE
+ visual.rotation = Vector3.ZERO if ring_spin.is_gpu(index) else Vector3(PI * 0.5, ring_spin_phase, 0)
  visual.visible = true
  ring_pickups[index] = {"start": visual.global_position, "elapsed": 0.0}
 
@@ -41,21 +43,25 @@ func clear_ring_pickups() -> void:
   ring_visuals[i].global_position = map_point(ring_field.rings[i].position, ring_height() + float(ring_field.rings[i].get("height", 0.0)) * SCALE)
   ring_visuals[i].scale = Vector3.ONE
 
+func _spin_rings(delta: float) -> void:
+ ring_spin_phase = fposmod(ring_spin_phase + delta * TAU * 0.75, TAU)
+ ring_spin.spin(ring_spin_phase)
+ for i: int in ring_spin.fallback_indices: ring_visuals[i].rotation = Vector3(PI * 0.5, ring_spin_phase, 0)
+
 func _update_ring_visuals(delta: float) -> void:
  _spin_rings(delta)
- for i in ring_visuals.size():
+ for i: int in ring_spin.fallback_indices:
+  if not ring_pickups.has(i): ring_visuals[i].visible = ring_field.rings[i].active
+ for i: int in ring_pickups.keys():
   var visual := ring_visuals[i]
-  if ring_pickups.has(i):
-   var pickup: Dictionary = ring_pickups[i]
-   pickup.elapsed = minf(float(pickup.elapsed) + delta, RING_PICKUP_DURATION)
-   var progress: float = pickup.elapsed / RING_PICKUP_DURATION
-   visual.global_position = (pickup.start as Vector3).lerp(ball_visual.global_position, progress * progress)
-   visual.scale = Vector3.ONE * lerpf(1.0, 0.25, smoothstep(0.7, 1.0, progress))
-   if progress >= 1.0:
-    visual.visible = false
-    ring_pickups.erase(i)
-  else:
-   visual.visible = ring_field.rings[i].active
+  var pickup: Dictionary = ring_pickups[i]
+  pickup.elapsed = minf(float(pickup.elapsed) + delta, RING_PICKUP_DURATION)
+  var progress: float = pickup.elapsed / RING_PICKUP_DURATION
+  visual.global_position = (pickup.start as Vector3).lerp(ball_visual.global_position, progress * progress)
+  visual.scale = Vector3.ONE * lerpf(1.0, 0.25, smoothstep(0.7, 1.0, progress))
+  if progress >= 1.0:
+   visual.visible = false
+   ring_pickups.erase(i)
 
 func build_study(_parent: Node3D, _origin: Vector3) -> void:
  pass

@@ -1,5 +1,15 @@
 # Rendering and streaming performance — 2026-10-30
 
+## Shared Ring rotation — 2026-11-11
+
+Prototype/Endless now update one shader rotation basis per shared Ring material,
+instead of every resting Ring's transform and visibility each frame. Per-Ring
+culling and Forward+ automatic instancing remain. A small manual-MultiMesh trial
+increased submissions and was rejected. All eight gold materials pass 4× MSAA
+Forward+/Vulkan software-rendered comparisons; Windows timing remains to be
+measured. Fresh version-9 bakes are required. See [Ring spin](RING_SPIN.md) for
+the bounds contract, lifecycle checks and same-bake `--ring-spin=legacy` comparison.
+
 ## HUD, documentation imports and packed Chemical masks — 2026-11-11
 
 This pass starts from `8ff074581333ee543495554bd46f5c5a9ce17636`. It keeps the

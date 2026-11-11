@@ -4,6 +4,8 @@ const RailRings = preload("res://scripts/authored_act/rail_rings.gd")
 const RailPath = preload("res://scripts/authored_act/rail_path.gd")
 const RingField = preload("res://scripts/ring_field.gd")
 const ActData = preload("res://scripts/act_editor/act_geometry.gd")
+class RailRun extends "res://scripts/prototype/zone_run.gd":
+ func _default_run_seed() -> int: return 0 # RampMania, Secret Entry, Reverse C.
 var checks := 0
 var failures := 0
 
@@ -69,9 +71,11 @@ func _initialize() -> void:
  quit(1 if failures else 0)
 
 func stream_checks() -> void:
- var game := preload("res://scripts/prototype/zone_run.gd").new()
- var path := "res://data/acts/Authored/RampMania.tres"
- game.source_paths = [path, path, path]
+ var game := RailRun.new()
+ var config := game.RunPlan.Configuration.new(["res://data/acts/Authored/RampMania.tres", "res://data/acts/Authored/Secret Entry.tres", "res://data/acts/Authored/Reverse C Spring.tres"])
+ config.zone_count = 1
+ config.selected_theme_ids = ["green_hill"]
+ game.run_configuration = config
  root.add_child(game)
  var deadline := Time.get_ticks_msec() + 180000
  while not game.started and game.last_source_error.is_empty() and Time.get_ticks_msec() < deadline: await process_frame
@@ -92,6 +96,7 @@ func stream_checks() -> void:
    var expected: Vector3 = game.presentation.map_point(ring.position, game.presentation.ring_height() + float(ring.get("height", 0.0)) * game.presentation.SCALE)
    positions_match = positions_match and game.presentation.ring_visuals[i].global_position.is_equal_approx(expected)
   check(positions_match, "Baked ring nodes match runtime centers and elevation in both streamed Acts")
+  check(game.library.fallback_builds == 0 and game.presentation.ring_spin.fallback_indices.is_empty(), "Disk-loaded rails use GPU spin with zero runtime rebuilds")
   var count_before: int = game.rings_collected
   for item: Dictionary in game.resident[1].runtime.mechanics.items:
    if item.type == "elevated_rail": game.resident[1].runtime.mechanics.rail_traveled.emit(item.object_id, 0.0, item.path.length)
@@ -103,6 +108,14 @@ func stream_checks() -> void:
    if item.type == "elevated_rail": game.active.runtime.mechanics.rail_traveled.emit(item.object_id, 0.0, item.path.length)
   check(active_count > 0 and game.rings_collected - count_before == active_count, "Real active-Act signal wiring awards every rail ring")
   check(game.active.ring_data.filter(func(ring): return not ring.has("rail_id")).all(func(ring): return ring.active), "Streamed rail travel leaves floor rings untouched")
+  game.presentation.set_process(false)
+  game.presentation._update_ring_visuals(0.21)
+  var completed := true
+  for i in game.ring_field.rings.size():
+   if not game.ring_field.rings[i].active: completed = completed and not game.presentation.ring_visuals[i].visible
+  check(completed and game.presentation.ring_pickups.is_empty(), "GPU rail pickup flights complete and hide individually")
+  game.ring_field.reset_rings()
+  check(game.presentation.ring_visuals.all(func(node): return node.visible), "Rail rack reset restores resting Ring visibility through its signal")
  await game.prepare_to_close()
  game.free()
  await process_frame

@@ -1,6 +1,6 @@
 extends Resource
 ## Derived data only. Never owns or edits the authored document.
-const VERSION := 8
+const VERSION := 9
 const ScenerySettings := preload("res://scripts/themes/scenery_settings.gd")
 const DEPENDENCIES := ["res://scripts/presentation.gd", "res://scripts/themes/themed_presentation.gd",
  "res://scripts/themes/terrain_border.gd", "res://scripts/endless/template_presenter.gd",

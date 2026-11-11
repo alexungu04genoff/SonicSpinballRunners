@@ -113,6 +113,7 @@ func _moving_objects(runtime: Dictionary) -> void:
  for ring: Dictionary in runtime.get("ring_records", []):
   ring_visuals.append(mesh_node(torus, gold, map_point(ring.position, ring_height() + float(ring.get("height", 0.0)) * SCALE)))
   await stream_checkpoint()
+ RingSpin.prepare(ring_visuals)
  for flipper: PlaygroundFlipper in runtime.flippers:
   var pivot := Node3D.new()
   pivot.position = map_point(flipper.position)

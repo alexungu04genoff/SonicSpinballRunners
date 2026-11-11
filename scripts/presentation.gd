@@ -3,6 +3,7 @@ extends Node3D
 ## No CollisionObject3D exists in this tree. This mapping is used for every visual.
 const PinballModels = preload("res://scripts/pinball_models.gd")
 const Density = preload("res://scripts/presentation_density.gd")
+const RingSpin = preload("res://scripts/ring_spin.gd")
 ## Optional slot overrides: rubber, face, trim, mark, paddle and base. Rebuild to apply.
 @export var pinball_palette: Dictionary = {}
 var _pinball_materials: Dictionary = {}

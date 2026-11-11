@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Let Rings spin together — 2026-11-11
+
+The web Ring pass moves shared rotation into a vertex shader for Prototype and Endless. Resting nodes keep fixed CPU transforms; individual pickup flights, resets, rails and owning-root visibility stay with their existing rules. Forward+ already auto-instances ordinary Rings: small manual MultiMeshes increased the fixture's submissions, so that experiment was dropped. The retained path keeps individual culling and automatic instancing, with one basis update per actual shared material. All eight gold materials pass rendered Forward+/Vulkan comparisons at 4× MSAA on software Vulkan; this is shader/instancing evidence, not Windows FPS evidence. Exact mesh-derived bounds keep foreground contribution enabled. Bake version 9 requires fresh Prototype and Endless recipes. `--ring-spin=legacy` provides an unsaved same-bake comparison. See [the implementation, checks and limits](RING_SPIN.md).
+
 ## Keep the right Acts drawing — 2026-11-11
 
 The web visibility follow-up gives Rooftop's grass an explicit shader/CPU contract. Its existing 7.5 px maximum approved shell heights stay unchanged; shader offsets are bounded to ±25 px, and attachment applies that envelope to Godot's native mesh culler and our cached Act/motion bounds. The exact program, existing shell tag, private atmosphere copies and normal bake conversion are checked together. Unknown deformation still fails open. Ring indices also cache their owning root IDs: a pickup keeps that root visible without waking every neighbor, while stale/missing owners keep the broad safety hold. Loading, drafts, transfers, physics, residency and background fades stay with their existing rules. See [the current contribution policy and checks](FOREGROUND_CONTRIBUTION.md#rooftop-bounds-and-pickup-ownership--2026-11-11). Refresh Rooftop bakes after this source change; Windows rendering/timing remains a separate check.

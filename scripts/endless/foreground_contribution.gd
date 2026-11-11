@@ -4,6 +4,7 @@ extends RefCounted
 const MechanicsVisual = preload("res://scripts/authored_act/mechanics_presentation.gd")
 const Flicky = preload("res://scripts/decor/island_flicky.gd")
 const GrassBounds = preload("res://scripts/themes/rooftop_grass_bounds.gd")
+const RingSpin = preload("res://scripts/ring_spin.gd")
 const GUARD := 0.25 # 25 table pixels, including halo/shell displacement and edge filtering.
 var bounds := AABB()
 var valid := false
@@ -61,11 +62,16 @@ func _collect(node: Node) -> void:
  if node is Node3D and node.top_level: supported = false
  if node is GeometryInstance3D:
   if node is MeshInstance3D or node is MultiMeshInstance3D or node is Label3D:
-   var box: AABB = node.get_aabb()
-   if node.custom_aabb != AABB(): box = box.merge(node.custom_aabb)
+   var rotating := _ring_material(node.material_override) or _ring_material(node.material_overlay)
    var mesh: Mesh
    if node is MeshInstance3D: mesh = node.mesh
    elif node is MultiMeshInstance3D and node.multimesh != null: mesh = node.multimesh.mesh
+   if mesh != null:
+    for surface in mesh.get_surface_count():
+     rotating = rotating or _ring_material(node.get_active_material(surface) if node is MeshInstance3D else mesh.surface_get_material(surface))
+   if rotating and not RingSpin.bound(node): supported = false
+   var box: AABB = node.get_aabb()
+   if node.custom_aabb != AABB(): box = box.merge(node.custom_aabb)
    var displacement := maxf(_check_material(node.material_override), _check_material(node.material_overlay))
    if mesh != null:
     for surface in mesh.get_surface_count():
@@ -80,6 +86,10 @@ func _collect(node: Node) -> void:
  elif node is Light3D or node is Decal or node is ReflectionProbe or node is AnimationMixer or node is Skeleton3D:
   supported = false
  for child: Node in node.get_children(): _collect(child)
+
+func _ring_material(material: Material) -> bool:
+ if material == null: return false
+ return RingSpin.is_material(material) or _ring_material(material.next_pass)
 
 func _check_material(material: Material) -> float:
  if material == null: return 0.0
@@ -96,6 +106,7 @@ func _check_material(material: Material) -> float:
    # Recognize only the shared clamped program. Remaining code/includes still
    # undergo the ordinary unknown-deformation check; a tag alone grants nothing.
    code = code.replace(grass_vertex, "")
+  if RingSpin.is_material(material): code = code.replace(RingSpin.vertex_code(), "")
   var key: String = material.shader.resource_path.get_base_dir() + "\n" + code
   if not _shader_checks.has(key): _shader_checks[key] = _shader_bounded(code, material.shader.resource_path.get_base_dir(), {})
   if not _shader_checks[key]: supported = false

@@ -114,6 +114,7 @@ func run() -> void:
    var owner_root := instance_from_id(game._ring_visual_owner_ids[index]) as Node3D
    owners_valid = owners_valid and is_instance_valid(owner_root) and owner_root.is_ancestor_of(p.ring_visuals[index])
   check(owners_valid, "Resident registration maps every Ring index to its actual visual root")
+  check(p.ring_spin.gpu_rings.size() == p.ring_visuals.size() and not p.ring_spin.materials.is_empty() and p.ring_spin.fallback_indices.is_empty(), "Real streamed Rings register shared GPU materials without losing per-Ring ownership")
   var active_ring := game._ring_visual_owner_ids.find(game.active.visual.get_instance_id())
   p._on_ring_claimed(active_ring)
   game._update_foreground_contribution()
