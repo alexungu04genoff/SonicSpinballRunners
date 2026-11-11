@@ -37,6 +37,9 @@ var combo_glow: Node
 var fps_label: Label
 var fps_update := 0.0
 var telemetry := preload("res://scripts/prototype/run_telemetry.gd").new()
+var _hud_buddy_levels := {}
+var _hud_rescues_used := {}
+var _hud_buddy_text := ""
 
 func effective_configuration() -> RefCounted:
  if run_configuration == null: run_configuration = RunPlan.Configuration.new(source_paths if not source_paths.is_empty() else RunPlan.source_paths())
@@ -391,8 +394,7 @@ func prepare_to_close() -> void:
   transfer = null
  await super.prepare_to_close()
 
-func _process(delta: float) -> void:
- super._process(delta)
+func _update_hud(delta: float) -> void:
  fps_update -= delta
  if is_instance_valid(fps_label) and fps_update <= 0.0:
   fps_label.text = "%d FPS" % Engine.get_frames_per_second()
@@ -402,21 +404,34 @@ func _process(delta: float) -> void:
   goal_pending = false
   _observe_authored_motion(active.runtime.goal_ring.center, active.runtime.goal_ring.center)
  heading.text = progress_text() + "\n" + act_title(active)
- detail.text = "ACT   %s\nTOTAL   %d%s\nBALLS   %s     SPECIAL   %s" % [act_score_text(), score, "     COMBO ×%d" % scorecraft.multiplier if scorecraft.multiplier >= 2 else "", "Unlimited" if practice_mode else "%d / %d" % [balls_remaining, starting_balls], "READY" if special_meter >= 100.0 else "%d%%" % int(special_meter)]
- detail.text += "\n" + specials.action.label()
- if not buddies.levels.is_empty(): detail.text += "\n" + buddies.summary()
- if scorecraft.ring_link_available:
-  detail.text += "\nRING LINK %d/%d" % [scorecraft.ring_progress, scorecraft.config.rings_per_link]
- elif scorecraft.combo_feedback_remaining > 0.0:
-  detail.text += "\n" + scorecraft.combo_feedback
- if not scoring_feedback_text().is_empty(): detail.text += "\n" + scoring_feedback_text()
- var bonus := Buddies.total(scorecraft.last_award.get("buddy_bonuses", {}))
- if bonus > 0 and scorecraft.feedback_remaining > 0.0: detail.text += "\nBuddy bonus included: +%d" % bonus
- hint.text = ""
- if is_instance_valid(transfer): hint.text = "Returning to spawn…" if transfer.drain else "Next Act…"
- if respawn_time >= 0.0: hint.text = "BALL LOST · Retrying…"
- if loading_boundary: hint.text = "Preparing the next Act…"
- hint.visible = not hint.text.is_empty()
+ if _hud_buddy_levels != buddies.levels or _hud_rescues_used != buddies.rescues_used:
+  _hud_buddy_levels = buddies.levels.duplicate()
+  _hud_rescues_used = buddies.rescues_used.duplicate()
+  _hud_buddy_text = buddies.summary() if not buddies.levels.is_empty() else ""
+ var act_text := act_score_text()
+ var action_text := specials.action.label()
+ var feedback := scoring_feedback_text()
+ var combo_feedback := scorecraft.combo_feedback if scorecraft.combo_feedback_remaining > 0.0 else ""
+ var bonus := Buddies.total(scorecraft.last_award.get("buddy_bonuses", {})) if scorecraft.feedback_remaining > 0.0 else 0
+ var state: Array = [act_text, score, scorecraft.multiplier, practice_mode, balls_remaining, starting_balls, int(special_meter), special_meter >= 100.0, action_text, _hud_buddy_text, scorecraft.ring_link_available, scorecraft.ring_progress, scorecraft.config.rings_per_link, combo_feedback, feedback, bonus]
+ if state != _hud_detail_state:
+  _hud_detail_state = state
+  var text := "ACT   %s\nTOTAL   %d%s\nBALLS   %s     SPECIAL   %s" % [act_text, score, "     COMBO ×%d" % scorecraft.multiplier if scorecraft.multiplier >= 2 else "", "Unlimited" if practice_mode else "%d / %d" % [balls_remaining, starting_balls], "READY" if special_meter >= 100.0 else "%d%%" % int(special_meter)]
+  text += "\n" + action_text
+  if not _hud_buddy_text.is_empty(): text += "\n" + _hud_buddy_text
+  if scorecraft.ring_link_available:
+   text += "\nRING LINK %d/%d" % [scorecraft.ring_progress, scorecraft.config.rings_per_link]
+  elif not combo_feedback.is_empty():
+   text += "\n" + combo_feedback
+  if not feedback.is_empty(): text += "\n" + feedback
+  if bonus > 0: text += "\nBuddy bonus included: +%d" % bonus
+  detail.text = text
+ var hint_text := ""
+ if is_instance_valid(transfer): hint_text = "Returning to spawn…" if transfer.drain else "Next Act…"
+ if respawn_time >= 0.0: hint_text = "BALL LOST · Retrying…"
+ if loading_boundary: hint_text = "Preparing the next Act…"
+ hint.text = hint_text
+ hint.visible = not hint_text.is_empty()
 
 func _build_hud() -> void:
  hud = CanvasLayer.new()

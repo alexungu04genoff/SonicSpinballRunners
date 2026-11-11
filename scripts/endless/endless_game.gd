@@ -55,6 +55,8 @@ var closing := false
 var foreground_contribution_enabled := not "--foreground-contribution=legacy" in OS.get_cmdline_user_args()
 var foreground_contributing := 0
 var foreground_update_usec := 0
+var _diagnostics_update := 0.0
+var _hud_detail_state: Array = []
 
 func _source_paths() -> Array:
  return Plan.PATHS
@@ -293,15 +295,35 @@ func _process(delta: float) -> void:
   if touring and not get_tree().paused: _tour_step(delta)
   _update_backgrounds()
   _retire_behind()
-  heading.text = "ZONE %d · %s · ACT %d / 3" % [active.plan.zone + 1, library.themes[active.plan.theme].display_name.to_upper(), active.plan.act + 1]
-  if loading_boundary:
-   detail.text = "Waiting for the next Act to finish loading…" if library.error.is_empty() else library.error
-  else:
-   detail.text = "%s · %s\nACT SCORE  %s     TOTAL SCORE  %d     COMBO ×%d\n%s" % [active.document.title, "Camera tour — ball parked" if touring else "Unlimited checkpoint retries", act_score_text(), score, scorecraft.multiplier, status_message]
-   if not scoring_feedback_text().is_empty(): detail.text += "\n" + scoring_feedback_text()
-  diagnostics.text = "Seed %d | Resident %d | Queued %d | Build %.2f ms (max %.2f) | Frame max %.1f ms\nDisk Acts %d · Disk themes %d · Runtime rebuilds %d · Last prepare %.2f s" % [run_seed, resident.size(), pending.size() + int(building != null), last_build_ms, max_build_ms, max_frame_ms, library.visual_bake_hits, library.theme_bake_hits, library.fallback_builds, library.last_prepare_ms / 1000.0]
-  diagnostics.text += "\nTheme preloads %d · Last %.2f s%s" % [library.theme_prefetches, library.last_theme_prepare_ms / 1000.0, " · Preparing " + library.preparing_theme if not library.preparing_theme.is_empty() else ""]
-  diagnostics.text += "\n" + scoring_breakdown_text()
+  _update_hud(delta)
+  _update_diagnostics(delta)
+
+func _update_hud(_delta: float) -> void:
+ # Prototype supplies its own HUD through this hook after shared streaming work.
+ heading.text = "ZONE %d · %s · ACT %d / 3" % [active.plan.zone + 1, library.themes[active.plan.theme].display_name.to_upper(), active.plan.act + 1]
+ var act_text := act_score_text()
+ var feedback := scoring_feedback_text()
+ var state: Array = [loading_boundary, library.error, active.document.title, touring, act_text, score, scorecraft.multiplier, status_message, feedback]
+ if state == _hud_detail_state: return
+ _hud_detail_state = state
+ var text: String
+ if loading_boundary:
+  text = "Waiting for the next Act to finish loading…" if library.error.is_empty() else library.error
+ else:
+  text = "%s · %s\nACT SCORE  %s     TOTAL SCORE  %d     COMBO ×%d\n%s" % [active.document.title, "Camera tour — ball parked" if touring else "Unlimited checkpoint retries", act_text, score, scorecraft.multiplier, status_message]
+  if not feedback.is_empty(): text += "\n" + feedback
+ detail.text = text
+
+func _update_diagnostics(delta: float) -> void:
+ if not diagnostics.is_visible_in_tree():
+  _diagnostics_update = 0.0
+  return
+ _diagnostics_update -= delta
+ if _diagnostics_update > 0.0: return
+ _diagnostics_update = 0.25
+ var text := "Seed %d | Resident %d | Queued %d | Build %.2f ms (max %.2f) | Frame max %.1f ms\nDisk Acts %d · Disk themes %d · Runtime rebuilds %d · Last prepare %.2f s" % [run_seed, resident.size(), pending.size() + int(building != null), last_build_ms, max_build_ms, max_frame_ms, library.visual_bake_hits, library.theme_bake_hits, library.fallback_builds, library.last_prepare_ms / 1000.0]
+ text += "\nTheme preloads %d · Last %.2f s%s" % [library.theme_prefetches, library.last_theme_prepare_ms / 1000.0, " · Preparing " + library.preparing_theme if not library.preparing_theme.is_empty() else ""]
+ diagnostics.text = text + "\n" + scoring_breakdown_text()
 
 func _foreground_safety_hold() -> bool:
  return not started or loading_boundary or not presentation.ring_pickups.is_empty()
