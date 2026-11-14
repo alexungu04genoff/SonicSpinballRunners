@@ -14,6 +14,7 @@ func _initialize() -> void:
   var fingerprint := Bake.pipeline_hash(theme_id)
   var theme = load(Bake.theme_path(theme_id))
   check(theme is Bake and theme.matches_pipeline(theme_id, fingerprint), "Packaged theme matches its source assets and pipeline: " + theme_id)
+  check(theme is Bake and theme.kind == "theme" and theme.visual_recipe != null and theme.visual_recipe.has_warm_manifest() and theme.preload_recipe != null and theme.preload_recipe.has_warm_manifest(), "Packaged theme retains presentation and material warm-up metadata: " + theme_id)
   for path: String in paths:
    var loaded := ActDocument.load_document(path)
    check(loaded.document != null, "Packaged authored Act loads: " + path)

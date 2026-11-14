@@ -21,6 +21,7 @@ var theme_fingerprints := {}
 var theme_validity := {}
 var generation := 0
 var checking := false
+var inspect_bakes := OS.has_feature("editor")
 
 func _ready() -> void:
  RenderingServer.frame_post_draw.connect(_after_draw)
@@ -179,7 +180,7 @@ func _validate(ticket: int) -> void:
   var selected_themes: Array = configuration.selected_theme_ids.duplicate()
   for theme: String in selected_themes:
    for path: String in selected_paths:
-    await validation_frame
+    if inspect_bakes: await validation_frame
     if is_queued_for_deletion(): return
     if ticket != generation:
      _validate(generation)
@@ -204,6 +205,11 @@ func _bake_error(path: String, theme: String) -> String:
  var message := "Baked data missing or outdated for %s / %s. Run Bake Prototype.cmd." % [path.get_file(), theme.replace("_", " ")]
  if ProjectSettings.has_setting("playtest/themes"): message = "Level data is missing. Please use a fresh copy of the game."
  if not ResourceLoader.exists(Bake.theme_path(theme)) or not ResourceLoader.exists(Bake.path_for(path, theme)): return message
+ # Export verifies every bake in the immutable package. Loading all their meshes
+ # and textures again here delays Play and discards them before the run starts.
+ # The runtime loader still validates each requested bake before using it.
+ # Editable projects retain the full inspection to catch stale authoring data.
+ if not inspect_bakes: return ""
  if not theme_fingerprints.has(theme):
   theme_fingerprints[theme] = Bake.pipeline_hash(theme)
  var fingerprint: String = theme_fingerprints[theme]
