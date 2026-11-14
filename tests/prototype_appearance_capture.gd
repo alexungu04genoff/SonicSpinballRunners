@@ -26,6 +26,7 @@ func run() -> void:
   push_error("Canonical captures require Forward+/Vulkan with a graphical display.")
   quit(1)
   return
+ root.mode = Window.MODE_WINDOWED
  root.size = Vector2i(1440, 1000)
  root.gui_disable_input = true
  DirAccess.make_dir_recursive_absolute(output)

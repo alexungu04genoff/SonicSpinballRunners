@@ -5,7 +5,13 @@ param(
     [ValidatePattern('^[A-Za-z0-9 _-]+$')][string]$BuildName = 'Sonic Spinball Runners',
     [string]$BuildRoot,
     [string]$DefaultSettings,
-    [string]$ReadmePath
+    [string]$ReadmePath,
+    [ValidateSet('green_hill', 'chemical_plant', 'rooftop_run', 'casino_night', 'sky_sanctuary', 'ice_cap', 'lava_reef', 'aquarium_park')]
+    [string[]]$Themes = @(),
+    [ValidateSet('sonic', 'tails', 'knuckles', 'shadow')]
+    [string[]]$Characters = @(),
+    [switch]$StartFullscreen,
+    [switch]$NoReadme
 )
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
@@ -25,6 +31,15 @@ $project = Get-Content (Join-Path $repo 'project.godot') -Raw
 $project = $project -replace 'run/main_scene="[^"]+"', 'run/main_scene="res://scenes/prototype_run.tscn"'
 # A named playtest build owns separate preferences and telemetry on the recipient's PC.
 $project = $project -replace 'config/name="[^"]+"', ('config/name="' + $BuildName + '"')
+if ($StartFullscreen) {
+    $project = $project -replace '(?m)^window/size/mode=.*\r?\n', ''
+    $project = $project.Replace('[display]', "[display]`n`nwindow/size/mode=3")
+}
+if ($Themes.Count -or $Characters.Count) {
+    $project += "`n[playtest]`n"
+    if ($Themes.Count) { $project += "`nthemes=PackedStringArray(" + (($Themes | Select-Object -Unique | ForEach-Object { '"' + $_ + '"' }) -join ', ') + ")`n" }
+    if ($Characters.Count) { $project += "`ncharacters=PackedStringArray(" + (($Characters | Select-Object -Unique | ForEach-Object { '"' + $_ + '"' }) -join ', ') + ")`n" }
+}
 if ($DefaultSettings) {
     Copy-Item -LiteralPath $DefaultSettings -Destination (Join-Path $build 'data\prototype_export_defaults.cfg')
 }
@@ -48,7 +63,7 @@ script_export_mode=0
 [preset.0.options]
 custom_template/release="$template"
 binary_format/architecture="x86_64"
-binary_format/embed_pck=true
+binary_format/embed_pck=false
 debug/export_console_wrapper=0
 codesign/enable=false
 application/modify_resources=false
@@ -81,12 +96,14 @@ try {
     Invoke-BuildStep 'bake' $bake
     Invoke-BuildStep 'import-bakes' ($common + @('--import'))
     Invoke-BuildStep 'export' ($common + @('--export-release', 'Prototype', ('"{0}"' -f (Join-Path $output 'Sonic Spinball Runners.exe'))))
-    Invoke-BuildStep 'verify-package' @('--headless', '--main-pack', ('"{0}"' -f (Join-Path $output 'Sonic Spinball Runners.exe')), '--script', 'res://tests/prototype_package_regression.gd')
+    Invoke-BuildStep 'verify-package' @('--headless', '--main-pack', ('"{0}"' -f (Join-Path $output 'Sonic Spinball Runners.pck')), '--script', 'res://tests/prototype_package_regression.gd')
 } finally { $env:APPDATA = $previousAppData; $env:LOCALAPPDATA = $previousLocalAppData }
-if (-not $ReadmePath) { $ReadmePath = Join-Path $repo 'docs\PLAYABLE_PROTOTYPE.md' }
-Copy-Item -LiteralPath $ReadmePath -Destination (Join-Path $output 'Read me.md')
+if (-not $NoReadme) {
+    if (-not $ReadmePath) { $ReadmePath = Join-Path $repo 'docs\PLAYABLE_PROTOTYPE.md' }
+    Copy-Item -LiteralPath $ReadmePath -Destination (Join-Path $output 'Read me.md')
+}
 $archive = "$output.zip"
-Compress-Archive -LiteralPath (Join-Path $output 'Sonic Spinball Runners.exe'), (Join-Path $output 'Read me.md') -DestinationPath $archive
+Compress-Archive -LiteralPath @(Get-ChildItem -LiteralPath $output -File | Select-Object -ExpandProperty FullName) -DestinationPath $archive
 Write-Output "Build: $output"
 Write-Output "Archive: $archive"
 Write-Output "Logs: $build"

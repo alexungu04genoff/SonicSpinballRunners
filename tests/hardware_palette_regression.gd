@@ -46,7 +46,14 @@ func run() -> void:
   bindings.apply_palette(values, game.presentation._key_light, false)
   for entry: Dictionary in bindings.palette_parameters:
    var actual: Variant = entry.target.get_shader_parameter(entry.property) if entry.shader else entry.target.get(entry.property)
-   check(actual.is_equal_approx(Color("c98e30")), theme + " cosmetic slot responds: " + entry.key)
+   var expected: Variant = Color("c98e30")
+   # Theme-owned tint roles multiply their authored color instead of replacing it.
+   if entry.mode == "tint": expected = entry.base * expected
+   elif entry.mode == "haze": expected = entry.unhazed.lerp(expected, entry.amount)
+   elif entry.base is Vector3:
+    var linear: Color = expected.srgb_to_linear()
+    expected = Vector3(linear.r, linear.g, linear.b)
+   check(actual.is_equal_approx(expected), theme + " cosmetic slot responds: " + entry.key)
   values["ranges/enabled"] = true
   values["ranges/yellow/hue"] = 0.3
   for key: String in bindings.palette_originals: values["stack/" + key] = false

@@ -35,11 +35,13 @@ func run() -> void:
  game.add_child(game.library)
  game.library_ready = true
  game.started = true
+ game.active_sequence = 0
+ game.run_plan.assign([{}, {}, {}])
  game.act_score_target = 1000
  game.exit_unlocked = false
  game.diagnostics.text = "hidden"
  game._process(0.01)
- check(game.heading.text == "ACT TEST\nHUD fixture" and game.detail.text.contains("BALLS   3 / 3"), "Shared processing dispatches the Prototype HUD without needing Endless title data")
+ check(game.heading.text == "000" and game.player_hud.lives.text == "× 3" and game.detail.text.contains("ACT 1 / 3"), "Shared processing dispatches the icon HUD without needing Endless title data")
  check(game.diagnostics.text == "hidden" and game.breakdown_calls == 0, "Hidden diagnostics do no formatting work")
  var original := game.detail.text
  game._process(0.01)
@@ -48,25 +50,25 @@ func run() -> void:
  game.score = 250
  game.special_meter = 99.9
  game._process(0.01)
- check(game.detail.text.contains("150 / 1000") and game.detail.text.contains("TOTAL   250") and game.detail.text.contains("SPECIAL   99%"), "Score and meter changes appear in the same update")
+ check(game.detail.text.contains("150 / 1000") and is_equal_approx(game.player_hud.charge, 0.999), "Score and gauge changes appear in the same update")
  game.special_meter = 100.0
  game.balls_remaining = 2
  game._process(0.01)
- check(game.detail.text.contains("SPECIAL   READY") and game.detail.text.contains("BALLS   2 / 3"), "Special readiness and Ball changes invalidate cached text")
+ check(game.player_hud.ready_label.text == "READY" and game.player_hud.lives.text == "× 2", "Special readiness and Ball changes invalidate cached text")
  game.practice_mode = true
  game.exit_unlocked = true
  game._process(0.01)
- check(game.detail.text.contains("Unlimited") and game.detail.text.contains("GOAL READY"), "Practice and Goal readiness invalidate cached text")
+ check(game.player_hud.lives.text.contains("∞") and game.detail.text.contains("GOAL READY"), "Practice and Goal readiness invalidate cached text")
  game.buddies.choose("chip")
  game._process(0.01)
- check(game.detail.text.contains("rescue ready"), "Acquiring a Buddy updates its summary")
+ check(not game.detail.text.contains("rescue ready"), "Buddy details stay out of the compact HUD")
  game.buddies.rescue()
  game._process(0.01)
- check(game.detail.text.contains("rescue used") and not game.detail.text.contains("rescue ready"), "Using a rescue updates the summary without changing Buddy levels")
+ check(not game.detail.text.contains("rescue used"), "Rescue details remain in the Buddy and Results screens")
  game.scorecraft.combo_feedback = "COMBO ×2"
  game.scorecraft.combo_feedback_remaining = 1.0
  game._process(0.01)
- check(game.detail.text.contains("COMBO ×2"), "Temporary combo feedback appears")
+ check(not game.detail.text.contains("COMBO ×2"), "The on-ball combo display owns temporary combo feedback")
  game.scorecraft.combo_feedback_remaining = 0.0
  game._process(0.01)
  check(not game.detail.text.contains("COMBO ×2"), "Expired feedback disappears without a score change")

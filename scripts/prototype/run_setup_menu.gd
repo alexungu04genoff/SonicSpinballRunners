@@ -13,6 +13,9 @@ var reason: Label
 var zones: SpinBox
 var theme_checks := {}
 var act_checks := {}
+var atmosphere_choices := {}
+var run_length: Label
+var advanced: VBoxContainer
 var bake_errors := {}
 var theme_fingerprints := {}
 var theme_validity := {}
@@ -33,33 +36,50 @@ func configure(value: RefCounted, available: Array, start: Button) -> void:
  paths = available
  start_button = start
  add_theme_constant_override("separation", 8)
- _label("RUN SETUP · 3 Acts per Zone")
  var row := HBoxContainer.new()
  add_child(row)
  var title := Label.new()
- title.text = "Zones: "
+ title.text = "Run length "
  row.add_child(title)
  zones = SpinBox.new()
  zones.min_value = 1
  zones.max_value = 7
  zones.step = 1
+ zones.suffix = "Zones"
  zones.value = configuration.zone_count
  row.add_child(zones)
+ run_length = Label.new()
+ row.add_child(run_length)
  zones.value_changed.connect(func(count: float): configuration.zone_count = int(count); _changed())
- _label("Themes")
+ var extras_start := get_child_count()
+ _label("Themes and atmospheres")
  _selection_actions(theme_checks)
  var themes := GridContainer.new()
  themes.columns = 2
  add_child(themes)
- for i in Registry.IDS.size():
-  var id: String = Registry.IDS[i]
+ for id: String in Plan.Configuration.Profile.theme_ids():
   var check := CheckBox.new()
-  check.text = Registry.NAMES[i]
+  check.text = Registry.NAMES[Registry.IDS.find(id)]
   check.button_pressed = id in configuration.selected_theme_ids
   theme_checks[id] = check
   themes.add_child(check)
   check.toggled.connect(func(_selected: bool): _changed())
- _label("Acts · select at least 3")
+  var choice := OptionButton.new()
+  choice.add_item("Random atmosphere")
+  choice.set_item_metadata(0, "")
+  for record: Dictionary in preload("res://scripts/atmosphere/variants.gd").new().read(id):
+   choice.add_item(record.name)
+   choice.set_item_metadata(choice.item_count - 1, record.id)
+   if configuration.atmosphere_overrides.get(id, "") == record.id: choice.select(choice.item_count - 1)
+  choice.tooltip_text = "Random uses saved variant weights. A named atmosphere stays fixed for this theme."
+  atmosphere_choices[id] = choice
+  themes.add_child(choice)
+  choice.item_selected.connect(func(index: int):
+   var variant_id: String = choice.get_item_metadata(index)
+   if variant_id.is_empty(): configuration.atmosphere_overrides.erase(id)
+   else: configuration.atmosphere_overrides[id] = variant_id
+   _changed())
+ _label("Levels · choose at least 3")
  _selection_actions(act_checks)
  var scroll := ScrollContainer.new()
  scroll.custom_minimum_size.y = 170
@@ -70,8 +90,7 @@ func configure(value: RefCounted, available: Array, start: Button) -> void:
  scroll.add_child(acts)
  for path: String in paths:
   var check := CheckBox.new()
-  var document: Resource = Plan.Document.load_document(path).document
-  check.text = "%s · %s" % [document.title, path.get_file()]
+  check.text = path.get_file().get_basename()
   check.tooltip_text = path
   check.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
   check.button_pressed = path in configuration.selected_act_paths
@@ -83,10 +102,26 @@ func configure(value: RefCounted, available: Array, start: Button) -> void:
  reset.pressed.connect(func():
   zones.set_value_no_signal(2)
   configuration.zone_count = 2
-  for id: String in theme_checks: theme_checks[id].set_pressed_no_signal(id in Plan.THEMES)
+  for id: String in theme_checks: theme_checks[id].set_pressed_no_signal(id in Plan.Configuration.Profile.default_themes())
+  configuration.atmosphere_overrides.clear()
+  for choice: OptionButton in atmosphere_choices.values(): choice.select(0)
   for path: String in act_checks: act_checks[path].set_pressed_no_signal(true)
   _changed())
  add_child(reset)
+ advanced = VBoxContainer.new()
+ advanced.add_theme_constant_override("separation", 8)
+ for child: Node in get_children().slice(extras_start):
+  remove_child(child)
+  advanced.add_child(child)
+ var customize := Button.new()
+ customize.text = "Customize"
+ customize.custom_minimum_size.y = 36
+ customize.pressed.connect(func():
+  advanced.visible = not advanced.visible
+  customize.text = "Done" if advanced.visible else "Customize")
+ add_child(customize)
+ add_child(advanced)
+ advanced.hide()
  reason = _label("")
  reason.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  reason.custom_minimum_size.x = 480
@@ -110,6 +145,8 @@ func _selection_actions(checks: Dictionary) -> void:
   row.add_child(button)
 
 func _changed() -> void:
+ run_length.text = " · %d Acts" % (configuration.zone_count * Plan.ACTS_PER_ZONE)
+ for id: String in atmosphere_choices: atmosphere_choices[id].disabled = not theme_checks[id].button_pressed
  configuration.selected_theme_ids = []
  configuration.selected_act_paths = []
  for id: String in Registry.IDS:
@@ -120,7 +157,7 @@ func _changed() -> void:
  generation += 1
  start_button.disabled = true
  var error: String = configuration.validation_error()
- reason.text = error if not error.is_empty() else "Checking existing baked data…"
+ reason.text = error if not error.is_empty() else "Loading…"
  if not checking: _validate(generation)
 
 func _validate(ticket: int) -> void:
@@ -137,7 +174,7 @@ func _validate(ticket: int) -> void:
    documents.append(loaded.document)
   if error.is_empty(): error = Plan.pool_error(documents)
  if error.is_empty():
-  reason.text = "Checking existing baked data…"
+  reason.text = "Loading…"
   var selected_paths: Array = configuration.selected_act_paths.duplicate()
   var selected_themes: Array = configuration.selected_theme_ids.duplicate()
   for theme: String in selected_themes:
@@ -159,11 +196,13 @@ func _validate(ticket: int) -> void:
      break
    if not error.is_empty(): break
  checking = false
- reason.text = error if not error.is_empty() else "%d Acts · targets 1,000–%s" % [configuration.zone_count * 3, Plan.target(configuration.zone_count * 3 - 1)]
+ reason.text = error if not error.is_empty() else "%d Acts" % (configuration.zone_count * 3)
+ reason.visible = not error.is_empty()
  start_button.disabled = not error.is_empty()
 
 func _bake_error(path: String, theme: String) -> String:
  var message := "Baked data missing or outdated for %s / %s. Run Bake Prototype.cmd." % [path.get_file(), theme.replace("_", " ")]
+ if ProjectSettings.has_setting("playtest/themes"): message = "Level data is missing. Please use a fresh copy of the game."
  if not ResourceLoader.exists(Bake.theme_path(theme)) or not ResourceLoader.exists(Bake.path_for(path, theme)): return message
  if not theme_fingerprints.has(theme):
   theme_fingerprints[theme] = Bake.pipeline_hash(theme)

@@ -1,0 +1,26 @@
+[
+  {
+    "file": "sonic.png",
+    "game": "Sonic Adventure 2",
+    "source_page": "https://sonic.fandom.com/wiki/File:Sonic-Icon-Sonic-Adventure-2.png",
+    "asset_url": "https://static.wikia.nocookie.net/sonic/images/c/c1/Sonic-Icon-Sonic-Adventure-2.png/revision/latest?format=original",
+    "copyright": "SEGA",
+    "sha256": "0056b009659eccca266bf66977ce6c89bae8044e4d70730f8a12d7e6e13e2f54"
+  },
+  {
+    "file": "tails.png",
+    "game": "Sonic Adventure 2",
+    "source_page": "https://sonic.fandom.com/wiki/File:Tails-Icon-Sonic-Adventure-2.png",
+    "asset_url": "https://static.wikia.nocookie.net/sonic/images/0/05/Tails-Icon-Sonic-Adventure-2.png/revision/latest?format=original",
+    "copyright": "SEGA",
+    "sha256": "89b000b0f027b63b066953ce337e252df545d815dab54301a03b40b24dc45e3b"
+  },
+  {
+    "file": "ring.png",
+    "game": "Sonic the Hedgehog Modern Style Guide",
+    "source_page": "https://sonic.fandom.com/wiki/File:Sonic_MSG_Ring_01.png",
+    "asset_url": "https://static.wikia.nocookie.net/sonic/images/a/a8/Sonic_MSG_Ring_01.png/revision/latest?format=original",
+    "copyright": "SEGA",
+    "sha256": "48dd6dcc5f7067628d111a4cd170d0a848f8397a1fa8658a6e62eb5a1f790a97"
+  }
+]

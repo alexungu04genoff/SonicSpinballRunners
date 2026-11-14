@@ -1,6 +1,7 @@
 extends RefCounted
 ## Stable, run-local input. Preferences store exclusions so new Acts opt in.
 const Registry = preload("res://scripts/themes/theme_registry.gd")
+const Profile = preload("res://scripts/prototype/build_profile.gd")
 const ACTS_PER_ZONE := 3
 var atmosphere_overrides := {}
 var zone_count := 2
@@ -14,6 +15,7 @@ var atmosphere_preview := {}
 var atmosphere_preview_error := ""
 
 func _init(paths: Array = []) -> void:
+ selected_theme_ids = Profile.default_themes()
  selected_act_paths = paths.duplicate()
  selected_act_paths.sort()
  apply_cli_override()
@@ -36,9 +38,9 @@ func validation_error() -> String:
  if zone_count < 1 or zone_count > 7: return "Choose 1–7 Zones."
  if selected_theme_ids.is_empty(): return "Select at least one theme."
  for id: String in selected_theme_ids:
-  if id not in Registry.IDS: return "Unknown theme: " + id
+  if id not in Profile.theme_ids(): return "Theme unavailable in this build: " + id
  for theme: String in atmosphere_overrides:
-  if theme not in Registry.IDS: return "Unknown override theme."
+  if theme not in Profile.theme_ids(): return "Override theme unavailable in this build."
   var variants := preload("res://scripts/atmosphere/variants.gd").new().read(theme)
   if not variants.any(func(record: Dictionary): return record.id == atmosphere_overrides[theme]): return "Unknown atmosphere override."
  if single_act_test:
@@ -69,8 +71,16 @@ func fingerprint() -> String:
 func read_preferences(settings: ConfigFile, available: Array) -> void:
  zone_count = clampi(int(settings.get_value("run_setup", "zone_count", 2)), 1, 7)
  selected_theme_ids = []
- for id: Variant in settings.get_value("run_setup", "selected_themes", ["green_hill", "chemical_plant"]):
-  if id in Registry.IDS and id not in selected_theme_ids: selected_theme_ids.append(id)
+ for id: Variant in settings.get_value("run_setup", "selected_themes", Profile.default_themes()):
+  if id in Profile.theme_ids() and id not in selected_theme_ids: selected_theme_ids.append(id)
+ atmosphere_overrides.clear()
+ var saved_variants: Variant = settings.get_value("run_setup", "atmosphere_overrides", {})
+ if saved_variants is Dictionary:
+  for theme: Variant in saved_variants:
+   if theme not in Profile.theme_ids(): continue
+   var records := preload("res://scripts/atmosphere/variants.gd").new().read(theme)
+   if records.any(func(record: Dictionary): return record.id == saved_variants[theme]):
+    atmosphere_overrides[theme] = saved_variants[theme]
  var excluded: Array = settings.get_value("run_setup", "excluded_acts", [])
  selected_act_paths = []
  for path: String in available:
@@ -79,6 +89,7 @@ func read_preferences(settings: ConfigFile, available: Array) -> void:
  apply_cli_override()
 
 func write_preferences(settings: ConfigFile, available: Array) -> void:
+ settings.set_value("run_setup", "atmosphere_overrides", atmosphere_overrides.duplicate(true))
  settings.set_value("run_setup", "zone_count", zone_count)
  settings.set_value("run_setup", "selected_themes", _unique(selected_theme_ids))
  var excluded: Array = []

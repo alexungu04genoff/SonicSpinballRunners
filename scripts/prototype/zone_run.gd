@@ -30,6 +30,7 @@ var run_plan: Array[Dictionary] = []
 var run_configuration: RefCounted
 
 var hint: Label
+var player_hud: Control
 var score_overlay: Control
 var _ring_award_position := Vector2.INF
 var goal_pending := false
@@ -37,9 +38,6 @@ var combo_glow: Node
 var fps_label: Label
 var fps_update := 0.0
 var telemetry := preload("res://scripts/prototype/run_telemetry.gd").new()
-var _hud_buddy_levels := {}
-var _hud_rescues_used := {}
-var _hud_buddy_text := ""
 
 func effective_configuration() -> RefCounted:
  if run_configuration == null: run_configuration = RunPlan.Configuration.new(source_paths if not source_paths.is_empty() else RunPlan.source_paths())
@@ -376,6 +374,7 @@ func jump_tour_boundary() -> void:
 func _unhandled_key_input(event: InputEvent) -> void:
  if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F3:
   diagnostics.visible = not diagnostics.visible
+  fps_label.visible = diagnostics.visible
 
 func reset_ball(relaunch := false) -> void:
  if not finished and not closing and not drafting and not is_instance_valid(transfer): super.reset_ball(relaunch)
@@ -403,29 +402,12 @@ func _update_hud(delta: float) -> void:
  if goal_pending and _next_ready():
   goal_pending = false
   _observe_authored_motion(active.runtime.goal_ring.center, active.runtime.goal_ring.center)
- heading.text = progress_text() + "\n" + act_title(active)
- if _hud_buddy_levels != buddies.levels or _hud_rescues_used != buddies.rescues_used:
-  _hud_buddy_levels = buddies.levels.duplicate()
-  _hud_rescues_used = buddies.rescues_used.duplicate()
-  _hud_buddy_text = buddies.summary() if not buddies.levels.is_empty() else ""
- var act_text := act_score_text()
- var action_text := specials.action.label()
- var feedback := scoring_feedback_text()
- var combo_feedback := scorecraft.combo_feedback if scorecraft.combo_feedback_remaining > 0.0 else ""
- var bonus := Buddies.total(scorecraft.last_award.get("buddy_bonuses", {})) if scorecraft.feedback_remaining > 0.0 else 0
- var state: Array = [act_text, score, scorecraft.multiplier, practice_mode, balls_remaining, starting_balls, int(special_meter), special_meter >= 100.0, action_text, _hud_buddy_text, scorecraft.ring_link_available, scorecraft.ring_progress, scorecraft.config.rings_per_link, combo_feedback, feedback, bonus]
+ var state: Array = [rings_collected, practice_mode, balls_remaining, active_sequence, run_plan.size(), act_score, act_score_target, exit_unlocked, int(special_meter)]
  if state != _hud_detail_state:
   _hud_detail_state = state
-  var text := "ACT   %s\nTOTAL   %d%s\nBALLS   %s     SPECIAL   %s" % [act_text, score, "     COMBO ×%d" % scorecraft.multiplier if scorecraft.multiplier >= 2 else "", "Unlimited" if practice_mode else "%d / %d" % [balls_remaining, starting_balls], "READY" if special_meter >= 100.0 else "%d%%" % int(special_meter)]
-  text += "\n" + action_text
-  if not _hud_buddy_text.is_empty(): text += "\n" + _hud_buddy_text
-  if scorecraft.ring_link_available:
-   text += "\nRING LINK %d/%d" % [scorecraft.ring_progress, scorecraft.config.rings_per_link]
-  elif not combo_feedback.is_empty():
-   text += "\n" + combo_feedback
-  if not feedback.is_empty(): text += "\n" + feedback
-  if bonus > 0: text += "\nBuddy bonus included: +%d" % bonus
-  detail.text = text
+  heading.text = "%03d" % rings_collected
+  detail.text = "ACT %d / %d    %s" % [active_sequence + 1, run_plan.size(), "GOAL READY" if exit_unlocked else "%d / %d" % [act_score, act_score_target]]
+  player_hud.update_values(character_id, "∞" if practice_mode else str(balls_remaining), special_meter)
  var hint_text := ""
  if is_instance_valid(transfer): hint_text = "Returning to spawn…" if transfer.drain else "Next Act…"
  if respawn_time >= 0.0: hint_text = "BALL LOST · Retrying…"
@@ -454,32 +436,24 @@ func _build_hud() -> void:
  fps_label.offset_right = -18
  fps_label.offset_top = 18
  fps_label.offset_bottom = 42
- var backing := PanelContainer.new()
- backing.position = Vector2(20, 18)
- var style := StyleBoxFlat.new()
- style.bg_color = Color(0.025, 0.055, 0.09, 0.35)
- style.set_content_margin_all(8)
- style.set_corner_radius_all(8)
- backing.add_theme_stylebox_override("panel", style)
- hud.add_child(backing)
- var stack := VBoxContainer.new()
- backing.add_child(stack)
- heading = Label.new()
- heading.add_theme_font_size_override("font_size", 18)
- stack.add_child(heading)
- detail = Label.new()
- detail.add_theme_font_size_override("font_size", 16)
- detail.custom_minimum_size.x = 350
- detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
- stack.add_child(detail)
- hint = Label.new()
- hint.add_theme_font_size_override("font_size", 14)
- hint.add_theme_color_override("font_color", Color("ffe07a"))
- stack.add_child(hint)
- _button("Pause / menu", toggle_pause, stack).add_theme_font_size_override("font_size", 14)
+ fps_label.hide()
+ player_hud = preload("res://scripts/prototype/arcade_hud.gd").new()
+ hud.add_child(player_hud)
+ heading = player_hud.rings
+ detail = player_hud.progress
+ hint = player_hud.message
+ var pause_button := _button("Ⅱ", toggle_pause, hud)
+ pause_button.tooltip_text = "Pause"
+ pause_button.add_theme_font_size_override("font_size", 14)
+ pause_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+ pause_button.offset_left = -62
+ pause_button.offset_right = -18
+ pause_button.offset_top = 22
+ pause_button.offset_bottom = 60
  diagnostics = Label.new()
  diagnostics.hide()
- stack.add_child(diagnostics)
+ diagnostics.position = Vector2(30, 140)
+ hud.add_child(diagnostics)
  loading_panel = ColorRect.new()
  loading_panel.color = Color("101b2c")
  loading_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
