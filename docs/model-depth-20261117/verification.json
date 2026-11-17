@@ -1,0 +1,462 @@
+{
+  "scope": "Seven themes; Lava Reef excluded",
+  "baseline": "2d2583bef058669388a5b2679f979e1fe4fe4a56",
+  "model_checks": 895,
+  "collision_checks": 2842,
+  "prototype_baked": 49,
+  "endless_baked": 49,
+  "prototype_audit": {
+    "checks": 555,
+    "variants": 56,
+    "failures": 0
+  },
+  "endless_audit": {
+    "remaining": "Excluded, stale Lava Reef Act receipts",
+    "checks": 555,
+    "variants": 56,
+    "failures": 7
+  },
+  "density_complete": true,
+  "play": {
+    "rooftop-play": {
+      "api": "1.4.351",
+      "balls_remaining": 3,
+      "command_line": [
+        "--script",
+        "res://tests/prototype_play_profile.gd"
+      ],
+      "device": "NVIDIA GeForce RTX 4060",
+      "draws_median": 822,
+      "driver": "vulkan",
+      "duration_ms": 29954.838,
+      "engine": "4.7.2-stable (official)",
+      "finished": false,
+      "input_ticks": 3600,
+      "menu_validation_ms": 5081.177,
+      "note": "Input-only Challenge session with HUD, sounds and telemetry. Launches and steers normally; no score grants, teleports or forced clears. Dynamic paths can diverge across runs.",
+      "objects_median": 1830,
+      "physics_ticks": 120,
+      "pipelines": {
+        "canvas": 8.0,
+        "draw": 0.0,
+        "mesh": 78.0,
+        "specialization": 139.0,
+        "surface": 77.0
+      },
+      "practice": false,
+      "ready_ms": 4645.37,
+      "ready_pipelines": {
+        "canvas": 8.0,
+        "draw": 0.0,
+        "mesh": 78.0,
+        "specialization": 138.0,
+        "surface": 76.0
+      },
+      "rebuilds": 0,
+      "render_cpu_ms_median": 1.83499994337559,
+      "render_gpu_ms_median": 0.889999978244305,
+      "renderer": "forward_plus",
+      "resident_peak": 3,
+      "score": 0,
+      "seed": 4257978228,
+      "startup_frames": {
+        "count": 935,
+        "frames_over_100_ms": 6,
+        "frames_over_50_ms": 11,
+        "max_ms": 1132.67,
+        "median_ms": 1.384,
+        "p95_ms": 5.387,
+        "p99_ms": 62.619
+      },
+      "theme": "rooftop_run",
+      "timing": {
+        "count": 5501,
+        "frames_over_100_ms": 0,
+        "frames_over_50_ms": 2,
+        "max_ms": 58.977,
+        "median_ms": 5.328,
+        "p95_ms": 7.619,
+        "p99_ms": 9.67
+      },
+      "user_arguments": [
+        "--profile-theme=rooftop_run",
+        "--profile-seconds=30",
+        "--profile-output=res://test-results/model-depth-20261117/rooftop-play.json"
+      ],
+      "waiting_ms": 0.0,
+      "window_size": [
+        1280,
+        900
+      ],
+      "world_size": [
+        673,
+        473
+      ]
+    },
+    "endless-play": {
+      "active_frames": {
+        "count": 430,
+        "max_ms": 256.351,
+        "median_ms": 16.625,
+        "p95_ms": 42.504,
+        "p99_ms": 79.169
+      },
+      "api": "1.4.351",
+      "command_line": [
+        "--script",
+        "res://tests/endless_stream_profile.gd"
+      ],
+      "cpu_max_ms": {
+        "cache.release": 0.127,
+        "graphics.queue": 0.375,
+        "physics.compile": 10.638,
+        "resource.collect": 0.03,
+        "resource.request": 0.04,
+        "scene.free": 0.102,
+        "scene.node": 45.174,
+        "theme.prime_request": 0.024
+      },
+      "device": "NVIDIA GeForce RTX 4060",
+      "draw_calls_median": 823,
+      "draw_calls_p95": 1795,
+      "driver": "vulkan",
+      "duration_ms": 7888.642,
+      "engine": "4.7.2-stable (official)",
+      "frame_max_ms": 256.351,
+      "frame_median_ms": 16.625,
+      "frame_p95_ms": 42.504,
+      "frame_p99_ms": 79.169,
+      "frames_over_100_ms": 3,
+      "frames_over_50_ms": 13,
+      "gameplay_cpu": {},
+      "gameplay_started_us": 9394468,
+      "initialize_ms": 1473,
+      "objects_median": 1550,
+      "physics_ticks": 120,
+      "pipelines": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 19.0,
+        "specialization": 162.0,
+        "surface": 98.0
+      },
+      "pool_size": 7,
+      "ready_pipelines": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 12.0,
+        "specialization": 69.0,
+        "surface": 38.0
+      },
+      "rebuilds": 0,
+      "render_cpu_ms_median": 2.31299994492531,
+      "render_gpu_ms_median": 0.923999980092049,
+      "renderer": "forward_plus",
+      "resident_peak": 5,
+      "retirement_completed": 0,
+      "retirement_peak": 0,
+      "reused_visual_nodes": 3579,
+      "sample_count": 430,
+      "seed": 18,
+      "sequence": 3,
+      "shaders": "N64-ish + VHS + CRT",
+      "startup_cpu": {},
+      "startup_ms": 2862,
+      "threaded_resource_wall_ms": 609.635,
+      "tour_speed": 240.0,
+      "user_arguments": [
+        "--seed=18",
+        "--profile-target=3",
+        "--profile-speed=240",
+        "--profile-output=res://test-results/model-depth-20261117/endless-play.json"
+      ],
+      "viewport_size": [
+        673,
+        473
+      ],
+      "vsync": 1,
+      "waiting_frames": {
+        "count": 0
+      },
+      "waiting_ms": 0.0,
+      "window_size": [
+        1280,
+        900
+      ],
+      "worst_frames": [
+        {
+          "act": "First Try Smooth Decor",
+          "at_us": 10509489,
+          "blend": 0.0,
+          "build_ms": 1.503,
+          "draw_calls": 581,
+          "engine_physics_ms": 0.482,
+          "engine_process_ms": 71.17,
+          "frame_ms": 256.351,
+          "memory_mb": 238.608011245728,
+          "nodes": 1263.0,
+          "objects": 1179,
+          "render_cpu_ms": 1.22900001126528,
+          "render_gpu_ms": 0.824999995529652,
+          "render_wall_ms": 4.148,
+          "resident_acts": 2,
+          "sequence": 0,
+          "stage": "idle",
+          "theme": "sky_sanctuary",
+          "video_mb": 388.868103027344,
+          "waiting": false
+        },
+        {
+          "act": "Second Simple",
+          "at_us": 13319487,
+          "blend": 0.0,
+          "build_ms": 110.677,
+          "draw_calls": 511,
+          "engine_physics_ms": 0.513,
+          "engine_process_ms": 71.059,
+          "frame_ms": 117.173,
+          "memory_mb": 268.128845214844,
+          "nodes": 4014.0,
+          "objects": 1055,
+          "render_cpu_ms": 1.98500004756451,
+          "render_gpu_ms": 0.800999991595745,
+          "render_wall_ms": 3.68,
+          "resident_acts": 3,
+          "sequence": 1,
+          "stage": "scene.instantiate",
+          "theme": "sky_sanctuary",
+          "video_mb": 464.014831542969,
+          "waiting": false
+        },
+        {
+          "act": "Second Simple",
+          "at_us": 14178453,
+          "blend": 0.0,
+          "build_ms": 102.017,
+          "draw_calls": 1055,
+          "engine_physics_ms": 0.32,
+          "engine_process_ms": 116.176,
+          "frame_ms": 108.638,
+          "memory_mb": 281.565306663513,
+          "nodes": 4831.0,
+          "objects": 1832,
+          "render_cpu_ms": 2.58799996933341,
+          "render_gpu_ms": 0.816000021994114,
+          "render_wall_ms": 3.826,
+          "resident_acts": 4,
+          "sequence": 1,
+          "stage": "resource.wait",
+          "theme": "sky_sanctuary",
+          "video_mb": 466.154205322266,
+          "waiting": false
+        },
+        {
+          "act": "First Try Smooth Decor",
+          "at_us": 10886250,
+          "blend": 0.0,
+          "build_ms": 79.38,
+          "draw_calls": 593,
+          "engine_physics_ms": 0.482,
+          "engine_process_ms": 71.17,
+          "frame_ms": 84.88,
+          "memory_mb": 241.562786102295,
+          "nodes": 2498.0,
+          "objects": 1173,
+          "render_cpu_ms": 1.88499998107553,
+          "render_gpu_ms": 0.951999992132187,
+          "render_wall_ms": 3.967,
+          "resident_acts": 2,
+          "sequence": 0,
+          "stage": "graphics.draw",
+          "theme": "sky_sanctuary",
+          "video_mb": 388.873886108398,
+          "waiting": false
+        },
+        {
+          "act": "Third Complex",
+          "at_us": 14782267,
+          "blend": 0.0,
+          "build_ms": 2.294,
+          "draw_calls": 1461,
+          "engine_physics_ms": 0.32,
+          "engine_process_ms": 116.176,
+          "frame_ms": 79.169,
+          "memory_mb": 296.349465370178,
+          "nodes": 5733.0,
+          "objects": 2417,
+          "render_cpu_ms": 2.70299997141957,
+          "render_gpu_ms": 0.984999977052212,
+          "render_wall_ms": 5.005,
+          "resident_acts": 4,
+          "sequence": 2,
+          "stage": "graphics.draw",
+          "theme": "sky_sanctuary",
+          "video_mb": 466.247055053711,
+          "waiting": false
+        },
+        {
+          "act": "First Try Smooth Decor",
+          "at_us": 11395296,
+          "blend": 0.0,
+          "build_ms": 0.039,
+          "draw_calls": 818,
+          "engine_physics_ms": 0.445,
+          "engine_process_ms": 254.741,
+          "frame_ms": 75.591,
+          "memory_mb": 242.43828868866,
+          "nodes": 2456.0,
+          "objects": 1539,
+          "render_cpu_ms": 2.61900002634525,
+          "render_gpu_ms": 1.30100000649691,
+          "render_wall_ms": 14.444,
+          "resident_acts": 3,
+          "sequence": 0,
+          "stage": "idle",
+          "theme": "sky_sanctuary",
+          "video_mb": 389.129333496094,
+          "waiting": false
+        },
+        {
+          "act": "Second Simple",
+          "at_us": 13057303,
+          "blend": 0.0,
+          "build_ms": 66.981,
+          "draw_calls": 628,
+          "engine_physics_ms": 0.986,
+          "engine_process_ms": 74.649,
+          "frame_ms": 71.891,
+          "memory_mb": 263.783049583435,
+          "nodes": 3535.0,
+          "objects": 1214,
+          "render_cpu_ms": 1.86900004094839,
+          "render_gpu_ms": 0.809999994933605,
+          "render_wall_ms": 3.191,
+          "resident_acts": 3,
+          "sequence": 1,
+          "stage": "resource.wait",
+          "theme": "sky_sanctuary",
+          "video_mb": 463.984313964844,
+          "waiting": false
+        },
+        {
+          "act": "Second Simple",
+          "at_us": 13839142,
+          "blend": 0.0,
+          "build_ms": 1.513,
+          "draw_calls": 953,
+          "engine_physics_ms": 0.513,
+          "engine_process_ms": 71.059,
+          "frame_ms": 69.798,
+          "memory_mb": 272.37850189209,
+          "nodes": 3567.0,
+          "objects": 1683,
+          "render_cpu_ms": 2.08400003045797,
+          "render_gpu_ms": 0.805000014603138,
+          "render_wall_ms": 4.168,
+          "resident_acts": 4,
+          "sequence": 1,
+          "stage": "idle",
+          "theme": "sky_sanctuary",
+          "video_mb": 464.069412231445,
+          "waiting": false
+        }
+      ]
+    },
+    "ice-play": {
+      "api": "1.4.351",
+      "balls_remaining": 1,
+      "command_line": [
+        "--script",
+        "res://tests/prototype_play_profile.gd"
+      ],
+      "device": "NVIDIA GeForce RTX 4060",
+      "draws_median": 944,
+      "driver": "vulkan",
+      "duration_ms": 29938.873,
+      "engine": "4.7.2-stable (official)",
+      "finished": false,
+      "input_ticks": 3600,
+      "menu_validation_ms": 3240.422,
+      "note": "Input-only Challenge session with HUD, sounds and telemetry. Launches and steers normally; no score grants, teleports or forced clears. Dynamic paths can diverge across runs.",
+      "objects_median": 2260,
+      "physics_ticks": 120,
+      "pipelines": {
+        "canvas": 8.0,
+        "draw": 0.0,
+        "mesh": 54.0,
+        "specialization": 103.0,
+        "surface": 70.0
+      },
+      "practice": false,
+      "ready_ms": 3735.316,
+      "ready_pipelines": {
+        "canvas": 8.0,
+        "draw": 0.0,
+        "mesh": 54.0,
+        "specialization": 101.0,
+        "surface": 68.0
+      },
+      "rebuilds": 0,
+      "render_cpu_ms_median": 1.82299995729327,
+      "render_gpu_ms_median": 0.94599998369813,
+      "renderer": "forward_plus",
+      "resident_peak": 3,
+      "score": 1475,
+      "seed": 2599629332,
+      "startup_frames": {
+        "count": 1019,
+        "frames_over_100_ms": 5,
+        "frames_over_50_ms": 9,
+        "max_ms": 1081.279,
+        "median_ms": 0.966,
+        "p95_ms": 4.93,
+        "p99_ms": 34.12
+      },
+      "theme": "ice_cap",
+      "timing": {
+        "count": 6147,
+        "frames_over_100_ms": 0,
+        "frames_over_50_ms": 1,
+        "max_ms": 72.469,
+        "median_ms": 4.966,
+        "p95_ms": 6.208,
+        "p99_ms": 7.528
+      },
+      "user_arguments": [
+        "--profile-theme=ice_cap",
+        "--profile-seconds=30",
+        "--profile-output=res://test-results/model-depth-20261117/ice-play.json"
+      ],
+      "waiting_ms": 0.0,
+      "window_size": [
+        1280,
+        900
+      ],
+      "world_size": [
+        673,
+        473
+      ]
+    }
+  },
+  "final_capture_sets": [
+    {
+      "checks": 140,
+      "captures": 7,
+      "view": "wide",
+      "failures": 0
+    },
+    {
+      "checks": 140,
+      "captures": 7,
+      "view": "normal",
+      "failures": 0
+    },
+    {
+      "checks": 140,
+      "captures": 7,
+      "view": "edge",
+      "failures": 0
+    }
+  ],
+  "headless_editor_import": "Exit 0, no script or engine errors"
+}

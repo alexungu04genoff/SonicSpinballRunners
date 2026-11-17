@@ -47,6 +47,23 @@ func primitive(kind: String) -> Mesh:
  if meshes.has(kind): return meshes[kind]
  var result: Mesh
  if kind == "box": result = BoxMesh.new()
+ elif kind == "bough":
+  # Alternating branch tips and raised notches break the stacked-cone outline.
+  # One shared 24-triangle mesh serves foliage and its smaller snow mantle.
+  var surface := SurfaceTool.new()
+  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+  surface.set_smooth_group(-1)
+  for i in 12:
+   var points: Array[Vector3] = []
+   for index in [i, (i + 1) % 12]:
+    var angle: float = TAU * index / 12.0
+    var radius := 1.0 if index % 2 == 0 else 0.63
+    points.append(Vector3(cos(angle) * radius, 0.0 if index % 2 == 0 else 0.14, sin(angle) * radius))
+   for point: Vector3 in [points[0], points[1], Vector3(0.06, 1.0, -0.04), points[1], points[0], Vector3(0, 0.12, 0)]:
+    surface.set_uv(Vector2(point.x * 0.5 + 0.5, 1.0 - point.y))
+    surface.add_vertex(point)
+  surface.generate_normals()
+  result = surface.commit()
  elif kind == "sphere":
   var sphere := SphereMesh.new()
   sphere.radius = 1.0
@@ -95,8 +112,11 @@ func pine(root: Node3D, at: Vector3, height: float, radius: float) -> void:
  for i in 3:
   var tier := 1.0 - i * 0.25
   var y := height * (0.40 + i * 0.22)
-  piece(root, "cone", "pine", at + Vector3.UP * y, Vector3(radius * tier, height * 0.46, radius * tier))
-  piece(root, "cone", "snow", at + Vector3.UP * (y + height * 0.055), Vector3(radius * tier * 0.85, height * 0.38, radius * tier * 0.85))
+  var base := at + Vector3.UP * (y - height * 0.23)
+  var foliage := piece(root, "bough", "pine", base, Vector3(radius * tier, height * 0.46, radius * tier))
+  var snow := piece(root, "bough", "snow", base + Vector3.UP * height * 0.07, Vector3(radius * tier * 0.88, height * 0.39, radius * tier * 0.88))
+  foliage.rotation.y = i * 0.28
+  snow.rotation.y = foliage.rotation.y
 
 func arch(root: Node3D, at: Vector3, width: float, height: float, depth: float) -> void:
  for side: int in [-1, 1]:

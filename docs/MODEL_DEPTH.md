@@ -1,0 +1,78 @@
+# Model and background depth pass — 2026-11-17
+
+Alex asked for a fresh review of the textured models and larger-feeling environments, excluding Lava Reef. This reopens the background composition decision from the November 9 audit; that audit intentionally inspected views with little distant scenery exposed.
+
+## Review and direction
+
+The complete production catalogue contains 102 variants. The 89 non-Lava variants were inspected in seven individual sheets. Existing loops, palms, machinery, clocks, casino signs, sanctuary masonry, ice crystals and aquatic architecture already carry strong silhouettes. Preserve these and the selected texture sets. Target the weak supporting forms: truncated-cone Green Hill rocks, mechanically identical snow-tree tiers, and thin rectangular Aquarium coral.
+
+Environment scale comes from overlapping near, middle and distant forms with different sizes and quieter distant colors. Keep recognizable gaps and the existing water/cloud/aurora effects. This is collisionless presentation, with deterministic construction and existing recipe batching; it does not change level layouts, physics, atmosphere presets, or the normal camera default.
+
+Visual reference browsing informed the composition, without importing assets:
+
+- [Rooftop Run daytime gameplay](https://en.sonicscanf.org/gallery/den-5/rooftop-run-14/): overlapping terracotta districts and large architectural spans.
+- [Icecap gallery](https://sonic.fandom.com/wiki/Icecap_%28Sonic_Adventure%29/Gallery): broad angular snow masses and mountain-scale framing.
+
+## Evidence protocol
+
+Starting source: `2d2583b`. Existing untracked import/UID sidecars are outside this pass. Baselines live under `test-results/model-depth-20261117/`, with complete per-capture provenance and manifests.
+
+All level comparisons use the actual disk-loaded Prototype session, current Default atmospheres, Forward+/Vulkan, production Retro, 4× MSAA, seed 18, a served Sonic, and fixed gameplay/shader time. Three matched framings use First Try Smooth Decor:
+
+- `before` / `after`: ordinary camera, target at the served Ball.
+- `before-upper` / `after-upper`: edge inspection at `(570, 500)` with normal zoom. The directory name is historical; this is a lateral view.
+- `before-wide` / `after-wide`: target `(400, 400)`, zoom `0.6` through the existing production camera setting. This is explicitly a wide inspection view, not a new camera default.
+
+The optional `-CameraZoom` capture argument accepts only the existing 0.6–2.5 camera range. Receipts record the resulting camera settings and transform. Original PNG pixels remain untouched; review sheets only label and uniformly resize them.
+
+## Implemented changes
+
+| Theme | Model review and retained change |
+| --- | --- |
+| Green Hill | Shared 36-triangle chipped rocks replace the straight truncated cones. Preserve the strong palm, flower, loop, coastal scenery and selected texture vocabulary. |
+| Chemical Plant | Twelve low processing blocks with broad paired stacks extend the factory behind the existing hero vessels. Preserve the authored machinery library. |
+| Rooftop Run | Two staggered rows on either side add 28 buildings. Near houses use the existing textured roof/shutter constructor; far houses reduce to three muted masses. Canals remain open. |
+| Casino Night | Fourteen low hotel blocks use stepped roofs and sparse broad window bands. Existing signs, stars and reel towers remain the brighter focal objects. No new lights. |
+| Sky Sanctuary | Six suspended islands use different scales and broken colonnade, arch and tower silhouettes. The first repeated-colonnade trial was rejected. Cloud gaps and existing cloud geometry remain. |
+| Ice Cap | Twenty asymmetric 21-triangle peaks form two overlapping ranges. Outer snow and rock colors converge toward a quieter blue. Fir trees use shared 24-triangle notched boughs and smaller snow mantles instead of smooth cone tiers. The aurora shader, placement and strength are unchanged. |
+| Aquarium Park | Six-sided tapered coral branches and short forks replace thin rectangular bars. Preserve the existing substantial park, palace, tank, fish and lantern compositions. |
+| Lava Reef | No source, model, material, atmosphere or bake edits. |
+
+All new distant geometry enters existing static recipes/batching. There is no new per-frame scenery traversal, scattering system, extra viewport or dynamic light. This adds geometry and some submissions; no FPS improvement is claimed.
+
+## Comparisons
+
+The wide pairs below use identical camera settings, simulation state, atmosphere and renderer on both sides. Before is left; after is right. JPEGs are lighter review copies; lossless PNG pairs and original frames remain in the local capture directories. Full-resolution gameplay pixels are copied 1:1 into the lossless pairs.
+
+[All seven comparisons in one sheet](model-depth-20261117/all-seven.jpg).
+
+| Theme | Wide level comparison | Supporting model comparison |
+| --- | --- | --- |
+| Green Hill | [Before / after](model-depth-20261117/green_hill.jpg) | [Chipped rocks](model-depth-20261117/models-green_hill.jpg) |
+| Chemical Plant | [Before / after](model-depth-20261117/chemical_plant.jpg) | Existing machinery retained |
+| Rooftop Run | [Before / after](model-depth-20261117/rooftop_run.jpg) | Existing authored library retained |
+| Casino Night | [Before / after](model-depth-20261117/casino_night.jpg) | Existing authored library retained |
+| Sky Sanctuary | [Before / after](model-depth-20261117/sky_sanctuary.jpg) | Existing authored library retained |
+| Ice Cap | [Before / after](model-depth-20261117/ice_cap.jpg) | [Notched snow boughs](model-depth-20261117/models-ice_cap.jpg) |
+| Aquarium Park | [Before / after](model-depth-20261117/aquarium_park.jpg) | [Tapered coral](model-depth-20261117/models-aquarium_park.jpg) |
+
+![Rooftop Run, before and after](model-depth-20261117/rooftop_run.jpg)
+
+![Ice Cap, before and after](model-depth-20261117/ice_cap.jpg)
+
+The source catalogue is a silhouette diagnostic, not the authority for final lighting. All seven level pairs come from the real Prototype renderer. Small supporting-model changes naturally occupy few pixels in wide level views.
+
+## Verification
+
+- Targeted decor/landmark/geometry suites: **895 checks, zero failures**. New checks verify finite, nondegenerate clockwise faces, flat normals, compact geometry and shared bough meshes.
+- Exact baked collision equivalence and stale-data rejection: **2,842 checks, zero failures**.
+- All three seven-theme baseline sets: **140 authority/freshness checks each, zero failures**.
+- Final normal, edge and wide sets: **21 captures / 420 authority/freshness checks, zero failures**. Matched-pair export verified camera, simulation, atmosphere, graphics, Act and disk-loading provenance before creating the comparison sheets.
+- Rebuilt **49 Prototype and 49 Endless variants**, across all seven included themes and seven Acts in each pool. Derived bakes remain local and ignored by Git.
+- Full Prototype disk audit: **56 variants / 555 checks, zero failures**, including the untouched current Lava Prototype recipes. The full Endless audit has **seven stale Lava Reef Act receipts**; all seven edited themes pass. Those excluded Lava bakes were not rebuilt, and no claim of a fully green eight-theme Endless audit is made.
+- Rooftop and Ice each completed **3,600 physics input ticks / approximately 30 seconds** in a real graphical Challenge session, with three resident Acts, zero fallback rebuilds and zero boundary wait. Rooftop scored 0; Ice scored 1,475. These are startup/input-path checks, not a reachability or feel assessment.
+- A graphical seed-18 Endless tour reached sequence 3 and crossed a Zone boundary with zero fallback rebuilds. Timing overlapped capture/bake work, so it is not isolated performance evidence.
+- Shutdown warnings remain: one ObjectDB instance for Rooftop and two for Ice/Endless. The known threaded-loader lifecycle issue is documented separately in `LIFECYCLE_AUDIT.md`; this pass does not establish ownership of every leaked instance. Existing selected-image source/export warnings also remain. No script/engine errors occurred in the final captures or play runs.
+- Final headless editor import exited successfully, with no script or engine errors. [Verification receipts](model-depth-20261117/verification.json) and [geometry counts](model-depth-20261117/density.json) accompany the images.
+
+Human review remains useful for moving-camera composition, visibility of the aurora between ridges, and scenery density across other Acts and atmosphere variants. Scripted inputs and stills do not establish visual taste or controller feel.

@@ -92,7 +92,7 @@ func build_background(p: Node3D) -> void:
  var city := Node3D.new()
  city.name = "SpagoniaCity"
  root.add_child(city)
- # A quiet continuous plaza gives the sparse architecture room to breathe.
+ # The plaza remains visible between districts and beneath the canal bridges.
  _library.box(city, "dark", center + Vector3(0, -4.85, 0), Vector3(180.0, 0.10, 180.0))
  # Two canals and one bridge each frame the table without a surrounding grid.
  for side: int in [-1, 1]:
@@ -109,6 +109,23 @@ func build_background(p: Node3D) -> void:
   city.add_child(bridge)
   bridge.position = center + Vector3(canal_x, -4.5, side * length * 0.22)
   bridge.scale = Vector3(1.0, 0.7, 1.5)
+ # Offset city blocks, rather than isolated towers in a blank plane. The near
+ # row has broad shutters; the outer row reduces to three faceted masses.
+ for side: int in [-1, 1]:
+  for layer in 2:
+   for i in 7:
+    if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
+    var at := center + Vector3(side * (width * 0.5 + 3.5 + layer * 3.4), -4.8, (i - 3) * 3.5 + layer * 1.65)
+    var size := Vector3(2.1 + (i % 2) * 0.45, 1.25 + float((i * 3 + layer) % 5) * 0.36, 2.3)
+    if layer == 0:
+     _house(city, at, size, i)
+    else:
+     var body: MeshInstance3D = _library.box(city, "stone", at + Vector3.UP * size.y * 0.5, size)
+     body.material_override = _district_material("wall", Color("a99f93"))
+     var cornice: MeshInstance3D = _library.box(city, "cream", at + Vector3.UP * size.y, Vector3(size.x * 1.08, 0.12, size.z * 1.08))
+     cornice.material_override = _district_material("trim", Color("beb4a1"))
+     var roof: MeshInstance3D = _library.piece(city, "roof", "roof", at + Vector3.UP * (size.y + 0.06), Vector3(size.x * 1.14, 0.65, size.z * 1.14))
+     roof.material_override = _district_material("roof", Color("9d6959"))
  # One short arcade and one clock retain the skyline's strongest silhouettes.
  var far_z: float = p.table_bounds.position.y * p.SCALE - 3.5
  var span := _library.build_variant("aqueduct", false) as Node3D
@@ -127,6 +144,14 @@ func build_background(p: Node3D) -> void:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   _library.balloon(city, Vector3(center.x + (i - 1) * 6.0, 1.4 + i * 0.7, far_z - 5.0 - (i % 2) * 4.0), 0.60, i)
  await _batch_city(city, p)
+
+func _district_material(key: String, color: Color) -> Material:
+ var id := "district_" + key
+ if not _library.materials.has(id):
+  var mat := material(color)
+  Atmosphere.color(mat, "roof_tint" if key == "roof" else "architecture_tint", "tint")
+  _library.materials[id] = mat
+ return _library.materials[id]
 
 func _haze_material(color: Color) -> Material:
  var key := "haze_" + color.to_html()

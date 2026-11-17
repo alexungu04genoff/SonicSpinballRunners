@@ -80,10 +80,10 @@ func primitive(kind: String) -> Mesh:
    result = torus
   _:
    var cylinder := CylinderMesh.new()
-   cylinder.top_radius = 0.0 if kind == "cone" else 1.0
+   cylinder.top_radius = 0.0 if kind == "cone" else (0.58 if kind == "coral_branch" else 1.0)
    cylinder.bottom_radius = 1.0
    cylinder.height = 1.0
-   cylinder.radial_segments = 8
+   cylinder.radial_segments = 6 if kind == "coral_branch" else 8
    cylinder.rings = 1
    result = cylinder
  meshes[kind] = result
@@ -153,13 +153,21 @@ func lantern(root: Node3D, at: Vector3, radius: float) -> void:
 func coral(root: Node3D, at: Vector3, height: float) -> void:
  var palette := str(_coral_cluster_index%2)
  _coral_cluster_index+=1
- bar(root,"reef_stem_"+palette,at,at+Vector3.UP*height,height*0.055)
+ _coral_branch(root,"reef_stem_"+palette,at,at+Vector3.UP*height,height*0.09)
  for i in 4:
   var side := -1.0 if i%2 == 0 else 1.0
   var joint := at+Vector3(0,height*(0.22+i*0.15),0)
   var tip := joint+Vector3(side*height*(0.36-i*0.05),height*0.22,0.04)
-  bar(root,"reef_branch_"+palette,joint,tip,height*0.045)
-  bar(root,"reef_branch_"+palette,tip,tip+Vector3.UP*height*0.16,height*0.035)
+  _coral_branch(root,"reef_branch_"+palette,joint,tip,height*0.075)
+  _coral_branch(root,"reef_branch_"+palette,tip,tip+Vector3.UP*height*0.16,height*0.055)
+  if i < 2:
+   var fork := joint.lerp(tip, 0.65)
+   _coral_branch(root,"reef_branch_"+palette,fork,fork+Vector3(-side*height*0.045,height*0.18,-height*0.10),height*0.045)
+
+func _coral_branch(root: Node3D, color: String, a: Vector3, b: Vector3, width: float) -> void:
+ # Broad tapered six-sided branches keep the reef legible through tank glass.
+ var branch := piece(root,"coral_branch",color,(a+b)*0.5,Vector3(width*0.5,a.distance_to(b),width*0.5))
+ branch.quaternion = Quaternion(Vector3.UP,(b-a).normalized())
 
 func fish(root: Node3D, at: Vector3, length: float, angle: float, depth_scale := 1.0) -> void:
  var group := Node3D.new()

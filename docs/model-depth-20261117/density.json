@@ -1,0 +1,2763 @@
+{
+  "act": "res://data/acts/Authored/First Try Smooth Decor.tres",
+  "complete": true,
+  "themes": {
+    "aquarium_park": {
+      "act": {
+        "animation_bindings": 15,
+        "batch_stats": {
+          "batches": 28,
+          "instances": 230,
+          "records_after": 830,
+          "records_before": 1032,
+          "removed_nodes": 230,
+          "source_meshes": 916
+        },
+        "bytes": 414640,
+        "dynamic_bumpers": 5,
+        "dynamic_flippers": 8,
+        "dynamic_rings": 20,
+        "fresh": true,
+        "groups": {
+          "coral_planter": {
+            "mesh_instances": 44,
+            "mesh_nodes": 44,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1584,
+            "triangles": 1584,
+            "vertices": 1628
+          },
+          "koi_display": {
+            "mesh_instances": 6,
+            "mesh_nodes": 6,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 152,
+            "triangles": 228,
+            "vertices": 199
+          },
+          "lantern_palace": {
+            "mesh_instances": 96,
+            "mesh_nodes": 96,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1496,
+            "triangles": 1752,
+            "vertices": 3198
+          },
+          "lantern_trio": {
+            "mesh_instances": 63,
+            "mesh_nodes": 63,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1404,
+            "triangles": 1404,
+            "vertices": 1926
+          },
+          "lotus_bowl": {
+            "mesh_instances": 69,
+            "mesh_nodes": 69,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 3312,
+            "triangles": 4208,
+            "vertices": 3131
+          },
+          "moon_bridge": {
+            "mesh_instances": 17,
+            "mesh_nodes": 17,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 348,
+            "triangles": 348,
+            "vertices": 500
+          },
+          "other": {
+            "mesh_instances": 437,
+            "mesh_nodes": 235,
+            "shadow_only_triangles": 10227,
+            "shadow_triangles": 24112,
+            "triangles": 42693,
+            "vertices": 54528
+          },
+          "paper_lantern": {
+            "mesh_instances": 50,
+            "mesh_nodes": 50,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1104,
+            "triangles": 1104,
+            "vertices": 1522
+          },
+          "reef_aquarium": {
+            "mesh_instances": 45,
+            "mesh_nodes": 45,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 2040,
+            "triangles": 2328,
+            "vertices": 2125
+          },
+          "waterside_pavilion": {
+            "mesh_instances": 89,
+            "mesh_nodes": 89,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 2112,
+            "triangles": 2112,
+            "vertices": 3264
+          }
+        },
+        "mesh_instances": 916,
+        "mesh_nodes": 714,
+        "pipeline": "15afaeeda4122b0093b81f660b325b8470b1dc958545bb3bda13eee35394ea4a",
+        "retained_decor_roots": {
+          "coral_planter": 2,
+          "koi_display": 1,
+          "lantern_palace": 2,
+          "lantern_trio": 3,
+          "lotus_bowl": 8,
+          "moon_bridge": 1,
+          "paper_lantern": 7,
+          "reef_aquarium": 2,
+          "waterside_pavilion": 3
+        },
+        "ring_mesh": {
+          "triangles": 144,
+          "vertices": 91
+        },
+        "shadow_only_triangles": 10227,
+        "shadow_triangles": 37664,
+        "triangles": 57761,
+        "vertices": 72021
+      },
+      "background": {
+        "animation_bindings": 0,
+        "batch_stats": {
+          "batches": 2,
+          "instances": 10,
+          "records_after": 50,
+          "records_before": 58,
+          "removed_nodes": 10,
+          "source_meshes": 34
+        },
+        "bytes": 36341,
+        "dynamic_bumpers": 0,
+        "dynamic_flippers": 0,
+        "dynamic_rings": 0,
+        "fresh": true,
+        "groups": {
+          "other": {
+            "mesh_instances": 1224,
+            "mesh_nodes": 46,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 336,
+            "triangles": 33710,
+            "vertices": 42186
+          }
+        },
+        "mesh_instances": 1224,
+        "mesh_nodes": 46,
+        "pipeline": "15afaeeda4122b0093b81f660b325b8470b1dc958545bb3bda13eee35394ea4a",
+        "retained_decor_roots": {},
+        "shadow_only_triangles": 0,
+        "shadow_triangles": 336,
+        "triangles": 33710,
+        "vertices": 42186
+      },
+      "decor": {
+        "coral_planter": {
+          "primitive_conversion": {
+            "mesh_instances": 23,
+            "mesh_nodes": 23,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 804,
+            "triangles": 804,
+            "vertices": 838
+          },
+          "source": {
+            "mesh_instances": 23,
+            "mesh_nodes": 23,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 804,
+            "triangles": 804,
+            "vertices": 838
+          }
+        },
+        "jellyfish_rotunda": {
+          "primitive_conversion": {
+            "mesh_instances": 26,
+            "mesh_nodes": 26,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 792,
+            "triangles": 1016,
+            "vertices": 1210
+          },
+          "source": {
+            "mesh_instances": 26,
+            "mesh_nodes": 26,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 792,
+            "triangles": 1016,
+            "vertices": 1210
+          }
+        },
+        "koi_display": {
+          "primitive_conversion": {
+            "mesh_instances": 13,
+            "mesh_nodes": 13,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 224,
+            "triangles": 364,
+            "vertices": 388
+          },
+          "source": {
+            "mesh_instances": 13,
+            "mesh_nodes": 13,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 224,
+            "triangles": 364,
+            "vertices": 388
+          }
+        },
+        "lantern_palace": {
+          "primitive_conversion": {
+            "mesh_instances": 87,
+            "mesh_nodes": 87,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1724,
+            "triangles": 2364,
+            "vertices": 3084
+          },
+          "source": {
+            "mesh_instances": 87,
+            "mesh_nodes": 87,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1724,
+            "triangles": 2364,
+            "vertices": 3084
+          }
+        },
+        "lantern_trio": {
+          "primitive_conversion": {
+            "mesh_instances": 28,
+            "mesh_nodes": 28,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 516,
+            "triangles": 708,
+            "vertices": 873
+          },
+          "source": {
+            "mesh_instances": 28,
+            "mesh_nodes": 28,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 516,
+            "triangles": 708,
+            "vertices": 873
+          }
+        },
+        "lotus_bowl": {
+          "primitive_conversion": {
+            "mesh_instances": 9,
+            "mesh_nodes": 9,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 432,
+            "triangles": 544,
+            "vertices": 409
+          },
+          "source": {
+            "mesh_instances": 9,
+            "mesh_nodes": 9,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 432,
+            "triangles": 544,
+            "vertices": 409
+          }
+        },
+        "moon_bridge": {
+          "primitive_conversion": {
+            "mesh_instances": 76,
+            "mesh_nodes": 76,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1032,
+            "triangles": 1160,
+            "vertices": 1958
+          },
+          "source": {
+            "mesh_instances": 76,
+            "mesh_nodes": 76,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1032,
+            "triangles": 1160,
+            "vertices": 1958
+          }
+        },
+        "moon_gate": {
+          "primitive_conversion": {
+            "mesh_instances": 19,
+            "mesh_nodes": 19,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 588,
+            "triangles": 716,
+            "vertices": 877
+          },
+          "source": {
+            "mesh_instances": 19,
+            "mesh_nodes": 19,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 588,
+            "triangles": 716,
+            "vertices": 877
+          }
+        },
+        "paper_lantern": {
+          "primitive_conversion": {
+            "mesh_instances": 10,
+            "mesh_nodes": 10,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 180,
+            "triangles": 244,
+            "vertices": 307
+          },
+          "source": {
+            "mesh_instances": 10,
+            "mesh_nodes": 10,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 180,
+            "triangles": 244,
+            "vertices": 307
+          }
+        },
+        "reef_aquarium": {
+          "primitive_conversion": {
+            "mesh_instances": 27,
+            "mesh_nodes": 27,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1076,
+            "triangles": 1284,
+            "vertices": 1198
+          },
+          "source": {
+            "mesh_instances": 27,
+            "mesh_nodes": 27,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1076,
+            "triangles": 1284,
+            "vertices": 1198
+          }
+        },
+        "tide_basin": {
+          "primitive_conversion": {
+            "mesh_instances": 13,
+            "mesh_nodes": 13,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 204,
+            "triangles": 280,
+            "vertices": 379
+          },
+          "source": {
+            "mesh_instances": 13,
+            "mesh_nodes": 13,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 204,
+            "triangles": 280,
+            "vertices": 379
+          }
+        },
+        "waterside_pavilion": {
+          "primitive_conversion": {
+            "mesh_instances": 40,
+            "mesh_nodes": 40,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 780,
+            "triangles": 1036,
+            "vertices": 1420
+          },
+          "source": {
+            "mesh_instances": 40,
+            "mesh_nodes": 40,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 780,
+            "triangles": 1036,
+            "vertices": 1420
+          }
+        },
+        "wave_screen": {
+          "primitive_conversion": {
+            "mesh_instances": 12,
+            "mesh_nodes": 12,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 204,
+            "triangles": 204,
+            "vertices": 480
+          },
+          "source": {
+            "mesh_instances": 12,
+            "mesh_nodes": 12,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 204,
+            "triangles": 204,
+            "vertices": 480
+          }
+        }
+      }
+    },
+    "casino_night": {
+      "act": {
+        "animation_bindings": 15,
+        "batch_stats": {
+          "batches": 51,
+          "instances": 258,
+          "records_after": 587,
+          "records_before": 797,
+          "removed_nodes": 261,
+          "source_meshes": 665
+        },
+        "bytes": 391779,
+        "dynamic_bumpers": 5,
+        "dynamic_flippers": 8,
+        "dynamic_rings": 20,
+        "fresh": true,
+        "groups": {
+          "casino_pylon": {
+            "mesh_instances": 4,
+            "mesh_nodes": 4,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 134,
+            "triangles": 134,
+            "vertices": 285
+          },
+          "chip_stack": {
+            "mesh_instances": 141,
+            "mesh_nodes": 141,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 2700,
+            "triangles": 2700,
+            "vertices": 4077
+          },
+          "crown_lamp": {
+            "mesh_instances": 1,
+            "mesh_nodes": 1,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 60,
+            "triangles": 60,
+            "vertices": 57
+          },
+          "diamond_ornament": {
+            "mesh_instances": 3,
+            "mesh_nodes": 3,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 84,
+            "triangles": 84,
+            "vertices": 105
+          },
+          "jackpot_palace": {
+            "mesh_instances": 22,
+            "mesh_nodes": 22,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 408,
+            "triangles": 408,
+            "vertices": 1032
+          },
+          "neon_palm": {
+            "mesh_instances": 2,
+            "mesh_nodes": 2,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 120,
+            "triangles": 120,
+            "vertices": 114
+          },
+          "neon_star": {
+            "mesh_instances": 2,
+            "mesh_nodes": 2,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 48,
+            "triangles": 48,
+            "vertices": 132
+          },
+          "other": {
+            "mesh_instances": 663,
+            "mesh_nodes": 275,
+            "shadow_only_triangles": 10227,
+            "shadow_triangles": 27962,
+            "triangles": 48619,
+            "vertices": 71771
+          },
+          "reel_cabinet": {
+            "mesh_instances": 5,
+            "mesh_nodes": 5,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 108,
+            "triangles": 108,
+            "vertices": 288
+          },
+          "reel_tower": {
+            "mesh_instances": 6,
+            "mesh_nodes": 6,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 72,
+            "triangles": 72,
+            "vertices": 144
+          },
+          "star_gateway": {
+            "mesh_instances": 3,
+            "mesh_nodes": 3,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 36,
+            "triangles": 36,
+            "vertices": 72
+          },
+          "star_lantern": {
+            "mesh_instances": 11,
+            "mesh_nodes": 11,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 540,
+            "triangles": 540,
+            "vertices": 747
+          }
+        },
+        "mesh_instances": 863,
+        "mesh_nodes": 475,
+        "pipeline": "87168d5c5cf3a747a23754742f4ea354b9349fe1cd8448127418b83ecfb879bb",
+        "retained_decor_roots": {
+          "casino_pylon": 1,
+          "chip_stack": 5,
+          "crown_lamp": 1,
+          "diamond_ornament": 3,
+          "jackpot_palace": 2,
+          "neon_palm": 2,
+          "neon_star": 9,
+          "reel_cabinet": 1,
+          "reel_tower": 2,
+          "star_gateway": 1,
+          "star_lantern": 2
+        },
+        "ring_mesh": {
+          "triangles": 144,
+          "vertices": 91
+        },
+        "shadow_only_triangles": 10227,
+        "shadow_triangles": 32272,
+        "triangles": 52929,
+        "vertices": 78824
+      },
+      "background": {
+        "animation_bindings": 0,
+        "batch_stats": {
+          "batches": 4,
+          "instances": 20,
+          "records_after": 33,
+          "records_before": 49,
+          "removed_nodes": 20,
+          "source_meshes": 28
+        },
+        "bytes": 19600,
+        "dynamic_bumpers": 0,
+        "dynamic_flippers": 0,
+        "dynamic_rings": 0,
+        "fresh": true,
+        "groups": {
+          "other": {
+            "mesh_instances": 267,
+            "mesh_nodes": 27,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 4352,
+            "triangles": 4352,
+            "vertices": 8091
+          }
+        },
+        "mesh_instances": 267,
+        "mesh_nodes": 27,
+        "pipeline": "87168d5c5cf3a747a23754742f4ea354b9349fe1cd8448127418b83ecfb879bb",
+        "retained_decor_roots": {},
+        "shadow_only_triangles": 0,
+        "shadow_triangles": 4352,
+        "triangles": 4352,
+        "vertices": 8091
+      },
+      "decor": {
+        "card_fan": {
+          "primitive_conversion": {
+            "mesh_instances": 7,
+            "mesh_nodes": 7,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 84,
+            "triangles": 84,
+            "vertices": 168
+          },
+          "source": {
+            "mesh_instances": 7,
+            "mesh_nodes": 7,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 84,
+            "triangles": 84,
+            "vertices": 168
+          }
+        },
+        "casino_pylon": {
+          "primitive_conversion": {
+            "mesh_instances": 14,
+            "mesh_nodes": 14,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 350,
+            "triangles": 350,
+            "vertices": 861
+          },
+          "source": {
+            "mesh_instances": 14,
+            "mesh_nodes": 14,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 350,
+            "triangles": 350,
+            "vertices": 861
+          }
+        },
+        "chip_stack": {
+          "primitive_conversion": {
+            "mesh_instances": 29,
+            "mesh_nodes": 29,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 588,
+            "triangles": 588,
+            "vertices": 861
+          },
+          "source": {
+            "mesh_instances": 29,
+            "mesh_nodes": 29,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 588,
+            "triangles": 588,
+            "vertices": 861
+          }
+        },
+        "crown_lamp": {
+          "primitive_conversion": {
+            "mesh_instances": 13,
+            "mesh_nodes": 13,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 490,
+            "triangles": 490,
+            "vertices": 516
+          },
+          "source": {
+            "mesh_instances": 13,
+            "mesh_nodes": 13,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 490,
+            "triangles": 490,
+            "vertices": 516
+          }
+        },
+        "diamond_ornament": {
+          "primitive_conversion": {
+            "mesh_instances": 3,
+            "mesh_nodes": 3,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 84,
+            "triangles": 84,
+            "vertices": 105
+          },
+          "source": {
+            "mesh_instances": 3,
+            "mesh_nodes": 3,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 84,
+            "triangles": 84,
+            "vertices": 105
+          }
+        },
+        "jackpot_palace": {
+          "primitive_conversion": {
+            "mesh_instances": 36,
+            "mesh_nodes": 36,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 912,
+            "triangles": 912,
+            "vertices": 2139
+          },
+          "source": {
+            "mesh_instances": 36,
+            "mesh_nodes": 36,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 912,
+            "triangles": 912,
+            "vertices": 2139
+          }
+        },
+        "neon_palm": {
+          "primitive_conversion": {
+            "mesh_instances": 14,
+            "mesh_nodes": 14,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 216,
+            "triangles": 216,
+            "vertices": 369
+          },
+          "source": {
+            "mesh_instances": 14,
+            "mesh_nodes": 14,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 216,
+            "triangles": 216,
+            "vertices": 369
+          }
+        },
+        "neon_star": {
+          "primitive_conversion": {
+            "mesh_instances": 3,
+            "mesh_nodes": 3,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 84,
+            "triangles": 84,
+            "vertices": 240
+          },
+          "source": {
+            "mesh_instances": 3,
+            "mesh_nodes": 3,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 84,
+            "triangles": 84,
+            "vertices": 240
+          }
+        },
+        "reel_cabinet": {
+          "primitive_conversion": {
+            "mesh_instances": 17,
+            "mesh_nodes": 17,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 492,
+            "triangles": 492,
+            "vertices": 1011
+          },
+          "source": {
+            "mesh_instances": 17,
+            "mesh_nodes": 17,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 492,
+            "triangles": 492,
+            "vertices": 1011
+          }
+        },
+        "reel_tower": {
+          "primitive_conversion": {
+            "mesh_instances": 37,
+            "mesh_nodes": 37,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1068,
+            "triangles": 1068,
+            "vertices": 2262
+          },
+          "source": {
+            "mesh_instances": 37,
+            "mesh_nodes": 37,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1068,
+            "triangles": 1068,
+            "vertices": 2262
+          }
+        },
+        "roulette_pavilion": {
+          "primitive_conversion": {
+            "mesh_instances": 29,
+            "mesh_nodes": 29,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 530,
+            "triangles": 530,
+            "vertices": 951
+          },
+          "source": {
+            "mesh_instances": 29,
+            "mesh_nodes": 29,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 530,
+            "triangles": 530,
+            "vertices": 951
+          }
+        },
+        "star_gateway": {
+          "primitive_conversion": {
+            "mesh_instances": 23,
+            "mesh_nodes": 23,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 612,
+            "triangles": 612,
+            "vertices": 1728
+          },
+          "source": {
+            "mesh_instances": 23,
+            "mesh_nodes": 23,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 612,
+            "triangles": 612,
+            "vertices": 1728
+          }
+        },
+        "star_lantern": {
+          "primitive_conversion": {
+            "mesh_instances": 18,
+            "mesh_nodes": 18,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 696,
+            "triangles": 696,
+            "vertices": 1032
+          },
+          "source": {
+            "mesh_instances": 18,
+            "mesh_nodes": 18,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 696,
+            "triangles": 696,
+            "vertices": 1032
+          }
+        }
+      }
+    },
+    "chemical_plant": {
+      "act": {
+        "animation_bindings": 15,
+        "batch_stats": {
+          "batches": 27,
+          "instances": 133,
+          "records_after": 726,
+          "records_before": 832,
+          "removed_nodes": 133,
+          "source_meshes": 726
+        },
+        "bytes": 398720,
+        "dynamic_bumpers": 5,
+        "dynamic_flippers": 8,
+        "dynamic_rings": 20,
+        "fresh": true,
+        "groups": {
+          "beacon": {
+            "mesh_instances": 45,
+            "mesh_nodes": 45,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 108,
+            "triangles": 540,
+            "vertices": 1080
+          },
+          "control_cabinet": {
+            "mesh_instances": 26,
+            "mesh_nodes": 26,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 120,
+            "triangles": 648,
+            "vertices": 855
+          },
+          "fluid_reactor": {
+            "mesh_instances": 71,
+            "mesh_nodes": 71,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1200,
+            "triangles": 2268,
+            "vertices": 2637
+          },
+          "girder_machinery": {
+            "mesh_instances": 53,
+            "mesh_nodes": 53,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 612,
+            "triangles": 780,
+            "vertices": 1371
+          },
+          "other": {
+            "mesh_instances": 390,
+            "mesh_nodes": 284,
+            "shadow_only_triangles": 10227,
+            "shadow_triangles": 20596,
+            "triangles": 44721,
+            "vertices": 55716
+          },
+          "pipe_arch": {
+            "mesh_instances": 34,
+            "mesh_nodes": 34,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1056,
+            "triangles": 1272,
+            "vertices": 1410
+          },
+          "pipe_cluster": {
+            "mesh_instances": 10,
+            "mesh_nodes": 10,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 216,
+            "triangles": 264,
+            "vertices": 339
+          },
+          "pump_elbow": {
+            "mesh_instances": 16,
+            "mesh_nodes": 16,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 288,
+            "triangles": 384,
+            "vertices": 516
+          },
+          "tank_tower": {
+            "mesh_instances": 18,
+            "mesh_nodes": 18,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 480,
+            "triangles": 600,
+            "vertices": 696
+          },
+          "valve": {
+            "mesh_instances": 18,
+            "mesh_nodes": 18,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 216,
+            "triangles": 684,
+            "vertices": 693
+          },
+          "vent": {
+            "mesh_instances": 45,
+            "mesh_nodes": 45,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 480,
+            "triangles": 540,
+            "vertices": 1080
+          }
+        },
+        "mesh_instances": 726,
+        "mesh_nodes": 620,
+        "pipeline": "f00ce10638c5078832baeb3809eb147a57f8892164e33e8561c7d3597242e4dc",
+        "retained_decor_roots": {
+          "beacon": 9,
+          "control_cabinet": 2,
+          "fluid_reactor": 2,
+          "girder_machinery": 3,
+          "pipe_arch": 1,
+          "pipe_cluster": 1,
+          "pump_elbow": 2,
+          "tank_tower": 1,
+          "valve": 3,
+          "vent": 5
+        },
+        "ring_mesh": {
+          "triangles": 144,
+          "vertices": 91
+        },
+        "shadow_only_triangles": 10227,
+        "shadow_triangles": 25372,
+        "triangles": 52701,
+        "vertices": 66393
+      },
+      "background": {
+        "animation_bindings": 0,
+        "batch_stats": {
+          "batches": 5,
+          "instances": 15,
+          "records_after": 120,
+          "records_before": 130,
+          "removed_nodes": 15,
+          "source_meshes": 125
+        },
+        "bytes": 24520,
+        "dynamic_bumpers": 0,
+        "dynamic_flippers": 0,
+        "dynamic_rings": 0,
+        "fresh": true,
+        "groups": {
+          "other": {
+            "mesh_instances": 125,
+            "mesh_nodes": 115,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 0,
+            "triangles": 5486,
+            "vertices": 5680
+          }
+        },
+        "mesh_instances": 125,
+        "mesh_nodes": 115,
+        "pipeline": "f00ce10638c5078832baeb3809eb147a57f8892164e33e8561c7d3597242e4dc",
+        "retained_decor_roots": {},
+        "shadow_only_triangles": 0,
+        "shadow_triangles": 0,
+        "triangles": 5486,
+        "vertices": 5680
+      },
+      "decor": {
+        "beacon": {
+          "primitive_conversion": {
+            "mesh_instances": 9,
+            "mesh_nodes": 9,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 12,
+            "triangles": 252,
+            "vertices": 315
+          },
+          "source": {
+            "mesh_instances": 9,
+            "mesh_nodes": 9,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 12,
+            "triangles": 252,
+            "vertices": 315
+          }
+        },
+        "control_cabinet": {
+          "primitive_conversion": {
+            "mesh_instances": 14,
+            "mesh_nodes": 14,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 60,
+            "triangles": 360,
+            "vertices": 468
+          },
+          "source": {
+            "mesh_instances": 14,
+            "mesh_nodes": 14,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 60,
+            "triangles": 360,
+            "vertices": 468
+          }
+        },
+        "fluid_canister": {
+          "primitive_conversion": {
+            "mesh_instances": 9,
+            "mesh_nodes": 9,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 156,
+            "triangles": 300,
+            "vertices": 348
+          },
+          "source": {
+            "mesh_instances": 9,
+            "mesh_nodes": 9,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 156,
+            "triangles": 300,
+            "vertices": 348
+          }
+        },
+        "fluid_reactor": {
+          "primitive_conversion": {
+            "mesh_instances": 40,
+            "mesh_nodes": 40,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 600,
+            "triangles": 1260,
+            "vertices": 1476
+          },
+          "source": {
+            "mesh_instances": 40,
+            "mesh_nodes": 40,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 600,
+            "triangles": 1260,
+            "vertices": 1476
+          }
+        },
+        "girder_machinery": {
+          "primitive_conversion": {
+            "mesh_instances": 18,
+            "mesh_nodes": 18,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 204,
+            "triangles": 264,
+            "vertices": 465
+          },
+          "source": {
+            "mesh_instances": 18,
+            "mesh_nodes": 18,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 204,
+            "triangles": 264,
+            "vertices": 465
+          }
+        },
+        "pipe_arch": {
+          "primitive_conversion": {
+            "mesh_instances": 35,
+            "mesh_nodes": 35,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1056,
+            "triangles": 1284,
+            "vertices": 1434
+          },
+          "source": {
+            "mesh_instances": 35,
+            "mesh_nodes": 35,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1056,
+            "triangles": 1284,
+            "vertices": 1434
+          }
+        },
+        "pipe_cluster": {
+          "primitive_conversion": {
+            "mesh_instances": 31,
+            "mesh_nodes": 31,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 216,
+            "triangles": 1524,
+            "vertices": 1536
+          },
+          "source": {
+            "mesh_instances": 31,
+            "mesh_nodes": 31,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 216,
+            "triangles": 1524,
+            "vertices": 1536
+          }
+        },
+        "pump_elbow": {
+          "primitive_conversion": {
+            "mesh_instances": 18,
+            "mesh_nodes": 18,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 144,
+            "triangles": 792,
+            "vertices": 828
+          },
+          "source": {
+            "mesh_instances": 18,
+            "mesh_nodes": 18,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 144,
+            "triangles": 792,
+            "vertices": 828
+          }
+        },
+        "reactor_island": {
+          "primitive_conversion": {
+            "mesh_instances": 25,
+            "mesh_nodes": 25,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 420,
+            "triangles": 984,
+            "vertices": 1050
+          },
+          "source": {
+            "mesh_instances": 25,
+            "mesh_nodes": 25,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 420,
+            "triangles": 984,
+            "vertices": 1050
+          }
+        },
+        "tank_tower": {
+          "primitive_conversion": {
+            "mesh_instances": 18,
+            "mesh_nodes": 18,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 480,
+            "triangles": 600,
+            "vertices": 696
+          },
+          "source": {
+            "mesh_instances": 18,
+            "mesh_nodes": 18,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 480,
+            "triangles": 600,
+            "vertices": 696
+          }
+        },
+        "valve": {
+          "primitive_conversion": {
+            "mesh_instances": 9,
+            "mesh_nodes": 9,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 72,
+            "triangles": 408,
+            "vertices": 402
+          },
+          "source": {
+            "mesh_instances": 9,
+            "mesh_nodes": 9,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 72,
+            "triangles": 408,
+            "vertices": 402
+          }
+        },
+        "vent": {
+          "primitive_conversion": {
+            "mesh_instances": 9,
+            "mesh_nodes": 9,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 96,
+            "triangles": 108,
+            "vertices": 216
+          },
+          "source": {
+            "mesh_instances": 9,
+            "mesh_nodes": 9,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 96,
+            "triangles": 108,
+            "vertices": 216
+          }
+        }
+      }
+    },
+    "green_hill": {
+      "act": {
+        "animation_bindings": 15,
+        "batch_stats": {
+          "batches": 37,
+          "instances": 213,
+          "records_after": 563,
+          "records_before": 742,
+          "removed_nodes": 216,
+          "source_meshes": 612
+        },
+        "bytes": 444251,
+        "dynamic_bumpers": 5,
+        "dynamic_flippers": 8,
+        "dynamic_rings": 20,
+        "fresh": true,
+        "groups": {
+          "checker_pedestal": {
+            "mesh_instances": 5,
+            "mesh_nodes": 5,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 72,
+            "triangles": 72,
+            "vertices": 112
+          },
+          "flower": {
+            "mesh_instances": 12,
+            "mesh_nodes": 12,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 192,
+            "triangles": 192,
+            "vertices": 256
+          },
+          "grass_tuft": {
+            "mesh_instances": 28,
+            "mesh_nodes": 28,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 112,
+            "triangles": 112,
+            "vertices": 336
+          },
+          "medium_rock": {
+            "mesh_instances": 2,
+            "mesh_nodes": 2,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 72,
+            "triangles": 72,
+            "vertices": 216
+          },
+          "other": {
+            "mesh_instances": 495,
+            "mesh_nodes": 319,
+            "shadow_only_triangles": 10227,
+            "shadow_triangles": 24496,
+            "triangles": 42639,
+            "vertices": 56375
+          },
+          "palm": {
+            "mesh_instances": 60,
+            "mesh_nodes": 60,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1816,
+            "triangles": 1816,
+            "vertices": 3096
+          },
+          "rope_bridge": {
+            "mesh_instances": 4,
+            "mesh_nodes": 4,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 48,
+            "triangles": 48,
+            "vertices": 96
+          },
+          "small_rock": {
+            "mesh_instances": 2,
+            "mesh_nodes": 2,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 72,
+            "triangles": 72,
+            "vertices": 216
+          },
+          "turf_loop": {
+            "mesh_instances": 4,
+            "mesh_nodes": 4,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 424,
+            "triangles": 424,
+            "vertices": 1272
+          }
+        },
+        "mesh_instances": 612,
+        "mesh_nodes": 436,
+        "pipeline": "fe3b34663c99ccb73d0e8e1cfa404fc077acc06fcdbf408f4fe09f2159c95306",
+        "retained_decor_roots": {
+          "checker_pedestal": 1,
+          "flower": 7,
+          "grass_tuft": 4,
+          "medium_rock": 2,
+          "palm": 4,
+          "rope_bridge": 1,
+          "shrub": 2,
+          "small_rock": 6,
+          "turf_loop": 2
+        },
+        "ring_mesh": {
+          "triangles": 144,
+          "vertices": 91
+        },
+        "shadow_only_triangles": 10227,
+        "shadow_triangles": 27304,
+        "triangles": 45447,
+        "vertices": 61975
+      },
+      "background": {
+        "animation_bindings": 0,
+        "batch_stats": {
+          "batches": 0,
+          "instances": 0,
+          "records_after": 19,
+          "records_before": 19,
+          "removed_nodes": 0,
+          "source_meshes": 16
+        },
+        "bytes": 14389,
+        "dynamic_bumpers": 0,
+        "dynamic_flippers": 0,
+        "dynamic_rings": 0,
+        "fresh": true,
+        "groups": {
+          "other": {
+            "mesh_instances": 16,
+            "mesh_nodes": 16,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 864,
+            "triangles": 866,
+            "vertices": 691
+          }
+        },
+        "mesh_instances": 16,
+        "mesh_nodes": 16,
+        "pipeline": "fe3b34663c99ccb73d0e8e1cfa404fc077acc06fcdbf408f4fe09f2159c95306",
+        "retained_decor_roots": {},
+        "shadow_only_triangles": 0,
+        "shadow_triangles": 864,
+        "triangles": 866,
+        "vertices": 691
+      },
+      "decor": {
+        "checker_pedestal": {
+          "primitive_conversion": {
+            "mesh_instances": 13,
+            "mesh_nodes": 13,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 120,
+            "triangles": 120,
+            "vertices": 240
+          },
+          "source": {
+            "mesh_instances": 13,
+            "mesh_nodes": 13,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 120,
+            "triangles": 120,
+            "vertices": 240
+          }
+        },
+        "flower": {
+          "primitive_conversion": {
+            "mesh_instances": 11,
+            "mesh_nodes": 11,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 96,
+            "triangles": 96,
+            "vertices": 192
+          },
+          "source": {
+            "mesh_instances": 11,
+            "mesh_nodes": 11,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 96,
+            "triangles": 96,
+            "vertices": 192
+          }
+        },
+        "flower_patch": {
+          "primitive_conversion": {
+            "mesh_instances": 33,
+            "mesh_nodes": 33,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 288,
+            "triangles": 288,
+            "vertices": 576
+          },
+          "source": {
+            "mesh_instances": 33,
+            "mesh_nodes": 33,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 288,
+            "triangles": 288,
+            "vertices": 576
+          }
+        },
+        "grass_tuft": {
+          "primitive_conversion": {
+            "mesh_instances": 7,
+            "mesh_nodes": 7,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 28,
+            "triangles": 28,
+            "vertices": 84
+          },
+          "source": {
+            "mesh_instances": 7,
+            "mesh_nodes": 7,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 28,
+            "triangles": 28,
+            "vertices": 84
+          }
+        },
+        "medium_rock": {
+          "primitive_conversion": {
+            "mesh_instances": 2,
+            "mesh_nodes": 2,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 72,
+            "triangles": 72,
+            "vertices": 216
+          },
+          "source": {
+            "mesh_instances": 2,
+            "mesh_nodes": 2,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 72,
+            "triangles": 72,
+            "vertices": 216
+          }
+        },
+        "palm": {
+          "primitive_conversion": {
+            "mesh_instances": 18,
+            "mesh_nodes": 18,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 562,
+            "triangles": 562,
+            "vertices": 858
+          },
+          "source": {
+            "mesh_instances": 18,
+            "mesh_nodes": 18,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 562,
+            "triangles": 562,
+            "vertices": 858
+          }
+        },
+        "palm_island": {
+          "primitive_conversion": {
+            "mesh_instances": 82,
+            "mesh_nodes": 82,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 4716,
+            "triangles": 4716,
+            "vertices": 3912
+          },
+          "source": {
+            "mesh_instances": 82,
+            "mesh_nodes": 82,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 4716,
+            "triangles": 4716,
+            "vertices": 3912
+          }
+        },
+        "palm_left": {
+          "primitive_conversion": {
+            "mesh_instances": 18,
+            "mesh_nodes": 18,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 562,
+            "triangles": 562,
+            "vertices": 858
+          },
+          "source": {
+            "mesh_instances": 18,
+            "mesh_nodes": 18,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 562,
+            "triangles": 562,
+            "vertices": 858
+          }
+        },
+        "rope_bridge": {
+          "primitive_conversion": {
+            "mesh_instances": 79,
+            "mesh_nodes": 79,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 2436,
+            "triangles": 2436,
+            "vertices": 2702
+          },
+          "source": {
+            "mesh_instances": 79,
+            "mesh_nodes": 79,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 2436,
+            "triangles": 2436,
+            "vertices": 2702
+          }
+        },
+        "shrub": {
+          "primitive_conversion": {
+            "mesh_instances": 3,
+            "mesh_nodes": 3,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 168,
+            "triangles": 168,
+            "vertices": 120
+          },
+          "source": {
+            "mesh_instances": 3,
+            "mesh_nodes": 3,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 168,
+            "triangles": 168,
+            "vertices": 120
+          }
+        },
+        "small_rock": {
+          "primitive_conversion": {
+            "mesh_instances": 1,
+            "mesh_nodes": 1,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 36,
+            "triangles": 36,
+            "vertices": 108
+          },
+          "source": {
+            "mesh_instances": 1,
+            "mesh_nodes": 1,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 36,
+            "triangles": 36,
+            "vertices": 108
+          }
+        },
+        "tall_rock": {
+          "primitive_conversion": {
+            "mesh_instances": 2,
+            "mesh_nodes": 2,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 72,
+            "triangles": 72,
+            "vertices": 216
+          },
+          "source": {
+            "mesh_instances": 2,
+            "mesh_nodes": 2,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 72,
+            "triangles": 72,
+            "vertices": 216
+          }
+        },
+        "turf_loop": {
+          "primitive_conversion": {
+            "mesh_instances": 2,
+            "mesh_nodes": 2,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 212,
+            "triangles": 212,
+            "vertices": 636
+          },
+          "source": {
+            "mesh_instances": 2,
+            "mesh_nodes": 2,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 212,
+            "triangles": 212,
+            "vertices": 636
+          }
+        }
+      }
+    },
+    "ice_cap": {
+      "act": {
+        "animation_bindings": 15,
+        "batch_stats": {
+          "batches": 17,
+          "instances": 98,
+          "records_after": 522,
+          "records_before": 609,
+          "removed_nodes": 104,
+          "source_meshes": 438
+        },
+        "bytes": 389833,
+        "dynamic_bumpers": 5,
+        "dynamic_flippers": 8,
+        "dynamic_rings": 20,
+        "fresh": true,
+        "groups": {
+          "alpine_fir": {
+            "mesh_instances": 15,
+            "mesh_nodes": 15,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 464,
+            "triangles": 464,
+            "vertices": 1012
+          },
+          "crystal_shards": {
+            "mesh_instances": 60,
+            "mesh_nodes": 60,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1980,
+            "triangles": 1980,
+            "vertices": 1980
+          },
+          "frozen_bridge": {
+            "mesh_instances": 6,
+            "mesh_nodes": 6,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 162,
+            "triangles": 162,
+            "vertices": 169
+          },
+          "frozen_spring": {
+            "mesh_instances": 8,
+            "mesh_nodes": 8,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 294,
+            "triangles": 294,
+            "vertices": 292
+          },
+          "glacier_crown": {
+            "mesh_instances": 16,
+            "mesh_nodes": 16,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 580,
+            "triangles": 580,
+            "vertices": 552
+          },
+          "glacier_sail": {
+            "mesh_instances": 2,
+            "mesh_nodes": 2,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 160,
+            "triangles": 160,
+            "vertices": 108
+          },
+          "ice_fan": {
+            "mesh_instances": 10,
+            "mesh_nodes": 10,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 330,
+            "triangles": 330,
+            "vertices": 330
+          },
+          "icicle_grotto": {
+            "mesh_instances": 5,
+            "mesh_nodes": 5,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 150,
+            "triangles": 150,
+            "vertices": 145
+          },
+          "other": {
+            "mesh_instances": 362,
+            "mesh_nodes": 238,
+            "shadow_only_triangles": 10227,
+            "shadow_triangles": 23918,
+            "triangles": 42053,
+            "vertices": 55624
+          },
+          "snow_cairn": {
+            "mesh_instances": 6,
+            "mesh_nodes": 6,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 480,
+            "triangles": 480,
+            "vertices": 324
+          },
+          "snow_pine": {
+            "mesh_instances": 3,
+            "mesh_nodes": 3,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 72,
+            "triangles": 72,
+            "vertices": 216
+          }
+        },
+        "mesh_instances": 493,
+        "mesh_nodes": 369,
+        "pipeline": "f0bc1e8d56e2969e22313eccd4d8a15f5d19071c6a3807ab67cb372e26eec047",
+        "retained_decor_roots": {
+          "alpine_fir": 2,
+          "crystal_shards": 10,
+          "frost_grass": 5,
+          "frozen_bridge": 1,
+          "frozen_spring": 1,
+          "glacier_crown": 2,
+          "glacier_sail": 2,
+          "ice_fan": 1,
+          "icicle_grotto": 1,
+          "snow_cairn": 2,
+          "snow_pine": 1,
+          "trail_fence": 1
+        },
+        "ring_mesh": {
+          "triangles": 144,
+          "vertices": 91
+        },
+        "shadow_only_triangles": 10227,
+        "shadow_triangles": 28590,
+        "triangles": 46725,
+        "vertices": 60752
+      },
+      "background": {
+        "animation_bindings": 0,
+        "batch_stats": {
+          "batches": 0,
+          "instances": 0,
+          "records_after": 28,
+          "records_before": 28,
+          "removed_nodes": 0,
+          "source_meshes": 1
+        },
+        "bytes": 28761,
+        "dynamic_bumpers": 0,
+        "dynamic_flippers": 0,
+        "dynamic_rings": 0,
+        "fresh": true,
+        "groups": {
+          "other": {
+            "mesh_instances": 81,
+            "mesh_nodes": 25,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 12,
+            "triangles": 1824,
+            "vertices": 2584
+          }
+        },
+        "mesh_instances": 81,
+        "mesh_nodes": 25,
+        "pipeline": "f0bc1e8d56e2969e22313eccd4d8a15f5d19071c6a3807ab67cb372e26eec047",
+        "retained_decor_roots": {},
+        "shadow_only_triangles": 0,
+        "shadow_triangles": 12,
+        "triangles": 1824,
+        "vertices": 2584
+      },
+      "decor": {
+        "alpine_fir": {
+          "primitive_conversion": {
+            "mesh_instances": 15,
+            "mesh_nodes": 15,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 464,
+            "triangles": 464,
+            "vertices": 1012
+          },
+          "source": {
+            "mesh_instances": 15,
+            "mesh_nodes": 15,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 464,
+            "triangles": 464,
+            "vertices": 1012
+          }
+        },
+        "aurora_basin": {
+          "primitive_conversion": {
+            "mesh_instances": 12,
+            "mesh_nodes": 12,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 802,
+            "triangles": 802,
+            "vertices": 592
+          },
+          "source": {
+            "mesh_instances": 12,
+            "mesh_nodes": 12,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 802,
+            "triangles": 802,
+            "vertices": 592
+          }
+        },
+        "crystal_shards": {
+          "primitive_conversion": {
+            "mesh_instances": 6,
+            "mesh_nodes": 6,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 198,
+            "triangles": 198,
+            "vertices": 198
+          },
+          "source": {
+            "mesh_instances": 6,
+            "mesh_nodes": 6,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 198,
+            "triangles": 198,
+            "vertices": 198
+          }
+        },
+        "frost_grass": {
+          "primitive_conversion": {
+            "mesh_instances": 5,
+            "mesh_nodes": 5,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 150,
+            "triangles": 150,
+            "vertices": 145
+          },
+          "source": {
+            "mesh_instances": 5,
+            "mesh_nodes": 5,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 150,
+            "triangles": 150,
+            "vertices": 145
+          }
+        },
+        "frozen_bridge": {
+          "primitive_conversion": {
+            "mesh_instances": 22,
+            "mesh_nodes": 22,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 830,
+            "triangles": 830,
+            "vertices": 763
+          },
+          "source": {
+            "mesh_instances": 22,
+            "mesh_nodes": 22,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 830,
+            "triangles": 830,
+            "vertices": 763
+          }
+        },
+        "frozen_spring": {
+          "primitive_conversion": {
+            "mesh_instances": 8,
+            "mesh_nodes": 8,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 294,
+            "triangles": 294,
+            "vertices": 292
+          },
+          "source": {
+            "mesh_instances": 8,
+            "mesh_nodes": 8,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 294,
+            "triangles": 294,
+            "vertices": 292
+          }
+        },
+        "glacier_crown": {
+          "primitive_conversion": {
+            "mesh_instances": 8,
+            "mesh_nodes": 8,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 290,
+            "triangles": 290,
+            "vertices": 276
+          },
+          "source": {
+            "mesh_instances": 8,
+            "mesh_nodes": 8,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 290,
+            "triangles": 290,
+            "vertices": 276
+          }
+        },
+        "glacier_sail": {
+          "primitive_conversion": {
+            "mesh_instances": 7,
+            "mesh_nodes": 7,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 278,
+            "triangles": 278,
+            "vertices": 252
+          },
+          "source": {
+            "mesh_instances": 7,
+            "mesh_nodes": 7,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 278,
+            "triangles": 278,
+            "vertices": 252
+          }
+        },
+        "ice_fan": {
+          "primitive_conversion": {
+            "mesh_instances": 10,
+            "mesh_nodes": 10,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 330,
+            "triangles": 330,
+            "vertices": 330
+          },
+          "source": {
+            "mesh_instances": 10,
+            "mesh_nodes": 10,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 330,
+            "triangles": 330,
+            "vertices": 330
+          }
+        },
+        "icicle_grotto": {
+          "primitive_conversion": {
+            "mesh_instances": 21,
+            "mesh_nodes": 21,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 818,
+            "triangles": 818,
+            "vertices": 739
+          },
+          "source": {
+            "mesh_instances": 21,
+            "mesh_nodes": 21,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 818,
+            "triangles": 818,
+            "vertices": 739
+          }
+        },
+        "snow_cairn": {
+          "primitive_conversion": {
+            "mesh_instances": 4,
+            "mesh_nodes": 4,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 320,
+            "triangles": 320,
+            "vertices": 216
+          },
+          "source": {
+            "mesh_instances": 4,
+            "mesh_nodes": 4,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 320,
+            "triangles": 320,
+            "vertices": 216
+          }
+        },
+        "snow_pine": {
+          "primitive_conversion": {
+            "mesh_instances": 7,
+            "mesh_nodes": 7,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 192,
+            "triangles": 192,
+            "vertices": 479
+          },
+          "source": {
+            "mesh_instances": 7,
+            "mesh_nodes": 7,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 192,
+            "triangles": 192,
+            "vertices": 479
+          }
+        },
+        "trail_fence": {
+          "primitive_conversion": {
+            "mesh_instances": 8,
+            "mesh_nodes": 8,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 96,
+            "triangles": 96,
+            "vertices": 192
+          },
+          "source": {
+            "mesh_instances": 8,
+            "mesh_nodes": 8,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 96,
+            "triangles": 96,
+            "vertices": 192
+          }
+        }
+      }
+    },
+    "rooftop_run": {
+      "act": {
+        "animation_bindings": 15,
+        "batch_stats": {
+          "batches": 28,
+          "instances": 177,
+          "records_after": 546,
+          "records_before": 703,
+          "removed_nodes": 185,
+          "source_meshes": 574
+        },
+        "bytes": 410718,
+        "dynamic_bumpers": 5,
+        "dynamic_flippers": 8,
+        "dynamic_rings": 20,
+        "fresh": true,
+        "groups": {
+          "aqueduct": {
+            "mesh_instances": 27,
+            "mesh_nodes": 27,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 324,
+            "triangles": 324,
+            "vertices": 648
+          },
+          "cafe_awning": {
+            "mesh_instances": 14,
+            "mesh_nodes": 14,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 168,
+            "triangles": 168,
+            "vertices": 336
+          },
+          "chimney_pots": {
+            "mesh_instances": 26,
+            "mesh_nodes": 26,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 888,
+            "triangles": 888,
+            "vertices": 992
+          },
+          "clock_tower": {
+            "mesh_instances": 39,
+            "mesh_nodes": 39,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 896,
+            "triangles": 896,
+            "vertices": 1151
+          },
+          "cypress_terrace": {
+            "mesh_instances": 7,
+            "mesh_nodes": 7,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 384,
+            "triangles": 384,
+            "vertices": 301
+          },
+          "festival_pennant": {
+            "mesh_instances": 8,
+            "mesh_nodes": 8,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 96,
+            "triangles": 96,
+            "vertices": 192
+          },
+          "flower_urn": {
+            "mesh_instances": 16,
+            "mesh_nodes": 16,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1056,
+            "triangles": 1056,
+            "vertices": 815
+          },
+          "garden_arch": {
+            "mesh_instances": 15,
+            "mesh_nodes": 15,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 316,
+            "triangles": 316,
+            "vertices": 420
+          },
+          "other": {
+            "mesh_instances": 494,
+            "mesh_nodes": 253,
+            "shadow_only_triangles": 10227,
+            "shadow_triangles": 24952,
+            "triangles": 68105,
+            "vertices": 131741
+          },
+          "roof_pavilion": {
+            "mesh_instances": 28,
+            "mesh_nodes": 28,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 324,
+            "triangles": 324,
+            "vertices": 672
+          }
+        },
+        "mesh_instances": 674,
+        "mesh_nodes": 433,
+        "pipeline": "e8d4ed7129f4b909ba3db6a930e54b667f40e530f44af17c559e5395016f3075",
+        "retained_decor_roots": {
+          "aqueduct": 1,
+          "cafe_awning": 2,
+          "chimney_pots": 5,
+          "clock_tower": 2,
+          "cypress_terrace": 1,
+          "festival_pennant": 3,
+          "flower_urn": 9,
+          "garden_arch": 1,
+          "garden_bench": 2,
+          "roof_pavilion": 3
+        },
+        "ring_mesh": {
+          "triangles": 144,
+          "vertices": 91
+        },
+        "shadow_only_triangles": 10227,
+        "shadow_triangles": 29404,
+        "triangles": 72557,
+        "vertices": 137268
+      },
+      "background": {
+        "animation_bindings": 0,
+        "batch_stats": {
+          "batches": 0,
+          "instances": 0,
+          "records_after": 42,
+          "records_before": 42,
+          "removed_nodes": 0,
+          "source_meshes": 2
+        },
+        "bytes": 30385,
+        "dynamic_bumpers": 0,
+        "dynamic_flippers": 0,
+        "dynamic_rings": 0,
+        "fresh": true,
+        "groups": {
+          "other": {
+            "mesh_instances": 408,
+            "mesh_nodes": 41,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 5184,
+            "triangles": 5184,
+            "vertices": 10039
+          }
+        },
+        "mesh_instances": 408,
+        "mesh_nodes": 41,
+        "pipeline": "e8d4ed7129f4b909ba3db6a930e54b667f40e530f44af17c559e5395016f3075",
+        "retained_decor_roots": {},
+        "shadow_only_triangles": 0,
+        "shadow_triangles": 5184,
+        "triangles": 5184,
+        "vertices": 10039
+      },
+      "decor": {
+        "aqueduct": {
+          "primitive_conversion": {
+            "mesh_instances": 32,
+            "mesh_nodes": 32,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 384,
+            "triangles": 384,
+            "vertices": 768
+          },
+          "source": {
+            "mesh_instances": 32,
+            "mesh_nodes": 32,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 384,
+            "triangles": 384,
+            "vertices": 768
+          }
+        },
+        "cafe_awning": {
+          "primitive_conversion": {
+            "mesh_instances": 15,
+            "mesh_nodes": 15,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 180,
+            "triangles": 180,
+            "vertices": 360
+          },
+          "source": {
+            "mesh_instances": 15,
+            "mesh_nodes": 15,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 180,
+            "triangles": 180,
+            "vertices": 360
+          }
+        },
+        "chimney_pots": {
+          "primitive_conversion": {
+            "mesh_instances": 6,
+            "mesh_nodes": 6,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 216,
+            "triangles": 216,
+            "vertices": 236
+          },
+          "source": {
+            "mesh_instances": 6,
+            "mesh_nodes": 6,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 216,
+            "triangles": 216,
+            "vertices": 236
+          }
+        },
+        "clock_tower": {
+          "primitive_conversion": {
+            "mesh_instances": 58,
+            "mesh_nodes": 58,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1432,
+            "triangles": 1432,
+            "vertices": 1765
+          },
+          "source": {
+            "mesh_instances": 58,
+            "mesh_nodes": 58,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1432,
+            "triangles": 1432,
+            "vertices": 1765
+          }
+        },
+        "cypress_terrace": {
+          "primitive_conversion": {
+            "mesh_instances": 8,
+            "mesh_nodes": 8,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 396,
+            "triangles": 396,
+            "vertices": 325
+          },
+          "source": {
+            "mesh_instances": 8,
+            "mesh_nodes": 8,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 396,
+            "triangles": 396,
+            "vertices": 325
+          }
+        },
+        "festival_balloons": {
+          "primitive_conversion": {
+            "mesh_instances": 38,
+            "mesh_nodes": 38,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 432,
+            "triangles": 432,
+            "vertices": 958
+          },
+          "source": {
+            "mesh_instances": 38,
+            "mesh_nodes": 38,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 432,
+            "triangles": 432,
+            "vertices": 958
+          }
+        },
+        "festival_pennant": {
+          "primitive_conversion": {
+            "mesh_instances": 4,
+            "mesh_nodes": 4,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 48,
+            "triangles": 48,
+            "vertices": 96
+          },
+          "source": {
+            "mesh_instances": 4,
+            "mesh_nodes": 4,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 48,
+            "triangles": 48,
+            "vertices": 96
+          }
+        },
+        "flower_urn": {
+          "primitive_conversion": {
+            "mesh_instances": 6,
+            "mesh_nodes": 6,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 284,
+            "triangles": 284,
+            "vertices": 232
+          },
+          "source": {
+            "mesh_instances": 6,
+            "mesh_nodes": 6,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 284,
+            "triangles": 284,
+            "vertices": 232
+          }
+        },
+        "garden_arch": {
+          "primitive_conversion": {
+            "mesh_instances": 15,
+            "mesh_nodes": 15,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 316,
+            "triangles": 316,
+            "vertices": 420
+          },
+          "source": {
+            "mesh_instances": 15,
+            "mesh_nodes": 15,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 316,
+            "triangles": 316,
+            "vertices": 420
+          }
+        },
+        "garden_bench": {
+          "primitive_conversion": {
+            "mesh_instances": 9,
+            "mesh_nodes": 9,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 108,
+            "triangles": 108,
+            "vertices": 216
+          },
+          "source": {
+            "mesh_instances": 9,
+            "mesh_nodes": 9,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 108,
+            "triangles": 108,
+            "vertices": 216
+          }
+        },
+        "hedge_planter": {
+          "primitive_conversion": {
+            "mesh_instances": 5,
+            "mesh_nodes": 5,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 264,
+            "triangles": 264,
+            "vertices": 210
+          },
+          "source": {
+            "mesh_instances": 5,
+            "mesh_nodes": 5,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 264,
+            "triangles": 264,
+            "vertices": 210
+          }
+        },
+        "roof_pavilion": {
+          "primitive_conversion": {
+            "mesh_instances": 14,
+            "mesh_nodes": 14,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 164,
+            "triangles": 164,
+            "vertices": 336
+          },
+          "source": {
+            "mesh_instances": 14,
+            "mesh_nodes": 14,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 164,
+            "triangles": 164,
+            "vertices": 336
+          }
+        }
+      }
+    },
+    "sky_sanctuary": {
+      "act": {
+        "animation_bindings": 15,
+        "batch_stats": {
+          "batches": 60,
+          "instances": 411,
+          "records_after": 496,
+          "records_before": 847,
+          "removed_nodes": 411,
+          "source_meshes": 719
+        },
+        "bytes": 383246,
+        "dynamic_bumpers": 5,
+        "dynamic_flippers": 8,
+        "dynamic_rings": 20,
+        "fresh": true,
+        "groups": {
+          "azure_tablet": {
+            "mesh_instances": 4,
+            "mesh_nodes": 4,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 48,
+            "triangles": 48,
+            "vertices": 96
+          },
+          "broken_colonnade": {
+            "mesh_instances": 4,
+            "mesh_nodes": 4,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 120,
+            "triangles": 120,
+            "vertices": 142
+          },
+          "fallen_capital": {
+            "mesh_instances": 13,
+            "mesh_nodes": 13,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 140,
+            "triangles": 140,
+            "vertices": 312
+          },
+          "orb_reliquary": {
+            "mesh_instances": 3,
+            "mesh_nodes": 3,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 148,
+            "triangles": 148,
+            "vertices": 120
+          },
+          "other": {
+            "mesh_instances": 873,
+            "mesh_nodes": 276,
+            "shadow_only_triangles": 10227,
+            "shadow_triangles": 32292,
+            "triangles": 55699,
+            "vertices": 70002
+          },
+          "sanctuary_belfry": {
+            "mesh_instances": 43,
+            "mesh_nodes": 43,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1792,
+            "triangles": 1792,
+            "vertices": 1833
+          },
+          "sanctuary_palm": {
+            "mesh_instances": 8,
+            "mesh_nodes": 8,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 356,
+            "triangles": 356,
+            "vertices": 297
+          },
+          "sky_aqueduct": {
+            "mesh_instances": 2,
+            "mesh_nodes": 2,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 24,
+            "triangles": 24,
+            "vertices": 48
+          },
+          "sky_blossoms": {
+            "mesh_instances": 1,
+            "mesh_nodes": 1,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 48,
+            "triangles": 48,
+            "vertices": 47
+          },
+          "stepped_fountain": {
+            "mesh_instances": 4,
+            "mesh_nodes": 4,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 176,
+            "triangles": 176,
+            "vertices": 168
+          },
+          "vine_obelisk": {
+            "mesh_instances": 5,
+            "mesh_nodes": 5,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 96,
+            "triangles": 96,
+            "vertices": 143
+          },
+          "vine_tablet": {
+            "mesh_instances": 14,
+            "mesh_nodes": 14,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 168,
+            "triangles": 168,
+            "vertices": 336
+          }
+        },
+        "mesh_instances": 974,
+        "mesh_nodes": 377,
+        "pipeline": "959a49ecbeec7180087f87afc0e81e5aa2fd17746277a7fd8fa3fb96ec89a26c",
+        "retained_decor_roots": {
+          "azure_tablet": 1,
+          "broken_colonnade": 1,
+          "fallen_capital": 7,
+          "orb_reliquary": 1,
+          "sanctuary_belfry": 2,
+          "sanctuary_palm": 3,
+          "sky_aqueduct": 1,
+          "sky_blossoms": 4,
+          "stepped_fountain": 2,
+          "vine_obelisk": 1,
+          "vine_tablet": 6
+        },
+        "ring_mesh": {
+          "triangles": 144,
+          "vertices": 91
+        },
+        "shadow_only_triangles": 10227,
+        "shadow_triangles": 35408,
+        "triangles": 58815,
+        "vertices": 73544
+      },
+      "background": {
+        "animation_bindings": 0,
+        "batch_stats": {
+          "batches": 0,
+          "instances": 0,
+          "records_after": 18,
+          "records_before": 18,
+          "removed_nodes": 0,
+          "source_meshes": 1
+        },
+        "bytes": 19367,
+        "dynamic_bumpers": 0,
+        "dynamic_flippers": 0,
+        "dynamic_rings": 0,
+        "fresh": true,
+        "groups": {
+          "other": {
+            "mesh_instances": 373,
+            "mesh_nodes": 14,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 0,
+            "triangles": 18722,
+            "vertices": 15791
+          }
+        },
+        "mesh_instances": 373,
+        "mesh_nodes": 14,
+        "pipeline": "959a49ecbeec7180087f87afc0e81e5aa2fd17746277a7fd8fa3fb96ec89a26c",
+        "retained_decor_roots": {},
+        "shadow_only_triangles": 0,
+        "shadow_triangles": 0,
+        "triangles": 18722,
+        "vertices": 15791
+      },
+      "decor": {
+        "astral_dais": {
+          "primitive_conversion": {
+            "mesh_instances": 18,
+            "mesh_nodes": 18,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 272,
+            "triangles": 272,
+            "vertices": 478
+          },
+          "source": {
+            "mesh_instances": 18,
+            "mesh_nodes": 18,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 272,
+            "triangles": 272,
+            "vertices": 478
+          }
+        },
+        "azure_tablet": {
+          "primitive_conversion": {
+            "mesh_instances": 5,
+            "mesh_nodes": 5,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 60,
+            "triangles": 60,
+            "vertices": 120
+          },
+          "source": {
+            "mesh_instances": 5,
+            "mesh_nodes": 5,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 60,
+            "triangles": 60,
+            "vertices": 120
+          }
+        },
+        "broken_colonnade": {
+          "primitive_conversion": {
+            "mesh_instances": 35,
+            "mesh_nodes": 35,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1052,
+            "triangles": 1052,
+            "vertices": 1254
+          },
+          "source": {
+            "mesh_instances": 35,
+            "mesh_nodes": 35,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 1052,
+            "triangles": 1052,
+            "vertices": 1254
+          }
+        },
+        "broken_column": {
+          "primitive_conversion": {
+            "mesh_instances": 16,
+            "mesh_nodes": 16,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 500,
+            "triangles": 500,
+            "vertices": 591
+          },
+          "source": {
+            "mesh_instances": 16,
+            "mesh_nodes": 16,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 500,
+            "triangles": 500,
+            "vertices": 591
+          }
+        },
+        "fallen_capital": {
+          "primitive_conversion": {
+            "mesh_instances": 7,
+            "mesh_nodes": 7,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 68,
+            "triangles": 68,
+            "vertices": 168
+          },
+          "source": {
+            "mesh_instances": 7,
+            "mesh_nodes": 7,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 68,
+            "triangles": 68,
+            "vertices": 168
+          }
+        },
+        "orb_reliquary": {
+          "primitive_conversion": {
+            "mesh_instances": 16,
+            "mesh_nodes": 16,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 592,
+            "triangles": 592,
+            "vertices": 616
+          },
+          "source": {
+            "mesh_instances": 16,
+            "mesh_nodes": 16,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 592,
+            "triangles": 592,
+            "vertices": 616
+          }
+        },
+        "sanctuary_belfry": {
+          "primitive_conversion": {
+            "mesh_instances": 84,
+            "mesh_nodes": 84,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 2988,
+            "triangles": 2988,
+            "vertices": 3279
+          },
+          "source": {
+            "mesh_instances": 84,
+            "mesh_nodes": 84,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 2988,
+            "triangles": 2988,
+            "vertices": 3279
+          }
+        },
+        "sanctuary_palm": {
+          "primitive_conversion": {
+            "mesh_instances": 13,
+            "mesh_nodes": 13,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 700,
+            "triangles": 700,
+            "vertices": 574
+          },
+          "source": {
+            "mesh_instances": 13,
+            "mesh_nodes": 13,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 700,
+            "triangles": 700,
+            "vertices": 574
+          }
+        },
+        "sky_aqueduct": {
+          "primitive_conversion": {
+            "mesh_instances": 79,
+            "mesh_nodes": 79,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 2212,
+            "triangles": 2212,
+            "vertices": 2724
+          },
+          "source": {
+            "mesh_instances": 79,
+            "mesh_nodes": 79,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 2212,
+            "triangles": 2212,
+            "vertices": 2724
+          }
+        },
+        "sky_blossoms": {
+          "primitive_conversion": {
+            "mesh_instances": 7,
+            "mesh_nodes": 7,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 192,
+            "triangles": 192,
+            "vertices": 203
+          },
+          "source": {
+            "mesh_instances": 7,
+            "mesh_nodes": 7,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 192,
+            "triangles": 192,
+            "vertices": 203
+          }
+        },
+        "stepped_fountain": {
+          "primitive_conversion": {
+            "mesh_instances": 5,
+            "mesh_nodes": 5,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 232,
+            "triangles": 232,
+            "vertices": 225
+          },
+          "source": {
+            "mesh_instances": 5,
+            "mesh_nodes": 5,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 232,
+            "triangles": 232,
+            "vertices": 225
+          }
+        },
+        "vine_obelisk": {
+          "primitive_conversion": {
+            "mesh_instances": 17,
+            "mesh_nodes": 17,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 512,
+            "triangles": 512,
+            "vertices": 615
+          },
+          "source": {
+            "mesh_instances": 17,
+            "mesh_nodes": 17,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 512,
+            "triangles": 512,
+            "vertices": 615
+          }
+        },
+        "vine_tablet": {
+          "primitive_conversion": {
+            "mesh_instances": 11,
+            "mesh_nodes": 11,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 100,
+            "triangles": 100,
+            "vertices": 264
+          },
+          "source": {
+            "mesh_instances": 11,
+            "mesh_nodes": 11,
+            "shadow_only_triangles": 0,
+            "shadow_triangles": 100,
+            "triangles": 100,
+            "vertices": 264
+          }
+        }
+      }
+    }
+  }
+}

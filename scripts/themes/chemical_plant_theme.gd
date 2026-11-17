@@ -144,6 +144,23 @@ func build_background(p: Node3D) -> void:
  var water := PlaneMesh.new()
  water.size = Vector2(180, 180)
  p.mesh_node(water, _shader(LIQUID), center + Vector3(0, -2.45, 0), root)
+ # Low processing blocks and paired stacks make a continuous industrial site
+ # beyond the hero vessels. Big modules retain a readable toy-factory scale.
+ var width: float = p.table_bounds.size.x * p.SCALE
+ for side: int in [-1, 1]:
+  for i in 6:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
+   var base := center + Vector3(side * (width * 0.5 + 4.2 + (i % 2) * 1.4), -2.35, (i - 2.5) * 4.4)
+   var height := 1.2 + float(i % 3) * 0.45
+   _vessel_piece(p, root, "stripe", base + Vector3.UP * height * 0.5, Vector3(2.8, height, 2.5), _dark)
+   _vessel_piece(p, root, "stripe", base + Vector3.UP * height, Vector3(3.0, 0.15, 2.7), _steel)
+   for stack in 2:
+    var foot := base + Vector3((stack - 0.5) * 1.15, height, 0)
+    var rise := 0.8 + float((i + stack) % 3) * 0.45
+    _vessel_piece(p, root, "body", foot + Vector3.UP * rise * 0.5, Vector3(0.36, rise, 0.36), _blue)
+    _vessel_piece(p, root, "body", foot + Vector3.UP * rise, Vector3(0.43, 0.16, 0.43), _steel)
+   var feed := _vessel_piece(p, root, "handle", base + Vector3(0, height * 0.6, 1.4), Vector3(0.18, 3.6, 0.18), _blue)
+   feed.rotation.z = PI * 0.5
  # The shared Zone backdrop starts 1200 pixels before its first Act. Keep this
  # low processing district near its downstream water, where upper gameplay
  # views can expose it. It is a simpler tier than the local hero vessels.

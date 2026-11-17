@@ -2,6 +2,7 @@ extends "res://scripts/decor/decor_skin.gd"
 ## Lightweight, collisionless props in cell units. Reuses the presentation's
 ## existing palm and sunflower silhouettes; all assets are constructed locally.
 var presentation: Node3D
+static var _rock_geometry: ArrayMesh
 const IslandFlicky = preload("res://scripts/decor/island_flicky.gd")
 
 func _init(owner_presentation: Node3D) -> void:
@@ -217,13 +218,31 @@ func _beam(root: Node3D, a: Vector3, b: Vector3, radius: float, material: Materi
  beam.quaternion = Quaternion(Vector3.UP, (b - a).normalized())
 
 func _rock(root: Node3D, base: Vector3, size: Vector3) -> void:
- var mesh := CylinderMesh.new()
- mesh.bottom_radius = 0.5
- mesh.top_radius = 0.29
- mesh.height = 1.0
- mesh.radial_segments = 5
- mesh.rings = 1
- var rock: MeshInstance3D = presentation.mesh_node(mesh, presentation.material(Color("b9b497")), base + Vector3.UP * size.y * 0.5, root)
+ if _rock_geometry == null:
+  # Three irregular rings give the existing rocks broad shoulders and chipped
+  # crowns. Thirty-six triangles, flat normals, and the original unit envelope.
+  var surface := SurfaceTool.new()
+  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+  surface.set_smooth_group(-1)
+  var rings: Array[PackedVector3Array] = []
+  for row in 3:
+   var ring := PackedVector3Array()
+   for i in 6:
+    var angle := TAU * i / 6.0
+    var radius: float = [0.43, 0.50, 0.29][row] * (0.88 if i % 3 == 1 else 1.0)
+    var height: float = [-0.5, 0.18, 0.46][row] + (0.04 * sin(i * 2.0) if row > 0 else 0.0)
+    ring.append(Vector3(cos(angle) * radius + (0.06 if row == 2 else 0.0), height, sin(angle) * radius))
+   rings.append(ring)
+  for i in 6:
+   var next := (i + 1) % 6
+   for row in 2:
+    for point: Vector3 in [rings[row][i], rings[row][next], rings[row + 1][i], rings[row][next], rings[row + 1][next], rings[row + 1][i]]:
+     surface.add_vertex(point)
+   for point: Vector3 in [rings[2][i], rings[2][next], Vector3(0.06, 0.5, 0), rings[0][next], rings[0][i], Vector3(0, -0.5, 0)]:
+    surface.add_vertex(point)
+  surface.generate_normals()
+  _rock_geometry = surface.commit()
+ var rock: MeshInstance3D = presentation.mesh_node(_rock_geometry, presentation.material(Color("b9b497")), base + Vector3.UP * size.y * 0.5, root)
  rock.scale = size
  rock.rotation.y = 0.35
 

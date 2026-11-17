@@ -15,6 +15,24 @@ func check(value: bool, message: String) -> void:
 func triangles(mesh: Mesh) -> int:
  return mesh.get_faces().size() / 3
 
+func valid_flat_faces(mesh: Mesh) -> bool:
+ var arrays := mesh.surface_get_arrays(0)
+ var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+ var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+ var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX] if arrays[Mesh.ARRAY_INDEX] != null else PackedInt32Array()
+ if normals.size() != vertices.size(): return false
+ if indices.is_empty():
+  for i in vertices.size(): indices.append(i)
+ for i in range(0, indices.size(), 3):
+  var a := indices[i]
+  var b := indices[i + 1]
+  var c := indices[i + 2]
+  var face := (vertices[c] - vertices[a]).cross(vertices[b] - vertices[a])
+  if not face.is_finite() or face.length_squared() < 0.000000000001: return false
+  for vertex: int in [a, b, c]:
+   if not normals[vertex].is_finite() or face.normalized().dot(normals[vertex]) < 0.99: return false
+ return true
+
 func _initialize() -> void:
  var total := 0
  for part: String in ["stem", "leaf", "petal", "center"]:
@@ -55,6 +73,14 @@ func _initialize() -> void:
   for uv: Vector2 in node.mesh.surface_get_arrays(0)[Mesh.ARRAY_TEX_UV]: valid_uv = valid_uv and uv.is_finite()
  check(valid_uv, "Loop retains finite texture coordinates")
  loop.free()
+ var rock: Node3D = presentation.decor_skin.factory.call("small_rock")
+ var rock_mesh: Mesh = rock.get_child(0).mesh
+ check(triangles(rock_mesh) <= 64 and valid_flat_faces(rock_mesh), "Chipped rocks retain a small, finite, outward flat-shaded mesh")
+ rock.free()
+ var ice := preload("res://scripts/decor/ice_cap_decor.gd").new(null)
+ var bough: Mesh = ice.primitive("bough")
+ check(triangles(bough) <= 32 and valid_flat_faces(bough), "Snow boughs retain a small, finite, outward flat-shaded mesh")
+ check(bough == ice.primitive("bough"), "Snow and foliage reuse the same branch geometry")
  presentation.free()
  print("GEOMETRY_DENSITY | flower_triangles=%d checks=%d failures=%d" % [total, checks, failures])
  quit(1 if failures else 0)

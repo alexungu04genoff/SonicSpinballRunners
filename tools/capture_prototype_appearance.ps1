@@ -7,11 +7,13 @@ param(
     [ValidateSet('green_hill', 'chemical_plant', 'rooftop_run', 'casino_night', 'sky_sanctuary', 'ice_cap', 'lava_reef', 'aquarium_park')]
     [string[]]$Themes = @(),
     [string]$CameraTarget = '',
+    [double]$CameraZoom = 0,
     [ValidateSet('off', 'production')]
     [string]$Retro = 'off'
 )
 $ErrorActionPreference = 'Stop'
 if (($Themes | Select-Object -Unique).Count -ne $Themes.Count) { throw 'Theme selection must not contain duplicates.' }
+if ($CameraZoom -ne 0 -and ($CameraZoom -lt 0.6 -or $CameraZoom -gt 2.5 -or [double]::IsNaN($CameraZoom))) { throw 'CameraZoom must be zero (unchanged) or within the production 0.6–2.5 range.' }
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 if (-not $OutputDirectory) {
     $OutputDirectory = Join-Path $projectRoot ('test-results\prototype-appearance\' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
@@ -68,6 +70,7 @@ if (-not $SkipBake) {
 $selection = @('--retro=' + $Retro)
 if ($Themes.Count) { $selection += '--themes=' + ($Themes -join ',') }
 if ($CameraTarget) { $selection += '--camera-target=' + $CameraTarget }
+if ($CameraZoom -ne 0) { $selection += '--camera-zoom=' + $CameraZoom.ToString([Globalization.CultureInfo]::InvariantCulture) }
 Invoke-Godot 'capture' ($common + @('--rendering-method', 'forward_plus', '--rendering-driver', 'vulkan', '--script', 'res://tests/prototype_appearance_capture.gd', '--', '--seed=18', ('"--act={0}"' -f $ActPath), ('"--output={0}"' -f $output)) + $selection)
 $after = Source-Hashes
 $after | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $output 'sources-after.json') -Encoding UTF8

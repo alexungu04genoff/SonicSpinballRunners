@@ -86,6 +86,33 @@ func build_background(p: Node3D) -> void:
    cloud.material_override = cloud_mat
    cloud.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  await _batch(clouds, p)
+ # A second scale of suspended masonry lives between the local ruins and the
+ # cloud sea. Keep open air between islands and avoid repeating hero belfries.
+ var islands := Node3D.new()
+ islands.name = "DistantSanctuaryIslands"
+ root.add_child(islands)
+ for side: int in [-1, 1]:
+  for i in 3:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
+   var island := Node3D.new()
+   islands.add_child(island)
+   island.position = center + Vector3(side * (width * 0.5 + 4.8 + (i % 2) * 2.0), -5.4 - (i % 2) * 1.3, (i - 1) * 8.0)
+   island.rotation.y = -0.25 + i * 0.31
+   island.scale = Vector3.ONE * (0.85 + (i % 2) * 0.30)
+   _library.box(island, "stone", Vector3(0, -0.15, 0), Vector3(3.4, 0.4, 2.0))
+   var underside: MeshInstance3D = _library.piece(island, "cone", "warm", Vector3(0, -1.1, 0), Vector3(1.65, 1.8, 0.95))
+   underside.rotation.z = PI
+   if i == 1:
+    _library.arch(island, Vector3(0, 0.08, 0), 2.65, 2.5, 0.55, true)
+   elif i == 2:
+    _library.column(island, Vector3(-0.65, 0.08, 0), 2.8, 0.35, true)
+    _library.column(island, Vector3(0.7, 0.08, 0.2), 0.75, 0.30, true)
+   else:
+    for column in 3:
+     _library.column(island, Vector3((column - 1) * 1.15, 0.08, 0), 1.5 + (column % 2) * 0.55, 0.21, column == 2)
+    _library.box(island, "pale", Vector3(-0.58, 2.13, 0), Vector3(2.0, 0.24, 0.60))
+   _atmosphere(island, 0.44)
+ await _batch(islands, p)
  _orbital_silhouette(root, center + Vector3(-width * 0.5 - 11.0, 1.0, -length * 0.5 - 24.0))
 
 func build_edges(p: Node3D) -> void:

@@ -70,6 +70,23 @@ func build_background(p: Node3D) -> void:
  var lake_reference := Color("387fa2").srgb_to_linear()
  lake_mat.set_shader_parameter("albedo_tint_reference", Vector3(lake_reference.r, lake_reference.g, lake_reference.b))
  lake.material_override = lake_mat
+ # Two overlapping ranges continue beyond the nearby authored shelves. Their
+ # bases stay below the lake, with lower contrast on the outer ridge. The
+ # aurora remains the foreground veil; no additional lights or fog are needed.
+ var ranges := Node3D.new()
+ ranges.name = "LayeredGlacierRanges"
+ root.add_child(ranges)
+ var ridge_mat := StandardMaterial3D.new()
+ ridge_mat.vertex_color_use_as_albedo = true
+ ridge_mat.roughness = 1.0
+ Atmosphere.color(ridge_mat, "ridge_tint", "tint")
+ for layer in 2:
+  for side: int in [-1, 1]:
+   for i in 5:
+    if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
+    var at := center + Vector3(side * (width * 0.5 + 4.5 + layer * 5.0), -7.0 - layer * 2.0, (i - 2) * 5.8 + layer * 2.4)
+    _mountain(ranges, at, 3.8 + float((i * 3 + layer) % 4) * 0.7, 3.6 + float(i % 2) * 0.6, ridge_mat, 0.30 + layer * 0.28)
+ await _batch(ranges, p)
  _snow(root, center, width, length)
  # Two low frozen gates sit in the shared backdrop's downstream lake. Their
  # open, snow-capped profiles support upper views without repeating the crown.
@@ -151,7 +168,7 @@ func _frozen_frame(root: Node3D, height: float) -> void:
  var cap: MeshInstance3D = _library.box(root, "snow", Vector3(0, height + 0.29, 0), Vector3(0.82, 0.12, 2.5))
  cap.rotation.x = -0.12
 
-func _mountain(root: Node3D, at: Vector3, height: float, radius: float, mat: StandardMaterial3D) -> void:
+func _mountain(root: Node3D, at: Vector3, height: float, radius: float, mat: StandardMaterial3D, haze := 0.0) -> void:
  # Asymmetric ridge facets with irregular snowlines, rather than stacked cones.
  var surface := SurfaceTool.new()
  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -166,11 +183,11 @@ func _mountain(root: Node3D, at: Vector3, height: float, radius: float, mat: Sta
   var normal := (peak - a).cross(b - a).normalized()
   for vertex: Vector3 in [a, b, snow_a, b, snow_b, snow_a]:
    surface.set_normal(normal)
-   surface.set_color(Color("344c70") if i % 2 else Color("456080"))
+   surface.set_color((Color("344c70") if i % 2 else Color("456080")).lerp(Color("536f91"), haze))
    surface.add_vertex(vertex)
   for vertex: Vector3 in [snow_a, snow_b, peak]:
    surface.set_normal(normal)
-   surface.set_color(Color("a4b9cf") if i % 2 else Color("c3d1dd"))
+   surface.set_color((Color("a4b9cf") if i % 2 else Color("c3d1dd")).lerp(Color("637f9e"), haze))
    surface.add_vertex(vertex)
  var mesh := MeshInstance3D.new()
  mesh.mesh = surface.commit()

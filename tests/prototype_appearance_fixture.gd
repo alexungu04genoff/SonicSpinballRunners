@@ -66,6 +66,12 @@ func open(tree: SceneTree, path: String, theme: String, output: String) -> bool:
  game.fps_label.hide()
  var camera_target: Vector2 = game.ball.position
  for argument: String in OS.get_cmdline_user_args():
+  if argument.begins_with("--camera-zoom="):
+   var value := argument.trim_prefix("--camera-zoom=")
+   if not value.is_valid_float() or not is_finite(float(value)) or float(value) < 0.6 or float(value) > 2.5:
+    error = "Capture zoom must be within the production camera's 0.6–2.5 range."
+    return false
+   game.presentation.camera_settings.zoom = float(value)
   if argument.begins_with("--camera-target="):
    var coordinates := argument.trim_prefix("--camera-target=").split(",")
    if coordinates.size() != 2 or not coordinates[0].is_valid_float() or not coordinates[1].is_valid_float():

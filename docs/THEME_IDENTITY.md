@@ -1,5 +1,9 @@
 # Theme identity: one imaginary SEGA game
 
+## Larger environments after texturing — 2026-11-17
+
+Alex reopened model polish and background scale, excluding Lava Reef. The [model/depth pass](MODEL_DEPTH.md) reviews all seven other prop libraries and adds layered Ice mountain ranges, staggered Rooftop districts, low Chemical factory blocks, dark Casino hotels and varied distant Sky ruins. Green Hill rocks gain chipped facets, Ice firs gain notched snow boughs, and Aquarium coral gains tapered forks. Strong existing heroes and selected textures remain. The November 9 sufficiency judgment below is historical, not a restriction against this newly requested composition work. Matched wide views supplement ordinary gameplay captures; the default camera is unchanged.
+
 ## Current visual-strength review — 2026-11-09
 
 The [fresh post-texture audit](visual-strength-20261109/README.md) re-evaluates all eight current production themes from two canonical gameplay positions each, with production Retro and current Default atmospheres. **All eight remain unchanged.** Materials, playable-surface separation and existing mid-scale/hero shapes provide enough identity; no extra scenery or landmark removal is justified by this set. Sky's pale constructed stone/green accents, Ice's snow/ice/dark-wall separation, Lava's broad volcanic facets and Aquarium's red architecture/pale stone/blue-inset hierarchy are authoritative. The normal comparison, label-free thumbnails, native frames, verification and limited motion questions live in that audit. Earlier sections below preserve historical decisions, not standing instructions to strengthen those themes again.

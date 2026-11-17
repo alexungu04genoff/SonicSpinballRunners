@@ -73,6 +73,19 @@ func build_background(p: Node3D) -> void:
  var far_z: float = p.table_bounds.position.y * p.SCALE - 4.5
  # Skyline sits below and outside the table. Large dark gaps separate buildings.
  _library.box(city, "dark", center + Vector3(0, -5.9, 0), Vector3(180, 0.15, 180))
+ # Lower hotel blocks sit behind the foreground slot towers. Sparse broad
+ # window bands and stepped roofs imply a district without more neon heroes.
+ for side: int in [-1, 1]:
+  for i in 7:
+   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
+   var height := 2.0 + float((i * 3) % 5) * 0.55
+   var at := center + Vector3(side * (width * 0.5 + 4.0 + (i % 2) * 1.2), -5.8, (i - 3) * 3.7)
+   _library.box(city, "navy", at + Vector3.UP * height * 0.5, Vector3(2.5, height, 2.4))
+   _library.box(city, "purple", at + Vector3.UP * height, Vector3(2.65, 0.17, 2.55))
+   _library.box(city, "navy", at + Vector3.UP * (height + 0.30), Vector3(1.65, 0.60, 1.55))
+   for row in 2:
+    _library.box(city, "gold_light", at + Vector3(0, height * (0.3 + row * 0.38), 1.22), Vector3(1.7, 0.13, 0.025))
+    _library.box(city, "gold_light", at + Vector3(-side * 1.27, height * (0.3 + row * 0.38), 0), Vector3(0.025, 0.13, 1.6))
  for i in 13:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var height := 2.3 + float((i * 7) % 6) * 0.5
