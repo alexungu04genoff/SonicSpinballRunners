@@ -12,6 +12,8 @@ Starting source: `6f9f5c5`. [Wide comparison](green-hill-polish-20261117/green_h
 
 Validation: **16 Green Hill landmark, 23 geometry-density, 387 landmark-theme and 9,095 scenery checks passed**. All seven Green Hill Prototype and seven Endless variants were rebuilt. The final graphical Challenge run completed 3,600 input ticks; the seed-8 Endless tour crossed three Green Hill Acts and entered the next Zone. Both loaded disk resources with zero fallback rebuilds and zero boundary wait. Source tests retain selected-image export warnings, and graphical shutdown retains ObjectDB warnings. No script or engine errors occurred in the accepted captures, bakes or play runs. These are functional smoke checks, not performance or feel claims. [Verification receipts](green-hill-polish-20261117/verification.json).
 
+An additional verbose replay investigated the varying shutdown count: the normal Prototype run reported one ObjectDB instance, normal Endless eight, and verbose Endless two `RefCounted` instances. Ownership remains unestablished. The verbose replay reached the next Zone with zero rebuilds but accumulated a 1,855.801 ms boundary wait, so its strict zero-wait check exited 1. The accepted nonverbose run above had no boundary wait; this extra diagnostic does not establish a performance regression or fix.
+
 The later Generations-inspired Chemical Plant request was cancelled before source changes. Chemical Plant remains at its existing factory-block presentation.
 
 ## Green Hill coastline follow-up

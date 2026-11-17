@@ -404,6 +404,8 @@
     "sequence": 3,
     "rebuilds": 0,
     "waiting_ms": 1855.801,
-    "note": "Counts vary across runs. The verbose replay reports two RefCounted instances, matching the previous pass count; ownership remains unestablished."
+    "note": "Counts vary across runs. The verbose replay reports two RefCounted instances, matching the previous pass count; ownership remains unestablished.",
+    "exit_code": 1,
+    "failure_reason": "The verbose replay reached sequence 3 without rebuilds but failed the strict zero-boundary-wait requirement with 1855.801 ms waiting. The accepted nonverbose run had zero waiting."
   }
 }
