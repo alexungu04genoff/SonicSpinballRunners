@@ -157,8 +157,8 @@ func build_edges(p: Node3D) -> void:
  var decor := GreenHillDecor.new(p)
  var layout := scenery_layout(p)
  var headlands := layout.plans([
-  {"name": "PalmHeadland", "side": -1, "at": 0.80, "span": 0.16, "width": 150.0},
-  {"name": "LoopPromontory", "side": 1, "at": 0.24, "span": 0.18, "width": 170.0},
+  {"name": "PalmHeadland", "side": -1, "at": 0.80, "span": 0.14, "width": 125.0},
+  {"name": "LoopPromontory", "side": 1, "at": 0.24, "span": 0.14, "width": 135.0},
  ])
  for i: int in headlands.size():
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
@@ -174,19 +174,32 @@ func build_edges(p: Node3D) -> void:
   var root := _coastal_landform(p, center, radius, i, side, sand, top_height)
   root.name = plan.name
   var near_shore := center + Vector2(-side * (radius.x - 55.0), radius.y * 0.36)
-  if i == layout.choice("loop", 1, 2):
-   # Reuse the existing collisionless landmark; this is scenery, not a new lane.
-   var loop: Node3D = decor.factory.call("turf_loop")
+  var has_loop := i == layout.choice("loop", 1, 2)
+  if has_loop:
+   # The coastal loop has short approaches; authored landmark footprints stay
+   # unchanged. Both versions remain collisionless scenery.
+   var loop: Node3D = decor.build_coastal_loop()
    root.add_child(loop)
    loop.position = TablePresentation.map_point(center + Vector2(-side * radius.x * 0.1, radius.y * 0.42), top_height)
-   loop.scale = Vector3.ONE * 0.9
+   loop.scale = Vector3.ONE * 0.82
    loop.rotation.y = layout.varied("loop yaw", -0.18, 0.18)
   else:
    _palm(p, TablePresentation.map_point(near_shore, top_height), side, 0.95 if i == 0 else 0.85, root)
   if layout.density >= 0.75:
    _flower(p, TablePresentation.map_point(near_shore + Vector2(side * 12.0, -radius.y * 0.42), top_height), 0.85, root)
-  if layout.density > 1.0:
-   _rock(p, TablePresentation.map_point(center + Vector2(-side * radius.x * 0.18, -radius.y * 0.55), top_height), 0.20)
+  if layout.density >= 0.75:
+   # Broad rocks sit in the open foreground (or behind the loop opening), not
+   # underneath the palm canopy. Reuse the textured, faceted prop library.
+   var rock_at := center + (Vector2(side * 22, -radius.y * 0.25) if has_loop else Vector2(side * radius.x * 0.35, radius.y * 0.42))
+   var rocks: Node3D = decor.factory.call("medium_rock")
+   root.add_child(rocks)
+   rocks.position = TablePresentation.map_point(rock_at, top_height)
+   rocks.rotation.y = side * 0.35
+   if not has_loop:
+    var shrub: Node3D = decor.factory.call("shrub")
+    root.add_child(shrub)
+    shrub.position = TablePresentation.map_point(center + Vector2(-side * radius.x * 0.15, radius.y * 0.68), top_height)
+    shrub.scale = Vector3.ONE * 0.75
  # Keep a few of the original small flower/rock islands for scale and variety,
  # deliberately placed in the gaps instead of repeating them along every edge.
  var islets := [Vector3(1, 0.72, 44)] if layout.density >= 1.0 else []
@@ -351,9 +364,6 @@ func build_background(p: Node3D) -> void:
  Atmosphere.color(distant_dark, "vegetation_tint", "tint")
  var distant_soil := material(Color("b5916f"))
  distant_soil.albedo_texture = _selected_texture("3A")
- distant_soil.uv1_triplanar = true
- distant_soil.uv1_world_triplanar = true
- distant_soil.uv1_scale = Vector3.ONE * 1.2
  Atmosphere.color(distant_soil, "shore_tint", "tint")
  var center = p.table_bounds.get_center() * TablePresentation.SCALE
  # Four separated offshore silhouettes, rather than two matching cone stacks.
@@ -377,7 +387,13 @@ func build_background(p: Node3D) -> void:
   var mound = p.cylinder(radius, height)
   mound.top_radius = radius * (0.72 if i % 2 == 0 else 0.90)
   mound.radial_segments = 8
-  p.mesh_node(mound, distant_soil, Vector3.UP * (0.16 + height * 0.5), island)
+  # Wrap one continuous checker strip around the bluff. Triplanar blending on
+  # these sloped, stretched cylinders smeared the checks at the face joins.
+  var soil: StandardMaterial3D = distant_soil.duplicate()
+  var perimeter: float = TAU * (radius + mound.top_radius) * 0.5 * (1.0 + island.scale.z) * 0.5
+  soil.uv1_scale = Vector3(maxf(1.0, roundf(perimeter / 0.64)), height / 0.64, 1)
+  soil.uv1_offset.y = (2.04 - height) / 0.64
+  p.mesh_node(mound, soil, Vector3.UP * (0.16 + height * 0.5), island)
   var cap = p.cylinder(mound.top_radius * 1.03, 0.10)
   cap.radial_segments = 8
   p.mesh_node(cap, distant_green if i % 2 == 0 else distant_dark, Vector3.UP * (0.16 + height), island)

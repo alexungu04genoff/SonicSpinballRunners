@@ -3,6 +3,8 @@ extends "res://scripts/decor/decor_skin.gd"
 ## existing palm and sunflower silhouettes; all assets are constructed locally.
 var presentation: Node3D
 static var _rock_geometry: ArrayMesh
+var _loop_soil: ShaderMaterial
+var _loop_turf: ShaderMaterial
 const IslandFlicky = preload("res://scripts/decor/island_flicky.gd")
 
 func _init(owner_presentation: Node3D) -> void:
@@ -97,7 +99,13 @@ func _grass_tuft(root: Node3D) -> void:
   leaf.cull_mode = BaseMaterial3D.CULL_DISABLED
   presentation.mesh_node(surface.commit(), leaf, Vector3.ZERO, root)
 
-func _turf_loop(root: Node3D) -> void:
+func build_coastal_loop() -> Node3D:
+ var root := Node3D.new()
+ root.name = "CoastalTurfLoop"
+ _turf_loop(root, 1.12)
+ return root
+
+func _turf_loop(root: Node3D, apron_reach := 1.52) -> void:
  # A continuous inner running surface through a broad checker cliff, with
  # separate approach/exit lanes in depth. The landmark remains collisionless.
  var soil := SurfaceTool.new()
@@ -106,7 +114,7 @@ func _turf_loop(root: Node3D) -> void:
  turf.begin(Mesh.PRIMITIVE_TRIANGLES)
  var inner := PackedVector3Array()
  var outer := PackedVector3Array()
- var normals := PackedVector3Array()
+ var distances := PackedFloat32Array([0.0])
  var steps := 16
  for i in steps + 1:
   var t := float(i) / steps
@@ -117,25 +125,23 @@ func _turf_loop(root: Node3D) -> void:
   var radius := pow(pow(absf(radial.x) / 1.07, 6) + pow(absf(radial.y), 6), -1.0 / 6.0)
   inner.append(center + radial * 0.84)
   outer.append(center + radial * radius)
-  normals.append(radial)
+  if i > 0: distances.append(distances[-1] + inner[i - 1].distance_to(inner[i]))
  var across := Vector3(0, 0, 0.23)
  for i in steps:
   var a := inner[i]
   var b := inner[i + 1]
   var c := outer[i + 1]
   var d := outer[i]
-  # Grass is on the inside of the loop, with a small visible lip on each face.
-  _quad(turf, a - across, b - across, b + across, a + across)
+  # Unwrap along the running surface, including its upright sections. Keep the
+  # checker face flush to the inside edge instead of adding a bright green rim.
+  _quad(turf, a - across, b - across, b + across, a + across, false,
+   PackedVector2Array([Vector2(distances[i], 0), Vector2(distances[i + 1], 0), Vector2(distances[i + 1], across.z * 2), Vector2(distances[i], across.z * 2)]))
   for side: int in [-1, 1]:
    var offset := across * side
-   var lip_a := a + normals[i] * 0.035
-   var lip_b := b + normals[i + 1] * 0.035
    if side > 0:
-    _quad(soil, lip_a + offset, lip_b + offset, c + offset, d + offset)
-    _quad(turf, a + offset, b + offset, lip_b + offset, lip_a + offset)
+    _quad(soil, a + offset, b + offset, c + offset, d + offset)
    else:
-    _quad(soil, d + offset, c + offset, lip_b + offset, lip_a + offset)
-    _quad(turf, lip_a + offset, lip_b + offset, b + offset, a + offset)
+    _quad(soil, d + offset, c + offset, b + offset, a + offset)
   # Classify the actual superellipse face, not its circular sample direction.
   # Coarse upper chords can be almost horizontal even at a 45-degree radial
   # sample; the vertical cliff projection is undefined on those faces.
@@ -145,20 +151,32 @@ func _turf_loop(root: Node3D) -> void:
  # Tangent entry and exit aprons are attached to the two ends of the spiral.
  for end: int in [0, steps]:
   var at := inner[end]
-  var tip := at + Vector3(-1.52 if end == 0 else 1.52, 0, 0)
+  var reach: float = -apron_reach if end == 0 else apron_reach
+  var tip := at + Vector3(reach, 0, 0)
   var down := Vector3(0, -0.16, 0)
-  _quad(turf, at + across, tip + across, tip - across, at - across, end > 0)
+  _quad(turf, at + across, tip + across, tip - across, at - across, end > 0,
+   PackedVector2Array([Vector2(distances[end], across.z * 2), Vector2(distances[end] + reach, across.z * 2), Vector2(distances[end] + reach, 0), Vector2(distances[end], 0)]))
   _quad(soil, at + across + down, tip + across + down, tip + across, at + across, end > 0)
   _quad(soil, at - across, tip - across, tip - across + down, at - across + down, end > 0)
   _quad(soil, tip + across, tip + across + down, tip - across + down, tip - across, end > 0)
   _quad(soil, at - across + down, tip - across + down, tip + across + down, at + across + down, end > 0)
- presentation.mesh_node(soil.commit(), presentation._cliff, Vector3.ZERO, root).name = "CheckerCliff"
- presentation.mesh_node(turf.commit(), presentation.terrain_top_material(), Vector3.ZERO, root).name = "ContinuousTurfTrack"
+ if _loop_soil == null:
+  _loop_soil = presentation.theme_definition._texture_material("3A", Vector2(0.64, 0.64), false)
+  # Production bakes use flat turf. The existing UV surface shader preserves
+  # that material policy while unwrapping the curved prop in source and bakes.
+  _loop_turf = _loop_soil.duplicate()
+  _loop_turf.set_shader_parameter("surface_texture", presentation.theme_definition._selected_texture("5B"))
+  _loop_turf.set_shader_parameter("repeat_size", Vector2(2, 2))
+ presentation.mesh_node(soil.commit(), _loop_soil, Vector3.ZERO, root).name = "CheckerCliff"
+ presentation.mesh_node(turf.commit(), _loop_turf, Vector3.ZERO, root).name = "ContinuousTurfTrack"
 
-func _quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, reverse := false) -> void:
+func _quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, reverse := false, coordinates := PackedVector2Array()) -> void:
  var normal := (d - a).cross(b - a).normalized() * (-1.0 if reverse else 1.0)
  # Clockwise front faces; UVs keep checker squares consistent across the cliff.
- var vertices := [a, c, b, a, d, c] if reverse else [a, b, c, a, c, d]
+ var points := [a, b, c, d]
+ var indices := [0, 2, 1, 0, 3, 2] if reverse else [0, 1, 2, 0, 2, 3]
+ var vertices: Array[Vector3] = []
+ for index: int in indices: vertices.append(points[index])
  for triangle in [0, 3]:
   # The loop twists in depth. A coarse quad is not planar: each triangle needs
   # its own geometric normal for lighting and the existing shadow normal bias.
@@ -171,7 +189,7 @@ func _quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3,
     uv = Vector2(point.z, point.y)
    elif absf(normal.y) > absf(normal.z):
     uv = Vector2(point.x, point.z)
-   surface.set_uv(uv * 0.60)
+   surface.set_uv(coordinates[indices[triangle + corner]] if coordinates.size() == 4 else uv)
    surface.add_vertex(point)
 
 func _rope_bridge(root: Node3D) -> void:

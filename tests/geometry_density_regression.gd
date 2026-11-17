@@ -70,9 +70,19 @@ func _initialize() -> void:
  check(valid_cliff, "Horizontal loop faces use turf, never the vertical facade projection")
  var valid_uv := true
  for node: MeshInstance3D in loop.get_children():
-  for uv: Vector2 in node.mesh.surface_get_arrays(0)[Mesh.ARRAY_TEX_UV]: valid_uv = valid_uv and uv.is_finite()
- check(valid_uv, "Loop retains finite texture coordinates")
+  var arrays := node.mesh.surface_get_arrays(0)
+  var coords: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
+  for uv: Vector2 in coords: valid_uv = valid_uv and uv.is_finite()
+  for i in range(0, coords.size(), 3):
+   valid_uv = valid_uv and absf((coords[i + 1] - coords[i]).cross(coords[i + 2] - coords[i])) > 0.00000001
+ check(valid_uv, "Loop texture triangles retain finite, nonzero surface area")
+ var running_surface: ShaderMaterial = loop.get_node("ContinuousTurfTrack").material_override
+ check(running_surface.get_shader_parameter("world_mapping") == false, "Upright loop turf uses its unwrapped surface rather than top-down projection")
  loop.free()
+ var compact: Node3D = presentation.decor_skin.build_coastal_loop()
+ var compact_bounds: AABB = presentation.theme_definition.SceneryLayout.group_bounds(compact)
+ check(compact_bounds.size.x < 2.3 and compact_bounds.size.y > 1.9, "Coastal loop shortens approaches while retaining the full upright loop")
+ compact.free()
  var rock: Node3D = presentation.decor_skin.factory.call("small_rock")
  var rock_mesh: Mesh = rock.get_child(0).mesh
  check(triangles(rock_mesh) <= 64 and valid_flat_faces(rock_mesh), "Chipped rocks retain a small, finite, outward flat-shaded mesh")

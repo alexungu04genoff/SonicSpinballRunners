@@ -2,6 +2,8 @@
 
 ## Give the table a world around it — 2026-11-17
 
+Green Hill polish: Alex spotted the empty palm island, distracting green loop rim and distorted textures. Local headlands are now more compact, rocks are visible again, and a shrub fills the palm's foreground. Only coastal loops shorten their approaches; all loops lose the extra face lip and unwrap grass along the track. Offshore checker cliffs use a continuous wrapped strip. Selected images, terrain shaders and physics are unchanged. [Before/after](green-hill-polish-20261117/green_hill.jpg). Alex cancelled the proposed Generations-style Chemical Plant towers and wavy pipes before source edits.
+
 Green Hill follow-up: Alex wanted more variety along the sides and offshore. The headlands now have coves, points, stepped palm terraces and different heights, with smaller flower islets and four varied offshore checker bluffs. Keep the open water and existing loops; this is more varied composition inside the existing scenery placement rules, not a new procedural level generator. [Comparison](green-hill-coast-20261117/green_hill.jpg).
 
 Follow-up from Alex: Rooftop's dark green ground made the district look wrong and the houses looked suspended. It now has muted stone streets, recessed canals, continuous sidewalk blocks and visible masonry feet; the local terrace foundations also reach below the waterline. The backdrop stays shadowless, so actual supports and paving carry the grounding cues. [Corrected comparison](rooftop-grounding-20261117/rooftop_run.jpg).

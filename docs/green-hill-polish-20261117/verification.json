@@ -1,0 +1,409 @@
+{
+  "scope": "Green Hill compact coastal headlands, loop UVs and distant checker mapping; Chemical Plant expansion cancelled before source edits",
+  "baseline": "6f9f5c59db237002c37dcd482a964136f2bbe023",
+  "suites": [
+    {
+      "name": "green_hill_landmarks",
+      "failures": 0,
+      "checks": 16
+    },
+    {
+      "name": "geometry_density_regression",
+      "failures": 0,
+      "checks": 23
+    },
+    {
+      "name": "landmark_theme_regression",
+      "failures": 0,
+      "checks": 387
+    },
+    {
+      "name": "scenery_regression",
+      "failures": 0,
+      "checks": 9095
+    }
+  ],
+  "captures": {
+    "before": 2,
+    "checks_per_set": 26,
+    "accepted_after_directories": [
+      "trial3-wide",
+      "trial3-edge"
+    ],
+    "failures": 0,
+    "renderer": "Forward+/Vulkan",
+    "retro": "production",
+    "views": [
+      "wide",
+      "edge"
+    ],
+    "after": 2
+  },
+  "bakes": {
+    "endless": 7,
+    "prototype": 7
+  },
+  "play": {
+    "endless": {
+      "active_frames": {
+        "count": 441,
+        "max_ms": 162.241,
+        "median_ms": 16.659,
+        "p95_ms": 34.806,
+        "p99_ms": 77.653
+      },
+      "api": "1.4.351",
+      "command_line": [
+        "--script",
+        "res://tests/endless_stream_profile.gd"
+      ],
+      "cpu_max_ms": {
+        "cache.release": 0.031,
+        "graphics.queue": 0.102,
+        "physics.compile": 8.495,
+        "resource.collect": 0.029,
+        "resource.request": 0.032,
+        "scene.free": 0.152,
+        "scene.node": 33.278,
+        "theme.prime_request": 0.023
+      },
+      "device": "NVIDIA GeForce RTX 4060",
+      "draw_calls_median": 922,
+      "draw_calls_p95": 1193,
+      "driver": "vulkan",
+      "duration_ms": 8057.575,
+      "engine": "4.7.2-stable (official)",
+      "frame_max_ms": 162.241,
+      "frame_median_ms": 16.659,
+      "frame_p95_ms": 34.806,
+      "frame_p99_ms": 77.653,
+      "frames_over_100_ms": 4,
+      "frames_over_50_ms": 14,
+      "gameplay_cpu": {},
+      "gameplay_started_us": 10674010,
+      "initialize_ms": 1564,
+      "objects_median": 1284,
+      "physics_ticks": 120,
+      "pipelines": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 25.0,
+        "specialization": 198.0,
+        "surface": 122.0
+      },
+      "pool_size": 7,
+      "ready_pipelines": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 16.0,
+        "specialization": 118.0,
+        "surface": 63.0
+      },
+      "rebuilds": 0,
+      "render_cpu_ms_median": 2.15799999302626,
+      "render_gpu_ms_median": 0.829999975860119,
+      "renderer": "forward_plus",
+      "resident_peak": 6,
+      "retirement_completed": 0,
+      "retirement_peak": 0,
+      "reused_visual_nodes": 3462,
+      "sample_count": 441,
+      "seed": 8,
+      "sequence": 3,
+      "shaders": "N64-ish + VHS + CRT",
+      "startup_cpu": {},
+      "startup_ms": 4232,
+      "threaded_resource_wall_ms": 718.839,
+      "tour_speed": 240.0,
+      "user_arguments": [
+        "--seed=8",
+        "--profile-target=3",
+        "--profile-speed=240",
+        "--profile-output=res://test-results/green-hill-polish-20261117/endless-play-final.json"
+      ],
+      "viewport_size": [
+        673,
+        473
+      ],
+      "vsync": 1,
+      "waiting_frames": {
+        "count": 0
+      },
+      "waiting_ms": 0.0,
+      "window_size": [
+        1280,
+        900
+      ],
+      "worst_frames": [
+        {
+          "act": "SpringUp",
+          "at_us": 12932906,
+          "blend": 0.0,
+          "build_ms": 149.238,
+          "draw_calls": 825,
+          "engine_physics_ms": 27.814,
+          "engine_process_ms": 71.858,
+          "frame_ms": 162.241,
+          "memory_mb": 276.958103179932,
+          "nodes": 3670.0,
+          "objects": 1245,
+          "render_cpu_ms": 2.45899993431568,
+          "render_gpu_ms": 0.771000005304813,
+          "render_wall_ms": 11.328,
+          "resident_acts": 3,
+          "sequence": 0,
+          "stage": "idle",
+          "theme": "green_hill",
+          "video_mb": 432.13200378418,
+          "waiting": false
+        },
+        {
+          "act": "First Try Smooth Decor",
+          "at_us": 13890277,
+          "blend": 0.0,
+          "build_ms": 94.813,
+          "draw_calls": 771,
+          "engine_physics_ms": 0.302,
+          "engine_process_ms": 161.397,
+          "frame_ms": 149.555,
+          "memory_mb": 285.558424949646,
+          "nodes": 3935.0,
+          "objects": 1162,
+          "render_cpu_ms": 2.05099998363852,
+          "render_gpu_ms": 0.796999976038933,
+          "render_wall_ms": 3.099,
+          "resident_acts": 3,
+          "sequence": 1,
+          "stage": "resource.wait",
+          "theme": "green_hill",
+          "video_mb": 439.283950805664,
+          "waiting": false
+        },
+        {
+          "act": "First Try Smooth Decor",
+          "at_us": 13740722,
+          "blend": 0.0,
+          "build_ms": 113.998,
+          "draw_calls": 789,
+          "engine_physics_ms": 0.302,
+          "engine_process_ms": 161.397,
+          "frame_ms": 119.424,
+          "memory_mb": 283.104555130005,
+          "nodes": 3935.0,
+          "objects": 1184,
+          "render_cpu_ms": 2.50999995350838,
+          "render_gpu_ms": 0.818999987095594,
+          "render_wall_ms": 3.195,
+          "resident_acts": 3,
+          "sequence": 1,
+          "stage": "resource.wait",
+          "theme": "green_hill",
+          "video_mb": 438.135620117188,
+          "waiting": false
+        },
+        {
+          "act": "First Try Smooth Decor",
+          "at_us": 13990299,
+          "blend": 0.0,
+          "build_ms": 63.305,
+          "draw_calls": 740,
+          "engine_physics_ms": 0.302,
+          "engine_process_ms": 161.397,
+          "frame_ms": 100.022,
+          "memory_mb": 285.928916931152,
+          "nodes": 3988.0,
+          "objects": 1134,
+          "render_cpu_ms": 1.98800000929832,
+          "render_gpu_ms": 0.798999980092049,
+          "render_wall_ms": 3.104,
+          "resident_acts": 3,
+          "sequence": 1,
+          "stage": "scene.instantiate",
+          "theme": "green_hill",
+          "video_mb": 439.284927368164,
+          "waiting": false
+        },
+        {
+          "act": "SpringUp",
+          "at_us": 12758044,
+          "blend": 0.0,
+          "build_ms": 0.027,
+          "draw_calls": 834,
+          "engine_physics_ms": 27.814,
+          "engine_process_ms": 71.858,
+          "frame_ms": 77.653,
+          "memory_mb": 275.053263664246,
+          "nodes": 3636.0,
+          "objects": 1252,
+          "render_cpu_ms": 1.65400004693866,
+          "render_gpu_ms": 0.737999998033047,
+          "render_wall_ms": 15.031,
+          "resident_acts": 3,
+          "sequence": 0,
+          "stage": "idle",
+          "theme": "green_hill",
+          "video_mb": 384.785079956055,
+          "waiting": false
+        },
+        {
+          "act": "First Try Smooth Decor",
+          "at_us": 13621298,
+          "blend": 0.0,
+          "build_ms": 71.765,
+          "draw_calls": 775,
+          "engine_physics_ms": 0.302,
+          "engine_process_ms": 161.397,
+          "frame_ms": 77.591,
+          "memory_mb": 281.197113037109,
+          "nodes": 3935.0,
+          "objects": 1171,
+          "render_cpu_ms": 2.15100003051758,
+          "render_gpu_ms": 0.826999969780445,
+          "render_wall_ms": 3.779,
+          "resident_acts": 3,
+          "sequence": 1,
+          "stage": "idle",
+          "theme": "green_hill",
+          "video_mb": 437.620880126953,
+          "waiting": false
+        },
+        {
+          "act": "Third Complex",
+          "at_us": 16210888,
+          "blend": 0.0,
+          "build_ms": 0.017,
+          "draw_calls": 1015,
+          "engine_physics_ms": 0.603,
+          "engine_process_ms": 66.998,
+          "frame_ms": 77.451,
+          "memory_mb": 300.73418712616,
+          "nodes": 6111.0,
+          "objects": 1384,
+          "render_cpu_ms": 3.8680000988245,
+          "render_gpu_ms": 0.836000010371208,
+          "render_wall_ms": 6.959,
+          "resident_acts": 5,
+          "sequence": 2,
+          "stage": "idle",
+          "theme": "green_hill",
+          "video_mb": 440.440338134766,
+          "waiting": false
+        },
+        {
+          "act": "SpringUp",
+          "at_us": 11721145,
+          "blend": 0.0,
+          "build_ms": 1.508,
+          "draw_calls": 927,
+          "engine_physics_ms": 0.52,
+          "engine_process_ms": 83.063,
+          "frame_ms": 72.438,
+          "memory_mb": 268.107389450073,
+          "nodes": 2314.0,
+          "objects": 1456,
+          "render_cpu_ms": 1.70699996817112,
+          "render_gpu_ms": 0.723999999463558,
+          "render_wall_ms": 2.672,
+          "resident_acts": 2,
+          "sequence": 0,
+          "stage": "idle",
+          "theme": "green_hill",
+          "video_mb": 384.735702514648,
+          "waiting": false
+        }
+      ]
+    },
+    "prototype": {
+      "api": "1.4.351",
+      "balls_remaining": 3,
+      "command_line": [
+        "--script",
+        "res://tests/prototype_play_profile.gd"
+      ],
+      "device": "NVIDIA GeForce RTX 4060",
+      "draws_median": 953,
+      "driver": "vulkan",
+      "duration_ms": 29950.896,
+      "engine": "4.7.2-stable (official)",
+      "finished": false,
+      "input_ticks": 3600,
+      "menu_validation_ms": 4258.898,
+      "note": "Input-only Challenge session with HUD, sounds and telemetry. Launches and steers normally; no score grants, teleports or forced clears. Dynamic paths can diverge across runs.",
+      "objects_median": 1604,
+      "physics_ticks": 120,
+      "pipelines": {
+        "canvas": 8.0,
+        "draw": 0.0,
+        "mesh": 66.0,
+        "specialization": 131.0,
+        "surface": 77.0
+      },
+      "practice": false,
+      "ready_ms": 3938.777,
+      "ready_pipelines": {
+        "canvas": 8.0,
+        "draw": 0.0,
+        "mesh": 66.0,
+        "specialization": 130.0,
+        "surface": 76.0
+      },
+      "rebuilds": 0,
+      "render_cpu_ms_median": 1.81199995529652,
+      "render_gpu_ms_median": 0.758999984711409,
+      "renderer": "forward_plus",
+      "resident_peak": 3,
+      "score": 0,
+      "seed": 1129959966,
+      "startup_frames": {
+        "count": 864,
+        "frames_over_100_ms": 3,
+        "frames_over_50_ms": 10,
+        "max_ms": 1155.47,
+        "median_ms": 1.608,
+        "p95_ms": 4.107,
+        "p99_ms": 54.565
+      },
+      "theme": "green_hill",
+      "timing": {
+        "count": 5868,
+        "frames_over_100_ms": 0,
+        "frames_over_50_ms": 2,
+        "max_ms": 55.175,
+        "median_ms": 5.302,
+        "p95_ms": 6.365,
+        "p99_ms": 7.478
+      },
+      "user_arguments": [
+        "--profile-theme=green_hill",
+        "--profile-seconds=30",
+        "--profile-output=res://test-results/green-hill-polish-20261117/prototype-play-final.json"
+      ],
+      "waiting_ms": 0.0,
+      "window_size": [
+        1280,
+        900
+      ],
+      "world_size": [
+        673,
+        473
+      ]
+    }
+  },
+  "notes": [
+    "Source scenery tests retain existing selected-image export warnings.",
+    "Final graphical play runs retain ObjectDB exit warnings; see logs. No script or engine errors in final captures, bakes or play runs.",
+    "An initial Prototype play attempt overlapped the Endless shared-background write and failed resource loading. The accepted play runs started after both bakes completed.",
+    "Play profiles verify startup, input and streaming. They are not isolated performance benchmarks or human feel review."
+  ],
+  "local_evidence": "test-results/green-hill-polish-20261117/",
+  "shutdown_diagnostic": {
+    "prototype_instances": 1,
+    "endless_instances": 8,
+    "verbose_endless_instances": 2,
+    "verbose_leaked_type": "RefCounted",
+    "sequence": 3,
+    "rebuilds": 0,
+    "waiting_ms": 1855.801,
+    "note": "Counts vary across runs. The verbose replay reports two RefCounted instances, matching the previous pass count; ownership remains unestablished."
+  }
+}

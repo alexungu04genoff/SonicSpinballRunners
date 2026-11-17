@@ -2,6 +2,18 @@
 
 Alex asked for a fresh review of the textured models and larger-feeling environments, excluding Lava Reef. This reopens the background composition decision from the November 9 audit; that audit intentionally inspected views with little distant scenery exposed.
 
+## Green Hill island and loop polish
+
+Alex found the large palm island empty, the loop's green margin distracting and the textures distorted. The local headlands now use smaller footprints, with a visible textured rock pair and a low shrub beside the palm. A rock pair also sits behind the coastal loop opening. The coastal loop has shorter approaches and a slightly smaller scale; authored loop footprint envelopes stay unchanged.
+
+The separate green face lips are removed. Loop grass now unwraps along the running surface, so upright sections no longer collapse under top-down projection. Checker faces use explicit UVs and the existing flat surface shader, preserving the production material policy and selected image pixels. Distant island cliffs wrap a continuous checker strip with whole repeats instead of blending three projections across their sloped corners. Shared terrain shaders, physics, camera defaults and atmosphere values remain unchanged.
+
+Starting source: `6f9f5c5`. [Wide comparison](green-hill-polish-20261117/green_hill.jpg) and [normal-zoom edge comparison](green-hill-polish-20261117/edge.jpg) retain identical canonical Prototype state, Default atmosphere and production Retro. Before is left; after is right. The accepted final captures are `trial3-wide` and `trial3-edge` under local `test-results/green-hill-polish-20261117/`; each before/after set passed 26 authority/freshness checks. Earlier rejected trials remain local diagnostic history.
+
+Validation: **16 Green Hill landmark, 23 geometry-density, 387 landmark-theme and 9,095 scenery checks passed**. All seven Green Hill Prototype and seven Endless variants were rebuilt. The final graphical Challenge run completed 3,600 input ticks; the seed-8 Endless tour crossed three Green Hill Acts and entered the next Zone. Both loaded disk resources with zero fallback rebuilds and zero boundary wait. Source tests retain selected-image export warnings, and graphical shutdown retains ObjectDB warnings. No script or engine errors occurred in the accepted captures, bakes or play runs. These are functional smoke checks, not performance or feel claims. [Verification receipts](green-hill-polish-20261117/verification.json).
+
+The later Generations-inspired Chemical Plant request was cancelled before source changes. Chemical Plant remains at its existing factory-block presentation.
+
 ## Green Hill coastline follow-up
 
 Alex asked for more variation in Green Hill's background and sides. Local headlands now alternate between coves, narrow points and broad bluffs, with different cliff heights and occasional raised palm terraces. Small flower islets also vary in elevation. Four separated offshore bluffs replace the matching pair of cone stacks; they use the existing checker and turf textures, muted colors, different shelf heights and elongated footprints. Their bases meet the ocean. The first offshore placement trial was too far outside the reference view, so two were brought into the exposed side background.

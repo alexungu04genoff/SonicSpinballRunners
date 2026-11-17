@@ -2,6 +2,8 @@
 
 ## Larger environments after texturing — 2026-11-17
 
+The final Green Hill follow-up compacts the palm/loop islands, restores visible rocks and adds a low shrub. Loop faces meet the grass without a separate bright rim; curved turf and distant checker cliffs now use explicit wrapped UVs. Keep the existing selected images and low-poly silhouettes. [Matched comparison](green-hill-polish-20261117/green_hill.jpg). The requested Generations-inspired Chemical Plant expansion was subsequently cancelled and has no source changes.
+
 Subsequent user review also requested more Green Hill side/background variety. Local coves, points, bluffs and stepped palm terraces now vary in height, while four separated offshore islands retain open ocean gaps. Rooftop's district now meets paved streets and recessed canals, and the bright roof ridge strips were removed. See the current follow-up sections in [the model/depth report](MODEL_DEPTH.md); the initial comparison sheets remain historical evidence.
 
 Alex reopened model polish and background scale, excluding Lava Reef. The [model/depth pass](MODEL_DEPTH.md) reviews all seven other prop libraries and adds layered Ice mountain ranges, staggered Rooftop districts, low Chemical factory blocks, dark Casino hotels and varied distant Sky ruins. Green Hill rocks gain chipped facets, Ice firs gain notched snow boughs, and Aquarium coral gains tapered forks. Strong existing heroes and selected textures remain. The November 9 sufficiency judgment below is historical, not a restriction against this newly requested composition work. Matched wide views supplement ordinary gameplay captures; the default camera is unchanged.

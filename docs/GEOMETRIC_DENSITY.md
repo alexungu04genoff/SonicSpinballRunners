@@ -2,6 +2,8 @@
 
 **2026-11-17 supporting-model update:** the [model/depth pass](MODEL_DEPTH.md) replaces Green Hill's primitive rocks with shared 36-triangle chipped meshes and Ice fir cones with shared 24-triangle notched boughs. Aquarium coral uses tapered six-sided branches. New distant scenery uses the existing ordinary primitive families, with 21-triangle Ice peaks and broad architectural modules. The budgets below still guide construction; earlier totals are historical and are not measurements of the larger backgrounds.
 
+The subsequent Green Hill polish retains the 16-step loop silhouette while removing the separate grass lips from its faces. Its running surface now uses a continuous UV unwrap. Only the coastal variant shortens its approaches; authored footprint envelopes remain unchanged. Compact headlands reuse the existing rock and shrub families. [Matched appearance evidence](green-hill-polish-20261117/green_hill.jpg).
+
 Collisionless presentation now follows a deliberately faceted, early-2000s Sonic-inspired vocabulary. Modern textures, materials, atmosphere, lighting and terrain contours remain unchanged. This is an art-direction pass, not an FPS claim.
 
 ## Authority and evidence
