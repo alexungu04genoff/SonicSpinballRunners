@@ -2,6 +2,8 @@
 
 ## Larger environments after texturing — 2026-11-17
 
+The latest Green Hill screenshot review removes the remaining raised loop-entry cap by tapering the approaches into the grass. Offshore cliffs retain their faceted silhouettes with correctly proportioned checker UVs; small existing palm, rock and sunflower groups give the four distant islands readable landmarks. [Updated matched comparison](green-hill-seams-20261117/green_hill.jpg).
+
 The final Green Hill follow-up compacts the palm/loop islands, restores visible rocks and adds a low shrub. Loop faces meet the grass without a separate bright rim; curved turf and distant checker cliffs now use explicit wrapped UVs. Keep the existing selected images and low-poly silhouettes. [Matched comparison](green-hill-polish-20261117/green_hill.jpg). The requested Generations-inspired Chemical Plant expansion was subsequently cancelled and has no source changes.
 
 Subsequent user review also requested more Green Hill side/background variety. Local coves, points, bluffs and stepped palm terraces now vary in height, while four separated offshore islands retain open ocean gaps. Rooftop's district now meets paved streets and recessed canals, and the bright roof ridge strips were removed. See the current follow-up sections in [the model/depth report](MODEL_DEPTH.md); the initial comparison sheets remain historical evidence.

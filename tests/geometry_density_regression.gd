@@ -82,7 +82,26 @@ func _initialize() -> void:
  var compact: Node3D = presentation.decor_skin.build_coastal_loop()
  var compact_bounds: AABB = presentation.theme_definition.SceneryLayout.group_bounds(compact)
  check(compact_bounds.size.x < 2.3 and compact_bounds.size.y > 1.9, "Coastal loop shortens approaches while retaining the full upright loop")
+ var grounded_tips := true
+ var tip_count := 0
+ for vertex: Vector3 in compact.get_node("ContinuousTurfTrack").mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]:
+  if absf(vertex.x) > 1.11:
+   tip_count += 1
+   grounded_tips = grounded_tips and absf(vertex.y) < 0.00001
+ check(tip_count >= 4 and grounded_tips, "Loop approaches meet the island without raised end caps")
  compact.free()
+ for island: Vector4 in [Vector4(1.8, 1.3, 0.72, 0.70), Vector4(1.7, 0.7, 0.90, 0.88), Vector4(1.5, 1.8, 0.72, 1.06), Vector4(1.1, 0.95, 0.90, 0.70)]:
+  var cliff: ArrayMesh = presentation.theme_definition._offshore_cliff(island.x, island.y, island.z, island.w)
+  var arrays := cliff.surface_get_arrays(0)
+  var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+  var coords: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
+  var square_density := valid_flat_faces(cliff)
+  for i in range(0, vertices.size(), 6):
+   var width := (vertices[i].distance_to(vertices[i + 5]) + vertices[i + 1].distance_to(vertices[i + 2])) * 0.5
+   var horizontal_repeat := width / absf(coords[i + 2].x - coords[i].x)
+   var vertical_repeat := island.y / absf(coords[i].y - coords[i + 1].y)
+   square_density = square_density and absf(horizontal_repeat / vertical_repeat - 1.0) < 0.05
+  check(square_density, "Offshore checker repeats match horizontal and vertical world size: " + str(island))
  var rock: Node3D = presentation.decor_skin.factory.call("small_rock")
  var rock_mesh: Mesh = rock.get_child(0).mesh
  check(triangles(rock_mesh) <= 64 and valid_flat_faces(rock_mesh), "Chipped rocks retain a small, finite, outward flat-shaded mesh")

@@ -148,18 +148,26 @@ func _turf_loop(root: Node3D, apron_reach := 1.52) -> void:
   var exterior_normal := Vector3(0, 0, -1).cross(c - d).normalized()
   var top: SurfaceTool = turf if exterior_normal.y > 0.72 else soil
   _quad(top, d + across, c + across, c - across, d - across)
- # Tangent entry and exit aprons are attached to the two ends of the spiral.
+ # Tangent entry and exit aprons taper into the ground, without a raised end
+ # cap or a vertical grass sliver at the island surface.
  for end: int in [0, steps]:
   var at := inner[end]
   var reach: float = -apron_reach if end == 0 else apron_reach
-  var tip := at + Vector3(reach, 0, 0)
-  var down := Vector3(0, -0.16, 0)
+  var tip := Vector3(at.x + reach, 0, at.z)
+  var down := Vector3(0, -at.y, 0)
+  var run := at.distance_to(tip) * signf(reach)
   _quad(turf, at + across, tip + across, tip - across, at - across, end > 0,
-   PackedVector2Array([Vector2(distances[end], across.z * 2), Vector2(distances[end] + reach, across.z * 2), Vector2(distances[end] + reach, 0), Vector2(distances[end], 0)]))
-  _quad(soil, at + across + down, tip + across + down, tip + across, at + across, end > 0)
-  _quad(soil, at - across, tip - across, tip - across + down, at - across + down, end > 0)
-  _quad(soil, tip + across, tip + across + down, tip - across + down, tip - across, end > 0)
-  _quad(soil, at - across + down, tip - across + down, tip + across + down, at + across + down, end > 0)
+   PackedVector2Array([Vector2(distances[end], across.z * 2), Vector2(distances[end] + run, across.z * 2), Vector2(distances[end] + run, 0), Vector2(distances[end], 0)]))
+  for side: int in [-1, 1]:
+   var offset := across * side
+   var vertices: Array[Vector3] = [at + offset, tip + offset, at + offset + down]
+   if (side > 0) != (end > 0): vertices.reverse()
+   var normal := (vertices[2] - vertices[0]).cross(vertices[1] - vertices[0]).normalized()
+   for vertex: Vector3 in vertices:
+    soil.set_normal(normal)
+    soil.set_uv(Vector2(vertex.x, vertex.y))
+    soil.add_vertex(vertex)
+  _quad(soil, at - across + down, tip - across, tip + across, at + across + down, end > 0)
  if _loop_soil == null:
   _loop_soil = presentation.theme_definition._texture_material("3A", Vector2(0.64, 0.64), false)
   # Production bakes use flat turf. The existing UV surface shader preserves

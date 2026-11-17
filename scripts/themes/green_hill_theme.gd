@@ -343,6 +343,33 @@ func _rock(p: Node3D, base: Vector3, size: float) -> void:
  rock.rotation.y = base.z * 0.7
  rock.scale = Vector3(1.15, 0.8, 0.85)
 
+func _offshore_cliff(radius: float, height: float, taper: float, stretch: float) -> ArrayMesh:
+ # Explicit side-only UVs avoid CylinderMesh's half-height side chart. Measure
+ # each stretched facet at mid-height so all eight faces keep the same density.
+ var outline := PackedVector3Array()
+ var distances := PackedFloat32Array([0.0])
+ for i in 9:
+  var angle := TAU * float(i) / 8.0
+  outline.append(Vector3(sin(angle) * radius, 0, cos(angle) * radius * stretch))
+  if i > 0: distances.append(distances[-1] + outline[i - 1].distance_to(outline[i]) * (1.0 + taper) * 0.5)
+ var fitted_length := maxf(1.0, roundf(distances[-1] / 0.64)) * 0.64
+ var fit := fitted_length / distances[-1]
+ var surface := SurfaceTool.new()
+ surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+ for i in 8:
+  var a := outline[i]
+  var b := outline[i + 1]
+  var c := b * taper + Vector3.UP * height
+  var d := a * taper + Vector3.UP * height
+  var normal := (b - a).cross(d - a).normalized()
+  var vertices := [a, d, c, a, c, b]
+  var along := [distances[i], distances[i], distances[i + 1], distances[i], distances[i + 1], distances[i + 1]]
+  for j in 6:
+   surface.set_normal(normal)
+   surface.set_uv(Vector2(along[j] * fit, 2.04 - vertices[j].y) / 0.64)
+   surface.add_vertex(vertices[j])
+ return surface.commit()
+
 func build_background(p: Node3D) -> void:
  var water = PlaneMesh.new()
  water.size = Vector2(150, 150)
@@ -352,20 +379,19 @@ func build_background(p: Node3D) -> void:
  var sand = material(Color("dfc179"))
  var distant_green = material(Color("c4dcae"))
  var distant_dark = material(Color("a4caa8"))
- var distant_stone = material(Color("66949b"))
  for turf: StandardMaterial3D in [distant_green, distant_dark]:
   turf.albedo_texture = _selected_texture("5B")
   turf.uv1_triplanar = true
   turf.uv1_world_triplanar = true
   turf.uv1_scale = Vector3.ONE * 0.38
  Atmosphere.color(sand, "shore_tint", "tint")
- Atmosphere.color(distant_stone, "shore_tint", "tint")
  Atmosphere.color(distant_green, "vegetation_tint", "tint")
  Atmosphere.color(distant_dark, "vegetation_tint", "tint")
  var distant_soil := material(Color("b5916f"))
  distant_soil.albedo_texture = _selected_texture("3A")
  Atmosphere.color(distant_soil, "shore_tint", "tint")
  var center = p.table_bounds.get_center() * TablePresentation.SCALE
+ var decor := GreenHillDecor.new(p)
  # Four separated offshore silhouettes, rather than two matching cone stacks.
  # Different shelf heights and footprints retain broad stretches of open sea.
  for i: int in 4:
@@ -378,31 +404,31 @@ func build_background(p: Node3D) -> void:
   var island := Node3D.new()
   island.name = "OffshoreBluff"
   island.position = Vector3(center.x + side * (p.table_bounds.size.x * TablePresentation.SCALE * 0.5 + offset), -2.2, (p.table_bounds.position.y + p.table_bounds.size.y * fraction) * TablePresentation.SCALE)
-  island.scale.z = 0.70 + 0.18 * (i % 3)
+  var stretch := 0.70 + 0.18 * (i % 3)
   island.rotation.y = -0.25 + i * 0.34
   p.scenery_root.add_child(island)
   var shore = p.cylinder(radius * 1.12, 0.32)
   shore.radial_segments = 8
-  p.mesh_node(shore, sand, Vector3.ZERO, island)
-  var mound = p.cylinder(radius, height)
-  mound.top_radius = radius * (0.72 if i % 2 == 0 else 0.90)
-  mound.radial_segments = 8
-  # Wrap one continuous checker strip around the bluff. Triplanar blending on
-  # these sloped, stretched cylinders smeared the checks at the face joins.
-  var soil: StandardMaterial3D = distant_soil.duplicate()
-  var perimeter: float = TAU * (radius + mound.top_radius) * 0.5 * (1.0 + island.scale.z) * 0.5
-  soil.uv1_scale = Vector3(maxf(1.0, roundf(perimeter / 0.64)), height / 0.64, 1)
-  soil.uv1_offset.y = (2.04 - height) / 0.64
-  p.mesh_node(mound, soil, Vector3.UP * (0.16 + height * 0.5), island)
-  var cap = p.cylinder(mound.top_radius * 1.03, 0.10)
+  p.mesh_node(shore, sand, Vector3.ZERO, island).scale.z = stretch
+  var taper := 0.72 if i % 2 == 0 else 0.90
+  p.mesh_node(_offshore_cliff(radius, height, taper, stretch), distant_soil, Vector3.UP * 0.16, island)
+  var cap = p.cylinder(radius * taper * 1.03, 0.10)
   cap.radial_segments = 8
-  p.mesh_node(cap, distant_green if i % 2 == 0 else distant_dark, Vector3.UP * (0.16 + height), island)
+  p.mesh_node(cap, distant_green if i % 2 == 0 else distant_dark, Vector3.UP * (0.16 + height), island).scale.z = stretch
+  # A few readable silhouettes give every island a destination. Stretch only
+  # the land meshes, keeping palms, flowers and rocks in their original shapes.
+  var top := height + 0.21
+  var palm_size: float = [0.66, 0.48, 0.66, 0.54][i]
+  var palm_front := 0.40 if i == 1 else 0.10
+  _palm(p, Vector3(side * radius * 0.18, top, radius * stretch * palm_front), -side, palm_size, island)
   if i % 2 == 0:
-   var peak = p.cylinder(0.42, 0.78)
-   peak.top_radius = 0.18
-   peak.radial_segments = 6
-   var rock_peak = p.mesh_node(peak, distant_stone, Vector3(-side * radius * 0.25, height + 0.55, 0), island)
-   rock_peak.rotation.z = side * 0.14
+   _palm(p, Vector3(-side * radius * 0.32, top, -radius * stretch * 0.18), side, 0.52, island)
+  var rocks: Node3D = decor.factory.call("medium_rock" if i % 2 else "tall_rock")
+  island.add_child(rocks)
+  rocks.position = Vector3(-side * radius * 0.30, top, radius * stretch * 0.25)
+  rocks.scale = Vector3.ONE * (0.60 if i == 3 else 0.72)
+  rocks.rotation.y = i * 0.70
+  _flower(p, Vector3(side * radius * 0.32, top, radius * stretch * 0.36), 0.95 if i == 1 else 0.70, island)
  # Soft clouds and distant green peaks give the lower camera a readable horizon.
  var cloud_material := ShaderMaterial.new()
  cloud_material.shader = preload("res://scripts/themes/green_hill_cloud.gdshader")

@@ -2,6 +2,8 @@
 
 ## Give the table a world around it — 2026-11-17
 
+Latest Green Hill correction: the marked entrance artifact was the loop approach's raised end cap; the approach now slopes into its supporting grass. The offshore checker rectangles came from the cylinder's half-height UV chart and stretched facets. Explicit side UVs now use measured facet lengths and full height. All four distant islands gain small palm/rock/sunflower groups, with land stretching kept separate from prop proportions. [Updated comparison](green-hill-seams-20261117/green_hill.jpg).
+
 Green Hill polish: Alex spotted the empty palm island, distracting green loop rim and distorted textures. Local headlands are now more compact, rocks are visible again, and a shrub fills the palm's foreground. Only coastal loops shorten their approaches; all loops lose the extra face lip and unwrap grass along the track. Offshore checker cliffs use a continuous wrapped strip. Selected images, terrain shaders and physics are unchanged. [Before/after](green-hill-polish-20261117/green_hill.jpg). Alex cancelled the proposed Generations-style Chemical Plant towers and wavy pipes before source edits.
 
 Green Hill follow-up: Alex wanted more variety along the sides and offshore. The headlands now have coves, points, stepped palm terraces and different heights, with smaller flower islets and four varied offshore checker bluffs. Keep the open water and existing loops; this is more varied composition inside the existing scenery placement rules, not a new procedural level generator. [Comparison](green-hill-coast-20261117/green_hill.jpg).

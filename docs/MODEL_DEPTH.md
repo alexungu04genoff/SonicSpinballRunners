@@ -2,6 +2,16 @@
 
 Alex asked for a fresh review of the textured models and larger-feeling environments, excluding Lava Reef. This reopens the background composition decision from the November 9 audit; that audit intentionally inspected views with little distant scenery exposed.
 
+## Green Hill loop end and offshore checker correction
+
+Alex's marked screenshot exposed the remaining raised cap at the coastal loop entrance. Both loop approaches now taper down to their supporting surface, using explicit triangular side faces instead of a hard-cut end cap. The footprint, full loop silhouette and collisionless role stay unchanged.
+
+The distant cliff distortion came from CylinderMesh packing its side UVs into only half the texture height, compounded by uniform UV spacing around stretched islands. Eight explicit cliff facets now wrap according to their actual mid-height edge lengths and full height, with a whole number of repeats at the closing seam. The existing taper and island footprints remain. Stretch applies to the land meshes only. Each offshore island now carries an existing palm, rock group and sunflower; two also have a smaller second palm. Selected texture pixels, atmosphere, gameplay and the normal camera are unchanged.
+
+Starting source: `a8047f9`. The [production Retro comparison](green-hill-seams-20261117/green_hill.jpg) retains the same wide inspection framing and Prototype state as Alex's screenshot. Before is left; after is right. The [loop-end crop](green-hill-seams-20261117/loop-end.png) preserves the original pixels from those matched frames. [Retro-off comparison](green-hill-seams-20261117/without-retro.jpg) and [offshore detail](green-hill-seams-20261117/detail.jpg) are supplemental diagnostics. All use real disk-loaded Prototype resources; local PNGs and receipts live under `test-results/green-hill-seams-20261117/`.
+
+Validation: **16 Green Hill landmark, 28 geometry-density, 387 landmark-theme and 9,179 scenery checks passed**. Six accepted before/after capture sets passed 26 authority/freshness checks each. All seven Prototype and seven Endless Green Hill variants were rebuilt. A 3,600-tick graphical Prototype run loaded disk resources with zero fallback rebuilds and no boundary wait. The first accelerated seed-8 Endless tour reached the next Zone but failed its zero-wait requirement with 3,000.478 ms waiting; an unchanged repeat passed with zero waiting and zero rebuilds. A separate Rooftop Godot preview was running, and concurrent diagnostic-logging edits in `endless_game.gd` were preserved outside this change, so these timings are not isolated performance evidence. Shutdown warnings remain (one ObjectDB instance in Prototype, eight in the first tour, two in the repeat), as do selected-image export warnings in source tests. [Verification receipts](green-hill-seams-20261117/verification.json).
+
 ## Green Hill island and loop polish
 
 Alex found the large palm island empty, the loop's green margin distracting and the textures distorted. The local headlands now use smaller footprints, with a visible textured rock pair and a low shrub beside the palm. A rock pair also sits behind the coastal loop opening. The coastal loop has shorter approaches and a slightly smaller scale; authored loop footprint envelopes stay unchanged.
