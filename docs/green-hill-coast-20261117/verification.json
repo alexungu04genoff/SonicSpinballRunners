@@ -1,0 +1,388 @@
+{
+  "scope": "Green Hill local coasts and shared offshore islands only",
+  "baseline": "d110650",
+  "suites": [
+    {
+      "name": "green_hill_landmarks",
+      "failures": 0,
+      "checks": 16
+    },
+    {
+      "name": "geometry_density_regression",
+      "failures": 0,
+      "checks": 21
+    },
+    {
+      "name": "scenery_regression",
+      "failures": 0,
+      "checks": 8661
+    }
+  ],
+  "captures": {
+    "views": [
+      "wide",
+      "edge"
+    ],
+    "after": 2,
+    "failures": 0,
+    "retro": "production",
+    "checks_per_set": 26,
+    "before": 2,
+    "renderer": "Forward+/Vulkan"
+  },
+  "bakes": {
+    "endless": 7,
+    "prototype": 7
+  },
+  "play": {
+    "prototype": {
+      "api": "1.4.351",
+      "balls_remaining": 3,
+      "command_line": [
+        "--script",
+        "res://tests/prototype_play_profile.gd"
+      ],
+      "device": "NVIDIA GeForce RTX 4060",
+      "draws_median": 431,
+      "driver": "vulkan",
+      "duration_ms": 29955.457,
+      "engine": "4.7.2-stable (official)",
+      "finished": false,
+      "input_ticks": 3600,
+      "menu_validation_ms": 3649.672,
+      "note": "Input-only Challenge session with HUD, sounds and telemetry. Launches and steers normally; no score grants, teleports or forced clears. Dynamic paths can diverge across runs.",
+      "objects_median": 842,
+      "physics_ticks": 120,
+      "pipelines": {
+        "canvas": 8.0,
+        "draw": 0.0,
+        "mesh": 66.0,
+        "specialization": 122.0,
+        "surface": 71.0
+      },
+      "practice": false,
+      "ready_ms": 3569.685,
+      "ready_pipelines": {
+        "canvas": 8.0,
+        "draw": 0.0,
+        "mesh": 66.0,
+        "specialization": 121.0,
+        "surface": 70.0
+      },
+      "rebuilds": 0,
+      "render_cpu_ms_median": 1.35400001010299,
+      "render_gpu_ms_median": 0.634999983012676,
+      "renderer": "forward_plus",
+      "resident_peak": 3,
+      "score": 0,
+      "seed": 379381558,
+      "startup_frames": {
+        "count": 1007,
+        "frames_over_100_ms": 4,
+        "frames_over_50_ms": 11,
+        "max_ms": 1026.462,
+        "median_ms": 0.909,
+        "p95_ms": 3.661,
+        "p99_ms": 50.323
+      },
+      "theme": "green_hill",
+      "timing": {
+        "count": 6514,
+        "frames_over_100_ms": 0,
+        "frames_over_50_ms": 2,
+        "max_ms": 61.909,
+        "median_ms": 4.594,
+        "p95_ms": 6.593,
+        "p99_ms": 8.139
+      },
+      "user_arguments": [
+        "--profile-theme=green_hill",
+        "--profile-seconds=30",
+        "--profile-output=res://test-results/green-hill-coast-20261117/prototype-play.json"
+      ],
+      "waiting_ms": 0.0,
+      "window_size": [
+        1280,
+        900
+      ],
+      "world_size": [
+        673,
+        473
+      ]
+    },
+    "endless": {
+      "active_frames": {
+        "count": 432,
+        "max_ms": 182.238,
+        "median_ms": 16.66,
+        "p95_ms": 56.463,
+        "p99_ms": 116.58
+      },
+      "api": "1.4.351",
+      "command_line": [
+        "--script",
+        "res://tests/endless_stream_profile.gd"
+      ],
+      "cpu_max_ms": {
+        "cache.release": 0.147,
+        "graphics.queue": 0.466,
+        "physics.compile": 20.56,
+        "resource.collect": 0.032,
+        "resource.request": 0.043,
+        "scene.free": 0.265,
+        "scene.node": 59.475,
+        "theme.prime_request": 0.024
+      },
+      "device": "NVIDIA GeForce RTX 4060",
+      "draw_calls_median": 921,
+      "draw_calls_p95": 1194,
+      "driver": "vulkan",
+      "duration_ms": 8461.911,
+      "engine": "4.7.2-stable (official)",
+      "frame_max_ms": 182.238,
+      "frame_median_ms": 16.66,
+      "frame_p95_ms": 56.463,
+      "frame_p99_ms": 116.58,
+      "frames_over_100_ms": 7,
+      "frames_over_50_ms": 23,
+      "gameplay_cpu": {},
+      "gameplay_started_us": 10884040,
+      "initialize_ms": 1593,
+      "objects_median": 1299,
+      "physics_ticks": 120,
+      "pipelines": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 25.0,
+        "specialization": 189.0,
+        "surface": 115.0
+      },
+      "pool_size": 7,
+      "ready_pipelines": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 16.0,
+        "specialization": 110.0,
+        "surface": 56.0
+      },
+      "rebuilds": 0,
+      "render_cpu_ms_median": 2.37099999624491,
+      "render_gpu_ms_median": 0.827999994158745,
+      "renderer": "forward_plus",
+      "resident_peak": 5,
+      "retirement_completed": 0,
+      "retirement_peak": 0,
+      "reused_visual_nodes": 3404,
+      "sample_count": 432,
+      "seed": 8,
+      "sequence": 3,
+      "shaders": "N64-ish + VHS + CRT",
+      "startup_cpu": {},
+      "startup_ms": 4294,
+      "threaded_resource_wall_ms": 1156.755,
+      "tour_speed": 240.0,
+      "user_arguments": [
+        "--seed=8",
+        "--profile-target=3",
+        "--profile-speed=240",
+        "--profile-output=res://test-results/green-hill-coast-20261117/endless-play.json"
+      ],
+      "viewport_size": [
+        673,
+        473
+      ],
+      "vsync": 1,
+      "waiting_frames": {
+        "count": 0
+      },
+      "waiting_ms": 0.0,
+      "window_size": [
+        1280,
+        900
+      ],
+      "worst_frames": [
+        {
+          "act": "First Try Smooth Decor",
+          "at_us": 14116852,
+          "blend": 0.0,
+          "build_ms": 156.734,
+          "draw_calls": 785,
+          "engine_physics_ms": 0.344,
+          "engine_process_ms": 75.125,
+          "frame_ms": 182.238,
+          "memory_mb": 274.584101676941,
+          "nodes": 3612.0,
+          "objects": 1180,
+          "render_cpu_ms": 2.03000000879169,
+          "render_gpu_ms": 0.771000012755394,
+          "render_wall_ms": 23.781,
+          "resident_acts": 3,
+          "sequence": 1,
+          "stage": "idle",
+          "theme": "green_hill",
+          "video_mb": 434.142532348633,
+          "waiting": false
+        },
+        {
+          "act": "First Try Smooth Decor",
+          "at_us": 14929055,
+          "blend": 0.0,
+          "build_ms": 126.884,
+          "draw_calls": 678,
+          "engine_physics_ms": 0.242,
+          "engine_process_ms": 181.428,
+          "frame_ms": 135.375,
+          "memory_mb": 280.285051345825,
+          "nodes": 3877.0,
+          "objects": 1070,
+          "render_cpu_ms": 2.09500003504753,
+          "render_gpu_ms": 0.784000009298325,
+          "render_wall_ms": 5.636,
+          "resident_acts": 3,
+          "sequence": 1,
+          "stage": "resource.wait",
+          "theme": "green_hill",
+          "video_mb": 440.145355224609,
+          "waiting": false
+        },
+        {
+          "act": "First Try Smooth Decor",
+          "at_us": 15120025,
+          "blend": 0.0,
+          "build_ms": 127.163,
+          "draw_calls": 701,
+          "engine_physics_ms": 0.242,
+          "engine_process_ms": 181.428,
+          "frame_ms": 134.507,
+          "memory_mb": 282.852872848511,
+          "nodes": 3877.0,
+          "objects": 1094,
+          "render_cpu_ms": 2.09000002127886,
+          "render_gpu_ms": 0.784000024199486,
+          "render_wall_ms": 4.955,
+          "resident_acts": 3,
+          "sequence": 1,
+          "stage": "resource.wait",
+          "theme": "green_hill",
+          "video_mb": 441.293930053711,
+          "waiting": false
+        },
+        {
+          "act": "First Try Smooth Decor",
+          "at_us": 13756701,
+          "blend": 0.0,
+          "build_ms": 37.869,
+          "draw_calls": 729,
+          "engine_physics_ms": 0.344,
+          "engine_process_ms": 75.125,
+          "frame_ms": 123.46,
+          "memory_mb": 271.593328475952,
+          "nodes": 3606.0,
+          "objects": 1136,
+          "render_cpu_ms": 3.13000001236796,
+          "render_gpu_ms": 1.13600001856685,
+          "render_wall_ms": 2.747,
+          "resident_acts": 2,
+          "sequence": 1,
+          "stage": "graphics.draw",
+          "theme": "green_hill",
+          "video_mb": 386.792984008789,
+          "waiting": false
+        },
+        {
+          "act": "First Try Smooth Decor",
+          "at_us": 15236605,
+          "blend": 0.0,
+          "build_ms": 76.419,
+          "draw_calls": 697,
+          "engine_physics_ms": 0.766,
+          "engine_process_ms": 134.005,
+          "frame_ms": 116.58,
+          "memory_mb": 283.453226089478,
+          "nodes": 3929.0,
+          "objects": 1091,
+          "render_cpu_ms": 3.12900005471706,
+          "render_gpu_ms": 0.775000028312206,
+          "render_wall_ms": 4.737,
+          "resident_acts": 3,
+          "sequence": 1,
+          "stage": "scene.instantiate",
+          "theme": "green_hill",
+          "video_mb": 441.295272827148,
+          "waiting": false
+        },
+        {
+          "act": "SpringUp",
+          "at_us": 10997315,
+          "blend": 0.0,
+          "build_ms": 0.405,
+          "draw_calls": 862,
+          "engine_physics_ms": 0.336,
+          "engine_process_ms": 203.714,
+          "frame_ms": 113.182,
+          "memory_mb": 250.123292922974,
+          "nodes": 2225.0,
+          "objects": 1447,
+          "render_cpu_ms": 0.333,
+          "render_gpu_ms": 0.0,
+          "render_wall_ms": 78.149,
+          "resident_acts": 2,
+          "sequence": 0,
+          "stage": "idle",
+          "theme": "green_hill",
+          "video_mb": 344.870727539063,
+          "waiting": false
+        },
+        {
+          "act": "First Try Smooth Decor",
+          "at_us": 15344758,
+          "blend": 0.0,
+          "build_ms": 71.013,
+          "draw_calls": 728,
+          "engine_physics_ms": 0.766,
+          "engine_process_ms": 134.005,
+          "frame_ms": 108.153,
+          "memory_mb": 283.797514915466,
+          "nodes": 3977.0,
+          "objects": 1122,
+          "render_cpu_ms": 3.32000000780821,
+          "render_gpu_ms": 0.777000024914742,
+          "render_wall_ms": 4.731,
+          "resident_acts": 3,
+          "sequence": 1,
+          "stage": "scene.instantiate",
+          "theme": "green_hill",
+          "video_mb": 441.295944213867,
+          "waiting": false
+        },
+        {
+          "act": "SpringUp",
+          "at_us": 11087636,
+          "blend": 0.0,
+          "build_ms": 0.036,
+          "draw_calls": 878,
+          "engine_physics_ms": 0.336,
+          "engine_process_ms": 203.714,
+          "frame_ms": 90.321,
+          "memory_mb": 255.531579017639,
+          "nodes": 2225.0,
+          "objects": 1464,
+          "render_cpu_ms": 0.19,
+          "render_gpu_ms": 0.0,
+          "render_wall_ms": 5.847,
+          "resident_acts": 2,
+          "sequence": 0,
+          "stage": "resource.wait",
+          "theme": "green_hill",
+          "video_mb": 344.857574462891,
+          "waiting": false
+        }
+      ]
+    },
+    "note": "Seed 8 starts in Green Hill. This is startup/input/streaming verification, not an isolated performance benchmark or a feel assessment."
+  },
+  "remaining_warnings": [
+    "ObjectDB shutdown warnings; see play logs",
+    "Existing selected-image export warnings during source scenery checks"
+  ]
+}

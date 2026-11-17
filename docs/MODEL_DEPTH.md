@@ -2,6 +2,16 @@
 
 Alex asked for a fresh review of the textured models and larger-feeling environments, excluding Lava Reef. This reopens the background composition decision from the November 9 audit; that audit intentionally inspected views with little distant scenery exposed.
 
+## Green Hill coastline follow-up
+
+Alex asked for more variation in Green Hill's background and sides. Local headlands now alternate between coves, narrow points and broad bluffs, with different cliff heights and occasional raised palm terraces. Small flower islets also vary in elevation. Four separated offshore bluffs replace the matching pair of cone stacks; they use the existing checker and turf textures, muted colors, different shelf heights and elongated footprints. Their bases meet the ocean. The first offshore placement trial was too far outside the reference view, so two were brought into the exposed side background.
+
+The existing loops, terrain textures, open ocean, cloud treatment and collision rules remain. Placement still uses the established deterministic scenery plans and conservative footprints; no gameplay RNG or terrain changes were introduced. The [wide comparison](green-hill-coast-20261117/green_hill.jpg) and [normal-zoom edge comparison](green-hill-coast-20261117/edge.jpg) start at `d110650`, with identical camera, Prototype state, Default atmosphere and production Retro on both sides. Before is left; after is right. Local originals and receipts live under `test-results/green-hill-coast-20261117/`.
+
+Green Hill validation: **16 landmark, 21 geometry-density and 8,661 scenery checks passed**. The accepted before/after sets each passed 26 authority/freshness checks, for two matched camera views. All seven Green Hill Prototype and seven Endless variants were rebaked successfully.
+
+A graphical Green Hill Challenge run completed 3,600 input ticks (approximately 30 seconds); a seed-8 graphical Endless tour crossed three Green Hill Acts and entered the next Zone. Both used disk resources with zero fallback rebuilds and zero boundary wait. Shutdown still reports one ObjectDB instance in Prototype and two in Endless; source scenery checks retain the existing selected-image export warnings. No script or engine errors occurred in the final captures or play runs. These runs verify startup/input/streaming, not feel or isolated performance. [Green Hill verification receipts](green-hill-coast-20261117/verification.json).
+
 ## Rooftop ridge follow-up
 
 Alex flagged the thin orange lines along the roof peaks. They came from an untextured bright ridge beam in the shared roof constructor. Removing that beam lets the existing textured roof slopes meet directly, across both authored props and background houses. The selected tiles, pale eaves and roof silhouettes remain. [Matched edge-view comparison](rooftop-ridge-20261117/rooftop_run.jpg), before left and after right, starts at `7ab8f09` and retains the canonical Prototype camera, atmosphere and production Retro settings.
