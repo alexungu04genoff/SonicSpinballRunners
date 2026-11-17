@@ -3,6 +3,7 @@ extends "res://scripts/themes/theme_definition.gd"
 const Decor = preload("res://scripts/decor/rooftop_run_decor.gd")
 const TEXTURES := "res://assets/textures/rooftop_run/"
 const CANAL = preload("res://scripts/themes/rooftop_canal.gdshader")
+const STREET_LEVEL := -4.8
 var _library: RefCounted
 var material_maps = preload("res://scripts/themes/rooftop_material_maps.gd").new()
 
@@ -92,31 +93,45 @@ func build_background(p: Node3D) -> void:
  var city := Node3D.new()
  city.name = "SpagoniaCity"
  root.add_child(city)
- # The plaza remains visible between districts and beneath the canal bridges.
- _library.box(city, "dark", center + Vector3(0, -4.85, 0), Vector3(180.0, 0.10, 180.0))
+ # Three paved land strips leave real openings for the lower canals. Broad,
+ # muted stone gives the shadowless backdrop a readable common ground plane.
+ var canal_offset := width * 0.5 + 1.30
+ var canal_half_width := 0.675
+ var ground: MeshInstance3D = _library.box(city, "stone", center + Vector3(0, STREET_LEVEL - 0.30, 0), Vector3((canal_offset - canal_half_width) * 2.0, 0.60, 180.0))
+ ground.material_override = _street_material()
+ for side: int in [-1, 1]:
+  var outer_edge := canal_offset + canal_half_width
+  var pavement: MeshInstance3D = _library.box(city, "stone", center + Vector3(side * (90.0 + outer_edge) * 0.5, STREET_LEVEL - 0.30, 0), Vector3(90.0 - outer_edge, 0.60, 180.0))
+  pavement.material_override = _street_material()
  # Two canals and one bridge each frame the table without a surrounding grid.
  for side: int in [-1, 1]:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-  var canal_x := side * (width * 0.5 + 1.30)
+  var canal_x := side * canal_offset
   var water := PlaneMesh.new()
-  water.size = Vector2(1.35, length + 6.0)
-  var water_mesh: MeshInstance3D = p.mesh_node(water, _shader(CANAL), center + Vector3(canal_x, -4.6, 0), root)
+  water.size = Vector2(canal_half_width * 2.0, 180.0)
+  var water_mesh: MeshInstance3D = p.mesh_node(water, _shader(CANAL), center + Vector3(canal_x, STREET_LEVEL - 0.18, 0), root)
   water_mesh.name = "BackgroundCanal"
   for bank: int in [-1, 1]:
    if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-   _library.box(city, "stone", center + Vector3(canal_x + bank * 0.76, -4.5, 0), Vector3(0.16, 0.25, length + 6.0))
+   _library.box(city, "stone", center + Vector3(canal_x + bank * 0.76, STREET_LEVEL - 0.08, 0), Vector3(0.16, 0.50, 180.0))
   var bridge: Node3D = _library.build_variant("aqueduct", false)
   city.add_child(bridge)
-  bridge.position = center + Vector3(canal_x, -4.5, side * length * 0.22)
+  bridge.position = center + Vector3(canal_x, STREET_LEVEL - 0.40, side * length * 0.22)
   bridge.scale = Vector3(1.0, 0.7, 1.5)
  # Offset city blocks, rather than isolated towers in a blank plane. The near
  # row has broad shutters; the outer row reduces to three faceted masses.
  for side: int in [-1, 1]:
   for layer in 2:
+   var block_x := side * (width * 0.5 + 3.5 + layer * 3.4)
+   # Continuous curb-height blocks join the buildings into streets. A darker
+   # masonry course at each foot supplies contact without adding shadow lights.
+   _library.box(city, "stone", center + Vector3(block_x, STREET_LEVEL + 0.09, layer * 1.65), Vector3(3.0, 0.18, 24.5))
    for i in 7:
     if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
-    var at := center + Vector3(side * (width * 0.5 + 3.5 + layer * 3.4), -4.8, (i - 3) * 3.5 + layer * 1.65)
+    var at := center + Vector3(block_x, STREET_LEVEL + 0.18, (i - 3) * 3.5 + layer * 1.65)
     var size := Vector3(2.1 + (i % 2) * 0.45, 1.25 + float((i * 3 + layer) % 5) * 0.36, 2.3)
+    var footing: MeshInstance3D = _library.box(city, "stone", at + Vector3.UP * 0.08, Vector3(size.x + 0.14, 0.16, size.z + 0.14))
+    footing.material_override = _district_material("foundation", Color("99866c"))
     if layer == 0:
      _house(city, at, size, i)
     else:
@@ -130,11 +145,11 @@ func build_background(p: Node3D) -> void:
  var far_z: float = p.table_bounds.position.y * p.SCALE - 3.5
  var span := _library.build_variant("aqueduct", false) as Node3D
  city.add_child(span)
- span.position = Vector3(center.x - width * 0.30, -4.8, far_z)
+ span.position = Vector3(center.x - width * 0.30, STREET_LEVEL, far_z)
  span.scale = Vector3(2.0, 3.6, 1.8)
  var tower: Node3D = _library.build_variant("clock_tower", false)
  city.add_child(tower)
- tower.position = Vector3(center.x + width * 0.5 + 2.5, -4.8, far_z - 1.0)
+ tower.position = Vector3(center.x + width * 0.5 + 2.5, STREET_LEVEL, far_z - 1.0)
  tower.scale = Vector3(2.2, 2.8, 2.2)
  for i in 3:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
@@ -144,6 +159,20 @@ func build_background(p: Node3D) -> void:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   _library.balloon(city, Vector3(center.x + (i - 1) * 6.0, 1.4 + i * 0.7, far_z - 5.0 - (i % 2) * 4.0), 0.60, i)
  await _batch_city(city, p)
+
+func _street_material() -> Material:
+ if not _library.materials.has("street"):
+  var paving := material(Color("b2ad9d"))
+  paving.albedo_texture = material_maps.texture("1A", "")
+  paving.uv1_triplanar = true
+  paving.uv1_world_triplanar = true
+  paving.uv1_scale = Vector3.ONE * 0.25
+  paving.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
+  paving.roughness = 0.95
+  paving.metallic_specular = 0.15
+  Atmosphere.color(paving, "architecture_tint", "tint")
+  _library.materials.street = paving
+ return _library.materials.street
 
 func _district_material(key: String, color: Color) -> Material:
  var id := "district_" + key
@@ -190,6 +219,10 @@ func build_edges(p: Node3D) -> void:
   if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
   var group := Node3D.new()
   terraces.add_child(group)
+  # Local terraces can cross a shared canal. Carry their masonry below the
+  # waterline as well as into the street, so the garden slab has a real support.
+  var foundation: MeshInstance3D = _library.box(group, "stone", Vector3(0, -0.44, 0), Vector3(1.94, 0.64, 1.94))
+  foundation.material_override = _district_material("foundation", Color("99866c"))
   _library.box(group, "stone", Vector3(0, -0.12, 0), Vector3(2.1, 0.24, 2.1))
   _house(group, Vector3.ZERO, Vector3(1.35, layout.varied("height/" + str(plan.id), 3.21, 0.25), 1.20), layout.choice("facade/" + str(plan.id), plan.id % 2, 2))
   if layout.density >= 0.75:

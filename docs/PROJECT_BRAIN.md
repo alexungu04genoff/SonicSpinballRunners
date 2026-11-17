@@ -2,6 +2,8 @@
 
 ## Give the table a world around it — 2026-11-17
 
+Follow-up from Alex: Rooftop's dark green ground made the district look wrong and the houses looked suspended. It now has muted stone streets, recessed canals, continuous sidewalk blocks and visible masonry feet; the local terrace foundations also reach below the waterline. The backdrop stays shadowless, so actual supports and paving carry the grounding cues. [Corrected comparison](rooftop-grounding-20261117/rooftop_run.jpg).
+
 Alex asked for model polish after texturing and bigger-feeling backgrounds, with Lava Reef left alone. Bro reviewed all 89 other decor variants. The heroes were already doing their job; the weak spots were cone-like rocks, tidy stacked snow cones, thin coral sticks and empty space beyond isolated scenery. Green Hill now has chipped flat-shaded rocks, Ice has notched snow boughs and overlapping mountain ranges, and Aquarium has tapered forked coral. Rooftop gets layered districts, Chemical gets low processing blocks, Casino gets subdued hotel masses, and Sky gets varied floating ruins with cloud gaps. Existing selected art, atmospheres, aurora, gameplay and camera defaults stay current. [Evidence and checks](MODEL_DEPTH.md) use matched disk-loaded Prototype views, including an explicitly labeled wide inspection zoom. This supersedes the older decision to leave all backgrounds alone; it is not another blanket detail increase.
 
 ## Let material setup yield while the next load progresses — 2026-11-11

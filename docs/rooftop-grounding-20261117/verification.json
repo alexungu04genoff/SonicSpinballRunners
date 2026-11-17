@@ -1,0 +1,402 @@
+{
+  "scope": "Rooftop ground, canal banks, sidewalk blocks and building foundations only",
+  "baseline": "f3604dfcacbef35916397d5464fae422b70b59b7",
+  "suites": [
+    {
+      "failures": 0,
+      "name": "rooftop_decor_regression",
+      "checks": 91
+    },
+    {
+      "failures": 0,
+      "name": "scenery_regression",
+      "checks": 8403
+    },
+    {
+      "failures": 0,
+      "name": "geometry_bake_regression",
+      "checks": 2842
+    }
+  ],
+  "captures": {
+    "after": 2,
+    "retro": "production",
+    "failures": 0,
+    "renderer": "Forward+/Vulkan",
+    "before": 2,
+    "checks_per_set": 26,
+    "views": [
+      "wide",
+      "edge"
+    ]
+  },
+  "bakes": {
+    "prototype": 7,
+    "endless": 7
+  },
+  "audits": {
+    "prototype": {
+      "variants": 56,
+      "failures": 0,
+      "checks": 556
+    },
+    "endless": {
+      "remaining": "Excluded stale Lava Reef Act receipts, unchanged from baseline",
+      "variants": 56,
+      "failures": 7,
+      "checks": 556
+    }
+  },
+  "play": {
+    "endless": {
+      "active_frames": {
+        "count": 465,
+        "max_ms": 187.729,
+        "median_ms": 16.661,
+        "p95_ms": 28.431,
+        "p99_ms": 84.624
+      },
+      "api": "1.4.351",
+      "command_line": [
+        "--script",
+        "res://tests/endless_stream_profile.gd"
+      ],
+      "cpu_max_ms": {
+        "cache.release": 0.053,
+        "graphics.queue": 0.228,
+        "physics.compile": 6.63,
+        "resource.collect": 0.02,
+        "resource.request": 0.047,
+        "scene.free": 0.213,
+        "scene.node": 33.735,
+        "theme.prime_request": 0.035
+      },
+      "device": "NVIDIA GeForce RTX 4060",
+      "draw_calls_median": 1154,
+      "draw_calls_p95": 1301,
+      "driver": "vulkan",
+      "duration_ms": 8674.965,
+      "engine": "4.7.2-stable (official)",
+      "frame_max_ms": 187.729,
+      "frame_median_ms": 16.661,
+      "frame_p95_ms": 28.431,
+      "frame_p99_ms": 84.624,
+      "frames_over_100_ms": 4,
+      "frames_over_50_ms": 14,
+      "gameplay_cpu": {},
+      "gameplay_started_us": 11001769,
+      "initialize_ms": 1544,
+      "objects_median": 2948,
+      "physics_ticks": 120,
+      "pipelines": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 34.0,
+        "specialization": 194.0,
+        "surface": 124.0
+      },
+      "pool_size": 7,
+      "ready_pipelines": {
+        "canvas": 5.0,
+        "draw": 0.0,
+        "mesh": 19.0,
+        "specialization": 141.0,
+        "surface": 77.0
+      },
+      "rebuilds": 0,
+      "render_cpu_ms_median": 2.55299993735552,
+      "render_gpu_ms_median": 1.31900000944734,
+      "renderer": "forward_plus",
+      "resident_peak": 5,
+      "retirement_completed": 0,
+      "retirement_peak": 0,
+      "reused_visual_nodes": 4301,
+      "sample_count": 465,
+      "seed": 2,
+      "sequence": 3,
+      "shaders": "N64-ish + VHS + CRT",
+      "startup_cpu": {},
+      "startup_ms": 4448,
+      "threaded_resource_wall_ms": 512.625,
+      "tour_speed": 240.0,
+      "user_arguments": [
+        "--seed=2",
+        "--profile-target=3",
+        "--profile-speed=240",
+        "--profile-output=res://test-results/rooftop-grounding-20261117/endless-play.json"
+      ],
+      "viewport_size": [
+        673,
+        473
+      ],
+      "vsync": 1,
+      "waiting_frames": {
+        "count": 0
+      },
+      "waiting_ms": 0.0,
+      "window_size": [
+        1280,
+        900
+      ],
+      "worst_frames": [
+        {
+          "act": "Secret Entry",
+          "at_us": 14327914,
+          "blend": 0.0,
+          "build_ms": 1.566,
+          "draw_calls": 1185,
+          "engine_physics_ms": 0.367,
+          "engine_process_ms": 52.777,
+          "frame_ms": 187.729,
+          "memory_mb": 281.666326522827,
+          "nodes": 4347.0,
+          "objects": 3224,
+          "render_cpu_ms": 2.5100000461936,
+          "render_gpu_ms": 1.38900003582239,
+          "render_wall_ms": 6.383,
+          "resident_acts": 3,
+          "sequence": 1,
+          "stage": "idle",
+          "theme": "rooftop_run",
+          "video_mb": 517.082550048828,
+          "waiting": false
+        },
+        {
+          "act": "RampMania",
+          "at_us": 16690947,
+          "blend": 0.0,
+          "build_ms": 1.858,
+          "draw_calls": 1119,
+          "engine_physics_ms": 0.394,
+          "engine_process_ms": 138.204,
+          "frame_ms": 182.579,
+          "memory_mb": 301.70569229126,
+          "nodes": 6842.0,
+          "objects": 2896,
+          "render_cpu_ms": 2.46900003299117,
+          "render_gpu_ms": 1.24599999189377,
+          "render_wall_ms": 3.755,
+          "resident_acts": 4,
+          "sequence": 2,
+          "stage": "idle",
+          "theme": "rooftop_run",
+          "video_mb": 520.148498535156,
+          "waiting": false
+        },
+        {
+          "act": "Third Complex",
+          "at_us": 11176237,
+          "blend": 0.0,
+          "build_ms": 0.531,
+          "draw_calls": 886,
+          "engine_physics_ms": 0.562,
+          "engine_process_ms": 145.841,
+          "frame_ms": 174.373,
+          "memory_mb": 254.784646034241,
+          "nodes": 3313.0,
+          "objects": 2512,
+          "render_cpu_ms": 80.873,
+          "render_gpu_ms": 0.0,
+          "render_wall_ms": 91.585,
+          "resident_acts": 2,
+          "sequence": 0,
+          "stage": "idle",
+          "theme": "rooftop_run",
+          "video_mb": 431.454635620117,
+          "waiting": false
+        },
+        {
+          "act": "Secret Entry",
+          "at_us": 15649264,
+          "blend": 0.0,
+          "build_ms": 1.515,
+          "draw_calls": 931,
+          "engine_physics_ms": 0.431,
+          "engine_process_ms": 186.265,
+          "frame_ms": 139.039,
+          "memory_mb": 294.713333129883,
+          "nodes": 6194.0,
+          "objects": 2381,
+          "render_cpu_ms": 2.038999969244,
+          "render_gpu_ms": 1.02200002595782,
+          "render_wall_ms": 3.125,
+          "resident_acts": 4,
+          "sequence": 1,
+          "stage": "idle",
+          "theme": "rooftop_run",
+          "video_mb": 518.716979980469,
+          "waiting": false
+        },
+        {
+          "act": "Secret Entry",
+          "at_us": 14808331,
+          "blend": 0.0,
+          "build_ms": 77.667,
+          "draw_calls": 1108,
+          "engine_physics_ms": 0.367,
+          "engine_process_ms": 52.777,
+          "frame_ms": 84.624,
+          "memory_mb": 289.056760787964,
+          "nodes": 6164.0,
+          "objects": 3074,
+          "render_cpu_ms": 2.89999998116493,
+          "render_gpu_ms": 1.40300003439188,
+          "render_wall_ms": 5.055,
+          "resident_acts": 3,
+          "sequence": 1,
+          "stage": "resource.wait",
+          "theme": "rooftop_run",
+          "video_mb": 518.680694580078,
+          "waiting": false
+        },
+        {
+          "act": "RampMania",
+          "at_us": 16213691,
+          "blend": 0.0,
+          "build_ms": 0.026,
+          "draw_calls": 1286,
+          "engine_physics_ms": 0.394,
+          "engine_process_ms": 138.204,
+          "frame_ms": 82.106,
+          "memory_mb": 302.799472808838,
+          "nodes": 7898.0,
+          "objects": 3330,
+          "render_cpu_ms": 2.9909999447763,
+          "render_gpu_ms": 1.06000002473593,
+          "render_wall_ms": 4.378,
+          "resident_acts": 4,
+          "sequence": 2,
+          "stage": "scene.instantiate",
+          "theme": "rooftop_run",
+          "video_mb": 520.150680541992,
+          "waiting": false
+        },
+        {
+          "act": "Third Complex",
+          "at_us": 12866569,
+          "blend": 0.0,
+          "build_ms": 72.769,
+          "draw_calls": 1163,
+          "engine_physics_ms": 0.582,
+          "engine_process_ms": 68.423,
+          "frame_ms": 81.327,
+          "memory_mb": 270.288217544556,
+          "nodes": 4343.0,
+          "objects": 3179,
+          "render_cpu_ms": 3.31200001573563,
+          "render_gpu_ms": 1.26099997758865,
+          "render_wall_ms": 6.704,
+          "resident_acts": 3,
+          "sequence": 0,
+          "stage": "idle",
+          "theme": "rooftop_run",
+          "video_mb": 510.751739501953,
+          "waiting": false
+        },
+        {
+          "act": "Secret Entry",
+          "at_us": 16120101,
+          "blend": 0.0,
+          "build_ms": 72.035,
+          "draw_calls": 1168,
+          "engine_physics_ms": 0.394,
+          "engine_process_ms": 138.204,
+          "frame_ms": 79.087,
+          "memory_mb": 302.24178314209,
+          "nodes": 7799.0,
+          "objects": 2908,
+          "render_cpu_ms": 2.77899999591708,
+          "render_gpu_ms": 1.32099997997284,
+          "render_wall_ms": 3.891,
+          "resident_acts": 4,
+          "sequence": 1,
+          "stage": "scene.instantiate",
+          "theme": "rooftop_run",
+          "video_mb": 520.145797729492,
+          "waiting": false
+        }
+      ]
+    },
+    "prototype": {
+      "api": "1.4.351",
+      "balls_remaining": 3,
+      "command_line": [
+        "--script",
+        "res://tests/prototype_play_profile.gd"
+      ],
+      "device": "NVIDIA GeForce RTX 4060",
+      "draws_median": 735,
+      "driver": "vulkan",
+      "duration_ms": 29945.913,
+      "engine": "4.7.2-stable (official)",
+      "finished": false,
+      "input_ticks": 3600,
+      "menu_validation_ms": 3878.587,
+      "note": "Input-only Challenge session with HUD, sounds and telemetry. Launches and steers normally; no score grants, teleports or forced clears. Dynamic paths can diverge across runs.",
+      "objects_median": 1661,
+      "physics_ticks": 120,
+      "pipelines": {
+        "canvas": 8.0,
+        "draw": 0.0,
+        "mesh": 78.0,
+        "specialization": 143.0,
+        "surface": 80.0
+      },
+      "practice": false,
+      "ready_ms": 3694.845,
+      "ready_pipelines": {
+        "canvas": 8.0,
+        "draw": 0.0,
+        "mesh": 78.0,
+        "specialization": 142.0,
+        "surface": 79.0
+      },
+      "rebuilds": 0,
+      "render_cpu_ms_median": 1.63499998521805,
+      "render_gpu_ms_median": 0.805999994277954,
+      "renderer": "forward_plus",
+      "resident_peak": 3,
+      "score": 0,
+      "seed": 3000836726,
+      "startup_frames": {
+        "count": 1076,
+        "frames_over_100_ms": 4,
+        "frames_over_50_ms": 9,
+        "max_ms": 1013.638,
+        "median_ms": 0.873,
+        "p95_ms": 3.479,
+        "p99_ms": 39.724
+      },
+      "theme": "rooftop_run",
+      "timing": {
+        "count": 6353,
+        "frames_over_100_ms": 0,
+        "frames_over_50_ms": 1,
+        "max_ms": 60.018,
+        "median_ms": 4.873,
+        "p95_ms": 6.217,
+        "p99_ms": 7.349
+      },
+      "user_arguments": [
+        "--profile-theme=rooftop_run",
+        "--profile-seconds=30",
+        "--profile-output=res://test-results/rooftop-grounding-20261117/prototype-play.json"
+      ],
+      "waiting_ms": 0.0,
+      "window_size": [
+        1280,
+        900
+      ],
+      "world_size": [
+        673,
+        473
+      ]
+    },
+    "note": "Seed 2 starts in Rooftop. Timing overlapped other verification and is not an isolated benchmark."
+  },
+  "import": "Headless editor exit 0, no script or engine errors",
+  "remaining_warnings": [
+    "One ObjectDB instance at shutdown in each play run",
+    "Existing selected-image export warnings in source scenery regression"
+  ]
+}

@@ -2,6 +2,16 @@
 
 Alex asked for a fresh review of the textured models and larger-feeling environments, excluding Lava Reef. This reopens the background composition decision from the November 9 audit; that audit intentionally inspected views with little distant scenery exposed.
 
+## Rooftop grounding follow-up
+
+Alex found the new Rooftop district unconvincing against its dark green background, with buildings appearing to float. The earlier images below preserve that first pass. The corrected version replaces the `dark` prop-colored plane with warm, muted paving using the existing approved floor texture. Three solid land strips leave openings for recessed canals; stone banks meet raised sidewalks, continuous city blocks connect the houses, and broad masonry courses establish their feet. Local garden-house foundations now continue beneath canal water wherever their footprints overlap it. The backdrop remains shadowless, so these physical connections provide the depth cues without adding lights or changing rendering architecture.
+
+Starting source: `f3604df`. Both before/after pairs use the same canonical Prototype state as the earlier pass: [wide comparison](rooftop-grounding-20261117/rooftop_run.jpg) at target `(400, 400)`, zoom `0.6`, and [edge comparison](rooftop-grounding-20261117/edge.jpg) at target `(570, 500)`, normal zoom. Before is left; after is right. Original PNGs and complete receipts remain under `test-results/rooftop-grounding-20261117/`. The normal camera, selected textures, atmosphere values, physics and other themes are unchanged.
+
+![Rooftop streets and foundations, before and after](rooftop-grounding-20261117/rooftop_run.jpg)
+
+Follow-up validation: **91 Rooftop decor, 8,403 scenery determinism/isolation and 2,842 geometry-bake checks passed**. Four accepted before/after captures passed 26 authority/freshness checks each. Rebuilt all seven Rooftop Prototype and seven Endless variants. The full Prototype audit passes 556 checks; the full Endless audit still reports only the same seven excluded stale Lava Reef Act receipts. A 30-second graphical Rooftop Challenge run and a seed-2 graphical Endless tour through three Rooftop Acts completed with zero fallback rebuilds and zero boundary wait. Both play runs report one ObjectDB instance at shutdown; source scenery checks retain the existing selected-image export warnings. The headless editor import is clean. Timing overlapped other checks, so this is not performance evidence. [Follow-up verification](rooftop-grounding-20261117/verification.json).
+
 ## Review and direction
 
 The complete production catalogue contains 102 variants. The 89 non-Lava variants were inspected in seven individual sheets. Existing loops, palms, machinery, clocks, casino signs, sanctuary masonry, ice crystals and aquatic architecture already carry strong silhouettes. Preserve these and the selected texture sets. Target the weak supporting forms: truncated-cone Green Hill rocks, mechanically identical snow-tree tiers, and thin rectangular Aquarium coral.
