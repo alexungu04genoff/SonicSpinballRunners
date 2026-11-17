@@ -17,6 +17,15 @@ static func remember(piece: Dictionary, sources: Array) -> void:
  for source: Dictionary in saved: _trim(source, MAX_DEPTH - 1)
  piece["editor_sources"] = {"reference": placement_transform(piece), "sources": saved}
 
+static func set_transform(piece: Dictionary, transform: Transform2D) -> void:
+ piece.quarter_turns = 0
+ piece.flip_h = false
+ piece.flip_v = transform.determinant() < 0.0
+ piece["terrain_scale"] = transform.x.length()
+ piece["fine_rotation_degrees"] = rad_to_deg(transform.x.angle())
+ Shapes.set_placement_position(piece, Vector2.ZERO)
+ Shapes.set_placement_position(piece, transform.origin - placement_transform(piece).origin)
+
 static func _trim(piece: Dictionary, depth: int) -> void:
  if depth == 0:
   piece.erase("editor_sources")
@@ -59,11 +68,5 @@ static func restore(piece: Dictionary) -> Dictionary:
  for source: Dictionary in sources:
   if Shapes.definition_for_placement(source).is_empty(): return {"error": "A saved source shape is unavailable."}
   var transformed := mapping * placement_transform(source)
-  source.quarter_turns = 0
-  source.flip_h = false
-  source.flip_v = transformed.determinant() < 0.0
-  source["terrain_scale"] = transformed.x.length()
-  source["fine_rotation_degrees"] = rad_to_deg(transformed.x.angle())
-  Shapes.set_placement_position(source, Vector2.ZERO)
-  Shapes.set_placement_position(source, transformed.origin - placement_transform(source).origin)
+  set_transform(source, transformed)
  return {"error": "", "sources": sources}

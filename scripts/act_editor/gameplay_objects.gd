@@ -98,6 +98,9 @@ static func local_points(placement: Dictionary, cell_size: float) -> PackedVecto
    points[CURVE_STEPS * 3] = Vector2(0, -radius)
   "triangle_bumper":
    points = Dimensions.sling_points(cell_size)
+   if properties(placement).get("mirror_x", false):
+    for index in points.size(): points[index] = Vector2(-points[index].x, points[index].y)
+    points.reverse() # Preserve winding for collision normals and extruded art.
   "left_flipper", "right_flipper":
    # The paddle is a capsule around the pivot-to-tip centerline.
    # Both hands share this unrotated body; rest angle and swing sign differ.
@@ -123,7 +126,8 @@ static func defaults(type: String) -> Dictionary:
   "drop_target_bank": return {"target_count": 5.0, "spacing": 32.0, "target_size": 22.0, "color": "green", "completion_bonus": 500.0, "reset_delay": 0.0}
   "slingshot": return {"width": 80.0, "strength": 650.0}
   "buzz_bomber": return {"scale": 1.0, "patrol_speed": 65.0, "starting_direction": "right", "patrol_left": -60.0, "patrol_right": 60.0, "respawn_delay": 15.0}
-  "round_bumper", "triangle_bumper": return {"scale": 1.0}
+  "round_bumper": return {"scale": 1.0}
+  "triangle_bumper": return {"scale": 1.0, "mirror_x": false}
   "one_way_gate": return {"width": 80.0, "initial_state": "closed", "visual_mode": "auto"}
   "switch_target", "wall_switch": return {"scale": 1.0, "color": "blue", "label": "", "score_reward": 25.0}
   "lane_barrier": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(80, 0)]), "post_radius": 9.0, "reward_type": "score", "lane_reward": 50.0, "completion_mode": "light_all", "completion_bonus": 500.0, "reset_delay": 1.5}
@@ -230,7 +234,7 @@ static func property_errors(placement: Dictionary) -> PackedStringArray:
     errors.append(str(key) + " is outside its supported finite range.")
    elif key in ["target_ticks", "target_count"] and float(values[key]) != floorf(float(values[key])):
     errors.append("Target count must be a whole number." if key == "target_count" else "Spinner target ticks must be a whole number.")
-  elif key in ["completion_enabled", "rings_enabled", "terrain_clearance"] and typeof(values[key]) != TYPE_BOOL:
+  elif key in ["completion_enabled", "rings_enabled", "terrain_clearance", "mirror_x"] and typeof(values[key]) != TYPE_BOOL:
    errors.append("Enable flags must be boolean.")
   elif key == "starting_direction" and values[key] not in ["left", "right"]:
    errors.append("Starting direction must be left or right.")

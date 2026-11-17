@@ -44,10 +44,12 @@ static func capture(document: Resource, selection: Dictionary) -> Dictionary:
  copied["count"] = count
  return copied
 
-static func append_to(document: Resource, copied: Dictionary, requested_offset: Vector2) -> Dictionary:
+static func append_to(document: Resource, copied: Dictionary, requested_offset: Vector2, clamp_to_bounds := true, validate_result := true) -> Dictionary:
  copied = for_cell_size(copied, float(document.cell_size))
  var adjusted := placement_offset(document, copied, requested_offset)
  if not adjusted.error.is_empty(): return adjusted
+ if not clamp_to_bounds and Vector2(adjusted.offset) != requested_offset:
+  return {"error": "The exact copy offset would move terrain outside the Act. Enlarge the grid first."}
  var cell := float(document.cell_size)
  var offset: Vector2 = adjusted.offset
  var selection := {"terrain": [], "gameplay": [], "decor": [], "ring": []}
@@ -84,8 +86,8 @@ static func append_to(document: Resource, copied: Dictionary, requested_offset: 
   for kind: String in COLLECTIONS:
    for index: int in original.members.get(kind, []): members[kind].append(selection[kind][index])
   document.editor_groups.append({"name": original.name, "members": members})
- var errors: PackedStringArray = document.validation_errors()
- return {"selection": selection, "error": "" if errors.is_empty() else errors[0]}
+ var errors: PackedStringArray = document.validation_errors() if validate_result else PackedStringArray()
+ return {"selection": selection, "offset": offset, "error": "" if errors.is_empty() else errors[0]}
 
 static func placement_offset(document: Resource, copied: Dictionary, requested_offset: Vector2) -> Dictionary:
  var lower := Vector2(-INF, -INF)

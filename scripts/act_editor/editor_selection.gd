@@ -14,7 +14,7 @@ static func count(selection: Dictionary) -> int:
 static func fingerprint_records(document: Resource) -> Array:
  var groups: Array = []
  for item: Dictionary in document.editor_groups: groups.append([item.name, _ordered_selection(item.members)])
- return [groups, _ordered_selection(document.editor_locks)]
+ return [groups, _ordered_selection(document.editor_locks), _ordered_selection(document.editor_hidden)]
 
 static func _ordered_selection(selection: Dictionary) -> Array:
  var result: Array = []
@@ -44,14 +44,23 @@ static func intersects(a: Dictionary, b: Dictionary) -> bool:
 static func locked(document: Resource, kind: String, index: Variant) -> bool:
  return document.editor_locks.get(kind, []).has(index)
 
+static func hidden(document: Resource, kind: String, index: Variant) -> bool:
+ return document.editor_hidden.get(kind, []).has(index)
+
 static func expanded(document: Resource, selection: Dictionary, unlocked_only := true) -> Dictionary:
  var result := empty()
  merge(result, selection)
  for group: Dictionary in document.editor_groups:
   if intersects(result, group.members): merge(result, group.members)
  if unlocked_only:
+  # A partly locked/hidden group cannot be moved as an incomplete assembly.
+  for item: Dictionary in document.editor_groups:
+   if not intersects(result, item.members): continue
+   if intersects(item.members, document.editor_locks) or intersects(item.members, document.editor_hidden):
+    for kind: String in KINDS:
+     for index: Variant in item.members.get(kind, []): result[kind].erase(index)
   for kind: String in KINDS:
-   result[kind] = result[kind].filter(func(index): return not locked(document, kind, index))
+   result[kind] = result[kind].filter(func(index): return not locked(document, kind, index) and not hidden(document, kind, index))
  return result
 
 static func group(document: Resource, selection: Dictionary) -> void:
@@ -66,7 +75,7 @@ static func ungroup(document: Resource, selection: Dictionary) -> void:
 
 static func remap(document: Resource, kind: String, mapping: Dictionary) -> void:
  # Missing keys are removed. Many-to-one mappings preserve membership after Merge.
- for selection: Dictionary in [document.editor_locks] + document.editor_groups.map(func(item): return item.members):
+ for selection: Dictionary in [document.editor_locks, document.editor_hidden] + document.editor_groups.map(func(item): return item.members):
   var indices: Array = []
   for old: Variant in selection.get(kind, []):
    if not mapping.has(old): continue
@@ -101,7 +110,7 @@ static func units(document: Resource, selection: Dictionary) -> Array[Dictionary
  return result
 
 static func validation_error(document: Resource) -> String:
- if not document.editor_groups is Array or not document.editor_locks is Dictionary: return "Editor groups and locks have invalid container types."
+ if not document.editor_groups is Array or not document.editor_locks is Dictionary or not document.editor_hidden is Dictionary: return "Editor groups, visibility and locks have invalid container types."
  var occupied := empty()
  for item: Variant in document.editor_groups:
   if not item is Dictionary or not item.get("name") is String or not item.get("members") is Dictionary: return "Editor group needs a name and member selection."
@@ -110,7 +119,8 @@ static func validation_error(document: Resource) -> String:
   if count(item.members) < 2 or not item.members.get("markers", []).is_empty(): return "Groups need at least two objects; lifecycle markers stay independent."
   if intersects(occupied, item.members): return "An object cannot belong to more than one group."
   merge(occupied, item.members)
- return _selection_error(document, document.editor_locks)
+ var error := _selection_error(document, document.editor_locks)
+ return error if not error.is_empty() else _selection_error(document, document.editor_hidden)
 
 static func _selection_error(document: Resource, selection: Dictionary) -> String:
  for kind: Variant in selection:

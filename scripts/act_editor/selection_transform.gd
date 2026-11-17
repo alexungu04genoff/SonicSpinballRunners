@@ -6,6 +6,7 @@ const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const Rings = preload("res://scripts/act_editor/ring_trails.gd")
 const Decor = preload("res://scripts/act_editor/decor_slots.gd")
 const EditorSelection = preload("res://scripts/act_editor/editor_selection.gd")
+const TerrainHistory = preload("res://scripts/act_editor/terrain_history.gd")
 
 static func bounds(document: Resource, selection: Dictionary) -> Rect2:
  var points := PackedVector2Array()
@@ -106,6 +107,66 @@ static func translate(document: Resource, selection: Dictionary, offset: Vector2
   if kind == "spawn": document.spawn_position += offset
   elif kind == "goal": document.goal_position = goal + offset
   elif kind == "activation": document.activation_y += offset.y
+
+static func mirror(document: Resource, selection: Dictionary, pivot: Vector2, horizontal: bool) -> void:
+ var axes := Vector2(-1, 1) if horizontal else Vector2(1, -1)
+ var reflected := Transform2D(Vector2(axes.x, 0), Vector2(0, axes.y), pivot - pivot * axes)
+ var cell := float(document.cell_size)
+ var cell_transform := reflected
+ cell_transform.origin /= cell
+ var goal: Vector2 = document.goal_center()
+ for index: int in selection.get("terrain", []):
+  var piece: Dictionary = document.placements[index]
+  TerrainHistory.set_transform(piece, cell_transform * TerrainHistory.placement_transform(piece))
+ for index: int in selection.get("gameplay", []):
+  var item: Dictionary = document.gameplay_objects[index]
+  item.position = reflected * Vector2(item.position)
+  var angle := float(item.rotation_degrees)
+  var props := Objects.properties(item)
+  if item.type in ["left_flipper", "right_flipper"]:
+   item.type = "right_flipper" if item.type == "left_flipper" else "left_flipper"
+   item.rotation_degrees = (180.0 if horizontal else 0.0) - angle
+  else:
+   # Reflection of local X, followed by a rotation, also reflects UP-facing forces.
+   item.rotation_degrees = (0.0 if horizontal else 180.0) - angle
+   if item.type == "triangle_bumper": props.mirror_x = not props.get("mirror_x", false)
+   elif item.type in ["elevated_rail", "lane_barrier"]:
+    for point in props.points.size(): props.points[point] = Vector2(-props.points[point].x, props.points[point].y)
+   elif item.type == "teleporter":
+    props.exit_x = -float(props.exit_x)
+    props.exit_angle = -float(props.exit_angle)
+   elif item.type == "diverter":
+    props.state_a_angle = -float(props.state_a_angle)
+    props.state_b_angle = -float(props.state_b_angle)
+   elif item.type == "buzz_bomber":
+    var old_left := float(props.patrol_left)
+    props.patrol_left = -float(props.patrol_right)
+    props.patrol_right = -old_left
+    props.starting_direction = "left" if props.starting_direction == "right" else "right"
+  item["properties"] = props
+ for index: int in selection.get("decor", []):
+  var slot: Dictionary = document.decor_slots[index]
+  slot.position = reflected * Vector2(slot.position)
+  slot.rotation_degrees = (0.0 if horizontal else 180.0) - float(slot.rotation_degrees)
+  if slot.get("mirror_x", false): slot.erase("mirror_x")
+  else: slot["mirror_x"] = true
+  slot.erase("placement_source")
+ for index: int in selection.get("ring", []):
+  var trail: Dictionary = document.ring_trails[index]
+  if trail.get("kind") == "ellipse":
+   var center: Vector2 = reflected * ((trail.start + trail.end) * 0.5)
+   var extent: Vector2 = (trail.end - trail.start) * 0.5
+   trail.start = center - extent
+   trail.end = center + extent
+   # Reflect local Y: the sampled outline is Y-symmetric even with odd ring counts.
+   trail.rotation_degrees = (180.0 if horizontal else 0.0) - float(trail.rotation_degrees)
+  else:
+   trail.start = reflected * Vector2(trail.start)
+   trail.end = reflected * Vector2(trail.end)
+ for kind: String in selection.get("markers", []):
+  if kind == "spawn" and document.spawn_position != null: document.spawn_position = reflected * Vector2(document.spawn_position)
+  elif kind == "goal": document.goal_position = reflected * goal
+  elif kind == "activation" and document.activation_y != null and not horizontal: document.activation_y = 2.0 * pivot.y - float(document.activation_y)
 
 static func arrange(document: Resource, selection: Dictionary, operation: String) -> String:
  if not selection.get("markers", []).is_empty(): return "Align objects and groups without lifecycle markers selected."

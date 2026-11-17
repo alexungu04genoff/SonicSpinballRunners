@@ -55,6 +55,7 @@ const OPTIONAL_TRANSFORM_FIELDS := ["offset", "terrain_scale", "fine_rotation_de
 ## Optional authoring metadata; excluded from the gameplay/bake fingerprint.
 @export var editor_groups = []
 @export var editor_locks = {}
+@export var editor_hidden = {}
 ## Entry lies on the bottom boundary; exit lies on the top boundary.
 ## A zero start and width represent an unset connector in an editable draft.
 @export var entry_start_x = 0
@@ -427,6 +428,7 @@ func copy_document() -> Resource:
  result.decor_slots = decor_slots.duplicate(true) if typeof(decor_slots) == TYPE_ARRAY else decor_slots
  result.editor_groups = editor_groups.duplicate(true) if editor_groups is Array else editor_groups
  result.editor_locks = editor_locks.duplicate(true) if editor_locks is Dictionary else editor_locks
+ result.editor_hidden = editor_hidden.duplicate(true) if editor_hidden is Dictionary else editor_hidden
  result.entry_start_x = entry_start_x
  result.entry_width = entry_width
  result.exit_start_x = exit_start_x

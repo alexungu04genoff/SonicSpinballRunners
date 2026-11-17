@@ -142,6 +142,7 @@ func _build_authored_decor(runtime: Dictionary, cell_size: float) -> void:
   # Canvas +Y maps to +Z. Clockwise canvas angles require negative world yaw.
   prop.rotation.y = -deg_to_rad(float(slot.rotation_degrees))
   prop.scale = Vector3.ONE * cell_size * SCALE * float(slot.get("scale", 1.0))
+  if slot.get("mirror_x", false): prop.scale.x = -prop.scale.x
 
 func _merge_authored_land(outlines: Array[PackedVector2Array]) -> Array[PackedVector2Array]:
  var result: Array[PackedVector2Array] = []

@@ -21,6 +21,10 @@ const SelectionTransform = preload("res://scripts/act_editor/selection_transform
 const EditorSelection = preload("res://scripts/act_editor/editor_selection.gd")
 const Snap = preload("res://scripts/act_editor/editor_snap.gd")
 const AssemblyLibrary = preload("res://scripts/act_editor/assembly_library.gd")
+const WorkspaceTools = preload("res://scripts/act_editor/editor_workspace_tools.gd")
+var workspace_tools: Control
+var _last_duplicate_offset := Vector2.ZERO
+var _duplicate_selection: Dictionary = {}
 const TerrainHistory = preload("res://scripts/act_editor/terrain_history.gd")
 const TERRAIN_SIZES := [1.0, 0.5, 0.125, 0.25, 0.75, 1.5, 2.0, 4.0, 8.0]
 var _selection_clipboard: Dictionary = {}
@@ -144,7 +148,8 @@ func _ready() -> void:
 	_build_ui()
 	_build_dialogs()
 	new_document()
-	_set_status("Choose Terrain or Gameplay. Terrain supports half-cell snapping and half size; hold Alt for free placement.")
+	workspace_tools.start_session()
+	_set_status("Choose a brush or use the Workspace tab for objects, exact transforms and recovery. F1 lists shortcuts.")
 
 func _exit_tree() -> void:
 	get_tree().auto_accept_quit = _previous_auto_quit
@@ -712,6 +717,10 @@ func _build_ui() -> void:
 	help.visible = false
 	status_label.tooltip_text = help.text
 	column.add_child(help)
+	workspace_tools = WorkspaceTools.new()
+	workspace_tools.editor = self
+	workspace_tools.name = "Workspace"
+	inspector_tabs.add_child(workspace_tools)
 
 func _button(parent: Node, id: String, label: String, action: Callable, hint: String) -> void:
 	var button := Button.new()
@@ -909,7 +918,9 @@ func set_decor_slot(index: int, slot: Dictionary) -> void:
 	_record_edit()
 	if document.decor_seed.is_empty(): document.decor_seed = Decor.new_id()
 	if index == -1: document.decor_slots.append(value)
-	else: document.decor_slots[index] = value
+	else:
+		_track_duplicate_movement(canvas.object_selection(), Vector2(value.position) - Vector2(document.decor_slots[index].position))
+		document.decor_slots[index] = value
 	_set_status("Decor slot saved in the draft. Theme chooses its visual; no gameplay collision.")
 	_refresh()
 
@@ -924,7 +935,7 @@ func randomize_decor() -> void:
 	for index in document.decor_slots.size():
 		var slot: Dictionary = document.decor_slots[index]
 		var grouped: bool = document.editor_groups.any(func(group): return group.members.get("decor", []).has(index))
-		if not DecorScatter.is_scattered(slot) or grouped or EditorSelection.locked(document, "decor", index):
+		if not DecorScatter.is_scattered(slot) or grouped or EditorSelection.locked(document, "decor", index) or EditorSelection.hidden(document, "decor", index):
 			mapping[index] = kept.size()
 			kept.append(slot)
 	if generated.is_empty() and kept.size() == document.decor_slots.size():
@@ -1121,6 +1132,9 @@ func set_ring_trail(index: int, trail: Dictionary) -> void:
 	if index < 0:
 		document.ring_trails.append(trail.duplicate(true))
 	else:
+		var before: Dictionary = document.ring_trails[index]
+		var offset: Vector2 = trail.start - before.start
+		if Vector2(trail.end - before.end).is_equal_approx(offset): _track_duplicate_movement(canvas.object_selection(), offset)
 		document.ring_trails[index] = trail.duplicate(true)
 	_set_status("%d rings in one pattern. Select / Move to drag the group or its bounds handles." % Rings.positions(trail).size())
 	_refresh()
@@ -1301,6 +1315,7 @@ func apply_composite() -> void:
 	document.placements = candidate.placements
 	document.editor_groups = candidate.editor_groups
 	document.editor_locks = candidate.editor_locks
+	document.editor_hidden = candidate.editor_hidden
 	_clear_composite_preview()
 	canvas.select_piece(inserted)
 	_refresh()
@@ -1328,6 +1343,7 @@ func restore_terrain_sources() -> void:
 	document.placements = candidate.placements
 	document.editor_groups = candidate.editor_groups
 	document.editor_locks = candidate.editor_locks
+	document.editor_hidden = candidate.editor_hidden
 	canvas.set_object_selection({"terrain": range(index, index + result.sources.size())})
 	_refresh()
 	_set_status("Restored %d saved source pieces. Ctrl+Z returns to the composite." % result.sources.size())
@@ -1450,7 +1466,9 @@ func move_placement(index: int, anchor: Vector2) -> void:
 	if anchor == Shapes.placement_position(placement):
 		return
 	_record_edit()
+	var offset := (anchor - Shapes.placement_position(placement)) * float(document.cell_size)
 	Shapes.set_placement_position(placement, anchor)
+	_track_duplicate_movement(canvas.object_selection(), offset)
 	_refresh()
 
 func _clamp_anchor(placement: Dictionary, anchor: Vector2) -> Vector2:
@@ -1478,7 +1496,9 @@ func move_gameplay_placement(index: int, position: Vector2) -> void:
 		return
 	_record_edit()
 	# Snapping belongs to the gesture. Stored positions are never normalized.
+	var offset: Vector2 = position - placement.position
 	placement.position = position
+	_track_duplicate_movement(canvas.object_selection(), offset)
 	_refresh()
 
 func _active_gameplay() -> Dictionary:
@@ -1580,20 +1600,48 @@ func _change_handedness(index: int) -> void:
 	placement.type = type
 	_refresh()
 
-func duplicate_selected() -> void:
+func duplicate_selected(repeat_offset := false) -> void:
 	if composite_preview_active or _transform_gesture_active(): return
 	var copied := SelectionClipboard.capture(document, canvas.object_selection())
 	if copied.is_empty():
 		_set_status("Select objects to duplicate. Lifecycle markers are singletons.")
 		return
-	var previous := _selection_clipboard
-	var previous_count := _paste_count
-	_selection_clipboard = copied
-	_paste_count = 0
-	paste_selected()
-	_selection_clipboard = previous
-	_paste_count = previous_count
+	var offset: Vector2 = _last_duplicate_offset if repeat_offset and not _last_duplicate_offset.is_zero_approx() else Vector2.ONE * float(document.cell_size) * canvas.terrain_snap_step
+	_duplicate_copies(copied, [offset])
+
+func duplicate_grid(columns: int, rows: int, step: Vector2) -> void:
+	if composite_preview_active or _transform_gesture_active(): return
+	if columns < 1 or rows < 1 or columns * rows < 2 or columns * rows > 256 or not step.is_finite():
+		_set_status("Use 2–256 total grid positions with finite spacing; the original occupies the first position.")
+		return
+	var copied := SelectionClipboard.capture(document, canvas.object_selection())
+	if copied.is_empty(): return
+	var offsets: Array[Vector2] = []
+	for row in rows:
+		for column in columns:
+			if column == 0 and row == 0: continue
+			offsets.append(Vector2(column * step.x, row * step.y))
+	_duplicate_copies(copied, offsets)
+
+func _duplicate_copies(copied: Dictionary, offsets: Array) -> void:
+	if int(copied.count) * offsets.size() > 20000:
+		_set_status("Keep one duplication operation under 20,000 new objects. Use fewer rows or columns.")
+		return
+	var candidate: Resource = document.copy_document()
+	var combined := EditorSelection.empty()
+	for offset: Vector2 in offsets:
+		var result := SelectionClipboard.append_to(candidate, copied, offset, false, false)
+		if not result.error.is_empty():
+			_set_status("Duplicate unchanged: " + result.error)
+			return
+		EditorSelection.merge(combined, result.selection)
+	if not _commit_candidate(candidate): return
+	show_all_layers()
+	canvas.set_object_selection(combined)
+	_last_duplicate_offset = offsets[0]
+	_duplicate_selection = combined.duplicate(true) if offsets.size() == 1 else {}
 	_refresh()
+	_set_status("Created %d copies as one edit. Ctrl+Shift+D repeats the last offset; moving a new duplicate updates that offset." % offsets.size())
 
 func copy_selected() -> void:
 	if composite_preview_active: return
@@ -1606,12 +1654,13 @@ func copy_selected() -> void:
 	buttons.paste.disabled = false
 	_set_status("Copied %d items. Ctrl+V pastes a fresh selection; complete copied switch banks keep their internal links." % copied.count)
 
-func paste_selected(at_cursor := false) -> void:
+func paste_selected(at_cursor := false, in_place := false) -> void:
 	if composite_preview_active or _transform_gesture_active() or _selection_clipboard.is_empty(): return
 	var candidate: Resource = document.copy_document()
 	var copied := SelectionClipboard.for_cell_size(_selection_clipboard, float(document.cell_size))
 	var offset: Vector2 = Vector2.ONE * float(document.cell_size) * canvas.terrain_snap_step * (_paste_count + 1)
-	if at_cursor:
+	if in_place: offset = Vector2.ZERO
+	if at_cursor and not in_place:
 		var recipe: Resource = ActData.new()
 		recipe.cell_size = document.cell_size
 		var all := EditorSelection.empty()
@@ -1619,12 +1668,13 @@ func paste_selected(at_cursor := false) -> void:
 			recipe.set(EditorSelection.COLLECTIONS[kind], copied[kind])
 			all[kind] = range(copied[kind].size())
 		offset = canvas.legal_gameplay_position(canvas.screen_to_local_pixels(canvas._cursor_position), canvas._alt_held) - SelectionTransform.bounds(recipe, all).get_center()
-	var result := SelectionClipboard.append_to(candidate, copied, offset)
+	var result := SelectionClipboard.append_to(candidate, copied, offset, not in_place)
 	if not result.error.is_empty():
 		_set_status("Paste unchanged: " + result.error)
 		return
 	canvas.cancel_gesture()
 	if not _commit_candidate(candidate): return
+	_duplicate_selection.clear()
 	_paste_count += 1
 	show_all_layers()
 	canvas.set_object_selection(result.selection)
@@ -1664,6 +1714,12 @@ func rotate_gameplay(degrees: float) -> void:
 		set_gameplay_angle(float(placement.rotation_degrees) + degrees)
 
 func flip_active(horizontal: bool) -> void:
+	if composite_preview_active or _transform_gesture_active(): return
+	if canvas.selection_count() > 0:
+		var candidate: Resource = document.copy_document()
+		SelectionTransform.mirror(candidate, canvas.object_selection(), canvas.transform_pivot(), horizontal)
+		if _commit_candidate(candidate): _set_status("Mirrored the selection as one edit, preserving identities and internal links.")
+		return
 	_transform_active("flip_h" if horizontal else "flip_v")
 
 func _transform_active(operation: String) -> void:
@@ -1719,6 +1775,7 @@ func delete_selected() -> void:
 	if EditorSelection.count(selection) == 0: return
 	canvas.cancel_gesture()
 	_record_edit()
+	_duplicate_selection.clear()
 	var ids: Array = []
 	for index: int in selection.gameplay: ids.append(Objects.identity(document.gameplay_objects[index], index))
 	Banks.remove_objects(document.switch_banks, ids)
@@ -1742,10 +1799,15 @@ func move_selected_objects(offset: Vector2) -> void:
 	if offset.is_zero_approx(): return
 	var candidate: Resource = document.copy_document()
 	SelectionTransform.translate(candidate, EditorSelection.expanded(document, canvas.object_selection()), offset)
-	_commit_candidate(candidate)
+	if _commit_candidate(candidate): _track_duplicate_movement(canvas.object_selection(), offset)
+
+func _track_duplicate_movement(selection: Dictionary, offset: Vector2) -> void:
+	if not _duplicate_selection.is_empty() and selection == _duplicate_selection:
+		_last_duplicate_offset += offset
 
 func _snapshot() -> Dictionary:
 	return {"document": document.copy_document(), "selected": canvas.selected_index,
+		"duplicate_offset": _last_duplicate_offset, "duplicate_selection": _duplicate_selection.duplicate(true),
 		"object_selection": canvas.object_selection(),
 		"terrain_selection": _terrain_selection(),
 		"gameplay_selection": canvas.selected_gameplay_indices.duplicate(), "bank": selected_bank_id,
@@ -1782,6 +1844,8 @@ func redo() -> void:
 	_set_status("Redid one edit.")
 
 func _restore_snapshot(snapshot: Dictionary) -> void:
+	_duplicate_selection = snapshot.get("duplicate_selection", {}).duplicate(true)
+	_last_duplicate_offset = snapshot.get("duplicate_offset", Vector2.ZERO)
 	_thesis_edit_recorded = false
 	review_panel.reset_checklist()
 	var active_decor_brush: Dictionary = canvas.decor_brush.duplicate(true)
@@ -1824,6 +1888,9 @@ func is_dirty() -> bool:
 	return document != null and (document.editing_fingerprint() != saved_fingerprint or title_field.text != document.title)
 
 func new_document() -> void:
+	if is_instance_valid(workspace_tools): workspace_tools.remember_view()
+	_duplicate_selection.clear()
+	_last_duplicate_offset = Vector2.ZERO
 	_thesis_edit_recorded = false
 	review_panel.reset_checklist()
 	_clear_composite_preview()
@@ -1839,6 +1906,7 @@ func new_document() -> void:
 	canvas.set_document(document)
 	_refresh()
 	canvas.call_deferred("fit_view")
+	if is_instance_valid(workspace_tools): workspace_tools.changed_document()
 	_set_status("New Act: 12 columns × 12 rows. Choose a terrain stamp to begin.")
 
 func save_to(path: String) -> bool:
@@ -1862,6 +1930,7 @@ func save_to(path: String) -> bool:
 	return true
 
 func load_from(path: String) -> bool:
+	if is_instance_valid(workspace_tools): workspace_tools.remember_view()
 	var result: Dictionary = ActData.load_document(path)
 	if result.document == null:
 		_show_error("Could not load this Act. Your current edits are still open.\n" + result.error)
@@ -1879,6 +1948,9 @@ func load_from(path: String) -> bool:
 	canvas.set_document(document)
 	_refresh()
 	canvas.call_deferred("fit_view")
+	_duplicate_selection.clear()
+	_last_duplicate_offset = Vector2.ZERO
+	workspace_tools.changed_document()
 	_set_status("Loaded %d terrain pieces, %d gameplay objects, %d ring trails and %d decor slots." % [document.placements.size(), document.gameplay_objects.size(), document.ring_trails.size(), document.decor_slots.size()])
 	return true
 
@@ -1896,6 +1968,7 @@ func request_action(action: String) -> void:
 	cell_size_field.apply()
 	_commit_title()
 	canvas.cancel_gesture()
+	workspace_tools.save_before_switch(action.begins_with("recover:"))
 	pending_action = action
 	if is_dirty():
 		unsaved_dialog.popup_centered(Vector2i(540, 150))
@@ -1905,6 +1978,10 @@ func request_action(action: String) -> void:
 func _continue_action() -> void:
 	var action := pending_action
 	pending_action = ""
+	if action.begins_with("recover:"):
+		workspace_tools.restore_copy(action.trim_prefix("recover:"))
+		return
+	if action == "quit": workspace_tools.persist_preferences()
 	match action:
 		"new": new_document()
 		"load":
@@ -2046,6 +2123,7 @@ func _refresh() -> void:
 	canvas_decor_visible_field.set_pressed_no_signal(canvas.show_decor)
 	gameplay_visible_field.set_pressed_no_signal(canvas.show_gameplay)
 	snap_mode_field.select(canvas.snap_mode)
+	terrain_snap_field.select([1.0, 0.5, 0.25].find(canvas.terrain_snap_step))
 	pivot_field.select(canvas.pivot_mode)
 	for kind: String in layer_fields: layer_fields[kind].set_pressed_no_signal(canvas.get("show_" + kind))
 	marker_reminders.visible = canvas.show_markers
@@ -2109,6 +2187,8 @@ func _refresh() -> void:
 	var angled := decor if not decor.is_empty() else gameplay
 	for key in ["rotate", "flip_h", "flip_v"]:
 		buttons[key].disabled = active.is_empty() or _terrain_selection().size() > 1
+	buttons.flip_h.disabled = active.is_empty() and canvas.selection_count() == 0
+	buttons.flip_v.disabled = buttons.flip_h.disabled
 	buttons.rotate.disabled = (active.is_empty() and angled.is_empty()) or _terrain_selection().size() > 1
 	buttons.rotate.text = "Rotate +15°" if not angled.is_empty() else "Rotate +90°"
 	angle_field.editable = not angled.is_empty() or not _active_terrain().is_empty()
@@ -2180,6 +2260,7 @@ func _refresh() -> void:
 	_refresh_banks()
 	canvas.queue_redraw()
 	_refreshing = false
+	if is_instance_valid(workspace_tools): workspace_tools.refresh()
 
 func _refresh_composite_controls() -> void:
 	var terrain_context: bool = composite_preview_active or not _active_terrain().is_empty() or (palette_tabs.current_tab == 0 and _active_gameplay().is_empty() and canvas.selected_gameplay_indices.is_empty() and canvas.selected_ring_index < 0)
@@ -2269,7 +2350,7 @@ func _show_error(message: String) -> void:
 	_set_status(message.get_slice("\n", 0))
 
 func _modal_open() -> bool:
-	return (assembly_dialog != null and assembly_dialog.visible) or (shortcuts_dialog != null and shortcuts_dialog.visible) or (verify_dialog != null and verify_dialog.visible) or save_dialog.visible or load_dialog.visible or unsaved_dialog.visible or error_dialog.visible
+	return (is_instance_valid(workspace_tools) and workspace_tools.modal_open()) or (assembly_dialog != null and assembly_dialog.visible) or (shortcuts_dialog != null and shortcuts_dialog.visible) or (verify_dialog != null and verify_dialog.visible) or save_dialog.visible or load_dialog.visible or unsaved_dialog.visible or error_dialog.visible
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_F11:
@@ -2288,6 +2369,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	var command: bool = event.ctrl_pressed or event.meta_pressed
 	if command:
 		match event.keycode:
+			KEY_M:
+				if typing: return
+				workspace_tools.reveal(1)
+			KEY_K:
+				if typing: return
+				workspace_tools.show_checkpoint_dialog()
 			KEY_G:
 				if typing: return
 				if event.shift_pressed: ungroup_selection()
@@ -2322,13 +2409,13 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				redo()
 			KEY_D:
 				if typing: return
-				duplicate_selected()
+				duplicate_selected(event.shift_pressed)
 			KEY_C:
 				if typing: return
 				copy_selected()
 			KEY_V:
 				if typing: return
-				paste_selected(event.shift_pressed)
+				paste_selected(event.shift_pressed, event.alt_pressed)
 			_: return
 	elif typing:
 		return
@@ -3019,7 +3106,7 @@ func _commit_candidate(candidate: Resource) -> bool:
 		return false
 	if candidate.editing_fingerprint() == document.editing_fingerprint(): return false
 	_record_edit()
-	for field: String in ["placements", "gameplay_objects", "decor_slots", "ring_trails", "switch_banks", "editor_groups", "editor_locks", "spawn_position", "goal_position", "goal_diameter_cells", "activation_y"]:
+	for field: String in ["placements", "gameplay_objects", "decor_slots", "ring_trails", "switch_banks", "editor_groups", "editor_locks", "editor_hidden", "spawn_position", "goal_position", "goal_diameter_cells", "activation_y"]:
 		document.set(field, candidate.get(field))
 	_refresh()
 	return true
@@ -3134,6 +3221,7 @@ func choose_assembly() -> void:
 	canvas.select_piece(-1)
 	show_all_layers()
 	canvas.assembly_copy = result.copied
+	canvas.assembly_copy["assembly_name"] = result.title
 	canvas.assembly_center = SelectionTransform.bounds(recipe, selection).get_center()
 	canvas.grab_focus()
 	_set_status("Assembly: %s. Click to place; Escape exits. S changes snapping; Alt places freely." % result.title)
@@ -3146,13 +3234,15 @@ func _place_assembly(position: Vector2) -> void:
 		_set_status(result.error)
 		return
 	EditorSelection.group(candidate, result.selection)
+	if EditorSelection.count(result.selection) >= 2:
+		candidate.editor_groups.back().name = canvas.assembly_copy.get("assembly_name", "Assembly")
 	if _commit_candidate(candidate): _set_status("Assembly placed. Escape returns to selection; Ctrl+Z removes this copy.")
 
 func show_shortcuts() -> void:
 	if shortcuts_dialog == null:
 		shortcuts_dialog = AcceptDialog.new()
 		shortcuts_dialog.title = "Act Editor Shortcuts"
-		shortcuts_dialog.dialog_text = "Ctrl+A  Select all unlocked content, including hidden layers and markers\nS  Cycle Free / Relative Grid / Absolute Grid; Alt always frees movement\nShift  Temporarily snap in Free mode; groups keep relative spacing\nArrows  Nudge 1 px in Free mode, otherwise one grid step\n\n[ / ] or Shift+Wheel  Shrink / grow; Shift+[ / ]  Half / double\nR / Shift+R  Rotate; Alt+R / Alt+Shift+R  Rotate ±1°\nT  Toggle transform handles; corners scale, round handle rotates\nShift+handle  Steps of 10% / 15°; C  Set pivot at cursor\nTransform tab  Center / Active / Cursor pivot and Align / Distribute\n\nCtrl+C / Ctrl+X / Ctrl+V  Copy / Cut / Paste\nCtrl+Shift+V  Paste centered at cursor; Ctrl+D  Duplicate\nCtrl+G / Ctrl+Shift+G  Group / Ungroup\nCtrl+L / Ctrl+Shift+L  Lock selection / Unlock all\nCtrl+E  Save selection to the local assembly Library\nU  Unsmooth: restore saved source pieces (new Merge / Smooth edits)\nCtrl+Z / Ctrl+Shift+Z  Undo / Redo\n\n1 Terrain · 2 Hardware · 3 Decor · 4 Rings · 5 Markers\nCtrl+1…5  Solo layer; repeat to restore; 0  Show all\nB  Grid boundary; drag handles or arrows ±1 cell (Shift: ±5)\nF  Frame selection; Shift+F  Fit grid; P  Launch previews\nCtrl+Shift+drag Buzz  Edit patrol; endpoint handles also work\nEsc / Right-click  Cancel gesture or tool; Alt-click cycles overlaps\n\nEntry/Exit stay on borders; Activation stays horizontal.\nGroups snap one shared anchor. Markers are never copied.\nTransforms preserve valid physical dimensions and never delete clipped content."
+		shortcuts_dialog.dialog_text = "Ctrl+A  Select matching unlocked objects and groups; reveal all layers\nS  Cycle Free / Relative Grid / Absolute Grid; Alt always frees movement\nShift  Temporarily snap in Free mode; groups keep relative spacing\nArrows  Nudge 1 px in Free mode, otherwise one grid step\n\n[ / ] or Shift+Wheel  Shrink / grow; Shift+[ / ]  Half / double\nR / Shift+R  Rotate; Alt+R / Alt+Shift+R  Rotate ±1°\nT  Toggle transform handles; corners scale, round handle rotates\nShift+handle  Steps of 10% / 15°; C  Set pivot at cursor\nTransform tab  Center / Active / Cursor pivot and Align / Distribute\n\nCtrl+C / Ctrl+X / Ctrl+V  Copy / Cut / Paste\nCtrl+Shift+V  Paste at cursor; Ctrl+Alt+V  Paste in place\nCtrl+D  Duplicate; Ctrl+Shift+D  Repeat duplication offset\nX / Y during drag  Toggle an axis lock; H / V  Mirror selection\nCtrl+M  Exact transforms and duplicate grids; Ctrl+K  Checkpoint\nWorkspace tab  Object list, selection filters, recovery copies\nCtrl+G / Ctrl+Shift+G  Group / Ungroup\nCtrl+L / Ctrl+Shift+L  Lock selection / Unlock all\nCtrl+E  Save selection to the local assembly Library\nU  Unsmooth: restore saved source pieces (new Merge / Smooth edits)\nCtrl+Z / Ctrl+Shift+Z  Undo / Redo\n\n1 Terrain · 2 Hardware · 3 Decor · 4 Rings · 5 Markers\nCtrl+1…5  Solo layer; repeat to restore; 0  Show all\nB  Grid boundary; drag handles or arrows ±1 cell (Shift: ±5)\nF  Frame selection; Shift+F  Fit grid; P  Launch previews\nCtrl+Shift+drag Buzz  Edit patrol; endpoint handles also work\nEsc / Right-click  Cancel gesture or tool; Alt-click cycles overlaps\n\nEntry/Exit stay on borders; Activation stays horizontal.\nGroups snap one shared anchor. Markers are never copied.\nTransforms preserve valid physical dimensions and never delete clipped content."
 		add_child(shortcuts_dialog)
 	shortcuts_dialog.popup_centered(Vector2i(800, 690))
 

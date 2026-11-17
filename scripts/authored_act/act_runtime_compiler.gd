@@ -125,8 +125,7 @@ static func _compile(document: Resource, tuning: PhysicsTuning, controls: Playgr
     descriptor.radius = Dimensions.ROUND_RADIUS_CELLS * cell_size * float(Objects.properties(placement).scale)
     body = BumperFactory.create({"kind": "circle", "position": placement.position, "rotation": deg_to_rad(float(placement.rotation_degrees)), "radius": descriptor.radius}, bumper_material)
    "triangle_bumper":
-    descriptor.points = Dimensions.sling_points(cell_size)
-    for i in descriptor.points.size(): descriptor.points[i] *= float(Objects.properties(placement).scale)
+    descriptor.points = Objects.local_points(placement, cell_size)
     body = BumperFactory.create({"kind": "triangle", "position": placement.position, "rotation": deg_to_rad(float(placement.rotation_degrees)), "points": descriptor.points}, bumper_material)
    "left_flipper", "right_flipper":
     var flipper := Flipper.new()
