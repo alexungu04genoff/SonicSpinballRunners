@@ -2,6 +2,12 @@
 
 Alex asked for a fresh review of the textured models and larger-feeling environments, excluding Lava Reef. This reopens the background composition decision from the November 9 audit; that audit intentionally inspected views with little distant scenery exposed.
 
+## Rooftop ridge follow-up
+
+Alex flagged the thin orange lines along the roof peaks. They came from an untextured bright ridge beam in the shared roof constructor. Removing that beam lets the existing textured roof slopes meet directly, across both authored props and background houses. The selected tiles, pale eaves and roof silhouettes remain. [Matched edge-view comparison](rooftop-ridge-20261117/rooftop_run.jpg), before left and after right, starts at `7ab8f09` and retains the canonical Prototype camera, atmosphere and production Retro settings.
+
+Ridge validation: 91 Rooftop decor and 387 landmark checks passed. Both canonical captures passed 26 authority/freshness checks each, with no script or engine errors. All seven Rooftop Prototype and seven Endless variants were rebaked successfully.
+
 ## Rooftop grounding follow-up
 
 Alex found the new Rooftop district unconvincing against its dark green background, with buildings appearing to float. The earlier images below preserve that first pass. The corrected version replaces the `dark` prop-colored plane with warm, muted paving using the existing approved floor texture. Three solid land strips leave openings for recessed canals; stone banks meet raised sidewalks, continuous city blocks connect the houses, and broad masonry courses establish their feet. Local garden-house foundations now continue beneath canal water wherever their footprints overlap it. The backdrop remains shadowless, so these physical connections provide the depth cues without adding lights or changing rendering architecture.

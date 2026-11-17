@@ -97,7 +97,6 @@ func bar(root: Node3D, color: String, a: Vector3, b: Vector3, width: float) -> v
 
 func roof(root: Node3D, at: Vector3, size: Vector3) -> void:
  piece(root, "roof", "roof", at, size)
- box(root, "roof_light", at + Vector3.UP * size.y, Vector3(0.045, 0.04, size.z * 1.02))
  # Broad eaves remain readable; individual tiles would shimmer in the retro view.
  for side: int in [-1, 1]:
   box(root, "cream", at + Vector3(side * size.x * 0.49, -0.025, 0), Vector3(0.045, 0.055, size.z))
