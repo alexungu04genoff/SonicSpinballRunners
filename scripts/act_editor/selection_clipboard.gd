@@ -3,7 +3,7 @@ extends RefCounted
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 const Decor = preload("res://scripts/act_editor/decor_slots.gd")
-const EditorSelection = preload("res://scripts/act_editor/editor_selection.gd")
+const EditorSelectionData = preload("res://scripts/act_editor/editor_selection.gd")
 const COLLECTIONS := {"terrain": "placements", "gameplay": "gameplay_objects", "decor": "decor_slots", "ring": "ring_trails"}
 
 static func capture(document: Resource, selection: Dictionary) -> Dictionary:
@@ -25,7 +25,7 @@ static func capture(document: Resource, selection: Dictionary) -> Dictionary:
    count += 1
  if count == 0: return {}
  for group: Dictionary in document.editor_groups:
-  var members := EditorSelection.empty()
+  var members := EditorSelectionData.empty()
   var complete := true
   for kind: String in COLLECTIONS:
    for index: int in group.members.get(kind, []):
@@ -82,7 +82,7 @@ static func append_to(document: Resource, copied: Dictionary, requested_offset: 
   for action: Dictionary in bank.get("actions", []): action.object_id = ids[action.object_id]
   document.switch_banks.append(bank)
  for original: Dictionary in copied.get("groups", []):
-  var members := EditorSelection.empty()
+  var members := EditorSelectionData.empty()
   for kind: String in COLLECTIONS:
    for index: int in original.members.get(kind, []): members[kind].append(selection[kind][index])
   document.editor_groups.append({"name": original.name, "members": members})

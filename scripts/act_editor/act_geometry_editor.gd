@@ -18,7 +18,7 @@ const DEFAULT_ACT_DIRECTORY := "res://data/acts"
 const HISTORY_LIMIT := 100
 const SelectionClipboard = preload("res://scripts/act_editor/selection_clipboard.gd")
 const SelectionTransform = preload("res://scripts/act_editor/selection_transform.gd")
-const EditorSelection = preload("res://scripts/act_editor/editor_selection.gd")
+const EditorSelectionData = preload("res://scripts/act_editor/editor_selection.gd")
 const Snap = preload("res://scripts/act_editor/editor_snap.gd")
 const AssemblyLibrary = preload("res://scripts/act_editor/assembly_library.gd")
 const WorkspaceTools = preload("res://scripts/act_editor/editor_workspace_tools.gd")
@@ -410,7 +410,7 @@ func _build_ui() -> void:
 	goal_size_field.prefix = "Goal diameter"
 	goal_size_field.suffix = "cells"
 	goal_size_field.value_changed.connect(func(value):
-		if _refreshing or composite_preview_active or EditorSelection.locked(document, "markers", "goal"): return
+		if _refreshing or composite_preview_active or EditorSelectionData.locked(document, "markers", "goal"): return
 		_record_edit()
 		document.goal_diameter_cells = value
 		_refresh())
@@ -897,14 +897,14 @@ func choose_decor(type: String) -> void:
 	_refresh()
 
 func _active_decor() -> Dictionary:
-	if EditorSelection.locked(document, "decor", canvas.selected_decor_index): return {}
+	if EditorSelectionData.locked(document, "decor", canvas.selected_decor_index): return {}
 	if not canvas.decor_brush.is_empty(): return canvas.decor_brush
 	if canvas.selection_count() > 1: return {}
 	if canvas.selected_decor_index >= 0: return document.decor_slots[canvas.selected_decor_index]
 	return {}
 
 func set_decor_slot(index: int, slot: Dictionary) -> void:
-	if index >= 0 and EditorSelection.locked(document, "decor", index): return
+	if index >= 0 and EditorSelectionData.locked(document, "decor", index): return
 	if composite_preview_active or index < -1 or index >= document.decor_slots.size(): return
 	var value := slot.duplicate(true)
 	if index == -1: value.slot_id = Decor.new_id()
@@ -935,7 +935,7 @@ func randomize_decor() -> void:
 	for index in document.decor_slots.size():
 		var slot: Dictionary = document.decor_slots[index]
 		var grouped: bool = document.editor_groups.any(func(group): return group.members.get("decor", []).has(index))
-		if not DecorScatter.is_scattered(slot) or grouped or EditorSelection.locked(document, "decor", index) or EditorSelection.hidden(document, "decor", index):
+		if not DecorScatter.is_scattered(slot) or grouped or EditorSelectionData.locked(document, "decor", index) or EditorSelectionData.hidden(document, "decor", index):
 			mapping[index] = kept.size()
 			kept.append(slot)
 	if generated.is_empty() and kept.size() == document.decor_slots.size():
@@ -943,7 +943,7 @@ func randomize_decor() -> void:
 		return
 	_record_edit()
 	if document.decor_seed.is_empty() and not generated.is_empty(): document.decor_seed = Decor.new_id()
-	EditorSelection.remap(document, "decor", mapping)
+	EditorSelectionData.remap_indices(document, "decor", mapping)
 	document.decor_slots = kept + generated
 	canvas.select_piece(-1)
 	canvas.show_decor = true
@@ -1113,7 +1113,7 @@ func _change_ring_radius(axis: int, value: float) -> void:
 	set_ring_trail(canvas.selected_ring_index, trail)
 
 func set_ring_trail(index: int, trail: Dictionary) -> void:
-	if index >= 0 and EditorSelection.locked(document, "ring", index): return
+	if index >= 0 and EditorSelectionData.locked(document, "ring", index): return
 	if index < -1 or index >= document.ring_trails.size():
 		return
 	trail = trail.duplicate(true)
@@ -1301,7 +1301,7 @@ func apply_composite() -> void:
 		else:
 			mapping[index] = next
 			next += 1
-	EditorSelection.remap(candidate, "terrain", mapping)
+	EditorSelectionData.remap_indices(candidate, "terrain", mapping)
 	var errors: PackedStringArray = candidate.validation_errors()
 	if not errors.is_empty():
 		_set_status(errors[0] + " Preview not applied.")
@@ -1334,7 +1334,7 @@ func restore_terrain_sources() -> void:
 	var mapping := {}
 	for old in document.placements.size():
 		mapping[old] = range(index, index + result.sources.size()) if old == index else (old if old < index else old + result.sources.size() - 1)
-	EditorSelection.remap(candidate, "terrain", mapping)
+	EditorSelectionData.remap_indices(candidate, "terrain", mapping)
 	var errors: PackedStringArray = candidate.validation_errors()
 	if not errors.is_empty():
 		_set_status("Sources not restored: " + errors[0])
@@ -1388,7 +1388,7 @@ func choose_marker(kind: String) -> void:
 	_refresh()
 
 func set_lifecycle_marker(kind: String, value: Variant) -> void:
-	if EditorSelection.locked(document, "markers", kind): return
+	if EditorSelectionData.locked(document, "markers", kind): return
 	if kind not in ["activation", "spawn", "goal"]:
 		return
 	var field: String = {"activation": "activation_y", "spawn": "spawn_position", "goal": "goal_position"}[kind]
@@ -1458,7 +1458,7 @@ func add_placement(placement: Dictionary) -> void:
 	_refresh()
 
 func move_placement(index: int, anchor: Vector2) -> void:
-	if index >= 0 and EditorSelection.locked(document, "terrain", index): return
+	if index >= 0 and EditorSelectionData.locked(document, "terrain", index): return
 	if index < 0 or index >= document.placements.size():
 		return
 	var placement: Dictionary = document.placements[index]
@@ -1488,7 +1488,7 @@ func add_gameplay_placement(placement: Dictionary) -> void:
 	_refresh()
 
 func move_gameplay_placement(index: int, position: Vector2) -> void:
-	if index >= 0 and EditorSelection.locked(document, "gameplay", index): return
+	if index >= 0 and EditorSelectionData.locked(document, "gameplay", index): return
 	if index < 0 or index >= document.gameplay_objects.size() or not position.is_finite():
 		return
 	var placement: Dictionary = document.gameplay_objects[index]
@@ -1502,7 +1502,7 @@ func move_gameplay_placement(index: int, position: Vector2) -> void:
 	_refresh()
 
 func _active_gameplay() -> Dictionary:
-	if EditorSelection.locked(document, "gameplay", canvas.selected_gameplay_index): return {}
+	if EditorSelectionData.locked(document, "gameplay", canvas.selected_gameplay_index): return {}
 	if not canvas.gameplay_brush.is_empty():
 		return canvas.gameplay_brush
 	if canvas.selection_count() > 1: return {}
@@ -1545,7 +1545,7 @@ func _ring_angle() -> float:
 	return rad_to_deg((Vector2(trail.end) - Vector2(trail.start)).angle())
 
 func _active_terrain() -> Dictionary:
-	if EditorSelection.locked(document, "terrain", canvas.selected_index): return {}
+	if EditorSelectionData.locked(document, "terrain", canvas.selected_index): return {}
 	if not canvas.brush.is_empty(): return canvas.brush
 	if canvas.selection_count() > 1: return {}
 	if _terrain_selection().size() == 1: return document.placements[canvas.selected_index]
@@ -1628,13 +1628,13 @@ func _duplicate_copies(copied: Dictionary, offsets: Array) -> void:
 		_set_status("Keep one duplication operation under 20,000 new objects. Use fewer rows or columns.")
 		return
 	var candidate: Resource = document.copy_document()
-	var combined := EditorSelection.empty()
+	var combined := EditorSelectionData.empty()
 	for offset: Vector2 in offsets:
 		var result := SelectionClipboard.append_to(candidate, copied, offset, false, false)
 		if not result.error.is_empty():
 			_set_status("Duplicate unchanged: " + result.error)
 			return
-		EditorSelection.merge(combined, result.selection)
+		EditorSelectionData.merge(combined, result.selection)
 	if not _commit_candidate(candidate): return
 	show_all_layers()
 	canvas.set_object_selection(combined)
@@ -1663,9 +1663,9 @@ func paste_selected(at_cursor := false, in_place := false) -> void:
 	if at_cursor and not in_place:
 		var recipe: Resource = ActData.new()
 		recipe.cell_size = document.cell_size
-		var all := EditorSelection.empty()
-		for kind: String in EditorSelection.COLLECTIONS:
-			recipe.set(EditorSelection.COLLECTIONS[kind], copied[kind])
+		var all := EditorSelectionData.empty()
+		for kind: String in EditorSelectionData.COLLECTIONS:
+			recipe.set(EditorSelectionData.COLLECTIONS[kind], copied[kind])
 			all[kind] = range(copied[kind].size())
 		offset = canvas.legal_gameplay_position(canvas.screen_to_local_pixels(canvas._cursor_position), canvas._alt_held) - SelectionTransform.bounds(recipe, all).get_center()
 	var result := SelectionClipboard.append_to(candidate, copied, offset, not in_place)
@@ -1769,22 +1769,22 @@ func delete_selected() -> void:
 	if not canvas.selected_connector.is_empty():
 		set_connector(canvas.selected_connector, 0, 0)
 		return
-	var selection: Dictionary = EditorSelection.expanded(document, canvas.object_selection())
-	if not canvas.selected_marker.is_empty() and not EditorSelection.locked(document, "markers", canvas.selected_marker):
+	var selection: Dictionary = EditorSelectionData.expanded(document, canvas.object_selection())
+	if not canvas.selected_marker.is_empty() and not EditorSelectionData.locked(document, "markers", canvas.selected_marker):
 		selection.markers = [canvas.selected_marker]
-	if EditorSelection.count(selection) == 0: return
+	if EditorSelectionData.count(selection) == 0: return
 	canvas.cancel_gesture()
 	_record_edit()
 	_duplicate_selection.clear()
 	var ids: Array = []
 	for index: int in selection.gameplay: ids.append(Objects.identity(document.gameplay_objects[index], index))
 	Banks.remove_objects(document.switch_banks, ids)
-	for kind: String in EditorSelection.COLLECTIONS:
+	for kind: String in EditorSelectionData.COLLECTIONS:
 		var indices: Array = selection[kind].duplicate()
-		EditorSelection.remove_indices(document, kind, indices)
+		EditorSelectionData.remove_indices(document, kind, indices)
 		indices.sort()
 		indices.reverse()
-		var records: Array = document.get(EditorSelection.COLLECTIONS[kind])
+		var records: Array = document.get(EditorSelectionData.COLLECTIONS[kind])
 		for index: int in indices: records.remove_at(index)
 	for kind: String in selection.markers:
 		if kind == "spawn": document.spawn_position = null
@@ -1798,7 +1798,7 @@ func move_selected_objects(offset: Vector2) -> void:
 	offset = canvas.clamp_group_offset(offset)
 	if offset.is_zero_approx(): return
 	var candidate: Resource = document.copy_document()
-	SelectionTransform.translate(candidate, EditorSelection.expanded(document, canvas.object_selection()), offset)
+	SelectionTransform.translate(candidate, EditorSelectionData.expanded(document, canvas.object_selection()), offset)
 	if _commit_candidate(candidate): _track_duplicate_movement(canvas.object_selection(), offset)
 
 func _track_duplicate_movement(selection: Dictionary, offset: Vector2) -> void:
@@ -2132,10 +2132,10 @@ func _refresh() -> void:
 	for field: CheckBox in layer_fields.values(): field.disabled = composite_preview_active
 	for button: Button in buttons.values():
 		button.disabled = false
-	buttons.ungroup.disabled = not document.editor_groups.any(func(group): return EditorSelection.intersects(group.members, canvas.object_selection()))
+	buttons.ungroup.disabled = not document.editor_groups.any(func(group): return EditorSelectionData.intersects(group.members, canvas.object_selection()))
 	buttons.group.disabled = canvas.selection_count() - canvas.selected_markers.size() < 2
 	buttons.lock.disabled = canvas.selection_count() == 0 and canvas.selected_marker.is_empty()
-	buttons.unlock_all.disabled = EditorSelection.count(document.editor_locks) == 0
+	buttons.unlock_all.disabled = EditorSelectionData.count(document.editor_locks) == 0
 	buttons.handles.text = "Handles: On" if canvas.show_transform_handles else "Handles: Off"
 	buttons.copy.disabled = composite_preview_active or canvas.selection_count() == 0
 	buttons.paste.disabled = composite_preview_active or _selection_clipboard.is_empty()
@@ -2144,7 +2144,7 @@ func _refresh() -> void:
 	grid_width_field.set_value_no_signal(document.grid_size.x)
 	grid_height_field.set_value_no_signal(document.grid_size.y)
 	goal_size_field.set_value_no_signal(document.goal_diameter_cells)
-	goal_size_field.editable = not composite_preview_active and not EditorSelection.locked(document, "markers", "goal")
+	goal_size_field.editable = not composite_preview_active and not EditorSelectionData.locked(document, "markers", "goal")
 	score_target_enabled.set_pressed_no_signal(document.score_target > 0)
 	if document.score_target > 0: _last_score_target = document.score_target
 	score_target_field.set_value_no_signal(_last_score_target)
@@ -2473,7 +2473,7 @@ func set_rail_points(points: PackedVector2Array) -> void:
 	set_gameplay_property("points", points)
 
 func set_teleporter_exit(index: int, offset: Vector2) -> void:
-	if index >= 0 and EditorSelection.locked(document, "gameplay", index): return
+	if index >= 0 and EditorSelectionData.locked(document, "gameplay", index): return
 	if index < 0 or index >= document.gameplay_objects.size(): return
 	var item: Dictionary = document.gameplay_objects[index]
 	if item.type != "teleporter": return
@@ -2487,7 +2487,7 @@ func set_teleporter_exit(index: int, offset: Vector2) -> void:
 	_refresh()
 
 func set_enemy_patrol(index: int, endpoints: Vector2) -> void:
-	if index >= 0 and EditorSelection.locked(document, "gameplay", index): return
+	if index >= 0 and EditorSelectionData.locked(document, "gameplay", index): return
 	if index < 0 or index >= document.gameplay_objects.size(): return
 	var item: Dictionary = document.gameplay_objects[index]
 	if item.type != "buzz_bomber": return
@@ -3114,14 +3114,14 @@ func _commit_candidate(candidate: Resource) -> bool:
 func group_selection() -> void:
 	if composite_preview_active or _transform_gesture_active(): return
 	var candidate: Resource = document.copy_document()
-	EditorSelection.group(candidate, canvas.object_selection())
+	EditorSelectionData.group(candidate, canvas.object_selection())
 	if _commit_candidate(candidate): _set_status("Group saved with the Act. Click any member to select the whole group.")
 	canvas.grab_focus()
 
 func ungroup_selection() -> void:
 	if composite_preview_active or _transform_gesture_active(): return
 	var candidate: Resource = document.copy_document()
-	EditorSelection.ungroup(candidate, canvas.object_selection())
+	EditorSelectionData.ungroup(candidate, canvas.object_selection())
 	if _commit_candidate(candidate): _set_status("Selection ungrouped. Positions are unchanged.")
 	canvas.grab_focus()
 
@@ -3129,16 +3129,16 @@ func lock_selection() -> void:
 	if composite_preview_active or _transform_gesture_active(): return
 	var selection: Dictionary = canvas.object_selection()
 	if not canvas.selected_marker.is_empty(): selection["markers"] = [canvas.selected_marker]
-	if EditorSelection.count(selection) == 0: return
+	if EditorSelectionData.count(selection) == 0: return
 	_record_edit()
-	EditorSelection.merge(document.editor_locks, selection)
+	EditorSelectionData.merge(document.editor_locks, selection)
 	canvas.select_piece(-1)
 	canvas.grab_focus()
 	_refresh()
 	_set_status("Selection locked. Ctrl+Shift+L unlocks all; Ctrl+Z undoes this lock.")
 
 func unlock_all() -> void:
-	if composite_preview_active or _transform_gesture_active() or EditorSelection.count(document.editor_locks) == 0: return
+	if composite_preview_active or _transform_gesture_active() or EditorSelectionData.count(document.editor_locks) == 0: return
 	_record_edit()
 	document.editor_locks = {}
 	canvas.grab_focus()
@@ -3214,10 +3214,10 @@ func choose_assembly() -> void:
 		_set_status(result.error)
 		return
 	var recipe: Resource = ActData.new()
-	for kind: String in EditorSelection.COLLECTIONS: recipe.set(EditorSelection.COLLECTIONS[kind], result.copied[kind])
+	for kind: String in EditorSelectionData.COLLECTIONS: recipe.set(EditorSelectionData.COLLECTIONS[kind], result.copied[kind])
 	recipe.cell_size = document.cell_size
-	var selection := EditorSelection.empty()
-	for kind: String in EditorSelection.COLLECTIONS: selection[kind] = range(result.copied[kind].size())
+	var selection := EditorSelectionData.empty()
+	for kind: String in EditorSelectionData.COLLECTIONS: selection[kind] = range(result.copied[kind].size())
 	canvas.select_piece(-1)
 	show_all_layers()
 	canvas.assembly_copy = result.copied
@@ -3233,8 +3233,8 @@ func _place_assembly(position: Vector2) -> void:
 	if not result.error.is_empty():
 		_set_status(result.error)
 		return
-	EditorSelection.group(candidate, result.selection)
-	if EditorSelection.count(result.selection) >= 2:
+	EditorSelectionData.group(candidate, result.selection)
+	if EditorSelectionData.count(result.selection) >= 2:
 		candidate.editor_groups.back().name = canvas.assembly_copy.get("assembly_name", "Assembly")
 	if _commit_candidate(candidate): _set_status("Assembly placed. Escape returns to selection; Ctrl+Z removes this copy.")
 

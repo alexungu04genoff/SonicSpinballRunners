@@ -13,7 +13,7 @@ const RINGS = preload("res://scripts/act_editor/ring_trails.gd")
 const BANKS = preload("res://scripts/act_editor/switch_banks.gd")
 const COMPOSITES = preload("res://scripts/act_editor/composite_terrain.gd")
 const DECOR = preload("res://scripts/act_editor/decor_slots.gd")
-const EditorSelection = preload("res://scripts/act_editor/editor_selection.gd")
+const EditorSelectionData = preload("res://scripts/act_editor/editor_selection.gd")
 const SCRIPT_PATH := "res://scripts/act_editor/act_geometry.gd"
 const PLACEMENT_TYPES := {
  "shape_id": TYPE_STRING,
@@ -108,7 +108,7 @@ func red_gutter_bounds() -> Rect2:
 
 func validation_errors() -> PackedStringArray:
  var errors := PackedStringArray()
- var editor_error := EditorSelection.validation_error(self)
+ var editor_error := EditorSelectionData.validation_error(self)
  if not editor_error.is_empty(): errors.append(editor_error)
  if typeof(authored_difficulty) != TYPE_INT or authored_difficulty < 1 or authored_difficulty > 5:
   errors.append("Authored difficulty must be an integer from 1 (Relaxed) to 5 (Expert).")
@@ -409,7 +409,7 @@ func difficulty_label() -> String:
 func editing_fingerprint() -> String:
  var histories: Array = []
  for piece: Dictionary in placements: histories.append(piece.get("editor_sources", {}))
- return fingerprint() + var_to_bytes([EditorSelection.fingerprint_records(self), histories]).hex_encode().sha256_text()
+ return fingerprint() + var_to_bytes([EditorSelectionData.fingerprint_records(self), histories]).hex_encode().sha256_text()
 
 func copy_document() -> Resource:
  var result: Resource = get_script().new()

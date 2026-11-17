@@ -35,7 +35,7 @@ var _boundary_axis := Vector2i.ONE
 var _boundary_preview := Vector2i.ZERO
 var selected_markers: Array[String] = []
 const SelectionTransform = preload("res://scripts/act_editor/selection_transform.gd")
-const EditorSelection = preload("res://scripts/act_editor/editor_selection.gd")
+const EditorSelectionData = preload("res://scripts/act_editor/editor_selection.gd")
 const Snap = preload("res://scripts/act_editor/editor_snap.gd")
 var snap_mode: int = Snap.Mode.FREE
 var selection_filter := "all"
@@ -271,7 +271,7 @@ func set_brush(value: Dictionary) -> void:
 
 
 func select_piece(index: int) -> void:
- if document != null and (EditorSelection.locked(document, "terrain", index) or EditorSelection.hidden(document, "terrain", index)): index = -1
+ if document != null and (EditorSelectionData.locked(document, "terrain", index) or EditorSelectionData.hidden(document, "terrain", index)): index = -1
  var indices: Array[int] = []
  if index >= 0 and index < _placements().size():
   indices.append(index)
@@ -286,7 +286,7 @@ func set_terrain_selection(indices: Array[int]) -> void:
  brush = {}
  selected_indices = []
  for index in indices:
-  if index >= 0 and index < _placements().size() and not EditorSelection.locked(document, "terrain", index) and not EditorSelection.hidden(document, "terrain", index) and not selected_indices.has(index):
+  if index >= 0 and index < _placements().size() and not EditorSelectionData.locked(document, "terrain", index) and not EditorSelectionData.hidden(document, "terrain", index) and not selected_indices.has(index):
    selected_indices.append(index)
  selected_index = selected_indices.back() if not selected_indices.is_empty() else -1
  connector_tool = ""
@@ -387,7 +387,7 @@ func set_gameplay_brush(value: Dictionary) -> void:
 
 
 func select_gameplay(index: int) -> void:
- if document != null and (EditorSelection.locked(document, "gameplay", index) or EditorSelection.hidden(document, "gameplay", index)): index = -1
+ if document != null and (EditorSelectionData.locked(document, "gameplay", index) or EditorSelectionData.hidden(document, "gameplay", index)): index = -1
  _clear_decor_selection()
  ring_tool = false
  selected_ring_index = -1
@@ -407,7 +407,7 @@ func set_gameplay_selection(indices: Array[int]) -> void:
  select_gameplay(-1)
  var valid: Array[int] = []
  for index: int in indices:
-  if index >= 0 and index < _gameplay_objects().size() and not EditorSelection.locked(document, "gameplay", index) and not EditorSelection.hidden(document, "gameplay", index) and not valid.has(index): valid.append(index)
+  if index >= 0 and index < _gameplay_objects().size() and not EditorSelectionData.locked(document, "gameplay", index) and not EditorSelectionData.hidden(document, "gameplay", index) and not valid.has(index): valid.append(index)
  selected_gameplay_index = valid.back() if not valid.is_empty() else -1
  selected_gameplay_indices = valid
  queue_redraw()
@@ -422,7 +422,7 @@ func set_marker_tool(kind: String) -> void:
 
 func select_marker(kind: String) -> void:
  select_piece(-1)
- selected_marker = kind if marker_value(kind) != null and not EditorSelection.locked(document, "markers", kind) and not EditorSelection.hidden(document, "markers", kind) else ""
+ selected_marker = kind if marker_value(kind) != null and not EditorSelectionData.locked(document, "markers", kind) and not EditorSelectionData.hidden(document, "markers", kind) else ""
  queue_redraw()
 
 
@@ -433,7 +433,7 @@ func set_ring_tool() -> void:
  queue_redraw()
 
 func select_ring(index: int) -> void:
- if document != null and (EditorSelection.locked(document, "ring", index) or EditorSelection.hidden(document, "ring", index)): index = -1
+ if document != null and (EditorSelectionData.locked(document, "ring", index) or EditorSelectionData.hidden(document, "ring", index)): index = -1
  select_piece(-1)
  selected_ring_index = index if index >= 0 and index < document.ring_trails.size() else -1
  queue_redraw()
@@ -463,7 +463,7 @@ func set_decor_brush(slot: Dictionary) -> void:
  queue_redraw()
 
 func select_decor(index: int) -> void:
- if document != null and (EditorSelection.locked(document, "decor", index) or EditorSelection.hidden(document, "decor", index)): index = -1
+ if document != null and (EditorSelectionData.locked(document, "decor", index) or EditorSelectionData.hidden(document, "decor", index)): index = -1
  select_piece(-1)
  selected_decor_index = index if index >= 0 and index < document.decor_slots.size() else -1
  queue_redraw()
@@ -477,7 +477,7 @@ func _decor_radius(slot: Dictionary) -> float:
 func _draw_decor() -> void:
  if not show_decor: return
  for index in document.decor_slots.size():
-  if EditorSelection.hidden(document, "decor", index): continue
+  if EditorSelectionData.hidden(document, "decor", index): continue
   var slot: Dictionary = document.decor_slots[index].duplicate(true)
   if index == _decor_drag_index: slot.position = _decor_drag_position
   if selected_decor_indices.has(index): slot.position += _group_offset
@@ -600,10 +600,10 @@ func nudge_distance(free_move: bool) -> float:
  return 1.0 if effective_snap_mode(free_move) == Snap.Mode.FREE else _local_cell_size() * terrain_snap_step
 
 func selection_allowed(kind: String, index: Variant) -> bool:
- if document == null or EditorSelection.locked(document, kind, index) or EditorSelection.hidden(document, kind, index): return false
- var selected := EditorSelection.single(kind, index)
+ if document == null or EditorSelectionData.locked(document, kind, index) or EditorSelectionData.hidden(document, kind, index): return false
+ var selected := EditorSelectionData.single(kind, index)
  for group: Dictionary in document.editor_groups:
-  if EditorSelection.intersects(group.members, selected) and (EditorSelection.intersects(group.members, document.editor_locks) or EditorSelection.intersects(group.members, document.editor_hidden)): return false
+  if EditorSelectionData.intersects(group.members, selected) and (EditorSelectionData.intersects(group.members, document.editor_locks) or EditorSelectionData.intersects(group.members, document.editor_hidden)): return false
  if selection_filter == "all" or selection_filter == kind: return true
  if kind != "gameplay": return false
  var type: String = document.gameplay_objects[index].type
@@ -815,7 +815,7 @@ func _draw_document() -> void:
  var placements := _placements()
  for index in placements.size():
   if not show_terrain: break
-  if EditorSelection.hidden(document, "terrain", index): continue
+  if EditorSelectionData.hidden(document, "terrain", index): continue
   var placement: Dictionary = placements[index]
   if selected_indices.has(index) and _group_dragging:
    placement = placement.duplicate(true)
@@ -895,7 +895,7 @@ func _draw_composite_preview() -> void:
 func _draw_rings() -> void:
  if not show_rings: return
  for index in document.ring_trails.size():
-  if EditorSelection.hidden(document, "ring", index): continue
+  if EditorSelectionData.hidden(document, "ring", index): continue
   var trail: Dictionary = _ring_preview if _ring_index == index and not _ring_mode.is_empty() else document.ring_trails[index]
   if selected_ring_indices.has(index) and _group_dragging:
    trail = trail.duplicate(true)
@@ -993,7 +993,7 @@ func _draw_gutter() -> void:
 
 func _draw_markers() -> void:
  for kind: String in ["activation", "spawn", "goal"]:
-  if EditorSelection.hidden(document, "markers", kind): continue
+  if EditorSelectionData.hidden(document, "markers", kind): continue
   var value: Variant = marker_value(kind)
   if value == null:
    continue
@@ -1070,7 +1070,7 @@ func _draw_gameplay_objects() -> void:
  var objects := _gameplay_objects()
  var scale_factor := _cell_pixels / _local_cell_size()
  for index in objects.size():
-  if EditorSelection.hidden(document, "gameplay", index): continue
+  if EditorSelectionData.hidden(document, "gameplay", index): continue
   var placement: Dictionary = objects[index]
   if _patrol_dragging and index == _patrol_index: placement = _patrol_preview
   if index == _teleporter_index: placement = _teleporter_preview
@@ -1110,7 +1110,7 @@ func _draw_gameplay_objects() -> void:
 func _draw_bank_links() -> void:
  var positions := {}
  for i in document.gameplay_objects.size():
-  if EditorSelection.hidden(document, "gameplay", i): continue
+  if EditorSelectionData.hidden(document, "gameplay", i): continue
   positions[Objects.identity(document.gameplay_objects[i], i)] = local_pixels_to_screen(document.gameplay_objects[i].position)
  for bank: Dictionary in document.switch_banks:
   if not bank.members.all(func(id): return positions.has(id)): continue
@@ -1630,17 +1630,17 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
    return
   if target.get("kind") in ["terrain", "gameplay", "decor", "ring"]:
    var selection := object_selection()
-   var members := EditorSelection.expanded(document, EditorSelection.single(target.kind, target.index))
+   var members := EditorSelectionData.expanded(document, EditorSelectionData.single(target.kind, target.index))
    if selection[target.kind].has(target.index):
-    for kind: String in EditorSelection.KINDS:
+    for kind: String in EditorSelectionData.KINDS:
      for index: Variant in members[kind]: selection.get(kind, []).erase(index)
-   else: EditorSelection.merge(selection, members)
+   else: EditorSelectionData.merge(selection, members)
    active_target = target.duplicate()
    set_object_selection(selection)
    return
  if target.get("kind") in ["terrain", "gameplay", "decor", "ring"] and not object_selection().get(target.kind, []).has(target.index):
-  var members := EditorSelection.expanded(document, EditorSelection.single(target.kind, target.index))
-  if EditorSelection.count(members) > 1:
+  var members := EditorSelectionData.expanded(document, EditorSelectionData.single(target.kind, target.index))
+  if EditorSelectionData.count(members) > 1:
    active_target = target.duplicate()
    set_object_selection(members)
  if (selection_count() > 1 or not selected_markers.is_empty()) and (object_selection().get(target.get("kind", ""), []).has(target.get("index", -1)) or (target.get("kind") == "marker" and selected_markers.has(target.get("marker", "")))):
@@ -1701,14 +1701,14 @@ func object_selection() -> Dictionary:
 
 
 func selection_count() -> int:
- return EditorSelection.count(object_selection())
+ return EditorSelectionData.count(object_selection())
 
 
 func set_object_selection(selection: Dictionary) -> void:
- var expanded := EditorSelection.expanded(document, selection)
- if document.editor_groups.any(func(group): return EditorSelection.intersects(group.members, expanded)):
+ var expanded := EditorSelectionData.expanded(document, selection)
+ if document.editor_groups.any(func(group): return EditorSelectionData.intersects(group.members, expanded)):
   # Never leave a group partly selected because one of its layers was hidden.
-  for kind: String in EditorSelection.COLLECTIONS:
+  for kind: String in EditorSelectionData.COLLECTIONS:
    if not expanded[kind].is_empty(): set("show_" + ("rings" if kind == "ring" else kind), true)
  selection = expanded
  select_piece(-1)
@@ -1750,7 +1750,7 @@ func set_layer_visible(layer: String, enabled: bool) -> void:
 
 func _finish_box_selection() -> void:
  var box := Rect2(_box_start, _box_end - _box_start).abs()
- var selection := EditorSelection.empty()
+ var selection := EditorSelectionData.empty()
  if _box_start.distance_to(_box_end) >= 3.0:
   for index in _placements().size():
    if not show_terrain: break
@@ -1804,9 +1804,9 @@ func _finish_box_selection() -> void:
    var bounds := SelectionTransform.bounds(document, group.members)
    var frame := Rect2(local_pixels_to_screen(bounds.position), bounds.size * _cell_pixels / _local_cell_size())
    if not box.encloses(frame):
-    for kind: String in EditorSelection.KINDS:
+    for kind: String in EditorSelectionData.KINDS:
      for index: Variant in group.members.get(kind, []): selection[kind].erase(index)
- if _box_additive: EditorSelection.merge(selection, object_selection())
+ if _box_additive: EditorSelectionData.merge(selection, object_selection())
  set_object_selection(selection)
  _set_status("%d items selected. Drag freely; Shift snaps; Ctrl-click toggles; R rotates; [ / ] scales; Ctrl+Z undoes." % selection_count())
 
@@ -1870,8 +1870,8 @@ func _update_group_drag(pointer: Vector2, free_move: bool, force: bool = false) 
 func _select_hit_target(target: Dictionary) -> void:
  active_target = target.duplicate()
  if target.get("kind") in ["terrain", "gameplay", "decor", "ring"]:
-  var members := EditorSelection.expanded(document, EditorSelection.single(target.kind, target.index))
-  if EditorSelection.count(members) > 1:
+  var members := EditorSelectionData.expanded(document, EditorSelectionData.single(target.kind, target.index))
+  if EditorSelectionData.count(members) > 1:
    set_object_selection(members)
    return
  if target.is_empty():
@@ -2576,7 +2576,7 @@ func select_all_content() -> void:
   "decor": range(document.decor_slots.size()), "ring": range(document.ring_trails.size()), "markers": []}
  for kind: String in ["spawn", "goal", "activation"]:
   if marker_value(kind) != null: selection.markers.append(kind)
- for kind: String in EditorSelection.KINDS:
+ for kind: String in EditorSelectionData.KINDS:
   selection[kind] = selection.get(kind, []).filter(func(index): return selection_allowed(kind, index))
  set_object_selection(selection)
  grab_focus()
@@ -2616,7 +2616,7 @@ func _draw_selection_handles() -> void:
  draw_line(pivot - Vector2(0, 7), pivot + Vector2(0, 7), Color("ffcb73"), 1.5, true)
  var bounds := SelectionTransform.bounds(document, object_selection())
  var label := "%.2f × %.2f px  |  %.2f × %.2f cells" % [bounds.size.x, bounds.size.y, bounds.size.x / _local_cell_size(), bounds.size.y / _local_cell_size()]
- var units := EditorSelection.units(document, object_selection())
+ var units := EditorSelectionData.units(document, object_selection())
  if units.size() == 2:
   var delta := SelectionTransform.bounds(document, units[1]).get_center() - SelectionTransform.bounds(document, units[0]).get_center()
   label += "  |  centers %.2f px (ΔX %.2f, ΔY %.2f)" % [delta.length(), delta.x, delta.y]
@@ -2626,11 +2626,11 @@ func _draw_selection_handles() -> void:
 
 func _draw_locked_items() -> void:
  if document == null: return
- for kind: String in EditorSelection.COLLECTIONS:
+ for kind: String in EditorSelectionData.COLLECTIONS:
   if not get("show_" + ("rings" if kind == "ring" else kind)): continue
   for index: int in document.editor_locks.get(kind, []):
-   if EditorSelection.hidden(document, kind, index): continue
-   var at := SelectionTransform.bounds(document, EditorSelection.single(kind, index)).get_center()
+   if EditorSelectionData.hidden(document, kind, index): continue
+   var at := SelectionTransform.bounds(document, EditorSelectionData.single(kind, index)).get_center()
    var point := local_pixels_to_screen(at)
    draw_rect(Rect2(point - Vector2(4, 0), Vector2(8, 7)), Color("d4a071"), false, 1.5)
    draw_arc(point + Vector2(0, 0), 3, PI, TAU, 8, Color("d4a071"), 1.5, true)
@@ -2649,7 +2649,7 @@ func _gizmo_input(event: InputEvent) -> bool:
      _update_gizmo(event.position, event.shift_pressed)
     var candidate := gizmo_document
     var error := gizmo_error
-    var unchanged := document.editing_fingerprint() == _gizmo_source
+    var unchanged: bool = document.editing_fingerprint() == _gizmo_source
     cancel_gesture()
     if candidate != null and unchanged and error.is_empty(): gizmo_commit_requested.emit(candidate)
     elif not error.is_empty(): _set_status("Transform canceled: " + error)

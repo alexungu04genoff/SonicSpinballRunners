@@ -5,7 +5,7 @@ const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const Rings = preload("res://scripts/act_editor/ring_trails.gd")
 const Decor = preload("res://scripts/act_editor/decor_slots.gd")
-const EditorSelection = preload("res://scripts/act_editor/editor_selection.gd")
+const EditorSelectionData = preload("res://scripts/act_editor/editor_selection.gd")
 const TerrainHistory = preload("res://scripts/act_editor/terrain_history.gd")
 
 static func bounds(document: Resource, selection: Dictionary) -> Rect2:
@@ -170,7 +170,7 @@ static func mirror(document: Resource, selection: Dictionary, pivot: Vector2, ho
 
 static func arrange(document: Resource, selection: Dictionary, operation: String) -> String:
  if not selection.get("markers", []).is_empty(): return "Align objects and groups without lifecycle markers selected."
- var units := EditorSelection.units(document, selection)
+ var units := EditorSelectionData.units(document, selection)
  var distribute := operation.begins_with("distribute")
  if units.size() < (3 if distribute else 2): return "Select at least %d independent objects or groups." % (3 if distribute else 2)
  var axis := 1 if operation in ["top", "middle", "bottom", "distribute_y"] else 0

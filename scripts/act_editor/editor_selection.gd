@@ -73,7 +73,7 @@ static func group(document: Resource, selection: Dictionary) -> void:
 static func ungroup(document: Resource, selection: Dictionary) -> void:
  document.editor_groups = document.editor_groups.filter(func(item): return not intersects(item.members, selection))
 
-static func remap(document: Resource, kind: String, mapping: Dictionary) -> void:
+static func remap_indices(document: Resource, kind: String, mapping: Dictionary) -> void:
  # Missing keys are removed. Many-to-one mappings preserve membership after Merge.
  for selection: Dictionary in [document.editor_locks, document.editor_hidden] + document.editor_groups.map(func(item): return item.members):
   var indices: Array = []
@@ -92,7 +92,7 @@ static func remove_indices(document: Resource, kind: String, removed: Array) -> 
   if removed.has(index): continue
   mapping[index] = next
   next += 1
- remap(document, kind, mapping)
+ remap_indices(document, kind, mapping)
 
 static func units(document: Resource, selection: Dictionary) -> Array[Dictionary]:
  # Alignment treats each saved group as one unit, preserving its internal layout.
