@@ -1,5 +1,23 @@
 # Act Geometry Editor
 
+## Scalable editing controls — 2026-11-17
+
+New terrain brushes, including palette drag-and-drop, start at **0.5×**. Existing placements retain their saved size. Terrain and manual Decor support **0.125–8×**; terrain presets include half, original, double and larger sizes. **[ / ]** and **Shift+wheel** divide/multiply size by 1.1. **Shift+[ / Shift+]** halve/double it. Hardware uses its actual physical dimensions and keeps its validated type-specific limits; flipper length now spans **0.25–4×**. Speeds, strengths, scoring and timers do not scale. Ring patterns scale their spacing with their extent, preserving density relative to the pattern.
+
+**Ctrl+A / Select All** reveals and selects terrain, gameplay, Decor, ring patterns, Spawn, Goal and Activation. **Group drags are free by default**; hold **Shift** to snap the shared offset to the current terrain grid step. Group arrows move one pixel, or one grid step with Shift. The same offset moves every selected item; terrain and lifecycle bounds constrain the whole group together. Box selection and Ctrl-click also support lifecycle markers. Entry/Exit remain structural connectors attached to grid borders.
+
+**R / Shift+R** rotates a mixed selection by ±15° around its shared center; **Alt+R / Alt+Shift+R** uses ±1°. Scaling a mixed selection also transforms its layout around that center, in one undo step. A single terrain piece retains its top-left during sizing; hardware and Decor retain their anchors; ring patterns retain their centers. Ring lines and ellipses now use the common rotation controls, including the exact Angle field. Buzz rotation turns its patrol, swept collision sensor and presentation together. Spawn has no physical size, Goal is rotationally symmetric, and Activation remains a horizontal checkpoint line. Invalid group transforms reject atomically with a reason.
+
+**B / Boundary** enters grid-boundary editing. Drag the right or bottom handle to change one dimension, or the corner to change both, in whole cells. Clicking elsewhere in this mode places the bottom-right corner at that grid intersection. Arrow keys add/remove one row or column; Shift changes five. Esc/right-click exits. Resizing preserves coordinates and rejects invalid shrinking without deleting or moving content; width/height fields remain available. Enlarge the grid first when a selected layout needs more space to move or rotate.
+
+**F** frames the selection, **Shift+F** fits the grid, **Ctrl+D** duplicates mixed object selections with fresh identities, and **F1 / Shortcuts** opens the controls reference. Copy/duplicate keeps the existing object clipboard contract; singleton lifecycle markers are not duplicated. Text fields retain their usual editing shortcuts.
+
+Launch previews start **enabled**, with flippers using **Launch strength / typical catch**, independent of a placed Spawn. Drop from spawn remains an optional guide mode. **P / Guides** toggles the overlays. Guides remain examples, not collision-aware reachability guarantees.
+
+Validation status: source and diffs reviewed only. No tests, Godot import, game launch, rendering or bake were run for this pass at Alex's request while other collaborators worked on GPU changes. Updated regression expectations and `editor_scalability_regression.gd` are available for a later run. Manual review remains needed for boundary-handle usability, group transforms near borders and rotated Buzz presentation.
+
+This section supersedes the narrower controls and defaults below.
+
 ## Current interaction controls — 2026-11-08
 
 **Shift + wheel** resizes every Gameplay type, both the placement brush and selected objects. It changes the dimensions used by collision and presentation, preserves anchors/IDs/angles, and never zooms. Bumpers, switches and Buzz change size; paddles change length; Gates, Springs, Slingshots, Spinners and Dash Panels change width; fields and Teleporters change radius; Drop Banks change target spacing; rails scale their control points and width; Lane Barriers scale their post positions and radius. Buzz patrol length still uses **Shift-drag** or endpoint handles. Inspector limits and geometry validation still apply.

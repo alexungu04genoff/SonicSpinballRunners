@@ -178,8 +178,8 @@ func validation_errors() -> PackedStringArray:
     errors.append(prefix + "offset must be finite and between 0 (inclusive) and 1 (exclusive).")
     continue
   if placement.has("terrain_scale"):
-   if typeof(placement.terrain_scale) not in [TYPE_INT, TYPE_FLOAT] or placement.terrain_scale not in [0.5, 1.0]:
-    errors.append(prefix + "terrain_scale must be 0.5 or 1.0.")
+   if typeof(placement.terrain_scale) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(placement.terrain_scale) or placement.terrain_scale < SHAPES.MIN_SCALE or placement.terrain_scale > SHAPES.MAX_SCALE:
+    errors.append(prefix + "terrain_scale must be finite and between 0.125 and 8.0.")
     continue
   if placement.has("fine_rotation_degrees"):
    if typeof(placement.fine_rotation_degrees) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(placement.fine_rotation_degrees):
@@ -542,6 +542,10 @@ static func _decode_stored_terrain_transforms(document: Resource) -> String:
  if typeof(document.placements) != TYPE_ARRAY: return ""
  for placement: Variant in document.placements:
   if not placement is Dictionary: continue
+  if typeof(placement.get("terrain_scale")) == TYPE_PACKED_BYTE_ARRAY:
+   var decoded: Variant = _decode_numeric_payload(placement.terrain_scale)
+   if decoded == null: return "Invalid stored terrain scale."
+   placement.terrain_scale = decoded
   if typeof(placement.get("fine_rotation_degrees")) == TYPE_PACKED_BYTE_ARRAY:
    var decoded: Variant = _decode_numeric_payload(placement.fine_rotation_degrees)
    if decoded == null: return "Invalid stored fine terrain angle."
@@ -604,6 +608,7 @@ static func _decode_numeric_payload(payload: PackedByteArray) -> Variant:
 func _storage_document() -> Resource:
  var stored: Resource = copy_document()
  for placement: Dictionary in stored.placements:
+  if placement.has("terrain_scale"): placement.terrain_scale = var_to_bytes(placement.terrain_scale)
   if placement.has("offset"): placement.offset = var_to_bytes(placement.offset)
   if placement.has("fine_rotation_degrees"): placement.fine_rotation_degrees = var_to_bytes(placement.fine_rotation_degrees)
   if placement.shape_id == "composite":

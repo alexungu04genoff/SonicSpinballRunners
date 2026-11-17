@@ -174,9 +174,28 @@ static func resized_properties(item: Dictionary, direction: float) -> Dictionary
  candidate.properties = props
  return props if property_errors(candidate).is_empty() else properties(item)
 
+static func scaled_properties(item: Dictionary, factor: float) -> Dictionary:
+ # Physical authoring dimensions only; speeds, forces, rewards and clocks stay fixed.
+ var props := properties(item)
+ var dimensions: Array = {
+  "left_flipper": ["length_multiplier"], "right_flipper": ["length_multiplier"],
+  "round_bumper": ["scale"], "triangle_bumper": ["scale"],
+  "switch_target": ["scale"], "wall_switch": ["scale"],
+  "buzz_bomber": ["scale", "patrol_left", "patrol_right"],
+  "drop_target_bank": ["spacing", "target_size"], "diverter": ["length"],
+  "teleporter": ["radius", "exit_x", "exit_y"], "magnetic_field": ["radius"],
+  "lane_barrier": ["post_radius"], "elevated_rail": ["width", "height"]
+ }.get(item.type, ["width"])
+ for key: String in dimensions: props[key] = float(props[key]) * factor
+ if item.type in ["elevated_rail", "lane_barrier"]:
+  var points: PackedVector2Array = props.points.duplicate()
+  for index in points.size(): points[index] *= factor
+  props.points = points
+ return props
+
 static func property_limits(type: String) -> Dictionary:
  match type:
-  "left_flipper", "right_flipper": return {"length_multiplier": [1.0, 2.0]}
+  "left_flipper", "right_flipper": return {"length_multiplier": [0.25, 4.0]}
   "teleporter": return {"radius": [10.0, 60.0], "exit_x": [-10000.0, 10000.0], "exit_y": [-10000.0, 10000.0], "exit_angle": [-180.0, 180.0]}
   "drop_target_bank": return {"target_count": [2.0, 12.0], "spacing": [16.0, 80.0], "target_size": [10.0, 50.0], "completion_bonus": [0.0, 100000.0], "reset_delay": [0.0, 60.0]}
   "slingshot": return {"width": [24.0, 200.0], "strength": [100.0, 1600.0]}

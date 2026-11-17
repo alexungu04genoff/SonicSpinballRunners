@@ -295,7 +295,7 @@ func check_fine_transforms() -> void:
 	check(doc.validation_errors().is_empty(), "Scaled frame may touch the exact terrain boundary")
 	Shapes.set_placement_position(edge, Vector2(11.001, 11))
 	check(not doc.validation_errors().is_empty(), "Fractional frame crossing the terrain boundary rejects")
-	for change in [{"offset": Vector2(NAN, 0)}, {"offset": Vector2(-0.1, 0)}, {"offset": Vector2(1, 0)}, {"offset": Vector2i.ZERO}, {"terrain_scale": 0.0}, {"terrain_scale": true}, {"terrain_scale": 2.0}]:
+	for change in [{"offset": Vector2(NAN, 0)}, {"offset": Vector2(-0.1, 0)}, {"offset": Vector2(1, 0)}, {"offset": Vector2i.ZERO}, {"terrain_scale": 0.0}, {"terrain_scale": true}, {"terrain_scale": 8.01}, {"terrain_scale": NAN}]:
 		var invalid := source.duplicate(true)
 		invalid.merge(change, true)
 		doc.placements = [invalid]

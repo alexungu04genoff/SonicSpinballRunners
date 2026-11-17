@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Let the editor stretch — 2026-11-17
+
+Alex wanted smaller starting terrain, broad rotate/scale controls, grid-driven boundaries and a freely movable whole-level selection. New terrain stamps start at half size; existing Acts stay as authored. Terrain/Decor size runs from 0.125× to 8×, flipper length from 0.25× to 4×, and other hardware keeps its physical dimension limits. Brackets and Shift-wheel resize, Shift-brackets halve/double, and mixed groups transform around one center. Ctrl+A includes hidden layers plus Spawn, Goal and Activation; group drags are free, Shift snaps. B edits the right/bottom grid boundary without clipping away content, F frames a selection, P toggles the default strength previews, and F1 lists controls. Buzz rotation finally follows through to patrol movement and its sensor, not just a drawing. Structural connectors stay on the boundary and Activation stays horizontal. Alex explicitly asked for no tests while two other bros worked on GPU changes, so this pass has source review only; runtime and visual verification remain pending. [Controls and limits](ACT_GEOMETRY_EDITOR.md#scalable-editing-controls--2026-11-17).
+
 ## Give the table a world around it — 2026-11-17
 
 Latest Green Hill correction: the marked entrance artifact was the loop approach's raised end cap; the approach now slopes into its supporting grass. The offshore checker rectangles came from the cylinder's half-height UV chart and stretched facets. Explicit side UVs now use measured facet lengths and full height. All four distant islands gain small palm/rock/sunflower groups, with land stretching kept separate from prop proportions. [Updated comparison](green-hill-seams-20261117/green_hill.jpg).

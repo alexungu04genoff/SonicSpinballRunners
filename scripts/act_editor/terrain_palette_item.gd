@@ -45,4 +45,4 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 	preview.add_theme_color_override("font_color", definition.color)
 	set_drag_preview(preview)
 	return {"terrain_stamp": {"shape_id": definition.id, "base_size": definition.size,
-		"anchor": Vector2i.ZERO, "quarter_turns": 0, "flip_h": false, "flip_v": false}}
+		"anchor": Vector2i.ZERO, "quarter_turns": 0, "flip_h": false, "flip_v": false, "terrain_scale": Shapes.DEFAULT_SCALE}}

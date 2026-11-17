@@ -58,12 +58,15 @@ func tick(delta: float) -> void:
    var pause_step := minf(remaining, item.pause_remaining)
    item.pause_remaining -= pause_step
    remaining -= pause_step
-  var left := float(item.anchor.x) + float(item.properties.patrol_left)
-  var right := float(item.anchor.x) + float(item.properties.patrol_right)
+  var left := float(item.properties.patrol_left)
+  var right := float(item.properties.patrol_right)
   if remaining <= 0.0 or is_equal_approx(left, right) or item.properties.patrol_speed <= 0.0: continue
   var target := left if item.direction < 0.0 else right
-  item.position.x = move_toward(item.position.x, target, item.properties.patrol_speed * remaining)
-  if is_equal_approx(item.position.x, target):
+  var axis := Vector2.RIGHT.rotated(deg_to_rad(float(item.get("rotation_degrees", 0.0))))
+  var progress := (Vector2(item.position) - Vector2(item.anchor)).dot(axis)
+  progress = move_toward(progress, target, item.properties.patrol_speed * remaining)
+  item.position = Vector2(item.anchor) + axis * progress
+  if is_equal_approx(progress, target):
    item.direction *= -1.0
    item.pause_remaining = PATROL_PAUSE_SECONDS
   if is_instance_valid(item.target): item.target.position = item.position
@@ -71,7 +74,10 @@ func tick(delta: float) -> void:
 
 func _safe_to_respawn(item: Dictionary) -> bool:
  if not is_instance_valid(ball): return true
- var region := Rect2(item.anchor + Vector2(item.properties.patrol_left, 0), Vector2(item.properties.patrol_right - item.properties.patrol_left, 0))
+ var axis := Vector2.RIGHT.rotated(deg_to_rad(float(item.get("rotation_degrees", 0.0))))
+ var left: Vector2 = item.anchor + axis * float(item.properties.patrol_left)
+ var right: Vector2 = item.anchor + axis * float(item.properties.patrol_right)
+ var region := Rect2(left, right - left).abs()
  var definition: Dictionary = DEFINITIONS[item.enemy_type]
  region = region.grow(RESPAWN_SAFETY_DISTANCE + ball.radius + (definition.radius + definition.half_segment) * float(item.properties.scale))
  var start := previous_ball_position if previous_ball_position.is_finite() else ball.position
@@ -126,7 +132,8 @@ static func swept_contact(item: Dictionary, start: Vector2, finish: Vector2, bal
  var scale_value := float(item.properties.scale)
  # Relative motion catches both fast balls and a target moving across the ball.
  var motion: Vector2 = finish - start - (Vector2(item.position) - Vector2(item.previous_position))
- return Contact.capsule_hit(start, motion, item.previous_position, Vector2.UP, definition.half_segment * scale_value, definition.radius * scale_value + ball_radius)
+ var normal := Vector2.UP.rotated(deg_to_rad(float(item.get("rotation_degrees", 0.0))))
+ return Contact.capsule_hit(start, motion, item.previous_position, normal, definition.half_segment * scale_value, definition.radius * scale_value + ball_radius)
 
 static func contact_velocity(velocity: Vector2, start: Vector2, finish: Vector2, enemy_start: Vector2, hit: Dictionary) -> Vector2:
  var result := velocity

@@ -1,7 +1,8 @@
 extends Control
 const FlipperProbe = preload("res://scripts/act_editor/flipper_launch_probe.gd")
 var launch_timing_variants := false
-var launch_from_spawn := true
+var launch_from_spawn := false
+var show_launch_previews := true
 var launch_contact_fraction := 0.9
 var _launch_probe := FlipperProbe.new()
 const LaunchPreview = preload("res://scripts/act_editor/launch_preview.gd")
@@ -27,6 +28,13 @@ signal decor_requested(index: int, slot: Dictionary)
 signal decor_selection_changed(index: int)
 signal status_changed(message: String)
 signal group_move_requested(offset: Vector2)
+signal grid_resize_requested(dimensions: Vector2i)
+var boundary_tool := false
+var _boundary_dragging := false
+var _boundary_axis := Vector2i.ONE
+var _boundary_preview := Vector2i.ZERO
+var selected_markers: Array[String] = []
+const SelectionTransform = preload("res://scripts/act_editor/selection_transform.gd")
 
 const ActData = preload("res://scripts/act_editor/act_geometry.gd")
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
@@ -408,6 +416,8 @@ func marker_value(kind: String) -> Variant:
  return null
 
 func _clear_decor_selection() -> void:
+ selected_markers.clear()
+ boundary_tool = false
  decor_brush = {}
  selected_decor_index = -1
 
@@ -485,6 +495,7 @@ func fit_view() -> void:
 
 
 func cancel_gesture() -> void:
+ _boundary_dragging = false
  _teleporter_index = -1
  _teleporter_preview = {}
  _bank_dragging = false
@@ -745,6 +756,7 @@ func _draw() -> void:
  _draw_connectors()
  _draw_composite_preview()
  _draw_smoothing_corners()
+ if boundary_tool: _draw_boundary_handles()
  if _box_selecting:
   var box := Rect2(_box_start, _box_end - _box_start).abs()
   draw_rect(box, Color(SELECTION_COLOR, 0.12))
@@ -887,7 +899,9 @@ func _draw_markers() -> void:
     _draw_marker(kind, value, false, true)
    _draw_marker(kind, _marker_drag_value, true, true, valid_marker_value(kind, _marker_drag_value))
   else:
-   _draw_marker(kind, value, selected_marker == kind, false)
+   if _group_dragging and selected_markers.has(kind):
+    value = float(value) + _group_offset.y if kind == "activation" else Vector2(value) + _group_offset
+   _draw_marker(kind, value, selected_marker == kind or selected_markers.has(kind), false)
  if _hovering and not marker_tool.is_empty():
   var value: Variant = _marker_position_value(marker_tool, screen_to_local_pixels(_cursor_position), _alt_held)
   _draw_marker(marker_tool, value, false, true, _inside_grid(_cursor_position) and valid_marker_value(marker_tool, value))
@@ -1166,6 +1180,9 @@ func _input(event: InputEvent) -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
+ if document != null and boundary_tool and not preview_active and _boundary_input(event):
+  accept_event()
+  return
  if _teleporter_input(event):
   accept_event()
   return
@@ -1220,10 +1237,10 @@ func _gui_input(event: InputEvent) -> void:
  elif event is InputEventKey and event.pressed and not event.ctrl_pressed and not event.meta_pressed and event.keycode in [KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN]:
   # Consume arrows before Control's built-in focus navigation. The owner still
   # applies the edit through the same move signal as pointer dragging.
-  if not event.echo and selection_count() > 1:
+  if not event.echo and (selection_count() > 1 or not selected_markers.is_empty()):
    cancel_gesture()
    var direction: Vector2 = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP, KEY_DOWN: Vector2.DOWN}[event.keycode]
-   group_move_requested.emit(clamp_group_offset(direction * (1.0 if event.alt_pressed else _local_cell_size() * terrain_snap_step)))
+   group_move_requested.emit(clamp_group_offset(direction * (_local_cell_size() * terrain_snap_step if event.shift_pressed and not event.alt_pressed else 1.0)))
   elif not event.echo and selected_decor_index >= 0:
    cancel_gesture()
    var direction: Vector2 = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP, KEY_DOWN: Vector2.DOWN}[event.keycode]
@@ -1297,7 +1314,7 @@ func _gui_input(event: InputEvent) -> void:
     elif _box_selecting:
      _box_end = event.position
     elif _group_dragging:
-     _update_group_drag(event.position, event.alt_pressed)
+     _update_group_drag(event.position, not event.shift_pressed or event.alt_pressed)
     elif _decor_drag_index >= 0:
      _update_decor_drag(event.position, event.alt_pressed)
     elif not _ring_mode.is_empty():
@@ -1327,7 +1344,7 @@ func _gui_input(event: InputEvent) -> void:
   elif _box_selecting:
    _box_end = event.position
   elif _group_dragging:
-   _update_group_drag(event.position, event.alt_pressed)
+   _update_group_drag(event.position, not event.shift_pressed or event.alt_pressed)
   elif _decor_drag_index >= 0:
    _update_decor_drag(event.position, event.alt_pressed)
   elif not _ring_mode.is_empty():
@@ -1480,6 +1497,14 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
   if cycle_overlaps and not click_target.is_empty():
    target = click_target
    click_target = {}
+  if target.get("kind") == "marker":
+   var selection := object_selection()
+   var markers: Array = selection.get("markers", [])
+   if markers.has(target.marker): markers.erase(target.marker)
+   else: markers.append(target.marker)
+   selection["markers"] = markers
+   set_object_selection(selection)
+   return
   if target.get("kind") in ["terrain", "gameplay", "decor", "ring"]:
    var selection := object_selection()
    var indices: Array = selection[target.kind]
@@ -1487,7 +1512,7 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
    else: indices.append(target.index)
    set_object_selection(selection)
    return
- if selection_count() > 1 and object_selection().get(target.get("kind", ""), []).has(target.get("index", -1)):
+ if (selection_count() > 1 or not selected_markers.is_empty()) and (object_selection().get(target.get("kind", ""), []).has(target.get("index", -1)) or (target.get("kind") == "marker" and selected_markers.has(target.get("marker", "")))):
   cancel_gesture()
   _group_dragging = true
   _group_start = pointer
@@ -1536,12 +1561,14 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
 
 
 func object_selection() -> Dictionary:
- return {"terrain": selected_indices.duplicate(), "gameplay": selected_gameplay_indices.duplicate(),
+ var selection := {"terrain": selected_indices.duplicate(), "gameplay": selected_gameplay_indices.duplicate(),
   "decor": selected_decor_indices.duplicate(), "ring": selected_ring_indices.duplicate()}
+ if not selected_markers.is_empty(): selection["markers"] = selected_markers.duplicate()
+ return selection
 
 
 func selection_count() -> int:
- return selected_indices.size() + selected_gameplay_indices.size() + selected_decor_indices.size() + selected_ring_indices.size()
+ return selected_indices.size() + selected_gameplay_indices.size() + selected_decor_indices.size() + selected_ring_indices.size() + selected_markers.size()
 
 
 func set_object_selection(selection: Dictionary) -> void:
@@ -1566,6 +1593,8 @@ func set_object_selection(selection: Dictionary) -> void:
  selected_decor_indices = decor
  selected_ring_index = rings.back() if not rings.is_empty() else -1
  selected_ring_indices = rings
+ for kind: String in selection.get("markers", []):
+  if show_gameplay and kind in ["spawn", "goal", "activation"] and marker_value(kind) != null and not selected_markers.has(kind): selected_markers.append(kind)
  _emit_selection_changed()
  queue_redraw()
 
@@ -1591,6 +1620,18 @@ func _finish_box_selection() -> void:
    if _box_hits_points(box, points, Shapes.definition_for_placement(placement).get("closed", false)):
     if not selection.terrain.has(index): selection.terrain.append(index)
   if show_gameplay:
+   var markers: Array = selection.get("markers", [])
+   for kind: String in ["spawn", "goal", "activation"]:
+    var value: Variant = marker_value(kind)
+    if value == null: continue
+    var hit := false
+    if kind == "activation":
+     var y := local_pixels_to_screen(Vector2(0, float(value))).y
+     hit = y >= box.position.y and y <= box.end.y and box.end.x >= grid_to_screen(Vector2.ZERO).x and box.position.x <= grid_to_screen(Vector2(_grid_size())).x
+    else:
+     hit = box.has_point(local_pixels_to_screen(value))
+    if hit and not markers.has(kind): markers.append(kind)
+   if not markers.is_empty(): selection["markers"] = markers
    for index in _gameplay_objects().size():
     var placement: Dictionary = _gameplay_objects()[index]
     var points := PackedVector2Array()
@@ -1609,7 +1650,7 @@ func _finish_box_selection() -> void:
     if _box_hits_circle(box, local_pixels_to_screen(slot.position), _decor_radius(slot)):
      if not selection.decor.has(index): selection.decor.append(index)
  set_object_selection(selection)
- _set_status("%d objects selected. Drag the selection to move; Ctrl-click toggles; Delete removes; Ctrl+Z undoes." % selection_count())
+ _set_status("%d items selected. Drag freely; Shift snaps; Ctrl-click toggles; R rotates; [ / ] scales; Ctrl+Z undoes." % selection_count())
 
 
 func _box_hits_circle(box: Rect2, center: Vector2, radius: float) -> bool:
@@ -1637,6 +1678,15 @@ func clamp_group_offset(offset: Vector2) -> Vector2:
   var anchor := Shapes.placement_position(placement)
   minimum = minimum.max(-anchor * _local_cell_size())
   maximum = maximum.min((Vector2(_grid_size()) - Shapes.scaled_size(placement) - anchor) * _local_cell_size())
+ for kind: String in selected_markers:
+  var value: Variant = marker_value(kind)
+  var limit := Vector2(_grid_size()) * _local_cell_size() - Vector2.ONE * 0.001
+  if kind == "activation":
+   minimum.y = maxf(minimum.y, -float(value))
+   maximum.y = minf(maximum.y, limit.y - float(value))
+  else:
+   minimum = minimum.max(-Vector2(value))
+   maximum = maximum.min(limit - Vector2(value))
  return offset.clamp(minimum, maximum)
 
 
@@ -1646,8 +1696,7 @@ func _update_group_drag(pointer: Vector2, free_move: bool, force: bool = false) 
  if pointer.distance_to(_group_start) < 3.0 and _group_offset == Vector2.ZERO: return
  _pending_cycle_target = {}
  var offset := screen_to_local_pixels(pointer) - screen_to_local_pixels(_group_start)
- var decor_only := selected_decor_indices.size() == selection_count()
- if not free_move and not (decor_only and not decor_snap):
+ if not free_move:
   offset = offset.snapped(Vector2.ONE * _local_cell_size() * terrain_snap_step)
  _group_offset = clamp_group_offset(offset)
 
@@ -2180,7 +2229,8 @@ func _patrol_input(event: InputEvent) -> bool:
    return true
   if event is InputEventMouseMotion or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed):
    if event is InputEventMouseMotion or event.position.distance_squared_to(_handle_last_pointer) > POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
-    var x := legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed).x - float(_patrol_preview.position.x)
+    var delta := legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed) - Vector2(_patrol_preview.position)
+    var x := delta.rotated(-deg_to_rad(float(_patrol_preview.rotation_degrees))).x
     if _patrol_index < 0:
      _patrol_preview.properties.patrol_left = clampf(x, -2000, 0)
      _patrol_preview.properties.patrol_right = clampf(x, 0, 2000)
@@ -2215,8 +2265,9 @@ func _patrol_input(event: InputEvent) -> bool:
   if selected.type == "buzz_bomber":
    var props := Objects.properties(selected)
    var anchor := local_pixels_to_screen(selected.position)
-   var left := local_pixels_to_screen(Vector2(selected.position) + Vector2(props.patrol_left, 0))
-   var right := local_pixels_to_screen(Vector2(selected.position) + Vector2(props.patrol_right, 0))
+   var axis := Vector2.RIGHT.rotated(deg_to_rad(float(selected.rotation_degrees)))
+   var left := local_pixels_to_screen(Vector2(selected.position) + axis * float(props.patrol_left))
+   var right := local_pixels_to_screen(Vector2(selected.position) + axis * float(props.patrol_right))
    for side: String in ["left", "right"]:
     var endpoint := left if side == "left" else right
     if endpoint.distance_to(event.position) <= 10 and (event.shift_pressed or endpoint.distance_to(anchor) > 12):
@@ -2224,7 +2275,7 @@ func _patrol_input(event: InputEvent) -> bool:
      edit_side = side
    if event.shift_pressed and Geometry2D.get_closest_point_to_segment(event.position, left, right).distance_to(event.position) <= 12:
     edit_index = selected_gameplay_index
-    edit_side = "auto" if event.position.distance_to(anchor) <= 12 else ("left" if event.position.x < anchor.x else "right")
+    edit_side = "auto" if event.position.distance_to(anchor) <= 12 else ("left" if (event.position - anchor).dot(axis) < 0.0 else "right")
  # Editing an existing Buzz takes priority over stamping another one, including
  # while the Buzz brush remains active after ordinary placement.
  if edit_index < 0 and event.shift_pressed:
@@ -2245,7 +2296,7 @@ func _patrol_input(event: InputEvent) -> bool:
  _patrol_preview.properties.patrol_right = 0.0
  _patrol_dragging = true
  grab_focus()
- _set_status("Buzz Bomber patrol: drag horizontally. Alt frees snapping; Esc cancels. Zero length is stationary.")
+ _set_status("Buzz Bomber patrol: drag along its rotated axis. Alt frees snapping; Esc cancels. Zero length is stationary.")
  queue_redraw()
  return true
 
@@ -2262,6 +2313,7 @@ func _begin_patrol_edit(index: int, side: String) -> void:
  queue_redraw()
 
 func _draw_launch_range(item: Dictionary) -> void:
+ if not show_launch_previews: return
  var is_flipper: bool = item.type in ["left_flipper", "right_flipper"]
  var profile: Resource = PhysicsTuning.FLOATY if is_equal_approx(trajectory_gravity_scale, PhysicsTuning.FLOATY.gravity_scale) else PhysicsTuning.BALANCED
  var stats := PhysicsTuning.resolve(profile, {}, [])
@@ -2318,6 +2370,68 @@ func _draw_launch_range(item: Dictionary) -> void:
  draw_string(get_theme_default_font(), Vector2(16, size.y - 51), title, HORIZONTAL_ALIGNMENT_LEFT, size.x - 32, 12, Color("dcebf2"))
  draw_string(get_theme_default_font(), Vector2(16, size.y - 34), detail, HORIZONTAL_ALIGNMENT_LEFT, size.x - 32, 11, Color("b3cadb"))
  draw_string(get_theme_default_font(), Vector2(16, size.y - 17), "Example paths · free flight after contact · no later obstacles or steering", HORIZONTAL_ALIGNMENT_LEFT, size.x - 32, 11, Color("9cb3c6"))
+
+func select_all_content() -> void:
+ show_gameplay = true
+ show_decor = true
+ var selection := {"terrain": range(_placements().size()), "gameplay": range(_gameplay_objects().size()),
+  "decor": range(document.decor_slots.size()), "ring": range(document.ring_trails.size()), "markers": []}
+ for kind: String in ["spawn", "goal", "activation"]:
+  if marker_value(kind) != null: selection.markers.append(kind)
+ set_object_selection(selection)
+ grab_focus()
+ _set_status("All content selected, including hidden layers and lifecycle markers. Drag freely; Shift snaps. Entry/Exit remain attached to the grid.")
+
+func frame_selection() -> void:
+ if selection_count() == 0:
+  fit_view()
+  return
+ var bounds := SelectionTransform.bounds(document, object_selection()).grow(_local_cell_size())
+ var available := (size - Vector2.ONE * GRID_MARGIN * 2.0).max(Vector2.ONE)
+ _cell_pixels = clampf(minf(available.x / bounds.size.x, available.y / bounds.size.y) * _local_cell_size(), 4.0, MAX_CELL_PIXELS)
+ _view_origin = size * 0.5 - bounds.get_center() * _cell_pixels / _local_cell_size()
+ _view_adjusted = true
+ queue_redraw()
+
+func _draw_boundary_handles() -> void:
+ var dimensions := _boundary_preview if _boundary_dragging else _grid_size()
+ var bounds := Rect2(grid_to_screen(Vector2.ZERO), Vector2(dimensions) * _cell_pixels)
+ draw_rect(bounds, Color("ffcc70"), false, 2.5)
+ for point: Vector2 in [bounds.end, Vector2(bounds.end.x, bounds.get_center().y), Vector2(bounds.get_center().x, bounds.end.y)]:
+  draw_rect(Rect2(point - Vector2.ONE * 6, Vector2.ONE * 12), Color("ffcc70"))
+ draw_string(get_theme_default_font(), Vector2(12, 24), "BOUNDARY · %d × %d cells · drag right/bottom handles · arrows resize · Esc finishes" % [dimensions.x, dimensions.y], HORIZONTAL_ALIGNMENT_LEFT, size.x - 24, 12, Color("ffcc70"))
+
+func _boundary_input(event: InputEvent) -> bool:
+ if event is InputEventKey and event.pressed and event.keycode in [KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN]:
+  if not event.echo:
+   var direction: Vector2i = {KEY_LEFT: Vector2i.LEFT, KEY_RIGHT: Vector2i.RIGHT, KEY_UP: Vector2i.UP, KEY_DOWN: Vector2i.DOWN}[event.keycode]
+   grid_resize_requested.emit((_grid_size() + direction * (5 if event.shift_pressed else 1)).max(Vector2i.ONE))
+  return true
+ if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+  grab_focus()
+  if event.pressed:
+   var bounds := Rect2(grid_to_screen(Vector2.ZERO), Vector2(_grid_size()) * _cell_pixels)
+   var right := Vector2(bounds.end.x, bounds.get_center().y)
+   var bottom := Vector2(bounds.get_center().x, bounds.end.y)
+   _boundary_axis = Vector2i.RIGHT if event.position.distance_to(right) <= 14 else (Vector2i.DOWN if event.position.distance_to(bottom) <= 14 else Vector2i.ONE)
+   _boundary_dragging = true
+  if _boundary_dragging:
+   _update_boundary_preview(event.position)
+   if not event.pressed:
+    var dimensions := _boundary_preview
+    _boundary_dragging = false
+    grid_resize_requested.emit(dimensions)
+   queue_redraw()
+  return true
+ if event is InputEventMouseMotion and _boundary_dragging:
+  _update_boundary_preview(event.position)
+  queue_redraw()
+  return true
+ return false
+
+func _update_boundary_preview(pointer: Vector2) -> void:
+ var at := Vector2i(screen_to_grid(pointer).round()).max(Vector2i.ONE)
+ _boundary_preview = Vector2i(at.x if _boundary_axis.x else _grid_size().x, at.y if _boundary_axis.y else _grid_size().y)
 
 func _launch_legend_style() -> StyleBoxFlat:
  var style := StyleBoxFlat.new()

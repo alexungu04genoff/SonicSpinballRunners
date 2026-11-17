@@ -4,6 +4,8 @@ const TYPES := ["small", "medium", "large", "landmark"]
 const HINTS := ["surface", "edge", "either"]
 const RADII := [0.10, 0.17, 0.25, 0.36]
 const COLORS := [Color("f4db80"), Color("9cdeb0"), Color("d6a8ff"), Color("ffab8c")]
+const MIN_SCALE := 0.125
+const MAX_SCALE := 8.0
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 
 static func new_id() -> String:
@@ -24,7 +26,7 @@ static func validation_error(slot: Variant) -> String:
  if slot.get("variant_mode", "auto") == "fixed" or slot.has("variant_index"):
   if typeof(slot.get("variant_index")) != TYPE_INT or slot.variant_index < 0: return "variant_index must be a nonnegative integer."
  var size: Variant = slot.get("scale", 1.0)
- if typeof(size) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(size) or size < 0.85 or size > 1.15: return "scale must be between 0.85 and 1.15."
+ if typeof(size) not in [TYPE_INT, TYPE_FLOAT] or not is_finite(size) or size < MIN_SCALE or size > MAX_SCALE: return "scale must be between 0.125 and 8.0."
  if slot.has("placement_source") and (typeof(slot.placement_source) != TYPE_STRING or slot.placement_source != "scatter"): return "placement_source must be scatter or omitted for manual decor."
  for key: Variant in slot:
   if key not in ["slot_id", "slot_type", "placement_hint", "position", "rotation_degrees", "variant_mode", "variant_index", "scale", "placement_source"]:

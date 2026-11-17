@@ -119,6 +119,7 @@ static func update(entry: Dictionary, elapsed: float, table: TablePresentation) 
  var normal := Vector3(0, sin(PI / 3), cos(PI / 3))
  if is_instance_valid(table.camera): normal = table.camera.global_basis.z
  entry.pose.rotation.x = -atan2(normal.y, normal.z)
+ entry.pose.rotation.z = -deg_to_rad(float(item.get("rotation_degrees", 0.0)))
  var facing := PI + deg_to_rad(15) if item.direction < 0.0 else deg_to_rad(-15)
  if not entry.has("last_turn_time"):
   entry.body.rotation.y = facing

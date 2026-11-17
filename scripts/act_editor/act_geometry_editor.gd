@@ -17,6 +17,8 @@ const EXAMPLE_PATH := "res://data/acts/curve_garden.tres"
 const DEFAULT_ACT_DIRECTORY := "res://data/acts"
 const HISTORY_LIMIT := 100
 const SelectionClipboard = preload("res://scripts/act_editor/selection_clipboard.gd")
+const SelectionTransform = preload("res://scripts/act_editor/selection_transform.gd")
+const TERRAIN_SIZES := [1.0, 0.5, 0.125, 0.25, 0.75, 1.5, 2.0, 4.0, 8.0]
 var _selection_clipboard: Dictionary = {}
 var _paste_count := 0
 
@@ -88,6 +90,7 @@ var composite_whole_contour: CheckBox
 var _composite_area_limited := false
 var terrain_snap_field: OptionButton
 var terrain_scale_field: OptionButton
+var shortcuts_dialog: AcceptDialog
 var _composite_error := ""
 var _composite_join_indices := PackedInt32Array()
 var _composite_protected_indices := PackedInt32Array()
@@ -206,7 +209,7 @@ func _build_ui() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	tools.add_child(spacer)
-	_button(tools, "fit", "Fit Grid", func(): canvas.fit_view(), "Mouse wheel zooms • middle-drag pans")
+	_button(tools, "fit", "Fit Grid", func(): canvas.fit_view(), "Shift+F fits grid • F frames selection • mouse wheel zooms • middle-drag pans")
 	var body := HBoxContainer.new()
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.add_theme_constant_override("separation", 4)
@@ -501,12 +504,19 @@ func _build_ui() -> void:
 		canvas.grab_focus())
 	connectors.add_child(terrain_snap_field)
 	terrain_scale_field = OptionButton.new()
-	terrain_scale_field.add_item("Size: 1×")
-	terrain_scale_field.add_item("Size: 0.5×")
-	terrain_scale_field.tooltip_text = "Uniform terrain size about the frame's top-left. Applies to the brush or one selected piece."
+	for scale_value: float in TERRAIN_SIZES: terrain_scale_field.add_item("Size: %s×" % scale_value)
+	terrain_scale_field.tooltip_text = "Terrain size: 0.125–8×. New brushes start at 0.5×. [ / ] resize; Shift+[ / ] halve / double."
 	terrain_scale_field.item_selected.connect(func(index):
-		if not _refreshing: _transform_active("half_size" if index == 1 else "full_size"))
+		if not _refreshing and index < TERRAIN_SIZES.size(): set_terrain_scale(TERRAIN_SIZES[index]))
 	connectors.add_child(terrain_scale_field)
+	var quick_tools := HFlowContainer.new()
+	inspector.add_child(quick_tools)
+	_button(quick_tools, "select_all", "Select All", select_all_content, "Ctrl+A • all content, including hidden layers and lifecycle markers")
+	_button(quick_tools, "boundary", "Boundary", toggle_boundary_tool, "B • drag grid handles or use arrows to add / remove rows and columns")
+	_button(quick_tools, "size_down", "Size −", func(): _scale_active(1.0 / 1.1), "[ • divide size by 1.1; Shift+[ halves")
+	_button(quick_tools, "size_up", "Size +", func(): _scale_active(1.1), "] • grow 10%; Shift+] doubles")
+	_button(quick_tools, "guides", "Guides: On", toggle_launch_guides, "P • show / hide launch-strength and direction previews")
+	_button(quick_tools, "shortcuts", "Shortcuts", show_shortcuts, "F1 • editor keyboard and mouse controls")
 	composite_bar = HFlowContainer.new()
 	composite_bar.add_theme_constant_override("separation", 6)
 	inspector.add_child(composite_bar)
@@ -613,6 +623,7 @@ func _build_ui() -> void:
 	canvas.placement_requested.connect(add_placement)
 	canvas.move_requested.connect(move_placement)
 	canvas.group_move_requested.connect(move_selected_objects)
+	canvas.grid_resize_requested.connect(resize_grid)
 	canvas.selection_changed.connect(func(_index): _refresh())
 	canvas.terrain_selection_changed.connect(func(_indices): _refresh())
 	canvas.composite_preview_cancel_requested.connect(cancel_composite_preview)
@@ -709,7 +720,7 @@ func _button(parent: Node, id: String, label: String, action: Callable, hint: St
 		_apply_scoring_fields()
 		_commit_gameplay_angle()
 		_commit_title()
-		if id in ["select", "rotate", "angle_minus", "angle_plus", "flip_h", "flip_v", "delete", "duplicate", "undo", "redo", "fit", "verify"]:
+		if id in ["select", "rotate", "angle_minus", "angle_plus", "flip_h", "flip_v", "delete", "duplicate", "undo", "redo", "fit", "verify", "select_all", "boundary", "size_down", "size_up", "guides"]:
 			canvas.grab_focus()
 		action.call())
 	parent.add_child(button)
@@ -827,8 +838,8 @@ func _build_decor_palette(parent: Node) -> void:
 		coordinates.add_child(field)
 		decor_position_fields.append(field)
 	decor_scale_field = SpinBox.new()
-	decor_scale_field.min_value = 0.85
-	decor_scale_field.max_value = 1.15
+	decor_scale_field.min_value = Decor.MIN_SCALE
+	decor_scale_field.max_value = Decor.MAX_SCALE
 	decor_scale_field.step = 0.01
 	decor_scale_field.value = 1.0
 	decor_scale_field.prefix = "Scale"
@@ -1007,7 +1018,7 @@ func choose_shape(id: String) -> void:
 		return
 	canvas.grab_focus()
 	canvas.set_brush({"shape_id": id, "base_size": definition.size, "anchor": Vector2i.ZERO,
-		"quarter_turns": 0, "flip_h": false, "flip_v": false})
+		"quarter_turns": 0, "flip_h": false, "flip_v": false, "terrain_scale": Shapes.DEFAULT_SCALE})
 	_set_status("Click the grid to place %s. Keep clicking to repeat; Esc returns to selection." % definition.label)
 	_refresh()
 
@@ -1408,7 +1419,6 @@ func _active_gameplay() -> Dictionary:
 
 func set_gameplay_angle(value: float) -> void:
 	var placement := _active_gameplay()
-	if placement.get("type") == "buzz_bomber": return # Horizontal patrol and silhouette in v1.
 	if placement.is_empty() or not is_finite(value) or placement.rotation_degrees == value:
 		return
 	canvas.cancel_gesture()
@@ -1431,8 +1441,15 @@ func _commit_gameplay_angle() -> void:
 		return
 	if not _active_decor().is_empty(): _set_decor_property("rotation_degrees", text_value.to_float())
 	elif not _active_gameplay().is_empty(): set_gameplay_angle(text_value.to_float())
+	elif canvas.selected_ring_index >= 0: transform_selection(1.0, text_value.to_float() - _ring_angle())
 	else: set_terrain_angle(text_value.to_float())
 	_refresh()
+
+func _ring_angle() -> float:
+	if canvas.selected_ring_index < 0: return canvas.ring_rotation
+	var trail: Dictionary = document.ring_trails[canvas.selected_ring_index]
+	if trail.get("kind") == "ellipse": return float(trail.rotation_degrees)
+	return rad_to_deg((Vector2(trail.end) - Vector2(trail.start)).angle())
 
 func _active_terrain() -> Dictionary:
 	if not canvas.brush.is_empty(): return canvas.brush
@@ -1442,7 +1459,12 @@ func _active_terrain() -> Dictionary:
 
 func _nudge_active_angle(degrees: float) -> void:
 	if composite_preview_active: return
-	if not _active_decor().is_empty():
+	if canvas.selection_count() > 1 or canvas.selected_ring_index >= 0 or not canvas.selected_markers.is_empty():
+		transform_selection(1.0, degrees)
+	elif canvas.ring_tool:
+		canvas.ring_rotation += degrees
+		_refresh()
+	elif not _active_decor().is_empty():
 		_set_decor_property("rotation_degrees", float(_active_decor().rotation_degrees) + degrees)
 	elif not _active_gameplay().is_empty(): rotate_gameplay(degrees)
 	elif not _active_terrain().is_empty(): set_terrain_angle(Shapes.angle_degrees(_active_terrain()) + degrees)
@@ -1485,7 +1507,21 @@ func _change_handedness(index: int) -> void:
 	_refresh()
 
 func duplicate_selected() -> void:
-	if composite_preview_active or canvas.selection_count() > 1:
+	if composite_preview_active:
+		return
+	if canvas.selection_count() > 1:
+		var copied := SelectionClipboard.capture(document, canvas.object_selection())
+		if copied.is_empty():
+			_set_status("Lifecycle markers are singletons; select objects to duplicate.")
+			return
+		var previous := _selection_clipboard
+		var previous_count := _paste_count
+		_selection_clipboard = copied
+		_paste_count = 0
+		paste_selected()
+		_selection_clipboard = previous
+		_paste_count = previous_count
+		_refresh()
 		return
 	if canvas.selected_decor_index >= 0:
 		var slot: Dictionary = document.decor_slots[canvas.selected_decor_index].duplicate(true)
@@ -1551,10 +1587,12 @@ func paste_selected() -> void:
 	canvas.show_decor = true
 	canvas.set_object_selection(result.selection)
 	_refresh()
-	_set_status("Pasted %d items · drag to move · Alt frees snapping · Ctrl+Z undoes the whole paste" % _selection_clipboard.count)
+	_set_status("Pasted %d items · drag groups freely · Shift snaps groups · Ctrl+Z undoes the whole paste" % _selection_clipboard.count)
 
 func rotate_active() -> void:
-	if not _active_decor().is_empty():
+	if canvas.selection_count() > 1 or canvas.selected_ring_index >= 0 or canvas.ring_tool or not canvas.selected_markers.is_empty():
+		_nudge_active_angle(15.0)
+	elif not _active_decor().is_empty():
 		_set_decor_property("rotation_degrees", float(_active_decor().rotation_degrees) + 15.0)
 	elif not _active_gameplay().is_empty():
 		rotate_gameplay(15.0)
@@ -1614,7 +1652,7 @@ func _transform_active(operation: String) -> void:
 func delete_selected() -> void:
 	if composite_preview_active:
 		return
-	if canvas.selection_count() > 1:
+	if canvas.selection_count() > 1 or not canvas.selected_markers.is_empty():
 		canvas.cancel_gesture()
 		_record_edit()
 		var ids: Array = []
@@ -1623,11 +1661,15 @@ func delete_selected() -> void:
 		Banks.remove_objects(document.switch_banks, ids)
 		var selection: Dictionary = canvas.object_selection()
 		var collections := {"terrain": document.placements, "gameplay": document.gameplay_objects, "decor": document.decor_slots, "ring": document.ring_trails}
-		for kind: String in selection:
+		for kind: String in collections:
 			var group_indices: Array = selection[kind]
 			group_indices.sort()
 			group_indices.reverse()
 			for index: int in group_indices: collections[kind].remove_at(index)
+		for kind: String in canvas.selected_markers:
+			if kind == "spawn": document.spawn_position = null
+			elif kind == "goal": document.goal_position = null
+			elif kind == "activation": document.activation_y = null
 		canvas.select_piece(-1)
 		_refresh()
 		return
@@ -1681,6 +1723,7 @@ func move_selected_objects(offset: Vector2) -> void:
 	offset = canvas.clamp_group_offset(offset)
 	if offset.is_zero_approx(): return
 	_record_edit()
+	var original_goal: Vector2 = document.goal_center()
 	for index: int in canvas.selected_indices:
 		var placement: Dictionary = document.placements[index]
 		Shapes.set_placement_position(placement, Shapes.placement_position(placement) + offset / float(document.cell_size))
@@ -1692,6 +1735,10 @@ func move_selected_objects(offset: Vector2) -> void:
 	for index: int in canvas.selected_ring_indices:
 		document.ring_trails[index].start += offset
 		document.ring_trails[index].end += offset
+	for kind: String in canvas.selected_markers:
+		if kind == "spawn": document.spawn_position += offset
+		elif kind == "goal": document.goal_position = original_goal + offset
+		elif kind == "activation": document.activation_y += offset.y
 	_refresh()
 
 func _snapshot() -> Dictionary:
@@ -1949,6 +1996,10 @@ func _resize_grid() -> void:
 	grid_width_field.apply()
 	grid_height_field.apply()
 	var dimensions := Vector2i(int(grid_width_field.value), int(grid_height_field.value))
+	resize_grid(dimensions, true)
+
+func resize_grid(dimensions: Vector2i, fit: bool = false) -> void:
+	if document == null or composite_preview_active: return
 	if dimensions == document.grid_size:
 		return
 	var candidate: Resource = document.copy_document()
@@ -1962,7 +2013,7 @@ func _resize_grid() -> void:
 	_record_edit()
 	document.grid_size = dimensions
 	_refresh()
-	canvas.fit_view()
+	if fit: canvas.fit_view()
 	_set_status("Act resized to %d × %d cells. Existing content remains at its original coordinates." % [dimensions.x, dimensions.y])
 
 func _change_cell_size(value: float) -> void:
@@ -2007,9 +2058,11 @@ func _refresh() -> void:
 	_refresh_file_state()
 	buttons.undo.disabled = undo_stack.is_empty()
 	buttons.redo.disabled = redo_stack.is_empty()
-	buttons.delete.disabled = canvas.selected_decor_index < 0 and canvas.selected_index < 0 and canvas.selected_gameplay_index < 0 and canvas.selected_ring_index < 0 and canvas.selected_connector.is_empty() and canvas.selected_marker.is_empty()
+	buttons.delete.disabled = canvas.selection_count() == 0 and canvas.selected_connector.is_empty() and canvas.selected_marker.is_empty()
 	buttons.duplicate.disabled = canvas.selected_decor_index < 0 and canvas.selected_gameplay_index < 0 and canvas.selected_ring_index < 0 and _terrain_selection().size() != 1
-	if canvas.selection_count() > 1: buttons.duplicate.disabled = true
+	if canvas.selection_count() > 1: buttons.duplicate.disabled = false
+	buttons.guides.text = "Guides: On" if canvas.show_launch_previews else "Guides: Off"
+	buttons.boundary.text = "Boundary: On" if canvas.boundary_tool else "Boundary"
 	var ring_spacing: float = document.ring_trails[canvas.selected_ring_index].spacing / float(document.cell_size) if canvas.selected_ring_index >= 0 else canvas.ring_spacing_cells
 	ring_spacing_field.set_value_no_signal(ring_spacing)
 	var selected_pattern: Dictionary = document.ring_trails[canvas.selected_ring_index] if canvas.selected_ring_index >= 0 else {}
@@ -2042,20 +2095,25 @@ func _refresh() -> void:
 	buttons.rotate.disabled = (active.is_empty() and angled.is_empty()) or _terrain_selection().size() > 1
 	buttons.rotate.text = "Rotate +15°" if not angled.is_empty() else "Rotate +90°"
 	angle_field.editable = not angled.is_empty() or not _active_terrain().is_empty()
-	if gameplay.get("type", "") == "buzz_bomber":
-		angle_field.editable = false
-		buttons.rotate.disabled = true
 	buttons.angle_minus.disabled = not angle_field.editable
 	buttons.angle_plus.disabled = not angle_field.editable
+	if canvas.selection_count() > 1 or canvas.selected_ring_index >= 0 or canvas.ring_tool:
+		buttons.rotate.disabled = false
+		buttons.rotate.text = "Rotate +15°"
+		buttons.angle_minus.disabled = false
+		buttons.angle_plus.disabled = false
 	_angle_display_text = var_to_str(angled.rotation_degrees) if not angled.is_empty() else (var_to_str(Shapes.angle_degrees(active)) if angle_field.editable else "")
+	if canvas.selection_count() == 1 and canvas.selected_ring_index >= 0:
+		angle_field.editable = true
+		_angle_display_text = var_to_str(_ring_angle())
 	angle_field.text = _angle_display_text
 	angle_field.placeholder_text = "Select a shape"
 	handedness_field.disabled = gameplay.is_empty() or gameplay.type not in ["left_flipper", "right_flipper"]
 	handedness_field.visible = not handedness_field.disabled
 	handedness_field.select(1 if not gameplay.is_empty() and gameplay.type == "right_flipper" else 0)
 	if canvas.selection_count() > 1:
-		mode_label.text = "%d OBJECTS SELECTED" % canvas.selection_count()
-		detail_label.text = "Drag selection to move · Arrows nudge · Ctrl-click toggles · Delete removes · Ctrl+Z undoes"
+		mode_label.text = "%d ITEMS SELECTED" % canvas.selection_count()
+		detail_label.text = "Drag freely · Shift snaps · Arrows: 1 px / Shift: grid · R rotates · [ / ] scales · Ctrl+D duplicates"
 	elif not decor.is_empty():
 		mode_label.text = ("PLACE" if not canvas.decor_brush.is_empty() else "SELECTED") + " · " + decor.slot_type.capitalize() + " decor"
 		var variant := "Variant %d" % (int(decor.get("variant_index", 0)) + 1) if decor.get("variant_mode", "auto") == "fixed" else "Auto variant"
@@ -2126,7 +2184,13 @@ func _refresh_composite_controls() -> void:
 	var terrain: Dictionary = canvas.brush if not canvas.brush.is_empty() else (document.placements[canvas.selected_index] if canvas.selected_index >= 0 else {})
 	terrain_snap_field.disabled = composite_preview_active
 	terrain_scale_field.disabled = composite_preview_active or terrain.is_empty() or canvas.selection_count() > 1
-	terrain_scale_field.select(1 if not terrain.is_empty() and float(terrain.get("terrain_scale", 1.0)) == 0.5 else 0)
+	var scale_value := float(terrain.get("terrain_scale", Shapes.DEFAULT_SCALE))
+	var preset := TERRAIN_SIZES.find(scale_value)
+	if terrain_scale_field.item_count > TERRAIN_SIZES.size(): terrain_scale_field.remove_item(TERRAIN_SIZES.size())
+	if preset < 0:
+		terrain_scale_field.add_item("Size: %.3f×" % scale_value)
+		preset = TERRAIN_SIZES.size()
+	terrain_scale_field.select(preset)
 	buttons.composite_clear_pins.visible = composite_preview_active and _composite_operation != "merge"
 	composite_strength.editable = not composite_preview_active or _composite_operation != "merge"
 	composite_preserve_corners.disabled = composite_preview_active and _composite_operation == "merge"
@@ -2187,7 +2251,7 @@ func _show_error(message: String) -> void:
 	_set_status(message.get_slice("\n", 0))
 
 func _modal_open() -> bool:
-	return (verify_dialog != null and verify_dialog.visible) or save_dialog.visible or load_dialog.visible or unsaved_dialog.visible or error_dialog.visible
+	return (shortcuts_dialog != null and shortcuts_dialog.visible) or (verify_dialog != null and verify_dialog.visible) or save_dialog.visible or load_dialog.visible or unsaved_dialog.visible or error_dialog.visible
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_F11:
@@ -2206,6 +2270,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	var command: bool = event.ctrl_pressed or event.meta_pressed
 	if command:
 		match event.keycode:
+			KEY_A:
+				if typing: return
+				select_all_content()
 			KEY_S:
 				if event.shift_pressed: _open_save_dialog()
 				else: _save_current()
@@ -2233,10 +2300,17 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	else:
 		match event.keycode:
 			KEY_ESCAPE: _select_mode()
+			KEY_B: toggle_boundary_tool()
+			KEY_F:
+				if event.shift_pressed: canvas.fit_view()
+				else: canvas.frame_selection()
+			KEY_P: toggle_launch_guides()
+			KEY_F1: show_shortcuts()
+			KEY_BRACKETLEFT, KEY_BRACELEFT: _scale_active(0.5 if event.shift_pressed else 1.0 / 1.1)
+			KEY_BRACKETRIGHT, KEY_BRACERIGHT: _scale_active(2.0 if event.shift_pressed else 1.1)
 			KEY_R:
 				if event.alt_pressed: _nudge_active_angle(-1.0 if event.shift_pressed else 1.0)
-				elif event.shift_pressed and not _active_decor().is_empty(): _set_decor_property("rotation_degrees", float(_active_decor().rotation_degrees) - 15.0)
-				elif event.shift_pressed and not _active_gameplay().is_empty(): rotate_gameplay(-15.0)
+				elif event.shift_pressed: _nudge_active_angle(-90.0 if not _active_terrain().is_empty() else -15.0)
 				else: rotate_active()
 			KEY_H: flip_active(true)
 			KEY_V: flip_active(false)
@@ -2326,7 +2400,7 @@ func _refresh_mechanics_properties() -> void:
 		var guide := OptionButton.new()
 		guide.name = "LaunchGuideMode"
 		guide.add_item("Guide: Drop from spawn")
-		guide.add_item("Guide: Typical catch")
+		guide.add_item("Guide: Launch strength / typical catch")
 		guide.select(0 if canvas.launch_from_spawn else 1)
 		guide.item_selected.connect(func(index: int):
 			canvas.launch_from_spawn = index == 0
@@ -2372,7 +2446,7 @@ func _refresh_mechanics_properties() -> void:
 		_mechanic_choice("Starting direction", "starting_direction", ["left", "right"], properties.starting_direction)
 		detail_label.text = "Shift-drag Buzz Bomber or its patrol line to resize. Alt frees snapping. Zero length is stationary."
 		var patrol_help := Label.new()
-		patrol_help.text = "Shift + wheel: widen / shorten patrol (10 px per end). Shift-drag Buzz or its line, or drag either endpoint."
+		patrol_help.text = "Shift + wheel scales Buzz and its patrol. R rotates both. Shift-drag Buzz or its line, or drag either endpoint."
 		patrol_help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		patrol_help.custom_minimum_size.x = 260
 		mechanics_properties.add_child(patrol_help)
@@ -2700,75 +2774,131 @@ func verify_document() -> void:
 	verify_dialog.popup_centered(Vector2i(720, 360))
 
 func _scale_preview(direction: float) -> void:
-	if composite_preview_active: return
-	if not canvas._rail_draft.is_empty():
-		canvas._rail_draft["properties"] = Objects.resized_properties(canvas._rail_draft, direction)
-		canvas.queue_redraw()
-		return
-	if canvas._bank_dragging or canvas._patrol_dragging or canvas._rail_drag >= 0 or canvas._teleporter_index >= 0 or canvas._group_dragging or canvas._decor_drag_index >= 0 or canvas._gameplay_drag_index >= 0 or canvas._drag_index >= 0 or not canvas._ring_mode.is_empty():
-		_set_status("Finish the current drag before resizing with Shift + wheel.")
-		return
-	if not canvas.gameplay_brush.is_empty():
-		var item: Dictionary = canvas.gameplay_brush
-		item["properties"] = Objects.resized_properties(item, direction)
-		_refresh()
-		_set_status("%s · Shift + wheel changes %s · Alt frees placement" % [Objects.get_definition(item.type).label, Objects.size_label(item.type)])
-		return
-	if not canvas.decor_brush.is_empty():
-		_set_decor_property("scale", clampf(float(canvas.decor_brush.get("scale", 1.0)) + direction * 0.01, 0.85, 1.15))
+	_scale_active(pow(1.1, direction))
+
+func _transform_gesture_active() -> bool:
+	return canvas._boundary_dragging or canvas._bank_dragging or canvas._patrol_dragging or canvas._rail_drag >= 0 or canvas._teleporter_index >= 0 or canvas._group_dragging or canvas._decor_drag_index >= 0 or canvas._gameplay_drag_index >= 0 or canvas._drag_index >= 0 or not canvas._ring_mode.is_empty()
+
+func _scale_active(factor: float) -> void:
+	if composite_preview_active or not is_finite(factor) or factor <= 0.0: return
+	if _transform_gesture_active():
+		_set_status("Finish or cancel the current drag before scaling.")
 		return
 	if not canvas.brush.is_empty():
-		_transform_active("full_size" if direction > 0 else "half_size")
+		set_terrain_scale(float(canvas.brush.get("terrain_scale", 1.0)) * factor)
+		return
+	if not canvas.gameplay_brush.is_empty():
+		var item: Dictionary = canvas._rail_draft if not canvas._rail_draft.is_empty() else canvas.gameplay_brush
+		var candidate := item.duplicate(true)
+		candidate["properties"] = Objects.scaled_properties(item, factor)
+		var errors := Objects.property_errors(candidate)
+		if not errors.is_empty():
+			_set_status("Size unchanged: " + errors[0])
+			return
+		item["properties"] = candidate.properties
+		_refresh()
+		return
+	if not canvas.decor_brush.is_empty():
+		_set_decor_property("scale", clampf(float(canvas.decor_brush.get("scale", 1.0)) * factor, Decor.MIN_SCALE, Decor.MAX_SCALE))
 		return
 	if canvas.marker_tool == "goal" or canvas.selected_marker == "goal":
-		goal_size_field.value = clampf(document.goal_diameter_cells + direction * 0.05, 0.25, 8.0)
+		goal_size_field.value = clampf(document.goal_diameter_cells * factor, 0.25, 8.0)
 		return
 	if not canvas.selected_connector.is_empty():
 		var kind: String = canvas.selected_connector
 		var span: Dictionary = document.get_connector(kind)
-		set_connector(kind, span.start_x, clampi(span.width + int(direction), 1, document.grid_size.x - span.start_x))
+		set_connector(kind, span.start_x, clampi(span.width + (1 if factor > 1.0 else -1), 1, document.grid_size.x - span.start_x))
 		return
 	if canvas.ring_tool:
 		if canvas.ring_kind == "ellipse":
-			canvas.ring_radii = (canvas.ring_radii * pow(1.1, direction)).clamp(Vector2.ONE, Vector2.ONE * 10000.0)
+			canvas.ring_radii = (canvas.ring_radii * factor).clamp(Vector2.ONE, Vector2.ONE * 10000.0)
 			_refresh()
-		else: _change_ring_spacing(clampf(canvas.ring_spacing_cells + direction * 0.05, 0.1, 4.0))
+		else: _change_ring_spacing(clampf(canvas.ring_spacing_cells * factor, 0.1, 4.0))
 		return
-	if canvas.selection_count() == 0:
-		_set_status("Select an object or brush to resize. Spawn and Activation are position markers; connectors use whole cells.")
+	transform_selection(factor, 0.0)
+
+func set_terrain_scale(value: float) -> void:
+	if composite_preview_active or not is_finite(value) or _transform_gesture_active(): return
+	var active := _active_terrain()
+	if active.is_empty(): return
+	value = clampf(value, Shapes.MIN_SCALE, Shapes.MAX_SCALE)
+	if is_equal_approx(float(active.get("terrain_scale", 1.0)), value): return
+	if canvas.brush.is_empty():
+		transform_selection(value / float(active.get("terrain_scale", 1.0)), 0.0)
 		return
+	var piece := active.duplicate(true)
+	piece["terrain_scale"] = value
+	var frame := Shapes.scaled_size(piece)
+	if frame.x > document.grid_size.x or frame.y > document.grid_size.y:
+		_set_status("Size unchanged: the terrain footprint does not fit inside the grid.")
+		_refresh()
+		return
+	Shapes.set_placement_position(piece, _clamp_anchor(piece, Shapes.placement_position(piece)))
+	canvas.set_brush(piece)
+	_refresh()
+
+func transform_selection(factor: float, degrees: float) -> void:
+	if composite_preview_active or canvas.selection_count() == 0 or not is_finite(factor) or factor <= 0.0 or not is_finite(degrees): return
+	if _transform_gesture_active():
+		_set_status("Finish or cancel the current drag before transforming.")
+		return
+	var selection: Dictionary = canvas.object_selection()
+	var pivot := SelectionTransform.bounds(document, selection).get_center()
+	# Single hardware retains its anchor; terrain sizing retains its top-left.
+	# Ring patterns and group transforms use their centers.
+	if canvas.selection_count() == 1:
+		if canvas.selected_gameplay_index >= 0: pivot = document.gameplay_objects[canvas.selected_gameplay_index].position
+		elif canvas.selected_decor_index >= 0: pivot = document.decor_slots[canvas.selected_decor_index].position
+		elif canvas.selected_index >= 0 and is_zero_approx(degrees):
+			pivot = Shapes.placement_position(document.placements[canvas.selected_index]) * float(document.cell_size)
+		elif canvas.selected_ring_index >= 0:
+			var trail: Dictionary = document.ring_trails[canvas.selected_ring_index]
+			pivot = (trail.start + trail.end) * 0.5
 	var candidate: Resource = document.copy_document()
-	for index: int in canvas.selected_gameplay_indices:
-		candidate.gameplay_objects[index]["properties"] = Objects.resized_properties(candidate.gameplay_objects[index], direction)
-	for index: int in canvas.selected_decor_indices:
-		var slot: Dictionary = candidate.decor_slots[index]
-		slot["scale"] = clampf(float(slot.get("scale", 1.0)) + direction * 0.01, 0.85, 1.15)
-		slot.erase("placement_source")
-	for index: int in canvas.selected_ring_indices:
-		var trail: Dictionary = candidate.ring_trails[index]
-		var center: Vector2 = (trail.start + trail.end) * 0.5
-		var extent: Vector2 = (trail.end - trail.start) * 0.5 * pow(1.1, direction)
-		trail.start = center - extent
-		trail.end = center + extent
-		# A one-ring trail has no extent; its wheel control adjusts future spacing.
-		if extent.is_zero_approx(): trail.spacing = maxf(1.0, float(trail.spacing) + direction * 2.5)
-	for index: int in canvas.selected_indices:
-		var piece: Dictionary = candidate.placements[index]
-		piece["terrain_scale"] = 1.0 if direction > 0 else 0.5
+	SelectionTransform.apply(candidate, selection, pivot, factor, degrees)
 	var errors: PackedStringArray = candidate.validation_errors()
 	if not errors.is_empty():
-		_set_status("Size unchanged: " + errors[0])
+		_set_status("Transform unchanged: " + errors[0] + " Enlarge the boundary or adjust the selection.")
+		_refresh()
 		return
-	if candidate.fingerprint() == document.fingerprint():
-		_set_status("Size limit reached. Terrain supports 0.5× / 1×; other objects use their inspector limits.")
-		return
+	if candidate.fingerprint() == document.fingerprint(): return
 	_record_edit()
 	document.placements = candidate.placements
 	document.gameplay_objects = candidate.gameplay_objects
 	document.decor_slots = candidate.decor_slots
 	document.ring_trails = candidate.ring_trails
+	document.spawn_position = candidate.spawn_position
+	document.goal_position = candidate.goal_position
+	document.goal_diameter_cells = candidate.goal_diameter_cells
+	document.activation_y = candidate.activation_y
 	_refresh()
-	_set_status("Resized selection · anchors preserved · Ctrl+Z undoes · Shift + wheel adjusts size")
+	_set_status("Transformed selection as one edit. Ctrl+Z undoes; [ / ] scales; R rotates.")
+
+func select_all_content() -> void:
+	if composite_preview_active: return
+	canvas.select_all_content()
+	_refresh()
+
+func toggle_boundary_tool() -> void:
+	if composite_preview_active: return
+	var enabled: bool = not canvas.boundary_tool
+	_select_mode()
+	canvas.boundary_tool = enabled
+	canvas.grab_focus()
+	_refresh()
+	_set_status("Boundary: drag the right, bottom or corner handle. Arrows change one cell; Shift+Arrows change five. Shrinking never deletes content." if enabled else "Select / Move")
+
+func toggle_launch_guides() -> void:
+	canvas.show_launch_previews = not canvas.show_launch_previews
+	_refresh()
+
+func show_shortcuts() -> void:
+	if shortcuts_dialog == null:
+		shortcuts_dialog = AcceptDialog.new()
+		shortcuts_dialog.title = "Act Editor Shortcuts"
+		shortcuts_dialog.dialog_text = "Ctrl+A  Select all content, including hidden layers, Spawn, Goal and Activation\nDrag a group freely; hold Shift to snap its offset to the grid\nGroup arrows: 1 px; Shift+Arrows: grid step\n\n[ / ] or Shift+Wheel  Shrink / grow by a factor of 1.1\nShift+[ / Shift+]  Half / double size\nR / Shift+R  Rotate clockwise / counterclockwise\nAlt+R / Alt+Shift+R  Rotate by one degree\nAngle field  Exact terrain, hardware or decor angle\n\nB  Edit boundary: drag handles or arrows ±1 cell (Shift: ±5)\nF  Frame selection; Shift+F  Fit grid\nP  Toggle launch previews (strength preview starts enabled)\nCtrl+D  Duplicate selection; Ctrl+C / Ctrl+V  Copy / paste objects\nCtrl+Z / Ctrl+Shift+Z  Undo / redo\nEsc / Right-click  Cancel gesture or return to selection\nAlt  Free single-object placement / movement; Alt-click cycles overlaps\n\nEntry/Exit stay on grid borders. Activation stays horizontal.\nSpawn has no size; Goal rotation is visually symmetric.\nTransforms respect physical dimension limits and never delete clipped content."
+		add_child(shortcuts_dialog)
+	shortcuts_dialog.popup_centered(Vector2i(760, 530))
 
 
 func _bake_current() -> void:

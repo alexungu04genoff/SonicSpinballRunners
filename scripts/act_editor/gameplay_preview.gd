@@ -85,17 +85,18 @@ static func draw_object(target: CanvasItem, placement: Dictionary, anchor: Vecto
 
 static func _draw_enemy(target: CanvasItem, placement: Dictionary, anchor: Vector2, scale_factor: float, selected: bool, ghost: bool, annotations: bool) -> void:
  var props := Objects.properties(placement)
+ var angle := deg_to_rad(float(placement.rotation_degrees))
  var size_value := float(props.scale) * scale_factor * 0.75
  var color := Color("ffe074") if selected else Color("5bafff")
  if ghost: color.a = 0.55
  if annotations:
-  var left := anchor + Vector2(float(props.patrol_left), 0) * scale_factor
-  var right := anchor + Vector2(float(props.patrol_right), 0) * scale_factor
+  var left := anchor + Vector2(float(props.patrol_left), 0).rotated(angle) * scale_factor
+  var right := anchor + Vector2(float(props.patrol_right), 0).rotated(angle) * scale_factor
   target.draw_line(left, right, Color("ffe074"), 2.0, true)
   for endpoint: Vector2 in [left, right]:
    target.draw_rect(Rect2(endpoint - Vector2.ONE * 5, Vector2.ONE * 10), Color("ffe074"), selected)
  var facing := -1.0 if props.starting_direction == "left" else 1.0
- var transform_point := func(point: Vector2) -> Vector2: return anchor + Vector2(point.x * facing, point.y) * size_value
+ var transform_point := func(point: Vector2) -> Vector2: return anchor + Vector2(point.x * facing, point.y).rotated(angle) * size_value
  for tip: Vector2 in [Vector2(-18, -18), Vector2(-21, -10)]:
   var blade := PackedVector2Array()
   for point: Vector2 in [Vector2(-5, -5), tip + Vector2(2, 0), tip, tip + Vector2(-1, 2)]: blade.append(transform_point.call(point))

@@ -55,6 +55,7 @@ func run() -> void:
  await process_frame
  var canvas = editor.canvas
  editor.choose_shape("rectangle_1x1")
+ editor.set_terrain_scale(1.0) # This fixture needs adjacent full-cell pieces for Merge.
  var terrain: Dictionary = canvas.brush.duplicate(true)
  Shapes.set_placement_position(terrain, Vector2(2, 2))
  editor.add_placement(terrain)
@@ -73,7 +74,7 @@ func run() -> void:
  drag_box(Vector2(60, 60), Vector2(275, 250))
  check(canvas.selection_count() == 4 and canvas.selected_indices == [0] and canvas.selected_gameplay_indices == [0] and canvas.selected_decor_indices == [0] and canvas.selected_ring_indices == [0], "Box selects terrain, gameplay, decor and whole ring patterns")
  check(editor.document.fingerprint() == fingerprint and editor.undo_stack.size() == history, "Selection never edits the Act or undo history")
- check(editor.buttons.duplicate.disabled and editor.buttons.rotate.disabled and editor.buttons.merge.disabled and not editor.angle_field.editable, "Mixed selection disables single-object transforms and terrain merging")
+ check(not editor.buttons.duplicate.disabled and not editor.buttons.rotate.disabled and editor.buttons.merge.disabled and not editor.angle_field.editable, "Mixed selection enables group transforms while excluding mixed terrain merges")
  drag_box(Vector2(450, 400), Vector2(550, 500), true)
  check(canvas.selection_count() == 5, "Ctrl-drag adds to the existing selection")
  button_at(Vector2(500, 450), true, true)

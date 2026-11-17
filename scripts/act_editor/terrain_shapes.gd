@@ -4,6 +4,9 @@ extends RefCounted
 ## Logical frames measure cells, not grid intersections or occupied-cell masks.
 const VERSION := 2
 const CURVE_STEPS := 24
+const MIN_SCALE := 0.125
+const MAX_SCALE := 8.0
+const DEFAULT_SCALE := 0.5
 
 static var _catalogue: Array[Dictionary] = []
 

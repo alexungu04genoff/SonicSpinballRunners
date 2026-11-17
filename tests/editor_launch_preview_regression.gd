@@ -80,7 +80,7 @@ func run() -> void:
    await process_frame
    check(scene.canvas.get_global_rect().is_equal_approx(original_rect), "Canvas stays fixed at " + str(dimensions))
   scene._select_mode()
- check(scene.canvas.launch_from_spawn and not scene.canvas.launch_timing_variants, "Default guide uses spawn with timing variants hidden")
+ check(not scene.canvas.launch_from_spawn and scene.canvas.show_launch_previews and not scene.canvas.launch_timing_variants, "Default guide shows launch strength through typical contact, with timing variants hidden")
  check(not scene.buttons.has("example") and not scene.buttons.has("gimmicks") and not scene.buttons.has("quit"), "Requested toolbar buttons removed")
  var rect: Rect2 = scene.canvas.get_global_rect()
  for kind in ["spring", "elevated_rail", "left_flipper", "round_bumper"]:
