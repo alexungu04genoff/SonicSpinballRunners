@@ -71,7 +71,13 @@ func attach(target: SubViewportContainer, viewport: SubViewport) -> void:
   rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
   passes[effect] = {"copy": copy, "rect": rect, "material": material}
  container.resized.connect(_refresh_output)
- set_effects(settings.default_effects)
+ var initial_effects: Array = settings.default_effects
+ # Explicit grounding diagnostics must compare startup with the requested
+ # stack too. These process-local switches never alter player preferences.
+ if "--grounding-lab" in OS.get_cmdline_user_args():
+  if "--grounding-retro=off" in OS.get_cmdline_user_args(): initial_effects = []
+  elif "--grounding-retro=n64" in OS.get_cmdline_user_args(): initial_effects = [Preset.N64]
+ set_effects(initial_effects)
 
 func cycle() -> void:
  set_preset((preset + 1) % NAMES.size())

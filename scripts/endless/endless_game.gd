@@ -58,6 +58,7 @@ var foreground_update_usec := 0
 var _diagnostics_update := 0.0
 var _hud_detail_state: Array = []
 var _ring_visual_owner_ids := PackedInt64Array()
+var _sampled_diagnostic_logging := "--grounding-lab" in OS.get_cmdline_user_args() and not "--grounding-verbose" in OS.get_cmdline_user_args()
 
 func _source_paths() -> Array:
  return Plan.PATHS
@@ -237,7 +238,7 @@ func _process(delta: float) -> void:
    building.step()
    if library.profile_enabled: library._record_cpu("live." + phase_label, operation_started)
    var operation_ms := float(Time.get_ticks_usec() - operation_started) / 1000.0
-   if started and operation_ms > 6.0: print("ENDLESS_SLOW_JOB | step=", operation, " ms=", operation_ms)
+   if started and operation_ms > 6.0 and not _sampled_diagnostic_logging: print("ENDLESS_SLOW_JOB | step=", operation, " ms=", operation_ms)
    if building.ready:
     resident.append(building)
     hub.runtimes.append(building.runtime.mechanics)
@@ -249,7 +250,7 @@ func _process(delta: float) -> void:
     _sync_resident()
     if library.profile_enabled: library._record_cpu("live.register", operation_started)
     operation_ms = float(Time.get_ticks_usec() - operation_started) / 1000.0
-    if started and operation_ms > 6.0: print("ENDLESS_SLOW_JOB | register ms=", operation_ms)
+    if started and operation_ms > 6.0 and not _sampled_diagnostic_logging: print("ENDLESS_SLOW_JOB | register ms=", operation_ms)
   elif _step_background():
    pass
   elif not pending.is_empty():
@@ -278,7 +279,7 @@ func _process(delta: float) -> void:
   if _last_frame_usec > 0:
    var elapsed_ms := float(tick - _last_frame_usec) / 1000.0
    max_frame_ms = maxf(max_frame_ms, elapsed_ms)
-   if elapsed_ms > 100.0:
+   if elapsed_ms > 100.0 and not _sampled_diagnostic_logging:
     print("ENDLESS_SLOW_FRAME | zone=", active.plan.zone + 1, " ms=", elapsed_ms, " build_ms=", last_build_ms, " | theme prefetch=", library.preparing_theme)
   _last_frame_usec = tick
   _frame_sample_count += 1

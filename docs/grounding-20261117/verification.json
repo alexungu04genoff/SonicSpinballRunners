@@ -1,0 +1,1031 @@
+{
+  "starting_head": "6f9f5c59db237002c37dcd482a964136f2bbe023",
+  "measured_base": "a5722d5c1a4396b930069c92e3edd6665695323b",
+  "scope": "Seven themes; no Lava investigation; proxy trials restricted to Rooftop, Sky, Ice and Chemical; production defaults unchanged.",
+  "visual": {
+    "green_hill": {
+      "untouched_reference_mode_0_pixel_identical": true,
+      "integrity": {
+        "lights": true,
+        "materials": true,
+        "physics": true
+      },
+      "restoration": [
+        {
+          "after": "restored_production.png",
+          "before": "sweep_production_0.png",
+          "exact_pixels": false,
+          "exact_settings": true,
+          "exact_state": true,
+          "retro": "production"
+        },
+        {
+          "after": "restored_off.png",
+          "before": "sweep_off_0.png",
+          "exact_pixels": false,
+          "exact_settings": true,
+          "exact_state": true,
+          "retro": "off"
+        }
+      ],
+      "failures": []
+    },
+    "chemical_plant": {
+      "untouched_reference_mode_0_pixel_identical": true,
+      "integrity": {
+        "lights": true,
+        "materials": true,
+        "physics": true
+      },
+      "restoration": [
+        {
+          "after": "restored_production.png",
+          "before": "sweep_production_0.png",
+          "exact_pixels": true,
+          "exact_settings": true,
+          "exact_state": true,
+          "retro": "production"
+        },
+        {
+          "after": "restored_off.png",
+          "before": "sweep_off_0.png",
+          "exact_pixels": true,
+          "exact_settings": true,
+          "exact_state": true,
+          "retro": "off"
+        }
+      ],
+      "failures": [],
+      "teardown": {
+        "nodes_after": 1,
+        "nodes_before": 1,
+        "orphan_nodes": 0,
+        "remaining_project_owners": []
+      }
+    },
+    "rooftop_run": {
+      "untouched_reference_mode_0_pixel_identical": true,
+      "integrity": {
+        "lights": true,
+        "materials": true,
+        "physics": true
+      },
+      "restoration": [
+        {
+          "after": "restored_production.png",
+          "before": "sweep_production_0.png",
+          "exact_pixels": true,
+          "exact_settings": true,
+          "exact_state": true,
+          "retro": "production"
+        },
+        {
+          "after": "restored_off.png",
+          "before": "sweep_off_0.png",
+          "exact_pixels": true,
+          "exact_settings": true,
+          "exact_state": true,
+          "retro": "off"
+        }
+      ],
+      "failures": [],
+      "teardown": {
+        "nodes_after": 1,
+        "nodes_before": 1,
+        "orphan_nodes": 0,
+        "remaining_project_owners": []
+      }
+    },
+    "casino_night": {
+      "untouched_reference_mode_0_pixel_identical": true,
+      "integrity": {
+        "lights": true,
+        "materials": true,
+        "physics": true
+      },
+      "restoration": [
+        {
+          "after": "restored_production.png",
+          "before": "sweep_production_0.png",
+          "exact_pixels": true,
+          "exact_settings": true,
+          "exact_state": true,
+          "retro": "production"
+        },
+        {
+          "after": "restored_off.png",
+          "before": "sweep_off_0.png",
+          "exact_pixels": true,
+          "exact_settings": true,
+          "exact_state": true,
+          "retro": "off"
+        }
+      ],
+      "failures": []
+    },
+    "sky_sanctuary": {
+      "untouched_reference_mode_0_pixel_identical": true,
+      "integrity": {
+        "lights": true,
+        "materials": true,
+        "physics": true
+      },
+      "restoration": [
+        {
+          "after": "restored_production.png",
+          "before": "sweep_production_0.png",
+          "exact_pixels": true,
+          "exact_settings": true,
+          "exact_state": true,
+          "retro": "production"
+        },
+        {
+          "after": "restored_off.png",
+          "before": "sweep_off_0.png",
+          "exact_pixels": true,
+          "exact_settings": true,
+          "exact_state": true,
+          "retro": "off"
+        }
+      ],
+      "failures": [],
+      "teardown": {
+        "nodes_after": 1,
+        "nodes_before": 1,
+        "orphan_nodes": 0,
+        "remaining_project_owners": []
+      }
+    },
+    "ice_cap": {
+      "untouched_reference_mode_0_pixel_identical": true,
+      "integrity": {
+        "lights": true,
+        "materials": true,
+        "physics": true
+      },
+      "restoration": [
+        {
+          "after": "restored_production.png",
+          "before": "sweep_production_0.png",
+          "exact_pixels": true,
+          "exact_settings": true,
+          "exact_state": true,
+          "retro": "production"
+        },
+        {
+          "after": "restored_off.png",
+          "before": "sweep_off_0.png",
+          "exact_pixels": true,
+          "exact_settings": true,
+          "exact_state": true,
+          "retro": "off"
+        }
+      ],
+      "failures": [],
+      "teardown": {
+        "nodes_after": 1,
+        "nodes_before": 1,
+        "orphan_nodes": 0,
+        "remaining_project_owners": []
+      }
+    },
+    "aquarium_park": {
+      "untouched_reference_mode_0_pixel_identical": true,
+      "integrity": {
+        "lights": true,
+        "materials": true,
+        "physics": true
+      },
+      "restoration": [
+        {
+          "after": "restored_production.png",
+          "before": "sweep_production_0.png",
+          "exact_pixels": true,
+          "exact_settings": true,
+          "exact_state": true,
+          "retro": "production"
+        },
+        {
+          "after": "restored_off.png",
+          "before": "sweep_off_0.png",
+          "exact_pixels": false,
+          "exact_settings": true,
+          "exact_state": true,
+          "retro": "off"
+        }
+      ],
+      "failures": []
+    }
+  },
+  "desktop_measurement_matrix": {
+    "path": "test-results\\grounding-20261117\\final\\matrix-final\\Work-Laptop-20261117-214133",
+    "jobs": {
+      "01-prototype-production": {
+        "failures": [],
+        "fallback_builds": 0,
+        "user_settings_written": false,
+        "production_defaults_changed": false,
+        "process_exit_code": 0,
+        "teardown": {
+          "nodes_after": 1,
+          "nodes_before": 1,
+          "orphan_nodes": 0,
+          "remaining_project_owners": []
+        }
+      },
+      "02-endless-production": {
+        "failures": [],
+        "fallback_builds": 0,
+        "user_settings_written": false,
+        "production_defaults_changed": false,
+        "process_exit_code": 0,
+        "teardown": {
+          "nodes_after": 1,
+          "nodes_before": 1,
+          "orphan_nodes": 0,
+          "remaining_project_owners": []
+        }
+      },
+      "03-endless-shadow-light": {
+        "failures": [],
+        "fallback_builds": 0,
+        "user_settings_written": false,
+        "production_defaults_changed": false,
+        "process_exit_code": 0,
+        "teardown": {
+          "nodes_after": 1,
+          "nodes_before": 1,
+          "orphan_nodes": 0,
+          "remaining_project_owners": []
+        }
+      },
+      "04-endless-balanced": {
+        "failures": [],
+        "fallback_builds": 0,
+        "user_settings_written": false,
+        "production_defaults_changed": false,
+        "process_exit_code": 0,
+        "teardown": {
+          "nodes_after": 1,
+          "nodes_before": 1,
+          "orphan_nodes": 0,
+          "remaining_project_owners": []
+        }
+      },
+      "05-endless-balanced-no-retro": {
+        "failures": [],
+        "fallback_builds": 0,
+        "user_settings_written": false,
+        "production_defaults_changed": false,
+        "process_exit_code": 0,
+        "teardown": {
+          "nodes_after": 1,
+          "nodes_before": 1,
+          "orphan_nodes": 0,
+          "remaining_project_owners": []
+        }
+      },
+      "06-endless-reduced-retro": {
+        "failures": [],
+        "fallback_builds": 0,
+        "user_settings_written": false,
+        "production_defaults_changed": false,
+        "process_exit_code": 0,
+        "teardown": {
+          "nodes_after": 1,
+          "nodes_before": 1,
+          "orphan_nodes": 0,
+          "remaining_project_owners": []
+        }
+      },
+      "07-endless-mobile-vulkan": {
+        "failures": [],
+        "fallback_builds": 0,
+        "user_settings_written": false,
+        "production_defaults_changed": false,
+        "process_exit_code": 0,
+        "teardown": {
+          "nodes_after": 1,
+          "nodes_before": 1,
+          "orphan_nodes": 0,
+          "remaining_project_owners": []
+        }
+      },
+      "08-endless-compatibility-angle": {
+        "failures": [],
+        "fallback_builds": 0,
+        "user_settings_written": false,
+        "production_defaults_changed": false,
+        "process_exit_code": 0,
+        "teardown": {
+          "nodes_after": 1,
+          "nodes_before": 1,
+          "orphan_nodes": 0,
+          "remaining_project_owners": []
+        }
+      }
+    }
+  },
+  "fresh_baked_variants": 98,
+  "supported_baseline": {
+    "passed": 30,
+    "total": 32,
+    "failed": [
+      "enemy",
+      "prototype_run"
+    ],
+    "results": [
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | Authored gimmicks | 93 checks | 0 failures"
+        ],
+        "rendered": true,
+        "seconds": 39.5064172,
+        "suite": "authored_gimmick"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | Pinball mechanics | 58 checks | 0 failures"
+        ],
+        "rendered": true,
+        "seconds": 14.0674143,
+        "suite": "pinball_mechanics"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | Soft retry | 62 checks | 0 failures"
+        ],
+        "rendered": true,
+        "seconds": 39.2044776,
+        "suite": "soft_retry"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | Ramp height and themes | 100 checks | 0 failures"
+        ],
+        "rendered": true,
+        "seconds": 48.0159206,
+        "suite": "ramp_height_theme"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | Theme texture coverage | 172 checks | 0 failures"
+        ],
+        "rendered": false,
+        "seconds": 10.6384886,
+        "suite": "theme_texture"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "ENDLESS_REUSE_REGRESSION | checks=131 failures=0"
+        ],
+        "rendered": true,
+        "seconds": 5.5278889,
+        "suite": "endless_reuse"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | Scorecraft | 29 checks | 0 failures"
+        ],
+        "rendered": false,
+        "seconds": 7.2553375,
+        "suite": "scorecraft"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "PASS | Results reconcile normal and Buddy totals",
+          "RESULT | Adventure Buddies | 70 checks | 0 failures"
+        ],
+        "rendered": false,
+        "seconds": 3.0584904,
+        "suite": "buddy_scoring"
+      },
+      {
+        "exit_code": 1,
+        "timed_out": false,
+        "results": [
+          "RESULT | Enemy integration | 50 checks | 2 failures"
+        ],
+        "rendered": false,
+        "seconds": 6.3268194,
+        "suite": "enemy"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | Authored main game | 70 checks | 0 failures"
+        ],
+        "rendered": false,
+        "seconds": 10.405436,
+        "suite": "authored_main_game"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "PASS | Diagnostic saves to an isolated regression path",
+          "RESULT | Traversal authoring | 36 checks | 0 failures"
+        ],
+        "rendered": false,
+        "seconds": 268.2293271,
+        "suite": "traversal_authoring"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "PASS | Intermediate Goal is unlocked for swept-transfer regression",
+          "PASS | Intermediate Goal is unlocked for swept-transfer regression",
+          "RESULT | Traversal Prototype | 20 checks | 0 failures"
+        ],
+        "rendered": true,
+        "seconds": 18.9240502,
+        "suite": "traversal_prototype"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "CONTACT RESPONSE | 208 checks | 0 failures"
+        ],
+        "rendered": false,
+        "seconds": 35.9179777,
+        "suite": "flipper_contact_response"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | Telemetry evidence | 30 checks | 0 failures"
+        ],
+        "rendered": false,
+        "seconds": 6.9726999,
+        "suite": "telemetry_evidence"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | Prototype plan | 59 checks | 0 failures"
+        ],
+        "rendered": false,
+        "seconds": 17.1676751,
+        "suite": "prototype_plan"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | Prototype setup | 16 checks | 0 failures"
+        ],
+        "rendered": true,
+        "seconds": 60.6726091,
+        "suite": "prototype_setup"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "TELEMETRY_DIRECTORY | E:/Sonic Spinball Runners/test-results/grounding-20261117/final/supported-baseline/isolated-user/Godot/app_userdata/Sonic Spinball Work Suite/telemetry/runs",
+          "PASS | Redisplaying Results, Copy and Return to menu do not duplicate the archive",
+          "PASS | Leaving Results flushes notes without waiting for debounce",
+          "PASS | Abandonment preserves the partial Act and opens distinct Results",
+          "PASS | Write failure preserves Results and game completion",
+          "RESULT | Prototype archive | 34 checks | 0 failures"
+        ],
+        "rendered": true,
+        "seconds": 63.5854326,
+        "suite": "prototype_archive"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | foreground contribution | 36 checks | 0 failures"
+        ],
+        "rendered": true,
+        "seconds": 14.0674406,
+        "suite": "foreground_contribution"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "GEOMETRY_BAKE_REGRESSION | checks=2842 failures=0"
+        ],
+        "rendered": false,
+        "seconds": 15.4783053,
+        "suite": "geometry_bake"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | Fresh-process reload | 6 checks | 0 failures",
+          "RESULT | Act geometry | 3461 checks | 0 failures"
+        ],
+        "rendered": false,
+        "seconds": 2.1681662,
+        "suite": "act_geometry"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "GEOMETRY_DENSITY | flower_triangles=96 checks=28 failures=0"
+        ],
+        "rendered": false,
+        "seconds": 1.7948097,
+        "suite": "geometry_density"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | Economy V1 integration | 44 checks | 0 failures"
+        ],
+        "rendered": false,
+        "seconds": 5.026739,
+        "suite": "economy_v1"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [],
+        "rendered": false,
+        "seconds": 2.2512311,
+        "suite": "pinball_vocabulary"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | Gimmick batch | 103 checks | 0 failures"
+        ],
+        "rendered": false,
+        "seconds": 21.4651354,
+        "suite": "gimmick_batch"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | Scoring flow | 31 checks | 0 failures"
+        ],
+        "rendered": false,
+        "seconds": 6.8953562,
+        "suite": "scoring_flow"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | Rail rings | 13 checks | 0 failures"
+        ],
+        "rendered": false,
+        "seconds": 3.0084821,
+        "suite": "rail_rings"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "Profile regression checks: 0 failures"
+        ],
+        "rendered": false,
+        "seconds": 0.5983167,
+        "suite": "profile"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "PASS | The third lost ball ends Challenge in a failure result",
+          "PASS | Build-aware results reconcile base scoring plus Buddy contributions",
+          "PASS | Abandoning cancels the animation, frees its proxy and shows partial Results",
+          "RESULT | Prototype budget | 57 checks | 0 failures"
+        ],
+        "rendered": true,
+        "seconds": 46.8482226,
+        "suite": "prototype_budget"
+      },
+      {
+        "exit_code": -1,
+        "timed_out": false,
+        "results": [],
+        "rendered": true,
+        "seconds": 256.5170342,
+        "suite": "prototype_run"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | Run telemetry | 14 checks | 0 failures"
+        ],
+        "rendered": false,
+        "seconds": 0.7785466,
+        "suite": "run_telemetry"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "RESULT | Prototype appearance regression | 70 checks | 0 failures"
+        ],
+        "rendered": true,
+        "seconds": 57.6428036,
+        "suite": "prototype_appearance"
+      },
+      {
+        "exit_code": 0,
+        "timed_out": false,
+        "results": [
+          "ENDLESS_BAKE_AUDIT | variants=56 checks=566 failures=0"
+        ],
+        "rendered": false,
+        "seconds": 19.4220326,
+        "suite": "endless_bake_audit"
+      }
+    ],
+    "pristine_base_reproduction": {
+      "scripts/endless/endless_game.gd": {
+        "expected_blob": "9c7088e7e0ff20bb16ea95bb8c250edfc4bf5f1c",
+        "actual_blob": "9c7088e7e0ff20bb16ea95bb8c250edfc4bf5f1c"
+      },
+      "menu": {
+        "arguments": "No grounding flags; original production scripts from the frozen base",
+        "exit_code": 0
+      },
+      "enemy": {
+        "arguments": "No grounding flags; original production scripts from the frozen base",
+        "exit_code": 1
+      },
+      "scripts/retro/retro_filter.gd": {
+        "expected_blob": "9e5d6beaa716d9139ef89cb692af17ffd16419ec",
+        "actual_blob": "9e5d6beaa716d9139ef89cb692af17ffd16419ec"
+      }
+    }
+  },
+  "lifecycle": {
+    "failures": [],
+    "checks": [
+      {
+        "old_zone_proxies_retired": true,
+        "transition_completed": true
+      },
+      {
+        "backgrounds": [
+          {
+            "active": true,
+            "disable_3d": false,
+            "has_camera_3d": false,
+            "msaa_samples": 4,
+            "native_3d_size": [
+              1280,
+              900
+            ],
+            "path": "/root",
+            "role": "output",
+            "scale": 1.0,
+            "screen_space_aa": 0,
+            "size": [
+              1280,
+              900
+            ],
+            "update_mode": 4,
+            "world_rid": "RID(3779571220480)"
+          },
+          {
+            "active": true,
+            "disable_3d": false,
+            "has_camera_3d": true,
+            "msaa_samples": 4,
+            "native_3d_size": [
+              673,
+              473
+            ],
+            "path": "/root/@Node@2/@SubViewportContainer@5/RetroViewportHost/@SubViewport@6/@SubViewportContainer@7/@SubViewport@8",
+            "role": "foreground",
+            "scale": 1.0,
+            "screen_space_aa": 0,
+            "size": [
+              673,
+              473
+            ],
+            "update_mode": 4,
+            "world_rid": "RID(4037269258241)"
+          },
+          {
+            "active": true,
+            "disable_3d": true,
+            "has_camera_3d": false,
+            "msaa_samples": 0,
+            "native_3d_size": [
+              673,
+              473
+            ],
+            "path": "/root/@Node@2/@SubViewportContainer@5/RetroViewportHost/@SubViewport@6",
+            "role": "composite",
+            "scale": 1.0,
+            "screen_space_aa": 0,
+            "size": [
+              673,
+              473
+            ],
+            "update_mode": 4,
+            "world_rid": "2D"
+          },
+          {
+            "active": false,
+            "disable_3d": false,
+            "has_camera_3d": false,
+            "msaa_samples": 4,
+            "native_3d_size": [
+              256,
+              256
+            ],
+            "path": "/root/@Node@2/@Node@151/StreamingWarmup",
+            "role": "warmup",
+            "scale": 1.0,
+            "screen_space_aa": 0,
+            "size": [
+              256,
+              256
+            ],
+            "update_mode": 0,
+            "world_rid": "RID(8542689951746)"
+          },
+          {
+            "active": false,
+            "disable_3d": false,
+            "has_camera_3d": true,
+            "msaa_samples": 4,
+            "native_3d_size": [
+              673,
+              473
+            ],
+            "path": "/root/@Node@2/@SubViewportContainer@5/RetroViewportHost/@SubViewport@6/Zone0Backdrop/@SubViewport@1102",
+            "role": "backdrop_0",
+            "scale": 1.0,
+            "screen_space_aa": 0,
+            "size": [
+              673,
+              473
+            ],
+            "update_mode": 0,
+            "world_rid": "RID(28110560952323)"
+          },
+          {
+            "active": true,
+            "disable_3d": false,
+            "has_camera_3d": true,
+            "msaa_samples": 4,
+            "native_3d_size": [
+              673,
+              473
+            ],
+            "path": "/root/@Node@2/@SubViewportContainer@5/RetroViewportHost/@SubViewport@6/Zone1Backdrop/@SubViewport@4206",
+            "role": "backdrop_1",
+            "scale": 1.0,
+            "screen_space_aa": 0,
+            "size": [
+              673,
+              473
+            ],
+            "update_mode": 4,
+            "world_rid": "RID(66344359821316)"
+          },
+          {
+            "active": false,
+            "disable_3d": false,
+            "has_camera_3d": true,
+            "msaa_samples": 4,
+            "native_3d_size": [
+              673,
+              473
+            ],
+            "path": "/root/@Node@2/@SubViewportContainer@5/RetroViewportHost/@SubViewport@6/Zone2Backdrop/@SubViewport@9857",
+            "role": "backdrop_2",
+            "scale": 1.0,
+            "screen_space_aa": 0,
+            "size": [
+              673,
+              473
+            ],
+            "update_mode": 0,
+            "world_rid": "RID(115332756799493)"
+          }
+        ],
+        "created_proxy_meshes": 4,
+        "light_count_unchanged": true,
+        "removed_on_restore": true,
+        "zone": 1
+      }
+    ],
+    "teardown": {
+      "nodes_after": 1,
+      "nodes_before": 1,
+      "orphan_nodes": 0,
+      "remaining_project_owners": []
+    }
+  },
+  "controls": {
+    "path": "test-results\\grounding-20261117\\final\\controls-package",
+    "failures": [],
+    "theme_switch_capture": "final/lab_casino_night_12033/interactive-controls.png",
+    "teardown": {
+      "nodes_after": 1,
+      "nodes_before": 1,
+      "orphan_nodes": 0,
+      "remaining_project_owners": []
+    }
+  },
+  "current_shared_editor_integration": {
+    "base": "5239008",
+    "fix_commit": "51d46a39a57749676661c086e8182307e7f99077",
+    "scope": "Helper aliases, remap helper name and explicit bool only; inverse substitution matched the previous commit exactly.",
+    "parse_scripts": [
+      "grounding_lab",
+      "enemy_regression"
+    ],
+    "parse_error_log_bytes": 0,
+    "editor_startup_error_log_bytes": 0,
+    "full_current_editor_behavior": "not certified"
+  },
+  "tool_syntax": {
+    "powershell_files": 6,
+    "powershell_parse": "passed",
+    "python_py_compile": "passed",
+    "markdown_relative_links": "passed",
+    "review_images": 38
+  },
+  "exit_warning_limit": "Lifecycle verbose: one zero-reference RefCounted. Extracted smoke: five ObjectDB objects; verbose repeat: one zero-reference RefCounted. Existing native loader signature; exact allocation origins not proven. Watched project owners and nodes release.",
+  "deferred": "UHD 620 bottleneck, acceptable low-end profile, renderer choice, sun-direction approval and any proxy enablement await Thursday results.",
+  "actual_packaged_cmd": {
+    "process": {
+      "elapsed_seconds": 541.6694768,
+      "method": "Actual packaged CMD, default ProjectRoot and bundled engine, Windows PowerShell 5.1",
+      "launcher": "E:\\Sonic Spinball Runners\\test-results\\grounding-20261117\\unpacked-final-verification\\Sonic Spinball Grounding 2026-11-19\\Run Work Laptop Matrix.cmd",
+      "exit_code": 0
+    },
+    "results": "test-results\\grounding-20261117\\unpacked-final-verification\\Sonic Spinball Grounding 2026-11-19\\Results\\Work-Laptop-20261117-222821",
+    "jobs": {
+      "01-prototype-production": {
+        "exit_code": 0,
+        "elapsed_seconds": 23.7583617,
+        "startup_ms": 8814.454,
+        "fallback_builds": 0,
+        "failures": [],
+        "user_settings_written": false,
+        "production_defaults_changed": false,
+        "teardown": {
+          "nodes_after": 1,
+          "nodes_before": 1,
+          "orphan_nodes": 0,
+          "remaining_project_owners": []
+        }
+      },
+      "02-endless-production": {
+        "exit_code": 0,
+        "elapsed_seconds": 107.4933784,
+        "startup_ms": 4564.822,
+        "fallback_builds": 0,
+        "failures": [],
+        "user_settings_written": false,
+        "production_defaults_changed": false,
+        "teardown": {
+          "nodes_after": 1,
+          "nodes_before": 1,
+          "orphan_nodes": 0,
+          "remaining_project_owners": []
+        }
+      },
+      "03-endless-shadow-light": {
+        "exit_code": 0,
+        "elapsed_seconds": 36.4012396,
+        "startup_ms": 3847.162,
+        "fallback_builds": 0,
+        "failures": [],
+        "user_settings_written": false,
+        "production_defaults_changed": false,
+        "teardown": {
+          "nodes_after": 1,
+          "nodes_before": 1,
+          "orphan_nodes": 0,
+          "remaining_project_owners": []
+        }
+      },
+      "04-endless-balanced": {
+        "exit_code": 0,
+        "elapsed_seconds": 35.9810228,
+        "startup_ms": 3678.357,
+        "fallback_builds": 0,
+        "failures": [],
+        "user_settings_written": false,
+        "production_defaults_changed": false,
+        "teardown": {
+          "nodes_after": 1,
+          "nodes_before": 1,
+          "orphan_nodes": 0,
+          "remaining_project_owners": []
+        }
+      },
+      "05-endless-balanced-no-retro": {
+        "exit_code": 0,
+        "elapsed_seconds": 34.2200056,
+        "startup_ms": 3735.072,
+        "fallback_builds": 0,
+        "failures": [],
+        "user_settings_written": false,
+        "production_defaults_changed": false,
+        "teardown": {
+          "nodes_after": 1,
+          "nodes_before": 1,
+          "orphan_nodes": 0,
+          "remaining_project_owners": []
+        }
+      },
+      "06-endless-reduced-retro": {
+        "exit_code": 0,
+        "elapsed_seconds": 34.6446067,
+        "startup_ms": 3739.939,
+        "fallback_builds": 0,
+        "failures": [],
+        "user_settings_written": false,
+        "production_defaults_changed": false,
+        "teardown": {
+          "nodes_after": 1,
+          "nodes_before": 1,
+          "orphan_nodes": 0,
+          "remaining_project_owners": []
+        }
+      },
+      "07-endless-mobile-vulkan": {
+        "exit_code": 0,
+        "elapsed_seconds": 40.143149199999996,
+        "startup_ms": 5775.361,
+        "fallback_builds": 0,
+        "failures": [],
+        "user_settings_written": false,
+        "production_defaults_changed": false,
+        "teardown": {
+          "nodes_after": 1,
+          "nodes_before": 1,
+          "orphan_nodes": 0,
+          "remaining_project_owners": []
+        }
+      },
+      "08-endless-compatibility-angle": {
+        "exit_code": 0,
+        "elapsed_seconds": 225.58549829999998,
+        "startup_ms": 135121.504,
+        "fallback_builds": 0,
+        "failures": [],
+        "user_settings_written": false,
+        "production_defaults_changed": false,
+        "teardown": {
+          "nodes_after": 1,
+          "nodes_before": 1,
+          "orphan_nodes": 0,
+          "remaining_project_owners": []
+        }
+      }
+    },
+    "cache_note": "New extracted private cache at launch; caches may warm across jobs. Native driver caches are not claimed cold. These are launcher qualification results, not substituted for the published warm-cache matrix."
+  },
+  "total_budget_receipt": {
+    "maximum_minutes": 0,
+    "expected_skipped_jobs": 8,
+    "recorded_skipped_jobs": 8,
+    "status": "passed",
+    "new_result_directory_required": true
+  },
+  "portable_zip": {
+    "path": "test-results\\grounding-20261117\\Sonic Spinball Grounding Thursday 2026-11-19 final.zip",
+    "bytes": 207485508,
+    "entries": 4098,
+    "sha256": "84c18a4d1bc193374ad3084e2804457d1727228c3d6fb7721a39d9a8c22fe707",
+    "zip_crc": "passed",
+    "tested_cmd_and_runners_byte_identical": true,
+    "difference_from_extracted_v2": "Only manifest and corrected probe wrapper; the tested extracted project already used that exact corrected wrapper. All other ZIP entries have identical CRC and size.",
+    "excluded_private_caches_and_results": true
+  }
+}
