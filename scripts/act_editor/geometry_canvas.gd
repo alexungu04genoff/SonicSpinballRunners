@@ -35,6 +35,32 @@ var _boundary_axis := Vector2i.ONE
 var _boundary_preview := Vector2i.ZERO
 var selected_markers: Array[String] = []
 const SelectionTransform = preload("res://scripts/act_editor/selection_transform.gd")
+const EditorSelection = preload("res://scripts/act_editor/editor_selection.gd")
+const Snap = preload("res://scripts/act_editor/editor_snap.gd")
+var snap_mode: int = Snap.Mode.FREE
+var _shift_held := false
+var active_target: Dictionary = {}
+var pivot_mode := 0 # Center, active item, fixed cursor position.
+var cursor_pivot := Vector2.ZERO
+signal gizmo_preview_requested(factor: float, degrees: float, pivot: Vector2)
+signal gizmo_commit_requested(candidate: Resource)
+var show_transform_handles := true
+var gizmo_document: Resource
+var gizmo_error := ""
+var _gizmo_dragging := false
+var _gizmo_kind := ""
+var _gizmo_start := Vector2.ZERO
+var _gizmo_pivot := Vector2.ZERO
+var _gizmo_source := ""
+var _gizmo_factor := 1.0
+var _gizmo_degrees := 0.0
+const Clipboard = preload("res://scripts/act_editor/selection_clipboard.gd")
+signal assembly_place_requested(position: Vector2)
+var assembly_copy: Dictionary = {}
+var assembly_center := Vector2.ZERO
+var show_terrain := true
+var show_markers := true
+var show_rings := true
 
 const ActData = preload("res://scripts/act_editor/act_geometry.gd")
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
@@ -167,6 +193,7 @@ var _drop_gameplay_brush: Dictionary = {}
 var _pending_cycle_target: Dictionary = {}
 var _alt_held := false
 var _handle_last_pointer := Vector2.ZERO
+var _handle_snap_origin: Variant = null
 var _guide_cache_key := ""
 var _guide_cache: Array[Dictionary] = []
 var _marker_drag_kind := ""
@@ -223,6 +250,7 @@ func set_document(value: Resource, reset_view: bool = true) -> void:
 
 
 func set_brush(value: Dictionary) -> void:
+ show_terrain = true
  _clear_decor_selection()
  ring_tool = false
  selected_ring_index = -1
@@ -240,6 +268,7 @@ func set_brush(value: Dictionary) -> void:
 
 
 func select_piece(index: int) -> void:
+ if document != null and EditorSelection.locked(document, "terrain", index): index = -1
  var indices: Array[int] = []
  if index >= 0 and index < _placements().size():
   indices.append(index)
@@ -254,7 +283,7 @@ func set_terrain_selection(indices: Array[int]) -> void:
  brush = {}
  selected_indices = []
  for index in indices:
-  if index >= 0 and index < _placements().size() and not selected_indices.has(index):
+  if index >= 0 and index < _placements().size() and not EditorSelection.locked(document, "terrain", index) and not selected_indices.has(index):
    selected_indices.append(index)
  selected_index = selected_indices.back() if not selected_indices.is_empty() else -1
  connector_tool = ""
@@ -355,6 +384,7 @@ func set_gameplay_brush(value: Dictionary) -> void:
 
 
 func select_gameplay(index: int) -> void:
+ if document != null and EditorSelection.locked(document, "gameplay", index): index = -1
  _clear_decor_selection()
  ring_tool = false
  selected_ring_index = -1
@@ -374,14 +404,14 @@ func set_gameplay_selection(indices: Array[int]) -> void:
  select_gameplay(-1)
  var valid: Array[int] = []
  for index: int in indices:
-  if index >= 0 and index < _gameplay_objects().size() and not valid.has(index): valid.append(index)
+  if index >= 0 and index < _gameplay_objects().size() and not EditorSelection.locked(document, "gameplay", index) and not valid.has(index): valid.append(index)
  selected_gameplay_index = valid.back() if not valid.is_empty() else -1
  selected_gameplay_indices = valid
  queue_redraw()
 
 
 func set_marker_tool(kind: String) -> void:
- show_gameplay = true
+ show_markers = true
  select_piece(-1)
  marker_tool = kind if kind in ["activation", "spawn", "goal"] else ""
  queue_redraw()
@@ -389,17 +419,18 @@ func set_marker_tool(kind: String) -> void:
 
 func select_marker(kind: String) -> void:
  select_piece(-1)
- selected_marker = kind if marker_value(kind) != null else ""
+ selected_marker = kind if marker_value(kind) != null and not EditorSelection.locked(document, "markers", kind) else ""
  queue_redraw()
 
 
 func set_ring_tool() -> void:
- show_gameplay = true
+ show_rings = true
  select_piece(-1)
  ring_tool = true
  queue_redraw()
 
 func select_ring(index: int) -> void:
+ if document != null and EditorSelection.locked(document, "ring", index): index = -1
  select_piece(-1)
  selected_ring_index = index if index >= 0 and index < document.ring_trails.size() else -1
  queue_redraw()
@@ -416,6 +447,7 @@ func marker_value(kind: String) -> Variant:
  return null
 
 func _clear_decor_selection() -> void:
+ assembly_copy = {}
  selected_markers.clear()
  boundary_tool = false
  decor_brush = {}
@@ -428,12 +460,13 @@ func set_decor_brush(slot: Dictionary) -> void:
  queue_redraw()
 
 func select_decor(index: int) -> void:
+ if document != null and EditorSelection.locked(document, "decor", index): index = -1
  select_piece(-1)
  selected_decor_index = index if index >= 0 and index < document.decor_slots.size() else -1
  queue_redraw()
 
 func decor_position(point: Vector2, alt: bool) -> Vector2:
- return legal_gameplay_position(point, not decor_snap or alt)
+ return legal_gameplay_position(point, alt)
 
 func _decor_radius(slot: Dictionary) -> float:
  return maxf(5.0, Decor.RADII[Decor.TYPES.find(slot.slot_type)] * _cell_pixels * float(slot.get("scale", 1.0)))
@@ -468,7 +501,7 @@ func _update_decor_drag(pointer: Vector2, alt: bool, force := false) -> void:
  if not _decor_drag_moved and delta.length() * _cell_pixels / _local_cell_size() < 3: return
  _decor_drag_moved = true
  _pending_cycle_target = {}
- _decor_drag_position = decor_position(_decor_drag_original + delta, alt)
+ _decor_drag_position = legal_gameplay_position(_decor_drag_original + delta, alt, _decor_drag_original)
 
 func _end_decor_drag() -> void:
  var index := _decor_drag_index
@@ -495,6 +528,9 @@ func fit_view() -> void:
 
 
 func cancel_gesture() -> void:
+ _gizmo_dragging = false
+ gizmo_document = null
+ gizmo_error = ""
  _boundary_dragging = false
  _teleporter_index = -1
  _teleporter_preview = {}
@@ -548,10 +584,15 @@ func local_pixels_to_screen(point: Vector2) -> Vector2:
  return grid_to_screen(point / _local_cell_size())
 
 
-func legal_gameplay_position(position: Vector2, free_move: bool) -> Vector2:
- if free_move:
-  return position
- return (position / _local_cell_size()).round() * _local_cell_size()
+func effective_snap_mode(free_move: bool = false) -> int:
+ if free_move: return Snap.Mode.FREE
+ return Snap.Mode.RELATIVE if _shift_held and snap_mode == Snap.Mode.FREE else snap_mode
+
+func legal_gameplay_position(position: Vector2, free_move: bool, origin: Variant = null) -> Vector2:
+ return Snap.position(position, origin, effective_snap_mode(free_move), _local_cell_size() * terrain_snap_step)
+
+func nudge_distance(free_move: bool) -> float:
+ return 1.0 if effective_snap_mode(free_move) == Snap.Mode.FREE else _local_cell_size() * terrain_snap_step
 
 
 func gameplay_hit_indices_at(local_position: Vector2) -> Array[int]:
@@ -561,6 +602,7 @@ func gameplay_hit_indices_at(local_position: Vector2) -> Array[int]:
  var tolerance := 7.0 * _local_cell_size() / _cell_pixels
  var objects := _gameplay_objects()
  for index in range(objects.size() - 1, -1, -1):
+  if EditorSelection.locked(document, "gameplay", index): continue
   var placement: Dictionary = objects[index]
   var points := ObjectPreview.rotated_points(placement, _local_cell_size())
   var point := pixel_position - Vector2(placement.position)
@@ -582,13 +624,15 @@ func mixed_hit_indices_at(local_position: Vector2) -> Array[Dictionary]:
  var hits: Array[Dictionary] = []
  if show_decor:
   for index in range(document.decor_slots.size() - 1, -1, -1):
+   if EditorSelection.locked(document, "decor", index): continue
    var slot: Dictionary = document.decor_slots[index]
    if local_position.distance_to(local_pixels_to_screen(slot.position)) <= _decor_radius(slot) + 3:
     hits.append({"kind": "decor", "index": index})
  for kind: String in marker_hits_at(local_position):
   hits.append({"kind": "marker", "marker": kind})
  for index in range(document.ring_trails.size() - 1, -1, -1):
-  if not show_gameplay: break
+  if EditorSelection.locked(document, "ring", index): continue
+  if not show_rings: break
   var trail: Dictionary = document.ring_trails[index]
   var hit := false
   var radius := maxf(5.0, PreviewDimensions.RING_RADIUS_CELLS * _cell_pixels + 2.0)
@@ -610,7 +654,7 @@ func mixed_hit_indices_at(local_position: Vector2) -> Array[Dictionary]:
 
 func marker_hits_at(local_position: Vector2) -> Array[String]:
  var hits: Array[String] = []
- if not show_gameplay: return hits
+ if not show_markers: return hits
  var goal: Vector2 = document.goal_center()
  if absf(local_position.distance_to(local_pixels_to_screen(goal)) - float(document.goal_diameter_cells) * _cell_pixels * 0.5) <= 10.0:
   hits.append("goal")
@@ -623,7 +667,7 @@ func marker_hits_at(local_position: Vector2) -> Array[String]:
   var end := local_pixels_to_screen(Vector2(document.terrain_bounds().size.x, float(activation)))
   if local_position.x >= start.x and local_position.x <= end.x and absf(local_position.y - start.y) <= 8.0:
    hits.append("activation")
- return hits
+ return hits.filter(func(kind): return not EditorSelection.locked(document, "markers", kind))
 
 
 func valid_marker_value(kind: String, value: Variant) -> bool:
@@ -656,6 +700,7 @@ func connector_border_at(local_position: Vector2) -> String:
 
 
 func connector_hit_at(local_position: Vector2) -> String:
+ if not show_markers: return ""
  for kind: String in ["entry", "exit"]:
   var span := connector_span(kind)
   if span.y <= 0:
@@ -682,18 +727,20 @@ func connector_handle_at(kind: String, local_position: Vector2) -> String:
  return "move"
 
 
-func legal_anchor_for(placement: Dictionary, grid_position: Vector2, free_move: bool = false) -> Vector2:
+func legal_anchor_for(placement: Dictionary, grid_position: Vector2, free_move: bool = false, origin: Variant = null) -> Vector2:
  var limit := (Vector2(_grid_size()) - Shapes.scaled_size(placement)).max(Vector2.ZERO)
- var point := grid_position if free_move else grid_position.snapped(Vector2.ONE * terrain_snap_step)
+ var point := Snap.position(grid_position, origin, effective_snap_mode(free_move), terrain_snap_step)
  return point.clamp(Vector2.ZERO, limit)
 
 
 func hit_indices_at(local_position: Vector2) -> Array[int]:
  var hits: Array[int] = []
+ if not show_terrain: return hits
  var grid_point := screen_to_grid(local_position)
  var tolerance := 7.0 / _cell_pixels
  var placements := _placements()
  for index in range(placements.size() - 1, -1, -1):
+  if EditorSelection.locked(document, "terrain", index): continue
   var placement: Dictionary = placements[index]
   var definition: Dictionary = Shapes.definition_for_placement(placement)
   if definition.is_empty():
@@ -715,6 +762,12 @@ func hit_indices_at(local_position: Vector2) -> Array[int]:
 
 
 func _draw() -> void:
+ var source := document
+ if gizmo_document != null: document = gizmo_document
+ _draw_document()
+ document = source
+
+func _draw_document() -> void:
  draw_rect(Rect2(Vector2.ZERO, size), Color("0b1320"))
  if document == null:
   return
@@ -722,6 +775,7 @@ func _draw() -> void:
  _draw_grid()
  var placements := _placements()
  for index in placements.size():
+  if not show_terrain: break
   var placement: Dictionary = placements[index]
   if selected_indices.has(index) and _group_dragging:
    placement = placement.duplicate(true)
@@ -731,6 +785,7 @@ func _draw() -> void:
    Shapes.set_placement_position(placement, _drag_anchor)
   _draw_piece(placement, false, false)
  for index in selected_indices:
+  if not show_terrain: break
   if index < 0 or index >= placements.size():
    continue
   var selected: Dictionary = placements[index].duplicate(true)
@@ -750,13 +805,16 @@ func _draw() -> void:
   _draw_footprint(ghost, Color(0.75, 0.91, 1.0, 0.5))
   _draw_launch_range({"type": "terrain", "placement": ghost})
  _draw_gameplay_objects()
- _draw_rings()
+ if show_rings: _draw_rings()
  _draw_decor()
- if show_gameplay: _draw_markers()
- _draw_connectors()
+ if show_markers: _draw_markers()
+ if show_markers: _draw_connectors()
+ _draw_assembly_ghost()
  _draw_composite_preview()
  _draw_smoothing_corners()
  if boundary_tool: _draw_boundary_handles()
+ _draw_selection_handles()
+ _draw_locked_items()
  if _box_selecting:
   var box := Rect2(_box_start, _box_end - _box_start).abs()
   draw_rect(box, Color(SELECTION_COLOR, 0.12))
@@ -792,7 +850,7 @@ func _draw_composite_preview() -> void:
 
 
 func _draw_rings() -> void:
- if not show_gameplay: return
+ if not show_rings: return
  for index in document.ring_trails.size():
   var trail: Dictionary = _ring_preview if _ring_index == index and not _ring_mode.is_empty() else document.ring_trails[index]
   if selected_ring_indices.has(index) and _group_dragging:
@@ -856,13 +914,13 @@ func _update_ring_drag(pointer: Vector2, free_move: bool, force: bool = false) -
  _ring_preview = _ring_original.duplicate(true)
  if _ring_mode == "move":
   # Snap only the translated start; preserve the complete trail's relative shape.
-  var offset := legal_gameplay_position(_ring_original.start + delta, free_move) - Vector2(_ring_original.start)
+  var offset := legal_gameplay_position(_ring_original.start + delta, free_move, _ring_original.start) - Vector2(_ring_original.start)
   _ring_preview.start += offset
   _ring_preview.end += offset
  elif _ring_mode == "create":
-  _ring_preview.end = legal_gameplay_position(screen_to_local_pixels(pointer), free_move)
+  _ring_preview.end = legal_gameplay_position(screen_to_local_pixels(pointer), free_move, _ring_original.start)
  else:
-  _ring_preview[_ring_mode] = legal_gameplay_position(_ring_original[_ring_mode] + delta, free_move)
+  _ring_preview[_ring_mode] = legal_gameplay_position(_ring_original[_ring_mode] + delta, free_move, _ring_original[_ring_mode])
  _set_status("%d rings · Release for one edit · Alt frees endpoints · Esc cancels" % Rings.positions(_ring_preview).size())
  queue_redraw()
 
@@ -1172,14 +1230,22 @@ func _input(event: InputEvent) -> void:
  # actual event before Godot asks this control to accept or commit a drop.
  if event is InputEventKey and event.keycode == KEY_ALT:
   _alt_held = event.pressed
+ elif event is InputEventKey and event.keycode == KEY_SHIFT:
+  _shift_held = event.pressed
  elif event is InputEventMouse:
   _alt_held = event.alt_pressed
+  _shift_held = event.shift_pressed
  else:
   return
  queue_redraw()
 
 
 func _gui_input(event: InputEvent) -> void:
+ if event is InputEventMouse or event is InputEventKey:
+  _shift_held = event.shift_pressed
+ if _gizmo_input(event):
+  accept_event()
+  return
  if document != null and boundary_tool and not preview_active and _boundary_input(event):
   accept_event()
   return
@@ -1240,17 +1306,19 @@ func _gui_input(event: InputEvent) -> void:
   if not event.echo and (selection_count() > 1 or not selected_markers.is_empty()):
    cancel_gesture()
    var direction: Vector2 = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP, KEY_DOWN: Vector2.DOWN}[event.keycode]
-   group_move_requested.emit(clamp_group_offset(direction * (_local_cell_size() * terrain_snap_step if event.shift_pressed and not event.alt_pressed else 1.0)))
+   var origin := selection_anchor()
+   group_move_requested.emit(clamp_group_offset(legal_gameplay_position(origin + direction * nudge_distance(event.alt_pressed), event.alt_pressed, origin) - origin))
   elif not event.echo and selected_decor_index >= 0:
    cancel_gesture()
    var direction: Vector2 = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP, KEY_DOWN: Vector2.DOWN}[event.keycode]
    var slot: Dictionary = document.decor_slots[selected_decor_index].duplicate(true)
-   slot.position += direction * (1.0 if event.alt_pressed or not decor_snap else _local_cell_size())
+   slot.position = legal_gameplay_position(slot.position + direction * nudge_distance(event.alt_pressed), event.alt_pressed, slot.position)
    decor_requested.emit(selected_decor_index, slot)
   elif not event.echo and selected_ring_index >= 0:
    cancel_gesture()
    var direction: Vector2 = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP, KEY_DOWN: Vector2.DOWN}[event.keycode]
-   var offset := direction * (1.0 if event.alt_pressed else _local_cell_size())
+   var origin: Vector2 = document.ring_trails[selected_ring_index].start
+   var offset := legal_gameplay_position(origin + direction * nudge_distance(event.alt_pressed), event.alt_pressed, origin) - origin
    var trail: Dictionary = document.ring_trails[selected_ring_index].duplicate(true)
    trail.start += offset
    trail.end += offset
@@ -1258,19 +1326,19 @@ func _gui_input(event: InputEvent) -> void:
   elif not event.echo and not selected_marker.is_empty():
    cancel_gesture()
    var direction: Vector2 = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP, KEY_DOWN: Vector2.DOWN}[event.keycode]
-   var distance := 1.0 if event.alt_pressed else _local_cell_size()
+   var distance := nudge_distance(event.alt_pressed)
    var value: Variant = marker_value(selected_marker)
    if selected_marker in ["spawn", "goal"]:
-    var moved: Vector2 = value + direction * distance
-    _request_marker(selected_marker, _marker_position_value("goal", moved, event.alt_pressed) if selected_marker == "goal" else moved)
+    var moved := legal_gameplay_position(value + direction * distance, event.alt_pressed, value)
+    _request_marker(selected_marker, moved)
    elif direction.y != 0.0:
-    _request_marker(selected_marker, float(value) + direction.y * distance)
+    _request_marker(selected_marker, legal_gameplay_position(Vector2(0, float(value) + direction.y * distance), event.alt_pressed, Vector2(0, float(value))).y)
   elif not event.echo and selected_gameplay_index >= 0 and selected_gameplay_index < _gameplay_objects().size():
    cancel_gesture()
    var direction: Vector2 = {KEY_LEFT: Vector2.LEFT, KEY_RIGHT: Vector2.RIGHT, KEY_UP: Vector2.UP, KEY_DOWN: Vector2.DOWN}[event.keycode]
    var point: Vector2 = _gameplay_objects()[selected_gameplay_index].position
-   var distance := 1.0 if event.alt_pressed else _local_cell_size()
-   gameplay_move_requested.emit(selected_gameplay_index, point + direction * distance)
+   var distance := nudge_distance(event.alt_pressed)
+   gameplay_move_requested.emit(selected_gameplay_index, legal_gameplay_position(point + direction * distance, event.alt_pressed, point))
   elif not event.echo and not selected_connector.is_empty():
    if event.keycode in [KEY_LEFT, KEY_RIGHT]:
     cancel_gesture()
@@ -1283,8 +1351,8 @@ func _gui_input(event: InputEvent) -> void:
    var direction: Vector2i = {KEY_LEFT: Vector2i.LEFT, KEY_RIGHT: Vector2i.RIGHT, KEY_UP: Vector2i.UP, KEY_DOWN: Vector2i.DOWN}[event.keycode]
    var placement: Dictionary = _placements()[selected_index]
    var anchor := Shapes.placement_position(placement)
-   var distance := 1.0 / _local_cell_size() if event.alt_pressed else terrain_snap_step
-   move_requested.emit(selected_index, legal_anchor_for(placement, anchor + Vector2(direction) * distance, true))
+   var distance := nudge_distance(event.alt_pressed) / _local_cell_size()
+   move_requested.emit(selected_index, legal_anchor_for(placement, anchor + Vector2(direction) * distance, event.alt_pressed, anchor))
   accept_event()
  elif event is InputEventMouseButton:
   _cursor_position = event.position
@@ -1310,11 +1378,11 @@ func _gui_input(event: InputEvent) -> void:
    else:
     if _bank_dragging:
      if event.position.distance_squared_to(_handle_last_pointer) > POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
-      _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed))
+      _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed, _bank_start))
     elif _box_selecting:
      _box_end = event.position
     elif _group_dragging:
-     _update_group_drag(event.position, not event.shift_pressed or event.alt_pressed)
+     _update_group_drag(event.position, event.alt_pressed)
     elif _decor_drag_index >= 0:
      _update_decor_drag(event.position, event.alt_pressed)
     elif not _ring_mode.is_empty():
@@ -1340,11 +1408,11 @@ func _gui_input(event: InputEvent) -> void:
    _view_adjusted = true
   elif _bank_dragging:
    _handle_last_pointer = event.position
-   _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed))
+   _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed, _bank_start))
   elif _box_selecting:
    _box_end = event.position
   elif _group_dragging:
-   _update_group_drag(event.position, not event.shift_pressed or event.alt_pressed)
+   _update_group_drag(event.position, event.alt_pressed)
   elif _decor_drag_index >= 0:
    _update_decor_drag(event.position, event.alt_pressed)
   elif not _ring_mode.is_empty():
@@ -1400,6 +1468,9 @@ func _composite_preview_input(event: InputEvent) -> void:
 
 func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool = false) -> void:
  if preview_active:
+  return
+ if not assembly_copy.is_empty():
+  if _inside_grid(pointer): assembly_place_requested.emit(legal_gameplay_position(screen_to_local_pixels(pointer), cycle_overlaps))
   return
  if not decor_brush.is_empty():
   if _inside_grid(pointer):
@@ -1507,13 +1578,22 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
    return
   if target.get("kind") in ["terrain", "gameplay", "decor", "ring"]:
    var selection := object_selection()
-   var indices: Array = selection[target.kind]
-   if indices.has(target.index): indices.erase(target.index)
-   else: indices.append(target.index)
+   var members := EditorSelection.expanded(document, EditorSelection.single(target.kind, target.index))
+   if selection[target.kind].has(target.index):
+    for kind: String in EditorSelection.KINDS:
+     for index: Variant in members[kind]: selection.get(kind, []).erase(index)
+   else: EditorSelection.merge(selection, members)
+   active_target = target.duplicate()
    set_object_selection(selection)
    return
+ if target.get("kind") in ["terrain", "gameplay", "decor", "ring"] and not object_selection().get(target.kind, []).has(target.index):
+  var members := EditorSelection.expanded(document, EditorSelection.single(target.kind, target.index))
+  if EditorSelection.count(members) > 1:
+   active_target = target.duplicate()
+   set_object_selection(members)
  if (selection_count() > 1 or not selected_markers.is_empty()) and (object_selection().get(target.get("kind", ""), []).has(target.get("index", -1)) or (target.get("kind") == "marker" and selected_markers.has(target.get("marker", "")))):
   cancel_gesture()
+  active_target = target.duplicate()
   _group_dragging = true
   _group_start = pointer
   _group_last_pointer = pointer
@@ -1563,28 +1643,35 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
 func object_selection() -> Dictionary:
  var selection := {"terrain": selected_indices.duplicate(), "gameplay": selected_gameplay_indices.duplicate(),
   "decor": selected_decor_indices.duplicate(), "ring": selected_ring_indices.duplicate()}
- if not selected_markers.is_empty(): selection["markers"] = selected_markers.duplicate()
+ selection["markers"] = selected_markers.duplicate()
+ if not selected_marker.is_empty() and not selection.markers.has(selected_marker): selection.markers.append(selected_marker)
  return selection
 
 
 func selection_count() -> int:
- return selected_indices.size() + selected_gameplay_indices.size() + selected_decor_indices.size() + selected_ring_indices.size() + selected_markers.size()
+ return EditorSelection.count(object_selection())
 
 
 func set_object_selection(selection: Dictionary) -> void:
+ var expanded := EditorSelection.expanded(document, selection)
+ if document.editor_groups.any(func(group): return EditorSelection.intersects(group.members, expanded)):
+  # Never leave a group partly selected because one of its layers was hidden.
+  for kind: String in EditorSelection.COLLECTIONS:
+   if not expanded[kind].is_empty(): set("show_" + ("rings" if kind == "ring" else kind), true)
+ selection = expanded
  select_piece(-1)
  var terrain: Array[int] = []
  var gameplay: Array[int] = []
  var decor: Array[int] = []
  var rings: Array[int] = []
  for index: int in selection.get("terrain", []):
-  if index >= 0 and index < _placements().size() and not terrain.has(index): terrain.append(index)
+  if show_terrain and index >= 0 and index < _placements().size() and not terrain.has(index): terrain.append(index)
  for index: int in selection.get("gameplay", []):
   if show_gameplay and index >= 0 and index < _gameplay_objects().size() and not gameplay.has(index): gameplay.append(index)
  for index: int in selection.get("decor", []):
   if show_decor and index >= 0 and index < document.decor_slots.size() and not decor.has(index): decor.append(index)
  for index: int in selection.get("ring", []):
-  if show_gameplay and index >= 0 and index < document.ring_trails.size() and not rings.has(index): rings.append(index)
+  if show_rings and index >= 0 and index < document.ring_trails.size() and not rings.has(index): rings.append(index)
  selected_index = terrain.back() if not terrain.is_empty() else -1
  selected_indices = terrain
  selected_gameplay_index = gameplay.back() if not gameplay.is_empty() else -1
@@ -1594,17 +1681,18 @@ func set_object_selection(selection: Dictionary) -> void:
  selected_ring_index = rings.back() if not rings.is_empty() else -1
  selected_ring_indices = rings
  for kind: String in selection.get("markers", []):
-  if show_gameplay and kind in ["spawn", "goal", "activation"] and marker_value(kind) != null and not selected_markers.has(kind): selected_markers.append(kind)
+  if show_markers and kind in ["spawn", "goal", "activation"] and marker_value(kind) != null and not selected_markers.has(kind): selected_markers.append(kind)
  _emit_selection_changed()
  queue_redraw()
 
 
 func set_layer_visible(layer: String, enabled: bool) -> void:
- if layer == "decor": show_decor = enabled
- elif layer == "gameplay": show_gameplay = enabled
+ if layer not in ["terrain", "gameplay", "decor", "rings", "markers"]: return
+ set("show_" + layer, enabled)
  if not enabled:
   # Drop hidden selections and active tools without changing the Act or undo history.
-  set_object_selection(object_selection())
+  select_piece(-1)
+  _emit_selection_changed()
  queue_redraw()
 
 
@@ -1613,13 +1701,14 @@ func _finish_box_selection() -> void:
  var selection := object_selection() if _box_additive else {"terrain": [], "gameplay": [], "decor": [], "ring": []}
  if _box_start.distance_to(_box_end) >= 3.0:
   for index in _placements().size():
+   if not show_terrain: break
    var placement: Dictionary = _placements()[index]
    var points := PackedVector2Array()
    for point: Vector2 in Shapes.transformed_points(placement):
     points.append(grid_to_screen(Shapes.placement_position(placement) + point))
    if _box_hits_points(box, points, Shapes.definition_for_placement(placement).get("closed", false)):
     if not selection.terrain.has(index): selection.terrain.append(index)
-  if show_gameplay:
+  if show_markers:
    var markers: Array = selection.get("markers", [])
    for kind: String in ["spawn", "goal", "activation"]:
     var value: Variant = marker_value(kind)
@@ -1632,6 +1721,7 @@ func _finish_box_selection() -> void:
      hit = box.has_point(local_pixels_to_screen(value))
     if hit and not markers.has(kind): markers.append(kind)
    if not markers.is_empty(): selection["markers"] = markers
+  if show_gameplay:
    for index in _gameplay_objects().size():
     var placement: Dictionary = _gameplay_objects()[index]
     var points := PackedVector2Array()
@@ -1639,6 +1729,7 @@ func _finish_box_selection() -> void:
      points.append(local_pixels_to_screen(placement.position + point))
     if _box_hits_points(box, points, placement.type not in ["elevated_rail", "lane_barrier"]):
      if not selection.gameplay.has(index): selection.gameplay.append(index)
+  if show_rings:
    for index in document.ring_trails.size():
     for point: Vector2 in Rings.positions(document.ring_trails[index]):
      if _box_hits_circle(box, local_pixels_to_screen(point), PreviewDimensions.RING_RADIUS_CELLS * _cell_pixels):
@@ -1696,12 +1787,18 @@ func _update_group_drag(pointer: Vector2, free_move: bool, force: bool = false) 
  if pointer.distance_to(_group_start) < 3.0 and _group_offset == Vector2.ZERO: return
  _pending_cycle_target = {}
  var offset := screen_to_local_pixels(pointer) - screen_to_local_pixels(_group_start)
- if not free_move:
-  offset = offset.snapped(Vector2.ONE * _local_cell_size() * terrain_snap_step)
+ var origin := selection_anchor()
+ offset = legal_gameplay_position(origin + offset, free_move, origin) - origin
  _group_offset = clamp_group_offset(offset)
 
 
 func _select_hit_target(target: Dictionary) -> void:
+ active_target = target.duplicate()
+ if target.get("kind") in ["terrain", "gameplay", "decor", "ring"]:
+  var members := EditorSelection.expanded(document, EditorSelection.single(target.kind, target.index))
+  if EditorSelection.count(members) > 1:
+   set_object_selection(members)
+   return
  if target.is_empty():
   select_piece(-1)
  elif target.kind == "decor":
@@ -1748,31 +1845,13 @@ func _update_drag(pointer: Vector2, free_move: bool = false, force := false) -> 
   return
  _drag_moved = true
  _pending_cycle_target = {}
- _drag_anchor = legal_anchor_for(placements[_drag_index], _drag_start_anchor + delta, free_move)
+ _drag_anchor = legal_anchor_for(placements[_drag_index], _drag_start_anchor + delta, free_move, _drag_start_anchor)
  _set_status("Move to %s cells. Release to apply; Alt moves freely; Esc cancels." % _drag_anchor)
 
 
 func _marker_position_value(kind: String, position: Vector2, free_move: bool) -> Variant:
  if kind == "activation":
-  return float(position.y) if free_move else roundf(position.y / _local_cell_size()) * _local_cell_size()
- if kind == "goal" and not free_move:
-  # Shared edges have one integer coordinate and one half-cell coordinate.
-  # Exclude the outer border: it does not separate two cells.
-  var cell := _local_cell_size()
-  var grid: Vector2i = document.grid_size
-  var point := position / cell
-  var candidates: Array[Vector2] = []
-  if grid.x > 1:
-   candidates.append(Vector2(clampf(roundf(point.x), 1, grid.x - 1), clampf(floorf(point.y) + 0.5, 0.5, grid.y - 0.5)) * cell)
-  if grid.y > 1:
-   candidates.append(Vector2(clampf(floorf(point.x) + 0.5, 0.5, grid.x - 0.5), clampf(roundf(point.y), 1, grid.y - 1)) * cell)
-  if grid.x > 1 and grid.y > 1:
-   candidates.append(Vector2(clampf(roundf(point.x), 1, grid.x - 1), clampf(roundf(point.y), 1, grid.y - 1)) * cell)
-  if candidates.is_empty(): return Vector2.ONE * cell * 0.5
-  var nearest := candidates[0]
-  for candidate: Vector2 in candidates:
-   if candidate.distance_squared_to(position) < nearest.distance_squared_to(position): nearest = candidate
-  return nearest
+  return legal_gameplay_position(position, free_move).y
  return legal_gameplay_position(position, free_move)
 
 
@@ -1787,7 +1866,7 @@ func _set_marker_status(kind: String, value: Variant, pointer_inside: bool = tru
  if not pointer_inside or not valid_marker_value(kind, value):
   _set_status("%s must stay inside the Act terrain bounds. The outer bottom/right edges and red gutter are outside; no edit applied." % kind.capitalize())
   return
- var mode := "FREE MOVE" if _alt_held else "SNAP ON"
+ var mode: String = Snap.LABELS[effective_snap_mode(_alt_held)]
  var coordinate := "Y %.2f px" % float(value) if kind == "activation" else "(%.2f, %.2f) px" % [value.x, value.y]
  _set_status("%s · %s %s · Alt frees position; Esc cancels. Activation moves vertically only." % [mode, kind.capitalize(), coordinate])
 
@@ -1817,9 +1896,9 @@ func _update_marker_drag(pointer: Vector2, free_move: bool, force: bool = false)
  _alt_held = free_move
  if _marker_drag_kind == "activation":
   var y := float(_marker_drag_start_value) + delta.y
-  _marker_drag_value = y if free_move else roundf(y / _local_cell_size()) * _local_cell_size()
+  _marker_drag_value = legal_gameplay_position(Vector2(0, y), free_move, Vector2(0, float(_marker_drag_start_value))).y
  else:
-  _marker_drag_value = _marker_position_value(_marker_drag_kind, _marker_drag_start_value + delta, free_move)
+  _marker_drag_value = legal_gameplay_position(_marker_drag_start_value + delta, free_move, _marker_drag_start_value)
  _set_marker_status(_marker_drag_kind, _marker_drag_value)
  queue_redraw()
 
@@ -1851,7 +1930,7 @@ func _update_gameplay_drag(pointer: Vector2, free_move: bool, force: bool = fals
  _gameplay_drag_moved = true
  _pending_cycle_target = {}
  _alt_held = free_move
- _gameplay_drag_position = legal_gameplay_position(_gameplay_drag_start_position + delta, free_move)
+ _gameplay_drag_position = legal_gameplay_position(_gameplay_drag_start_position + delta, free_move, _gameplay_drag_start_position)
  _set_gameplay_status(_gameplay_drag_position)
  queue_redraw()
 
@@ -1869,7 +1948,7 @@ func _end_gameplay_drag() -> void:
 
 
 func _set_gameplay_status(point: Vector2) -> void:
- var mode := "FREE MOVE" if _alt_held else "SNAP ON"
+ var mode: String = Snap.LABELS[effective_snap_mode(_alt_held)]
  _set_status("%s · Anchor (%.2f, %.2f) px · Alt frees placement · Shift + wheel resizes" % [mode, point.x, point.y])
 
 
@@ -2074,6 +2153,7 @@ func _notification(what: int) -> void:
   queue_redraw()
  elif what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
   _alt_held = false
+  _shift_held = false
   cancel_gesture()
 
 
@@ -2148,7 +2228,7 @@ func _rail_input(event: InputEvent) -> bool:
  var points: PackedVector2Array = Objects.properties(item).points
  if event is InputEventMouseButton and event.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
   grab_focus()
-  var local := (legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed) - Vector2(item.position)).rotated(-deg_to_rad(float(item.rotation_degrees)))
+  var local := (legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed, item.position) - Vector2(item.position)).rotated(-deg_to_rad(float(item.rotation_degrees)))
   var nearest := -1
   for i in points.size():
    var screen := local_pixels_to_screen(item.position + points[i].rotated(deg_to_rad(float(item.rotation_degrees))))
@@ -2161,6 +2241,7 @@ func _rail_input(event: InputEvent) -> bool:
    elif nearest >= 0:
     _handle_last_pointer = event.position
     _rail_drag = nearest
+    _handle_snap_origin = Vector2(item.position) + points[nearest].rotated(deg_to_rad(float(item.rotation_degrees)))
     _rail_preview = points.duplicate()
    elif points.size() < (Objects.MAX_POSTS if item.type == "lane_barrier" else 64):
     var insert_at := points.size()
@@ -2181,7 +2262,7 @@ func _rail_input(event: InputEvent) -> bool:
   return true
  if event is InputEventMouseMotion and _rail_drag >= 0:
   _handle_last_pointer = event.position
-  _rail_preview[_rail_drag] = (legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed) - Vector2(item.position)).rotated(-deg_to_rad(float(item.rotation_degrees)))
+  _rail_preview[_rail_drag] = (legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed, _handle_snap_origin) - Vector2(item.position)).rotated(-deg_to_rad(float(item.rotation_degrees)))
   queue_redraw()
   return true
  return false
@@ -2196,7 +2277,7 @@ func _teleporter_input(event: InputEvent) -> bool:
   if event is InputEventMouseMotion or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed):
    var offset := Vector2(_teleporter_preview.properties.exit_x, _teleporter_preview.properties.exit_y)
    if event is InputEventMouseMotion or event.position.distance_squared_to(_handle_last_pointer) > POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
-    offset = (legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed) - Vector2(_teleporter_preview.position)).rotated(-deg_to_rad(float(_teleporter_preview.rotation_degrees)))
+    offset = (legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed, _handle_snap_origin) - Vector2(_teleporter_preview.position)).rotated(-deg_to_rad(float(_teleporter_preview.rotation_degrees)))
    _handle_last_pointer = event.position
    _teleporter_preview.properties.exit_x = offset.x
    _teleporter_preview.properties.exit_y = offset.y
@@ -2213,6 +2294,7 @@ func _teleporter_input(event: InputEvent) -> bool:
  if item.type != "teleporter": return false
  if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and local_pixels_to_screen(Objects.teleporter_exit(item)).distance_to(event.position) <= 12.0:
   _teleporter_index = selected_gameplay_index
+  _handle_snap_origin = Objects.teleporter_exit(item)
   _handle_last_pointer = event.position
   _teleporter_preview = item.duplicate(true)
   _teleporter_preview.properties = Objects.properties(item)
@@ -2229,7 +2311,7 @@ func _patrol_input(event: InputEvent) -> bool:
    return true
   if event is InputEventMouseMotion or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed):
    if event is InputEventMouseMotion or event.position.distance_squared_to(_handle_last_pointer) > POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
-    var delta := legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed) - Vector2(_patrol_preview.position)
+    var delta := legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed, _handle_snap_origin) - Vector2(_patrol_preview.position)
     var x := delta.rotated(-deg_to_rad(float(_patrol_preview.rotation_degrees))).x
     if _patrol_index < 0:
      _patrol_preview.properties.patrol_left = clampf(x, -2000, 0)
@@ -2248,9 +2330,9 @@ func _patrol_input(event: InputEvent) -> bool:
    queue_redraw()
    return true
   return false
- # Shift may be pressed after the mouse button. Promote an uncommitted move
+ # Ctrl+Shift may be pressed after the mouse button. Promote an uncommitted move
  # gesture to patrol editing without moving the anchor or adding an Undo step.
- if event is InputEventMouseMotion and event.shift_pressed and _gameplay_drag_index >= 0:
+ if event is InputEventMouseMotion and (event.shift_pressed and event.ctrl_pressed) and _gameplay_drag_index >= 0:
   var index := _gameplay_drag_index
   if _gameplay_objects()[index].type == "buzz_bomber":
    _begin_patrol_edit(index, "auto")
@@ -2270,15 +2352,15 @@ func _patrol_input(event: InputEvent) -> bool:
    var right := local_pixels_to_screen(Vector2(selected.position) + axis * float(props.patrol_right))
    for side: String in ["left", "right"]:
     var endpoint := left if side == "left" else right
-    if endpoint.distance_to(event.position) <= 10 and (event.shift_pressed or endpoint.distance_to(anchor) > 12):
+    if endpoint.distance_to(event.position) <= 10 and ((event.shift_pressed and event.ctrl_pressed) or endpoint.distance_to(anchor) > 12):
      edit_index = selected_gameplay_index
      edit_side = side
-   if event.shift_pressed and Geometry2D.get_closest_point_to_segment(event.position, left, right).distance_to(event.position) <= 12:
+   if (event.shift_pressed and event.ctrl_pressed) and Geometry2D.get_closest_point_to_segment(event.position, left, right).distance_to(event.position) <= 12:
     edit_index = selected_gameplay_index
     edit_side = "auto" if event.position.distance_to(anchor) <= 12 else ("left" if (event.position - anchor).dot(axis) < 0.0 else "right")
  # Editing an existing Buzz takes priority over stamping another one, including
  # while the Buzz brush remains active after ordinary placement.
- if edit_index < 0 and event.shift_pressed:
+ if edit_index < 0 and (event.shift_pressed and event.ctrl_pressed):
   for index in gameplay_hit_indices_at(event.position):
    if _gameplay_objects()[index].type == "buzz_bomber":
     edit_index = index
@@ -2286,7 +2368,7 @@ func _patrol_input(event: InputEvent) -> bool:
  if edit_index >= 0:
   _begin_patrol_edit(edit_index, edit_side)
   return true
- if gameplay_brush.get("type") != "buzz_bomber" or not event.shift_pressed or not _inside_grid(event.position): return false
+ if gameplay_brush.get("type") != "buzz_bomber" or not (event.shift_pressed and event.ctrl_pressed) or not _inside_grid(event.position): return false
  _patrol_index = -1
  _patrol_preview = gameplay_brush.duplicate(true)
  _patrol_preview.object_id = Objects.new_id()
@@ -2294,6 +2376,7 @@ func _patrol_input(event: InputEvent) -> bool:
  _patrol_preview.properties = Objects.properties(_patrol_preview)
  _patrol_preview.properties.patrol_left = 0.0
  _patrol_preview.properties.patrol_right = 0.0
+ _handle_snap_origin = _patrol_preview.position
  _patrol_dragging = true
  grab_focus()
  _set_status("Buzz Bomber patrol: drag along its rotated axis. Alt frees snapping; Esc cancels. Zero length is stationary.")
@@ -2307,13 +2390,15 @@ func _begin_patrol_edit(index: int, side: String) -> void:
  _patrol_side = side
  _patrol_preview = _gameplay_objects()[index].duplicate(true)
  _patrol_preview.properties = Objects.properties(_patrol_preview)
+ var endpoint: float = _patrol_preview.properties.get("patrol_" + side, 0.0)
+ _handle_snap_origin = Vector2(_patrol_preview.position) + Vector2.RIGHT.rotated(deg_to_rad(float(_patrol_preview.rotation_degrees))) * endpoint
  _patrol_dragging = true
  grab_focus()
  _set_status("Resize patrol: drag left or right. Anchor stays fixed. Alt frees snapping; Esc cancels.")
  queue_redraw()
 
 func _draw_launch_range(item: Dictionary) -> void:
- if not show_launch_previews: return
+ if not show_launch_previews or _gizmo_dragging: return
  var is_flipper: bool = item.type in ["left_flipper", "right_flipper"]
  var profile: Resource = PhysicsTuning.FLOATY if is_equal_approx(trajectory_gravity_scale, PhysicsTuning.FLOATY.gravity_scale) else PhysicsTuning.BALANCED
  var stats := PhysicsTuning.resolve(profile, {}, [])
@@ -2371,7 +2456,43 @@ func _draw_launch_range(item: Dictionary) -> void:
  draw_string(get_theme_default_font(), Vector2(16, size.y - 34), detail, HORIZONTAL_ALIGNMENT_LEFT, size.x - 32, 11, Color("b3cadb"))
  draw_string(get_theme_default_font(), Vector2(16, size.y - 17), "Example paths · free flight after contact · no later obstacles or steering", HORIZONTAL_ALIGNMENT_LEFT, size.x - 32, 11, Color("9cb3c6"))
 
+func selection_anchor() -> Vector2:
+ var selection := object_selection()
+ var kind: String = active_target.get("kind", "")
+ if kind == "marker" and selection.get("markers", []).has(active_target.get("marker", "")):
+  var marker: String = active_target.marker
+  var value: Variant = marker_value(marker)
+  return Vector2(0, float(value)) if marker == "activation" else Vector2(value)
+ var index: int = active_target.get("index", -1)
+ if not selection.get(kind, []).has(index):
+  kind = ""
+  index = -1
+  for candidate: String in ["gameplay", "terrain", "decor", "ring"]:
+   if not selection.get(candidate, []).is_empty():
+    kind = candidate
+    index = selection[candidate].back()
+    break
+ if kind == "terrain" and index >= 0: return Shapes.placement_position(document.placements[index]) * _local_cell_size()
+ if kind == "gameplay" and index >= 0: return document.gameplay_objects[index].position
+ if kind == "decor" and index >= 0: return document.decor_slots[index].position
+ if kind == "ring" and index >= 0: return (document.ring_trails[index].start + document.ring_trails[index].end) * 0.5
+ return SelectionTransform.bounds(document, selection).get_center()
+
+func transform_pivot() -> Vector2:
+ if _gizmo_dragging: return _gizmo_pivot
+ if pivot_mode == 2: return cursor_pivot
+ if pivot_mode == 1: return selection_anchor()
+ return SelectionTransform.bounds(document, object_selection()).get_center()
+
+func set_cursor_pivot() -> void:
+ pivot_mode = 2
+ cursor_pivot = screen_to_local_pixels(_cursor_position)
+ queue_redraw()
+
 func select_all_content() -> void:
+ show_terrain = true
+ show_rings = true
+ show_markers = true
  show_gameplay = true
  show_decor = true
  var selection := {"terrain": range(_placements().size()), "gameplay": range(_gameplay_objects().size()),
@@ -2380,7 +2501,7 @@ func select_all_content() -> void:
   if marker_value(kind) != null: selection.markers.append(kind)
  set_object_selection(selection)
  grab_focus()
- _set_status("All content selected, including hidden layers and lifecycle markers. Drag freely; Shift snaps. Entry/Exit remain attached to the grid.")
+ _set_status("All unlocked content selected, including hidden layers and lifecycle markers. Drag freely; Shift snaps. Entry/Exit remain attached to the grid.")
 
 func frame_selection() -> void:
  if selection_count() == 0:
@@ -2392,6 +2513,119 @@ func frame_selection() -> void:
  _view_origin = size * 0.5 - bounds.get_center() * _cell_pixels / _local_cell_size()
  _view_adjusted = true
  queue_redraw()
+
+func _selection_handle_points() -> PackedVector2Array:
+ var bounds := SelectionTransform.bounds(document, object_selection())
+ var rect := Rect2(local_pixels_to_screen(bounds.position), bounds.size * _cell_pixels / _local_cell_size()).grow(9.0)
+ return PackedVector2Array([rect.position, Vector2(rect.end.x, rect.position.y), rect.end,
+  Vector2(rect.position.x, rect.end.y), Vector2(rect.get_center().x, rect.position.y - 27.0)])
+
+func _handles_available() -> bool:
+ return document != null and show_transform_handles and selection_count() > 0 and not boundary_tool and not preview_active and not rail_edit and _rail_drag < 0 and not _patrol_dragging and _teleporter_index < 0 and not _group_dragging and _drag_index < 0 and _gameplay_drag_index < 0 and _decor_drag_index < 0 and _ring_mode.is_empty() and _marker_drag_kind.is_empty()
+
+func _draw_selection_handles() -> void:
+ if not _handles_available(): return
+ var points := _selection_handle_points()
+ var tint := Color("ff7676") if not gizmo_error.is_empty() else Color("75dbe8")
+ var outline := PackedVector2Array([points[0], points[1], points[2], points[3], points[0]])
+ draw_polyline(outline, Color(tint, 0.55), 1.0, true)
+ for index in 4: draw_rect(Rect2(points[index] - Vector2.ONE * 4, Vector2.ONE * 8), tint)
+ draw_line((points[0] + points[1]) * 0.5, points[4], tint, 1.0, true)
+ draw_circle(points[4], 5.0, tint)
+ var pivot := local_pixels_to_screen(transform_pivot())
+ draw_line(pivot - Vector2(7, 0), pivot + Vector2(7, 0), Color("ffcb73"), 1.5, true)
+ draw_line(pivot - Vector2(0, 7), pivot + Vector2(0, 7), Color("ffcb73"), 1.5, true)
+ var bounds := SelectionTransform.bounds(document, object_selection())
+ var label := "%.2f × %.2f px  |  %.2f × %.2f cells" % [bounds.size.x, bounds.size.y, bounds.size.x / _local_cell_size(), bounds.size.y / _local_cell_size()]
+ var units := EditorSelection.units(document, object_selection())
+ if units.size() == 2:
+  var delta := SelectionTransform.bounds(document, units[1]).get_center() - SelectionTransform.bounds(document, units[0]).get_center()
+  label += "  |  centers %.2f px (ΔX %.2f, ΔY %.2f)" % [delta.length(), delta.x, delta.y]
+ if _gizmo_dragging: label = "%.3f× · %.2f° · release to apply · Esc cancels" % [_gizmo_factor, _gizmo_degrees]
+ if not gizmo_error.is_empty(): label = "Cannot apply: " + gizmo_error
+ draw_string(get_theme_default_font(), Vector2(12, 43 if boundary_tool else 22), label, HORIZONTAL_ALIGNMENT_LEFT, size.x - 24, 11, tint)
+
+func _draw_locked_items() -> void:
+ if document == null: return
+ for kind: String in EditorSelection.COLLECTIONS:
+  if not get("show_" + ("rings" if kind == "ring" else kind)): continue
+  for index: int in document.editor_locks.get(kind, []):
+   var at := SelectionTransform.bounds(document, EditorSelection.single(kind, index)).get_center()
+   var point := local_pixels_to_screen(at)
+   draw_rect(Rect2(point - Vector2(4, 0), Vector2(8, 7)), Color("d4a071"), false, 1.5)
+   draw_arc(point + Vector2(0, 0), 3, PI, TAU, 8, Color("d4a071"), 1.5, true)
+
+func _gizmo_input(event: InputEvent) -> bool:
+ if _gizmo_dragging:
+  if (event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE) or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT):
+   cancel_gesture()
+   return true
+  if event is InputEventMouseMotion:
+   _update_gizmo(event.position, event.shift_pressed)
+   return true
+  if event is InputEventMouseButton:
+   if event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+    if event.position.distance_squared_to(_cursor_position) > POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
+     _update_gizmo(event.position, event.shift_pressed)
+    var candidate := gizmo_document
+    var error := gizmo_error
+    var unchanged := document.editing_fingerprint() == _gizmo_source
+    cancel_gesture()
+    if candidate != null and unchanged and error.is_empty(): gizmo_commit_requested.emit(candidate)
+    elif not error.is_empty(): _set_status("Transform canceled: " + error)
+   return true
+  return false
+ if not _handles_available() or not event is InputEventMouseButton or not event.pressed or event.button_index != MOUSE_BUTTON_LEFT: return false
+ var handles := _selection_handle_points()
+ for index in handles.size():
+  if handles[index].distance_to(event.position) > 8.0: continue
+  var pivot := transform_pivot()
+  cancel_gesture()
+  _gizmo_pivot = pivot
+  _gizmo_start = screen_to_local_pixels(event.position) - pivot
+  if _gizmo_start.length() < 0.001: return true
+  _gizmo_dragging = true
+  _gizmo_kind = "rotate" if index == 4 else "scale"
+  _gizmo_source = document.editing_fingerprint()
+  _gizmo_factor = 1.0
+  _gizmo_degrees = 0.0
+  _cursor_position = event.position
+  grab_focus()
+  return true
+ return false
+
+func _update_gizmo(pointer: Vector2, shift: bool) -> void:
+ _cursor_position = pointer
+ var current := screen_to_local_pixels(pointer) - _gizmo_pivot
+ _gizmo_factor = clampf(current.length() / _gizmo_start.length(), 0.01, 100.0) if _gizmo_kind == "scale" else 1.0
+ _gizmo_degrees = rad_to_deg(_gizmo_start.angle_to(current)) if _gizmo_kind == "rotate" else 0.0
+ if shift:
+  if _gizmo_kind == "scale": _gizmo_factor = maxf(0.1, snappedf(_gizmo_factor, 0.1))
+  else: _gizmo_degrees = snappedf(_gizmo_degrees, 15.0)
+ gizmo_preview_requested.emit(_gizmo_factor, _gizmo_degrees, _gizmo_pivot)
+ queue_redraw()
+
+func _draw_assembly_ghost() -> void:
+ if assembly_copy.is_empty() or not _hovering or not _inside_grid(_cursor_position): return
+ var target := legal_gameplay_position(screen_to_local_pixels(_cursor_position), _alt_held)
+ var adjusted := Clipboard.placement_offset(document, assembly_copy, target - assembly_center)
+ if not adjusted.error.is_empty(): return
+ var offset: Vector2 = adjusted.offset
+ for original: Dictionary in assembly_copy.terrain:
+  var piece := original.duplicate(true)
+  Shapes.set_placement_position(piece, Shapes.placement_position(piece) + offset / _local_cell_size())
+  _draw_piece(piece, false, true)
+ for item: Dictionary in assembly_copy.gameplay:
+  ObjectPreview.draw_object(self, item, local_pixels_to_screen(item.position + offset), _cell_pixels / _local_cell_size(), _local_cell_size(), false, true)
+ for original: Dictionary in assembly_copy.ring:
+  var trail := original.duplicate(true)
+  trail.start += offset
+  trail.end += offset
+  _draw_ring_trail(trail, false, true)
+ for original: Dictionary in assembly_copy.decor:
+  var slot := original.duplicate(true)
+  slot.position += offset
+  _draw_decor_slot(slot, false, true)
 
 func _draw_boundary_handles() -> void:
  var dimensions := _boundary_preview if _boundary_dragging else _grid_size()

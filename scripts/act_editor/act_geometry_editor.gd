@@ -18,6 +18,10 @@ const DEFAULT_ACT_DIRECTORY := "res://data/acts"
 const HISTORY_LIMIT := 100
 const SelectionClipboard = preload("res://scripts/act_editor/selection_clipboard.gd")
 const SelectionTransform = preload("res://scripts/act_editor/selection_transform.gd")
+const EditorSelection = preload("res://scripts/act_editor/editor_selection.gd")
+const Snap = preload("res://scripts/act_editor/editor_snap.gd")
+const AssemblyLibrary = preload("res://scripts/act_editor/assembly_library.gd")
+const TerrainHistory = preload("res://scripts/act_editor/terrain_history.gd")
 const TERRAIN_SIZES := [1.0, 0.5, 0.125, 0.25, 0.75, 1.5, 2.0, 4.0, 8.0]
 var _selection_clipboard: Dictionary = {}
 var _paste_count := 0
@@ -91,6 +95,14 @@ var _composite_area_limited := false
 var terrain_snap_field: OptionButton
 var terrain_scale_field: OptionButton
 var shortcuts_dialog: AcceptDialog
+var snap_mode_field: OptionButton
+var pivot_field: OptionButton
+var layer_fields: Dictionary = {}
+var assembly_list: ItemList
+var assembly_entries: Array[Dictionary] = []
+var assembly_dialog: ConfirmationDialog
+var assembly_name_field: LineEdit
+var _solo_visibility: Dictionary = {}
 var _composite_error := ""
 var _composite_join_indices := PackedInt32Array()
 var _composite_protected_indices := PackedInt32Array()
@@ -385,7 +397,7 @@ func _build_ui() -> void:
 	marker_summary.add_theme_color_override("font_color", Color("9bdedb"))
 	marker_summary.add_theme_font_size_override("font_size", 13)
 	marker_list.add_child(marker_summary)
-	_button(marker_list, "goal", "Place / move goal ring", func(): choose_marker("goal"), "One cell wide by default. Snaps to shared cell-edge midpoints and grid intersections; Alt allows free placement. Delete restores the default.")
+	_button(marker_list, "goal", "Place / move goal ring", func(): choose_marker("goal"), "One cell wide by default. S changes snapping; Alt always places freely. Delete restores the default.")
 	goal_size_field = SpinBox.new()
 	goal_size_field.min_value = 0.25
 	goal_size_field.max_value = 8.0
@@ -393,7 +405,7 @@ func _build_ui() -> void:
 	goal_size_field.prefix = "Goal diameter"
 	goal_size_field.suffix = "cells"
 	goal_size_field.value_changed.connect(func(value):
-		if _refreshing: return
+		if _refreshing or composite_preview_active or EditorSelection.locked(document, "markers", "goal"): return
 		_record_edit()
 		document.goal_diameter_cells = value
 		_refresh())
@@ -495,11 +507,12 @@ func _build_ui() -> void:
 	connector_summary.visible = false
 	connectors.add_child(connector_summary)
 	terrain_snap_field = OptionButton.new()
-	terrain_snap_field.add_item("Snap: 1 cell")
-	terrain_snap_field.add_item("Snap: ½ cell")
-	terrain_snap_field.tooltip_text = "Terrain placement and movement grid. Hold Alt for free positioning."
+	terrain_snap_field.add_item("Step: 1 cell")
+	terrain_snap_field.add_item("Step: ½ cell")
+	terrain_snap_field.add_item("Step: ¼ cell")
+	terrain_snap_field.tooltip_text = "Shared grid step for all objects. S cycles Free / Relative Grid / Absolute Grid."
 	terrain_snap_field.item_selected.connect(func(index):
-		canvas.terrain_snap_step = 0.5 if index == 1 else 1.0
+		canvas.terrain_snap_step = [1.0, 0.5, 0.25][index]
 		canvas.queue_redraw()
 		canvas.grab_focus())
 	connectors.add_child(terrain_snap_field)
@@ -517,11 +530,13 @@ func _build_ui() -> void:
 	_button(quick_tools, "size_up", "Size +", func(): _scale_active(1.1), "] • grow 10%; Shift+] doubles")
 	_button(quick_tools, "guides", "Guides: On", toggle_launch_guides, "P • show / hide launch-strength and direction previews")
 	_button(quick_tools, "shortcuts", "Shortcuts", show_shortcuts, "F1 • editor keyboard and mouse controls")
+	_build_productivity_tools(inspector)
 	composite_bar = HFlowContainer.new()
 	composite_bar.add_theme_constant_override("separation", 6)
 	inspector.add_child(composite_bar)
 	_button(composite_bar, "merge", "Merge", func(): preview_composite("merge"), "Ctrl-click filled terrain to select two or more pieces, then preview their union")
 	_button(composite_bar, "smooth", "Smooth", func(): preview_composite("smooth"), "Preview conservative corner smoothing on one filled terrain piece or composite")
+	_button(composite_bar, "restore_sources", "Unsmooth", restore_terrain_sources, "U • restore the saved source pieces from the last Merge / Smooth, including after reopening the Act")
 	_button(composite_bar, "merge_smooth", "Merge + Smooth", func(): preview_composite("merge_smooth"), "Union selected filled terrain, then smooth the resulting outline")
 	_button(composite_bar, "composite_apply", "Apply", apply_composite, "Replace the selected sources in one undo step")
 	_button(composite_bar, "composite_cancel", "Cancel", cancel_composite_preview, "Discard the preview; original terrain stays unchanged")
@@ -595,15 +610,15 @@ func _build_ui() -> void:
 	tools.add_child(visibility_bar)
 	tools.move_child(visibility_bar, tools.get_child_count() - 3)
 	canvas_decor_visible_field = CheckBox.new()
-	canvas_decor_visible_field.text = "Show decor"
+	canvas_decor_visible_field.text = "Decor"
 	canvas_decor_visible_field.button_pressed = true
 	canvas_decor_visible_field.tooltip_text = "Show decor slots in the editor. Hidden slots cannot be selected; saved Act data is unchanged."
 	canvas_decor_visible_field.toggled.connect(func(value): canvas.set_layer_visible("decor", value); _refresh())
 	visibility_bar.add_child(canvas_decor_visible_field)
 	gameplay_visible_field = CheckBox.new()
-	gameplay_visible_field.text = "Show gameplay"
+	gameplay_visible_field.text = "Hardware"
 	gameplay_visible_field.button_pressed = true
-	gameplay_visible_field.tooltip_text = "Show gameplay objects, rings and lifecycle markers in the editor. Saved Act data is unchanged."
+	gameplay_visible_field.tooltip_text = "2 toggles hardware. Other layers have independent controls in Layers."
 	gameplay_visible_field.toggled.connect(func(value): canvas.set_layer_visible("gameplay", value); _refresh())
 	visibility_bar.add_child(gameplay_visible_field)
 	canvas = Canvas.new()
@@ -624,6 +639,9 @@ func _build_ui() -> void:
 	canvas.move_requested.connect(move_placement)
 	canvas.group_move_requested.connect(move_selected_objects)
 	canvas.grid_resize_requested.connect(resize_grid)
+	canvas.gizmo_preview_requested.connect(_preview_gizmo)
+	canvas.gizmo_commit_requested.connect(_commit_candidate)
+	canvas.assembly_place_requested.connect(_place_assembly)
 	canvas.selection_changed.connect(func(_index): _refresh())
 	canvas.terrain_selection_changed.connect(func(_indices): _refresh())
 	canvas.composite_preview_cancel_requested.connect(cancel_composite_preview)
@@ -870,12 +888,14 @@ func choose_decor(type: String) -> void:
 	_refresh()
 
 func _active_decor() -> Dictionary:
+	if EditorSelection.locked(document, "decor", canvas.selected_decor_index): return {}
 	if not canvas.decor_brush.is_empty(): return canvas.decor_brush
 	if canvas.selection_count() > 1: return {}
 	if canvas.selected_decor_index >= 0: return document.decor_slots[canvas.selected_decor_index]
 	return {}
 
 func set_decor_slot(index: int, slot: Dictionary) -> void:
+	if index >= 0 and EditorSelection.locked(document, "decor", index): return
 	if composite_preview_active or index < -1 or index >= document.decor_slots.size(): return
 	var value := slot.duplicate(true)
 	if index == -1: value.slot_id = Decor.new_id()
@@ -900,13 +920,19 @@ func randomize_decor() -> void:
 	rng.randomize()
 	var generated := DecorScatter.generate(document, decor_frequency_field.value, rng.randi(), decor_small_percent_field.value)
 	var kept: Array = []
-	for slot: Dictionary in document.decor_slots:
-		if not DecorScatter.is_scattered(slot): kept.append(slot)
+	var mapping := {}
+	for index in document.decor_slots.size():
+		var slot: Dictionary = document.decor_slots[index]
+		var grouped: bool = document.editor_groups.any(func(group): return group.members.get("decor", []).has(index))
+		if not DecorScatter.is_scattered(slot) or grouped or EditorSelection.locked(document, "decor", index):
+			mapping[index] = kept.size()
+			kept.append(slot)
 	if generated.is_empty() and kept.size() == document.decor_slots.size():
 		_set_status("No free raised terrain for this frequency. Manual decor stays unchanged.")
 		return
 	_record_edit()
 	if document.decor_seed.is_empty() and not generated.is_empty(): document.decor_seed = Decor.new_id()
+	EditorSelection.remap(document, "decor", mapping)
 	document.decor_slots = kept + generated
 	canvas.select_piece(-1)
 	canvas.show_decor = true
@@ -1076,6 +1102,7 @@ func _change_ring_radius(axis: int, value: float) -> void:
 	set_ring_trail(canvas.selected_ring_index, trail)
 
 func set_ring_trail(index: int, trail: Dictionary) -> void:
+	if index >= 0 and EditorSelection.locked(document, "ring", index): return
 	if index < -1 or index >= document.ring_trails.size():
 		return
 	trail = trail.duplicate(true)
@@ -1246,7 +1273,21 @@ func apply_composite() -> void:
 	for offset in range(_composite_sources.size() - 1, -1, -1):
 		candidate.placements.remove_at(_composite_sources[offset])
 	var inserted: int = _composite_sources[0]
-	candidate.placements.insert(inserted, composite_preview.duplicate(true))
+	var sources: Array = []
+	for index: int in _composite_sources: sources.append(document.placements[index])
+	var piece := composite_preview.duplicate(true)
+	TerrainHistory.remember(piece, sources)
+	candidate.placements.insert(inserted, piece)
+	var mapping := {}
+	var next := 0
+	for index in document.placements.size():
+		if _composite_sources.has(index):
+			mapping[index] = inserted
+			if index == inserted: next += 1
+		else:
+			mapping[index] = next
+			next += 1
+	EditorSelection.remap(candidate, "terrain", mapping)
 	var errors: PackedStringArray = candidate.validation_errors()
 	if not errors.is_empty():
 		_set_status(errors[0] + " Preview not applied.")
@@ -1258,10 +1299,38 @@ func apply_composite() -> void:
 		return
 	_record_edit()
 	document.placements = candidate.placements
+	document.editor_groups = candidate.editor_groups
+	document.editor_locks = candidate.editor_locks
 	_clear_composite_preview()
 	canvas.select_piece(inserted)
 	_refresh()
-	_set_status("CompositeTerrain applied as one edit. Ctrl+Z restores every source piece; merge this composite again to keep sculpting.")
+	_set_status("Composite applied. U restores saved sources, even after reopening; Ctrl+Z also undoes this edit.")
+
+func restore_terrain_sources() -> void:
+	if composite_preview_active or _transform_gesture_active() or canvas.selection_count() != 1 or canvas.selected_index < 0: return
+	var index: int = canvas.selected_index
+	var result := TerrainHistory.restore(document.placements[index])
+	if not result.error.is_empty():
+		_set_status(result.error)
+		return
+	var candidate: Resource = document.copy_document()
+	candidate.placements.remove_at(index)
+	for offset in result.sources.size(): candidate.placements.insert(index + offset, result.sources[offset])
+	var mapping := {}
+	for old in document.placements.size():
+		mapping[old] = range(index, index + result.sources.size()) if old == index else (old if old < index else old + result.sources.size() - 1)
+	EditorSelection.remap(candidate, "terrain", mapping)
+	var errors: PackedStringArray = candidate.validation_errors()
+	if not errors.is_empty():
+		_set_status("Sources not restored: " + errors[0])
+		return
+	_record_edit()
+	document.placements = candidate.placements
+	document.editor_groups = candidate.editor_groups
+	document.editor_locks = candidate.editor_locks
+	canvas.set_object_selection({"terrain": range(index, index + result.sources.size())})
+	_refresh()
+	_set_status("Restored %d saved source pieces. Ctrl+Z returns to the composite." % result.sources.size())
 
 func _clear_composite_preview() -> void:
 	composite_preview_active = false
@@ -1296,13 +1365,14 @@ func choose_marker(kind: String) -> void:
 	canvas.grab_focus()
 	canvas.set_marker_tool(kind)
 	if kind == "goal":
-		_set_status("Place a one-cell goal on a shared cell edge or grid intersection. Drag to move; Alt allows free placement.")
+		_set_status("Place a goal freely. S changes snapping; Shift temporarily snaps; Alt forces free placement.")
 		_refresh()
 		return
-	_set_status("Click inside the Act to place %s. Snap is on; hold Alt for fine position. The red gutter is outside the Act." % {"activation": "the Activation Trigger", "spawn": "the Spawn Point", "goal": "the Goal Ring"}[kind])
+	_set_status("Click inside the Act to place %s. S changes snapping; Shift snaps; Alt forces free placement. The red gutter is outside the Act." % {"activation": "the Activation Trigger", "spawn": "the Spawn Point", "goal": "the Goal Ring"}[kind])
 	_refresh()
 
 func set_lifecycle_marker(kind: String, value: Variant) -> void:
+	if EditorSelection.locked(document, "markers", kind): return
 	if kind not in ["activation", "spawn", "goal"]:
 		return
 	var field: String = {"activation": "activation_y", "spawn": "spawn_position", "goal": "goal_position"}[kind]
@@ -1372,6 +1442,7 @@ func add_placement(placement: Dictionary) -> void:
 	_refresh()
 
 func move_placement(index: int, anchor: Vector2) -> void:
+	if index >= 0 and EditorSelection.locked(document, "terrain", index): return
 	if index < 0 or index >= document.placements.size():
 		return
 	var placement: Dictionary = document.placements[index]
@@ -1399,6 +1470,7 @@ func add_gameplay_placement(placement: Dictionary) -> void:
 	_refresh()
 
 func move_gameplay_placement(index: int, position: Vector2) -> void:
+	if index >= 0 and EditorSelection.locked(document, "gameplay", index): return
 	if index < 0 or index >= document.gameplay_objects.size() or not position.is_finite():
 		return
 	var placement: Dictionary = document.gameplay_objects[index]
@@ -1410,6 +1482,7 @@ func move_gameplay_placement(index: int, position: Vector2) -> void:
 	_refresh()
 
 func _active_gameplay() -> Dictionary:
+	if EditorSelection.locked(document, "gameplay", canvas.selected_gameplay_index): return {}
 	if not canvas.gameplay_brush.is_empty():
 		return canvas.gameplay_brush
 	if canvas.selection_count() > 1: return {}
@@ -1452,6 +1525,7 @@ func _ring_angle() -> float:
 	return rad_to_deg((Vector2(trail.end) - Vector2(trail.start)).angle())
 
 func _active_terrain() -> Dictionary:
+	if EditorSelection.locked(document, "terrain", canvas.selected_index): return {}
 	if not canvas.brush.is_empty(): return canvas.brush
 	if canvas.selection_count() > 1: return {}
 	if _terrain_selection().size() == 1: return document.placements[canvas.selected_index]
@@ -1459,7 +1533,7 @@ func _active_terrain() -> Dictionary:
 
 func _nudge_active_angle(degrees: float) -> void:
 	if composite_preview_active: return
-	if canvas.selection_count() > 1 or canvas.selected_ring_index >= 0 or not canvas.selected_markers.is_empty():
+	if canvas.selection_count() > 0:
 		transform_selection(1.0, degrees)
 	elif canvas.ring_tool:
 		canvas.ring_rotation += degrees
@@ -1507,53 +1581,18 @@ func _change_handedness(index: int) -> void:
 	_refresh()
 
 func duplicate_selected() -> void:
-	if composite_preview_active:
+	if composite_preview_active or _transform_gesture_active(): return
+	var copied := SelectionClipboard.capture(document, canvas.object_selection())
+	if copied.is_empty():
+		_set_status("Select objects to duplicate. Lifecycle markers are singletons.")
 		return
-	if canvas.selection_count() > 1:
-		var copied := SelectionClipboard.capture(document, canvas.object_selection())
-		if copied.is_empty():
-			_set_status("Lifecycle markers are singletons; select objects to duplicate.")
-			return
-		var previous := _selection_clipboard
-		var previous_count := _paste_count
-		_selection_clipboard = copied
-		_paste_count = 0
-		paste_selected()
-		_selection_clipboard = previous
-		_paste_count = previous_count
-		_refresh()
-		return
-	if canvas.selected_decor_index >= 0:
-		var slot: Dictionary = document.decor_slots[canvas.selected_decor_index].duplicate(true)
-		slot.position += Vector2.ONE * float(document.cell_size) * 0.5
-		set_decor_slot(-1, slot)
-		canvas.select_decor(document.decor_slots.size() - 1)
-		_refresh()
-		return
-	if _terrain_selection().size() == 1:
-		var terrain: Dictionary = document.placements[canvas.selected_index].duplicate(true)
-		Shapes.set_placement_position(terrain, _clamp_anchor(terrain, Shapes.placement_position(terrain) + Vector2.ONE * canvas.terrain_snap_step))
-		canvas.cancel_gesture()
-		add_placement(terrain)
-		canvas.select_piece(document.placements.size() - 1)
-		_refresh()
-		return
-	if canvas.selected_ring_index >= 0:
-		var trail: Dictionary = document.ring_trails[canvas.selected_ring_index].duplicate(true)
-		trail.start += Vector2.ONE * document.cell_size
-		trail.end += Vector2.ONE * document.cell_size
-		set_ring_trail(-1, trail)
-		canvas.select_ring(document.ring_trails.size() - 1)
-		_refresh()
-		return
-	var index: int = canvas.selected_gameplay_index
-	if index < 0 or index >= document.gameplay_objects.size():
-		return
-	canvas.cancel_gesture()
-	var placement: Dictionary = document.gameplay_objects[index].duplicate(true)
-	placement.position += Vector2.ONE * float(document.cell_size)
-	add_gameplay_placement(placement)
-	canvas.select_gameplay(document.gameplay_objects.size() - 1)
+	var previous := _selection_clipboard
+	var previous_count := _paste_count
+	_selection_clipboard = copied
+	_paste_count = 0
+	paste_selected()
+	_selection_clipboard = previous
+	_paste_count = previous_count
 	_refresh()
 
 func copy_selected() -> void:
@@ -1567,29 +1606,49 @@ func copy_selected() -> void:
 	buttons.paste.disabled = false
 	_set_status("Copied %d items. Ctrl+V pastes a fresh selection; complete copied switch banks keep their internal links." % copied.count)
 
-func paste_selected() -> void:
-	if composite_preview_active or _selection_clipboard.is_empty(): return
+func paste_selected(at_cursor := false) -> void:
+	if composite_preview_active or _transform_gesture_active() or _selection_clipboard.is_empty(): return
 	var candidate: Resource = document.copy_document()
+	var copied := SelectionClipboard.for_cell_size(_selection_clipboard, float(document.cell_size))
 	var offset: Vector2 = Vector2.ONE * float(document.cell_size) * canvas.terrain_snap_step * (_paste_count + 1)
-	var result := SelectionClipboard.append_to(candidate, _selection_clipboard, offset)
+	if at_cursor:
+		var recipe: Resource = ActData.new()
+		recipe.cell_size = document.cell_size
+		var all := EditorSelection.empty()
+		for kind: String in EditorSelection.COLLECTIONS:
+			recipe.set(EditorSelection.COLLECTIONS[kind], copied[kind])
+			all[kind] = range(copied[kind].size())
+		offset = canvas.legal_gameplay_position(canvas.screen_to_local_pixels(canvas._cursor_position), canvas._alt_held) - SelectionTransform.bounds(recipe, all).get_center()
+	var result := SelectionClipboard.append_to(candidate, copied, offset)
 	if not result.error.is_empty():
 		_set_status("Paste unchanged: " + result.error)
 		return
 	canvas.cancel_gesture()
-	_record_edit()
-	document.placements = candidate.placements
-	document.gameplay_objects = candidate.gameplay_objects
-	document.decor_slots = candidate.decor_slots
-	document.ring_trails = candidate.ring_trails
-	document.switch_banks = candidate.switch_banks
+	if not _commit_candidate(candidate): return
 	_paste_count += 1
-	canvas.show_gameplay = true
-	canvas.show_decor = true
+	show_all_layers()
 	canvas.set_object_selection(result.selection)
 	_refresh()
-	_set_status("Pasted %d items · drag groups freely · Shift snaps groups · Ctrl+Z undoes the whole paste" % _selection_clipboard.count)
+	_set_status("Pasted %d items with fresh IDs. Internal bank links and groups preserved; Ctrl+Z undoes the whole paste." % copied.count)
+
+func cut_selected() -> void:
+	if composite_preview_active or _transform_gesture_active(): return
+	var selection: Dictionary = canvas.object_selection()
+	selection["markers"] = []
+	var copied := SelectionClipboard.capture(document, selection)
+	if copied.is_empty():
+		_set_status("Select objects to cut. Lifecycle markers are not copied or removed.")
+		return
+	_selection_clipboard = copied
+	_paste_count = 0
+	canvas.set_object_selection(selection)
+	delete_selected()
+	_set_status("Cut %d objects. Ctrl+V pastes; Ctrl+Z restores the originals." % copied.count)
 
 func rotate_active() -> void:
+	if canvas.selection_count() > 0:
+		transform_selection(1.0, 90.0 if not _active_terrain().is_empty() else 15.0)
+		return
 	if canvas.selection_count() > 1 or canvas.selected_ring_index >= 0 or canvas.ring_tool or not canvas.selected_markers.is_empty():
 		_nudge_active_angle(15.0)
 	elif not _active_decor().is_empty():
@@ -1650,71 +1709,30 @@ func _transform_active(operation: String) -> void:
 	_refresh()
 
 func delete_selected() -> void:
-	if composite_preview_active:
-		return
-	if canvas.selection_count() > 1 or not canvas.selected_markers.is_empty():
-		canvas.cancel_gesture()
-		_record_edit()
-		var ids: Array = []
-		for index: int in canvas.selected_gameplay_indices:
-			ids.append(Objects.identity(document.gameplay_objects[index], index))
-		Banks.remove_objects(document.switch_banks, ids)
-		var selection: Dictionary = canvas.object_selection()
-		var collections := {"terrain": document.placements, "gameplay": document.gameplay_objects, "decor": document.decor_slots, "ring": document.ring_trails}
-		for kind: String in collections:
-			var group_indices: Array = selection[kind]
-			group_indices.sort()
-			group_indices.reverse()
-			for index: int in group_indices: collections[kind].remove_at(index)
-		for kind: String in canvas.selected_markers:
-			if kind == "spawn": document.spawn_position = null
-			elif kind == "goal": document.goal_position = null
-			elif kind == "activation": document.activation_y = null
-		canvas.select_piece(-1)
-		_refresh()
-		return
-	if canvas.selected_decor_index >= 0:
-		canvas.cancel_gesture()
-		_record_edit()
-		document.decor_slots.remove_at(canvas.selected_decor_index)
-		canvas.select_decor(-1)
-		_refresh()
-		return
-	if canvas.selected_ring_index >= 0:
-		canvas.cancel_gesture()
-		_record_edit()
-		document.ring_trails.remove_at(canvas.selected_ring_index)
-		canvas.select_ring(-1)
-		_refresh()
-		return
-	if not canvas.selected_marker.is_empty():
-		set_lifecycle_marker(canvas.selected_marker, null)
-		return
+	if composite_preview_active or _transform_gesture_active(): return
 	if not canvas.selected_connector.is_empty():
 		set_connector(canvas.selected_connector, 0, 0)
 		return
-	if canvas.selected_gameplay_index >= 0:
-		canvas.cancel_gesture()
-		_record_edit()
-		var indices: Array[int] = canvas.selected_gameplay_indices.duplicate()
-		var ids: Array = []
-		for index: int in indices: ids.append(Objects.identity(document.gameplay_objects[index], index))
-		Banks.remove_objects(document.switch_banks, ids)
-		indices.sort()
-		indices.reverse()
-		for index: int in indices: document.gameplay_objects.remove_at(index)
-		canvas.select_gameplay(-1)
-		_refresh()
-		return
-	if canvas.selected_index < 0:
-		return
+	var selection: Dictionary = EditorSelection.expanded(document, canvas.object_selection())
+	if not canvas.selected_marker.is_empty() and not EditorSelection.locked(document, "markers", canvas.selected_marker):
+		selection.markers = [canvas.selected_marker]
+	if EditorSelection.count(selection) == 0: return
 	canvas.cancel_gesture()
 	_record_edit()
-	var indices := _terrain_selection()
-	indices.sort()
-	indices.reverse()
-	for index: int in indices:
-		document.placements.remove_at(index)
+	var ids: Array = []
+	for index: int in selection.gameplay: ids.append(Objects.identity(document.gameplay_objects[index], index))
+	Banks.remove_objects(document.switch_banks, ids)
+	for kind: String in EditorSelection.COLLECTIONS:
+		var indices: Array = selection[kind].duplicate()
+		EditorSelection.remove_indices(document, kind, indices)
+		indices.sort()
+		indices.reverse()
+		var records: Array = document.get(EditorSelection.COLLECTIONS[kind])
+		for index: int in indices: records.remove_at(index)
+	for kind: String in selection.markers:
+		if kind == "spawn": document.spawn_position = null
+		elif kind == "goal": document.goal_position = null
+		elif kind == "activation": document.activation_y = null
 	canvas.select_piece(-1)
 	_refresh()
 
@@ -1722,24 +1740,9 @@ func move_selected_objects(offset: Vector2) -> void:
 	if composite_preview_active or not offset.is_finite() or canvas.selection_count() == 0: return
 	offset = canvas.clamp_group_offset(offset)
 	if offset.is_zero_approx(): return
-	_record_edit()
-	var original_goal: Vector2 = document.goal_center()
-	for index: int in canvas.selected_indices:
-		var placement: Dictionary = document.placements[index]
-		Shapes.set_placement_position(placement, Shapes.placement_position(placement) + offset / float(document.cell_size))
-	for index: int in canvas.selected_gameplay_indices:
-		document.gameplay_objects[index].position += offset
-	for index: int in canvas.selected_decor_indices:
-		document.decor_slots[index].position += offset
-		document.decor_slots[index].erase("placement_source")
-	for index: int in canvas.selected_ring_indices:
-		document.ring_trails[index].start += offset
-		document.ring_trails[index].end += offset
-	for kind: String in canvas.selected_markers:
-		if kind == "spawn": document.spawn_position += offset
-		elif kind == "goal": document.goal_position = original_goal + offset
-		elif kind == "activation": document.activation_y += offset.y
-	_refresh()
+	var candidate: Resource = document.copy_document()
+	SelectionTransform.translate(candidate, EditorSelection.expanded(document, canvas.object_selection()), offset)
+	_commit_candidate(candidate)
 
 func _snapshot() -> Dictionary:
 	return {"document": document.copy_document(), "selected": canvas.selected_index,
@@ -1818,7 +1821,7 @@ func _restore_snapshot(snapshot: Dictionary) -> void:
 	_refresh()
 
 func is_dirty() -> bool:
-	return document != null and (document.fingerprint() != saved_fingerprint or title_field.text != document.title)
+	return document != null and (document.editing_fingerprint() != saved_fingerprint or title_field.text != document.title)
 
 func new_document() -> void:
 	_thesis_edit_recorded = false
@@ -1832,7 +1835,7 @@ func new_document() -> void:
 	selected_bank_id = ""
 	undo_stack.clear()
 	redo_stack.clear()
-	saved_fingerprint = document.fingerprint()
+	saved_fingerprint = document.editing_fingerprint()
 	canvas.set_document(document)
 	_refresh()
 	canvas.call_deferred("fit_view")
@@ -1853,7 +1856,7 @@ func save_to(path: String) -> bool:
 		_show_error("Could not save this Act (%s). Your edits are still open.\n%s" % [error_string(result), path])
 		return false
 	current_path = path
-	saved_fingerprint = document.fingerprint()
+	saved_fingerprint = document.editing_fingerprint()
 	_set_status("Saved %d terrain pieces, %d gameplay objects, %d ring trails and %d decor slots to %s" % [document.placements.size(), document.gameplay_objects.size(), document.ring_trails.size(), document.decor_slots.size(), path])
 	_refresh()
 	return true
@@ -1870,7 +1873,7 @@ func load_from(path: String) -> bool:
 	selected_bank_id = ""
 	_title_edit_recorded = false
 	current_path = path
-	saved_fingerprint = document.fingerprint()
+	saved_fingerprint = document.editing_fingerprint()
 	undo_stack.clear()
 	redo_stack.clear()
 	canvas.set_document(document)
@@ -2038,11 +2041,24 @@ func _refresh() -> void:
 	if document == null:
 		return
 	_refreshing = true
+	decor_snap_field.visible = false
 	review_panel.refresh(document, not composite_preview_active)
 	canvas_decor_visible_field.set_pressed_no_signal(canvas.show_decor)
 	gameplay_visible_field.set_pressed_no_signal(canvas.show_gameplay)
+	snap_mode_field.select(canvas.snap_mode)
+	pivot_field.select(canvas.pivot_mode)
+	for kind: String in layer_fields: layer_fields[kind].set_pressed_no_signal(canvas.get("show_" + kind))
+	marker_reminders.visible = canvas.show_markers
+	pivot_field.disabled = composite_preview_active
+	snap_mode_field.disabled = composite_preview_active
+	for field: CheckBox in layer_fields.values(): field.disabled = composite_preview_active
 	for button: Button in buttons.values():
 		button.disabled = false
+	buttons.ungroup.disabled = not document.editor_groups.any(func(group): return EditorSelection.intersects(group.members, canvas.object_selection()))
+	buttons.group.disabled = canvas.selection_count() - canvas.selected_markers.size() < 2
+	buttons.lock.disabled = canvas.selection_count() == 0 and canvas.selected_marker.is_empty()
+	buttons.unlock_all.disabled = EditorSelection.count(document.editor_locks) == 0
+	buttons.handles.text = "Handles: On" if canvas.show_transform_handles else "Handles: Off"
 	buttons.copy.disabled = composite_preview_active or canvas.selection_count() == 0
 	buttons.paste.disabled = composite_preview_active or _selection_clipboard.is_empty()
 	title_field.text = document.title
@@ -2050,6 +2066,7 @@ func _refresh() -> void:
 	grid_width_field.set_value_no_signal(document.grid_size.x)
 	grid_height_field.set_value_no_signal(document.grid_size.y)
 	goal_size_field.set_value_no_signal(document.goal_diameter_cells)
+	goal_size_field.editable = not composite_preview_active and not EditorSelection.locked(document, "markers", "goal")
 	score_target_enabled.set_pressed_no_signal(document.score_target > 0)
 	if document.score_target > 0: _last_score_target = document.score_target
 	score_target_field.set_value_no_signal(_last_score_target)
@@ -2169,7 +2186,7 @@ func _refresh_composite_controls() -> void:
 	composite_bar.visible = terrain_context
 	composite_strength.get_parent().visible = terrain_context
 	composite_hint.visible = terrain_context
-	terrain_snap_field.visible = terrain_context
+	terrain_snap_field.visible = true
 	terrain_scale_field.visible = terrain_context
 	var merge_error := _composite_selection_error("merge")
 	var smooth_error := _composite_selection_error("smooth")
@@ -2182,6 +2199,7 @@ func _refresh_composite_controls() -> void:
 	buttons.composite_apply.visible = composite_preview_active
 	buttons.composite_cancel.visible = composite_preview_active
 	var terrain: Dictionary = canvas.brush if not canvas.brush.is_empty() else (document.placements[canvas.selected_index] if canvas.selected_index >= 0 else {})
+	buttons.restore_sources.disabled = composite_preview_active or canvas.selection_count() != 1 or not terrain.has("editor_sources")
 	terrain_snap_field.disabled = composite_preview_active
 	terrain_scale_field.disabled = composite_preview_active or terrain.is_empty() or canvas.selection_count() > 1
 	var scale_value := float(terrain.get("terrain_scale", Shapes.DEFAULT_SCALE))
@@ -2251,7 +2269,7 @@ func _show_error(message: String) -> void:
 	_set_status(message.get_slice("\n", 0))
 
 func _modal_open() -> bool:
-	return (shortcuts_dialog != null and shortcuts_dialog.visible) or (verify_dialog != null and verify_dialog.visible) or save_dialog.visible or load_dialog.visible or unsaved_dialog.visible or error_dialog.visible
+	return (assembly_dialog != null and assembly_dialog.visible) or (shortcuts_dialog != null and shortcuts_dialog.visible) or (verify_dialog != null and verify_dialog.visible) or save_dialog.visible or load_dialog.visible or unsaved_dialog.visible or error_dialog.visible
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_F11:
@@ -2270,6 +2288,23 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	var command: bool = event.ctrl_pressed or event.meta_pressed
 	if command:
 		match event.keycode:
+			KEY_G:
+				if typing: return
+				if event.shift_pressed: ungroup_selection()
+				else: group_selection()
+			KEY_L:
+				if typing: return
+				if event.shift_pressed: unlock_all()
+				else: lock_selection()
+			KEY_E:
+				if typing: return
+				show_save_assembly()
+			KEY_X:
+				if typing: return
+				cut_selected()
+			KEY_1, KEY_2, KEY_3, KEY_4, KEY_5:
+				if typing: return
+				solo_layer(["terrain", "gameplay", "decor", "rings", "markers"][event.keycode - KEY_1])
 			KEY_A:
 				if typing: return
 				select_all_content()
@@ -2293,12 +2328,21 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				copy_selected()
 			KEY_V:
 				if typing: return
-				paste_selected()
+				paste_selected(event.shift_pressed)
 			_: return
 	elif typing:
 		return
 	else:
 		match event.keycode:
+			KEY_S: set_snap_mode((canvas.snap_mode + 1) % 3)
+			KEY_T: toggle_transform_handles()
+			KEY_C:
+				canvas.set_cursor_pivot()
+				_refresh()
+			KEY_U: restore_terrain_sources()
+			KEY_0: show_all_layers()
+			KEY_1, KEY_2, KEY_3, KEY_4, KEY_5:
+				toggle_layer(["terrain", "gameplay", "decor", "rings", "markers"][event.keycode - KEY_1])
 			KEY_ESCAPE: _select_mode()
 			KEY_B: toggle_boundary_tool()
 			KEY_F:
@@ -2318,7 +2362,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN:
 				if _terrain_selection().size() == 1:
 					var direction: Vector2i = {KEY_LEFT: Vector2i.LEFT, KEY_RIGHT: Vector2i.RIGHT, KEY_UP: Vector2i.UP, KEY_DOWN: Vector2i.DOWN}[event.keycode]
-					var distance: float = 1.0 / float(document.cell_size) if event.alt_pressed else canvas.terrain_snap_step
+					var distance: float = canvas.nudge_distance(event.alt_pressed) / float(document.cell_size)
 					move_placement(canvas.selected_index, Shapes.placement_position(document.placements[canvas.selected_index]) + Vector2(direction) * distance)
 			_: return
 	get_viewport().set_input_as_handled()
@@ -2342,6 +2386,7 @@ func set_rail_points(points: PackedVector2Array) -> void:
 	set_gameplay_property("points", points)
 
 func set_teleporter_exit(index: int, offset: Vector2) -> void:
+	if index >= 0 and EditorSelection.locked(document, "gameplay", index): return
 	if index < 0 or index >= document.gameplay_objects.size(): return
 	var item: Dictionary = document.gameplay_objects[index]
 	if item.type != "teleporter": return
@@ -2355,6 +2400,7 @@ func set_teleporter_exit(index: int, offset: Vector2) -> void:
 	_refresh()
 
 func set_enemy_patrol(index: int, endpoints: Vector2) -> void:
+	if index >= 0 and EditorSelection.locked(document, "gameplay", index): return
 	if index < 0 or index >= document.gameplay_objects.size(): return
 	var item: Dictionary = document.gameplay_objects[index]
 	if item.type != "buzz_bomber": return
@@ -2444,9 +2490,9 @@ func _refresh_mechanics_properties() -> void:
 		_mechanic_number(key.replace("_", " ").capitalize(), float(properties[key]), func(value: float): set_gameplay_property(key, value))
 	if item.type == "buzz_bomber":
 		_mechanic_choice("Starting direction", "starting_direction", ["left", "right"], properties.starting_direction)
-		detail_label.text = "Shift-drag Buzz Bomber or its patrol line to resize. Alt frees snapping. Zero length is stationary."
+		detail_label.text = "Ctrl+Shift-drag Buzz Bomber or its patrol line to resize. Alt frees snapping. Zero length is stationary."
 		var patrol_help := Label.new()
-		patrol_help.text = "Shift + wheel scales Buzz and its patrol. R rotates both. Shift-drag Buzz or its line, or drag either endpoint."
+		patrol_help.text = "Shift + wheel scales Buzz and its patrol. R rotates both. Ctrl+Shift-drag Buzz or its line, or drag either endpoint."
 		patrol_help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		patrol_help.custom_minimum_size.x = 260
 		mechanics_properties.add_child(patrol_help)
@@ -2777,7 +2823,7 @@ func _scale_preview(direction: float) -> void:
 	_scale_active(pow(1.1, direction))
 
 func _transform_gesture_active() -> bool:
-	return canvas._boundary_dragging or canvas._bank_dragging or canvas._patrol_dragging or canvas._rail_drag >= 0 or canvas._teleporter_index >= 0 or canvas._group_dragging or canvas._decor_drag_index >= 0 or canvas._gameplay_drag_index >= 0 or canvas._drag_index >= 0 or not canvas._ring_mode.is_empty()
+	return canvas._gizmo_dragging or canvas._boundary_dragging or canvas._bank_dragging or canvas._patrol_dragging or canvas._rail_drag >= 0 or canvas._teleporter_index >= 0 or canvas._group_dragging or canvas._decor_drag_index >= 0 or canvas._gameplay_drag_index >= 0 or canvas._drag_index >= 0 or not canvas._ring_mode.is_empty() or not canvas._marker_drag_kind.is_empty()
 
 func _scale_active(factor: float) -> void:
 	if composite_preview_active or not is_finite(factor) or factor <= 0.0: return
@@ -2843,17 +2889,7 @@ func transform_selection(factor: float, degrees: float) -> void:
 		_set_status("Finish or cancel the current drag before transforming.")
 		return
 	var selection: Dictionary = canvas.object_selection()
-	var pivot := SelectionTransform.bounds(document, selection).get_center()
-	# Single hardware retains its anchor; terrain sizing retains its top-left.
-	# Ring patterns and group transforms use their centers.
-	if canvas.selection_count() == 1:
-		if canvas.selected_gameplay_index >= 0: pivot = document.gameplay_objects[canvas.selected_gameplay_index].position
-		elif canvas.selected_decor_index >= 0: pivot = document.decor_slots[canvas.selected_decor_index].position
-		elif canvas.selected_index >= 0 and is_zero_approx(degrees):
-			pivot = Shapes.placement_position(document.placements[canvas.selected_index]) * float(document.cell_size)
-		elif canvas.selected_ring_index >= 0:
-			var trail: Dictionary = document.ring_trails[canvas.selected_ring_index]
-			pivot = (trail.start + trail.end) * 0.5
+	var pivot: Vector2 = canvas.transform_pivot()
 	var candidate: Resource = document.copy_document()
 	SelectionTransform.apply(candidate, selection, pivot, factor, degrees)
 	var errors: PackedStringArray = candidate.validation_errors()
@@ -2892,13 +2928,233 @@ func toggle_launch_guides() -> void:
 	canvas.show_launch_previews = not canvas.show_launch_previews
 	_refresh()
 
+func _build_productivity_tools(parent: Control) -> void:
+	var tabs := TabContainer.new()
+	parent.add_child(tabs)
+	var transforms := VBoxContainer.new()
+	transforms.name = "Transform"
+	tabs.add_child(transforms)
+	snap_mode_field = OptionButton.new()
+	for label: String in Snap.LABELS: snap_mode_field.add_item(label)
+	snap_mode_field.tooltip_text = "S cycles snapping. Free is the default; Shift temporarily enables Relative Grid. Alt always moves freely."
+	snap_mode_field.item_selected.connect(set_snap_mode)
+	transforms.add_child(snap_mode_field)
+	pivot_field = OptionButton.new()
+	for label: String in ["Pivot: Selection center", "Pivot: Active item", "Pivot: Cursor (C)"]: pivot_field.add_item(label)
+	pivot_field.item_selected.connect(func(index):
+		if composite_preview_active or _transform_gesture_active(): return
+		canvas.pivot_mode = index
+		canvas.queue_redraw()
+		canvas.grab_focus())
+	transforms.add_child(pivot_field)
+	var tools := HFlowContainer.new()
+	transforms.add_child(tools)
+	_button(tools, "handles", "Handles: On", toggle_transform_handles, "T • corner handles scale; round handle rotates; Shift uses 10% / 15° steps")
+	_button(tools, "group", "Group", group_selection, "Ctrl+G • save selection as a group")
+	_button(tools, "ungroup", "Ungroup", ungroup_selection, "Ctrl+Shift+G • release selected groups")
+	_button(tools, "lock", "Lock", lock_selection, "Ctrl+L • protect selection from clicking, Ctrl+A, movement and deletion")
+	_button(tools, "unlock_all", "Unlock all", unlock_all, "Ctrl+Shift+L • unlock all objects and lifecycle markers")
+	var align := OptionButton.new()
+	for label: String in ["Align left", "Align horizontal centers", "Align right", "Align top", "Align vertical centers", "Align bottom", "Distribute horizontal centers", "Distribute vertical centers"]: align.add_item(label)
+	transforms.add_child(align)
+	_button(tools, "arrange", "Align / Distribute", func(): arrange_selection(["left", "center", "right", "top", "middle", "bottom", "distribute_x", "distribute_y"][align.selected]), "Apply selected arrangement; saved groups move as one unit")
+	var layers := VBoxContainer.new()
+	layers.name = "Layers"
+	tabs.add_child(layers)
+	var kinds := ["terrain", "gameplay", "decor", "rings", "markers"]
+	var labels := ["Terrain", "Hardware", "Decor", "Rings", "Markers / connectors"]
+	for index in kinds.size():
+		var kind: String = kinds[index]
+		var field := CheckBox.new()
+		field.text = "%d  %s" % [index + 1, labels[index]]
+		field.tooltip_text = "%d toggles this layer; Ctrl+%d solos it. Repeat solo to restore visibility." % [index + 1, index + 1]
+		field.toggled.connect(func(enabled):
+			if not _refreshing and not composite_preview_active:
+				_solo_visibility.clear()
+				canvas.set_layer_visible(kind, enabled)
+				_refresh())
+		layers.add_child(field)
+		layer_fields[kind] = field
+	_button(layers, "show_layers", "Show all layers", show_all_layers, "0 • show all five layers")
+	var library := VBoxContainer.new()
+	library.name = "Library"
+	tabs.add_child(library)
+	assembly_list = ItemList.new()
+	assembly_list.custom_minimum_size.y = 125
+	assembly_list.item_activated.connect(func(_index): choose_assembly())
+	library.add_child(assembly_list)
+	var library_tools := HFlowContainer.new()
+	library.add_child(library_tools)
+	_button(library_tools, "assembly_save", "Save selection", show_save_assembly, "Ctrl+E • save a reusable assembly in your local library")
+	_button(library_tools, "assembly_place", "Place", choose_assembly, "Click to stamp the selected assembly; Escape exits")
+	_button(library_tools, "assembly_refresh", "Refresh", _refresh_assemblies, "Reload the local assembly library")
+	_refresh_assemblies()
+
+func set_snap_mode(mode: int) -> void:
+	if composite_preview_active or _transform_gesture_active(): return
+	canvas.snap_mode = clampi(mode, 0, 2)
+	canvas.grab_focus()
+	_refresh()
+	_set_status("Snap: %s. Relative Grid preserves offsets; Absolute Grid aligns the active anchor. Alt overrides both." % Snap.LABELS[canvas.snap_mode])
+
+func toggle_transform_handles() -> void:
+	if composite_preview_active: return
+	canvas.cancel_gesture()
+	canvas.show_transform_handles = not canvas.show_transform_handles
+	canvas.grab_focus()
+	_refresh()
+
+func _preview_gizmo(factor: float, degrees: float, pivot: Vector2) -> void:
+	var candidate: Resource = document.copy_document()
+	SelectionTransform.apply(candidate, canvas.object_selection(), pivot, factor, degrees)
+	var errors: PackedStringArray = candidate.validation_errors()
+	canvas.gizmo_error = "" if errors.is_empty() else errors[0]
+	canvas.gizmo_document = candidate if errors.is_empty() else null
+	canvas.queue_redraw()
+
+func _commit_candidate(candidate: Resource) -> bool:
+	var errors: PackedStringArray = candidate.validation_errors()
+	if not errors.is_empty():
+		_set_status("Edit unchanged: " + errors[0])
+		return false
+	if candidate.editing_fingerprint() == document.editing_fingerprint(): return false
+	_record_edit()
+	for field: String in ["placements", "gameplay_objects", "decor_slots", "ring_trails", "switch_banks", "editor_groups", "editor_locks", "spawn_position", "goal_position", "goal_diameter_cells", "activation_y"]:
+		document.set(field, candidate.get(field))
+	_refresh()
+	return true
+
+func group_selection() -> void:
+	if composite_preview_active or _transform_gesture_active(): return
+	var candidate: Resource = document.copy_document()
+	EditorSelection.group(candidate, canvas.object_selection())
+	if _commit_candidate(candidate): _set_status("Group saved with the Act. Click any member to select the whole group.")
+	canvas.grab_focus()
+
+func ungroup_selection() -> void:
+	if composite_preview_active or _transform_gesture_active(): return
+	var candidate: Resource = document.copy_document()
+	EditorSelection.ungroup(candidate, canvas.object_selection())
+	if _commit_candidate(candidate): _set_status("Selection ungrouped. Positions are unchanged.")
+	canvas.grab_focus()
+
+func lock_selection() -> void:
+	if composite_preview_active or _transform_gesture_active(): return
+	var selection: Dictionary = canvas.object_selection()
+	if not canvas.selected_marker.is_empty(): selection["markers"] = [canvas.selected_marker]
+	if EditorSelection.count(selection) == 0: return
+	_record_edit()
+	EditorSelection.merge(document.editor_locks, selection)
+	canvas.select_piece(-1)
+	canvas.grab_focus()
+	_refresh()
+	_set_status("Selection locked. Ctrl+Shift+L unlocks all; Ctrl+Z undoes this lock.")
+
+func unlock_all() -> void:
+	if composite_preview_active or _transform_gesture_active() or EditorSelection.count(document.editor_locks) == 0: return
+	_record_edit()
+	document.editor_locks = {}
+	canvas.grab_focus()
+	_refresh()
+	_set_status("All objects and markers unlocked.")
+
+func arrange_selection(operation: String) -> void:
+	if composite_preview_active or _transform_gesture_active(): return
+	var candidate: Resource = document.copy_document()
+	var error := SelectionTransform.arrange(candidate, canvas.object_selection(), operation)
+	if not error.is_empty():
+		_set_status(error)
+		return
+	if _commit_candidate(candidate): _set_status("Selection arranged as one edit; group spacing is preserved.")
+	canvas.grab_focus()
+
+func toggle_layer(kind: String) -> void:
+	if composite_preview_active: return
+	_solo_visibility.clear()
+	canvas.set_layer_visible(kind, not canvas.get("show_" + kind))
+	_refresh()
+
+func show_all_layers() -> void:
+	if composite_preview_active: return
+	_solo_visibility.clear()
+	for kind: String in layer_fields: canvas.set_layer_visible(kind, true)
+	_refresh()
+
+func solo_layer(kind: String) -> void:
+	if composite_preview_active: return
+	if _solo_visibility.get("solo", "") == kind:
+		for layer: String in layer_fields: canvas.set_layer_visible(layer, _solo_visibility[layer])
+		_solo_visibility.clear()
+	else:
+		if _solo_visibility.is_empty():
+			for layer: String in layer_fields: _solo_visibility[layer] = canvas.get("show_" + layer)
+		_solo_visibility["solo"] = kind
+		for layer: String in layer_fields: canvas.set_layer_visible(layer, layer == kind)
+	_refresh()
+
+func _refresh_assemblies() -> void:
+	assembly_entries = AssemblyLibrary.entries()
+	assembly_list.clear()
+	for entry: Dictionary in assembly_entries: assembly_list.add_item(entry.title)
+
+func show_save_assembly() -> void:
+	if composite_preview_active or _transform_gesture_active(): return
+	if SelectionClipboard.capture(document, canvas.object_selection()).is_empty():
+		_set_status("Select objects to save an assembly. Lifecycle markers are not copied.")
+		return
+	if assembly_dialog == null:
+		assembly_dialog = ConfirmationDialog.new()
+		assembly_dialog.title = "Save assembly"
+		assembly_name_field = LineEdit.new()
+		assembly_name_field.placeholder_text = "Assembly name"
+		assembly_dialog.add_child(assembly_name_field)
+		assembly_dialog.confirmed.connect(func():
+			var result := AssemblyLibrary.save_selection(document, canvas.object_selection(), assembly_name_field.text)
+			if not result.error.is_empty(): _set_status(result.error)
+			else:
+				_refresh_assemblies()
+				_set_status("Assembly saved in your local library, including complete switch banks and groups."))
+		add_child(assembly_dialog)
+	assembly_name_field.text = ""
+	assembly_dialog.popup_centered(Vector2i(340, 110))
+	assembly_name_field.grab_focus()
+
+func choose_assembly() -> void:
+	if composite_preview_active or assembly_list.get_selected_items().is_empty(): return
+	var entry: Dictionary = assembly_entries[assembly_list.get_selected_items()[0]]
+	var result := AssemblyLibrary.load_copy(entry.path, float(document.cell_size))
+	if not result.error.is_empty():
+		_set_status(result.error)
+		return
+	var recipe: Resource = ActData.new()
+	for kind: String in EditorSelection.COLLECTIONS: recipe.set(EditorSelection.COLLECTIONS[kind], result.copied[kind])
+	recipe.cell_size = document.cell_size
+	var selection := EditorSelection.empty()
+	for kind: String in EditorSelection.COLLECTIONS: selection[kind] = range(result.copied[kind].size())
+	canvas.select_piece(-1)
+	show_all_layers()
+	canvas.assembly_copy = result.copied
+	canvas.assembly_center = SelectionTransform.bounds(recipe, selection).get_center()
+	canvas.grab_focus()
+	_set_status("Assembly: %s. Click to place; Escape exits. S changes snapping; Alt places freely." % result.title)
+
+func _place_assembly(position: Vector2) -> void:
+	if composite_preview_active or canvas.assembly_copy.is_empty(): return
+	var candidate: Resource = document.copy_document()
+	var result := SelectionClipboard.append_to(candidate, canvas.assembly_copy, position - canvas.assembly_center)
+	if not result.error.is_empty():
+		_set_status(result.error)
+		return
+	EditorSelection.group(candidate, result.selection)
+	if _commit_candidate(candidate): _set_status("Assembly placed. Escape returns to selection; Ctrl+Z removes this copy.")
+
 func show_shortcuts() -> void:
 	if shortcuts_dialog == null:
 		shortcuts_dialog = AcceptDialog.new()
 		shortcuts_dialog.title = "Act Editor Shortcuts"
-		shortcuts_dialog.dialog_text = "Ctrl+A  Select all content, including hidden layers, Spawn, Goal and Activation\nDrag a group freely; hold Shift to snap its offset to the grid\nGroup arrows: 1 px; Shift+Arrows: grid step\n\n[ / ] or Shift+Wheel  Shrink / grow by a factor of 1.1\nShift+[ / Shift+]  Half / double size\nR / Shift+R  Rotate clockwise / counterclockwise\nAlt+R / Alt+Shift+R  Rotate by one degree\nAngle field  Exact terrain, hardware or decor angle\n\nB  Edit boundary: drag handles or arrows ±1 cell (Shift: ±5)\nF  Frame selection; Shift+F  Fit grid\nP  Toggle launch previews (strength preview starts enabled)\nCtrl+D  Duplicate selection; Ctrl+C / Ctrl+V  Copy / paste objects\nCtrl+Z / Ctrl+Shift+Z  Undo / redo\nEsc / Right-click  Cancel gesture or return to selection\nAlt  Free single-object placement / movement; Alt-click cycles overlaps\n\nEntry/Exit stay on grid borders. Activation stays horizontal.\nSpawn has no size; Goal rotation is visually symmetric.\nTransforms respect physical dimension limits and never delete clipped content."
+		shortcuts_dialog.dialog_text = "Ctrl+A  Select all unlocked content, including hidden layers and markers\nS  Cycle Free / Relative Grid / Absolute Grid; Alt always frees movement\nShift  Temporarily snap in Free mode; groups keep relative spacing\nArrows  Nudge 1 px in Free mode, otherwise one grid step\n\n[ / ] or Shift+Wheel  Shrink / grow; Shift+[ / ]  Half / double\nR / Shift+R  Rotate; Alt+R / Alt+Shift+R  Rotate ±1°\nT  Toggle transform handles; corners scale, round handle rotates\nShift+handle  Steps of 10% / 15°; C  Set pivot at cursor\nTransform tab  Center / Active / Cursor pivot and Align / Distribute\n\nCtrl+C / Ctrl+X / Ctrl+V  Copy / Cut / Paste\nCtrl+Shift+V  Paste centered at cursor; Ctrl+D  Duplicate\nCtrl+G / Ctrl+Shift+G  Group / Ungroup\nCtrl+L / Ctrl+Shift+L  Lock selection / Unlock all\nCtrl+E  Save selection to the local assembly Library\nU  Unsmooth: restore saved source pieces (new Merge / Smooth edits)\nCtrl+Z / Ctrl+Shift+Z  Undo / Redo\n\n1 Terrain · 2 Hardware · 3 Decor · 4 Rings · 5 Markers\nCtrl+1…5  Solo layer; repeat to restore; 0  Show all\nB  Grid boundary; drag handles or arrows ±1 cell (Shift: ±5)\nF  Frame selection; Shift+F  Fit grid; P  Launch previews\nCtrl+Shift+drag Buzz  Edit patrol; endpoint handles also work\nEsc / Right-click  Cancel gesture or tool; Alt-click cycles overlaps\n\nEntry/Exit stay on borders; Activation stays horizontal.\nGroups snap one shared anchor. Markers are never copied.\nTransforms preserve valid physical dimensions and never delete clipped content."
 		add_child(shortcuts_dialog)
-	shortcuts_dialog.popup_centered(Vector2i(760, 530))
+	shortcuts_dialog.popup_centered(Vector2i(800, 690))
 
 
 func _bake_current() -> void:

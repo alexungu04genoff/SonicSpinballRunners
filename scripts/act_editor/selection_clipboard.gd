@@ -3,23 +3,35 @@ extends RefCounted
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 const Decor = preload("res://scripts/act_editor/decor_slots.gd")
+const EditorSelection = preload("res://scripts/act_editor/editor_selection.gd")
 const COLLECTIONS := {"terrain": "placements", "gameplay": "gameplay_objects", "decor": "decor_slots", "ring": "ring_trails"}
 
 static func capture(document: Resource, selection: Dictionary) -> Dictionary:
- var copied := {"banks": []}
+ var copied := {"banks": [], "groups": [], "cell_size": float(document.cell_size)}
+ var indices := {}
  var ids := {}
  var count := 0
  for kind: String in COLLECTIONS:
   copied[kind] = []
+  indices[kind] = {}
   var records: Array = document.get(COLLECTIONS[kind])
   for index: int in selection.get(kind, []):
    var item: Dictionary = records[index].duplicate(true)
    if kind == "gameplay":
     item["object_id"] = Objects.identity(item, index)
     ids[item.object_id] = true
+   indices[kind][index] = copied[kind].size()
    copied[kind].append(item)
    count += 1
  if count == 0: return {}
+ for group: Dictionary in document.editor_groups:
+  var members := EditorSelection.empty()
+  var complete := true
+  for kind: String in COLLECTIONS:
+   for index: int in group.members.get(kind, []):
+    if not indices[kind].has(index): complete = false
+    else: members[kind].append(indices[kind][index])
+  if complete: copied.groups.append({"name": group.name, "members": members})
  # Only complete copied objectives carry their membership. Targets outside the
  # copied selection are deliberately excluded, never wired to original objects.
  for bank: Dictionary in document.switch_banks:
@@ -33,16 +45,11 @@ static func capture(document: Resource, selection: Dictionary) -> Dictionary:
  return copied
 
 static func append_to(document: Resource, copied: Dictionary, requested_offset: Vector2) -> Dictionary:
- # Clamp one shared offset, so terrain stays in bounds without distorting a group.
- var lower := Vector2(-INF, -INF)
- var upper := Vector2(INF, INF)
+ copied = for_cell_size(copied, float(document.cell_size))
+ var adjusted := placement_offset(document, copied, requested_offset)
+ if not adjusted.error.is_empty(): return adjusted
  var cell := float(document.cell_size)
- for piece: Dictionary in copied.terrain:
-  var position := Shapes.placement_position(piece)
-  lower = lower.max(-position * cell)
-  upper = upper.min((Vector2(document.grid_size) - position - Shapes.scaled_size(piece)) * cell)
- if lower.x > upper.x or lower.y > upper.y: return {"error": "The copied terrain does not fit in this Act."}
- var offset := requested_offset.clamp(lower, upper)
+ var offset: Vector2 = adjusted.offset
  var selection := {"terrain": [], "gameplay": [], "decor": [], "ring": []}
  var ids := {}
  for kind: String in COLLECTIONS:
@@ -72,5 +79,39 @@ static func append_to(document: Resource, copied: Dictionary, requested_offset: 
   bank.gates = bank.gates.map(func(id): return ids[id])
   for action: Dictionary in bank.get("actions", []): action.object_id = ids[action.object_id]
   document.switch_banks.append(bank)
+ for original: Dictionary in copied.get("groups", []):
+  var members := EditorSelection.empty()
+  for kind: String in COLLECTIONS:
+   for index: int in original.members.get(kind, []): members[kind].append(selection[kind][index])
+  document.editor_groups.append({"name": original.name, "members": members})
  var errors: PackedStringArray = document.validation_errors()
  return {"selection": selection, "error": "" if errors.is_empty() else errors[0]}
+
+static func placement_offset(document: Resource, copied: Dictionary, requested_offset: Vector2) -> Dictionary:
+ var lower := Vector2(-INF, -INF)
+ var upper := Vector2(INF, INF)
+ var cell := float(document.cell_size)
+ for piece: Dictionary in copied.terrain:
+  var position := Shapes.placement_position(piece)
+  lower = lower.max(-position * cell)
+  upper = upper.min((Vector2(document.grid_size) - position - Shapes.scaled_size(piece)) * cell)
+ if lower.x > upper.x or lower.y > upper.y: return {"error": "The copied terrain does not fit in this Act."}
+ return {"error": "", "offset": requested_offset.clamp(lower, upper)}
+
+static func for_cell_size(copied: Dictionary, cell_size: float) -> Dictionary:
+ var ratio := cell_size / float(copied.get("cell_size", cell_size))
+ if is_equal_approx(ratio, 1.0): return copied
+ var adapted := copied.duplicate(true)
+ adapted.cell_size = cell_size
+ for item: Dictionary in adapted.gameplay:
+  item.position *= ratio
+  # These four silhouettes already derive their dimensions from cell size.
+  if item.type not in ["round_bumper", "triangle_bumper", "left_flipper", "right_flipper"]:
+   item["properties"] = Objects.scaled_properties(item, ratio)
+   if item.type == "elevated_rail": item.properties.ring_spacing *= ratio
+ for slot: Dictionary in adapted.decor: slot.position *= ratio
+ for trail: Dictionary in adapted.ring:
+  trail.start *= ratio
+  trail.end *= ratio
+  trail.spacing *= ratio
+ return adapted

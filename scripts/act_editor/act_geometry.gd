@@ -13,6 +13,7 @@ const RINGS = preload("res://scripts/act_editor/ring_trails.gd")
 const BANKS = preload("res://scripts/act_editor/switch_banks.gd")
 const COMPOSITES = preload("res://scripts/act_editor/composite_terrain.gd")
 const DECOR = preload("res://scripts/act_editor/decor_slots.gd")
+const EditorSelection = preload("res://scripts/act_editor/editor_selection.gd")
 const SCRIPT_PATH := "res://scripts/act_editor/act_geometry.gd"
 const PLACEMENT_TYPES := {
  "shape_id": TYPE_STRING,
@@ -22,7 +23,8 @@ const PLACEMENT_TYPES := {
  "flip_h": TYPE_BOOL,
  "flip_v": TYPE_BOOL,
 }
-const COMPOSITE_FIELDS := ["composite_version", "outline", "smoothing_strength"]
+const COMPOSITE_FIELDS := ["composite_version", "outline", "smoothing_strength", "editor_sources"]
+const TERRAIN_HISTORY = preload("res://scripts/act_editor/terrain_history.gd")
 const OPTIONAL_TRANSFORM_FIELDS := ["offset", "terrain_scale", "fine_rotation_degrees"]
 
 # Dynamic exports preserve malformed input for validation. Typed Resource fields
@@ -50,6 +52,9 @@ const OPTIONAL_TRANSFORM_FIELDS := ["offset", "terrain_scale", "fine_rotation_de
 ## Stable identity survives Save As; populated when the first decoration is authored.
 @export var decor_seed = ""
 @export var decor_slots = []
+## Optional authoring metadata; excluded from the gameplay/bake fingerprint.
+@export var editor_groups = []
+@export var editor_locks = {}
 ## Entry lies on the bottom boundary; exit lies on the top boundary.
 ## A zero start and width represent an unset connector in an editable draft.
 @export var entry_start_x = 0
@@ -102,6 +107,8 @@ func red_gutter_bounds() -> Rect2:
 
 func validation_errors() -> PackedStringArray:
  var errors := PackedStringArray()
+ var editor_error := EditorSelection.validation_error(self)
+ if not editor_error.is_empty(): errors.append(editor_error)
  if typeof(authored_difficulty) != TYPE_INT or authored_difficulty < 1 or authored_difficulty > 5:
   errors.append("Authored difficulty must be an integer from 1 (Relaxed) to 5 (Expert).")
  if typeof(design_thesis) != TYPE_STRING or design_thesis.length() > MAX_DESIGN_THESIS_LENGTH:
@@ -186,6 +193,9 @@ func validation_errors() -> PackedStringArray:
     errors.append(prefix + "fine_rotation_degrees must be a finite angle.")
     continue
   if composite:
+   if placement.has("editor_sources"):
+    var history_error := TERRAIN_HISTORY.validation_error(placement.editor_sources)
+    if not history_error.is_empty(): errors.append(prefix + history_error)
    var composite_errors := _composite_validation_errors(placement)
    for error: String in composite_errors: errors.append(prefix + error)
    if not composite_errors.is_empty(): continue
@@ -395,6 +405,11 @@ func fingerprint() -> String:
 func difficulty_label() -> String:
  return DIFFICULTY_LABELS[authored_difficulty - 1]
 
+func editing_fingerprint() -> String:
+ var histories: Array = []
+ for piece: Dictionary in placements: histories.append(piece.get("editor_sources", {}))
+ return fingerprint() + var_to_bytes([EditorSelection.fingerprint_records(self), histories]).hex_encode().sha256_text()
+
 func copy_document() -> Resource:
  var result: Resource = get_script().new()
  result.format_version = format_version
@@ -410,6 +425,8 @@ func copy_document() -> Resource:
  result.ring_trails = ring_trails.duplicate(true) if typeof(ring_trails) == TYPE_ARRAY else ring_trails
  result.decor_seed = decor_seed
  result.decor_slots = decor_slots.duplicate(true) if typeof(decor_slots) == TYPE_ARRAY else decor_slots
+ result.editor_groups = editor_groups.duplicate(true) if editor_groups is Array else editor_groups
+ result.editor_locks = editor_locks.duplicate(true) if editor_locks is Dictionary else editor_locks
  result.entry_start_x = entry_start_x
  result.entry_width = entry_width
  result.exit_start_x = exit_start_x
@@ -580,6 +597,12 @@ static func _decode_stored_composites(document: Resource) -> String:
    var decoded: Variant = _decode_numeric_payload(placement.smoothing_strength)
    if decoded == null: return "Composite %d: invalid stored smoothing strength." % (index + 1)
    placement.smoothing_strength = decoded
+  if typeof(placement.get("editor_sources")) == TYPE_PACKED_BYTE_ARRAY:
+   # Native Variant storage preserves exact coordinates; objects are never decoded.
+   var payload: PackedByteArray = placement.editor_sources
+   if payload.size() < 8 or payload.size() > 32 * 1024 * 1024 or payload.decode_u32(0) != var_to_bytes({}).decode_u32(0):
+    return "Invalid saved terrain source payload."
+   placement.editor_sources = bytes_to_var(payload)
  return ""
 
 static func _decode_stored_angles(document: Resource) -> String:
@@ -615,6 +638,7 @@ func _storage_document() -> Resource:
    # Preserve every float bit across text Resource serialization and new sessions.
    placement.outline = var_to_bytes(placement.outline)
    placement.smoothing_strength = var_to_bytes(placement.smoothing_strength)
+   if placement.has("editor_sources"): placement.editor_sources = var_to_bytes(placement.editor_sources)
  for placement: Dictionary in stored.gameplay_objects:
   # Godot 4.7's text float parser can shift arbitrary double scalars by one ULP.
   # Store the angle once as a native numeric byte payload in the same field.
@@ -656,7 +680,7 @@ func save_document(path: String) -> Error:
   _remove_if_present(staged)
   return error
  var roundtrip := load_document(staged)
- if roundtrip.document == null or roundtrip.document.fingerprint() != fingerprint():
+ if roundtrip.document == null or roundtrip.document.editing_fingerprint() != editing_fingerprint():
   _remove_if_present(staged)
   return ERR_FILE_CORRUPT
  var backup := ""
