@@ -24,8 +24,9 @@ func build(presenter: TablePresentation, runtime: Dictionary) -> void:
    "spinner": _spinner(item)
    "magnetic_field": _field(item)
    "elevated_rail": await _rail(item)
-   "drop_target_bank", "slingshot", "one_way_gate", "switch_target", "wall_switch", "spring", "lane_barrier", "diverter", "dash_panel":
+   "moving_bumper", "score_chute", "drop_target_bank", "slingshot", "one_way_gate", "switch_target", "wall_switch", "spring", "lane_barrier", "diverter", "dash_panel":
     var entry := Gimmicks.build(table, self, item)
+    if item.type == "moving_bumper": table.bumper_visuals[descriptor.body.get_instance_id()] = entry.puck
     gimmicks.append(entry)
     Gimmicks.update(entry)
 

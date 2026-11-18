@@ -224,7 +224,7 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
    if not _contact_cooldowns.has(id):
     _contact_cooldowns[id] = 0.16
     var outward_speed: float = state.linear_velocity.dot(normal)
-    var desired := bumper_rebound_speed(approach, stats)
+    var desired := bumper_rebound_speed(approach, stats) + state.get_contact_collider_velocity_at_position(index).dot(normal)
     # Native restitution may already exceed the tuned rebound. Remove that
     # excess as well as supplying lift, matching the swept collision response.
     state.apply_central_impulse(normal * (desired - outward_speed) * mass)

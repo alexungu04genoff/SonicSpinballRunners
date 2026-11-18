@@ -30,7 +30,7 @@ func _draw() -> void:
   draw_polyline(points, Color("d6e5ee"), 2.0 * units_per_pixel, true)
  for item: Dictionary in runtime.get("objects", []):
   if item.has("mechanic"):
-   preload("res://scripts/act_editor/gameplay_preview.gd").draw_object(self, item, item.position, 1.0, float(document.cell_size))
+   preload("res://scripts/act_editor/gameplay_preview.gd").draw_object(self, item, item.body.position, 1.0, float(document.cell_size), false, false, item.type != "moving_bumper")
    continue
   var body: Node2D = item.body
   var points := PackedVector2Array()

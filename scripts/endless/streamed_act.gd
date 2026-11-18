@@ -185,11 +185,12 @@ func _object_step() -> void:
  descriptor.position = item.position + plan.offset
  var body: Node2D
  if item.has("mechanic"):
-  body = item.body.duplicate() if item.type == "lane_barrier" else Node2D.new()
+  body = item.body.duplicate() if item.type in ["lane_barrier", "moving_bumper"] else Node2D.new()
   var placement: Dictionary = document.gameplay_objects[index].duplicate(true)
   placement.object_id = descriptor.object_id
   placement.position = descriptor.position
   runtime.mechanics.add_object(placement, descriptor)
+  if item.type == "moving_bumper": descriptor.mechanic.body = body
  elif item.type in ["left_flipper", "right_flipper"]:
   var flipper := PlaygroundFlipper.new()
   for property: String in ["length", "radius", "side", "authored_rest_angle"]: flipper.set(property, item.body.get(property))

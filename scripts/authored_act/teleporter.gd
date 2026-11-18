@@ -13,7 +13,7 @@ static func near_outline(point: Vector2, points: PackedVector2Array, closed: boo
 static func hardware_clear(point: Vector2, radius: float, objects: Array, cell_size: float) -> bool:
  for item: Dictionary in objects:
   var props := Objects.properties(item)
-  if item.type in ["teleporter", "magnetic_field", "elevated_rail", "spinner", "switch_target", "wall_switch", "dash_panel", "buzz_bomber"]: continue
+  if item.type in ["teleporter", "score_chute", "magnetic_field", "elevated_rail", "spinner", "switch_target", "wall_switch", "dash_panel", "buzz_bomber"]: continue
   if item.type in ["left_flipper", "right_flipper"]:
    var length := Objects.flipper_length(item, cell_size)
    var side := 1.0 if item.type == "left_flipper" else -1.0

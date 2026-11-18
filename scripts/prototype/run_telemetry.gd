@@ -40,7 +40,7 @@ func begin_act(at: float, document: Resource = null, character := "") -> void:
  score_at_target = null
  buddy_at_target = null
  score_by_category = {}
- for kind: String in ["ring", "bumper", "enemy", "switch", "switch_bank", "spinner_tick", "spinner_goal", "lane", "lane_set", "ring_rack", "other"]:
+ for kind: String in ["ring", "bumper", "enemy", "switch", "switch_bank", "spinner_tick", "spinner_goal", "score_chute", "lane", "lane_set", "ring_rack", "other"]:
   score_by_category[kind] = 0
  combo_score_by_multiplier = {"1": 0, "2": 0, "3": 0, "4": 0}
  combo_advances_by_source = {}

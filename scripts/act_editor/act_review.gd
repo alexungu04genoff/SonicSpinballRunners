@@ -8,7 +8,7 @@ const FEATURED_FAMILIES := {
  "drop_target_bank": "Drop Targets", "switch_target": "Switch", "wall_switch": "Switch",
  "one_way_gate": "One-Way Gate", "diverter": "Diverter", "elevated_rail": "Elevated Rail",
  "dash_panel": "Dash Panel", "spinner": "Spinner", "lane_barrier": "Lane Barrier",
- "magnetic_field": "Magnetic Field",
+ "moving_bumper": "Moving Bumper", "score_chute": "Score Chute", "magnetic_field": "Magnetic Field",
 }
 
 static func summarize(document: Resource) -> Dictionary:

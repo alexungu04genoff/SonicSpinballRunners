@@ -32,6 +32,7 @@ var ramp: Dictionary = {}
 var progress := 0.0
 var speed := 0.0
 var age := 0.0
+var chute_entry := Vector2.ZERO
 var reentry_time := 0.0
 var _saved_layer := 2
 var _saved_mask := 1
@@ -69,6 +70,10 @@ func add_object(placement: Dictionary, descriptor: Dictionary) -> void:
  item["pulse"] = 0.0
  item["launch_count"] = 0
  if Enemies.is_enemy(item.type): enemies.add(item)
+ if item.type == "moving_bumper":
+  item["patrol_phase"] = 0.0
+  item["patrol_offset"] = 0.0
+ if item.type == "score_chute": item["lit_bars"] = 0
  if item.type == "drop_target_bank":
   item["targets"] = []
   item["complete"] = false
@@ -110,6 +115,10 @@ func reset() -> void:
   item.passing = false
   item.pulse = 0.0
   item.launch_count = 0
+  if item.type == "moving_bumper":
+   item.patrol_phase = 0.0
+   item.patrol_offset = 0.0
+   if is_instance_valid(item.get("body")): item.body.position = item.position
   if item.type == "drop_target_bank":
    item.complete = false
    item.reset_remaining = 0.0
@@ -151,6 +160,8 @@ func reset_motion() -> void:
     lane.latched = false
 
 func leave_ramp(completed := false) -> void:
+ var leaving_rail: bool = ramp.get("type") == "elevated_rail"
+ if ramp.get("type") == "score_chute": ramp.lit_bars = 0
  var leaving_id: String = ramp.get("object_id", "")
  if is_instance_valid(ball) and not ramp.is_empty():
   ball.collision_layer = _saved_layer
@@ -163,7 +174,7 @@ func leave_ramp(completed := false) -> void:
  speed = 0.0
  age = 0.0
  reset_motion()
- if not leaving_id.is_empty(): traversal_event.emit(&"elevated_rail", leaving_id, &"completed" if completed else &"exited")
+ if leaving_rail: traversal_event.emit(&"elevated_rail", leaving_id, &"completed" if completed else &"exited")
 
 func tick(dt: float) -> void:
  if scoring_active: enemies.tick(dt)
@@ -179,6 +190,13 @@ func tick(dt: float) -> void:
  for item: Dictionary in items:
   item.cooldown = maxf(0.0, item.cooldown - dt)
   item.pulse = maxf(0.0, item.pulse - dt)
+  if item.type == "moving_bumper":
+   var span := float(item.properties.patrol_right) - float(item.properties.patrol_left)
+   if span > 0.0:
+    var direction := -1.0 if item.properties.starting_direction == "left" else 1.0
+    item.patrol_phase = fposmod(float(item.patrol_phase) + direction * float(item.properties.patrol_speed) * dt, span * 2.0)
+    item.patrol_offset = float(item.properties.patrol_left) + pingpong(float(item.patrol_phase) - float(item.properties.patrol_left), span)
+    item.body.position = Vector2(item.position) + Vector2.RIGHT * float(item.patrol_offset)
   if item.type == "drop_target_bank": tick_drop_bank(item, dt)
   if item.type == "lane_barrier":
    for lane: Dictionary in item.lanes: lane.pulse = maxf(0.0, lane.pulse - dt)
@@ -266,6 +284,22 @@ func observe_motion(state: PhysicsDirectBodyState2D, sample_travel := true) -> b
    if crossing_fraction(start, end, item.position, forward, float(item.properties.width) * 0.5, false) >= 0.0:
     item.spin = clampf(float(item.spin) + state.linear_velocity.dot(forward) * 0.08, -float(item.properties.max_spin), float(item.properties.max_spin))
     item.cooldown = 0.08
+  elif item.type == "score_chute" and scoring_active and reentry_time <= 0.0:
+   var down := -Objects.forward(item)
+   var width := float(item.properties.width)
+   var top := Vector2(item.position) - down * width * 0.3
+   var fraction := crossing_fraction(start, end, top, down, width * 0.5 - ball.radius, true)
+   if fraction < 0.0: continue
+   var entry := start.lerp(end, fraction)
+   # Keep the lateral entry coordinate, including on a rotated chute.
+   query.from = Transform2D(0.0, entry)
+   query.motion = down * (width * 0.6 + ball.radius + 1.0)
+   if PhysicsServer2D.body_test_motion(ball.get_rid(), query): continue
+   chute_entry = entry
+   item.lit_bars = 0
+   _capture(item)
+   advance_ramp(state, state.step * (1.0 - fraction))
+   return true
   elif item.type == "elevated_rail" and reentry_time <= 0.0:
    var forward := RailPath.tangent(item.path, 0.0)
    var incoming := state.linear_velocity.dot(forward)
@@ -273,18 +307,8 @@ func observe_motion(state: PhysicsDirectBodyState2D, sample_travel := true) -> b
    if incoming / maxf(1.0, state.linear_velocity.length()) < 0.35: continue
    var fraction := crossing_fraction(start, end, item.path.points[0], forward, maxf(1.0, float(item.properties.width) * 0.5 - ball.radius), true)
    if fraction < 0.0: continue
-   ramp = item
+   _capture(item)
    speed = minf(incoming, 2400.0)
-   progress = 0.0
-   age = 0.0
-   _saved_layer = ball.collision_layer
-   _saved_mask = ball.collision_mask
-   ball.collision_layer = 0
-   ball.collision_mask = 0
-   ball.gravity_scale = 0.0
-   ball.on_ramp = true
-   ball._reset_steering("Elevated rail")
-   ball.flipper_launch_pending = false
    traversal_event.emit(&"elevated_rail", item.object_id, &"entered")
    advance_ramp(state, state.step * (1.0 - fraction))
    return true
@@ -508,9 +532,46 @@ func _observe_gimmicks(state: PhysicsDirectBodyState2D, start: Vector2, motion: 
    return true
  return false
 
+func _capture(item: Dictionary) -> void:
+ ramp = item
+ progress = 0.0
+ age = 0.0
+ _saved_layer = ball.collision_layer
+ _saved_mask = ball.collision_mask
+ ball.collision_layer = 0
+ ball.collision_mask = 0
+ ball.gravity_scale = 0.0
+ ball.on_ramp = true
+ ball._reset_steering("Captured by " + str(item.type))
+ ball.flipper_launch_pending = false
+
+func _advance_chute(state: PhysicsDirectBodyState2D) -> void:
+ var down := -Objects.forward(ramp)
+ var width := float(ramp.properties.width)
+ var stage := mini(3, 1 + floori(age * 6.0))
+ while int(ramp.lit_bars) < stage:
+  ramp.lit_bars += 1
+  if scoring_active: mechanic_score.emit(&"score_chute", ramp.object_id, 25)
+ state.transform = Transform2D(0.0, chute_entry + down * float(stage - 1) * width * 0.3)
+ state.linear_velocity = Vector2.ZERO
+ state.angular_velocity = 0.0
+ if age < 0.5: return
+ var exit := chute_entry + down * (width * 0.6 + ball.radius + 1.0)
+ if not _exit_clear(exit):
+  if age >= 2.0: ball.teleport_to(ball.serve_position, Vector2.ZERO, true)
+  return
+ state.transform = Transform2D(0.0, exit)
+ leave_ramp()
+ reentry_time = 0.15
+ state.linear_velocity = down * 100.0
+ ball._previous_step_velocity = state.linear_velocity
+
 func advance_ramp(state: PhysicsDirectBodyState2D, dt: float) -> void:
  if ramp.is_empty(): return
  age += dt
+ if ramp.type == "score_chute":
+  _advance_chute(state)
+  return
  if age > 30.0:
   # Last-resort lifecycle reset for an externally obstructed mouth, never a rail exit.
   ball.teleport_to(ball.serve_position, Vector2.ZERO, true)

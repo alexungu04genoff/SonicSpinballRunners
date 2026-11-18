@@ -372,6 +372,7 @@ func jump_tour_boundary() -> void:
  pass
 
 func _unhandled_key_input(event: InputEvent) -> void:
+ if not finished and not drafting and _cycle_play_camera(event): return
  if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F3:
   diagnostics.visible = not diagnostics.visible
   fps_label.visible = diagnostics.visible

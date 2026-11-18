@@ -10,6 +10,8 @@ const SAMPLE_SPEED := 300.0
 
 static func description(type: String) -> String:
  return {"spring": "Fixed launch speed · forward-face contact",
+  "moving_bumper": "End contact at midpoint · return shown for rightward travel",
+  "score_chute": "Downward entry · three awards · drops from the bottom",
   "terrain": "300 px/s contact · sample exposed edges · wall restitution",
   "slingshot": "Active rubber launch · back and ends rebound passively",
   "dash_panel": "300 px/s approach · authored boost, influence and speed cap",
@@ -56,6 +58,15 @@ static func shots(item: Dictionary, cell_size: float, resolved_stats: Dictionary
  var facing := Objects.forward(item)
  var origin: Vector2 = item.position
  match type:
+  "moving_bumper":
+   var side := Vector2.RIGHT.rotated(angle)
+   for sign_value: float in [-1.0, 1.0]:
+    var normal := side * sign_value
+    var surface_speed := Vector2.RIGHT.dot(normal) * float(props.patrol_speed)
+    result.append({"origin": origin + normal * (float(props.width) * 0.5 + radius),
+     "velocity": normal * (Ball.bumper_rebound_speed(SAMPLE_SPEED + surface_speed, stats) + surface_speed)})
+  "score_chute":
+   result.append({"origin": origin - facing * (float(props.width) * 0.3 + radius + 1.0), "velocity": -facing * 100.0})
   "spring", "slingshot":
    var depth := float(props.width) * 0.5 if type == "spring" else 4.0
    var speed := float(props.launch_strength) if type == "spring" else float(props.strength)

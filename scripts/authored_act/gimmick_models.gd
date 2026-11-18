@@ -31,6 +31,8 @@ static func build(p, parent: Node3D, item: Dictionary) -> Dictionary:
 
 static func _build_parts(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dictionary:
  match item.type:
+  "moving_bumper": return _moving_bumper(p, root, item, style)
+  "score_chute": return _score_chute(p, root, item, style)
   "one_way_gate": return _gate(p, root, item, style)
   "switch_target": return _switch(p, root, item, style)
   "wall_switch":
@@ -69,6 +71,29 @@ static func _star(p, parent: Node3D, radius: float, height: float, mat: Material
  for i in 10:
   points.append(Vector2.from_angle(-PI / 2.0 + i * TAU / 10.0) * radius / p.SCALE * (1.0 if i % 2 == 0 else 0.45))
  p.mesh_node(p._prism(points, 0.008, mat, mat), null, Vector3(0, height, 0), parent).name = "StarEmblem"
+
+static func _moving_bumper(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dictionary:
+ var width: float = float(item.properties.width) * p.SCALE
+ var puck := Node3D.new()
+ root.add_child(puck)
+ for layer: Dictionary in [{"radius": 0.5, "y": 0.07, "mat": style.body}, {"radius": 0.46, "y": 0.12, "mat": style.trim}, {"radius": 0.38, "y": 0.15, "mat": style.light}]:
+  var disc := _disc(p, puck, width * float(layer.radius), 0.06, Vector3.UP * float(layer.y), layer.mat, "Oval", 24)
+  disc.scale.z = 0.48
+ return {"kind": "moving_bumper", "item": item, "root": root, "puck": puck}
+
+static func _score_chute(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dictionary:
+ var width: float = float(item.properties.width) * p.SCALE
+ var indicators: Array[Node3D] = []
+ for i in 3:
+  var at := Vector3(0, 0.04, (i - 1) * width * 0.3)
+  _box(p, root, Vector3(width, 0.05, 0.035), at, style.body, "ScoreBar")
+  var light := Node3D.new()
+  root.add_child(light)
+  _box(p, light, Vector3(width * 0.9, 0.02, 0.04), at + Vector3.UP * 0.03, style.light, "LitBar")
+  indicators.append(light)
+  for side: float in [-1.0, 1.0]:
+   _disc(p, root, 0.035, 0.07, at + Vector3.RIGHT * side * width * 0.5, style.trim, "EndCap", 8)
+ return {"kind": "score_chute", "item": item, "root": root, "indicators": indicators}
 
 static func _gate(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dictionary:
  var width: float = float(item.properties.width) * p.SCALE
@@ -184,6 +209,11 @@ static func _spring(p, root: Node3D, item: Dictionary) -> Dictionary:
 static func update(entry: Dictionary) -> void:
  var item: Dictionary = entry.item
  match entry.kind:
+  "moving_bumper":
+   # Baked visuals are Act-local. Translate by the offset, never the Act origin.
+   entry.puck.position = Vector3.RIGHT.rotated(Vector3.UP, deg_to_rad(float(item.rotation_degrees))) * float(item.patrol_offset) * TablePresentation.SCALE
+  "score_chute":
+   for i in entry.indicators.size(): entry.indicators[i].visible = i < int(item.lit_bars)
   "drop_target_bank":
    for i in entry.pads.size():
     entry.pads[i].scale.y = maxf(0.08, 1.0 - float(item.targets[i].retraction))

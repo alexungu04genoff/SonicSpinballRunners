@@ -22,9 +22,9 @@ static func bounds(document: Resource, selection: Dictionary) -> Rect2:
   for point: Vector2 in Objects.local_points(item, cell):
    points.append(Vector2(item.position) + point.rotated(deg_to_rad(float(item.rotation_degrees))))
   if item.type == "teleporter": points.append(Objects.teleporter_exit(item))
-  if item.type == "buzz_bomber":
+  if item.type in ["buzz_bomber", "moving_bumper"]:
    var props := Objects.properties(item)
-   var axis := Vector2.RIGHT.rotated(deg_to_rad(float(item.rotation_degrees)))
+   var axis := Objects.patrol_axis(item)
    points.append(Vector2(item.position) + axis * float(props.patrol_left))
    points.append(Vector2(item.position) + axis * float(props.patrol_right))
  for index: int in selection.get("decor", []):
@@ -138,7 +138,7 @@ static func mirror(document: Resource, selection: Dictionary, pivot: Vector2, ho
    elif item.type == "diverter":
     props.state_a_angle = -float(props.state_a_angle)
     props.state_b_angle = -float(props.state_b_angle)
-   elif item.type == "buzz_bomber":
+   elif item.type == "buzz_bomber" or (horizontal and item.type == "moving_bumper"):
     var old_left := float(props.patrol_left)
     props.patrol_left = -float(props.patrol_right)
     props.patrol_right = -old_left

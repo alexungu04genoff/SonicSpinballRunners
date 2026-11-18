@@ -116,7 +116,23 @@ static func _compile(document: Resource, tuning: PhysicsTuning, controls: Playgr
   var descriptor := placement.duplicate(true)
   var body: Node2D
   match placement.type:
-   "teleporter", "drop_target_bank", "slingshot", "spinner", "magnetic_field", "elevated_rail", "one_way_gate", "switch_target", "wall_switch", "spring", "lane_barrier", "diverter", "dash_panel", "buzz_bomber":
+   "moving_bumper":
+    var moving := AnimatableBody2D.new()
+    moving.physics_material_override = bumper_material
+    moving.collision_layer = 1
+    moving.collision_mask = 2
+    moving.position = placement.position
+    moving.rotation_degrees = placement.rotation_degrees
+    moving.set_meta("bumper", true)
+    var shape := ConvexPolygonShape2D.new()
+    shape.points = Objects.local_points(placement, cell_size)
+    var collision := CollisionShape2D.new()
+    collision.shape = shape
+    moving.add_child(collision)
+    body = moving
+    mechanics.add_object(placement, descriptor)
+    descriptor.mechanic.body = moving
+   "score_chute", "teleporter", "drop_target_bank", "slingshot", "spinner", "magnetic_field", "elevated_rail", "one_way_gate", "switch_target", "wall_switch", "spring", "lane_barrier", "diverter", "dash_panel", "buzz_bomber":
     body = lane_barrier_body(placement, wall_material) if placement.type == "lane_barrier" else Node2D.new()
     body.position = placement.position
     body.rotation_degrees = placement.rotation_degrees

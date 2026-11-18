@@ -2490,7 +2490,7 @@ func set_enemy_patrol(index: int, endpoints: Vector2) -> void:
 	if index >= 0 and EditorSelectionData.locked(document, "gameplay", index): return
 	if index < 0 or index >= document.gameplay_objects.size(): return
 	var item: Dictionary = document.gameplay_objects[index]
-	if item.type != "buzz_bomber": return
+	if item.type not in ["buzz_bomber", "moving_bumper"]: return
 	var props := Objects.properties(item)
 	if props.patrol_left == endpoints.x and props.patrol_right == endpoints.y: return
 	var edited := item.duplicate(true)
@@ -2575,11 +2575,11 @@ func _refresh_mechanics_properties() -> void:
 	for key: String in Objects.property_limits(item.type):
 		if key in ["patrol_left", "patrol_right", "ring_spacing"]: continue
 		_mechanic_number(key.replace("_", " ").capitalize(), float(properties[key]), func(value: float): set_gameplay_property(key, value))
-	if item.type == "buzz_bomber":
+	if item.type in ["buzz_bomber", "moving_bumper"]:
 		_mechanic_choice("Starting direction", "starting_direction", ["left", "right"], properties.starting_direction)
-		detail_label.text = "Ctrl+Shift-drag Buzz Bomber or its patrol line to resize. Alt frees snapping. Zero length is stationary."
+		detail_label.text = "Ctrl+Shift-drag the object or drag a patrol endpoint to resize. Alt frees snapping. Zero length is stationary."
 		var patrol_help := Label.new()
-		patrol_help.text = "Shift + wheel scales Buzz and its patrol. R rotates both. Ctrl+Shift-drag Buzz or its line, or drag either endpoint."
+		patrol_help.text = "Drag either endpoint to change travel. Moving bumpers always travel horizontally."
 		patrol_help.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		patrol_help.custom_minimum_size.x = 260
 		mechanics_properties.add_child(patrol_help)

@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Horizontal bumper and score chute experiment — 2026-11-18
+
+Use Act Geometry Editor → open Side to Side in Experiments → Play. Drag the moving bumper patrol endpoints and tune patrol speed in the inspector. Shoot up through the chute, then drop into its top to score. C cycles the live camera and Shift+C goes back. The November 17 laptop package predates these features.
+
 ## Measure grounding before adding shadows — 2026-11-17
 
 The seven-theme grounding investigation leaves every production default alone and recommends **zero scenery proxies**. Authored foreground Decor already casts; local scenery is recursively shadowless in separate backdrop worlds, whose lights cannot shadow the table. Exact source/hull trials in Rooftop, Sky, Ice and Chemical add work without useful playfield contact. Camera-right is worth Alex reviewing for Rooftop/Sky's wall and column separation, but remains an unsaved diagnostic. Green Hill, Casino and Aquarium receive audits/sweeps only; Lava is excluded from the investigation.

@@ -686,7 +686,39 @@ func jump_tour_boundary() -> void:
    _activate(act)
    return
 
+var camera_notice: Label
+var camera_notice_tween: Tween
+
+func _cycle_play_camera(event: InputEvent) -> bool:
+ if not event is InputEventKey or not event.pressed or event.echo or event.keycode != KEY_C: return false
+ if event.ctrl_pressed or event.alt_pressed or event.meta_pressed: return false
+ if not started or closing or get_tree().paused or not is_instance_valid(presentation.camera): return false
+ var order := [TablePresentation.CameraPreset.DRAMATIC_PINBALL, TablePresentation.CameraPreset.WIDE_PINBALL, TablePresentation.CameraPreset.REAL_PINBALL, TablePresentation.CameraPreset.TOP_DOWN]
+ var direction := -1 if event.shift_pressed else 1
+ var index: int = order[posmod(order.find(presentation.camera_preset) + direction, order.size())]
+ presentation.set_camera_preset(index)
+ if not is_instance_valid(camera_notice):
+  camera_notice = Label.new()
+  hud.add_child(camera_notice)
+  camera_notice.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+  camera_notice.offset_left = -160
+  camera_notice.offset_right = 160
+  camera_notice.offset_top = -64
+  camera_notice.offset_bottom = -32
+  camera_notice.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  camera_notice.add_theme_constant_override("outline_size", 4)
+  camera_notice.mouse_filter = Control.MOUSE_FILTER_IGNORE
+ if camera_notice_tween != null: camera_notice_tween.kill()
+ camera_notice.text = TablePresentation.CAMERA_NAMES[index]
+ camera_notice.show()
+ camera_notice_tween = create_tween()
+ camera_notice_tween.tween_interval(1.6)
+ camera_notice_tween.tween_callback(camera_notice.hide)
+ get_viewport().set_input_as_handled()
+ return true
+
 func _unhandled_key_input(event: InputEvent) -> void:
+ if _cycle_play_camera(event): return
  if not event is InputEventKey or not event.pressed or event.echo: return
  if event.keycode == KEY_T: toggle_tour()
  elif event.keycode == KEY_N: jump_tour_boundary()
@@ -729,7 +761,7 @@ func _build_hud() -> void:
   add_child(retro_controls)
   retro_controls.install(retro_filter, buttons, buttons)
  var hint := Label.new()
- hint.text = "Enter: roll in · Q/E: flippers · Arrows: steer · Space: special · F3: stats · F4: filters · F11: fullscreen"
+ hint.text = "Enter: roll in · Q/E: flippers · Arrows: steer · Space: special · C: camera · F3: stats · F4: filters · F11: fullscreen"
  panel.add_child(hint)
  diagnostics = Label.new()
  diagnostics.visible = "--frame-timing" in OS.get_cmdline_user_args()

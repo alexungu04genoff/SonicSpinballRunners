@@ -9,6 +9,8 @@ const CURVE_STEPS := 24
 static func definitions() -> Array[Dictionary]:
  return [
   {"id": "round_bumper", "label": "Round Bumper", "color": Color("53d5ed")},
+  {"id": "moving_bumper", "label": "Moving Bumper", "color": Color("50caff")},
+  {"id": "score_chute", "label": "Three-Bar Score Chute", "color": Color("ffc269")},
   {"id": "triangle_bumper", "label": "Triangle Bumper", "color": Color("76cafa")},
   {"id": "left_flipper", "label": "Left Flipper", "color": Color("ffd76b")},
   {"id": "right_flipper", "label": "Right Flipper", "color": Color("ffd76b")},
@@ -49,6 +51,15 @@ static func local_points(placement: Dictionary, cell_size: float) -> PackedVecto
  # The sling keeps its origin relative to the original silhouette, without re-centering.
  var points := PackedVector2Array()
  match placement.get("type", ""):
+  "moving_bumper":
+   var width := float(properties(placement).width)
+   for i in 24:
+    var angle := TAU * i / 24.0
+    points.append(Vector2(cos(angle) * width * 0.5, sin(angle) * width * 0.24))
+  "score_chute":
+   var width := float(properties(placement).width)
+   for corner: Vector2 in [Vector2(-0.5, -0.3), Vector2(0.5, -0.3), Vector2(0.5, 0.3), Vector2(-0.5, 0.3)]:
+    points.append(corner * width)
   "teleporter":
    var props := properties(placement)
    for step in 32: points.append(Vector2.from_angle(TAU * step / 32.0) * float(props.radius))
@@ -116,6 +127,9 @@ static func local_points(placement: Dictionary, cell_size: float) -> PackedVecto
   for i in points.size(): points[i] *= float(properties(placement).scale)
  return points
 
+static func patrol_axis(item: Dictionary) -> Vector2:
+ return Vector2.RIGHT if item.type == "moving_bumper" else Vector2.RIGHT.rotated(deg_to_rad(float(item.rotation_degrees)))
+
 static func new_id() -> String:
  return "obj_" + Crypto.new().generate_random_bytes(12).hex_encode()
 
@@ -126,6 +140,8 @@ static func defaults(type: String) -> Dictionary:
   "drop_target_bank": return {"target_count": 5.0, "spacing": 32.0, "target_size": 22.0, "color": "green", "completion_bonus": 500.0, "reset_delay": 0.0}
   "slingshot": return {"width": 80.0, "strength": 650.0}
   "buzz_bomber": return {"scale": 1.0, "patrol_speed": 65.0, "starting_direction": "right", "patrol_left": -60.0, "patrol_right": 60.0, "respawn_delay": 15.0}
+  "moving_bumper": return {"width": 64.0, "patrol_speed": 90.0, "patrol_left": -75.0, "patrol_right": 75.0, "starting_direction": "right"}
+  "score_chute": return {"width": 58.0}
   "round_bumper": return {"scale": 1.0}
   "triangle_bumper": return {"scale": 1.0, "mirror_x": false}
   "one_way_gate": return {"width": 80.0, "initial_state": "closed", "visual_mode": "auto"}
@@ -185,6 +201,7 @@ static func scaled_properties(item: Dictionary, factor: float) -> Dictionary:
   "left_flipper": ["length_multiplier"], "right_flipper": ["length_multiplier"],
   "round_bumper": ["scale"], "triangle_bumper": ["scale"],
   "switch_target": ["scale"], "wall_switch": ["scale"],
+  "moving_bumper": ["width", "patrol_left", "patrol_right"],
   "buzz_bomber": ["scale", "patrol_left", "patrol_right"],
   "drop_target_bank": ["spacing", "target_size"], "diverter": ["length"],
   "teleporter": ["radius", "exit_x", "exit_y"], "magnetic_field": ["radius"],
@@ -204,6 +221,8 @@ static func property_limits(type: String) -> Dictionary:
   "drop_target_bank": return {"target_count": [2.0, 12.0], "spacing": [16.0, 80.0], "target_size": [10.0, 50.0], "completion_bonus": [0.0, 100000.0], "reset_delay": [0.0, 60.0]}
   "slingshot": return {"width": [24.0, 200.0], "strength": [100.0, 1600.0]}
   "buzz_bomber": return {"scale": [0.35, 2.5], "patrol_speed": [0.0, 400.0], "patrol_left": [-2000.0, 0.0], "patrol_right": [0.0, 2000.0], "respawn_delay": [0.1, 300.0]}
+  "moving_bumper": return {"width": [24.0, 160.0], "patrol_speed": [0.0, 400.0], "patrol_left": [-2000.0, 0.0], "patrol_right": [0.0, 2000.0]}
+  "score_chute": return {"width": [40.0, 160.0]}
   "round_bumper", "triangle_bumper": return {"scale": [0.35, 2.5]}
   "one_way_gate": return {"width": [20.0, 500.0]}
   "switch_target", "wall_switch": return {"scale": [0.35, 2.5], "score_reward": [0.0, 1000.0]}

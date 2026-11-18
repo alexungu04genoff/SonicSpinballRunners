@@ -36,6 +36,9 @@ func capture(act: RefCounted) -> void:
     _motion(entry.root, 3.0, Vector3(patrol, 0, 0))
    for entry: Dictionary in node.gimmicks:
     match entry.kind:
+     "moving_bumper":
+      var travel := maxf(-float(entry.item.properties.patrol_left), float(entry.item.properties.patrol_right)) * TablePresentation.SCALE
+      _motion(entry.puck, 1.0, Vector3(travel, 0, travel))
      "diverter": _planar_motion(entry.arm)
      "slingshot": _scaled_motion(entry.rubber, Vector3(1, 3, 1))
      "spring": _include(_subtree_bounds(entry.pad).grow(0.1))

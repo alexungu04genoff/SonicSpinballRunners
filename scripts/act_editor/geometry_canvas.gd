@@ -607,7 +607,7 @@ func selection_allowed(kind: String, index: Variant) -> bool:
  if selection_filter == "all" or selection_filter == kind: return true
  if kind != "gameplay": return false
  var type: String = document.gameplay_objects[index].type
- if selection_filter == "bumpers": return type in ["round_bumper", "triangle_bumper"]
+ if selection_filter == "bumpers": return type in ["round_bumper", "triangle_bumper", "moving_bumper"]
  return selection_filter == type
 
 func constrain_delta(delta: Vector2) -> Vector2:
@@ -2389,7 +2389,7 @@ func _patrol_input(event: InputEvent) -> bool:
   if event is InputEventMouseMotion or (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed):
    if event is InputEventMouseMotion or event.position.distance_squared_to(_handle_last_pointer) > POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
     var delta := legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed, _handle_snap_origin) - Vector2(_patrol_preview.position)
-    var x := delta.rotated(-deg_to_rad(float(_patrol_preview.rotation_degrees))).x
+    var x := delta.dot(Objects.patrol_axis(_patrol_preview))
     if _patrol_index < 0:
      _patrol_preview.properties.patrol_left = clampf(x, -2000, 0)
      _patrol_preview.properties.patrol_right = clampf(x, 0, 2000)
@@ -2411,20 +2411,20 @@ func _patrol_input(event: InputEvent) -> bool:
  # gesture to patrol editing without moving the anchor or adding an Undo step.
  if event is InputEventMouseMotion and (event.shift_pressed and event.ctrl_pressed) and _gameplay_drag_index >= 0:
   var index := _gameplay_drag_index
-  if _gameplay_objects()[index].type == "buzz_bomber":
+  if _gameplay_objects()[index].type in ["buzz_bomber", "moving_bumper"]:
    _begin_patrol_edit(index, "auto")
    return _patrol_input(event)
  if not event is InputEventMouseButton or not event.pressed or event.button_index != MOUSE_BUTTON_LEFT: return false
  _handle_last_pointer = event.position
- if not gameplay_brush.is_empty() and gameplay_brush.get("type") != "buzz_bomber": return false
+ if not gameplay_brush.is_empty() and gameplay_brush.get("type") not in ["buzz_bomber", "moving_bumper"]: return false
  var edit_index := -1
  var edit_side := "auto"
  if selected_gameplay_index >= 0 and selected_gameplay_index < _gameplay_objects().size():
   var selected: Dictionary = _gameplay_objects()[selected_gameplay_index]
-  if selected.type == "buzz_bomber":
+  if selected.type in ["buzz_bomber", "moving_bumper"]:
    var props := Objects.properties(selected)
    var anchor := local_pixels_to_screen(selected.position)
-   var axis := Vector2.RIGHT.rotated(deg_to_rad(float(selected.rotation_degrees)))
+   var axis := Objects.patrol_axis(selected)
    var left := local_pixels_to_screen(Vector2(selected.position) + axis * float(props.patrol_left))
    var right := local_pixels_to_screen(Vector2(selected.position) + axis * float(props.patrol_right))
    for side: String in ["left", "right"]:
@@ -2439,13 +2439,13 @@ func _patrol_input(event: InputEvent) -> bool:
  # while the Buzz brush remains active after ordinary placement.
  if edit_index < 0 and (event.shift_pressed and event.ctrl_pressed):
   for index in gameplay_hit_indices_at(event.position):
-   if _gameplay_objects()[index].type == "buzz_bomber":
+   if _gameplay_objects()[index].type in ["buzz_bomber", "moving_bumper"]:
     edit_index = index
     break
  if edit_index >= 0:
   _begin_patrol_edit(edit_index, edit_side)
   return true
- if gameplay_brush.get("type") != "buzz_bomber" or not (event.shift_pressed and event.ctrl_pressed) or not _inside_grid(event.position): return false
+ if gameplay_brush.get("type") not in ["buzz_bomber", "moving_bumper"] or not (event.shift_pressed and event.ctrl_pressed) or not _inside_grid(event.position): return false
  _patrol_index = -1
  _patrol_preview = gameplay_brush.duplicate(true)
  _patrol_preview.object_id = Objects.new_id()
@@ -2456,7 +2456,7 @@ func _patrol_input(event: InputEvent) -> bool:
  _handle_snap_origin = _patrol_preview.position
  _patrol_dragging = true
  grab_focus()
- _set_status("Buzz Bomber patrol: drag along its rotated axis. Alt frees snapping; Esc cancels. Zero length is stationary.")
+ _set_status("Drag along the patrol line. Alt frees snapping; Esc cancels. Zero length is stationary.")
  queue_redraw()
  return true
 
@@ -2468,7 +2468,7 @@ func _begin_patrol_edit(index: int, side: String) -> void:
  _patrol_preview = _gameplay_objects()[index].duplicate(true)
  _patrol_preview.properties = Objects.properties(_patrol_preview)
  var endpoint: float = _patrol_preview.properties.get("patrol_" + side, 0.0)
- _handle_snap_origin = Vector2(_patrol_preview.position) + Vector2.RIGHT.rotated(deg_to_rad(float(_patrol_preview.rotation_degrees))) * endpoint
+ _handle_snap_origin = Vector2(_patrol_preview.position) + Objects.patrol_axis(_patrol_preview) * endpoint
  _patrol_dragging = true
  grab_focus()
  _set_status("Resize patrol: drag left or right. Anchor stays fixed. Alt frees snapping; Esc cancels.")

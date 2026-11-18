@@ -17,6 +17,21 @@ static func draw_object(target: CanvasItem, placement: Dictionary, anchor: Vecto
  var definition: Dictionary = Objects.get_definition(str(placement.get("type", "")))
  if definition.is_empty():
   return
+ if placement.type == "moving_bumper" and annotations:
+  var props := Objects.properties(placement)
+  var left := anchor + Vector2.RIGHT * float(props.patrol_left) * scale_factor
+  var right := anchor + Vector2.RIGHT * float(props.patrol_right) * scale_factor
+  target.draw_line(left, right, definition.color, 1.5, true)
+  for point: Vector2 in [left, right]:
+   target.draw_rect(Rect2(point - Vector2.ONE * 4.0, Vector2.ONE * 8.0), definition.color, selected)
+ if placement.type == "score_chute":
+  var width := float(Objects.properties(placement).width) * scale_factor
+  var forward := Objects.forward(placement)
+  var side := forward.orthogonal() * width * 0.5
+  for i in range(-1, 2):
+   var center := anchor + forward * width * 0.3 * i
+   target.draw_line(center - side, center + side, SELECTION_COLOR if selected else definition.color, 3.0, true)
+  return
  if placement.type == "teleporter":
   var exit := anchor + (Objects.teleporter_exit(placement) - Vector2(placement.position)) * scale_factor
   var color := Color("cb96ff")

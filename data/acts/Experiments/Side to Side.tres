@@ -1,0 +1,73 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=3]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+format_version = 19
+library_version = 2
+title = "Side to Side"
+grid_size = Vector2i(12, 11)
+cell_size = 50.0
+placements = [{
+"shape_id": "composite",
+"base_size": Vector2i(12, 11),
+"anchor": Vector2i(0, 0),
+"quarter_turns": 0,
+"flip_h": false,
+"flip_v": false,
+"composite_version": 1,
+"smoothing_strength": 0.0,
+"outline": PackedVector2Array(0.0, 0.0, 5.0, 0.0, 4.6, 0.7, 3.6, 0.7, 3.2, 1.2, 3.2, 3.2, 4.2, 4.0, 5.3, 4.4, 5.3, 5.8, 4.2, 6.4, 2.0, 6.0, 1.2, 8.0, 2.8, 9.6, 5.0, 11.0, 0.0, 11.0)
+},
+{
+"shape_id": "composite",
+"base_size": Vector2i(12, 11),
+"anchor": Vector2i(0, 0),
+"quarter_turns": 0,
+"flip_h": false,
+"flip_v": false,
+"composite_version": 1,
+"smoothing_strength": 0.0,
+"outline": PackedVector2Array(12.0, 0.0, 7.0, 0.0, 7.4, 0.7, 8.4, 0.7, 8.8, 1.2, 8.8, 3.2, 7.8, 4.0, 6.7, 4.4, 6.7, 5.8, 7.8, 6.4, 10.0, 6.0, 10.8, 8.0, 9.2, 9.6, 7.0, 11.0, 12.0, 11.0)
+}]
+gameplay_objects = [{
+"type": "left_flipper",
+"position": Vector2(250, 550),
+"rotation_degrees": 18.334649444,
+"properties": {
+
+},
+"object_id": "experiment_left"
+},
+{
+"type": "right_flipper",
+"position": Vector2(350, 550),
+"rotation_degrees": 161.665350556,
+"properties": {
+
+},
+"object_id": "experiment_right"
+}, {
+"type": "moving_bumper",
+"position": Vector2(300, 362),
+"rotation_degrees": 0.0,
+"object_id": "shuttle",
+"properties": {"width": 64.0, "patrol_left": -64.0, "patrol_right": 64.0, "patrol_speed": 90.0}
+}, {
+"type": "score_chute",
+"position": Vector2(270, 148),
+"rotation_degrees": 0.0,
+"object_id": "bars",
+"properties": {"width": 58.0}
+}]
+ring_trails = []
+entry_start_x = 5
+entry_width = 2
+exit_start_x = 5
+exit_width = 2
+score_target = 0
+activation_y = 470.0
+spawn_position = Vector2(300, 505)
+goal_position = Vector2(300, 55)
+goal_diameter_cells = 1.0

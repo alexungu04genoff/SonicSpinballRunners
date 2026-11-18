@@ -19,8 +19,8 @@ const RAIL_TOP_COLOR := Color("64d6bd")
 const RING_PICKUP_DURATION: float = 0.20
 const OVERLAY_HEIGHT: float = 0.015
 const AuthoredActData := preload("res://scripts/act_editor/act_geometry.gd")
-enum CameraPreset { TOP_DOWN, REAL_PINBALL, DRAMATIC_PINBALL }
-const CAMERA_NAMES: Array[String] = ["Top-down reference", "Real Pinball", "Dramatic Pinball"]
+enum CameraPreset { TOP_DOWN, REAL_PINBALL, DRAMATIC_PINBALL, WIDE_PINBALL }
+const CAMERA_NAMES: Array[String] = ["Top-down reference", "Real Pinball", "Dramatic Pinball", "Wide Pinball"]
 var camera_preset: int = CameraPreset.REAL_PINBALL
 var camera_follow_enabled: bool = true
 var overview_zoom: float = 1.0
@@ -304,7 +304,7 @@ func _update_flipper_visibility() -> void:
   flipper_retracted_visuals[i].rotation.y = -flippers[i].rotation
 
 func set_camera_preset(index: int) -> void:
- camera_preset = clampi(index, CameraPreset.TOP_DOWN, CameraPreset.DRAMATIC_PINBALL)
+ camera_preset = clampi(index, CameraPreset.TOP_DOWN, CameraPreset.WIDE_PINBALL)
  reset_camera()
 
 func set_camera_follow(enabled: bool) -> void:
@@ -367,7 +367,8 @@ func reset_camera(at: Vector2 = Vector2.INF) -> void:
   camera.position = map_point(camera_focus) + _camera_offset
 
 func _follow_zoom() -> float:
- return float(camera_settings.zoom) * (AUTHORED_FOLLOW_ZOOM if authored_mode else 1.0)
+ var preset_zoom := 0.75 if camera_preset == CameraPreset.WIDE_PINBALL else 1.0
+ return preset_zoom * float(camera_settings.zoom) * (AUTHORED_FOLLOW_ZOOM if authored_mode else 1.0)
 
 func _follow_window_size() -> Vector2:
  # Authored gameplay uses a close local window. Overview still fits the full Act.
@@ -410,7 +411,7 @@ func _configure_camera() -> void:
   camera.look_at(map_point(camera_focus), Vector3.FORWARD)
  else:
   camera.projection = Camera3D.PROJECTION_PERSPECTIVE
-  var dramatic := camera_preset == CameraPreset.DRAMATIC_PINBALL
+  var dramatic := camera_preset in [CameraPreset.DRAMATIC_PINBALL, CameraPreset.WIDE_PINBALL]
   var elevation := deg_to_rad(50.0 if dramatic else 60.0)
   camera.fov = 52.0 if dramatic else 40.0
   var normal := Vector3(0, sin(elevation), cos(elevation))
