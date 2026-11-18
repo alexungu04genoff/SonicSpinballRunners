@@ -4,6 +4,15 @@ Extract the ZIP into a writable folder on a Windows x64 PC with a Vulkan-capable
 graphics driver. Keep **Geometry Editor.exe** and **Atmosphere Lab.exe** together.
 Neither executable needs Godot or the repository installed.
 
+The current development package includes the optional **Launch Tube Workshop**
+under **Acts/Experiments**. Open it in Geometry Editor and choose **Play Act**.
+Hold **X** and release in Prototype; short charges roll back, stronger charges
+exit, and death waits for a fresh charge. The tube inspector selects Exposed or
+Tunnel and provides editable path points and tuning. Existing Acts are unchanged.
+The bundled Workshop also has verified disk recipes in all eight themes.
+This development package is separate from the frozen UHD 620 Thursday release;
+use that release's **Run Work Laptop Matrix.exe** for the benchmark.
+
 ## Full portable suite
 
 The `-FullSuite` option in `tools/export_authoring_tools.ps1` also packages the

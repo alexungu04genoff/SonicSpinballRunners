@@ -57,7 +57,7 @@ func run() -> void:
   mouse(at, true, true)
   if type == "drop_target_bank": motion(at + Vector2(130, 0), true)
   mouse(at + Vector2(130, 0) if type == "drop_target_bank" else at, false, true)
-  if type in ["elevated_rail", "lane_barrier"]:
+  if type in ["elevated_rail", "lane_barrier", "launch_tube"]:
    mouse(at + Vector2(100.5, -60.25), true, true)
    mouse(at + Vector2(100.5, -60.25), false, true)
    var enter := InputEventKey.new()
@@ -106,7 +106,7 @@ func check_handles() -> void:
  alt_key(false)
  mouse(bank_end, false)
  check(editor.document.gameplay_objects[0].position.distance_to((bank_start + bank_end) * 0.5) < 0.001, "Drag-placed Bank keeps the exact span when Alt is released first")
- for type in ["teleporter", "buzz_bomber", "elevated_rail", "lane_barrier"]:
+ for type in ["teleporter", "buzz_bomber", "elevated_rail", "lane_barrier", "launch_tube"]:
   editor.new_document()
   var item := Objects.make_placement(type)
   item.position = Vector2(180, 320)

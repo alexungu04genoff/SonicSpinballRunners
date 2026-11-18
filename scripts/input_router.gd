@@ -16,6 +16,11 @@ var virtual_enabled: bool = false
 var virtual_steering: float = 0.0
 var virtual_left: bool = false
 var virtual_right: bool = false
+var virtual_launch: bool = false
+var launch_hold_action: StringName = &"launch"
+
+func launch_held() -> bool:
+ return virtual_launch if virtual_enabled else Input.is_action_pressed(launch_hold_action)
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS

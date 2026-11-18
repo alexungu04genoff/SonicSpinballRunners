@@ -14,6 +14,8 @@ var radius: float = RADIUS:
    _collision_circle.radius = radius
 var _collision_circle: CircleShape2D
 var mechanics: Node
+## Only the active Act may dock this ball; neighboring tubes never capture by overlap.
+var launch_tube: Node
 ## Optional shared type action adapter; never owns transforms or collision shapes.
 var type_action_controller: Node
 var on_ramp := false
@@ -87,6 +89,7 @@ func teleport_to(where: Vector2, velocity: Vector2 = Vector2.ZERO, waiting: bool
  _contact_cooldowns.clear()
 
 func launch() -> void:
+ if is_instance_valid(launch_tube) and launch_tube.contained: return
  if serve_pending and not release_pending:
   release_pending = true
   launch_started.emit()
@@ -146,6 +149,9 @@ func _apply_steering(state: PhysicsDirectBodyState2D, stats: Dictionary) -> void
    steering_block_reason = "No command / deadzone" if absf(axis) <= 0.01 else "Selected acceleration rate is zero"
 
 func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
+ if is_instance_valid(launch_tube) and launch_tube.contained:
+  launch_tube.integrate(state, state.step)
+  return
  if not serve_pending:
   teleporter_cooldown = maxf(0.0, teleporter_cooldown - state.step)
   if teleporter_cooldown <= 0.0 and teleporter_arrival.is_finite() and state.transform.origin.distance_to(teleporter_arrival) > 60.0 + radius + 2.0:

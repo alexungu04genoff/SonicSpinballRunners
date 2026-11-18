@@ -69,7 +69,7 @@ static func draw_object(target: CanvasItem, placement: Dictionary, anchor: Vecto
  if placement.type in ["one_way_gate", "switch_target", "spring"]:
   _draw_gimmick(target, placement, anchor, scale_factor, points, selected, ghost)
   return
- if placement.type in ["spinner", "magnetic_field", "elevated_rail"]:
+ if placement.type in ["spinner", "magnetic_field", "elevated_rail", "launch_tube"]:
   _draw_mechanic(target, placement, anchor, scale_factor, points, selected, ghost)
   return
  if points.size() < 3:
@@ -156,7 +156,18 @@ static func _draw_mechanic(target: CanvasItem, placement: Dictionary, anchor: Ve
  var color: Color = Objects.get_definition(placement.type).color
  if ghost: color.a = 0.55
  var angle := deg_to_rad(float(placement.rotation_degrees))
- if placement.type == "elevated_rail":
+ if placement.type == "launch_tube":
+  if points.size() >= 2:
+   target.draw_polyline(points, Color(color, 0.2), maxf(3.0, float(props.width) * scale_factor), true)
+   target.draw_polyline(points, color, 2.0, true)
+   _arrow(target, points[-1] - (points[-1] - points[-2]).normalized() * 18, points[-1], color)
+   target.draw_arc(points[0], maxf(5.0, float(props.width) * scale_factor * 0.5), 0, TAU, 12, color, 2.0, true)
+   if selected:
+    target.draw_string(ThemeDB.fallback_font, points[0] + Vector2(10, 15), "DOCK · " + str(props.presentation).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, color)
+    target.draw_string(ThemeDB.fallback_font, points[-1] + Vector2(10, 15), "EXIT · KEEP CLEAR", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, color)
+  for point: Vector2 in props.points:
+   target.draw_circle(anchor + point.rotated(angle) * scale_factor, 5.0 if selected else 3.0, color)
+ elif placement.type == "elevated_rail":
   for ring: Dictionary in preload("res://scripts/authored_act/rail_rings.gd").samples(placement, props):
    target.draw_arc(anchor + (ring.position - placement.position) * scale_factor, maxf(2.0, 5.0 * scale_factor), 0, TAU, 16, Color("ffd568"), 1.5, true)
   if points.size() >= 2:

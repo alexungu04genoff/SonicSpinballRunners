@@ -31,6 +31,7 @@ static func build(p, parent: Node3D, item: Dictionary) -> Dictionary:
 
 static func _build_parts(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dictionary:
  match item.type:
+  "launch_tube": return preload("res://scripts/authored_act/launch_tube_visual.gd").build(p, root, item, style)
   "moving_bumper": return _moving_bumper(p, root, item, style)
   "score_chute": return _score_chute(p, root, item, style)
   "one_way_gate": return _gate(p, root, item, style)
@@ -209,6 +210,7 @@ static func _spring(p, root: Node3D, item: Dictionary) -> Dictionary:
 static func update(entry: Dictionary) -> void:
  var item: Dictionary = entry.item
  match entry.kind:
+  "launch_tube": preload("res://scripts/authored_act/launch_tube_visual.gd").update(entry)
   "moving_bumper":
    # Baked visuals are Act-local. Translate by the offset, never the Act origin.
    entry.puck.position = Vector3.RIGHT.rotated(Vector3.UP, deg_to_rad(float(item.rotation_degrees))) * float(item.patrol_offset) * TablePresentation.SCALE

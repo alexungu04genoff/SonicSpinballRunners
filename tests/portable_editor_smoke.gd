@@ -5,6 +5,11 @@ func _ready() -> void:
 	call_deferred("run")
 
 func run() -> void:
+	if "--launch-tube" in OS.get_cmdline_user_args():
+		var passed: bool = await preload("res://tests/portable_launch_tube_smoke.gd").run(self)
+		print("PORTABLE_LAUNCH_TUBE_SMOKE: ", "PASS" if passed else "FAIL")
+		get_tree().quit(0 if passed else 1)
+		return
 	var root := get_tree().root
 	var editor = load("res://scenes/act_geometry_editor.tscn").instantiate()
 	root.add_child(editor)

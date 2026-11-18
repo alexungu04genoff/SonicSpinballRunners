@@ -1,0 +1,57 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=3]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+format_version = 19
+library_version = 2
+title = "Launch Tube Workshop"
+grid_size = Vector2i(12, 12)
+cell_size = 50.0
+design_thesis = "Launch/retry workshop. Weak: 15% (0.18 s); medium: 50% (0.60 s); full: 100% (1.20 s). Drain through the open bottom. Retry keeps switch/spinner progress and waits for a fresh Launch hold. Switch Exposed/Tunnel in the tube inspector."
+placements = [{
+"shape_id": "composite", "base_size": Vector2i(12, 12), "anchor": Vector2i(0, 0), "quarter_turns": 0, "flip_h": false, "flip_v": false,
+"composite_version": 1, "smoothing_strength": 0.0,
+"outline": PackedVector2Array(0, 0, 0.5, 0, 0.5, 12, 0, 12)
+}, {
+"shape_id": "composite", "base_size": Vector2i(12, 12), "anchor": Vector2i(0, 0), "quarter_turns": 0, "flip_h": false, "flip_v": false,
+"composite_version": 1, "smoothing_strength": 0.0,
+"outline": PackedVector2Array(11.5, 0, 12, 0, 12, 12, 11.5, 12)
+}, {
+"shape_id": "composite", "base_size": Vector2i(12, 12), "anchor": Vector2i(0, 0), "quarter_turns": 0, "flip_h": false, "flip_v": false,
+"composite_version": 1, "smoothing_strength": 0.0,
+"outline": PackedVector2Array(0.5, 0, 5, 0, 5, 0.5, 0.5, 0.5)
+}, {
+"shape_id": "composite", "base_size": Vector2i(12, 12), "anchor": Vector2i(0, 0), "quarter_turns": 0, "flip_h": false, "flip_v": false,
+"composite_version": 1, "smoothing_strength": 0.0,
+"outline": PackedVector2Array(7, 0, 11.5, 0, 11.5, 0.5, 7, 0.5)
+}, {
+"shape_id": "composite", "base_size": Vector2i(12, 12), "anchor": Vector2i(0, 0), "quarter_turns": 0, "flip_h": false, "flip_v": false,
+"composite_version": 1, "smoothing_strength": 0.0,
+"outline": PackedVector2Array(1.3, 5.3, 3.3, 5.3, 3.3, 7.3, 1.3, 7.3)
+}]
+gameplay_objects = [{
+"type": "launch_tube", "object_id": "workshop_tube", "position": Vector2(115, 515), "rotation_degrees": 0.0,
+"properties": {"points": PackedVector2Array(0, 0, 0, -170, 100, -245, 185, -345), "width": 40.0, "height": 80.0, "presentation": "exposed", "charge_seconds": 1.2, "min_speed": 80.0, "max_speed": 700.0, "resistance": 100.0, "return_speed": 300.0}
+}, {
+"type": "left_flipper", "object_id": "workshop_left", "position": Vector2(245, 555), "rotation_degrees": 18.334649444, "properties": {}
+}, {
+"type": "right_flipper", "object_id": "workshop_right", "position": Vector2(355, 555), "rotation_degrees": 161.665350556, "properties": {}
+}, {
+"type": "round_bumper", "object_id": "workshop_bumper", "position": Vector2(450, 300), "rotation_degrees": 0.0, "properties": {"scale": 0.7}
+}, {
+"type": "switch_target", "object_id": "workshop_switch", "position": Vector2(340, 370), "rotation_degrees": 0.0, "properties": {"label": "RETRY KEEPS THIS", "score_reward": 25.0, "color": "green"}
+}, {
+"type": "spinner", "object_id": "workshop_spinner", "position": Vector2(395, 190), "rotation_degrees": 0.0, "properties": {"width": 45.0, "target_ticks": 10.0}
+}]
+ring_trails = []
+entry_start_x = 5
+entry_width = 2
+exit_start_x = 5
+exit_width = 2
+score_target = 250
+activation_y = 500.0
+spawn_position = Vector2(115, 515)
+goal_position = Vector2(525, 100)
+goal_diameter_cells = 1.0

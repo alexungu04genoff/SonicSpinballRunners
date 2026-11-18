@@ -1,5 +1,9 @@
 # Sonic Spinball Runners — Living Game Design
 
+## Optional Launch Tube — 2026-11-18
+
+Confirmed: an optional authored dock-to-exit path, with Exposed/Tunnel presentation and hold/release Launch input. Charge materially changes traversal and exit speed; weak or blocked launches return to dock. The real ball remains contained with gameplay collision, steering and scoring disabled, then returns to ordinary physics at a clear exit. Terrain is unchanged. Death retains the current soft-retry/objective state and requires a fresh player charge; a button held through death cannot relaunch. Only the active Act owns retry, and Acts without a tube retain their existing behavior. Editor transforms, persistence and disk-backed Prototype/Endless share the object. The new Workshop is experimental; no production Act or roster changes. Charge duration, speed and visual intensity remain tunable feel choices. See [architecture, authoring and verification](LAUNCH_TUBE.md).
+
 ## Environmental motion review contract — 2026-11-18
 
 Seven included themes now have a shared Zone-owned diagnostic motion contract and a disk-backed Prototype Motion Lab. Ordinary gameplay retains Current/C; candidate choices and STATIC/SIGNATURE/FULL tiers remain process-local developer controls. Future promotion is one explicit registry decision per theme. Preserve the hierarchy of one primary environmental signature, optional secondary ambience and stable architecture; do not animate every theme equally. Ice adds no new motion, Lava Reef remains excluded, and the frozen Thursday UHD package is unchanged. See [Theme Life](THEME_LIFE.md) for implementation, evidence and recommendations.

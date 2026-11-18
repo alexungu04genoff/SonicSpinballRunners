@@ -126,6 +126,7 @@ func _ready() -> void:
  ring_field.feature_completed.connect(_on_ring_feature_completed)
  tuning.changed.connect(_apply_tuning)
  _apply_tuning()
+ _dock_launch_tube()
  if _authored_root != null:
   call_deferred("_record_authored_timing", initial_authored, presentation_ms)
  print("ACT_ENGINE_READY | Godot %s | 120 Hz | 2D collisions / 3D presentation" % Engine.get_version_info().string)
@@ -335,6 +336,7 @@ func _replace_playfield(prepared: Dictionary, settings: Dictionary) -> void:
  loading_act = false
  if is_instance_valid(debug_panel): debug_panel.refresh_act()
  status_message = "Act ready. Resume if paused, then Enter / X to launch."
+ _dock_launch_tube()
  _record_authored_timing(prepared, presentation_ms)
 
 func _clear_playfield_geometry() -> void:
@@ -351,11 +353,13 @@ func _apply_tuning() -> void:
 func launch_ball() -> void:
  if respawn_time > 0 or loading_act:
   return
+ if is_instance_valid(ball.launch_tube) and ball.launch_tube.contained: return
  ball.launch()
  auto_launch_time = -1.0
  status_message = "Keep it alive. Time your flips; steer lightly."
 
 func reset_ball(relaunch: bool = false) -> void:
+ _detach_launch_tube()
  specials.reset(false, "Reset")
  scorecraft.reset("Reset", true)
  respawn_time = -1.0
@@ -368,6 +372,44 @@ func reset_ball(relaunch: bool = false) -> void:
  ring_field.scoring_enabled = true
  auto_launch_time = 0.25 if relaunch else -1.0
  status_message = "Ready to launch"
+ _dock_launch_tube()
+
+func _active_launch_tube() -> Node:
+ # Only the active runtime is eligible. Resident neighbors never own a retry.
+ var best: Node
+ var nearest := INF
+ var root: Node2D = authored_runtime.get("root")
+ if not is_instance_valid(root) or authored_document.spawn_position == null: return null
+ var spawn: Vector2 = authored_runtime.get("spawn", root.to_global(Vector2(authored_document.spawn_position)))
+ for tube: Node2D in authored_runtime.get("launch_tubes", []):
+  var distance: float = tube.dock_position().distance_squared_to(spawn)
+  if distance < nearest:
+   nearest = distance
+   best = tube
+ return best
+
+func _detach_launch_tube() -> void:
+ if is_instance_valid(ball.launch_tube): ball.launch_tube.detach()
+
+func _dock_launch_tube() -> bool:
+ var tube := _active_launch_tube()
+ if tube == null: return false
+ if not tube.exited.is_connected(_tube_exited): tube.exited.connect(_tube_exited)
+ tube.dock(ball)
+ auto_launch_time = -1.0
+ ring_field.scoring_enabled = false
+ ring_field.previous_ball_position = ball.serve_position
+ previous_goal_position = ball.serve_position
+ _goal_motion_ready = false
+ status_message = tube.feedback
+ return true
+
+func _tube_exited(point: Vector2, _velocity: Vector2) -> void:
+ ring_field.previous_ball_position = point
+ ring_field.scoring_enabled = true
+ previous_goal_position = point
+ _goal_motion_ready = false
+ status_message = "Launch Tube exit — steering restored"
 
 func _on_retry_requested() -> void:
  reset_ball(true)
@@ -563,6 +605,9 @@ func _on_ring_collected(_where: Vector2, source: String = "", multiplier: int = 
 func _physics_process(delta: float) -> void:
  if not is_instance_valid(ball) or loading_act:
   return
+ if is_instance_valid(ball.launch_tube) and ball.launch_tube.contained:
+  auto_launch_time = -1.0
+  status_message = ball.launch_tube.feedback
  if _transfer_serial != ball.transfer_serial:
   _transfer_serial = ball.transfer_serial
   _goal_motion_ready = false

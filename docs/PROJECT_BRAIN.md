@@ -1,5 +1,11 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Optional Launch Tube after closure — 2026-11-18
+
+Alex asked for a player-controlled launch machine without changing old Acts. The optional Launch Tube owns a path from dock to exit and constrains the real physics ball; theme art never drives it. Weak charge rolls back, successful charge releases with materially different speed, and blocked exits return safely. Prototype keeps its existing soft retry and objectives, but a valid active-Act tube returns the ball to dock and waits for a fresh hold/release. Held-through-death input cannot relaunch. Neighboring streamed Acts never own retry; ordinary Acts keep their existing auto-launch.
+
+Bro kept this out of production pools. Open `data/acts/Experiments/Launch Tube Workshop.tres`, use the weak/medium/full examples, and drain through the open bottom to inspect the fresh-charge requirement. Both Exposed and Tunnel use the existing shared theme palette, bounded mesh feedback and normal disk recipes. Authoring uses the existing path handles, transforms, clipboard, assemblies and format 19. The 1.2-second charge and 80–700 speed range are starting tunes, not settled feel. See [Launch Tube](LAUNCH_TUBE.md). Closure was pushed first at `5d160094673982414615a572e8e33098066c9bd7`; its releases and the frozen Thursday benchmark remain separate.
+
 ## Close current main before the next feature — 2026-11-18
 
 Bro reproduced the Theme Life handoff's 29/32 baseline, traced the stale Lava recipes to older shared pipeline dependencies, and refreshed Prototype and Endless through the normal baker. The final supported baseline is **32/32, 8,702 checks**. All 121 inspected recipes are fresh; both 56-variant audits pass. Production remains C for all seven Theme Life entries, with Lava outside that system. No production Act, atmosphere or artwork changed.

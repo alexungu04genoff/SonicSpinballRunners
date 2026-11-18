@@ -647,12 +647,12 @@ func gameplay_hit_indices_at(local_position: Vector2) -> Array[int]:
   var point := pixel_position - Vector2(placement.position)
   if points.size() < 2:
    continue
-  if placement.type not in ["elevated_rail", "lane_barrier"] and Geometry2D.is_point_in_polygon(point, points):
+  if placement.type not in ["elevated_rail", "lane_barrier", "launch_tube"] and Geometry2D.is_point_in_polygon(point, points):
    hits.append(index)
    continue
-  for segment in (points.size() - 1 if placement.type in ["elevated_rail", "lane_barrier"] else points.size()):
+  for segment in (points.size() - 1 if placement.type in ["elevated_rail", "lane_barrier", "launch_tube"] else points.size()):
    var nearest := Geometry2D.get_closest_point_to_segment(point, points[segment], points[(segment + 1) % points.size()])
-   var hit_width := maxf(tolerance, float(Objects.properties(placement).width) * 0.5) if placement.type == "elevated_rail" else (maxf(tolerance, float(Objects.properties(placement).post_radius)) if placement.type == "lane_barrier" else tolerance)
+   var hit_width := maxf(tolerance, float(Objects.properties(placement).width) * 0.5) if placement.type in ["elevated_rail", "launch_tube"] else (maxf(tolerance, float(Objects.properties(placement).post_radius)) if placement.type == "lane_barrier" else tolerance)
    if nearest.distance_to(point) <= hit_width:
     hits.append(index)
     break
@@ -1554,7 +1554,7 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
    _bank_start = legal_gameplay_position(screen_to_local_pixels(pointer), cycle_overlaps)
    _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, _bank_start)
   return
- if gameplay_brush.get("type") in ["elevated_rail", "lane_barrier"]:
+ if gameplay_brush.get("type") in ["elevated_rail", "lane_barrier", "launch_tube"]:
   if _inside_grid(pointer):
    var at := legal_gameplay_position(screen_to_local_pixels(pointer), cycle_overlaps)
    if _rail_draft.is_empty():
@@ -1783,7 +1783,7 @@ func _finish_box_selection() -> void:
     var points := PackedVector2Array()
     for point: Vector2 in ObjectPreview.rotated_points(placement, _local_cell_size()):
      points.append(local_pixels_to_screen(placement.position + point))
-    if _box_hits_points(box, points, placement.type not in ["elevated_rail", "lane_barrier"]):
+    if _box_hits_points(box, points, placement.type not in ["elevated_rail", "lane_barrier", "launch_tube"]):
      if not selection.gameplay.has(index): selection.gameplay.append(index)
   if show_rings:
    for index in document.ring_trails.size():
@@ -2209,7 +2209,7 @@ func _drop_data(at_position: Vector2, data: Variant) -> void:
   var object: Dictionary = data["gameplay_stamp"].duplicate(true)
   object["position"] = legal_gameplay_position(screen_to_local_pixels(at_position), _alt_held)
   set_gameplay_brush(data["gameplay_stamp"])
-  if object.type in ["elevated_rail", "lane_barrier"]:
+  if object.type in ["elevated_rail", "lane_barrier", "launch_tube"]:
    _rail_draft = object
    _rail_draft.properties.points = PackedVector2Array([Vector2.ZERO])
    grab_focus()
@@ -2299,7 +2299,7 @@ func _rail_input(event: InputEvent) -> bool:
   return true
  if not rail_edit or selected_gameplay_index < 0 or selected_gameplay_index >= _gameplay_objects().size(): return false
  var item: Dictionary = _gameplay_objects()[selected_gameplay_index]
- if item.type not in ["elevated_rail", "lane_barrier"]:
+ if item.type not in ["elevated_rail", "lane_barrier", "launch_tube"]:
   rail_edit = false
   return false
  var points: PackedVector2Array = Objects.properties(item).points

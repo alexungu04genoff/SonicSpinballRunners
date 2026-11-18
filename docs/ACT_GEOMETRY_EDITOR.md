@@ -1,5 +1,9 @@
 # Act Geometry Editor
 
+## Optional Launch Tube — 2026-11-18
+
+Gameplay now includes **Launch Tube (optional)**. Click dock/path points and press Enter; use **Edit path points** to drag, Shift-click to insert and right-click to remove. Choose Exposed/Tunnel and tune charge duration, speed range, resistance and rollback speed in Properties. The first point is the dock; keep the final tangent and exit approach clear. The nearest dock to the active Act's Spawn owns launch and retry. Routes may pass through terrain without editing it. Shared Undo/Redo, scaling, H/V mirrors, clipboard, assemblies and save/reopen apply normally. Start with `data/acts/Experiments/Launch Tube Workshop.tres`; see [the complete workflow and behavior](LAUNCH_TUBE.md).
+
 ## Qualification — 2026-11-18
 
 The November 17 controls below have now been exercised in an imported, isolated

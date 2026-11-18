@@ -57,6 +57,17 @@ func _ready() -> void:
  scorecraft_config.multiplier_cap = 4
  scorecraft_config.tiered_decay = true
  super._ready()
+ # Prototype's existing X launch differs from shared Enter (pause in Session).
+ # A separate held action preserves both ordinary input paths and their bindings.
+ controls.launch_hold_action = &"prototype_launch_hold"
+ if not InputMap.has_action(controls.launch_hold_action):
+  InputMap.add_action(controls.launch_hold_action)
+  var key := InputEventKey.new()
+  key.keycode = KEY_X
+  InputMap.action_add_event(controls.launch_hold_action, key)
+  var button := InputEventJoypadButton.new()
+  button.button_index = JOY_BUTTON_X
+  InputMap.action_add_event(controls.launch_hold_action, button)
  scorecraft.combo_advanced.connect(func(kind: StringName, id: String, tier: int, began: bool): telemetry.combo_advanced(kind, id, tier, began, elapsed))
  scorecraft.combo_supported.connect(telemetry.combo_supported)
  scorecraft.combo_ended.connect(func(reason: String, chain: int, tier: int): telemetry.combo_ended(reason, chain, tier, elapsed))
@@ -191,6 +202,9 @@ func choose_buddy(id: String) -> bool:
  return true
 
 func _start_transfer(drained: bool) -> void:
+ _detach_launch_tube()
+ var tube := _active_launch_tube()
+ if tube != null: ball.serve_position = tube.dock_position()
  if is_instance_valid(ball.mechanics): ball.mechanics.reset_for_retry()
  controls.input_blocked = true
  ring_field.scoring_enabled = false
@@ -226,7 +240,7 @@ func _transfer_arrived() -> void:
  ring_field.scoring_enabled = true
  active.runtime.mechanics.scoring_active = true
  controls.input_blocked = false
- auto_launch_time = 0.35
+ if not _dock_launch_tube(): auto_launch_time = 0.35
 
 func _act_result(cleared: bool) -> Dictionary:
  var row := {"act": active_sequence + 1, "zone": active.plan.zone + 1, "zone_act": active.plan.act + 1, "theme": active.plan.theme, "source": source_paths[active.plan.id], "title": act_title(active), "cleared": cleared, "score": act_score, "target": act_score_target, "seconds": elapsed - act_started_at, "drains": ball_number - act_start_ball, "categories": act_score_breakdown.duplicate(), "buddy_contributions": act_buddy_contributions.duplicate(), "buddies": buddies.levels.duplicate(), "buddy_state": buddies.state(), "normal_score": act_score - Buddies.total(act_buddy_contributions)}
@@ -411,6 +425,7 @@ func _update_hud(delta: float) -> void:
   detail.text = "ACT %d / %d    %s" % [active_sequence + 1, run_plan.size(), "GOAL READY" if exit_unlocked else "%d / %d" % [act_score, act_score_target]]
   player_hud.update_values(character_id, "∞" if practice_mode else str(balls_remaining), special_meter)
  var hint_text := ""
+ if is_instance_valid(ball.launch_tube) and ball.launch_tube.contained: hint_text = ball.launch_tube.feedback
  if is_instance_valid(transfer): hint_text = "Returning to spawn…" if transfer.drain else "Next Act…"
  if respawn_time >= 0.0: hint_text = "BALL LOST · Retrying…"
  if loading_boundary: hint_text = "Preparing the next Act…"

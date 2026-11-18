@@ -110,12 +110,22 @@ static func _compile(document: Resource, tuning: PhysicsTuning, controls: Playgr
   result.terrain.append({"shape_id": placement.shape_id, "points": points, "closed": definition.closed, "body": body, "collision": collision, "color": definition.color})
  result.timings.terrain_ms = float(Time.get_ticks_usec() - terrain_started) / 1000.0
  var objects_started := Time.get_ticks_usec()
+ result.launch_tubes = []
  for placement: Dictionary in document.gameplay_objects:
   placement = placement.duplicate(true)
   placement["object_id"] = Objects.identity(placement, result.objects.size())
   var descriptor := placement.duplicate(true)
   var body: Node2D
   match placement.type:
+   "launch_tube":
+    var tube := preload("res://scripts/authored_act/launch_tube.gd").new()
+    tube.position = placement.position
+    tube.rotation_degrees = placement.rotation_degrees
+    tube.configure(Objects.properties(placement))
+    body = tube
+    mechanics.add_object(placement, descriptor)
+    descriptor.mechanic["tube"] = tube
+    result.launch_tubes.append(tube)
    "moving_bumper":
     var moving := AnimatableBody2D.new()
     moving.physics_material_override = bumper_material

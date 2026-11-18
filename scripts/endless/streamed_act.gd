@@ -65,7 +65,7 @@ func initialize(owner_game: Node, entry: Dictionary, library: Node) -> void:
  mechanics.scoring_active = false
  mechanics.banks = document.switch_banks.duplicate(true)
  root.add_child(mechanics)
- runtime = {"root": root, "mechanics": mechanics, "terrain": [], "objects": [], "flippers": [], "cell_size": document.cell_size}
+ runtime = {"root": root, "mechanics": mechanics, "terrain": [], "objects": [], "flippers": [], "launch_tubes": [], "spawn": spawn(), "cell_size": document.cell_size}
  mechanics.exit_obstacles = runtime.objects
  mechanics.cell_size = document.cell_size
  ring_data.assign(RingField.document_records(document, "act:%d" % plan.sequence, plan.offset))
@@ -195,6 +195,12 @@ func _object_step() -> void:
   placement.object_id = descriptor.object_id
   placement.position = descriptor.position
   runtime.mechanics.add_object(placement, descriptor)
+  if item.type == "launch_tube":
+   body.free()
+   body = preload("res://scripts/authored_act/launch_tube.gd").new()
+   body.configure(Objects.properties(placement))
+   descriptor.mechanic["tube"] = body
+   runtime.launch_tubes.append(body)
   if item.type == "moving_bumper": descriptor.mechanic.body = body
  elif item.type in ["left_flipper", "right_flipper"]:
   var flipper := PlaygroundFlipper.new()

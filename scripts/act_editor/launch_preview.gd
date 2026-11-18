@@ -18,6 +18,7 @@ static func description(type: String) -> String:
   "teleporter": "300 px/s arrival · speed preserved along the exit arrow",
   "magnetic_field": "300 px/s flybys · gravity and the authored field force",
   "elevated_rail": "Entry at least 300 px/s · slope, height and drag · may roll back",
+  "launch_tube": "15% / 50% / 100% charge · weak shots return · exit arcs assume clear space",
   "buzz_bomber": "300 px/s top contact · enemy bounce response",
   "diverter": "300 px/s contact · gold: state A / teal: state B",
   "one_way_gate": "300 px/s contact · blocked face only when closed",
@@ -91,6 +92,9 @@ static func shots(item: Dictionary, cell_size: float, resolved_stats: Dictionary
     result.append({"path": path})
   "elevated_rail":
    if props.points.size() >= 2: result.append(_rail_shot(item, stats))
+  "launch_tube":
+   if props.points.size() >= 2:
+    for charge: float in [0.15, 0.5, 1.0]: result.append(_tube_shot(item, charge))
   "buzz_bomber":
    var at := origin + Vector2.UP * (6.0 * float(props.scale) + radius)
    var velocity := Enemies.contact_velocity(Vector2.DOWN * SAMPLE_SPEED, at - Vector2.DOWN, at, origin, {"normal": Vector2.UP})
@@ -172,6 +176,22 @@ static func _rail_shot(item: Dictionary, stats: Dictionary) -> Dictionary:
   if finished:
    return {"origin": at, "velocity": Objects.RailPath.tangent(path, progress) * speed, "path_prefix": trace, "duration": 1.5}
  return {"path": trace}
+
+static func _tube_shot(item: Dictionary, charge: float) -> Dictionary:
+ var props := Objects.properties(item)
+ var route := Objects.RailPath.build(props.points)
+ var speed := lerpf(float(props.min_speed), float(props.max_speed), charge)
+ var reach := speed * speed / (2.0 * float(props.resistance))
+ var finish := minf(float(route.length), reach)
+ var angle := deg_to_rad(float(item.rotation_degrees))
+ var trace := PackedVector2Array()
+ for step in 81:
+  trace.append(Vector2(item.position) + Objects.RailPath.sample(route, finish * step / 80.0).rotated(angle))
+ if reach < float(route.length):
+  for index in range(trace.size() - 2, -1, -1): trace.append(trace[index])
+  return {"path": trace}
+ var exit_speed := sqrt(maxf(0.0, speed * speed - 2.0 * float(props.resistance) * float(route.length)))
+ return {"origin": trace[-1], "velocity": Objects.RailPath.tangent(route, route.length).rotated(angle) * exit_speed, "path_prefix": trace, "duration": 1.5}
 
 static func trajectory(shot: Dictionary) -> PackedVector2Array:
  if shot.has("path"): return shot.path.duplicate()

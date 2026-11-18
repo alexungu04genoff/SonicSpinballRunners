@@ -2676,7 +2676,7 @@ func _refresh_mechanics_properties() -> void:
 		detail_label.text = "Adds speed on entry · Influence 0% preserves direction; 100% follows arrow · Full departure rearms · Cap applies to total speed."
 	if item.type == "wall_switch":
 		detail_label.text = "Anchor on wall face · Arrow faces exposed side · Front impacts only · Shares floor-switch banks."
-	if item.type in ["elevated_rail", "lane_barrier"]:
+	if item.type in ["elevated_rail", "lane_barrier", "launch_tube"]:
 		var edit := CheckButton.new()
 		edit.text = "Edit posts" if item.type == "lane_barrier" else "Edit path points"
 		edit.disabled = not canvas.gameplay_brush.is_empty()
@@ -2684,6 +2684,9 @@ func _refresh_mechanics_properties() -> void:
 		edit.toggled.connect(func(enabled: bool): canvas.rail_edit = enabled; canvas.queue_redraw(); canvas.grab_focus())
 		mechanics_properties.add_child(edit)
 		detail_label.text = "Click posts (2–12); Enter commits; Esc / right-click cancels. Edit posts: drag, click appends, Shift-click inserts, right-click removes. Alt frees coordinates." if item.type == "lane_barrier" else "Click entry and path points; Enter finishes. Edit path: drag points, click appends, Shift-click inserts, right-click removes. Alt frees placement."
+	if item.type == "launch_tube":
+		_mechanic_choice("Presentation", "presentation", ["exposed", "tunnel"], properties.presentation)
+		detail_label.text = "Dock is the first path point. The tube nearest Spawn owns this Act's launch/retry. Edit path: drag points, Shift-click inserts, right-click removes. Terrain stays intact. Hold Launch, release to fire; weak shots return. Keep the exit and its forward approach clear."
 
 func _mechanic_number(label_text: String, value: float, action: Callable) -> void:
 	var label := Label.new()

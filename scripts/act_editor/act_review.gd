@@ -9,6 +9,7 @@ const FEATURED_FAMILIES := {
  "one_way_gate": "One-Way Gate", "diverter": "Diverter", "elevated_rail": "Elevated Rail",
  "dash_panel": "Dash Panel", "spinner": "Spinner", "lane_barrier": "Lane Barrier",
  "moving_bumper": "Moving Bumper", "score_chute": "Score Chute", "magnetic_field": "Magnetic Field",
+ "launch_tube": "Launch Tube",
 }
 
 static func summarize(document: Resource) -> Dictionary:
@@ -38,6 +39,7 @@ static func summarize(document: Resource) -> Dictionary:
  var ball_diameter: float = 2.0 * Dimensions.BALL_RADIUS_CELLS * document.cell_size
  var goal_diameter: float = document.goal_diameter_cells * document.cell_size
  var hints := PackedStringArray()
+ if counts.launch_tube > 1: hints.append("The Launch Tube dock nearest Spawn owns serving and retry. Other tubes never capture a moving ball.")
  if counts.buzz_bomber == 0: hints.append("No Buzz Bombers are authored; review the intended enemy role.")
  if rings == 0: hints.append("No Rings are authored; review how routes are taught or rewarded.")
  if counts.slingshot == 0: hints.append("No Slingshots are authored; review the intended rebound vocabulary.")

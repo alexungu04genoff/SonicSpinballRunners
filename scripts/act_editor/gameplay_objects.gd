@@ -28,6 +28,7 @@ static func definitions() -> Array[Dictionary]:
   {"id": "diverter", "label": "Diverter", "color": Color("f3b669")},
   {"id": "dash_panel", "label": "Dash Panel", "color": Color("56eaff")},
   {"id": "buzz_bomber", "label": "Enemy · Buzz Bomber", "color": Color("ffd548")},
+  {"id": "launch_tube", "label": "Launch Tube (optional)", "color": Color("72efd1")},
  ]
 
 static func get_definition(id: String) -> Dictionary:
@@ -97,7 +98,7 @@ static func local_points(placement: Dictionary, cell_size: float) -> PackedVecto
   "magnetic_field":
    for step in 64:
     points.append(Vector2.from_angle(TAU * step / 64.0) * float(properties(placement).radius))
-  "elevated_rail":
+  "elevated_rail", "launch_tube":
    points = RailPath.build(properties(placement).points).points
   "round_bumper":
    var radius := Dimensions.ROUND_RADIUS_CELLS * cell_size
@@ -135,6 +136,7 @@ static func new_id() -> String:
 
 static func defaults(type: String) -> Dictionary:
  match type:
+  "launch_tube": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(0, -140), Vector2(100, -240), Vector2(140, -340)]), "width": 40.0, "height": 80.0, "presentation": "exposed", "charge_seconds": 1.2, "min_speed": 80.0, "max_speed": 700.0, "resistance": 100.0, "return_speed": 300.0, "feedback_strength": 1.0}
   "left_flipper", "right_flipper": return {"length_multiplier": 1.0}
   "teleporter": return {"radius": 18.0, "exit_x": 150.0, "exit_y": 0.0, "exit_angle": 0.0}
   "drop_target_bank": return {"target_count": 5.0, "spacing": 32.0, "target_size": 22.0, "color": "green", "completion_bonus": 500.0, "reset_delay": 0.0}
@@ -162,7 +164,7 @@ static func properties(placement: Dictionary) -> Dictionary:
 
 static func size_label(type: String) -> String:
  return {"left_flipper": "length", "right_flipper": "length", "drop_target_bank": "target spacing",
-  "elevated_rail": "path and width", "lane_barrier": "posts and spacing", "diverter": "length",
+  "elevated_rail": "path and width", "launch_tube": "path and width", "lane_barrier": "posts and spacing", "diverter": "length",
   "teleporter": "radius", "magnetic_field": "radius", "buzz_bomber": "size",
   "round_bumper": "size", "triangle_bumper": "size", "switch_target": "size", "wall_switch": "size"}.get(type, "width")
 
@@ -171,9 +173,9 @@ static func resized_properties(item: Dictionary, direction: float) -> Dictionary
  # Never add a cosmetic Node scale that leaves the physical footprint behind.
  var props := properties(item)
  var type: String = item.type
- if type in ["elevated_rail", "lane_barrier"]:
+ if type in ["elevated_rail", "lane_barrier", "launch_tube"]:
   var points: PackedVector2Array = props.points.duplicate()
-  var key := "width" if type == "elevated_rail" else "post_radius"
+  var key := "post_radius" if type == "lane_barrier" else "width"
   var limits: Array = property_limits(type)[key]
   var current := float(props[key])
   props[key] = clampf(current * pow(1.1, direction), float(limits[0]), float(limits[1]))
@@ -205,10 +207,10 @@ static func scaled_properties(item: Dictionary, factor: float) -> Dictionary:
   "buzz_bomber": ["scale", "patrol_left", "patrol_right"],
   "drop_target_bank": ["spacing", "target_size"], "diverter": ["length"],
   "teleporter": ["radius", "exit_x", "exit_y"], "magnetic_field": ["radius"],
-  "lane_barrier": ["post_radius"], "elevated_rail": ["width", "height"]
+  "lane_barrier": ["post_radius"], "elevated_rail": ["width", "height"], "launch_tube": ["width", "height"]
  }.get(item.type, ["width"])
  for key: String in dimensions: props[key] = float(props[key]) * factor
- if item.type in ["elevated_rail", "lane_barrier"]:
+ if item.type in ["elevated_rail", "lane_barrier", "launch_tube"]:
   var points: PackedVector2Array = props.points.duplicate()
   for index in points.size(): points[index] *= factor
   props.points = points
@@ -216,6 +218,7 @@ static func scaled_properties(item: Dictionary, factor: float) -> Dictionary:
 
 static func property_limits(type: String) -> Dictionary:
  match type:
+  "launch_tube": return {"width": [24.0, 120.0], "height": [0.0, 200.0], "charge_seconds": [0.2, 4.0], "min_speed": [20.0, 500.0], "max_speed": [100.0, 1600.0], "resistance": [10.0, 600.0], "return_speed": [60.0, 800.0], "feedback_strength": [0.0, 1.0]}
   "left_flipper", "right_flipper": return {"length_multiplier": [0.25, 4.0]}
   "teleporter": return {"radius": [10.0, 60.0], "exit_x": [-10000.0, 10000.0], "exit_y": [-10000.0, 10000.0], "exit_angle": [-180.0, 180.0]}
   "drop_target_bank": return {"target_count": [2.0, 12.0], "spacing": [16.0, 80.0], "target_size": [10.0, 50.0], "completion_bonus": [0.0, 100000.0], "reset_delay": [0.0, 60.0]}
@@ -257,6 +260,8 @@ static func property_errors(placement: Dictionary) -> PackedStringArray:
    errors.append("Enable flags must be boolean.")
   elif key == "starting_direction" and values[key] not in ["left", "right"]:
    errors.append("Starting direction must be left or right.")
+  elif key == "presentation" and values[key] not in ["exposed", "tunnel"]:
+   errors.append("Launch Tube presentation must be exposed or tunnel.")
   elif key == "mode" and values[key] not in ["attract", "repel"]:
    errors.append("mode must be attract or repel.")
   elif key == "initial_state" and values[key] not in (["a", "b"] if placement.type == "diverter" else ["closed", "open"]):
@@ -279,6 +284,9 @@ static func property_errors(placement: Dictionary) -> PackedStringArray:
  if placement.type == "drop_target_bank" and errors.is_empty():
   var props := properties(placement)
   if float(props.spacing) < float(props.target_size) + 2.0: errors.append("Target spacing must exceed target size by at least 2 pixels.")
+ if placement.type == "launch_tube" and errors.is_empty():
+  var props := properties(placement)
+  if float(props.max_speed) <= float(props.min_speed): errors.append("Full launch speed must exceed minimum speed.")
  return errors
 
 static func flipper_length(item: Dictionary, cell_size: float) -> float:

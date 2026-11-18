@@ -417,7 +417,7 @@ func _prefetch_next_theme() -> void:
 
 func _physics_process(delta: float) -> void:
  if not started or touring or get_tree().paused: return
- if not _next_ready() and ball.position.y < active.bounds().position.y + maxf(100.0, absf(ball.linear_velocity.y) * 0.25):
+ if not is_instance_valid(ball.launch_tube) and not _next_ready() and ball.position.y < active.bounds().position.y + maxf(100.0, absf(ball.linear_velocity.y) * 0.25):
   _wait_for_next()
   return
  super._physics_process(delta)
