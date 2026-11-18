@@ -36,7 +36,7 @@ func check_lifecycle_creation() -> void:
 	check(editor.document.activation_y == null and editor.document.spawn_position == null, "A new Act starts with optional activation and spawn markers unset")
 	check(editor.document.grid_size == Vector2i(12, 12) and ActData.RED_GUTTER_CELLS == 1, "System gutter leaves the authored terrain grid at exactly twelve rows")
 	check(editor.document.terrain_bounds() == Rect2(0, 0, 600, 600) and editor.document.red_gutter_bounds() == Rect2(0, 600, 600, 50), "Shared bounds put the one-cell red gutter strictly below terrain")
-	check(editor.palette_tabs.get_tab_title(2) == "Act Markers" and editor.marker_buttons.size() == 4, "Act Markers exposes Entry, Exit, Activation and Spawn without a red-zone tool")
+	check(editor.palette_tabs.get_tab_title(2) == "Markers" and editor.marker_buttons.size() == 4, "Markers exposes Entry, Exit, Activation and Spawn without a red-zone tool")
 	check(editor.save_to(DRAFT_SAVE), "An incomplete draft with no connectors or lifecycle markers can be saved")
 	var draft: Dictionary = ActData.load_document(DRAFT_SAVE)
 	check(draft.document != null and draft.document.activation_y == null and draft.document.spawn_position == null, "Incomplete lifecycle metadata remains unset after loading")
@@ -50,7 +50,7 @@ func check_lifecycle_creation() -> void:
 	check(editor.document.activation_y == 500.0, "Activation placement snaps its Y coordinate and spans the Act independently of X")
 	await choose_marker("spawn")
 	await click_at(local_position(Vector2(324.2, 524.3)))
-	check(editor.document.spawn_position == Vector2(300, 500), "Spawn placement snaps to grid intersections by default")
+	check(editor.document.spawn_position == Vector2(300, 500), "Spawn placement snaps in the selected Absolute Grid mode")
 	await choose_marker("spawn")
 	await set_alt(true)
 	await click_at(local_position(Vector2(438.5, 471.25)))
@@ -88,7 +88,7 @@ func check_marker_movement_and_history() -> void:
 	await set_alt(false)
 	check(editor.document.activation_y == fine_y - 1.0, "Alt-arrow moves activation by one local pixel")
 	await press_key(KEY_DOWN)
-	check(editor.document.activation_y == fine_y + 49.0, "Normal activation arrow movement advances by one cell")
+	check(editor.document.activation_y == snappedf(fine_y + 49.0, 50.0), "Absolute Grid activation arrow movement reaches the next grid position")
 	await select_marker_at("spawn", editor.document.spawn_position)
 	check(editor.canvas.selected_marker == "spawn", "Spawn marker is selectable at its authored point")
 	var before: Vector2 = editor.document.spawn_position
@@ -108,7 +108,7 @@ func check_marker_movement_and_history() -> void:
 	await set_alt(false)
 	check(editor.document.spawn_position == before + Vector2.RIGHT, "Alt-arrow nudges spawn by one local pixel")
 	await press_key(KEY_DOWN)
-	check(editor.document.spawn_position == before + Vector2(1, 50), "Normal spawn arrow movement advances by one cell")
+	check(editor.document.spawn_position == (before + Vector2(1, 50)).snapped(Vector2(50, 50)), "Absolute Grid spawn arrow movement reaches the next grid position")
 	before = editor.document.spawn_position
 	history = editor.undo_stack.size()
 	await mouse_button(local_position(before), true)
@@ -291,6 +291,7 @@ func run() -> void:
 		check(false, "Authoring scene initializes its interactive canvas")
 		quit(1)
 		return
+	editor.set_snap_mode(2) # The movement fixture deliberately uses whole-cell snapping.
 	if OS.get_cmdline_user_args().has("--reload-lifecycle-fixture"):
 		await reload_lifecycle_in_fresh_process()
 		return

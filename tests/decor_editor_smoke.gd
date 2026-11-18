@@ -82,7 +82,7 @@ func run() -> void:
 	editor.decor_type_field.select(2)
 	editor.decor_type_field.item_selected.emit(2)
 	editor.decor_scale_field.value = 1.1
-	check(editor.document.decor_slots[0].placement_hint == "edge" and editor.document.decor_slots[0].slot_type == "large" and editor.document.decor_slots[0].scale == 1.1, "Inspector edits hint, type and safe scale")
+	check(editor.document.decor_slots[0].placement_hint == "edge" and editor.document.decor_slots[0].slot_type == "large" and is_equal_approx(editor.document.decor_slots[0].scale, 1.1), "Inspector edits hint, type and safe scale without a minimum-relative offset")
 	await click_control(editor.decor_position_fields[0])
 	await press_key(KEY_A, true)
 	await type_text("123.75")
@@ -100,7 +100,7 @@ func run() -> void:
 	await click_at(local_position(editor.document.decor_slots[0].position))
 	await press_key(KEY_RIGHT)
 	check(editor.document.decor_slots[0].position.x == 124.75, "Free decor arrows nudge one pixel")
-	await click_control(editor.decor_snap_field)
+	editor.set_snap_mode(2) # Shared Absolute Grid replaces the retired per-Decor toggle.
 	await click_control(editor.buttons.decor_medium)
 	await click_at(local_position(Vector2(421.25, 318.5)))
 	check(editor.document.decor_slots[-1].position == Vector2(400, 300), "Optional decor grid snapping works")

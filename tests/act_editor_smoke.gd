@@ -114,6 +114,7 @@ func show_palette_item(id: String) -> Control:
 func choose_palette(id: String) -> void:
 	var item: Control = await show_palette_item(id)
 	await click_control(item)
+	editor.set_terrain_scale(1.0) # Full-cell hit probes; brush defaults have separate coverage.
 
 
 func find_button(node: Node, label: String) -> Button:
@@ -180,12 +181,22 @@ func check_edit_gestures() -> void:
 	var center := Vector2(placed.anchor) + Vector2(2.0, 2.0 / 3.0)
 	await click_at(grid_position(center))
 	check(editor.canvas.selected_index == 2, "Clicking actual triangle fill selects the placed shape")
+	var original_points := Shapes.transformed_points(placed)
+	var pivot: Vector2 = editor.canvas.transform_pivot() / float(editor.document.cell_size)
+	for index in original_points.size(): original_points[index] += Shapes.placement_position(placed)
 	await click_control(editor.buttons.rotate)
 	await click_control(editor.buttons.flip_h)
 	await click_control(editor.buttons.flip_v)
 	placed = editor.document.placements[2]
-	check(placed.quarter_turns == 2 and not placed.flip_h and not placed.flip_v and Shapes.transformed_size(placed) == Vector2i(1, 3), "Toolbar transforms selected geometry and footprint")
-	center = Vector2(placed.anchor) + Vector2(2.0 / 3.0, 1.0)
+	var transformed_points := Shapes.transformed_points(placed)
+	var geometry_matches := true
+	center = Vector2.ZERO
+	for index in transformed_points.size():
+		transformed_points[index] += Shapes.placement_position(placed)
+		geometry_matches = geometry_matches and transformed_points[index].distance_to(pivot + (original_points[index] - pivot).rotated(PI * 1.5)) < 0.0001
+		center += transformed_points[index] / float(transformed_points.size())
+	check(geometry_matches and Shapes.scaled_size(placed).is_equal_approx(Vector2(1, 3)), "Toolbar rotation and both mirrors transform actual geometry around the center pivot")
+	print("TERRAIN TRANSFORM | before=", original_points, " after=", transformed_points, " pivot=", pivot, " frame=", Shapes.scaled_size(placed), " piece=", placed, " | ", editor.status_label.text)
 	var drag_start := grid_position(center)
 	var old_anchor: Vector2i = placed.anchor
 	var history_size: int = editor.undo_stack.size()
@@ -248,6 +259,7 @@ func check_open_hits_and_palette_drag() -> void:
 	await mouse_button(grid_position(Vector2(5.2, 8.4)), false)
 	check(editor.document.placements[top_index - 1].anchor == anchor_before, "Esc cancels an unfinished drag without mutating geometry")
 	var item: Control = await show_palette_item("bump_1x2")
+	editor.set_terrain_scale(1.0)
 	var palette_start := item.get_global_rect().get_center()
 	var before: int = editor.document.placements.size()
 	await move_pointer(palette_start)
@@ -505,6 +517,7 @@ func run() -> void:
 	root.add_child(editor)
 	await process_frame
 	await process_frame
+	editor.set_snap_mode(2) # Original integer-grid gestures; Free defaults are covered separately.
 	await check_palette_and_overlap()
 	await check_edit_gestures()
 	await check_open_hits_and_palette_drag()

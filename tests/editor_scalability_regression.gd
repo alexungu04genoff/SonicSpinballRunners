@@ -85,7 +85,7 @@ func run() -> void:
  check(editor.document.fingerprint() == before, "Mixed transformation undoes atomically")
  editor.canvas.select_piece(0)
  editor.set_terrain_scale(2.0)
- check(Shapes.placement_position(editor.document.placements[0]) == Vector2(4, 4) and Shapes.scaled_size(editor.document.placements[0]) == Vector2(2, 2), "Single terrain sizing preserves top-left and exceeds original size")
+ check(Shapes.placement_position(editor.document.placements[0]) == Vector2(3.5, 3.5) and Shapes.scaled_size(editor.document.placements[0]) == Vector2(2, 2), "Single terrain sizing preserves the configured center pivot and exceeds original size")
  editor.undo()
  editor.canvas.select_ring(0)
  editor.transform_selection(1.0, 90.0)

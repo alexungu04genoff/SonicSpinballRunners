@@ -147,6 +147,7 @@ func choose_terrain(id: String) -> void:
 		parent.ensure_control_visible(item)
 	await process_frame
 	await click_control(item)
+	editor.set_terrain_scale(1.0)
 
 
 func enter_angle(text_value: String) -> void:
@@ -200,7 +201,10 @@ func check_initial_placement() -> void:
 			correct = correct and placed.rotation_degrees == Objects.make_placement(probes[index].id).rotation_degrees
 	check(correct, "Actual palette clicks snap bumper anchors and flipper pivots while preserving their default resting angles")
 	check(editor.document.placements.is_empty() and editor.is_dirty(), "Gameplay placement dirties the document without adding terrain records")
-	check(editor.find_children("*", "CollisionObject2D", true, false).is_empty() and editor.find_children("*", "CollisionObject3D", true, false).is_empty(), "Authoring scene contains no physics bodies or collision objects")
+	var isolated_preview_physics := true
+	for body: Node in editor.find_children("*", "CollisionObject2D", true, false):
+		isolated_preview_physics = isolated_preview_physics and body.get_viewport() != root
+	check(isolated_preview_physics and editor.find_children("*", "CollisionObject3D", true, false).is_empty(), "Authoring viewport has no collision objects; launch probes use isolated preview viewports")
 	await choose_gameplay("round_bumper")
 	await set_alt(true)
 	await click_at(local_position(Vector2(438.5, 271.25)))
@@ -247,7 +251,7 @@ func check_movement() -> void:
 	await set_alt(false)
 	check(editor.document.gameplay_objects[0].position == Vector2(201, 250), "Alt-arrow nudges selected gameplay by one local pixel")
 	await press_key(KEY_RIGHT)
-	check(editor.document.gameplay_objects[0].position == Vector2(251, 250), "Normal arrow nudges by one cell without silently normalizing an authored offset")
+	check(editor.document.gameplay_objects[0].position == Vector2(250, 250), "Absolute Grid arrow movement reaches the next grid position")
 	await click_at(local_position(Vector2(100, 450)))
 	check(editor.canvas.selected_gameplay_index == 2, "Flipper selects at its physical pivot")
 	await set_alt(true)
@@ -339,7 +343,7 @@ func check_overlaps_and_terrain() -> void:
 	await set_alt(false)
 	check(close_to(Shapes.placement_position(editor.document.placements[0]) * float(editor.document.cell_size), Vector2(47.75, 322.25)), "Alt terrain drag preserves the exact free position")
 	await press_key(KEY_R)
-	check(editor.document.placements[0].quarter_turns == 1, "Terrain rotation stays at quarter-turn increments")
+	check(is_equal_approx(float(editor.document.placements[0].get("fine_rotation_degrees", 0.0)), 90.0), "Terrain R turns the selected geometry by ninety degrees")
 	await click_control(editor.buttons.entry)
 	await drag(grid_position(Vector2(7.2, 12)), grid_position(Vector2(8.8, 12)))
 	await click_control(editor.buttons.exit)
@@ -501,8 +505,10 @@ func run() -> void:
 	await process_frame
 	await process_frame
 	if OS.get_cmdline_user_args().has("--reload-gameplay-fixture"):
+		editor.set_snap_mode(2)
 		await reload_in_fresh_process()
 		return
+	editor.set_snap_mode(2) # Explicit integer-grid fixture; Free is the intended default.
 	await check_bumper_grid_scale()
 	await check_initial_placement()
 	await check_movement()

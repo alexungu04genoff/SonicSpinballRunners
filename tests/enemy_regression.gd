@@ -4,6 +4,17 @@ const Buddies = preload("res://scripts/prototype/buddies.gd")
 const FIXTURE := "res://data/acts/buzz_bomber_test.tres"
 var game: Node
 
+func pointer(point: Vector2, pressed: bool, button := MOUSE_BUTTON_LEFT, shift := false) -> void:
+ var event := InputEventMouseButton.new()
+ event.position = editor.canvas.local_pixels_to_screen(point)
+ event.button_index = button
+ event.pressed = pressed
+ event.alt_pressed = true
+ event.shift_pressed = shift
+ # Patrol drawing moved to Ctrl+Shift; Shift-wheel remains proportional sizing.
+ event.ctrl_pressed = shift and button == MOUSE_BUTTON_LEFT
+ editor.canvas._gui_input(event)
+
 func capture(label: String) -> void:
  if "--capture" not in OS.get_cmdline_user_args() or DisplayServer.get_name() == "headless": return
  await process_frame
@@ -15,6 +26,7 @@ func drag_to(point: Vector2, shift := false) -> void:
  event.position = editor.canvas.local_pixels_to_screen(point)
  event.alt_pressed = true
  event.shift_pressed = shift
+ event.ctrl_pressed = shift
  editor.canvas._gui_input(event)
 
 func shoot(at: Vector2, velocity: Vector2, id: String) -> void:
@@ -34,7 +46,7 @@ func run() -> void:
  pointer(Vector2(200, 300), true, MOUSE_BUTTON_LEFT, true)
  drag_to(Vector2(335.25, 480))
  pointer(Vector2(335.25, 480), false)
- check(editor.document.gameplay_objects.size() == 1, "Shift-drag creates one enemy through the real editor")
+ check(editor.document.gameplay_objects.size() == 1, "Ctrl+Shift-drag creates one enemy through the real editor")
  var item: Dictionary = editor.document.gameplay_objects[0]
  var id: String = item.object_id
  var original_endpoint: float = item.properties.patrol_right
@@ -53,19 +65,19 @@ func run() -> void:
  pointer(Vector2(200, 300), true, MOUSE_BUTTON_LEFT, true)
  drag_to(Vector2(450, 300), true)
  pointer(Vector2(450, 300), false)
- check(editor.document.gameplay_objects.size() == 1 and editor.document.gameplay_objects[0].properties.patrol_right == 250.0, "Shift edits an existing Buzz while its placement brush is active, without stamping another")
+ check(editor.document.gameplay_objects.size() == 1 and editor.document.gameplay_objects[0].properties.patrol_right == 250.0, "Ctrl+Shift edits an existing Buzz while its placement brush is active, without stamping another")
  editor.undo()
  editor.canvas.select_gameplay(0)
  pointer(Vector2(200, 300), true)
  drag_to(Vector2(100, 300), true)
  pointer(Vector2(100, 300), false)
- check(editor.document.gameplay_objects[0].position.distance_to(Vector2(200, 300)) < 0.001 and editor.document.gameplay_objects[0].properties.patrol_left == -100.0, "Pressing Shift after mouse-down extends the left patrol without moving the anchor")
+ check(editor.document.gameplay_objects[0].position.distance_to(Vector2(200, 300)) < 0.001 and editor.document.gameplay_objects[0].properties.patrol_left == -100.0, "Pressing Ctrl+Shift after mouse-down extends the left patrol without moving the anchor")
  editor.undo()
  editor.canvas.select_gameplay(0)
  pointer(Vector2(300, 300), true, MOUSE_BUTTON_LEFT, true)
  drag_to(Vector2(500, 300), true)
  pointer(Vector2(500, 300), false)
- check(editor.document.gameplay_objects[0].properties.patrol_right == 300.0, "Shift-drag anywhere on the selected patrol line extends its endpoint")
+ check(editor.document.gameplay_objects[0].properties.patrol_right == 300.0, "Ctrl+Shift-drag anywhere on the selected patrol line extends its endpoint")
  editor.undo()
  editor.canvas.select_gameplay(0)
  await capture("editor")
@@ -87,11 +99,11 @@ func run() -> void:
  editor.redo()
  check(is_equal_approx(editor.document.gameplay_objects[0].properties.scale, 1.1), "Redo restores the wheel size edit")
  for i in 2: pointer(Vector2(200, 300), true, MOUSE_BUTTON_WHEEL_DOWN, true)
- check(is_equal_approx(editor.document.gameplay_objects[0].properties.scale, 0.9) and editor.document.gameplay_objects[0].properties.patrol_right == 0, "Wheel sizing leaves a stationary patrol unchanged")
+ check(is_equal_approx(editor.document.gameplay_objects[0].properties.scale, 1.0 / 1.1) and editor.document.gameplay_objects[0].properties.patrol_right == 0, "Proportional wheel sizing leaves a stationary patrol unchanged")
  editor.choose_gameplay("buzz_bomber")
  var object_count: int = editor.document.gameplay_objects.size()
  pointer(Vector2(400, 300), true, MOUSE_BUTTON_WHEEL_UP, true)
- check(editor.canvas.gameplay_brush.properties.patrol_left == -60 and editor.canvas.gameplay_brush.properties.patrol_right == 60 and is_equal_approx(editor.canvas.gameplay_brush.properties.scale, 1.1) and editor.document.gameplay_objects.size() == object_count, "Shift-wheel also sizes the brush without placing an enemy or changing its patrol")
+ check(is_equal_approx(editor.canvas.gameplay_brush.properties.patrol_left, -66.0) and is_equal_approx(editor.canvas.gameplay_brush.properties.patrol_right, 66.0) and is_equal_approx(editor.canvas.gameplay_brush.properties.scale, 1.1) and editor.document.gameplay_objects.size() == object_count, "Uniform brush sizing scales the physical patrol span without placing an enemy")
  editor.free()
 
  game = load("res://scenes/playground.tscn").instantiate()

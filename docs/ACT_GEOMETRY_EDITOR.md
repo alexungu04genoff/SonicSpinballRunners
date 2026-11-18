@@ -1,5 +1,38 @@
 # Act Geometry Editor
 
+## Qualification — 2026-11-18
+
+The November 17 controls below have now been exercised in an imported, isolated
+current-main snapshot. The qualification report records the original failures,
+their classification, fixes, actual test receipts and remaining manual review.
+See [Editor qualification](EDITOR_QUALIFICATION_2026-11-18.md).
+
+Four corrections protect existing editing behavior: malformed saved terrain
+sources are rejected on load/save; exact Size and Decor scale fields no longer
+offset entered values because of their minimum/step alignment; and terrain
+mirrors preserve scale and frame precision at Act borders. Border mirrors are
+checked against independently reflected vertices and real toolbar input.
+
+Free remains the initial snap mode; new terrain brushes remain half-size. In
+Absolute Grid, arrow movement snaps the active anchor to the grid. Relative Grid
+preserves its existing fractional offset. Changing a layer clears the current
+selection; it does not remove objects. Rings and markers have independent layers.
+The current palette tab is named **Markers**.
+
+Reusable qualification commands, run against an imported disposable snapshot:
+
+```powershell
+& .\tools\verify_act_editor.ps1 -ProjectRoot <snapshot> -OutputDirectory <new-results>
+& .\tools\verify_editor_authority.ps1 -ProjectRoot <snapshot> -OutputDirectory <new-results>
+```
+
+The first command exports temporary mixed, linked and smoothed fixtures and tests
+format-19 persistence, editing, recovery and fresh-process preferences. The second
+uses the normal baker and rendered Prototype for all eight themes, including
+separate horizontal and vertical linked-assembly cases. It checks disk recipes,
+2D collision, object IDs/banks, collisionless 3D transforms, controls, scoring and
+zero fallback builds. Neither command edits the production Act pool.
+
 ## Workspace, precision and recovery copies — 2026-11-17
 
 The right sidebar now includes **Workspace → Objects / Precision / Recovery**. These controls extend the earlier editor passes below.
@@ -15,7 +48,7 @@ The right sidebar now includes **Workspace → Objects / Precision / Recovery**.
 
 Per-object visibility is optional authoring metadata in format 19, alongside groups, locks and source backups. Visibility alone does not change gameplay/bake fingerprints. Mirroring actual geometry does. **0 / Show all layers** affects layer preferences; **Reveal all hidden objects** clears per-object hiding as an undoable document edit.
 
-Verification: source review and `git diff --check` only. **No tests, Godot launch/import, rendering or bake were run**, as requested during concurrent GPU work. Manual runtime review remains pending: recovery after restart, partial group protection, axis locks with all snap modes, exact dimensions with fixed-radius hardware, duplicate/Undo spacing and mirrored collision/presentation.
+Historical verification on November 17 was source review and `git diff --check` only, under the concurrent GPU-work restriction. The November 18 qualification above supersedes that pending status; its report separates automated checks, native input evidence and remaining manual feel review.
 
 ## Selection, clipboard and recovery — 2026-11-17
 
@@ -32,7 +65,7 @@ Properties now includes **Transform**, **Layers** and **Library** tabs. These co
 
 Groups, locks and source backups are optional authoring metadata in format 19. They affect editor dirty/save validation, but do not change gameplay/bake fingerprints by themselves.
 
-Verification: source review and `git diff --check` only. **No tests, Godot launch/import, rendering or bake were run**, as requested during concurrent GPU work. Later manual review should cover mixed free/grid dragging, transformed Unsmooth after reopening, clipboard bank isolation, layer solo restoration and repeated assembly placement.
+Historical verification on November 17 was source review and `git diff --check` only. The November 18 qualification above now covers these operations, including transformed source recovery, copied bank isolation, layer restoration and repeated assembly placement.
 
 ## Scalable editing controls — 2026-11-17
 
@@ -48,7 +81,7 @@ New terrain brushes, including palette drag-and-drop, start at **0.5×**. Existi
 
 Launch previews start **enabled**, with flippers using **Launch strength / typical catch**, independent of a placed Spawn. Drop from spawn remains an optional guide mode. **P / Guides** toggles the overlays. Guides remain examples, not collision-aware reachability guarantees.
 
-Validation status: source and diffs reviewed only. No tests, Godot import, game launch, rendering or bake were run for this pass at Alex's request while other collaborators worked on GPU changes. Updated regression expectations and `editor_scalability_regression.gd` are available for a later run. Manual review remains needed for boundary-handle usability, group transforms near borders and rotated Buzz presentation.
+Historical validation on November 17 was source review only while other collaborators worked on GPU changes. The November 18 qualification above includes runtime checks and rendered collision/presentation comparisons. Boundary-handle ergonomics and preferred camera/guide readability remain manual feel questions.
 
 This section supersedes the narrower controls and defaults below.
 

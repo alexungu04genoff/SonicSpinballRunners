@@ -2,6 +2,14 @@
 
 Baseline: `0d5934a10772f59d5d327bb5bbed79dc4f2ad2e8`, Godot **4.7.2.stable.official.ed1daf0bf**, Windows, Forward+/Vulkan on RTX 4060. Existing local artwork and Acts were preserved. This is an ownership audit, not a graphics-quality or streaming-performance change.
 
+**November 18 replay follow-up:** the new Results replay deliberately keeps one
+plain run configuration in Session after the Game closes. The ownership probe now
+asserts that this is the only retained runtime reference, that starting another run
+releases it, and that disposing Session releases every watched owner. It passes
+39 checks across six runs. The original 33-check measurements below predate replay;
+they remain historical evidence. See the [editor qualification follow-up](EDITOR_QUALIFICATION_2026-11-18.md#12-undoredo-and-safety-sanity)
+for current receipts. Production cleanup and loader scheduling are unchanged.
+
 ## Finding
 
 The recurring plain `RefCounted` shutdown warnings are consistent with Godot's **threaded ResourceLoader LoadToken leak**. They are not evidence that the Prototype retains its Game or resident Act trees. However, they are also **not harmless shutdown-only noise**: the loader-only control and repeated sessions show persistent increases in ObjectDB count while the executable is still running.

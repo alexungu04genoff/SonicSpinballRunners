@@ -4,6 +4,7 @@ extends SceneTree
 
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 const Composite = preload("res://scripts/act_editor/composite_terrain.gd")
+const History = preload("res://scripts/act_editor/terrain_history.gd")
 const EditorScene = preload("res://scenes/act_geometry_editor.tscn")
 const SAVE_PATH := "res://test-results/composite-editor-smoke.tres"
 var editor: Control
@@ -93,6 +94,30 @@ func reset_fixture() -> void:
 	editor.add_placement(stamp("triangle_2x2", Vector2i(4, 4)))
 	await process_frame
 	await process_frame
+	editor.set_snap_mode(2)
+	editor.canvas.pivot_mode = 0
+
+
+func preview_with_history() -> Dictionary:
+	var expected: Dictionary = editor.composite_preview.duplicate(true)
+	var sources := []
+	for index: int in editor._composite_sources: sources.append(editor.document.placements[index])
+	History.remember(expected, sources)
+	return expected
+
+
+func world_points(piece: Dictionary) -> PackedVector2Array:
+	var points := Shapes.transformed_points(piece)
+	for index in points.size(): points[index] += Shapes.placement_position(piece)
+	return points
+
+
+func rotated_points_match(before: PackedVector2Array, piece: Dictionary, pivot: Vector2, angle: float) -> bool:
+	var after := world_points(piece)
+	if before.size() != after.size(): return false
+	for index in before.size():
+		if after[index].distance_to(pivot + (before[index] - pivot).rotated(angle)) > 0.0001: return false
+	return true
 
 
 func select_sources() -> void:
@@ -111,7 +136,7 @@ func check_selection() -> void:
 	check(editor.canvas.selected_indices == [2, 0], "Ctrl+Alt pointer adds a completely covered terrain piece")
 	await click_at(grid_position(Vector2(4.3, 5.6)), true)
 	check(editor.canvas.selected_indices == [2, 0, 1] and editor.canvas.selected_index == 1, "Ctrl pointer retains all selected highlight indices and updates the primary selection")
-	check(editor.canvas.selection_count() == 3 and editor.mode_label.text.contains("3") and editor.buttons.rotate.disabled and editor.buttons.duplicate.disabled, "Multiselection UI identifies all three pieces and prevents ambiguous transforms")
+	check(editor.canvas.selection_count() == 3 and editor.mode_label.text.contains("3") and not editor.buttons.rotate.disabled and not editor.buttons.duplicate.disabled, "Multiselection UI identifies all three pieces and enables atomic group transforms")
 	var multiple_before: String = editor.document.fingerprint()
 	var pieces_before: Array = editor.document.placements.duplicate(true)
 	await press_key(KEY_RIGHT)
@@ -120,7 +145,9 @@ func check_selection() -> void:
 		group_moved = group_moved and Shapes.placement_position(editor.document.placements[index]) == Shapes.placement_position(pieces_before[index]) + Vector2.RIGHT * editor.canvas.terrain_snap_step
 	var after_nudge: String = editor.document.fingerprint()
 	await press_key(KEY_R)
-	check(group_moved and editor.document.fingerprint() == after_nudge, "Nudges move the whole selection; rotation never partially edits it")
+	check(group_moved and editor.document.fingerprint() != after_nudge, "Nudges and rotation transform the complete selection")
+	editor.undo()
+	check(editor.document.fingerprint() == after_nudge, "One undo restores the entire group rotation")
 	editor.undo()
 	check(editor.document.fingerprint() == multiple_before, "One undo restores the entire group nudge")
 	await click_at(grid_position(Vector2(4.3, 5.6)), true)
@@ -201,7 +228,7 @@ func check_preview_and_history() -> void:
 	check(editor.composite_preview.outline == unprotected, "Turning corner protection off rebuilds the original preview without accumulating smoothing")
 	editor.composite_strength.value = 25
 	await process_frame
-	var expected: Dictionary = editor.composite_preview.duplicate(true)
+	var expected := preview_with_history()
 	await click_control(editor.buttons.composite_apply)
 	check(not editor.composite_preview_active and editor.document.placements.size() == 1 and editor.document.placements[0].shape_id == "composite", "Apply replaces both source pieces with one actual CompositeTerrain")
 	check(editor.document.placements[0] == expected and editor.undo_stack.size() == history_size + 1, "Apply commits precisely the displayed outline as one undo entry")
@@ -230,11 +257,13 @@ func check_composite_edits_and_persistence() -> void:
 	await press_key(KEY_RIGHT)
 	check(editor.document.placements[0].anchor == original.anchor + Vector2i.RIGHT and editor.document.placements[0].outline == original_outline, "Composite movement snaps its anchor without resnapping smoothed vertices")
 	await press_key(KEY_Z, true)
+	var before_rotation := world_points(editor.document.placements[0])
+	var pivot: Vector2 = editor.canvas.transform_pivot() / float(editor.document.cell_size)
 	await press_key(KEY_R)
-	check(editor.document.placements[0].quarter_turns == 1 and editor.document.placements[0].outline == original_outline, "Quarter-turn rotation preserves canonical composite coordinates")
+	check(rotated_points_match(before_rotation, editor.document.placements[0], pivot, PI * 0.5) and editor.document.placements[0].outline == original_outline, "Quarter-turn rotation transforms geometry while preserving canonical composite coordinates")
 	await press_key(KEY_H)
 	await press_key(KEY_V)
-	check(editor.document.placements[0].flip_h and editor.document.placements[0].flip_v and editor.document.placements[0].outline == original_outline, "Both mirror transforms preserve the stored final outline")
+	check(rotated_points_match(before_rotation, editor.document.placements[0], pivot, PI * 1.5) and editor.document.placements[0].outline == original_outline, "Both mirror transforms reflect geometry while preserving the stored final outline")
 	check(editor.document.validation_errors().is_empty(), "Transformed composite remains valid authoring data")
 	var transformed: String = editor.document.fingerprint()
 	check(editor.save_to(SAVE_PATH), "Editor saves a transformed composite document")
@@ -318,7 +347,7 @@ func check_join_controls() -> void:
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw
 		check(root.get_texture().get_image().save_png("res://test-results/join-only-smoothing-preview.png") == OK, "500% join-only preview capture saved")
-	var expected: Dictionary = editor.composite_preview.duplicate(true)
+	var expected := preview_with_history()
 	await click_control(editor.buttons.composite_apply)
 	check(editor.document.placements.size() == 1 and editor.document.placements[0] == expected and editor.undo_stack.size() == history_size + 1, "Join-only Apply commits one exact composite in one history step")
 	check(editor.save_to(SAVE_PATH) and editor.load_from(SAVE_PATH) and editor.document.placements[0] == expected, "500% join-only result saves and reloads exactly without source seams")
@@ -366,7 +395,7 @@ func check_corner_pins() -> void:
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw
 		check(root.get_texture().get_image().save_png("res://test-results/pinned-smoothing-preview.png") == OK, "Pinned smoothing preview capture saved")
-	var expected: Dictionary = editor.composite_preview.duplicate(true)
+	var expected := preview_with_history()
 	await click_control(editor.buttons.composite_apply)
 	check(editor.document.placements[0] == expected and editor.undo_stack.size() == history_size + 1 and editor.canvas._smoothing_corners.is_empty(), "Apply saves exactly the pinned contour in one edit and clears handles")
 	editor.undo()
@@ -407,6 +436,8 @@ func check_fine_terrain() -> void:
 	editor.composite_allow_reshaping.button_pressed = false
 	editor.terrain_snap_field.select(1)
 	editor.terrain_snap_field.item_selected.emit(1)
+	editor.set_snap_mode(2)
+	editor.canvas.pivot_mode = 1 # Preserve the top-left anchor for this half-grid fixture.
 	editor.terrain_scale_field.select(1)
 	editor.terrain_scale_field.item_selected.emit(1)
 	await process_frame
@@ -427,9 +458,11 @@ func check_fine_terrain() -> void:
 	await mouse_button(end, false, false, false)
 	var placement: Dictionary = editor.document.placements[0]
 	check(Shapes.placement_position(placement) == preview_position and preview_position.distance_to(Vector2(3.737, 3.819)) < 0.0001, "Alt-drag moves terrain freely and releasing Alt alone does not snap it")
-	var before_rotation := Shapes.placement_position(placement)
+	var before_rotation := world_points(placement)
+	editor.canvas.pivot_mode = 0
+	var pivot: Vector2 = editor.canvas.transform_pivot() / float(editor.document.cell_size)
 	editor.rotate_active()
-	check(Shapes.placement_position(editor.document.placements[0]) == before_rotation and Shapes.scaled_size(editor.document.placements[0]) == Vector2(1.0, 0.5), "Rotation retains a free position and the half-size footprint")
+	check(rotated_points_match(before_rotation, editor.document.placements[0], pivot, PI * 0.5) and Shapes.scaled_size(editor.document.placements[0]).is_equal_approx(Vector2(1.0, 0.5)), "Rotation preserves the free center pivot and half-size footprint")
 	var exact: Dictionary = editor.document.placements[0].duplicate(true)
 	check(editor.save_to(SAVE_PATH) and editor.load_from(SAVE_PATH) and editor.document.placements[0] == exact, "Free half-size terrain saves and reloads exactly")
 	editor.canvas.select_piece(0)

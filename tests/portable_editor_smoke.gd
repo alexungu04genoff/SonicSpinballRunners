@@ -35,11 +35,40 @@ func run() -> void:
 		push_error("Traversal inspector edits or Undo failed")
 		get_tree().quit(1)
 		return
-	if not editor.save_to(target) or not editor.load_from(target) or editor.document.fingerprint() != fingerprint:
+	# Qualify the exported format-19 workspace using a disposable external copy.
+	editor.canvas.set_object_selection({"gameplay": [2, 3]})
+	editor.group_selection()
+	var grouped: String = editor.document.editing_fingerprint()
+	var original: Vector2 = editor.document.gameplay_objects[2].position
+	var workspace: Control = editor.workspace_tools
+	workspace.move_x.get_line_edit().text = "12.5"
+	workspace.move_y.get_line_edit().text = "-3.25"
+	workspace.angle.get_line_edit().text = "0"
+	workspace.scale_mode.select(0)
+	workspace.scale_value.get_line_edit().text = "100"
+	workspace._apply_exact()
+	var editing: String = editor.document.editing_fingerprint()
+	var workspace_ok: bool = editor.document.editor_groups.size() == 1 and editor.document.gameplay_objects[2].position == original + Vector2(12.5, -3.25)
+	editor.undo()
+	workspace_ok = workspace_ok and editor.document.editing_fingerprint() == grouped
+	editor.redo()
+	workspace_ok = workspace_ok and editor.document.editing_fingerprint() == editing
+	fingerprint = editor.document.fingerprint()
+	if not workspace_ok or not editor.save_to(target) or not editor.load_from(target) or editor.document.editing_fingerprint() != editing:
 		print("PORTABLE_EDITOR_SMOKE: external persistence failed: ", editor.error_dialog.dialog_text)
 		push_error("External Act save/reload failed")
 		get_tree().quit(1)
 		return
+	workspace.show_checkpoint_dialog()
+	workspace.checkpoint_name.text = "Portable qualification"
+	workspace._save_checkpoint()
+	workspace.checkpoint_dialog.hide()
+	var recovery = load("res://scripts/act_editor/editor_recovery.gd")
+	if not recovery.entries().any(func(entry): return entry.label == "Portable qualification" and entry.source == target):
+		push_error("Portable recovery checkpoint failed")
+		get_tree().quit(1)
+		return
+	print("PORTABLE_WORKSPACE: group, exact transform, complete Undo/Redo, external save/reopen and checkpoint PASS")
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png(OS.get_user_data_dir().path_join("portable-editor.png"))

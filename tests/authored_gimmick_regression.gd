@@ -322,11 +322,13 @@ func _scale_checks() -> void:
 
 func _demo_checks() -> void:
  var loaded := ActData.load_document(EXAMPLE)
- # Older Acts can omit flipper length and triangle mirror defaults.
+ var expected := fixture()
+ # Optional defaults (including triangle mirror_x and flipper length) do not
+ # require rewriting the shipped Act. Compare the resolved gameplay properties.
  if loaded.document != null:
-  for item: Dictionary in loaded.document.gameplay_objects:
-   if item.type in ["left_flipper", "right_flipper", "triangle_bumper"]: item.properties = Objects.properties(item)
- check(loaded.document != null and loaded.document.fingerprint() == fixture().fingerprint(), "Shipped mechanic Act matches verified example")
+  for item: Dictionary in loaded.document.gameplay_objects: item.properties = Objects.properties(item)
+ for item: Dictionary in expected.gameplay_objects: item.properties = Objects.properties(item)
+ check(loaded.document != null and loaded.document.fingerprint() == expected.fingerprint(), "Shipped mechanic Act matches verified example with resolved optional defaults")
  await game.request_authored_act(EXAMPLE)
  await await_rebuild()
  manager = game.ball.mechanics

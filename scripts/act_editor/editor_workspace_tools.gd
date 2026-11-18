@@ -101,7 +101,9 @@ func _ready() -> void:
  scale_mode = OptionButton.new()
  for label: String in ["Scale percent", "Target width (px)", "Target height (px)"]: scale_mode.add_item(label)
  precision.add_child(scale_mode)
- scale_value = _number(precision, "Size", 0.001, 1000000, 100, 0.01)
+ # Range steps are relative to the minimum. Align it with the displayed step so
+ # 100% remains exactly 100%, and integer target dimensions stay exact too.
+ scale_value = _number(precision, "Size", 0.01, 1000000, 100, 0.01)
  scale_mode.item_selected.connect(func(index):
   var bounds := Transform.bounds(editor.document, editor.canvas.object_selection())
   scale_value.value = 100 if index == 0 else maxf(0.001, bounds.size[index - 1]))

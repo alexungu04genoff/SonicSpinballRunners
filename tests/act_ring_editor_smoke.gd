@@ -12,6 +12,7 @@ func run() -> void:
 	root.add_child(editor)
 	await process_frame
 	await process_frame
+	editor.set_snap_mode(2) # Exercise integer-grid ring gestures explicitly.
 	if OS.get_cmdline_user_args().has("--reload-ring-editor"):
 		check(editor.load_from(RING_SAVE), "Fresh editor loads trail document")
 		check(editor.document.fingerprint() == OS.get_cmdline_user_args()[-1], "Fresh editor restores exact authored trail coordinates")
@@ -48,7 +49,10 @@ func run() -> void:
 	var pending: Dictionary = editor.canvas._ring_preview.duplicate(true)
 	await set_alt(false)
 	await mouse_button(pointer, false)
-	check(editor.document.ring_trails[-1] == pending, "Releasing Alt before mouse-up preserves the last free preview without drift")
+	var committed: Dictionary = editor.document.ring_trails[-1]
+	var preview_matches := true
+	for key in pending: preview_matches = preview_matches and committed.get(key) == pending[key]
+	check(preview_matches and not String(committed.get("pattern_id", "")).is_empty(), "Releasing Alt before mouse-up preserves every preview field and assigns an identity")
 	await press_key(KEY_Z, true)
 	var saved_count: int = editor.document.ring_trails.size()
 	await press_key(KEY_Z, true)

@@ -37,9 +37,19 @@ Back up these folders before replacing or moving your tools.
 ## Geometry Editor
 
 Use Load and Save As to edit `.tres` files in **Acts**. The latest editor includes
-drag-box selection, Ctrl-click/add selection, group move/delete/undo, and separate
-**Show decor** and **Show gameplay** toggles. Save the Act before clicking **Play**;
-the separate player supports **Reload Act** after further saves.
+mixed selection, groups/locks, five visibility layers, Free/Relative/Absolute
+snapping, pivots, handles, clipboard and reusable assemblies. **Workspace** contains
+the object/group browser, **Ctrl+M** exact transforms and the Recovery browser.
+**Ctrl+K** creates a named recovery checkpoint; changed committed documents receive
+a separate automatic recovery copy every 30 seconds. Restore opens an unsaved copy.
+Uncommitted field drafts are not autosaved.
+
+Save the Act before clicking **Play**. It opens the current Act through Prototype;
+pause and **Restart run** after further saves. Editor preferences, assemblies and
+recovery copies live in the local application profile, independently of the
+portable **Acts** folder. They are not included as shipped defaults. The repository
+contains `docs/ACT_GEOMETRY_EDITOR.md` and `docs/EDITOR_QUALIFICATION_2026-11-18.md`
+with the complete controls, tested behavior and limits.
 
 ## Atmosphere Lab
 
@@ -78,7 +88,7 @@ shader compilation may pause briefly. If the tools cannot create their data
 folders, move them to a writable location and reopen them.
 
 The November 5 traversal refresh includes per-rail **Terrain clearance**, flipper
-**Length multiplier** (1–2×), and **Teleporter** with a draggable OUT marker.
+**Length multiplier** (currently 0.25–4×), and **Teleporter** with a draggable OUT marker.
 `Acts/Experiments/Traversal Diagnostic.tres` demonstrates all three. Play uses
 the actual Prototype session. Save new work with this format-19 editor; older
 builds cannot read the new format. Existing Acts load without a source rewrite

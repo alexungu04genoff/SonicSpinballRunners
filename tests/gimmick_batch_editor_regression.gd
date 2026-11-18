@@ -25,6 +25,7 @@ func run() -> void:
  root.add_child(editor)
  await process_frame
  var canvas = editor.canvas
+ editor.set_snap_mode(2) # This fixture deliberately mixes Absolute Grid and Alt-free posts.
  editor.choose_gameplay("lane_barrier")
  click(Vector2(105, 301))
  key(KEY_ENTER)

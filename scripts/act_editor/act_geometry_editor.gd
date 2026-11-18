@@ -867,7 +867,8 @@ func _build_decor_palette(parent: Node) -> void:
 	decor_scale_field = SpinBox.new()
 	decor_scale_field.min_value = Decor.MIN_SCALE
 	decor_scale_field.max_value = Decor.MAX_SCALE
-	decor_scale_field.step = 0.01
+	# The 0.125 minimum must align with the step; otherwise Range shifts 1.1 to 1.105.
+	decor_scale_field.step = 0.001
 	decor_scale_field.value = 1.0
 	decor_scale_field.prefix = "Scale"
 	decor_scale_field.value_changed.connect(func(value): _set_decor_property("scale", value))

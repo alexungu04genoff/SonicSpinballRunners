@@ -91,6 +91,7 @@ func run() -> void:
   session.sound_enabled = false
   root.add_child(session)
   var session_ref: WeakRef = weakref(session)
+  var finished_runs: Array[Dictionary] = []
   for run_index in 2:
    while is_instance_valid(session.setup_menu) and session.setup_menu.checking: await process_frame
    await session.start_run()
@@ -99,6 +100,8 @@ func run() -> void:
    while (not game.started or game.library.busy or game.building != null or game.resident.size() < 3) and game.last_source_error.is_empty() and Time.get_ticks_msec() < deadline:
     await process_frame
    check(game.started and game.resident.size() == 3, "Three normal resident Acts attach")
+   if not finished_runs.is_empty():
+    check(surviving(finished_runs.back()).is_empty(), "Starting a new run releases the previous replay configuration and retired owners")
    check(game.library.fallback_builds == 0, "Session uses validated disk bakes")
    check(game.view.msaa_3d == Viewport.MSAA_4X and game.view.scaling_3d_scale == 1.0, "Production pixel defaults remain intact")
    game.launch_ball()
@@ -111,17 +114,24 @@ func run() -> void:
    await settle()
    record["after_frames"] = surviving(refs)
    record["menu"] = census()
-   check(record.after_frames.is_empty(), "Retired runtime owners and resources release after normal menu return")
+   # Results replay deliberately retains this plain configuration until the next
+   # run or Session disposal. It must not retain any Game, Act or renderer owner.
+   check(record.after_frames.size() == 1 and record.after_frames[0].label == "run_configuration"
+    and refs.run_configuration.reference.get_ref() == session.last_run_configuration,
+    "Only the Session replay configuration outlives the retired runtime")
    observations.append(record)
    print("LIFECYCLE_RUN | ", JSON.stringify(record))
-   refs.clear()
+   finished_runs.append(refs)
   session.queue_free()
   await settle()
   check(session_ref.get_ref() == null, "Session and its menu leave the tree")
+  var retained_after_session: Array = []
+  for refs: Dictionary in finished_runs: retained_after_session.append_array(surviving(refs))
+  check(retained_after_session.is_empty(), "Session disposal releases every run owner, including the replay configuration")
   var idle := census()
   check(idle.live_registered_views == 0 and idle.live_registered_lights == 0, "Device registries retain no live session targets")
   check(idle.nodes == initial.nodes and idle.orphans == initial.orphans, "Node and orphan counts return to the pre-session baseline")
-  observations.append({"cycle": cycle, "idle": idle})
+  observations.append({"cycle": cycle, "idle": idle, "retained_after_session": retained_after_session})
   print("LIFECYCLE_IDLE | ", JSON.stringify(idle))
  var file := FileAccess.open(output, FileAccess.WRITE)
  file.store_string(JSON.stringify({"metadata": Report.metadata(), "initial": initial, "observations": observations, "checks": checks, "failures": failures}, "  "))

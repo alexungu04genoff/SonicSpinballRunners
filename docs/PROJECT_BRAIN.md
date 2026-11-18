@@ -1,5 +1,13 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Editor qualification and recovery hardening — 2026-11-18
+
+The November 17 editor now has real import, persistence, native-input and rendered Prototype evidence. Four small fixes reject malformed saved terrain sources, keep exact Size and Decor scale inputs honest, and stop reflected terrain drifting outside an Act border. Old tests were aligned with documented Free snapping, half-size brushes, current pivots, groups, optional property defaults and the Play menu label; geometry and Undo checks stayed intact.
+
+Qualification started at `1e19af3`, then preserved the four newer main commits through `c57c2bd` before final checks. The dense disposable fixture includes both new hardware types. Core/workspace and real restart checks pass 685 assertions; all eight themes plus horizontal/vertical linked assemblies and smoothed terrain pass 1,023 rendered collision/presentation assertions with zero fallback builds. The native editor's Play button opens current Prototype; scripted play also completes the scored Goal and replays the course. No production Acts, graphics defaults or grounding work changed in this qualification. The old November 17 “source review only” notes below are historical now. See [the qualification report, package and remaining manual feel checks](EDITOR_QUALIFICATION_2026-11-18.md).
+
+The final supported baseline passes all 32 suites, up from 29 before qualification. A fresh full Authoring Tools ZIP was actually extracted; its EXE passes editing, save/reopen, group/exact transforms, recovery and Prototype play, with no personal workspace data shipped. Held-button drag cancellation and human feel remain manual checks. Existing Godot threaded-loader warnings are preserved and investigated separately from editor ownership; this pass does not claim an engine leak fix.
+
 ## Horizontal bumper and score chute experiment — 2026-11-18
 
 Use Act Geometry Editor → open Side to Side in Experiments → Play. Drag the moving bumper patrol endpoints and tune patrol speed in the inspector. Shoot up through the chute, then drop into its top to score. C cycles the live camera and Shift+C goes back. The November 17 laptop package predates these features.

@@ -93,8 +93,12 @@ func run() -> void:
  var positions := Rings.positions(preview)
  check(preview.kind == "ellipse" and preview.fill and positions.size() > 10 and editor.document.ring_trails.is_empty(), "Filled ellipse previews before committing")
  pointer(Vector2(380.75, 330.25), false)
- if editor.document.ring_trails[0] != preview: print("PREVIEW / COMMIT | ", preview, " / ", editor.document.ring_trails[0])
- check(editor.document.ring_trails.size() == 1 and editor.document.ring_trails[0] == preview and editor.undo_stack.size() == count + 1, "One ellipse draw gesture commits one exact undo action")
+ var committed: Dictionary = editor.document.ring_trails[0].duplicate(true)
+ check(not String(committed.get("pattern_id", "")).is_empty(), "Committing an ellipse assigns its persistent identity")
+ var preview_matches := true
+ for key in preview: preview_matches = preview_matches and committed.get(key) == preview[key]
+ check(not committed.bonus_rack and committed.completion_bonus == 0 and committed.timeout == 25.0 and committed.respawn_delay == 18.0, "Ellipse commit materializes the default scoring properties")
+ check(editor.document.ring_trails.size() == 1 and preview_matches and editor.undo_stack.size() == count + 1, "One ellipse draw gesture commits its exact preview and one undo action")
  editor.undo()
  check(editor.document.ring_trails.is_empty(), "Undo removes entire ellipse pattern")
  editor.redo()

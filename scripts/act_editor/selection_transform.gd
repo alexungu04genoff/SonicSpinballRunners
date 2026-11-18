@@ -6,7 +6,6 @@ const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const Rings = preload("res://scripts/act_editor/ring_trails.gd")
 const Decor = preload("res://scripts/act_editor/decor_slots.gd")
 const EditorSelectionData = preload("res://scripts/act_editor/editor_selection.gd")
-const TerrainHistory = preload("res://scripts/act_editor/terrain_history.gd")
 
 static func bounds(document: Resource, selection: Dictionary) -> Rect2:
  var points := PackedVector2Array()
@@ -112,12 +111,23 @@ static func mirror(document: Resource, selection: Dictionary, pivot: Vector2, ho
  var axes := Vector2(-1, 1) if horizontal else Vector2(1, -1)
  var reflected := Transform2D(Vector2(axes.x, 0), Vector2(0, axes.y), pivot - pivot * axes)
  var cell := float(document.cell_size)
- var cell_transform := reflected
- cell_transform.origin /= cell
  var goal: Vector2 = document.goal_center()
  for index: int in selection.get("terrain", []):
   var piece: Dictionary = document.placements[index]
-  TerrainHistory.set_transform(piece, cell_transform * TerrainHistory.placement_transform(piece))
+  # Reflect the existing frame without decomposing a float32 affine basis. That
+  # decomposition can change unit scale/quarter turns and push a border-touching
+  # piece a fraction outside the Act when the next mirror recomputes its pivot.
+  var frame := Shapes.scaled_size(piece)
+  var position := Shapes.placement_position(piece)
+  if horizontal:
+   position.x = 2.0 * pivot.x / cell - position.x - frame.x
+   piece.flip_h = not piece.flip_h
+  else:
+   position.y = 2.0 * pivot.y / cell - position.y - frame.y
+   piece.flip_v = not piece.flip_v
+  if piece.has("fine_rotation_degrees"):
+   piece.fine_rotation_degrees = -float(piece.fine_rotation_degrees)
+  Shapes.set_placement_position(piece, position)
  for index: int in selection.get("gameplay", []):
   var item: Dictionary = document.gameplay_objects[index]
   item.position = reflected * Vector2(item.position)

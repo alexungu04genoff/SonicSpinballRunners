@@ -98,10 +98,10 @@ func run() -> void:
  check(editor.document.fingerprint() == fingerprint and canvas.object_selection() == selected, "Undo restores a deleted mixed group and its selection")
  editor.canvas_decor_visible_field.button_pressed = false
  editor.gameplay_visible_field.button_pressed = false
- check(canvas.selection_count() == 1 and canvas.selected_indices == [0] and not editor.decor_visible_field.button_pressed, "Toolbar toggles deselect hidden objects and sync the decor inspector")
+ check(canvas.selection_count() == 0 and not editor.decor_visible_field.button_pressed and canvas.show_rings, "Layer toggles clear the selection safely, preserve the independent ring layer and sync the decor inspector")
  check(canvas.mixed_hit_indices_at(canvas.local_pixels_to_screen(Vector2(120, 220))).is_empty() and canvas.gameplay_hit_indices_at(canvas.local_pixels_to_screen(Vector2(200, 120))).is_empty() and canvas.marker_hits_at(canvas.local_pixels_to_screen(editor.document.goal_center())).is_empty(), "Hidden decor, gameplay and lifecycle markers cannot intercept clicks")
  drag_box(Vector2(275, 250), Vector2(60, 60))
- check(canvas.selection_count() == 1 and canvas.selected_indices == [0], "Reverse-direction box selection ignores hidden layers")
+ check(canvas.selection_count() == 2 and canvas.selected_indices == [0] and canvas.selected_ring_indices == [0], "Reverse-direction box selection ignores hidden layers and includes visible rings")
  check(editor.document.fingerprint() == fingerprint, "Visibility leaves saved Act data unchanged")
  editor.decor_visible_field.button_pressed = true
  check(editor.canvas_decor_visible_field.button_pressed, "Decor inspector synchronizes the toolbar toggle")

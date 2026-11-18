@@ -71,6 +71,7 @@ func run() -> void:
   check(placed.position.distance_to(expected) < 0.001, type + ": Alt placement keeps fractional coordinates")
   editor._select_mode()
   editor.canvas.select_gameplay(0)
+  editor.canvas.pivot_mode = 1 # Anchor-specific check; the default center pivot can move asymmetric anchors.
   var history: int = editor.undo_stack.size()
   wheel()
   check(editor.document.gameplay_objects[0].properties != placed.properties and editor.document.gameplay_objects[0].position == placed.position and editor.document.gameplay_objects[0].object_id == placed.object_id, type + ": placed sizing preserves anchor and identity")
@@ -187,6 +188,7 @@ func check_clipboard() -> void:
  editor.set_decor_slot(-1, slot)
  editor.set_ring_trail(-1, {"start": Vector2(180, 300), "end": Vector2(280, 320), "spacing": 25.0})
  editor._select_mode()
+ editor.canvas.pivot_mode = 0
  var selection := {"terrain": [0], "gameplay": [0, 1, 2, 3], "decor": [0], "ring": [0], "markers": []}
  editor.canvas.set_object_selection(selection)
  editor.canvas.grab_focus()

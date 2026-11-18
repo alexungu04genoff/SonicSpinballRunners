@@ -64,7 +64,7 @@ func run() -> void:
  while session.setup_menu.checking: await process_frame
  press("Play")
  check(await await_run(), "Menu starts the real streamed six-Act run")
- if not session.game.started:
+ if not is_instance_valid(session.game) or not session.game.started:
   await session.return_to_menu()
   quit(1)
   return
