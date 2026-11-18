@@ -167,6 +167,7 @@ func _collect(node: Node3D, transform: Transform3D, batches: Dictionary, glass: 
  for child: Node in node.get_children(): _collect(child,local,batches,glass)
 
 func _batch(root: Node3D, scheduler: Node = null) -> void:
+ var preserved := preload("res://scripts/themes/motion_preserve.gd").take(root)
  var batches := {}
  var glass := []
  for child: Node in root.get_children():
@@ -200,6 +201,7 @@ func _batch(root: Node3D, scheduler: Node = null) -> void:
   instance.transform = data.transform
   instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
   root.add_child(instance)
+ preload("res://scripts/themes/motion_preserve.gd").restore(root, preserved)
 
 func ramp_materials() -> Dictionary:
  return {"deck":_ramp_deck_material,"edge":_ramp_guard_material,"fascia":_ramp_guard_material,"border":_ramp_guard_material,"support":_library.materials.wood,"accent":_library.materials.cyan}

@@ -169,13 +169,16 @@ func _coral_branch(root: Node3D, color: String, a: Vector3, b: Vector3, width: f
  var branch := piece(root,"coral_branch",color,(a+b)*0.5,Vector3(width*0.5,a.distance_to(b),width*0.5))
  branch.quaternion = Quaternion(Vector3.UP,(b-a).normalized())
 
-func fish(root: Node3D, at: Vector3, length: float, angle: float, depth_scale := 1.0) -> void:
+func fish(root: Node3D, at: Vector3, length: float, angle: float, depth_scale := 1.0, swim := false) -> void:
  var group := Node3D.new()
  group.name = "DecorativeFish"
  root.add_child(group)
  group.position = at
  group.rotation.y = angle
  group.scale.z = depth_scale
+ if swim:
+  # Confined to the existing tank volume. Palace reliefs remain architecture.
+  group.set_meta("theme_motion", {"kind":"drift", "candidate":"B", "axis":Vector3(1, 0.18, 0), "amplitude":length * 0.10, "period":11.0 + length * 1.7, "phase":angle + 0.7})
  piece(group,"orb","fish",Vector3.ZERO,Vector3(length*0.38,length*0.14,length*0.12))
  var tail := piece(group,"cone","coral",Vector3(-length*0.40,0,0),Vector3(length*0.17,length*0.24,length*0.05))
  tail.rotation.z = -PI*0.5
@@ -201,7 +204,7 @@ func tank(root: Node3D, at: Vector3, radius: float, height: float, jelly := fals
     bar(root,"fish",top,top+Vector3(sin(j)*radius*0.06,-height*0.23,0),radius*0.012)
  else:
   # Two readable silhouettes replace a school of tiny flecks behind the glass.
-  for i in 2: fish(root,at+Vector3((i-0.5)*radius*0.4,0.25+height*(0.25+i*0.32),0),radius*1.12,i*PI)
+  for i in 2: fish(root,at+Vector3((i-0.5)*radius*0.4,0.25+height*(0.25+i*0.32),0),radius*1.12,i*PI,1.0,true)
   coral(root,at+Vector3(-radius*0.35,0.18,0),height*0.48)
 
 func pavilion(root: Node3D, at: Vector3, width: float, height: float, depth: float) -> void:

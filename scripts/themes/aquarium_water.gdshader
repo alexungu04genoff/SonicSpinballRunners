@@ -1,4 +1,6 @@
 shader_type spatial;
+// Process-local Theme Motion candidate; zero preserves current production.
+uniform int motion_candidate = 0;
 // Linear palette uniforms preserve the original shader constants.
 uniform vec3 deep_color = vec3(0.012,0.070,0.105);
 uniform vec3 wave_color = vec3(0.018,0.12,0.17);
@@ -23,6 +25,12 @@ void fragment() {
  float fresnel = pow(1.0-max(dot(NORMAL,VIEW),0.0),3.0);
  vec3 deep = mix(deep_color,wave_color,0.5+0.5*ripple);
  float caustic = pow(max(0.0,1.0-abs(a+b)*1.5),5.0);
+ // A: broad drifting caustic cells remain confined to the existing water.
+ if (motion_candidate == 1) {
+  vec2 q = world_position.xz * 0.35 + vec2(t * 0.055, -t * 0.033);
+  float cell = sin(q.x + sin(q.y)) + sin(q.y * 1.3 - q.x * 0.3);
+  caustic = pow(max(0.0, 1.0 - abs(cell) * 1.2), 3.0);
+ }
  // Broken, broad reflection ribbons suggest distant amber lantern rows.
  float reflection = pow(max(0.0,sin(p.x*0.65+0.12*ripple)),18.0);
  reflection *= 0.35+0.65*pow(0.5+0.5*sin(p.y*4.0+t*0.3+a),3.0);

@@ -7,8 +7,13 @@ var camera: Camera3D
 var scenery: Node3D
 var environment: WorldEnvironment
 var light: DirectionalLight3D
+var motion: RefCounted
+var _motion_frame := -1
 
 func configure(game: Node, entry: Dictionary, library: Node) -> void:
+ if entry.theme in preload("res://scripts/theme_motion/registry.gd").IDS:
+  motion = preload("res://scripts/theme_motion/controller.gd").new()
+  motion.configure(entry.theme, int(entry.get("zone", 0)))
  set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  stretch = true
  mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -58,3 +63,10 @@ func follow(source: Camera3D, viewport_size: Vector2i, weight: float, warming :=
  var running := weight > 0.0 or warming
  scenery.process_mode = Node.PROCESS_MODE_ALWAYS if running else Node.PROCESS_MODE_DISABLED
  view.render_target_update_mode = SubViewport.UPDATE_ALWAYS if running else SubViewport.UPDATE_DISABLED
+ if motion != null:
+  var delta := 0.0 if get_tree().paused or _motion_frame == Engine.get_process_frames() else get_process_delta_time()
+  _motion_frame = Engine.get_process_frames()
+  motion.update(delta, running)
+
+func _exit_tree() -> void:
+ if motion != null: motion.release()

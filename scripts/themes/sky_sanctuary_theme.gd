@@ -225,6 +225,13 @@ func _batch(root: Node3D, scheduler: Node = null) -> void:
   var instance := MultiMeshInstance3D.new()
   instance.multimesh = multimesh
   instance.material_override = data.material
+  # Cloud lobes displace by at most 1.2 local units; their transforms can scale
+  # that displacement before the MultiMesh-level AABB is evaluated.
+  if data.material is ShaderMaterial and data.material.shader.resource_path.ends_with("sanctuary_cloud_volume.gdshader"):
+   var maximum_scale := 0.0
+   for transform: Transform3D in data.transforms:
+    maximum_scale = maxf(maximum_scale, transform.basis.get_scale().abs().x)
+   instance.extra_cull_margin = 1.2 * maximum_scale
   instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
   root.add_child(instance)
 

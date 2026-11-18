@@ -89,8 +89,22 @@ func bar(root: Node3D, color: String, a: Vector3, b: Vector3, width: float) -> v
  mesh.quaternion = Quaternion(Vector3.UP, (b - a).normalized())
 
 func star(root: Node3D, at: Vector3, size: float, color := "amber") -> void:
+ # Only large architectural signs participate; small deck ornaments stay stable.
+ if size >= 0.42:
+  var sign := Node3D.new()
+  sign.name = "MechanicalStarSign"
+  sign.position = at
+  sign.set_meta("theme_motion", {"kind":"rotate", "candidate":"B", "axis":Vector3(0, 0, 1), "amplitude":TAU, "period":23.0 + size * 4.0, "phase":at.x * 1.7 + at.y * 0.63 + size * 2.1})
+  root.add_child(sign)
+  root = sign
+  at = Vector3.ZERO
  piece(root, "star", "gold", at, Vector3(size, size, size))
- piece(root, "star", color, at + Vector3(0, 0, size * 0.065), Vector3(size * 0.75, size * 0.75, size * 0.3))
+ var face := piece(root, "star", color, at + Vector3(0, 0, size * 0.065), Vector3(size * 0.75, size * 0.75, size * 0.3))
+ if size >= 0.42:
+  # Unique source identity lets the existing Zone atmosphere owner supply one
+  # private copy without animating all materials of this color throughout play.
+  face.material_override = face.material_override.duplicate()
+  face.set_meta("theme_motion", {"kind":"signal", "candidate":"A", "period":7.6, "phase":size * 7.0 + float(color.hash() % 9) * 0.47})
 
 func frame(root: Node3D, at: Vector3, size: Vector2, color := "amber", width := 0.035) -> void:
  for side: int in [-1, 1]:

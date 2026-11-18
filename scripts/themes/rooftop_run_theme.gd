@@ -244,6 +244,7 @@ func _collect_meshes(node: Node3D, transform: Transform3D, batches: Dictionary) 
   _collect_meshes(child, local, batches)
 
 func _batch_city(root: Node3D, scheduler: Node = null) -> void:
+ var preserved := preload("res://scripts/themes/motion_preserve.gd").take(root)
  # Concrete draw-call reduction for the repeated district. Authored props retain
  # their own roots/metadata; only static background geometry is instanced here.
  var batches := {}
@@ -268,6 +269,7 @@ func _batch_city(root: Node3D, scheduler: Node = null) -> void:
   instance.multimesh = multimesh
   instance.material_override = data.material
   root.add_child(instance)
+ preload("res://scripts/themes/motion_preserve.gd").restore(root, preserved)
 
 func build_study(_p: Node3D, parent: Node3D, origin: Vector3) -> void:
  parent.position = origin

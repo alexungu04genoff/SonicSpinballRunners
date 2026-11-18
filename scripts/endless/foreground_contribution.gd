@@ -62,6 +62,16 @@ func _include(box: AABB) -> void:
  valid = true
 
 func _collect(node: Node) -> void:
+ if node.has_meta("theme_motion") and node is Node3D:
+  var spec: Variant = node.get_meta("theme_motion")
+  if not preload("res://scripts/theme_motion/registry.gd").binding_error(spec).is_empty():
+   supported = false
+  elif spec.kind == "rotate":
+   _motion(node)
+  elif spec.kind == "drift":
+   var translation: Vector3 = spec.axis.normalized() * absf(float(spec.amplitude))
+   if node.get_parent() is Node3D: translation = node.get_parent().global_basis * translation
+   _motion(node, 1.0, translation.abs())
  if node is Node3D and node.top_level: supported = false
  if node is GeometryInstance3D:
   if node is MeshInstance3D or node is MultiMeshInstance3D or node is Label3D:
@@ -103,6 +113,13 @@ func _check_material(material: Material) -> float:
   # Vertex programs are not CPU mesh bounds. Unknown writes fail open. Includes
   # are inspected once too (current palette/normal includes do not move vertices).
   var code: String = material.shader.code
+  var motion_id: String = preload("res://scripts/theme_motion/registry.gd").shader_id(material)
+  if motion_id in ["green_hill_cloud", "sanctuary_cloud_volume"]:
+   var source := FileAccess.get_file_as_string("res://scripts/themes/" + motion_id + ".gdshader")
+   var vertex := RegEx.create_from_string("(?s)void vertex\\(\\) \\{.*?\\}").search(source)
+   if vertex != null and code.contains(vertex.get_string()):
+    displacement = 0.45 if motion_id == "green_hill_cloud" else 1.2
+    code = code.replace(vertex.get_string(), "")
   var grass_vertex := GrassBounds.vertex_code()
   if material.has_meta("grass_shell_fraction") and code.contains(grass_vertex):
    displacement = GrassBounds.MAX_OFFSET

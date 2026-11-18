@@ -1,0 +1,731 @@
+{
+  "method": "Separate repeats, same frozen canonical Act, normal right-focus production Retro. No capture or encoding during timing.",
+  "runs": [
+    {
+      "name": "Casino repeat",
+      "complete": true,
+      "failures": [],
+      "rows": [
+        {
+          "theme": "casino_night",
+          "candidate": "B",
+          "benchmark": {
+            "counters": {
+              "draws": 165,
+              "objects": 187,
+              "primitives": 27069,
+              "shadow_draws": 458,
+              "transparent_draws": null
+            },
+            "frame": {
+              "count": 180,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 5.13,
+              "median_ms": 2.972,
+              "p95_ms": 3.566,
+              "p99_ms": 4.994
+            },
+            "motion": {
+              "animated_materials": 0,
+              "bindings": 60,
+              "candidate": "B",
+              "controllers": 1,
+              "cpu_callbacks": 1,
+              "cpu_motion_usec": 0,
+              "diagnostic_driver_callbacks": 1,
+              "error": "",
+              "moving_meshes": 60,
+              "native_cpu_callbacks": 0,
+              "systems": [
+                "binding"
+              ],
+              "theme": "casino_night",
+              "tier": "FULL",
+              "time": 2.98333333333333,
+              "zone": 0
+            },
+            "motion_update": {
+              "count": 180,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 0.899,
+              "median_ms": 0.456,
+              "p95_ms": 0.631,
+              "p99_ms": 0.872
+            },
+            "note": "Uncapped presented-frame timing; frozen gameplay; capture/readback and hidden-UI formatting excluded. Motion update measures diagnostic seek/uniform upload, not native production cost. CPU/GPU viewport sums may overlap. Transparent draw count unavailable. Desktop evidence is not UHD certification.",
+            "pipeline_compilations": {
+              "canvas": 0.0,
+              "draw": 0.0,
+              "mesh": 0.0,
+              "specialization": 1.0,
+              "surface": 1.0
+            },
+            "preparation_ms": 4098.28,
+            "render_cpu": {
+              "count": 12,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 1.00700002908707,
+              "median_ms": 0.906000021845102,
+              "p95_ms": 1.00700002908707,
+              "p99_ms": 1.00700002908707
+            },
+            "render_gpu": {
+              "count": 12,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 0.681999981403351,
+              "median_ms": 0.668999999761581,
+              "p95_ms": 0.681999981403351,
+              "p99_ms": 0.681999981403351
+            },
+            "resident_inventory": {
+              "materials": 116,
+              "recipe_bytes": 429556,
+              "recipe_records": 705,
+              "scope": "Resident canonical Act and shared background; recipe bytes exclude shared asset bank. Transparent slots are eligibility, not visible submissions.",
+              "shader_resources": 9,
+              "transparent_surface_slots": 8,
+              "warm_signatures": 28
+            },
+            "resource_delta": 0.0,
+            "resources": 1494.0,
+            "warmup_frames": 40,
+            "warmup_ms": 146.046
+          }
+        },
+        {
+          "theme": "casino_night",
+          "candidate": "C",
+          "benchmark": {
+            "counters": {
+              "draws": 163,
+              "objects": 186,
+              "primitives": 27033,
+              "shadow_draws": 458,
+              "transparent_draws": null
+            },
+            "frame": {
+              "count": 180,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 5.808,
+              "median_ms": 3.017,
+              "p95_ms": 4.412,
+              "p99_ms": 5.285
+            },
+            "motion": {
+              "animated_materials": 0,
+              "bindings": 60,
+              "candidate": "C",
+              "controllers": 1,
+              "cpu_callbacks": 1,
+              "cpu_motion_usec": 0,
+              "diagnostic_driver_callbacks": 1,
+              "error": "",
+              "moving_meshes": 0,
+              "native_cpu_callbacks": 0,
+              "systems": [],
+              "theme": "casino_night",
+              "tier": "FULL",
+              "time": 2.98333333333333,
+              "zone": 0
+            },
+            "motion_update": {
+              "count": 180,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 1.03,
+              "median_ms": 0.403,
+              "p95_ms": 0.646,
+              "p99_ms": 0.838
+            },
+            "note": "Uncapped presented-frame timing; frozen gameplay; capture/readback and hidden-UI formatting excluded. Motion update measures diagnostic seek/uniform upload, not native production cost. CPU/GPU viewport sums may overlap. Transparent draw count unavailable. Desktop evidence is not UHD certification.",
+            "pipeline_compilations": {
+              "canvas": 0.0,
+              "draw": 0.0,
+              "mesh": 0.0,
+              "specialization": 0.0,
+              "surface": 0.0
+            },
+            "preparation_ms": 4098.28,
+            "render_cpu": {
+              "count": 12,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 1.2039999961853,
+              "median_ms": 1.04499999806285,
+              "p95_ms": 1.2039999961853,
+              "p99_ms": 1.2039999961853
+            },
+            "render_gpu": {
+              "count": 12,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 0.757999986410141,
+              "median_ms": 0.74600000679493,
+              "p95_ms": 0.757999986410141,
+              "p99_ms": 0.757999986410141
+            },
+            "resident_inventory": {
+              "materials": 116,
+              "recipe_bytes": 429556,
+              "recipe_records": 705,
+              "scope": "Resident canonical Act and shared background; recipe bytes exclude shared asset bank. Transparent slots are eligibility, not visible submissions.",
+              "shader_resources": 9,
+              "transparent_surface_slots": 8,
+              "warm_signatures": 28
+            },
+            "resource_delta": 0.0,
+            "resources": 1494.0,
+            "warmup_frames": 40,
+            "warmup_ms": 144.011
+          }
+        },
+        {
+          "theme": "casino_night",
+          "candidate": "B",
+          "benchmark": {
+            "counters": {
+              "draws": 165,
+              "objects": 187,
+              "primitives": 27069,
+              "shadow_draws": 458,
+              "transparent_draws": null
+            },
+            "frame": {
+              "count": 180,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 4.303,
+              "median_ms": 3.012,
+              "p95_ms": 3.572,
+              "p99_ms": 4.137
+            },
+            "motion": {
+              "animated_materials": 0,
+              "bindings": 60,
+              "candidate": "B",
+              "controllers": 1,
+              "cpu_callbacks": 1,
+              "cpu_motion_usec": 0,
+              "diagnostic_driver_callbacks": 1,
+              "error": "",
+              "moving_meshes": 60,
+              "native_cpu_callbacks": 0,
+              "systems": [
+                "binding"
+              ],
+              "theme": "casino_night",
+              "tier": "FULL",
+              "time": 2.98333333333333,
+              "zone": 0
+            },
+            "motion_update": {
+              "count": 180,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 0.807,
+              "median_ms": 0.468,
+              "p95_ms": 0.589,
+              "p99_ms": 0.752
+            },
+            "note": "Uncapped presented-frame timing; frozen gameplay; capture/readback and hidden-UI formatting excluded. Motion update measures diagnostic seek/uniform upload, not native production cost. CPU/GPU viewport sums may overlap. Transparent draw count unavailable. Desktop evidence is not UHD certification.",
+            "pipeline_compilations": {
+              "canvas": 0.0,
+              "draw": 0.0,
+              "mesh": 0.0,
+              "specialization": 0.0,
+              "surface": 0.0
+            },
+            "preparation_ms": 4098.28,
+            "render_cpu": {
+              "count": 12,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 1.27599996328354,
+              "median_ms": 0.965999983251095,
+              "p95_ms": 1.27599996328354,
+              "p99_ms": 1.27599996328354
+            },
+            "render_gpu": {
+              "count": 12,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 0.762000001966953,
+              "median_ms": 0.743999987840652,
+              "p95_ms": 0.762000001966953,
+              "p99_ms": 0.762000001966953
+            },
+            "resident_inventory": {
+              "materials": 116,
+              "recipe_bytes": 429556,
+              "recipe_records": 705,
+              "scope": "Resident canonical Act and shared background; recipe bytes exclude shared asset bank. Transparent slots are eligibility, not visible submissions.",
+              "shader_resources": 9,
+              "transparent_surface_slots": 8,
+              "warm_signatures": 28
+            },
+            "resource_delta": 0.0,
+            "resources": 1494.0,
+            "warmup_frames": 40,
+            "warmup_ms": 148.411
+          }
+        },
+        {
+          "theme": "casino_night",
+          "candidate": "C",
+          "benchmark": {
+            "counters": {
+              "draws": 163,
+              "objects": 186,
+              "primitives": 27033,
+              "shadow_draws": 458,
+              "transparent_draws": null
+            },
+            "frame": {
+              "count": 180,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 5.632,
+              "median_ms": 3.033,
+              "p95_ms": 4.468,
+              "p99_ms": 5.263
+            },
+            "motion": {
+              "animated_materials": 0,
+              "bindings": 60,
+              "candidate": "C",
+              "controllers": 1,
+              "cpu_callbacks": 1,
+              "cpu_motion_usec": 0,
+              "diagnostic_driver_callbacks": 1,
+              "error": "",
+              "moving_meshes": 0,
+              "native_cpu_callbacks": 0,
+              "systems": [],
+              "theme": "casino_night",
+              "tier": "FULL",
+              "time": 2.98333333333333,
+              "zone": 0
+            },
+            "motion_update": {
+              "count": 180,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 1.088,
+              "median_ms": 0.409,
+              "p95_ms": 0.653,
+              "p99_ms": 0.956
+            },
+            "note": "Uncapped presented-frame timing; frozen gameplay; capture/readback and hidden-UI formatting excluded. Motion update measures diagnostic seek/uniform upload, not native production cost. CPU/GPU viewport sums may overlap. Transparent draw count unavailable. Desktop evidence is not UHD certification.",
+            "pipeline_compilations": {
+              "canvas": 0.0,
+              "draw": 0.0,
+              "mesh": 0.0,
+              "specialization": 0.0,
+              "surface": 0.0
+            },
+            "preparation_ms": 4098.28,
+            "render_cpu": {
+              "count": 12,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 1.2490000128746,
+              "median_ms": 0.95600002259016,
+              "p95_ms": 1.2490000128746,
+              "p99_ms": 1.2490000128746
+            },
+            "render_gpu": {
+              "count": 12,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 0.755999989807606,
+              "median_ms": 0.744000017642975,
+              "p95_ms": 0.755999989807606,
+              "p99_ms": 0.755999989807606
+            },
+            "resident_inventory": {
+              "materials": 116,
+              "recipe_bytes": 429556,
+              "recipe_records": 705,
+              "scope": "Resident canonical Act and shared background; recipe bytes exclude shared asset bank. Transparent slots are eligibility, not visible submissions.",
+              "shader_resources": 9,
+              "transparent_surface_slots": 8,
+              "warm_signatures": 28
+            },
+            "resource_delta": 0.0,
+            "resources": 1494.0,
+            "warmup_frames": 40,
+            "warmup_ms": 160.456
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sky repeat",
+      "complete": true,
+      "failures": [],
+      "rows": [
+        {
+          "theme": "sky_sanctuary",
+          "candidate": "A",
+          "benchmark": {
+            "counters": {
+              "draws": 161,
+              "objects": 193,
+              "primitives": 50169,
+              "shadow_draws": 451,
+              "transparent_draws": null
+            },
+            "frame": {
+              "count": 600,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 5.797,
+              "median_ms": 2.536,
+              "p95_ms": 3.82,
+              "p99_ms": 4.681
+            },
+            "motion": {
+              "animated_materials": 1,
+              "bindings": 0,
+              "candidate": "A",
+              "controllers": 1,
+              "cpu_callbacks": 1,
+              "cpu_motion_usec": 0,
+              "diagnostic_driver_callbacks": 1,
+              "error": "",
+              "moving_meshes": 180,
+              "native_cpu_callbacks": 0,
+              "systems": [
+                "sanctuary_cloud_volume"
+              ],
+              "theme": "sky_sanctuary",
+              "tier": "FULL",
+              "time": 9.98333333333333,
+              "zone": 0
+            },
+            "motion_update": {
+              "count": 600,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 0.139,
+              "median_ms": 0.042,
+              "p95_ms": 0.07,
+              "p99_ms": 0.083
+            },
+            "note": "Uncapped presented-frame timing; frozen gameplay; capture/readback and hidden-UI formatting excluded. Motion update measures diagnostic seek/uniform upload, not native production cost. CPU/GPU viewport sums may overlap. Transparent draw count unavailable. Desktop evidence is not UHD certification.",
+            "pipeline_compilations": {
+              "canvas": 0.0,
+              "draw": 0.0,
+              "mesh": 0.0,
+              "specialization": 1.0,
+              "surface": 1.0
+            },
+            "preparation_ms": 5277.995,
+            "render_cpu": {
+              "count": 40,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 1.72299997508526,
+              "median_ms": 0.972000014036894,
+              "p95_ms": 1.45499996840954,
+              "p99_ms": 1.72299997508526
+            },
+            "render_gpu": {
+              "count": 40,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 0.690000019967556,
+              "median_ms": 0.660000011324883,
+              "p95_ms": 0.686999998986721,
+              "p99_ms": 0.690000019967556
+            },
+            "resident_inventory": {
+              "materials": 79,
+              "recipe_bytes": 402826,
+              "recipe_records": 514,
+              "scope": "Resident canonical Act and shared background; recipe bytes exclude shared asset bank. Transparent slots are eligibility, not visible submissions.",
+              "shader_resources": 8,
+              "transparent_surface_slots": 8,
+              "warm_signatures": 20
+            },
+            "resource_delta": 0.0,
+            "resources": 1277.0,
+            "warmup_frames": 40,
+            "warmup_ms": 158.755
+          }
+        },
+        {
+          "theme": "sky_sanctuary",
+          "candidate": "C",
+          "benchmark": {
+            "counters": {
+              "draws": 161,
+              "objects": 193,
+              "primitives": 50169,
+              "shadow_draws": 451,
+              "transparent_draws": null
+            },
+            "frame": {
+              "count": 600,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 4.732,
+              "median_ms": 2.689,
+              "p95_ms": 4.082,
+              "p99_ms": 4.472
+            },
+            "motion": {
+              "animated_materials": 0,
+              "bindings": 0,
+              "candidate": "C",
+              "controllers": 1,
+              "cpu_callbacks": 1,
+              "cpu_motion_usec": 0,
+              "diagnostic_driver_callbacks": 1,
+              "error": "",
+              "moving_meshes": 0,
+              "native_cpu_callbacks": 0,
+              "systems": [],
+              "theme": "sky_sanctuary",
+              "tier": "FULL",
+              "time": 9.98333333333333,
+              "zone": 0
+            },
+            "motion_update": {
+              "count": 600,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 0.137,
+              "median_ms": 0.046,
+              "p95_ms": 0.073,
+              "p99_ms": 0.09
+            },
+            "note": "Uncapped presented-frame timing; frozen gameplay; capture/readback and hidden-UI formatting excluded. Motion update measures diagnostic seek/uniform upload, not native production cost. CPU/GPU viewport sums may overlap. Transparent draw count unavailable. Desktop evidence is not UHD certification.",
+            "pipeline_compilations": {
+              "canvas": 0.0,
+              "draw": 0.0,
+              "mesh": 0.0,
+              "specialization": 0.0,
+              "surface": 0.0
+            },
+            "preparation_ms": 5277.995,
+            "render_cpu": {
+              "count": 40,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 1.81500001996756,
+              "median_ms": 1.02300001308322,
+              "p95_ms": 1.5980000346899,
+              "p99_ms": 1.81500001996756
+            },
+            "render_gpu": {
+              "count": 40,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 0.67400000244379,
+              "median_ms": 0.662000000476837,
+              "p95_ms": 0.670999981462955,
+              "p99_ms": 0.67400000244379
+            },
+            "resident_inventory": {
+              "materials": 79,
+              "recipe_bytes": 402826,
+              "recipe_records": 514,
+              "scope": "Resident canonical Act and shared background; recipe bytes exclude shared asset bank. Transparent slots are eligibility, not visible submissions.",
+              "shader_resources": 8,
+              "transparent_surface_slots": 8,
+              "warm_signatures": 20
+            },
+            "resource_delta": 0.0,
+            "resources": 1277.0,
+            "warmup_frames": 40,
+            "warmup_ms": 129.353
+          }
+        },
+        {
+          "theme": "sky_sanctuary",
+          "candidate": "A",
+          "benchmark": {
+            "counters": {
+              "draws": 161,
+              "objects": 193,
+              "primitives": 50169,
+              "shadow_draws": 451,
+              "transparent_draws": null
+            },
+            "frame": {
+              "count": 600,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 4.657,
+              "median_ms": 2.481,
+              "p95_ms": 3.293,
+              "p99_ms": 4.154
+            },
+            "motion": {
+              "animated_materials": 1,
+              "bindings": 0,
+              "candidate": "A",
+              "controllers": 1,
+              "cpu_callbacks": 1,
+              "cpu_motion_usec": 0,
+              "diagnostic_driver_callbacks": 1,
+              "error": "",
+              "moving_meshes": 180,
+              "native_cpu_callbacks": 0,
+              "systems": [
+                "sanctuary_cloud_volume"
+              ],
+              "theme": "sky_sanctuary",
+              "tier": "FULL",
+              "time": 9.98333333333333,
+              "zone": 0
+            },
+            "motion_update": {
+              "count": 600,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 0.156,
+              "median_ms": 0.042,
+              "p95_ms": 0.065,
+              "p99_ms": 0.079
+            },
+            "note": "Uncapped presented-frame timing; frozen gameplay; capture/readback and hidden-UI formatting excluded. Motion update measures diagnostic seek/uniform upload, not native production cost. CPU/GPU viewport sums may overlap. Transparent draw count unavailable. Desktop evidence is not UHD certification.",
+            "pipeline_compilations": {
+              "canvas": 0.0,
+              "draw": 0.0,
+              "mesh": 0.0,
+              "specialization": 0.0,
+              "surface": 0.0
+            },
+            "preparation_ms": 5277.995,
+            "render_cpu": {
+              "count": 40,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 1.68099998682737,
+              "median_ms": 0.937999997287989,
+              "p95_ms": 1.21899999305606,
+              "p99_ms": 1.68099998682737
+            },
+            "render_gpu": {
+              "count": 40,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 0.679999999701977,
+              "median_ms": 0.660999998450279,
+              "p95_ms": 0.670999988913536,
+              "p99_ms": 0.679999999701977
+            },
+            "resident_inventory": {
+              "materials": 79,
+              "recipe_bytes": 402826,
+              "recipe_records": 514,
+              "scope": "Resident canonical Act and shared background; recipe bytes exclude shared asset bank. Transparent slots are eligibility, not visible submissions.",
+              "shader_resources": 8,
+              "transparent_surface_slots": 8,
+              "warm_signatures": 20
+            },
+            "resource_delta": 0.0,
+            "resources": 1277.0,
+            "warmup_frames": 40,
+            "warmup_ms": 129.856
+          }
+        },
+        {
+          "theme": "sky_sanctuary",
+          "candidate": "C",
+          "benchmark": {
+            "counters": {
+              "draws": 161,
+              "objects": 193,
+              "primitives": 50169,
+              "shadow_draws": 451,
+              "transparent_draws": null
+            },
+            "frame": {
+              "count": 600,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 4.305,
+              "median_ms": 2.416,
+              "p95_ms": 3.519,
+              "p99_ms": 3.964
+            },
+            "motion": {
+              "animated_materials": 0,
+              "bindings": 0,
+              "candidate": "C",
+              "controllers": 1,
+              "cpu_callbacks": 1,
+              "cpu_motion_usec": 0,
+              "diagnostic_driver_callbacks": 1,
+              "error": "",
+              "moving_meshes": 0,
+              "native_cpu_callbacks": 0,
+              "systems": [],
+              "theme": "sky_sanctuary",
+              "tier": "FULL",
+              "time": 9.98333333333333,
+              "zone": 0
+            },
+            "motion_update": {
+              "count": 600,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 0.088,
+              "median_ms": 0.04,
+              "p95_ms": 0.066,
+              "p99_ms": 0.076
+            },
+            "note": "Uncapped presented-frame timing; frozen gameplay; capture/readback and hidden-UI formatting excluded. Motion update measures diagnostic seek/uniform upload, not native production cost. CPU/GPU viewport sums may overlap. Transparent draw count unavailable. Desktop evidence is not UHD certification.",
+            "pipeline_compilations": {
+              "canvas": 0.0,
+              "draw": 0.0,
+              "mesh": 0.0,
+              "specialization": 0.0,
+              "surface": 0.0
+            },
+            "preparation_ms": 5277.995,
+            "render_cpu": {
+              "count": 40,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 1.56000000238419,
+              "median_ms": 0.927000012248755,
+              "p95_ms": 1.49500003457069,
+              "p99_ms": 1.56000000238419
+            },
+            "render_gpu": {
+              "count": 40,
+              "frames_over_100_ms": 0,
+              "frames_over_50_ms": 0,
+              "max_ms": 0.691999986767769,
+              "median_ms": 0.660999998450279,
+              "p95_ms": 0.671000003814697,
+              "p99_ms": 0.691999986767769
+            },
+            "resident_inventory": {
+              "materials": 79,
+              "recipe_bytes": 402826,
+              "recipe_records": 514,
+              "scope": "Resident canonical Act and shared background; recipe bytes exclude shared asset bank. Transparent slots are eligibility, not visible submissions.",
+              "shader_resources": 8,
+              "transparent_surface_slots": 8,
+              "warm_signatures": 20
+            },
+            "resource_delta": 0.0,
+            "resources": 1277.0,
+            "warmup_frames": 40,
+            "warmup_ms": 118.658
+          }
+        }
+      ]
+    }
+  ]
+}

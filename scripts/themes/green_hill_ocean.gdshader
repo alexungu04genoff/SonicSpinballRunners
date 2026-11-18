@@ -1,4 +1,8 @@
 shader_type spatial;
+// Process-local Theme Motion candidate; zero preserves current production.
+uniform int motion_candidate = 0;
+uniform float time_override = -1.0;
+float theme_time() { return time_override >= 0.0 ? time_override : TIME; }
 render_mode unshaded, cull_disabled;
 // One opaque plane: three broad analytic bands, no textures or extra passes.
 // Raw linear colors are converted from the Lab's sRGB picker on apply only.
@@ -10,8 +14,10 @@ varying vec3 world_position;
 void vertex() { world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
 void fragment() {
  vec2 p = world_position.xz;
- float broad = sin(p.y * 0.85 + p.x * 0.21 + TIME * 0.24);
- float ripple = sin(p.y * 2.2 - p.x * 0.34 - TIME * 0.31 + broad * 0.65);
+ // B: a broad, slowly travelling tide beneath the existing smaller ripples.
+ if (motion_candidate == 2) p.y += sin(p.x * 0.055 + theme_time() * 0.19) * 1.1;
+ float broad = sin(p.y * 0.85 + p.x * 0.21 + theme_time() * 0.24);
+ float ripple = sin(p.y * 2.2 - p.x * 0.34 - theme_time() * 0.31 + broad * 0.65);
  float wave = 0.5 + broad * 0.30 + ripple * 0.20;
  vec3 water = mix(deep_color, wave_color, wave);
  float reflection = smoothstep(0.35, 0.95, ripple) * 0.40;

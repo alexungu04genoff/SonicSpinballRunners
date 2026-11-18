@@ -243,7 +243,8 @@ func _snow(root: Node3D, center: Vector3, width: float, length: float) -> void:
  instance.multimesh = flakes
  instance.material_override = _shader(preload("res://scripts/themes/ice_snow.gdshader"))
  instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
- instance.extra_cull_margin = 6.0
+ # Source heights -5..3 wrap into [-6, 4): the full finite travel is 9 units.
+ instance.extra_cull_margin = 9.0
  root.add_child(instance)
 
 func _collect(node: Node3D, transform: Transform3D, batches: Dictionary) -> void:

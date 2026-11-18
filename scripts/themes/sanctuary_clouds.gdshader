@@ -1,4 +1,8 @@
 shader_type spatial;
+// Process-local Theme Motion candidate; zero preserves current production.
+uniform int motion_candidate = 0;
+uniform float time_override = -1.0;
+float theme_time() { return time_override >= 0.0 ? time_override : TIME; }
 // Linear palette uniforms preserve the original shader constants.
 uniform vec3 shadow_color = vec3(0.54, 0.71, 0.82);
 uniform vec3 highlight_color = vec3(0.82, 0.89, 0.93);
@@ -13,6 +17,8 @@ float noise(vec2 p) {
 }
 void fragment() {
  vec2 p = world_position.xz * 0.12;
+ // B: continuous depth-layer advection; the monumental architecture stays fixed.
+ if (motion_candidate == 2) p += vec2(theme_time() * 0.022, -theme_time() * 0.009);
  float n = noise(p) * 0.62 + noise(p * 2.1) * 0.26 + noise(p * 4.3) * 0.12;
  // Cloud troughs stay blue, never a white ground slab or a water surface.
  vec3 color = mix(shadow_color, highlight_color, smoothstep(0.18, 0.65, n));

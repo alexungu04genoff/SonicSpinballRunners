@@ -24,6 +24,11 @@ func has_warm_manifest() -> bool:
  return true
 
 func capture(node: Node, parent := -1, recursive := true) -> void:
+ if node.has_meta("theme_motion"):
+  var problem := preload("res://scripts/theme_motion/registry.gd").binding_error(node.get_meta("theme_motion"))
+  if not problem.is_empty():
+   error = problem
+   push_error(problem)
  var index := records.size()
  indices[node.get_instance_id()] = index
  var copy: Node = ClassDB.instantiate(node.get_class())

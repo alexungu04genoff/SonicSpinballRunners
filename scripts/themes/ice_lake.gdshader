@@ -1,4 +1,6 @@
 shader_type spatial;
+uniform float time_override = -1.0;
+float theme_time() { return time_override >= 0.0 ? time_override : TIME; }
 #include "res://scripts/themes/rooftop_normal.gdshaderinc"
 // Linear palette uniforms preserve the original shader constants.
 uniform vec3 base_color = vec3(0.04, 0.07, 0.13);
@@ -13,10 +15,10 @@ varying vec3 world_position;
 void vertex() { world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; }
 void fragment() {
  vec2 p = world_position.xz - center;
- float bend = sin(p.x * 0.17 + TIME * 0.075) * 1.8 + sin(p.x * 0.31 - TIME * 0.045) * 0.6;
+ float bend = sin(p.x * 0.17 + theme_time() * 0.075) * 1.8 + sin(p.x * 0.31 - theme_time() * 0.045) * 0.6;
  float band = exp(-pow((p.y + 8.0 + bend) * 0.24, 2.0));
  band += exp(-pow((p.y - 6.0 + bend * 1.4) * 0.17, 2.0)) * 0.30;
- float ripples = 0.72 + sin(p.y * 4.0 + sin(p.x * 0.6) + TIME * 0.08) * 0.16;
+ float ripples = 0.72 + sin(p.y * 4.0 + sin(p.x * 0.6) + theme_time() * 0.08) * 0.16;
  // Art-directed, distorted aurora reflection, not a screen-space reflection.
  ALBEDO = base_color;
  if (use_albedo) ALBEDO = texture(albedo_texture, p / repeat_distance).rgb * base_color / max(albedo_tint_reference, vec3(.001));

@@ -1,0 +1,4 @@
+"case","candidate","tier","median_ms","p95_ms","p99_ms","max_ms","draws","primitives","motion_ms"
+"current","C","NATIVE","2.464","2.827","3.151","4.307","174","54305","0.169"
+"clock-signature","A","SIGNATURE","2.668","3.657","4.32","4.432","174","54305","0.276"
+"static","C","STATIC","2.525","3.501","4.038","4.167","174","54305","0.176"

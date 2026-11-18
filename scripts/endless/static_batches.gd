@@ -27,6 +27,7 @@ func optimize(recipe: Resource) -> Dictionary:
  probe.free()
  for record: Dictionary in recipe.records:
   var node: Node = record.scene.instantiate()
+  if node.has_meta("theme_motion"): protected[nodes.size()] = true
   native_animation = native_animation or node is AnimationMixer or node is Skeleton3D
   var parent: int = record.parent
   var transform := Transform3D.IDENTITY if parent < 0 else transforms[parent]

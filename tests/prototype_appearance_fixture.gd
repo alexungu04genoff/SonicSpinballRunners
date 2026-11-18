@@ -13,7 +13,7 @@ var game: Node
 var error := ""
 var receipt := {}
 
-func open(tree: SceneTree, path: String, theme: String, output: String) -> bool:
+func open(tree: SceneTree, path: String, theme: String, output: String, variant_id := "default") -> bool:
  error = ""
  var source := Document.load_document(path)
  if source.document == null or theme not in Registry.IDS:
@@ -31,7 +31,7 @@ func open(tree: SceneTree, path: String, theme: String, output: String) -> bool:
  session.archive_directory = output.path_join("isolated-telemetry")
  session.configure_act_test(path)
  session.run_configuration.single_act_use_bakes = true
- session.run_configuration.atmosphere_overrides = {theme: "default"}
+ session.run_configuration.atmosphere_overrides = {theme: variant_id}
  session.run_configuration.selected_theme_ids = [theme]
  session.selected_character = "sonic"
  session.sound_enabled = false

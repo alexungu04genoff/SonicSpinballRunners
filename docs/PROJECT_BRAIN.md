@@ -1,5 +1,13 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Theme Life is a reviewable system — 2026-11-18
+
+The seven-theme motion pass keeps ordinary gameplay on Current/C. Bro added one Zone-owned motion contract, exact environmental-time scrubbing, process-local STATIC/SIGNATURE/FULL controls, explicit baked motion metadata and a canonical Prototype Motion Lab. Clocks, star signs, clouds, water and contained tank fish can now be compared without editing Acts or atmosphere Defaults. Ice gets no extra animation. Lava stays outside the pass, and Thursday's UHD package stays frozen.
+
+Candidates are promotion-ready through one registry, not silently promoted. The Lab separates ordinary gameplay framing from edge/wide diagnostic views, and preserves production Retro as the authority. Native shader time still behaves as before; diagnostic seeks use private Zone material copies. See [Theme Life](THEME_LIFE.md) for the inventory, review evidence, measured costs and remaining human/laptop decisions.
+
+Bro recommends Rooftop clocks (A), Casino rotating large stars (B) and Sky cloud-bank drift (A); keep C elsewhere. The 21 clips are ready for Alex's yes/no. The seven-theme recipes and motion checks pass. The supported baseline ends at 29/32 after refreshing one test fixture: the remaining all-eight-theme checks reject Lava's stale derived caches, which this explicitly Lava-excluded pass did not touch. All-eight-theme local play needs that separate cache refresh; Thursday's frozen package is independent.
+
 ## Editor qualification and recovery hardening — 2026-11-18
 
 The November 17 editor now has real import, persistence, native-input and rendered Prototype evidence. Four small fixes reject malformed saved terrain sources, keep exact Size and Decor scale inputs honest, and stop reflected terrain drifting outside an Act border. Old tests were aligned with documented Free snapping, half-size brushes, current pivots, groups, optional property defaults and the Play menu label; geometry and Undo checks stayed intact.

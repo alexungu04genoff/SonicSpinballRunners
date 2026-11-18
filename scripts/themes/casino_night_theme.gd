@@ -181,6 +181,7 @@ func _collect(node: Node3D, transform: Transform3D, batches: Dictionary) -> void
  for child: Node in node.get_children(): _collect(child, local, batches)
 
 func _batch_background(root: Node3D, scheduler: Node = null) -> void:
+ var preserved := preload("res://scripts/themes/motion_preserve.gd").take(root)
  var batches := {}
  for child: Node in root.get_children():
   if scheduler != null and scheduler.has_method("stream_checkpoint"): await scheduler.stream_checkpoint()
@@ -203,6 +204,7 @@ func _batch_background(root: Node3D, scheduler: Node = null) -> void:
   instance.multimesh = multimesh
   instance.material_override = data.material
   root.add_child(instance)
+ preload("res://scripts/themes/motion_preserve.gd").restore(root, preserved)
 
 func build_study(_p: Node3D, parent: Node3D, origin: Vector3) -> void:
  parent.position = origin

@@ -233,8 +233,13 @@ func clock_tower(root: Node3D) -> void:
   bezel.rotation.x = PI * 0.5
   var clock := piece(face, "cylinder", "cream", Vector3(0, 1.60, clock_depth + 0.030), Vector3(0.19, 0.018, 0.19))
   clock.rotation.x = PI * 0.5
-  bar(face, "dark", Vector3(0, 1.60, clock_depth + 0.050), Vector3(0, 1.75, clock_depth + 0.050), 0.028)
-  bar(face, "dark", Vector3(0, 1.60, clock_depth + 0.051), Vector3(0.11, 1.66, clock_depth + 0.051), 0.028)
+  for hand in 2:
+   var pivot := Node3D.new()
+   pivot.name = "MinuteHand" if hand == 0 else "HourHand"
+   pivot.position = Vector3(0, 1.60, clock_depth + 0.050 + hand * 0.001)
+   pivot.set_meta("theme_motion", {"kind":"rotate", "candidate":"A", "axis":Vector3(0, 0, -1), "amplitude":TAU, "period":48.0 if hand == 0 else 576.0, "phase":0.0})
+   face.add_child(pivot)
+   bar(pivot, "dark", Vector3.ZERO, Vector3(0, 0.15, 0) if hand == 0 else Vector3(0.11, 0.06, 0), 0.028)
  roof(root, Vector3(0, 1.82, 0), Vector3(0.82, 0.32, 0.78))
  piece(root, "cone", "dark", Vector3(0, 2.24, 0), Vector3(0.10, 0.24, 0.10))
 
@@ -248,6 +253,13 @@ func aqueduct(root: Node3D, width := 1.8) -> void:
  railing(root, width - 0.08, Vector3(0, 1.01, 0.36 if width > 2.0 else 0.17))
 
 func balloon(root: Node3D, at: Vector3, radius: float, variant: int) -> void:
+ var envelope := Node3D.new()
+ envelope.name = "FestivalBalloonMotion"
+ envelope.position = at
+ envelope.set_meta("theme_motion", {"kind":"drift", "candidate":"B", "axis":Vector3(0.8, 0.3, 0.2).normalized(), "amplitude":radius * 0.38, "period":19.0 + variant * 2.7, "phase":variant * 1.7})
+ root.add_child(envelope)
+ root = envelope
+ at = Vector3.ZERO
  # Eight colored gores form a faceted envelope; basket and ropes are visual only.
  for side in 8:
   var key := "balloon_%d_%d" % [variant % 3, side]

@@ -1,0 +1,450 @@
+{
+  "starting_sha": "ecbe1b812f0b0be11b7f3364c83e084fd0424c0a",
+  "monitor": "Secondary display; visible Godot windows at (-1900,30).",
+  "frozen_inputs": {
+    "files": 480,
+    "changed": []
+  },
+  "capture_disk_hashes": {
+    "files": 14,
+    "changed": []
+  },
+  "focused_checks": [
+    {
+      "test": "theme_motion_regression",
+      "checks": 35,
+      "failures": 0
+    },
+    {
+      "test": "theme_motion_batch_regression",
+      "checks": 8,
+      "failures": 0
+    },
+    {
+      "test": "theme_motion_shader_parity",
+      "samples": 30,
+      "failures": 0,
+      "max_pixel_channel_delta": 0
+    },
+    {
+      "test": "source_decor_parity",
+      "variants": 38,
+      "failures": 0
+    },
+    {
+      "test": "island_flicky_regression",
+      "checks": 11,
+      "failures": 0
+    },
+    {
+      "test": "theme_motion_bake_audit",
+      "files": 105,
+      "checks": 623,
+      "failures": 0
+    },
+    {
+      "test": "theme_motion_transition",
+      "checks": 435,
+      "failures": 0
+    },
+    {
+      "test": "theme_motion_endless",
+      "checks": 32,
+      "failures": 0
+    }
+  ],
+  "baseline": {
+    "unfiltered_suites": 32,
+    "initial_passed": 28,
+    "initial_failed": 4,
+    "runs": [
+      {
+        "results": [
+          "RESULT | Authored gimmicks | 93 checks | 0 failures"
+        ],
+        "suite": "authored_gimmick",
+        "timed_out": false,
+        "seconds": 35.1157038,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": true
+      },
+      {
+        "results": [
+          "RESULT | Pinball mechanics | 58 checks | 0 failures"
+        ],
+        "suite": "pinball_mechanics",
+        "timed_out": false,
+        "seconds": 14.5475635,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": true
+      },
+      {
+        "results": [
+          "RESULT | Soft retry | 62 checks | 0 failures"
+        ],
+        "suite": "soft_retry",
+        "timed_out": false,
+        "seconds": 40.1790202,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": true
+      },
+      {
+        "results": [
+          "RESULT | Ramp height and themes | 100 checks | 0 failures"
+        ],
+        "suite": "ramp_height_theme",
+        "timed_out": false,
+        "seconds": 27.4217881,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": true
+      },
+      {
+        "results": [
+          "RESULT | Theme texture coverage | 172 checks | 0 failures"
+        ],
+        "suite": "theme_texture",
+        "timed_out": false,
+        "seconds": 10.0096185,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "ENDLESS_REUSE_REGRESSION | checks=131 failures=0"
+        ],
+        "suite": "endless_reuse",
+        "timed_out": false,
+        "seconds": 5.5826371,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": true
+      },
+      {
+        "results": [
+          "RESULT | Scorecraft | 29 checks | 0 failures"
+        ],
+        "suite": "scorecraft",
+        "timed_out": false,
+        "seconds": 6.8928515,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "RESULT | Adventure Buddies | 70 checks | 0 failures"
+        ],
+        "suite": "buddy_scoring",
+        "timed_out": false,
+        "seconds": 3.4532949,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "RESULT | Enemy integration | 50 checks | 0 failures"
+        ],
+        "suite": "enemy",
+        "timed_out": false,
+        "seconds": 6.6020537,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "RESULT | Authored main game | 70 checks | 0 failures"
+        ],
+        "suite": "authored_main_game",
+        "timed_out": false,
+        "seconds": 10.5829638,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "RESULT | Traversal authoring | 36 checks | 0 failures"
+        ],
+        "suite": "traversal_authoring",
+        "timed_out": false,
+        "seconds": 268.2798946,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "RESULT | Traversal Prototype | 11 checks | 1 failures"
+        ],
+        "suite": "traversal_prototype",
+        "timed_out": false,
+        "seconds": 17.4750165,
+        "exit_code": 1,
+        "script_error": false,
+        "rendered": true
+      },
+      {
+        "results": [
+          "CONTACT RESPONSE | 208 checks | 0 failures"
+        ],
+        "suite": "flipper_contact_response",
+        "timed_out": false,
+        "seconds": 36.0397828,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "RESULT | Telemetry evidence | 30 checks | 0 failures"
+        ],
+        "suite": "telemetry_evidence",
+        "timed_out": false,
+        "seconds": 6.8985506,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "RESULT | Prototype plan | 59 checks | 0 failures"
+        ],
+        "suite": "prototype_plan",
+        "timed_out": false,
+        "seconds": 17.0850993,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "RESULT | Prototype setup | 16 checks | 1 failures"
+        ],
+        "suite": "prototype_setup",
+        "timed_out": false,
+        "seconds": 57.4783967,
+        "exit_code": 1,
+        "script_error": false,
+        "rendered": true
+      },
+      {
+        "results": [
+          "RESULT | Prototype archive | 34 checks | 0 failures"
+        ],
+        "suite": "prototype_archive",
+        "timed_out": false,
+        "seconds": 64.6635252,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": true
+      },
+      {
+        "results": [
+          "RESULT | foreground contribution | 36 checks | 0 failures"
+        ],
+        "suite": "foreground_contribution",
+        "timed_out": false,
+        "seconds": 16.5457191,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": true
+      },
+      {
+        "results": [
+          "GEOMETRY_BAKE_REGRESSION | checks=2842 failures=0"
+        ],
+        "suite": "geometry_bake",
+        "timed_out": false,
+        "seconds": 17.1642104,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "RESULT | Fresh-process reload | 6 checks | 0 failures",
+          "RESULT | Act geometry | 3461 checks | 0 failures"
+        ],
+        "suite": "act_geometry",
+        "timed_out": false,
+        "seconds": 2.261678,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "GEOMETRY_DENSITY | flower_triangles=96 checks=28 failures=0"
+        ],
+        "suite": "geometry_density",
+        "timed_out": false,
+        "seconds": 2.0854428,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "RESULT | Economy V1 integration | 44 checks | 0 failures"
+        ],
+        "suite": "economy_v1",
+        "timed_out": false,
+        "seconds": 4.6568951,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [],
+        "suite": "pinball_vocabulary",
+        "timed_out": false,
+        "seconds": 2.3554853,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "RESULT | Gimmick batch | 103 checks | 0 failures"
+        ],
+        "suite": "gimmick_batch",
+        "timed_out": false,
+        "seconds": 21.1612168,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "RESULT | Scoring flow | 31 checks | 0 failures"
+        ],
+        "suite": "scoring_flow",
+        "timed_out": false,
+        "seconds": 7.5310736,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "RESULT | Rail rings | 13 checks | 0 failures"
+        ],
+        "suite": "rail_rings",
+        "timed_out": false,
+        "seconds": 3.8380951,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "Profile regression checks: 0 failures"
+        ],
+        "suite": "profile",
+        "timed_out": false,
+        "seconds": 0.6006101,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "RESULT | Prototype budget | 57 checks | 0 failures"
+        ],
+        "suite": "prototype_budget",
+        "timed_out": false,
+        "seconds": 51.8625789,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": true
+      },
+      {
+        "results": [
+          "RESULT | Prototype run | 162 checks | 0 failures"
+        ],
+        "suite": "prototype_run",
+        "timed_out": false,
+        "seconds": 73.1799022,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": true
+      },
+      {
+        "results": [
+          "RESULT | Run telemetry | 14 checks | 0 failures"
+        ],
+        "suite": "run_telemetry",
+        "timed_out": false,
+        "seconds": 0.8544308,
+        "exit_code": 0,
+        "script_error": false,
+        "rendered": false
+      },
+      {
+        "results": [
+          "RESULT | Prototype appearance regression | 55 checks | 1 failures"
+        ],
+        "suite": "prototype_appearance",
+        "timed_out": false,
+        "seconds": 56.0298562,
+        "exit_code": 1,
+        "script_error": false,
+        "rendered": true
+      },
+      {
+        "results": [
+          "ENDLESS_BAKE_AUDIT | variants=56 checks=566 failures=8"
+        ],
+        "suite": "endless_bake_audit",
+        "timed_out": false,
+        "seconds": 28.2344157,
+        "exit_code": 1,
+        "script_error": false,
+        "rendered": false
+      }
+    ],
+    "followup": {
+      "test": "traversal_prototype",
+      "reason": "Stale test-only Green Hill traversal fixture outside the published pool. Refreshed derived fixture; restored shared theme byte-for-byte.",
+      "checks": 20,
+      "failures": 0
+    },
+    "resolved_passed": 29,
+    "remaining_failed": [
+      "prototype_setup",
+      "prototype_appearance",
+      "endless_bake_audit"
+    ],
+    "remaining_reason": "Excluded Lava Reef shared cache and seven Act caches have stale shared-pipeline fingerprints. No Lava source or cache was changed; all-eight-theme setup remains blocked pending a separately scoped refresh.",
+    "baseline_is_green": false
+  },
+  "included_appearance_followup": {
+    "scope": "Seven included themes using the existing --themes option; does not replace the unfiltered baseline failure.",
+    "checks": 62,
+    "failures": 0
+  },
+  "capture": {
+    "clips": 21,
+    "deterministic_repeat_all_true": true,
+    "failures": []
+  },
+  "performance": {
+    "final_states": 21,
+    "repeat_states": 8,
+    "optional_cases": 3,
+    "uhd620_certified": false
+  },
+  "warnings": [
+    "Prototype motion transition process printed 3 ObjectDB exit instances; Endless printed 1. Project ownership checks passed; no engine-cleanup fix is claimed.",
+    "Native production CPU update cost and a matched starting-SHA performance run were not measured. Diagnostic seek timing is labeled separately.",
+    "Transparent pass GPU time and transparent draw counts are unavailable.",
+    "Source record/material/signature before-counts were not captured; bake byte deltas and current inventory are provided."
+  ]
+}

@@ -441,6 +441,7 @@ func build_background(p: Node3D) -> void:
    if p.has_method("stream_checkpoint"): await p.stream_checkpoint()
    var puff = p.mesh_node(p.sphere(1.2 + float(j % 2) * 0.3), cloud_material, Vector3(float(j) * 1.1, float(j % 2) * 0.2, 0), cloud)
    puff.scale = Vector3(1.2, 0.58, 0.8)
+   puff.extra_cull_margin = 0.45 # Theme Motion A has a finite local X envelope.
 
 func build_study(p: Node3D, parent: Node3D, origin: Vector3) -> void:
  # A separate presentation-only diorama keeps close study clear of gameplay rails.

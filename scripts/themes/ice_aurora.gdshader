@@ -1,4 +1,6 @@
 shader_type spatial;
+uniform float time_override = -1.0;
+float theme_time() { return time_override >= 0.0 ? time_override : TIME; }
 // Linear palette uniforms preserve the original shader constants.
 uniform vec3 primary_color = vec3(0.05, 0.95, 0.32);
 uniform vec3 secondary_color = vec3(0.14, 0.52, 0.80);
@@ -10,16 +12,16 @@ uniform float strength = 0.65;
 // Retain the individual curtains' authored strength ratio.
 uniform float atmosphere_strength = 1.0;
 void vertex() {
- float wave = sin(UV.x * 13.0 + TIME * 0.075 + phase);
- VERTEX.y += wave * 1.8 + sin(UV.x * 24.0 - TIME * 0.045) * 0.6;
- VERTEX.z += sin(UV.x * 10.0 + TIME * 0.055 + phase) * 3.0;
+ float wave = sin(UV.x * 13.0 + theme_time() * 0.075 + phase);
+ VERTEX.y += wave * 1.8 + sin(UV.x * 24.0 - theme_time() * 0.045) * 0.6;
+ VERTEX.z += sin(UV.x * 10.0 + theme_time() * 0.055 + phase) * 3.0;
 }
 void fragment() {
- float edge = 0.73 + sin(UV.x * 12.0 + TIME * 0.075 + phase) * 0.07;
+ float edge = 0.73 + sin(UV.x * 12.0 + theme_time() * 0.075 + phase) * 0.07;
  float height = edge - UV.y;
  float curtain = smoothstep(-0.035, 0.035, height) * exp(-max(height, 0.0) * 6.0);
- float folds = 0.64 + 0.22 * sin(UV.x * 91.0 + sin(UV.x * 21.0 + TIME * 0.06) * 3.0);
- folds += 0.10 * sin(UV.x * 169.0 - TIME * 0.025);
+ float folds = 0.64 + 0.22 * sin(UV.x * 91.0 + sin(UV.x * 21.0 + theme_time() * 0.06) * 3.0);
+ folds += 0.10 * sin(UV.x * 169.0 - theme_time() * 0.025);
  float ends = smoothstep(0.0, 0.10, UV.x) * smoothstep(0.0, 0.10, 1.0 - UV.x);
  vec3 color = mix(primary_color, secondary_color, clamp(height * 4.0, 0.0, 1.0));
  color = mix(color, tertiary_color, smoothstep(0.24, 0.52, height));

@@ -125,7 +125,12 @@ func _finish_stage() -> void:
    completed = _attach_materials(background_visual, true)
    label = "live.atmosphere_scenery"
   3:
+   # Capture the authored rest pose before diagnostics apply a nonzero phase.
    contribution.capture(self)
+   var motion: RefCounted = game.backgrounds[plan.zone].layer.get("motion")
+   if motion != null:
+    motion.attach(visual)
+    motion.attach(background_visual, true)
    phase = 3
    label = "live.contribution_capture"
  if completed: _finish_phase += 1
