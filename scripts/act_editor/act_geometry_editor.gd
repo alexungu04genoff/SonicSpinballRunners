@@ -2977,6 +2977,10 @@ func transform_selection(factor: float, degrees: float) -> void:
 		return
 	var selection: Dictionary = canvas.object_selection()
 	var pivot: Vector2 = canvas.transform_pivot()
+	# Quick sizing keeps one piece of hardware mounted at its authored anchor.
+	# Group transforms and a deliberately placed cursor pivot keep their usual centers.
+	if canvas.pivot_mode == 0 and degrees == 0.0 and canvas.selection_count() == 1 and selection.gameplay.size() == 1:
+		pivot = document.gameplay_objects[selection.gameplay[0]].position
 	var candidate: Resource = document.copy_document()
 	SelectionTransform.apply(candidate, selection, pivot, factor, degrees)
 	var errors: PackedStringArray = candidate.validation_errors()

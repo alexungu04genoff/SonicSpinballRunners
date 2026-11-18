@@ -38,6 +38,7 @@ func shortcut(code: Key) -> void:
  await process_frame
 
 func run() -> void:
+ DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results"))
  root.size = Vector2i(1440, 1000)
  root.gui_embed_subwindows = true
  editor = EditorScene.instantiate()
@@ -186,7 +187,7 @@ func check_clipboard() -> void:
  editor.set_decor_slot(-1, slot)
  editor.set_ring_trail(-1, {"start": Vector2(180, 300), "end": Vector2(280, 320), "spacing": 25.0})
  editor._select_mode()
- var selection := {"terrain": [0], "gameplay": [0, 1, 2, 3], "decor": [0], "ring": [0]}
+ var selection := {"terrain": [0], "gameplay": [0, 1, 2, 3], "decor": [0], "ring": [0], "markers": []}
  editor.canvas.set_object_selection(selection)
  editor.canvas.grab_focus()
  var before: String = editor.document.fingerprint()

@@ -71,7 +71,7 @@ func run() -> void:
   check(started and session.game.act_score == 0 and not session.game.active.runtime.goal_ring.unlocked, "Restart reloads the saved Act with fresh score and Goal state")
   await session._close_run("test_finished")
   session._show_menu()
-  check(session.start_button.text == "Play Act" and not is_instance_valid(session.setup_menu), "Act-test menu retains a single source with theme selection")
+  check(session.start_button.text == "Play" and session.run_configuration.single_act_test and session.run_configuration.selected_act_paths.size() == 1 and not is_instance_valid(session.setup_menu), "Act-test menu retains a single source with theme selection")
  else:
   await session._close_run("test_failed")
  session.free()
