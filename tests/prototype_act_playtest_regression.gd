@@ -58,6 +58,7 @@ func run() -> void:
    await RenderingServer.frame_post_draw
    DirAccess.make_dir_recursive_absolute("res://test-results")
    root.get_texture().get_image().save_png("res://test-results/prototype-act-goal.png")
+  game.select_play_camera(TablePresentation.CameraPreset.REAL_PINBALL)
   game._observe_authored_motion(goal.center - Vector2(40, 0), goal.center + Vector2(40, 0))
   check(game.finished and session.state == "results" and session.last_summary.won and session.last_summary.acts.size() == 1, "Goal contact completes the Act through the Prototype results screen")
   var exported: Dictionary = preload("res://scripts/prototype/run_telemetry.gd").export_run(session.last_summary)
@@ -66,10 +67,25 @@ func run() -> void:
   var archived: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(session.archive_result.path))
   check(archived.telemetry_format_version == preload("res://scripts/prototype/run_telemetry.gd").FORMAT_VERSION and archived.acts[0].authored_difficulty == 4 and archived.acts[0].authored_difficulty_label == "Hard", "Automatic local archive retains the nondefault authored rating")
   check(session.best_score == 0 and session.practice_best_score == 0 and not FileAccess.file_exists(session.settings_path), "Act tests do not overwrite normal run preferences or records")
-  await session.start_run()
+  var original_seed: int = game.run_seed
+  var original_course: Array = game.course_snapshot()
+  var replay_button: Button
+  for button: Node in session.overlay_root.find_children("*", "Button", true, false):
+   if button.text == "Replay same course": replay_button = button
+  check(replay_button != null, "Editor Act Results exposes Replay same course")
+  if replay_button == null:
+   await session._close_run("test_failed")
+   session.free()
+   quit(1)
+   return
+  replay_button.pressed.emit()
+  while session.transitioning: await process_frame
   started = await wait_started()
-  check(started and session.game.act_score == 0 and not session.game.active.runtime.goal_ring.unlocked, "Restart reloads the saved Act with fresh score and Goal state")
+  check(started and session.game.act_score == 0 and not session.game.active.runtime.goal_ring.unlocked, "Replay reloads the saved Act with fresh score and Goal state")
+  check(session.game.run_seed == original_seed and session.game.course_snapshot() == original_course and session.game.practice_mode, "Replay retains the single Act, theme, seed and Practice mode")
+  check(session.game.presentation.camera_preset == TablePresentation.CameraPreset.REAL_PINBALL, "Replay keeps the chosen camera for the next attempt")
   await session._close_run("test_finished")
+  DirAccess.remove_absolute(ProjectSettings.globalize_path(session._camera_settings_path()))
   session._show_menu()
   check(session.start_button.text == "Play" and session.run_configuration.single_act_test and session.run_configuration.selected_act_paths.size() == 1 and not is_instance_valid(session.setup_menu), "Act-test menu retains a single source with theme selection")
  else:

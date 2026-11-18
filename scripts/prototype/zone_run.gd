@@ -28,6 +28,7 @@ var _planned := false
 var source_paths: Array = []
 var run_plan: Array[Dictionary] = []
 var run_configuration: RefCounted
+var replay_seed: Variant = null
 
 var hint: Label
 var player_hud: Control
@@ -104,7 +105,7 @@ func _source_paths() -> Array:
  return source_paths
 
 func _default_run_seed() -> int:
- return randi()
+ return randi() if replay_seed == null else int(replay_seed)
 
 func _pool_error(documents: Array) -> String:
  var error: String = effective_configuration().validation_error()

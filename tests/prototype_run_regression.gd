@@ -62,7 +62,7 @@ func run() -> void:
  session.sound_enabled = false
  session.practice_mode = false
  while session.setup_menu.checking: await process_frame
- press("Start run")
+ press("Play")
  check(await await_run(), "Menu starts the real streamed six-Act run")
  if not session.game.started:
   await session.return_to_menu()
@@ -210,10 +210,33 @@ func run() -> void:
  check(game.score == total, "Completed run rejects late mechanic rewards")
  var settings := ConfigFile.new()
  check(settings.load(session.settings_path) == OK and int(settings.get_value(Session.CHALLENGE_RECORDS, "score", 0)) >= 13500, "Completed two-Zone Challenge personal best is saved separately")
- press("Play again")
- check(await await_run(), "Replay starts another real run")
+ var original_course: Array = game.course_snapshot()
+ var original_seed: int = game.run_seed
+ var original_config: String = game.effective_configuration().fingerprint()
+ var original_archive: String = session.archive_result.path
+ session.run_feel.text = "First camera comparison"
+ session.run_feel.text_changed.emit()
+ press("Replay same course")
+ check(await await_run(), "Results replays the completed course")
+ check(session.game.run_seed == original_seed and session.game.course_snapshot() == original_course, "Replay restores every Act, theme, atmosphere and target in order")
+ check(session.game.character_id == "tails" and not session.game.practice_mode and session.game.effective_configuration().fingerprint() == original_config, "Replay retains the character, Challenge mode and run setup")
+ check(JSON.parse_string(FileAccess.get_file_as_string(original_archive)).run_feel == "First camera comparison", "Replay flushes feedback to the previous attempt")
  check(session.game.score == 0 and session.game.act_score == 0 and session.game.active_sequence == 0 and not session.game.exit_unlocked, "Replay clears progress and locks the first exit again")
  check(session.game.buddies.levels.is_empty() and session.game.scorecraft.award_bonuses.is_empty(), "Replay clears Buddy levels, bonuses and contribution ledgers")
+ await session.return_to_menu()
+ check(session.state == "results" and session.game == null and session.archive_result.path != original_archive and session.run_feel.text.is_empty(), "The replay archives separately with a fresh notes field")
+ press("Replay same course")
+ check(await await_run() and session.game.run_seed == original_seed and session.game.course_snapshot() == original_course, "Abandoned Results restore the same course after the old game is freed")
+ session.game.balls_remaining = 1
+ session.game._on_ball_drained()
+ check(session.state == "results" and session.last_summary.termination_reason == "out_of_balls", "The last drain opens loss Results")
+ press("Replay same course")
+ check(await await_run() and session.game.course_snapshot() == original_course and session.game.balls_remaining == Session.Run.BALLS_PER_ACT, "A loss replays the same layout with a full Ball budget")
+ await session.return_to_menu()
+ press("New run")
+ check(await await_run(), "New run starts a fresh attempt from Results")
+ var pinned := Array(OS.get_cmdline_user_args()).any(func(arg: String): return arg.begins_with("--seed="))
+ check(session.game.run_seed == original_seed if pinned else session.game.run_seed != original_seed, "New run draws its own seed unless the launch command pins one")
  session.game.toggle_pause()
  await frames()
  press("Restart run")
@@ -228,9 +251,10 @@ func run() -> void:
  await await_transition()
  check(session.state == "menu", "Leaving abandoned Results restores the menu")
  while session.setup_menu.checking: await process_frame
- press("Start run")
+ press("Play")
  await session.return_to_menu()
  check(session.state == "results" and session.game == null, "Abandoning safely cancels an unfinished startup")
+ check(not session.overlay_root.find_children("*", "Button", true, false).any(func(button: Button): return button.text == "Replay same course"), "Cancelling before play offers no unplayed course to replay")
  await session.return_to_menu()
  session.free()
  print("RESULT | Prototype run | %d checks | %d failures" % [checks, failures])

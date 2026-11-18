@@ -22,6 +22,7 @@ var practice_best_score := 0
 var practice_best_seconds := 0.0
 var settings_path := SETTINGS_PATH
 var last_summary: Dictionary = {}
+var last_run_configuration: RefCounted
 var copy_status: Label
 var available_act_paths: Array = []
 var run_configuration: RefCounted
@@ -251,9 +252,12 @@ func _show_menu() -> void:
  _action(stack, "Quit", _quit)
 
 func start_run() -> void:
- if transitioning: return
  if state == "menu" and is_instance_valid(start_button) and start_button.disabled: return
- var configuration_error: String = run_configuration.validation_error()
+ await _start_configured_run(run_configuration, selected_character, practice_mode)
+
+func _start_configured_run(configuration: RefCounted, character_id: String, practice: bool, replay_seed: Variant = null) -> void:
+ if transitioning: return
+ var configuration_error: String = configuration.validation_error()
  if not configuration_error.is_empty():
   var stack := _panel("RUN COULD NOT START", configuration_error)
   _action(stack, "Quit", _quit, true)
@@ -265,21 +269,23 @@ func start_run() -> void:
  archive_attempted = false
  archive_result = {}
  last_summary = {}
+ last_run_configuration = null
  last_export = {}
  last_json = ""
  archived_json = ""
  game = Run.new()
  game.initial_play_camera = _read_play_camera()
  game.play_camera_changed.connect(_save_play_camera)
- game.run_configuration = Run.RunPlan.Configuration.new(run_configuration.selected_act_paths)
- game.run_configuration.atmosphere_overrides = run_configuration.atmosphere_overrides.duplicate(true)
- game.run_configuration.zone_count = run_configuration.zone_count
- game.run_configuration.selected_theme_ids = run_configuration.selected_theme_ids.duplicate()
- game.run_configuration.single_act_test = run_configuration.single_act_test
- game.run_configuration.single_act_use_bakes = run_configuration.single_act_use_bakes
- game.run_configuration.atmosphere_preview = run_configuration.atmosphere_preview.duplicate(true)
- game.character_id = selected_character
- game.practice_mode = practice_mode
+ game.run_configuration = Run.RunPlan.Configuration.new(configuration.selected_act_paths)
+ game.run_configuration.atmosphere_overrides = configuration.atmosphere_overrides.duplicate(true)
+ game.run_configuration.zone_count = configuration.zone_count
+ game.run_configuration.selected_theme_ids = configuration.selected_theme_ids.duplicate()
+ game.run_configuration.single_act_test = configuration.single_act_test
+ game.run_configuration.single_act_use_bakes = configuration.single_act_use_bakes
+ game.run_configuration.atmosphere_preview = configuration.atmosphere_preview.duplicate(true)
+ game.replay_seed = replay_seed
+ game.character_id = character_id
+ game.practice_mode = practice
  game.completed.connect(_on_completed)
  game.draft_started.connect(_on_draft_started)
  add_child(game)
@@ -418,13 +424,19 @@ func _on_completed(summary: Dictionary) -> void:
  _action(stack, "Copy run data", _copy_run_data)
  copy_status = _label(stack, "", 14, Color("8fe9b1"))
  copy_status.hide()
- _action(stack, "Play again", start_run, true)
+ var run_actions := HBoxContainer.new()
+ stack.add_child(run_actions)
+ if summary.started:
+  var replay := _action(run_actions, "Replay same course", _start_configured_run.bind(last_run_configuration, summary.character, summary.practice, summary.seed), true)
+  replay.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ _action(run_actions, "New run", start_run, not summary.started).size_flags_horizontal = Control.SIZE_EXPAND_FILL
  _action(stack, "Return to menu", return_to_menu)
  _action(stack, "Quit", _quit)
 
 func _archive_run(summary: Dictionary) -> void:
  if archive_attempted: return
  archive_attempted = true
+ last_run_configuration = game.run_configuration
  last_summary = summary.duplicate(true)
  last_summary["ended_at_local"] = Time.get_datetime_string_from_system(false)
  last_export = Telemetry.export_run(last_summary)
