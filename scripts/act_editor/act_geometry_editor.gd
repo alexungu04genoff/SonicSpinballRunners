@@ -3260,6 +3260,8 @@ func _bake_current() -> void:
 		"res://scenes/act_baker.tscn", "--", "--act=" + ProjectSettings.globalize_path(current_path)])
 	if not OS.has_feature("editor"):
 		arguments = PackedStringArray(["--", "--portable-bake", "--act=" + ProjectSettings.globalize_path(current_path)])
+	var window_position := get_window().position
+	arguments = PackedStringArray(["--position", "%d,%d" % [window_position.x, window_position.y]]) + arguments
 	var process := OS.create_process(OS.get_executable_path(), arguments)
 	_set_status("Baking opened in a separate progress window." if process >= 0 else "Could not open the Act baker.")
 
@@ -3281,6 +3283,8 @@ func _play_current() -> void:
 		return
 	var arguments := PackedStringArray(["--rendering-method", "forward_plus",
 		"--rendering-driver", "vulkan"])
+	var window_position := get_window().position
+	arguments.append_array(["--position", "%d,%d" % [window_position.x, window_position.y]])
 	if OS.has_feature("editor"):
 		arguments.append_array(["--path", ProjectSettings.globalize_path("res://")])
 		arguments.append_array(["res://scenes/prototype_run.tscn", "--"])

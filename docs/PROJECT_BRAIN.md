@@ -1,5 +1,11 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Close current main before the next feature — 2026-11-18
+
+Bro reproduced the Theme Life handoff's 29/32 baseline, traced the stale Lava recipes to older shared pipeline dependencies, and refreshed Prototype and Endless through the normal baker. The final supported baseline is **32/32, 8,702 checks**. All 121 inspected recipes are fresh; both 56-variant audits pass. Production remains C for all seven Theme Life entries, with Lava outside that system. No production Act, atmosphere or artwork changed.
+
+The full Authoring Tools portable now exposes the Environmental Motion Lab, keeps its captures in the portable profile, and inherits the editor's display position when opening Play/Bake children. Native editor/play checks and the packaged all-eight-theme authority check pass. Thursday's original benchmark stays frozen; separate direct EXE launchers preserve its payload and matrix while writing only to adjacent Results. See [the closure report](CURRENT_MAIN_CLOSURE_2026_11_18.md) for provenance, retained native warnings, exact counts and downloadable release records. The older 29/32 note below is historical.
+
 ## Theme Life is a reviewable system — 2026-11-18
 
 The seven-theme motion pass keeps ordinary gameplay on Current/C. Bro added one Zone-owned motion contract, exact environmental-time scrubbing, process-local STATIC/SIGNATURE/FULL controls, explicit baked motion metadata and a canonical Prototype Motion Lab. Clocks, star signs, clouds, water and contained tank fish can now be compared without editing Acts or atmosphere Defaults. Ice gets no extra animation. Lava stays outside the pass, and Thursday's UHD package stays frozen.

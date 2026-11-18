@@ -57,6 +57,8 @@ func _ready() -> void:
    window.current_screen = screen
    window.position = DisplayServer.screen_get_position(screen) + Vector2i(20, 30)
    break
+ if ProjectSettings.get_setting("portable_tools/enabled", false):
+  output = "user://theme-motion/lab-%d" % Time.get_unix_time_from_system()
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--output="): output = argument.trim_prefix("--output=")
   if argument.begins_with("--theme="): theme_id = argument.trim_prefix("--theme=")

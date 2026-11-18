@@ -14,6 +14,11 @@ recipes, including source assets needed for fingerprint validation.
 - **Play Prototype.cmd** opens the normal run menu with bundled disk bakes.
 - **Play Endless.cmd** opens the separate streaming stress test with disk bakes.
 - **Visual Lab.cmd** opens character and presentation tuning.
+- **Environmental Motion Lab.cmd** opens the seven-theme C/A/B review over
+  bundled Prototype disk recipes. Candidates, tiers and time overrides last only
+  for this process; ordinary Prototype and Endless retain Current/C. Review
+  output goes to `user://theme-motion`, outside the embedded package. Lava Reef
+  remains on its ordinary production path and outside the candidate roster.
 - **Geometry Editor.exe** and **Atmosphere Lab.exe** retain editable workspaces.
 - **Play Prototype source.cmd** uses the bundled pool with source construction
   for diagnostics. It does not replace that pool with external edited Acts.

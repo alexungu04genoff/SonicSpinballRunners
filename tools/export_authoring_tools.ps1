@@ -97,6 +97,7 @@ if ($FullSuite) {
         'Play Prototype' = '--portable-play'
         'Play Endless' = '--portable-endless'
         'Visual Lab' = '--portable-visual'
+        'Environmental Motion Lab' = '--portable-motion'
         'Play Prototype source' = '--portable-play --no-bakes'
     }
     foreach ($name in $routes.Keys) {
