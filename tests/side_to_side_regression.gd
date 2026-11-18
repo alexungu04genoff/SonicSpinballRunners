@@ -6,7 +6,7 @@ func steps(count: int) -> void:
 
 func run() -> void:
  session = Session.new()
- session.settings_path = "user://side-to-side-test.cfg"
+ session.settings_path = "user://side-to-side-test-%d.cfg" % Time.get_ticks_usec()
  root.add_child(session)
  if not await wait_started():
   push_error("Side to Side did not start")
@@ -75,6 +75,7 @@ func run() -> void:
   if not is_zero_approx(shift): previous_step = shift
   previous_x = bumper.body.position.x
  check(seen_reverse, "Bumper reverses at the end of its patrol")
+ DirAccess.remove_absolute(ProjectSettings.globalize_path(session._camera_settings_path()))
  await session._close_run("finished")
  session.free()
  paused = false

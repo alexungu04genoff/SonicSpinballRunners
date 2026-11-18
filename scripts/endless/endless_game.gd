@@ -9,6 +9,14 @@ const Hub = preload("res://scripts/endless/mechanics_hub.gd")
 const Character = preload("res://experiments/visual_lab/sonic_presenter.gd")
 const RetroFilter = preload("res://scripts/retro/retro_filter.gd")
 const RetroControls = preload("res://scripts/retro/retro_controls.gd")
+signal play_camera_changed(preset: int)
+const PLAY_CAMERAS: Array[int] = [
+ TablePresentation.CameraPreset.DRAMATIC_PINBALL,
+ TablePresentation.CameraPreset.WIDE_PINBALL,
+ TablePresentation.CameraPreset.REAL_PINBALL,
+ TablePresentation.CameraPreset.TOP_DOWN,
+]
+var initial_play_camera := TablePresentation.CameraPreset.DRAMATIC_PINBALL
 var retro_filter: RetroFilter
 var retro_controls: CanvasLayer
 var _composite_view: SubViewport
@@ -202,7 +210,7 @@ func _build_presentation() -> void:
  presentation = StreamPresentation.new()
  presentation.ball = ball
  presentation.ring_field = ring_field
- presentation.camera_preset = TablePresentation.CameraPreset.DRAMATIC_PINBALL
+ presentation.camera_preset = initial_play_camera
  presentation.camera_settings.zoom = 1.2
  view.add_child(presentation)
  presentation.build_authored(authored_runtime, playfield.bounds, authored_document.cell_size)
@@ -689,14 +697,18 @@ func jump_tour_boundary() -> void:
 var camera_notice: Label
 var camera_notice_tween: Tween
 
+func select_play_camera(preset: int) -> void:
+ if preset not in PLAY_CAMERAS or preset == presentation.camera_preset: return
+ presentation.set_camera_preset(preset)
+ play_camera_changed.emit(preset)
+
 func _cycle_play_camera(event: InputEvent) -> bool:
  if not event is InputEventKey or not event.pressed or event.echo or event.keycode != KEY_C: return false
  if event.ctrl_pressed or event.alt_pressed or event.meta_pressed: return false
  if not started or closing or get_tree().paused or not is_instance_valid(presentation.camera): return false
- var order := [TablePresentation.CameraPreset.DRAMATIC_PINBALL, TablePresentation.CameraPreset.WIDE_PINBALL, TablePresentation.CameraPreset.REAL_PINBALL, TablePresentation.CameraPreset.TOP_DOWN]
  var direction := -1 if event.shift_pressed else 1
- var index: int = order[posmod(order.find(presentation.camera_preset) + direction, order.size())]
- presentation.set_camera_preset(index)
+ var index: int = PLAY_CAMERAS[posmod(PLAY_CAMERAS.find(presentation.camera_preset) + direction, PLAY_CAMERAS.size())]
+ select_play_camera(index)
  if not is_instance_valid(camera_notice):
   camera_notice = Label.new()
   hud.add_child(camera_notice)

@@ -35,7 +35,7 @@ Two specialist launchers remain deliberately: **Authored Act Playtest.cmd** expo
 | Special | Space | A |
 | Retry | R | Back / View |
 | Pause / resume | Enter or Escape | Menu / Start |
-| Cycle gameplay camera | C (Shift+C for previous) | — |
+| Camera preset | C / Shift+C to cycle, or choose by name in Pause | Pause → Camera |
 | Fullscreen | F11 | — |
 
 Editor Act tests use the Prototype controls above, including **X** to launch and **Enter / Escape** to pause. Endless retains **Enter** to launch, **Escape** to pause, **T** for its camera tour, **N** for a diagnostic boundary jump and **F3** for streaming statistics. **F4 / Shift+F4** control post-processing.

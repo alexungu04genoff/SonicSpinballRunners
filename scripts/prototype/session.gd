@@ -27,6 +27,7 @@ var available_act_paths: Array = []
 var run_configuration: RefCounted
 var setup_menu: VBoxContainer
 var start_button: Button
+var pause_camera_picker: OptionButton
 var archive_directory := Archive.DIRECTORY
 var archive_attempted := false
 var archive_result := {}
@@ -109,6 +110,27 @@ func _save_settings() -> void:
  settings.set_value(CHALLENGE_RECORDS, "score", best_score)
  settings.set_value(CHALLENGE_RECORDS, "seconds", best_seconds)
  if settings.save(settings_path) != OK: push_warning("Could not save prototype preferences.")
+
+func _camera_settings_path() -> String:
+ # Editor playtests remember their view separately from normal player settings.
+ return settings_path.get_basename() + "-act-camera.cfg" if run_configuration.single_act_test else settings_path
+
+func _read_play_camera() -> int:
+ var settings := ConfigFile.new()
+ var fallback := TablePresentation.CameraPreset.DRAMATIC_PINBALL
+ if settings.load(_camera_settings_path()) != OK: return fallback
+ var saved: Variant = settings.get_value("player", "camera_preset", fallback)
+ return saved if saved is int and saved in Run.PLAY_CAMERAS else fallback
+
+func _save_play_camera(preset: int) -> void:
+ var path := _camera_settings_path()
+ var settings := ConfigFile.new()
+ var error := settings.load(path)
+ if error != OK and error != ERR_FILE_NOT_FOUND:
+  push_warning("Could not read camera preferences: " + error_string(error))
+  return
+ settings.set_value("player", "camera_preset", preset)
+ if settings.save(path) != OK: push_warning("Could not save camera preference.")
 
 func _panel(title: String, subtitle: String) -> VBoxContainer:
  if is_instance_valid(overlay_root):
@@ -223,7 +245,7 @@ func _show_menu() -> void:
   setup_menu.advanced.add_child(sound)
  else: stack.add_child(sound)
  var controls_button := _action(stack, "Controls", func(): pass)
- var controls_label := _label(stack, "Q / E or LB / RB · Flippers\nArrows or stick · Steer\nX · Launch     Space / A · Special\nEnter / Esc / Menu · Pause     R / Back · Retry\nF11 · Fullscreen", 16)
+ var controls_label := _label(stack, "Q / E or LB / RB · Flippers\nArrows or stick · Steer\nX · Launch     Space / A · Special\nEnter / Esc / Menu · Pause     R / Back · Retry\nC / Shift+C · Next / previous camera\nF11 · Fullscreen", 16)
  controls_label.hide()
  controls_button.pressed.connect(func(): controls_label.visible = not controls_label.visible)
  _action(stack, "Quit", _quit)
@@ -247,6 +269,8 @@ func start_run() -> void:
  last_json = ""
  archived_json = ""
  game = Run.new()
+ game.initial_play_camera = _read_play_camera()
+ game.play_camera_changed.connect(_save_play_camera)
  game.run_configuration = Run.RunPlan.Configuration.new(run_configuration.selected_act_paths)
  game.run_configuration.atmosphere_overrides = run_configuration.atmosphere_overrides.duplicate(true)
  game.run_configuration.zone_count = run_configuration.zone_count
@@ -291,6 +315,13 @@ func _show_pause() -> void:
  state = "paused"
  var stack := _panel("PAUSED", "%s · %d points" % [game.act_title(game.active), game.score])
  _action(stack, "Resume", func(): game.toggle_pause(), true)
+ pause_camera_picker = OptionButton.new()
+ for preset: int in Run.PLAY_CAMERAS:
+  pause_camera_picker.add_item("Camera · " + TablePresentation.CAMERA_NAMES[preset], preset)
+ pause_camera_picker.select(pause_camera_picker.get_item_index(game.presentation.camera_preset))
+ pause_camera_picker.item_selected.connect(func(index: int):
+  game.select_play_camera(pause_camera_picker.get_item_id(index)))
+ stack.add_child(pause_camera_picker)
  _action(stack, "Restart run", start_run)
  _action(stack, "Return to menu", return_to_menu)
  _action(stack, "Quit", _quit)
@@ -457,6 +488,7 @@ func _process(_delta: float) -> void:
 func _input(event: InputEvent) -> void:
  if not event is InputEventKey or state not in ["playing", "paused"] or not is_instance_valid(game) or not game.started: return
  if event.keycode in [KEY_ENTER, KEY_KP_ENTER]:
+  if state == "paused" and is_instance_valid(pause_camera_picker) and pause_camera_picker.has_focus(): return
   # Consume Enter before UI accept or the shared launch binding can also fire.
   get_viewport().set_input_as_handled()
   if event.pressed and not event.echo: game.toggle_pause()
