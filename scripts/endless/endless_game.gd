@@ -574,7 +574,7 @@ func _blend_lighting(from_zone: int, to_zone: int, weight: float) -> void:
  fog.apply(presentation.camera, fog.blend(before.values, after.values, weight))
  var light: DirectionalLight3D = presentation._key_light
  light.quaternion = before.lighting.quaternion.slerp(after.lighting.quaternion, weight)
- for property: String in ["light_color", "light_energy", "light_specular", "light_angular_distance", "shadow_opacity", "shadow_bias", "shadow_normal_bias", "directional_shadow_max_distance"]:
+ for property: String in ["light_color", "light_energy", "light_specular", "light_angular_distance", "shadow_blur", "shadow_opacity", "shadow_bias", "shadow_normal_bias", "directional_shadow_max_distance"]:
   light.set(property, lerp(before.lighting[property], after.lighting[property], weight))
  for property: String in ["shadow_enabled"]:
   light.set(property, before.lighting[property] if weight < 0.5 else after.lighting[property])

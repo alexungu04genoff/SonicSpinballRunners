@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Give the atmosphere its own shadow radius — 2026-11-19
+
+Alex's UHD 620 passed the 85% / 2× presentation in motion. Full Retro helped the frozen build reach about 60 FPS steady at 2048/1. The separate single-Act Lab looked good at 4096/4 with FXAA and Medium filtering. Bro kept the Production reference and made the four FXAA/filter combinations independently measurable. The Lab now gives each atmosphere a normal shadow blur radius and a separate physical sun angle. Ring casting has a live review switch. [Evidence, matched Ring motion and laptop review](SHADOW_REVIEW.md)
+
 ## Optional Launch Tube after closure — 2026-11-18
 
 Alex asked for a player-controlled launch machine without changing old Acts. The optional Launch Tube owns a path from dock to exit and constrains the real physics ball; theme art never drives it. Weak charge rolls back, successful charge releases with materially different speed, and blocked exits return safely. Prototype keeps its existing soft retry and objectives, but a valid active-Act tube returns the ball to dock and waits for a fresh hold/release. Held-through-death input cannot relaunch. Neighboring streamed Acts never own retry; ordinary Acts keep their existing auto-launch.

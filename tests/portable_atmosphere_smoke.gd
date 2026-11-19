@@ -32,14 +32,15 @@ func run() -> void:
  check(act_path.begins_with(Workspace.act_directory()) and FileAccess.file_exists(act_path), "Lab starts with an editable external Act")
  var panel = game.lighting_controls
  if "--graphics-reload" in OS.get_cmdline_user_args():
-  check(Options.shadow_resolution() == 4096 and Options.shadow_cascades() == 2 and Options.smooth_shadows_enabled(), "Fresh portable process reloads device preferences")
+  check(Options.shadow_resolution() == 4096 and Options.shadow_cascades() == 2 and Options.ultra_filter_enabled(), "Fresh portable process reloads device preferences")
  for size: int in [8192, 2048, 4096]:
   panel.shadow_resolution.item_selected.emit(panel.shadow_resolution.get_item_index(size))
   check(Options.shadow_resolution() == size, "Portable live atlas resolution " + str(size))
  for count: int in [1, 4, 2]:
   panel.shadow_cascades.item_selected.emit(panel.shadow_cascades.get_item_index(count))
   check(game.presentation._key_light.directional_shadow_mode == Options.SHADOW_CASCADES.find(count), "Portable live cascade count " + str(count))
- panel.smooth_shadows.button_pressed = true
+ panel.ultra_filter.button_pressed = true
+ panel.fxaa.button_pressed = true
  panel.tabs.current_tab = panel.tabs.get_tab_idx_from_control(panel.tabs.get_node("Shadows"))
  var variants = panel.variants
  variants.context.selected = "default"

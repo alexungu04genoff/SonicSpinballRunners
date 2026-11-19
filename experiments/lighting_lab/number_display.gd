@@ -4,13 +4,18 @@ static func install(number: SpinBox) -> void:
  var edit := number.get_line_edit()
  edit.focus_mode = Control.FOCUS_ALL
  number.select_all_on_focus = true
+ var owner := weakref(number) as WeakRef
  var refresh := func():
-  if not is_instance_valid(number) or not is_instance_valid(edit) or edit.is_editing(): return
-  var text := "%.2f" % number.value
-  if not number.prefix.is_empty(): text = number.prefix + " " + text
-  if not number.suffix.is_empty(): text += " " + number.suffix
-  if edit.text != text: edit.text = text
- number.draw.connect(func(): refresh.call_deferred())
+  # Theme switches and Lab teardown can free the control before this idle call.
+  var spin := owner.get_ref() as SpinBox
+  if spin == null: return
+  var line := spin.get_line_edit()
+  if line.is_editing(): return
+  var text := "%.2f" % spin.value
+  if not spin.prefix.is_empty(): text = spin.prefix + " " + text
+  if not spin.suffix.is_empty(): text += " " + spin.suffix
+  if line.text != text: line.text = text
+ number.draw.connect(refresh, CONNECT_DEFERRED)
  edit.editing_toggled.connect(func(editing: bool):
   if not editing: refresh.call_deferred()
  )

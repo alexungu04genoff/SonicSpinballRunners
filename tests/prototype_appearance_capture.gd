@@ -62,7 +62,7 @@ func run() -> void:
    "msaa_3d": fixture.game.view.msaa_3d, "scale_3d": fixture.game.view.scaling_3d_scale,
    "fxaa": fixture.game.view.screen_space_aa, "retro": fixture.game.retro_filter.selected_effects.duplicate(),
    "shadow_atlas": options.shadow_resolution(), "shadow_cascades": options.shadow_cascades(),
-   "smooth_shadows": options.smooth_shadows_enabled(),
+   "ultra_filter": options.ultra_filter_enabled(),
    "project_shadow_filter": ProjectSettings.get_setting("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality")}
   receipt["image"] = theme + ".png"
   captures.append(receipt)

@@ -28,7 +28,7 @@ func run() -> void:
  DirAccess.make_dir_recursive_absolute(OUTPUT)
  Options.settings_path = "user://shadow-option-regression.cfg"
  if FileAccess.file_exists(Options.settings_path): DirAccess.remove_absolute(ProjectSettings.globalize_path(Options.settings_path))
- check(not Options.smooth_shadows_enabled(), "Ultra + FXAA is opt-in")
+ check(not Options.ultra_filter_enabled(), "Ultra + FXAA is opt-in")
  root.size = Vector2i(1280, 900)
  var game = load("res://experiments/lighting_lab/lighting_lab.tscn").instantiate()
  root.add_child(game)
@@ -37,15 +37,17 @@ func run() -> void:
  var panel = game.lighting_controls
  var baseline: Dictionary = panel.values.duplicate(true)
  var msaa: int = game.view.msaa_3d
- panel.smooth_shadows.button_pressed = true
- check(Options.smooth_shadows_enabled() and game.view.screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA, "Shadow toggle updates the live world viewport")
+ panel.ultra_filter.button_pressed = true
+ panel.fxaa.button_pressed = true
+ check(Options.ultra_filter_enabled() and game.view.screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA, "Shadow toggle updates the live world viewport")
  check(panel.values == baseline and game.view.msaa_3d == msaa, "Quality choice preserves atmosphere values and MSAA")
  var next_view := SubViewport.new()
  Options.register_view(next_view)
  check(next_view.screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA, "New gameplay/backdrop viewports inherit the option")
  var settings := ConfigFile.new()
- check(settings.load(Options.settings_path) == OK and settings.get_value("rendering", "smooth_shadows") == true, "Device option persists separately")
- panel.smooth_shadows.button_pressed = false
+ check(settings.load(Options.settings_path) == OK and settings.get_value("rendering", "ultra_filter") == true and settings.get_value("rendering", "fxaa") == true, "Device option persists separately")
+ panel.ultra_filter.button_pressed = false
+ panel.fxaa.button_pressed = false
  check(game.view.screen_space_aa == Viewport.SCREEN_SPACE_AA_DISABLED and next_view.screen_space_aa == Viewport.SCREEN_SPACE_AA_DISABLED, "Disabling restores every live viewport")
  next_view.free()
  game.view_container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

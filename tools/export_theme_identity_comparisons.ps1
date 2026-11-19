@@ -17,7 +17,7 @@ foreach ($view in @('', '-sky-edge')) {
         if (-not $manifest.complete -or $manifest.authority -ne 'Prototype') { throw "Incomplete/noncanonical manifest: $view" }
         if ((($manifest.captures.theme | Sort-Object) -join ',') -cne (($expected | Sort-Object) -join ',')) { throw "Unexpected theme set: $view" }
         foreach ($capture in $manifest.captures) {
-            if ($null -eq $capture.graphics -or $capture.graphics.msaa_3d -ne 2 -or $capture.graphics.scale_3d -ne 1 -or $capture.graphics.fxaa -ne 0 -or $capture.graphics.smooth_shadows -or $capture.graphics.shadow_atlas -ne 8192 -or $capture.graphics.shadow_cascades -ne 4) {
+            if ($null -eq $capture.graphics -or $capture.graphics.msaa_3d -ne 2 -or $capture.graphics.scale_3d -ne 1 -or $capture.graphics.fxaa -ne 0 -or $capture.graphics.ultra_filter -ne $false -or $capture.graphics.shadow_atlas -ne 8192 -or $capture.graphics.shadow_cascades -ne 4) {
                 throw 'Identity evidence requires explicit, unchanged 4x/100% and default shadow receipts.'
             }
         }

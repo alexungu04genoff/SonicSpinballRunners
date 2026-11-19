@@ -25,7 +25,7 @@ func run() -> void:
  check(Options.set_pixel_profile(8, 100) == ERR_INVALID_PARAMETER and Options.set_pixel_profile(2, 80) == ERR_INVALID_PARAMETER and Options.set_pixel_profile(2, 85, 2) == ERR_INVALID_PARAMETER and Options.pixel_profile() == original, "Invalid combinations are rejected atomically")
  var light := DirectionalLight3D.new()
  Options.register_light(light)
- var shadows := [Options.shadow_resolution(), Options.shadow_cascades(), Options.smooth_shadows_enabled(), light.directional_shadow_mode]
+ var shadows := [Options.shadow_resolution(), Options.shadow_cascades(), Options.ultra_filter_enabled(), light.directional_shadow_mode]
  for samples: int in Options.PROFILE_MSAA:
   for scale_percent: int in Options.PROFILE_SCALES:
    check(Options.set_pixel_profile(samples, scale_percent) == OK, "Supported live profile applies")
@@ -33,11 +33,11 @@ func run() -> void:
    Options.register_view(late)
    check(world.msaa_3d == {0:0, 2:1, 4:2}[samples] and late.msaa_3d == world.msaa_3d and is_equal_approx(late.scaling_3d_scale, scale_percent / 100.0), "Existing and late viewports inherit the same pixel profile")
    check(ProjectSettings.get_setting("rendering/anti_aliasing/quality/msaa_3d") == world.msaa_3d, "Pipeline preparation follows the live MSAA profile without changing visual quality")
-   check(world.size == Vector2i(673, 473) and shadows == [Options.shadow_resolution(), Options.shadow_cascades(), Options.smooth_shadows_enabled(), light.directional_shadow_mode], "Pixel switching leaves layout and all shadow choices intact")
+   check(world.size == Vector2i(673, 473) and shadows == [Options.shadow_resolution(), Options.shadow_cascades(), Options.ultra_filter_enabled(), light.directional_shadow_mode], "Pixel switching leaves layout and all shadow choices intact")
    late.free()
  check(not FileAccess.file_exists(Options.settings_path), "Profile controls never write graphics preferences")
  Options.set_pixel_profile(2, 100, 1)
- check(not Options.smooth_shadows_enabled() and (world.screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA if Options.smooth_filter_supported() else world.screen_space_aa == Viewport.SCREEN_SPACE_AA_DISABLED), "FXAA-only visual probe does not enable Ultra shadows")
+ check(not Options.ultra_filter_enabled() and (world.screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA if Options.smooth_filter_supported() else world.screen_space_aa == Viewport.SCREEN_SPACE_AA_DISABLED), "FXAA-only visual probe does not enable Ultra shadows")
  Options.set_pixel_profile(4, 100)
  var controls := preload("res://scripts/pixel_profile_controls.gd").new()
  root.add_child(controls)
@@ -86,6 +86,7 @@ func route_check(route: String) -> void:
   paused = true
   game.set_process(false)
   game.presentation.set_process(false)
+  check(not game.presentation.ring_visuals.is_empty() and game.presentation.ring_visuals.all(func(ring): return not ring.has_meta("review_cast_shadow") and ring.cast_shadow != GeometryInstance3D.SHADOW_CASTING_SETTING_OFF), "Ordinary route retains collectible shadows: " + route)
   var before := [game.view.size, game._composite_view.size, game.ball.get_instance_id(), game.ball.position, game.score, game.presentation.camera.global_transform, game.run_seed]
   for samples: int in Options.PROFILE_MSAA:
    Options.set_pixel_profile(samples, 85)

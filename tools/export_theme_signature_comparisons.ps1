@@ -24,7 +24,7 @@ foreach ($view in $views) {
         foreach ($capture in $manifest.captures) {
             if ($capture.fallback_builds -ne 0 -or $capture.disk_acts -ne 1 -or $capture.disk_themes -ne 1) { throw 'Evidence must come from production disk bakes.' }
             $g = $capture.graphics
-            if ($null -eq $g -or $g.msaa_3d -ne 2 -or $g.scale_3d -ne 1 -or $g.fxaa -ne 0 -or $g.smooth_shadows -or $g.shadow_atlas -ne 8192 -or $g.shadow_cascades -ne 4) { throw 'Unexpected production graphics settings.' }
+            if ($null -eq $g -or $g.msaa_3d -ne 2 -or $g.scale_3d -ne 1 -or $g.fxaa -ne 0 -or $g.ultra_filter -ne $false -or $g.shadow_atlas -ne 8192 -or $g.shadow_cascades -ne 4) { throw 'Unexpected production graphics settings.' }
         }
         $manifests[$side] = $manifest
     }

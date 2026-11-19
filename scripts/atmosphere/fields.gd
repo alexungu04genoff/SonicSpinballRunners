@@ -3,6 +3,7 @@ extends RefCounted
 const SHADOW_DEFAULTS := {
  "shadow_enabled": true,
  "shadow_opacity": 0.85,
+ "shadow_blur": 1.0,
  "light_angular_distance": 0.0,
  "shadow_bias": 0.02,
  "shadow_normal_bias": 0.55,
@@ -56,7 +57,8 @@ const GROUPS := {
  "Shadows": [
   ["Shadows enabled", "sun/shadow_enabled", "bool"],
   ["Opacity", "sun/shadow_opacity", "number", 0.0, 1.0, 0.01],
-  ["Softness (Forward+)", "sun/light_angular_distance", "number", 0.0, 5.0, 0.05],
+  ["Shadow blur", "sun/shadow_blur", "number", 0.5, 2.0, 0.05],
+  ["Sun angle ° (PCSS, costly)", "sun/light_angular_distance", "number", 0.0, 5.0, 0.05],
   ["Depth bias", "sun/shadow_bias", "number", 0.0, 2.0, 0.01],
   ["Normal bias", "sun/shadow_normal_bias", "number", 0.0, 8.0, 0.05],
   ["Shadow distance", "sun/directional_shadow_max_distance", "number", 10.0, 500.0, 1.0],

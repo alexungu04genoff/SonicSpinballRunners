@@ -57,7 +57,7 @@ func run() -> void:
  if profile_cascades in [1, 2, 4]:
   var options := preload("res://scripts/rendering_options.gd")
   options.shadow_resolution() # Load existing device settings before an unsaved probe override.
-  options._shadow_cascades = profile_cascades
+  options.update_quality({"directional_shadow_cascades": profile_cascades}, false)
  if DisplayServer.get_name() == "headless":
   push_error("Rendering measurements require a graphical renderer.")
   quit(1)
@@ -216,7 +216,7 @@ func run() -> void:
   "visual_pairs": visual_pairs,
   "shadow_resolution": preload("res://scripts/rendering_options.gd").shadow_resolution(),
   "shadow_cascades": preload("res://scripts/rendering_options.gd").shadow_cascades(),
-  "smooth_shadows": preload("res://scripts/rendering_options.gd").smooth_shadows_enabled(),
+  "ultra_filter": preload("res://scripts/rendering_options.gd").ultra_filter_enabled(),
   "theme": game.theme_id if mode == "act" else game.active.plan.theme,
   "hardware_batching": HardwareBatch.enabled if mode == "act" else "baked",
   "shadow_batching": HardwareBatch.shadow_batch_enabled if mode == "act" else "baked",

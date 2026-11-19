@@ -18,7 +18,7 @@ func run() -> void:
  var panel = game.lighting_controls
  panel.variants.context.selected = "draft"
  panel.reset_values()
- panel.tabs.current_tab = 4
+ panel.tabs.current_tab = panel.tabs.get_tab_idx_from_control(panel.tabs.get_node("Hue"))
  var picker = panel.color_range_picker
  var retro: Array = game.retro_filter.selected_effects.duplicate()
  game.retro_filter.set_effects([])
@@ -105,7 +105,7 @@ func type_text(text: String) -> void:
  for character: String in text: await press_key(character.to_upper().unicode_at(0), character.unicode_at(0))
 
 func check_text_entry(game: Node, panel: CanvasLayer) -> void:
- panel.tabs.current_tab = 0
+ panel.tabs.current_tab = panel.tabs.get_tab_idx_from_control(panel.tabs.get_node("Variants"))
  panel.variants.create(false)
  await frames(3)
  var follow: bool = game.presentation.camera_follow_enabled
@@ -116,7 +116,7 @@ func check_text_entry(game: Node, panel: CanvasLayer) -> void:
  panel.variants.title.release_focus()
  for fullscreen in [false, true]:
   if fullscreen: game.toggle_fullscreen()
-  panel.tabs.current_tab = 1
+  panel.tabs.current_tab = panel.tabs.get_tab_idx_from_control(panel.tabs.get_node("Light"))
   await frames(3)
   var number: SpinBox = panel.widgets["env/tonemap_exposure"]
   var edit := number.get_line_edit()
@@ -138,7 +138,7 @@ func check_text_entry(game: Node, panel: CanvasLayer) -> void:
   check(is_equal_approx(panel.values["env/tonemap_exposure"], float(typed)), "Typed number applies on Enter in fullscreen=%s" % fullscreen)
   check(edit.text == typed, "Numeric display has two decimals")
  if game.player_view: game.toggle_fullscreen()
- panel.tabs.current_tab = 5
+ panel.tabs.current_tab = panel.tabs.get_tab_idx_from_control(panel.tabs.get_node("Glow & Fog"))
  panel.set_value("env/fog_density", 0.0065)
  await frames(3)
  var density: SpinBox = panel.widgets["env/fog_density"]

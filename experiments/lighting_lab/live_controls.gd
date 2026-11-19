@@ -25,7 +25,13 @@ var vsync: CheckButton
 var shadow_resolution: OptionButton
 var shadow_cascades: OptionButton
 var shadow_quality_status: Label
-var smooth_shadows: CheckButton
+const Review = preload("res://scripts/diagnostics/shadow_review.gd")
+var review := "--shadow-review" in OS.get_cmdline_user_args()
+var review_rings: CheckButton
+var ultra_filter: CheckButton
+var fxaa: CheckButton
+var msaa: OptionButton
+var native_scale: OptionButton
 var performance_label: Label
 var fps_overlay: Label
 var tabs: TabContainer
@@ -61,8 +67,14 @@ func install(owner_game: Node) -> void:
  renderer = RenderingServer.get_current_rendering_method()
  var error := saved.load(settings_path)
  if error not in [OK, ERR_FILE_NOT_FOUND]: push_warning("Cannot load lighting lab presets: " + error_string(error))
+ if review:
+  Review.position_review_window(get_window())
+  RenderingOptions.update_quality(Review.profile("quality"), false)
+  game.retro_filter.set_effects(game.retro_filter.settings.default_effects)
+  get_tree().paused = false
  _build_ui()
  bind_theme()
+ if review: tabs.current_tab = tabs.get_tab_idx_from_control(tabs.get_node("Shadows"))
  game.retro_filter.preset_changed.connect(func(_index: int): retro.set_pressed_no_signal(not game.retro_filter.selected_effects.is_empty()))
 
 func _build_ui() -> void:
@@ -187,6 +199,7 @@ func _build_ui() -> void:
    controls.add_child(scenery)
    scenery.install(self)
   if group == "Shadows":
+   if review: _build_review_controls(controls)
    var appearance_heading := Label.new()
    appearance_heading.text = "SHADOW APPEARANCE"
    controls.add_child(appearance_heading)
@@ -254,28 +267,19 @@ func _build_ui() -> void:
 func _build_device_shadow_controls(controls: VBoxContainer) -> void:
  controls.add_child(HSeparator.new())
  var heading := Label.new()
- heading.text = "DEVICE SHADOW QUALITY"
+ heading.text = "DEVICE QUALITY"
  controls.add_child(heading)
  var note := Label.new()
- note.text = "Device quality is saved for this machine and does not belong to Atmosphere variants. Changes apply live. Turn VSync off above to compare uncapped FPS."
+ note.text = "Review settings last for this session." if review else "Saved on this machine. Applies to the Lab, Prototype and Endless."
  note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  note.add_theme_font_size_override("font_size", 12)
  controls.add_child(note)
- shadow_resolution = _device_choice(controls, "Resolution", RenderingOptions.SHADOW_RESOLUTIONS)
- shadow_resolution.item_selected.connect(func(index: int):
-  _device_shadow_changed(RenderingOptions.set_shadow_resolution(shadow_resolution.get_item_id(index)))
- )
- shadow_cascades = _device_choice(controls, "Cascades", RenderingOptions.SHADOW_CASCADES)
- shadow_cascades.item_selected.connect(func(index: int):
-  _device_shadow_changed(RenderingOptions.set_shadow_cascades(shadow_cascades.get_item_id(index)))
- )
- smooth_shadows = CheckButton.new()
- smooth_shadows.text = "Smooth shadows · Ultra + FXAA"
- smooth_shadows.disabled = not RenderingOptions.smooth_filter_supported()
- smooth_shadows.tooltip_text = "Device-local preference shared with gameplay. Ultra filtering and FXAA require Forward+ or Mobile; unavailable in Compatibility."
- smooth_shadows.focus_mode = Control.FOCUS_NONE
- smooth_shadows.toggled.connect(func(enabled: bool): _device_shadow_changed(RenderingOptions.set_smooth_shadows(enabled)))
- controls.add_child(smooth_shadows)
+ shadow_resolution = _device_choice(controls, "Shadow atlas (px)", RenderingOptions.SHADOW_RESOLUTIONS, "directional_shadow_resolution")
+ shadow_cascades = _device_choice(controls, "Cascades", RenderingOptions.SHADOW_CASCADES, "directional_shadow_cascades")
+ ultra_filter = _device_toggle(controls, "Ultra shadow filter", "ultra_filter")
+ fxaa = _device_toggle(controls, "FXAA", "fxaa")
+ msaa = _device_choice(controls, "MSAA samples", RenderingOptions.PROFILE_MSAA, "msaa")
+ native_scale = _device_choice(controls, "Native 3D scale (%)", RenderingOptions.PROFILE_SCALES, "scale_percent")
  shadow_quality_status = Label.new()
  shadow_quality_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  shadow_quality_status.add_theme_font_size_override("font_size", 12)
@@ -283,7 +287,28 @@ func _build_device_shadow_controls(controls: VBoxContainer) -> void:
  controls.add_child(shadow_quality_status)
  _sync_device_shadow_controls()
 
-func _device_choice(parent: Node, title: String, choices: Array) -> OptionButton:
+func _build_review_controls(parent: Node) -> void:
+ var row := HBoxContainer.new()
+ parent.add_child(row)
+ for entry: Array in [["A · Production", "production"], ["B · 4096", "quality"], ["C · 2048", "performance"]]:
+  var id: String = entry[1]
+  _button(row, entry[0], func(): _change_device(Review.profile(id)))
+ review_rings = CheckButton.new()
+ review_rings.text = "Ring shadows (review only)"
+ review_rings.button_pressed = true
+ review_rings.toggled.connect(func(enabled: bool): Review.show_ring_shadows(game.presentation.ring_visuals, enabled))
+ parent.add_child(review_rings)
+
+func _device_toggle(parent: Node, title: String, key: String) -> CheckButton:
+ var toggle := CheckButton.new()
+ toggle.text = title
+ toggle.focus_mode = Control.FOCUS_NONE
+ toggle.disabled = not RenderingOptions.smooth_filter_supported()
+ toggle.toggled.connect(func(enabled: bool): _change_device({key: enabled}))
+ parent.add_child(toggle)
+ return toggle
+
+func _device_choice(parent: Node, title: String, choices: Array, key: String) -> OptionButton:
  var row := HBoxContainer.new()
  parent.add_child(row)
  var label := Label.new()
@@ -294,23 +319,32 @@ func _device_choice(parent: Node, title: String, choices: Array) -> OptionButton
  choice.focus_mode = Control.FOCUS_NONE
  choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  for value: int in choices: choice.add_item(str(value), value)
+ choice.item_selected.connect(func(index: int): _change_device({key: choice.get_item_id(index)}))
  row.add_child(choice)
  return choice
 
-func _device_shadow_changed(error: Error) -> void:
+func _change_device(changes: Dictionary) -> void:
+ var error := RenderingOptions.update_quality(changes, not review)
  _sync_device_shadow_controls()
- message.text = "Device graphics saved; atmosphere unchanged." if error == OK else "Cannot save graphics setting: " + error_string(error)
+ message.text = ("Review quality applied." if review else "Device quality saved.") if error == OK else "Cannot apply device quality: " + error_string(error)
 
 func _sync_device_shadow_controls() -> void:
  var size := RenderingOptions.shadow_resolution()
  if shadow_resolution.get_item_index(size) < 0: shadow_resolution.add_item("%d (project default)" % size, size)
  shadow_resolution.select(shadow_resolution.get_item_index(size))
  shadow_cascades.select(shadow_cascades.get_item_index(RenderingOptions.shadow_cascades()))
- smooth_shadows.set_pressed_no_signal(RenderingOptions.smooth_shadows_enabled())
- var quality := "Ultra + FXAA"
- if not RenderingOptions.smooth_shadows_enabled(): quality = "Project filter / AA defaults"
- if not RenderingOptions.smooth_filter_supported(): quality = "Ultra / FXAA unavailable on this renderer\nSaved smooth preference: " + ("On" if RenderingOptions.smooth_shadows_enabled() else "Off")
- shadow_quality_status.text = "%d px · %d cascades\n%s" % [size, RenderingOptions.shadow_cascades(), quality]
+ var settings := RenderingOptions.quality()
+ ultra_filter.set_pressed_no_signal(settings.ultra_filter)
+ fxaa.set_pressed_no_signal(settings.fxaa)
+ msaa.select(msaa.get_item_index(settings.msaa))
+ native_scale.select(native_scale.get_item_index(settings.scale_percent))
+ var view: Viewport = game.view
+ var filter := RenderingOptions.filter_quality()
+ var filter_name: String = ["Hard", "Very low", "Low", "Medium", "High", "Ultra"][filter]
+ if not RenderingOptions.smooth_filter_supported(): filter_name = "Unavailable"
+ shadow_quality_status.text = "%d px · %d cascades · %s / %s\nFilter %s · FXAA %s · MSAA %d× · 3D %d%%" % [
+  size, [1, 2, 4][game.presentation._key_light.directional_shadow_mode], renderer, RenderingServer.get_current_rendering_driver_name(),
+  filter_name, "On" if view.screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA else "Off", [0, 2, 4, 8][view.msaa_3d], roundi(view.scaling_3d_scale * 100)]
  if DisplayServer.get_name() == "headless": shadow_quality_status.text += "\nHeadless: no rendered shadow comparison."
 
 func _button(parent: Node, title: String, callback: Callable) -> Button:
@@ -341,7 +375,7 @@ func _field(parent: Node, spec: Array) -> void:
    number.custom_arrow_step = spec[5]
    number.allow_greater = true
    number.allow_lesser = true
-   if key.begins_with("directional_fog/") or key.begins_with("env/fog_") or key.begins_with("env/glow_") or key == "surface_halo_spread":
+   if key.begins_with("directional_fog/") or key.begins_with("env/fog_") or key.begins_with("env/glow_") or key in ["surface_halo_spread", "sun/shadow_blur"]:
     number.allow_greater = false
     number.allow_lesser = false
    number.value_changed.connect(func(value: float): set_value(key, value))
@@ -377,13 +411,14 @@ func _field(parent: Node, spec: Array) -> void:
  field.focus_mode = Control.FOCUS_NONE
  row.add_child(field)
  widgets[key] = field
+ if key == "sun/shadow_blur": field.tooltip_text = "Scales the normal shadow filter radius. 1.00 is the engine baseline."
  if key == "surface_halo_spread":
   field.tooltip_text = "Scales the existing floor/edge material halo radius. 1.00 preserves the authored width. This is separate from screen-space Glow."
  if key == "sun/light_angular_distance" and renderer != "forward_plus":
   (field as SpinBox).editable = false
   field.tooltip_text = "Directional soft shadows require Forward+."
  elif key == "sun/light_angular_distance":
-  field.tooltip_text = "Sun angular size in degrees. Higher values widen contact shadows and can expose shadow-filter dithering. 0.00 disables contact-hardening softness."
+  field.tooltip_text = "Physical penumbra (Forward+). Sun angular size in degrees. Higher values widen contact shadows and can expose shadow-filter dithering. 0.00 disables contact-hardening softness."
  if spec[2] == "number":
   var slider := HSlider.new()
   slider.scrollable = false
@@ -413,6 +448,8 @@ func bind_theme() -> void:
  if game.theme_id == "rooftop_run" and is_instance_valid(rooftop): rooftop.apply_lighting()
  Fields.apply_shadow_defaults(light)
  RenderingOptions.register_light(light)
+ if review: Review.show_ring_shadows(game.presentation.ring_visuals, review_rings.button_pressed)
+ _sync_device_shadow_controls()
  _bind_sky(environment)
  emission.collect(game.presentation, game.theme_id, sky_material)
  _bind_palette()
@@ -436,6 +473,9 @@ func bind_theme() -> void:
  scenery.bind_context()
  variants.syncing = false
  variants.bind_theme()
+ if review and variants.context.selected == "draft":
+  variants.context.selected = "default"
+  variants.load_selected()
 
 func _scenery_tab() -> bool:
  return tabs.get_current_tab_control().name == "Scenery"

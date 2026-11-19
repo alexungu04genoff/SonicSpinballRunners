@@ -35,7 +35,7 @@ func run() -> void:
  DirAccess.make_dir_recursive_absolute(output.get_base_dir())
  Options.settings_path = output.get_basename() + "-isolated-graphics.cfg"
  verify(not FileAccess.file_exists(Options.settings_path), "Use a fresh output path; never inherit a previous graphics probe")
- verify(Options.shadow_resolution() == 8192 and Options.shadow_cascades() == 4 and not Options.smooth_shadows_enabled(), "Primary attribution uses unchanged production shadows with Smooth/FXAA off")
+ verify(Options.shadow_resolution() == 8192 and Options.shadow_cascades() == 4 and not Options.ultra_filter_enabled(), "Primary attribution uses unchanged production shadows with Smooth/FXAA off")
  session = Session.new()
  session.settings_path = output.get_basename() + "-isolated-session.cfg"
  session.sound_enabled = false
@@ -116,7 +116,7 @@ func run() -> void:
  var report := {"workload": workload, "metadata": Report.metadata(), "stationary": true,
   "invariants": identity, "phases": phases, "visual_only": visual_frames,
   "shadow_resolution": Options.shadow_resolution(), "shadow_cascades": Options.shadow_cascades(),
-  "smooth_shadows": Options.smooth_shadows_enabled(), "fallback_builds": game.library.fallback_builds,
+  "ultra_filter": Options.ultra_filter_enabled(), "fallback_builds": game.library.fallback_builds,
   "disk_acts": game.library.visual_bake_hits, "disk_themes": game.library.theme_bake_hits,
   "course": game.course_snapshot(), "failures": failures,
   "clean_viewports_final": viewport_state(),

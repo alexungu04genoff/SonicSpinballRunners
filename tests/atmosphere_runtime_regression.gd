@@ -5,7 +5,7 @@ class FixtureGame extends "res://scripts/endless/endless_game.gd":
   var entries: Array[Dictionary] = super._next_planned_zone(documents)
   for entry: Dictionary in entries:
    entry.theme = "ice_cap"
-   entry.atmosphere = {"id": "default" if entry.zone % 2 == 0 else "test_dusk", "values": {} if entry.zone % 2 == 0 else {"hue/terrain": 0.3, "hue/background": -0.2, "sun/light_color": Color("f4a8dc"), "env/ambient_light_color": Color("6c88af")}}
+   entry.atmosphere = {"id": "default" if entry.zone % 2 == 0 else "test_dusk", "values": {} if entry.zone % 2 == 0 else {"sun/shadow_blur": 1.8, "hue/terrain": 0.3, "hue/background": -0.2, "sun/light_color": Color("f4a8dc"), "env/ambient_light_color": Color("6c88af")}}
   return entries
 
 var checks := 0
@@ -41,6 +41,8 @@ func run() -> void:
  check(before.environment != after.environment and before.bindings != after.bindings, "Per-Zone ownership")
  check(before.bindings.materials.size() > 0 and after.bindings.materials.size() > 0, "Both Zones bind baked materials")
  var common := 0
+ var terrain_groups := {}
+ var other_groups := {}
  for source: Material in before.bindings.materials:
   if not after.bindings.materials.has(source): continue
   var a: Material = before.bindings.materials[source]
@@ -50,9 +52,16 @@ func run() -> void:
   check(a != b, "Shared recipe sources have distinct Zone copies")
   if source.has_meta("atmosphere_hue") and a is ShaderMaterial:
    check(is_zero_approx(float(a.get_shader_parameter("atmosphere_hue"))), "Default Zone remains authored")
-   check(is_equal_approx(float(b.get_shader_parameter("atmosphere_hue")), 0.3), "Next Zone owns shifted terrain")
+   var group: String = source.get_meta("atmosphere_hue")
+   if group.begins_with("terrain_"):
+    terrain_groups[group] = true
+    check(is_equal_approx(float(b.get_shader_parameter("atmosphere_hue")), 0.3), "Next Zone owns shifted " + group)
+   else:
+    other_groups[group] = true
+    check(is_zero_approx(float(b.get_shader_parameter("atmosphere_hue"))), "Terrain edit preserves " + group)
    check(source.get_shader_parameter("atmosphere_hue") == null or is_zero_approx(float(source.get_shader_parameter("atmosphere_hue"))), "Recipe material remains immutable")
  check(common > 0, "Ownership test exercises shared source materials")
+ check(terrain_groups.has("terrain_ground") and terrain_groups.has("terrain_walls") and other_groups.has("ramps") and other_groups.has("foliage"), "Fixture exercises both targeted terrain and separately colored surfaces")
  var source_count: int = before.bindings.materials.size()
  var base: Dictionary = before.values.duplicate(true)
  var strong := {"hue/terrain": 0.3, "saturation/terrain": 1.6, "hue/background": -0.2, "hue/neon": 0.35}
@@ -73,6 +82,7 @@ func run() -> void:
  game._update_backgrounds()
  preparation.append({"transition_apply_cpu_ms": (Time.get_ticks_usec() - timer) / 1000.0})
  check(game.background_blend > 0.45 and game.background_blend < 0.55, "Distance-driven crossfade between variants")
+ check(is_equal_approx(game.presentation._key_light.shadow_blur, lerpf(1.0, 1.8, game.background_blend)) and is_zero_approx(game.presentation._key_light.light_angular_distance), "Foreground blends shadow blur independently of PCSS")
  check(game.presentation._key_light.light_color.is_equal_approx(before.lighting.light_color.lerp(after.lighting.light_color, game.background_blend)), "Foreground light blends selected variants")
  await frames(90)
  results.append(await sample("ice_cap", "transition", 4))

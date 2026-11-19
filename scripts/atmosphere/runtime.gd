@@ -6,7 +6,7 @@ const Bindings := preload("res://scripts/atmosphere/material_bindings.gd")
 var bindings := Bindings.new()
 var values := {}
 var lighting := {}
-const LIGHT_FIELDS := ["light_color", "light_energy", "light_specular", "light_angular_distance", "shadow_opacity", "shadow_bias", "shadow_normal_bias", "directional_shadow_max_distance", "shadow_enabled"]
+const LIGHT_FIELDS := ["light_color", "light_energy", "light_specular", "light_angular_distance", "shadow_blur", "shadow_opacity", "shadow_bias", "shadow_normal_bias", "directional_shadow_max_distance", "shadow_enabled"]
 var environment: Environment
 var sun: DirectionalLight3D
 

@@ -215,7 +215,7 @@ static func shadow_reaches(box: AABB, light: DirectionalLight3D, receiver_floor:
  var aspect_guard := maxf(1.0, viewport_size.x / maxf(1.0, viewport_size.y))
  var depth := maxf(maxf(camera.far, camera.size), light.directional_shadow_max_distance) * aspect_guard
  var atlas := float(preload("res://scripts/rendering_options.gd").shadow_resolution())
- var bias_guard := depth * 8.0 / atlas * (absf(light.shadow_normal_bias) + absf(light.shadow_bias) + 1.0)
+ var bias_guard := depth * 8.0 / atlas * (absf(light.shadow_normal_bias) + absf(light.shadow_bias) + maxf(1.0, light.shadow_blur))
  var padding := distance * spread * (1.0 + 1.0 / -direction.y) + bias_guard + GUARD
  # Test the swept convex volume directly. Its world AABB invents high floating
  # receivers at the far end of a downward ray and keeps distant Acts needlessly.

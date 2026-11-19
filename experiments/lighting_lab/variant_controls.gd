@@ -127,7 +127,10 @@ func load_selected() -> void:
  panel.values = panel.originals.duplicate(true)
  var stored: Dictionary = panel.drafts.get(panel.preset_key, panel.saved.get_value(panel.preset_key, "values", {})) if context.selected == "draft" else selected_record().values
  for key: String in stored:
-  if panel.values.has(key): panel.values[key] = stored[key]
+  # A validated variant may color hardware absent from the preview Act.
+  # Keep those palette entries when saving unrelated edits such as shadow blur.
+  if panel.values.has(key) or (context.selected != "draft" and key.begins_with("palette/")):
+   panel.values[key] = stored[key]
  panel.compare.set_pressed_no_signal(false)
  panel._sync_widgets()
  panel.apply_values()

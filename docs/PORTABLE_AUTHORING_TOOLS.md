@@ -72,12 +72,7 @@ Use **Load Act** to inspect another saved level, or **Reload Act** after editing
 it in Geometry Editor. Theme selection, lighting, sky, palette, selective hue,
 glow, fog and scenery controls are included.
 
-For the work-laptop shadow experiment, open **Shadows** and scroll to **Device
-Shadow Quality**. Change **Resolution** (2048 / 4096 / 8192), **Cascades**
-(1 / 2 / 4), and **Smooth shadows · Ultra + FXAA** independently, without a
-restart. Turn **VSync** off to compare uncapped FPS. The active choices appear
-below the controls; no-preference defaults remain 8192 / 4 with project filtering.
-Try 8192/4, 4096/4, 4096/2, 2048/2 and 4096/1 with the same view and atmosphere.
+For the current work-laptop shadow experiment, use the dedicated **Shadow Review.cmd** bundle. Its live Shadows tab includes the three reference profiles, independent FXAA and Ultra settings and a Ring caster comparison. [Review controls](DEVICE_SHADOW_QUALITY.md)
 
 Device graphics save immediately to `graphics_settings.cfg` in
 `%APPDATA%\Godot\app_userdata\Sonic Spinball Authoring Tools`, independently of
@@ -114,10 +109,9 @@ For the separate pixel-cost experiment, use **Compare Prototype pixels.cmd**.
 In the running Prototype, **F6** cycles MSAA 4× / Off / 2× and **F7** cycles native
 3D scale 100% / 75% / 85%. The overlay shows both current values. These choices
 last only for that process and never save to device preferences or Atmospheres.
-Ordinary launches remain 4× / 100%. Keep scale at 100% when comparing MSAA, and
+Fresh profiles use 4× / 100%. Keep scale at 100% when comparing MSAA, and
 MSAA at 4× when comparing scale. Use the same camera/Act and wait after each switch.
-Keep shadow resolution, cascades, Retro and atmosphere fixed; disable Smooth
-Shadows before primary MSAA comparisons because it also enables FXAA. Existing
+Keep shadow resolution, cascades, directional filter, FXAA, Retro and atmosphere fixed for the MSAA comparison. Existing
 device shadow preferences still apply. HUD/text resolution is unchanged.
 The developer keys apply to Prototype/Endless only; the Lab retains its F6 inspector
 shortcut. Desktop findings and native comparison paths are in `docs/PIXEL_COST_AUDIT.md`

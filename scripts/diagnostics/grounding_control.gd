@@ -22,8 +22,8 @@ var proxy := Proxy.new()
 var label: Label
 var production_light := {}
 var production_retro: Array = []
-var saved_pixel := {}
-var saved_shadow := {}
+const Review = preload("res://scripts/diagnostics/shadow_review.gd")
+var saved_quality := {}
 var overlays: Array[MeshInstance3D] = []
 var _known_owners := ""
 var _last_zone := -99
@@ -34,8 +34,7 @@ func configure(owner_game: Node, defaults: Dictionary = {}) -> void:
  layer = 120
  production_retro = game.retro_filter.settings.default_effects.duplicate()
  snapshot_light()
- saved_pixel = defaults.get("pixel", Options.pixel_profile().duplicate())
- saved_shadow = defaults.get("shadow", {"size": Options.shadow_resolution(), "cascades": Options.shadow_cascades(), "smooth": Options.smooth_shadows_enabled()})
+ saved_quality = Options.quality() if defaults.is_empty() else defaults.duplicate()
  label = Label.new()
  label.position = Vector2(12, 105)
  label.add_theme_font_size_override("font_size", 15)
@@ -96,26 +95,23 @@ static func direction_basis(index: int, camera: Camera3D, production_pitch: floa
 
 func set_quality(profile: String) -> void:
  quality = profile
- apply_quality(profile, {"pixel": saved_pixel, "shadow": saved_shadow})
- for light: DirectionalLight3D in _lights(): Options._apply_light(light)
+ apply_quality(profile, saved_quality)
  game.retro_filter.set_effects([] if profile == "balanced-no-retro" else ([2] if profile == "reduced-retro" else production_retro))
  refresh_label()
 
 static func apply_quality(profile: String, defaults: Dictionary) -> void:
- var saved_shadow: Dictionary = defaults.shadow
- var saved_pixel: Dictionary = defaults.pixel
- var production := profile == "production"
- Options._shadow_resolution = saved_shadow.size if production else 2048
- Options._shadow_cascades = saved_shadow.cascades if production else 1
- Options._smooth_shadows = saved_shadow.smooth if production else false
- Options._apply_resolution()
- Options._apply_filter()
- for reference: WeakRef in Options._lights:
-  var light := reference.get_ref() as DirectionalLight3D
-  if is_instance_valid(light): Options._apply_light(light)
- var low := profile.begins_with("balanced") or profile == "reduced-retro"
- Options.set_pixel_profile(2 if low else saved_pixel.msaa, 85 if low else saved_pixel.scale_percent, saved_pixel.fxaa_override)
- ProjectSettings.set_setting("rendering/anti_aliasing/quality/msaa_3d", {0: 0, 2: 1, 4: 2}[Options.pixel_profile().msaa])
+ var settings := defaults.duplicate()
+ if profile in Review.CASES and profile != "production":
+  settings = Review.profile(profile)
+ elif profile != "production":
+  settings.directional_shadow_resolution = 2048
+  settings.directional_shadow_cascades = 1
+  settings.ultra_filter = false
+  settings.fxaa = false
+  if profile != "shadow-light":
+   settings.msaa = 2
+   settings.scale_percent = 85
+ Options.update_quality(settings, false)
 
 func owner_signature() -> String:
  var ids: Array = [game.active_sequence]

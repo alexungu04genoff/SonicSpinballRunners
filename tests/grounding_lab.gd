@@ -26,6 +26,8 @@ var startup_ms := 0.0
 var initial_mode := 0
 var initial_direction := 2
 var fresh_defaults := {}
+var zone_preparation := {}
+var cache_pass := "unspecified"
 var reference_digest := ""
 var camera_states := {}
 var native_camera_far := 0.0
@@ -49,6 +51,7 @@ func _initialize() -> void:
 func run() -> void:
  for arg: String in OS.get_cmdline_user_args():
   if arg.begins_with("--output="): output = arg.trim_prefix("--output=")
+  if arg.begins_with("--cache-pass="): cache_pass = arg.trim_prefix("--cache-pass=")
   if arg.begins_with("--grounding-task="): task = arg.trim_prefix("--grounding-task=")
   if arg.begins_with("--theme="): theme = arg.trim_prefix("--theme=")
   if arg.begins_with("--grounding-runtime="): runtime = arg.trim_prefix("--grounding-runtime=")
@@ -57,11 +60,11 @@ func run() -> void:
   if arg.begins_with("--grounding-mode="): initial_mode = int(arg.trim_prefix("--grounding-mode="))
   if arg.begins_with("--grounding-direction="): initial_direction = int(arg.trim_prefix("--grounding-direction="))
   if arg == "--grounding-verbose": sampler.verbose = true
- if theme not in THEMES or task not in ["interactive", "audit", "visual", "matrix", "tour", "smoke", "lifecycle", "controls", "proxy-sweep"] or runtime not in ["prototype", "endless"]:
+ if theme not in THEMES or task not in ["interactive", "audit", "visual", "matrix", "tour", "smoke", "lifecycle", "controls", "proxy-sweep", "shadow-bench", "ring-study"] or runtime not in ["prototype", "endless"]:
   push_error("Unsupported grounding argument. Lava Reef is excluded.")
   quit(1)
   return
- if quality not in ["production", "shadow-light", "balanced", "balanced-no-retro", "reduced-retro"]:
+ if quality not in Controls.Review.CASES and quality not in ["shadow-light", "balanced", "balanced-no-retro", "reduced-retro"]:
   push_error("Unknown grounding quality profile.")
   quit(1)
   return
@@ -75,6 +78,7 @@ func run() -> void:
  auto_accept_quit = false
  root.size = Vector2i(1440, 1000) if task in ["interactive", "visual", "audit", "proxy-sweep", "controls"] else Vector2i(1280, 900)
  if task == "interactive": root.size = root.size.min(DisplayServer.screen_get_usable_rect().size - Vector2i(40, 80))
+ if task in ["shadow-bench", "ring-study"]: Controls.Review.position_review_window(root)
  Engine.max_fps = 0
  DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
  DirAccess.make_dir_recursive_absolute(output)
@@ -83,16 +87,25 @@ func run() -> void:
   fail("Use a new result folder; fresh-install diagnostics must not inherit settings.")
   quit(1)
   return
- fresh_defaults = {"pixel": Audit.Options.pixel_profile().duplicate(), "shadow": {"size": Audit.Options.shadow_resolution(), "cascades": Audit.Options.shadow_cascades(), "smooth": Audit.Options.smooth_shadows_enabled()}}
+ fresh_defaults = Audit.Options.quality()
  Controls.apply_quality(quality, fresh_defaults)
  if not await open_game():
+  var partial := {"metadata": Audit.Report.metadata(), "runtime": runtime, "quality": quality,
+   "settings_submitted": Audit.Options.quality(), "cache_pass": cache_pass, "failures": failures,
+   "timing_by_phase_and_work": sampler.summary(), "elapsed_ms": Time.get_ticks_msec()}
+  FileAccess.open(output.path_join("startup-failed.json"), FileAccess.WRITE).store_string(JSON.stringify(partial, "  "))
   quit(1)
   return
  if task == "interactive":
   controls.visible = true
   return
  controls.visible = false
- if task == "visual": await visual_experiments()
+ if task == "shadow-bench":
+  await sample("first_stationary_settled", duration)
+  if runtime == "endless": await tour_experiments()
+  else: await prototype_camera_sweep()
+ elif task == "ring-study": await ring_study()
+ elif task == "visual": await visual_experiments()
  elif task == "proxy-sweep": await proxy_direction_experiments()
  elif task == "controls": await controls_experiments()
  elif task in ["matrix", "smoke"]: await matrix_experiments(task == "smoke")
@@ -144,7 +157,7 @@ func open_game() -> bool:
   fixture.session.overlay_root.hide()
  game.retro_filter.set_effects(game.retro_filter.settings.default_effects)
  native_camera_far = game.presentation.camera.far
- if runtime == "endless":
+ if runtime == "endless" and task != "shadow-bench":
   # Matched projection for the A-E experiment; native far coverage is recorded
   # separately and restored for the normal continuous tour.
   game.presentation.camera.far = game.presentation._camera_offset.length() + game.active.document.terrain_bounds().size.length() * TablePresentation.SCALE + 10.0
@@ -166,6 +179,21 @@ func open_game() -> bool:
  controls.theme_requested.connect(next_theme, CONNECT_DEFERRED)
  controls.close_requested.connect(finish, CONNECT_DEFERRED)
  RenderingServer.frame_pre_draw.connect(apply_comparison)
+ if task == "shadow-bench" and runtime == "endless":
+  # Observe the real scheduler. Opening-room frame rate cannot excuse a missed deadline.
+  sampler.phase = "zone_preparation"
+  var started := Time.get_ticks_msec()
+  var ready := false
+  while Time.get_ticks_msec() - started < 180000:
+   await process_frame
+   sampler.tick()
+   if game._zone_ready(1) and game.resident.any(func(act): return act.plan.sequence == 3):
+    ready = true
+    break
+   if not game.library.error.is_empty(): break
+  zone_preparation = {"next_zone": 1, "backdrop_and_entry_ready": ready, "after_startup_ms": Time.get_ticks_msec() - started,
+   "deadline_ms": 180000, "library_error": game.library.error}
+  if not ready: fail("Next Zone backdrop and entry Act missed preparation deadline or failed to load.")
  await settle()
  set_camera(0)
  if task in ["matrix", "smoke", "audit", "lifecycle", "tour"]:
@@ -375,6 +403,52 @@ func proxy_direction_experiments() -> void:
    await capture("proxy_direction_%d_%d" % [index, int(enabled)])
  controls.apply_mode(0)
  set_camera(0)
+
+func prototype_camera_sweep() -> void:
+ # A single authored Act has no Zone crossing. Move its normal camera through a fixed path.
+ var start: Vector2 = game.ball.position
+ var target := Vector2(570, 240)
+ var began := Time.get_ticks_usec()
+ sampler.phase = "prototype_camera_sweep"
+ sampler.previous = began
+ while Time.get_ticks_usec() - began < duration * 1000000.0:
+  var t := clampf((Time.get_ticks_usec() - began) / (duration * 1000000.0), 0.0, 1.0)
+  game.presentation.reset_camera(start.lerp(target, t))
+  game._update_backgrounds()
+  await process_frame
+  sampler.tick()
+
+func ring_study() -> void:
+ # Same baked Ring, camera and phase on both sides of each pair. Full Retro stays active.
+ var presentation: Node = game.presentation
+ var ring: MeshInstance3D
+ for candidate: MeshInstance3D in presentation.ring_visuals:
+  if candidate.is_visible_in_tree():
+   ring = candidate
+   break
+ if ring == null:
+  fail("Ring study needs a visible collectible.")
+  return
+ var target := TablePresentation.unmap_point(ring.global_position)
+ presentation.reset_camera(target)
+ game._update_backgrounds()
+ await settle()
+ var study := {"settings": Audit.settings(game), "ring": str(ring.get_path()), "frames": []}
+ for index in 24:
+  var phase := index * PI / 24.0
+  presentation.ring_spin.spin(phase)
+  for slot: int in presentation.ring_spin.fallback_indices:
+   presentation.ring_visuals[slot].rotation = Vector3(PI * 0.5, phase, 0)
+  for enabled: bool in [true, false]:
+   Controls.Review.show_ring_shadows(presentation.ring_visuals, enabled)
+   for frame in 3: await process_frame
+   await RenderingServer.frame_post_draw
+   var img := root.get_texture().get_image()
+   var file := "ring_%02d_%s.png" % [index, "on" if enabled else "off"]
+   if img.save_png(output.path_join(file)) != OK: fail("Cannot save " + file)
+   study.frames.append({"image": file, "phase_rad": phase, "ring_shadows": enabled})
+ Controls.Review.show_ring_shadows(presentation.ring_visuals, true)
+ FileAccess.open(output.path_join("ring-study.json"), FileAccess.WRITE).store_string(JSON.stringify(study, "  "))
 
 func overlap_comparison() -> void:
  var last_act: RefCounted
@@ -606,6 +680,7 @@ func finish() -> void:
  if finishing: return
  finishing = true
  var watched := watch_owners()
+ var measured_settings := Audit.settings(game)
  controls.restore()
  comparison = "C"
  game._update_backgrounds()
@@ -616,7 +691,7 @@ func finish() -> void:
    if not integrity_checks[field]: fail("Visual trial changed production " + field + ".")
  if FileAccess.file_exists(Audit.Options.settings_path): fail("Diagnostic wrote persistent graphics preferences.")
  if game.library.fallback_builds != 0: fail("Runtime geometry regeneration occurred.")
- write_report()
+ write_report(measured_settings)
  print("GROUNDING_COMPLETE | ", output, " | failures=", failures.size())
  RenderingServer.frame_pre_draw.disconnect(apply_comparison)
  controls.free()
@@ -636,12 +711,12 @@ func finish() -> void:
  if not remaining.is_empty(): fail("Diagnostic retained project owners: " + str(remaining))
  quit(0 if failures.is_empty() else 1)
 
-func write_report() -> void:
- sampler.write(output, {"task": task, "theme": theme, "runtime": runtime, "quality": quality, "startup_ms": startup_ms,
+func write_report(measured_settings: Dictionary = {}) -> void:
+ sampler.write(output, {"cache_pass": cache_pass, "zone_preparation": zone_preparation, "task": task, "theme": theme, "runtime": runtime, "quality": quality, "startup_ms": startup_ms,
   "initial_state": initial_state, "native_camera_far": native_camera_far, "initial_settings": initial_settings, "captures": captures, "failures": failures,
   "restoration_checks": restoration_checks, "lifecycle_checks": lifecycle_checks,
   "integrity_checks": integrity_checks,
-  "production_defaults_changed": false, "user_settings_written": FileAccess.file_exists(Audit.Options.settings_path)})
+  "production_defaults_changed": false, "user_settings_written": FileAccess.file_exists(Audit.Options.settings_path)}, measured_settings)
 
 func watch_owners() -> Dictionary:
  var watched := {"game": weakref(game), "presentation": weakref(game.presentation), "library": weakref(game.library), "controls": weakref(controls)}

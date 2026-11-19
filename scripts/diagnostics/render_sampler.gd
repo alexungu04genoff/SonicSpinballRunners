@@ -77,7 +77,7 @@ func tick() -> void:
   "retiring_resources": game.library.retirement.pending_count(), "retiring_nodes": game.retire_nodes.size(), "build_ms": game.last_build_ms,
   "fallback_builds": game.library.fallback_builds, "pipelines": Report.pipelines(), "inventory_counts": inventory_counts,
   "resident_casting_surfaces": casting, "resident_shadow_only_meshes": shadow_only,
-  "shadow_atlas": Audit.Options.shadow_resolution(), "cascades": Audit.Options.shadow_cascades(), "smooth_ultra": Audit.Options.smooth_shadows_enabled(),
+  "shadow_atlas": Audit.Options.shadow_resolution(), "cascades": Audit.Options.shadow_cascades(), "ultra_filter": Audit.Options.ultra_filter_enabled(),
   "retro": game.retro_filter.selected_effects.duplicate(),
   "nodes": Performance.get_monitor(Performance.OBJECT_NODE_COUNT), "resources": Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT),
   "video_bytes": Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED)})
@@ -132,9 +132,9 @@ func counter_summary() -> Dictionary:
    result[key][metric] = {"count": values.size(), "median": values[values.size() / 2], "maximum": values[-1]}
  return result
 
-func write(output: String, extra: Dictionary = {}) -> void:
+func write(output: String, extra: Dictionary = {}, measured_settings: Dictionary = {}) -> void:
  DirAccess.make_dir_recursive_absolute(output)
- var result := {"metadata": Report.metadata(), "settings": Audit.settings(game), "timing_by_phase_and_work": summary(),
+ var result := {"metadata": Report.metadata(), "settings": Audit.settings(game) if measured_settings.is_empty() else measured_settings, "timing_by_phase_and_work": summary(),
   "sampled_counter_summary": counter_summary(), "samples": samples, "events": game.library.profile_events, "cpu_stage_totals": game.library.profile_cpu,
   "cpu_stage_maxima": game.library.profile_max_cpu_ms, "fallback_builds": game.library.fallback_builds,
   "note": "Frame distributions include every frame; counters are 4 Hz unless --grounding-verbose. TIME_PROCESS is Godot main-loop time, not OS process CPU time. GPU/CPU viewport counters may overlap. Unavailable Compatibility timings are null. Disabled viewport counters are zeroed because the engine can retain stale values."}

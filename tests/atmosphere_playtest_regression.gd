@@ -22,7 +22,7 @@ func run() -> void:
  Options.settings_path = "user://atmosphere-playtest-graphics.cfg"
  Options.set_shadow_resolution(4096)
  Options.set_shadow_cascades(2)
- Options.set_smooth_shadows(true)
+ Options.update_quality({"ultra_filter": true, "fxaa": true})
  root.size = Vector2i(1600, 1000)
  var production := "res://data/atmospheres/green_hill.cfg"
  var before := FileAccess.get_sha256(production)
@@ -34,6 +34,7 @@ func run() -> void:
  check(lab.presentation._key_light.directional_shadow_mode == DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS, "Lab inherits device cascades")
  controls.set_value("env/tonemap_exposure", 0.65)
  controls.set_value("sun_yaw", -25.0)
+ controls.set_value("sun/shadow_blur", 1.35)
  var request := lab.prototype_playtest_request()
  check(request.error.is_empty(), "Unsaved Lab atmosphere creates a valid user-local playtest snapshot")
  if not request.error.is_empty():
@@ -68,7 +69,8 @@ func run() -> void:
  var game: Node = session.game
  check(is_instance_valid(game) and game.started, "Prototype starts the single Act with the unsaved Lab atmosphere")
  if is_instance_valid(game) and game.started:
-  check(Options.shadow_resolution() == 4096 and Options.shadow_cascades() == 2 and Options.smooth_shadows_enabled(), "Prototype retains device quality from the Lab")
+  check(is_equal_approx(game.presentation._key_light.shadow_blur, 1.35), "Prototype applies Lab shadow blur")
+  check(Options.shadow_resolution() == 4096 and Options.shadow_cascades() == 2 and Options.ultra_filter_enabled(), "Prototype retains device quality from the Lab")
   check(game.presentation._key_light.directional_shadow_mode == DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS and game.view.screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA, "Prototype foreground inherits device cascades and FXAA")
   for background: Dictionary in game.backgrounds.values():
    check(background.layer.light.directional_shadow_mode == DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS and not background.layer.light.shadow_enabled and background.layer.view.screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA, "Streamed backdrop inherits policy and remains shadowless")

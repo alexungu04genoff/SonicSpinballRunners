@@ -1,18 +1,23 @@
 # Device shadow quality
 
-Atmosphere owns shadow enablement, opacity, angular softness, depth/normal bias and maximum distance. Device graphics owns directional atlas resolution, cascade count and the existing smooth-shadow convenience toggle. Selecting a mood never changes those device choices.
+Atmosphere owns shadow enablement, opacity, filter radius, physical sun angle, depth/normal bias and maximum distance. Device graphics owns atlas size, cascades, directional filter quality, FXAA, MSAA and native 3D scale.
 
 ## Controls and defaults
 
-Open **Atmosphere Lab > Shadows**, then scroll from **Shadow Appearance** to **Device Shadow Quality**. Resolution (2048 / 4096 / 8192) and cascades (1 / 2 / 4) are independent controls. Changes save immediately in `user://graphics_settings.cfg`, section `rendering`:
+Open **Atmosphere Lab → Shadows**. The six **Device Quality** controls save immediately in the `rendering` section of `user://graphics_settings.cfg`.
 
 | Key | Values | No saved preference |
 | --- | --- | --- |
 | `directional_shadow_resolution` | 2048, 4096, 8192 | Current project directional atlas size (8192) |
 | `directional_shadow_cascades` | 1, 2, 4 | 4 |
-| `smooth_shadows` | Boolean | false: existing project filter and screen-space AA defaults |
+| `ultra_filter` | Off / on | Project filter, currently Medium |
+| `fxaa` | Off / on | Project screen-space AA, currently off |
+| `msaa` | 0, 2, 4 samples | 4 |
+| `scale_percent` | 75, 85, 100 | 100 |
 
-Smooth shadows enables Ultra directional filtering plus FXAA on registered viewports. Turning it off restores the project defaults (currently Medium filtering and disabled FXAA), without changing MSAA. Invalid saved types or choices fall back independently. Saves merge with the latest graphics file; write failures retain the active settings and report an error in the Lab.
+Legacy `smooth_shadows=true` enables Ultra and FXAA. Explicit new keys take precedence independently. The first successful device save writes both keys and removes the legacy key. Reads preserve the file. Saves merge with the latest file and preserve unrelated keys.
+
+**Shadow blur** scales the normal light filter radius from 0.50 to 2.00. Start at 1.00 and try 1.25 or 1.50. **Sun angle ° (PCSS, costly)** controls physical source size in Forward+. Old variants inherit a blur of 1.00 and retain any authored sun angle. The default angle is 0°. Both properties blend between Zones. The installed 4.7.2 binary confirmed their independent defaults. [Godot Light3D reference](https://docs.godotengine.org/en/4.7/classes/class_light3d.html#class-light3d-property-shadow-blur)
 
 These preferences are local to the application's `user://` directory. Source Lab and Prototype share the game profile; the portable tools and their launched Prototype share the separate **Sonic Spinball Authoring Tools** profile. Copying Acts/Atmospheres or a ZIP does not transfer device preferences. Separate running processes load preferences on startup; they do not poll one another's files.
 
@@ -29,7 +34,7 @@ Directional light registrations use weak references and apply 1/2/4 cascades imm
 
 Atmosphere lighting snapshots/blends contain no cascade mode. Cached light metadata does not own it. Registering a light never changes `shadow_enabled` or artistic properties. There are no per-frame scene scans and no geometry or baked-lighting architecture changes. Existing source-fingerprint rules can require an ordinary rebake after this code update; changing device preferences does not invalidate bakes.
 
-Atlas size and cascade modes are supported by Forward+, Mobile and Compatibility, so the numeric preferences are shared across renderers. Ultra shadow filtering and FXAA require Forward+/Mobile. Compatibility disables that toggle, states that both features are unavailable, and preserves the saved preference for a later supported launch. Angular softness retains its existing Forward+-only control. Headless runs explicitly state that they cannot compare rendered shadows.
+Atlas size and cascade modes are supported by Forward+, Mobile and Compatibility, so the numeric preferences are shared across renderers. Ultra shadow filtering and FXAA require Forward+/Mobile. The Lab disables both toggles in Compatibility and retains the preferences for later supported launches. Angular softness retains its existing Forward+-only control. Headless runs explicitly state that they cannot compare rendered shadows.
 
 Engine references: [global runtime atlas API and directional filtering](https://docs.godotengine.org/en/stable/classes/class_renderingserver.html#class-renderingserver-method-directional-shadow-atlas-set-size), [Compatibility light storage](https://github.com/godotengine/godot/blob/master/drivers/gles3/storage/light_storage.cpp), [renderer feature support](https://docs.godotengine.org/en/latest/tutorials/rendering/renderers.html#antialiasing).
 
@@ -41,15 +46,7 @@ Explicit variant saves omit the retired field from all records in that theme fil
 
 ## Laptop comparison
 
-Extract the portable authoring ZIP into a writable folder, open **Atmosphere Lab.exe**, choose **Shadows**, and scroll to **Device Shadow Quality**. Disable VSync for uncapped FPS. Keep the same Act, camera, atmosphere and Retro state while trying:
-
-1. 8192 / 4 (current baseline)
-2. 4096 / 4
-3. 4096 / 2
-4. 2048 / 2
-5. 4096 / 1
-
-Compare edges, distant shadows, cascade transitions and FPS after shader/atlas warm-up. Toggle smooth shadows independently. Use **Play Prototype** to carry the visible appearance into a single-Act game with the same saved device quality. No new production default or quality preset is selected by these tests.
+Extract the Shadow Review ZIP to a writable folder. Double-click **Shadow Review.cmd**. Option 1 opens the live Lab on the Shadows tab at B. Keep Act, camera, atmosphere and Retro fixed while switching A/B/C, FXAA, Ultra and Ring shadows. Review device changes last for that session. Ordinary Lab device changes persist. Option 2 runs the paired first/repeat benchmark. [Configurations, evidence and review instructions](SHADOW_REVIEW.md)
 
 ## Regression coverage
 
