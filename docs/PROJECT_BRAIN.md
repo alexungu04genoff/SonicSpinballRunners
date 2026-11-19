@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Give the sun a limited tonal range — 2026-11-19
+
+Alex wanted the memory of an old soft gradient. The isolated Retro Shadow Lab now lets us turn that same filtered sun shadow into 8, 4, 3 or 2 clean tones and compare it with the ordered pattern we liked. Four tones give the broad penumbra a readable contour. Eight are quieter on regular terrain. The patterned version is our modern Saturn/Dreamcast-inspired alternative. All three use the existing key, casters and full Retro stack. The native shadow remains the game's default. [Matched screenshots, motion and portable review](RETRO_SHADOW_LAB.md)
+
 ## Give the atmosphere its own shadow radius — 2026-11-19
 
 Alex's UHD 620 passed the 85% / 2× presentation in motion. Full Retro helped the frozen build reach about 60 FPS steady at 2048/1. The separate single-Act Lab looked good at 4096/4 with FXAA and Medium filtering. Bro kept the Production reference and made the four FXAA/filter combinations independently measurable. The Lab now gives each atmosphere a normal shadow blur radius and a separate physical sun angle. Ring casting has a live review switch. [Evidence, matched Ring motion and laptop review](SHADOW_REVIEW.md)

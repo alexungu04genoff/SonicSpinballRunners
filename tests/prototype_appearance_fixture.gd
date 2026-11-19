@@ -13,7 +13,7 @@ var game: Node
 var error := ""
 var receipt := {}
 
-func open(tree: SceneTree, path: String, theme: String, output: String, variant_id := "default") -> bool:
+func open(tree: SceneTree, path: String, theme: String, output: String, variant_id := "default", retro_mode := "") -> bool:
  error = ""
  var source := Document.load_document(path)
  if source.document == null or theme not in Registry.IDS:
@@ -55,9 +55,11 @@ func open(tree: SceneTree, path: String, theme: String, output: String, variant_
  game.set_physics_process(false)
  game.ball.freeze = true
  game.auto_launch_time = -1.0
- var retro := "off"
- for argument: String in OS.get_cmdline_user_args():
-  if argument.begins_with("--retro="): retro = argument.trim_prefix("--retro=")
+ var retro := retro_mode
+ if retro.is_empty():
+  retro = "off"
+  for argument: String in OS.get_cmdline_user_args():
+   if argument.begins_with("--retro="): retro = argument.trim_prefix("--retro=")
  if retro not in ["off", "production"]:
   error = "Retro capture mode must be off or production."
   return false

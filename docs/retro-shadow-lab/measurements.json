@@ -1,0 +1,141 @@
+{
+  "renderer": {
+    "engine": "4.7.2-stable (official)",
+    "renderer": "forward_plus",
+    "driver": "vulkan",
+    "api": "1.4.351",
+    "device": "NVIDIA GeForce RTX 4060"
+  },
+  "checks_passed": 433,
+  "orphan_nodes": 0.0,
+  "ring_motion": [
+    {
+      "profile": "B",
+      "mode": "A   Normal",
+      "mean_darkness": 61904.375,
+      "max_adjacent_over_mean": 0.18633577998324027
+    },
+    {
+      "profile": "B",
+      "mode": "B   Clean \u00b7 8 levels",
+      "mean_darkness": 62103.9375,
+      "max_adjacent_over_mean": 0.18633279089590737
+    },
+    {
+      "profile": "B",
+      "mode": "B   Clean \u00b7 4 levels",
+      "mean_darkness": 61315.625,
+      "max_adjacent_over_mean": 0.19844860098873657
+    },
+    {
+      "profile": "B",
+      "mode": "D   Ordered dither \u00b7 4 levels",
+      "mean_darkness": 61344.3125,
+      "max_adjacent_over_mean": 0.20182800157716332
+    },
+    {
+      "profile": "C",
+      "mode": "A   Normal",
+      "mean_darkness": 59263.3125,
+      "max_adjacent_over_mean": 0.39086576539237494
+    },
+    {
+      "profile": "C",
+      "mode": "B   Clean \u00b7 8 levels",
+      "mean_darkness": 57979.1875,
+      "max_adjacent_over_mean": 0.38988128283101586
+    },
+    {
+      "profile": "C",
+      "mode": "B   Clean \u00b7 4 levels",
+      "mean_darkness": 54311.0625,
+      "max_adjacent_over_mean": 0.387526942600322
+    },
+    {
+      "profile": "C",
+      "mode": "D   Ordered dither \u00b7 4 levels",
+      "mean_darkness": 57032.9375,
+      "max_adjacent_over_mean": 0.3743275541436034
+    }
+  ],
+  "endless": [
+    {
+      "boundary_wait_frames": 0,
+      "crossing": {
+        "count": 815,
+        "frames_over_100_ms": 0,
+        "frames_over_50_ms": 0,
+        "max_ms": 26.202,
+        "median_ms": 5.637,
+        "p95_ms": 9.249,
+        "p99_ms": 13.571
+      },
+      "fallback": 0,
+      "mode": 0,
+      "prep_ms": 2382,
+      "receiver_inventory": {
+        "acts": 0,
+        "excluded_alpha": 0,
+        "materials": 0,
+        "programs": 0,
+        "receivers": 0,
+        "roles": {}
+      },
+      "runtime": "Endless",
+      "startup_ms": 3340.032
+    },
+    {
+      "boundary_wait_frames": 0,
+      "crossing": {
+        "count": 757,
+        "frames_over_100_ms": 1,
+        "frames_over_50_ms": 1,
+        "max_ms": 221.806,
+        "median_ms": 6.091,
+        "p95_ms": 9.532,
+        "p99_ms": 14.663
+      },
+      "fallback": 0,
+      "mode": 3,
+      "prep_ms": 1655,
+      "receiver_inventory": {
+        "acts": 7,
+        "excluded_alpha": 40,
+        "materials": 43,
+        "programs": 8,
+        "receivers": 69,
+        "roles": {
+          "ramps": 5,
+          "terrain_borders": 7,
+          "terrain_ground": 7,
+          "terrain_ledges": 43,
+          "terrain_walls": 7
+        }
+      },
+      "runtime": "Endless",
+      "startup_ms": 2241.459
+    }
+  ],
+  "lighting_and_ownership": [
+    "green_hill local/emission-only native parity",
+    "Unshadowed diffuse calibration: Ring ON/OFF residual 0.0335 of native contrast",
+    "Released runtime and Lab materials for green_hill: survivors []",
+    "chemical_plant local/emission-only native parity",
+    "Released runtime and Lab materials for chemical_plant: survivors []",
+    "Released runtime and Lab materials for rooftop_run: survivors []",
+    "casino_night local/emission-only native parity",
+    "Released runtime and Lab materials for casino_night: survivors []",
+    "Released runtime and Lab materials for sky_sanctuary: survivors []",
+    "Released runtime and Lab materials for ice_cap: survivors []",
+    "Released runtime and Lab materials for lava_reef: survivors []",
+    "Aquarium: 20 alpha slots inspected, 0 treated, 0 backdrop overlays",
+    "aquarium_park local/emission-only native parity",
+    "Released runtime and Lab materials for aquarium_park: survivors []",
+    "Released runtime and Lab materials for green_hill: survivors []",
+    "Released runtime and Lab materials for rooftop_run: survivors []",
+    "Released runtime and Lab materials for rooftop_run: survivors []",
+    "Released runtime and Lab materials for rooftop_run: survivors []",
+    "Released runtime and Lab materials for rooftop_run: survivors []",
+    "Released runtime and Lab materials for rooftop_run: survivors []"
+  ]
+}
