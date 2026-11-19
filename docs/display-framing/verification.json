@@ -1,0 +1,135 @@
+{
+  "base": "5ceab0c5a3b86eac3dbc239763867e39976ef2c2",
+  "branch": "codex/display-framing-contract",
+  "unchanged_16_9_records": 64,
+  "matched_frozen_state_records": 128,
+  "maximum_fixed_landmark_delta": 0,
+  "suites": [
+    {
+      "suite": "Legacy framing matrix",
+      "checks": 605,
+      "passed": true,
+      "result": "RESULT | Display framing matrix | 605 checks | 0 failures | 128 records",
+      "command": "display_framing_matrix.gd -- --legacy-layout",
+      "stdout_sha256": "2ccccd1a0ce2cb22e97eb94af57f12a03a7f6f6da9aea54ab1caa62c3da7ed96",
+      "warnings": 1,
+      "errors": []
+    },
+    {
+      "suite": "Fixed framing matrix",
+      "checks": 861,
+      "passed": true,
+      "result": "RESULT | Display framing matrix | 861 checks | 0 failures | 128 records",
+      "command": "display_framing_matrix.gd -- --expect-fixed",
+      "stdout_sha256": "c00509781247b68b08d130aaf88b1be3b446d96c158d904400687a4edef02619",
+      "warnings": 1,
+      "errors": []
+    },
+    {
+      "suite": "Native input / F11",
+      "checks": 250,
+      "passed": true,
+      "result": "RESULT | Native display input/fullscreen | 250 checks | 0 failures",
+      "command": "display_framing_native.gd",
+      "stdout_sha256": "5ff47c7eaf89d873351ff71f7d6167daadc19e634ac11ce4fe4df35a381e0bab",
+      "warnings": 1,
+      "errors": []
+    },
+    {
+      "suite": "Prototype / Endless Zone seams",
+      "checks": 556,
+      "passed": true,
+      "result": "RESULT | Display framing Zone transitions | 556 checks | 0 failures",
+      "command": "display_framing_transitions.gd",
+      "stdout_sha256": "c958586edd8f81003c56a44fb558fd504774e916a9e764db94656c12440f2974",
+      "warnings": 1,
+      "errors": []
+    },
+    {
+      "suite": "Contract lifecycle",
+      "checks": 24,
+      "passed": true,
+      "result": "RESULT | Display contract lifecycle | 24 checks | 0 failures",
+      "command": "display_framing_regression.gd",
+      "stdout_sha256": "ca22aceda20311ac4b582535d6b3dccecad699dec7f242a2db4d0db72596f57b",
+      "warnings": 0,
+      "errors": []
+    },
+    {
+      "suite": "Exact display physics traces",
+      "checks": 3,
+      "passed": true,
+      "result": "RESULT | Display framing physics | 3 checks | 0 failures",
+      "command": "display_framing_physics.gd",
+      "stdout_sha256": "317e9f71d2176ae9396656616f9cac23253cdcd20139348cbbd789edeb223a02",
+      "warnings": 0,
+      "errors": []
+    },
+    {
+      "suite": "Existing camera picker",
+      "checks": 9,
+      "passed": true,
+      "result": "RESULT | Camera picker | 9 checks | 0 failures",
+      "command": "prototype_camera_picker_regression.gd",
+      "stdout_sha256": "5faeaa78ca62dee23050e7a4a333f58f417b7e021f1cbc57549d96e7a11af3bf",
+      "warnings": 0,
+      "errors": []
+    },
+    {
+      "suite": "Existing Retro physics traces",
+      "checks": 8,
+      "passed": true,
+      "result": "RESULT | Retro physics | 8 checks | 0 failures",
+      "command": "retro_physics_regression.gd",
+      "stdout_sha256": "446932672bb9f091353af9d3ea632b35340110ebb0b75a531cf442641511a3a8",
+      "warnings": 0,
+      "errors": []
+    },
+    {
+      "suite": "Existing Endless planner",
+      "checks": 845,
+      "passed": true,
+      "result": "ENDLESS_REGRESSION | checks=845 failures=0",
+      "command": "endless_regression.gd",
+      "stdout_sha256": "a3bbe2acf3e765c9c4a16548663ea60f8d13f9571baaf74c441e3642a0113de9",
+      "warnings": 0,
+      "errors": []
+    },
+    {
+      "suite": "Existing Endless reuse",
+      "checks": 131,
+      "passed": true,
+      "result": "ENDLESS_REUSE_REGRESSION | checks=131 failures=0",
+      "command": "endless_reuse_regression.gd",
+      "stdout_sha256": "f426ee3f6be2fdf3b858f8704db68a38aa3593fd9fe7521f37cfdb530c3297d8",
+      "warnings": 0,
+      "errors": []
+    },
+    {
+      "suite": "Existing Prototype run, seed 18",
+      "checks": 162,
+      "passed": false,
+      "result": "RESULT | Prototype run | 162 checks | 1 failures",
+      "command": "prototype_run_regression.gd -- --seed=18",
+      "stdout_sha256": "3281bdf8de5c2c9961bf776948fd80b9e0417034c7282857dfe2d83daefe2ced",
+      "warnings": 1,
+      "errors": [
+        "ERROR: Unable to open clipboard.",
+        "ERROR: FAIL | OS clipboard contains the exact pretty-printed run JSON"
+      ]
+    }
+  ],
+  "passed_checks": 3292,
+  "retained_limitations": [
+    "Parent and feature both fail the same pre-existing JSON course precision assertion at seed 4141928365.",
+    "Both seed-18 runs passed 161/162 checks; the remaining check failed with Unable to open clipboard. No test assertion was changed.",
+    "Native fixture initially captured an occluding window; final fixture raises only its monitor-2 window and validates black bars.",
+    "One repeated Vulkan matrix readback crashed in native Godot/NVIDIA code with lost-device UI_PASS/BLIT_PASS breadcrumbs; unchanged retry recorded separately. Cause not proven.",
+    "Existing ObjectDB teardown warnings retained. No controlled GPU benchmark or physical 4K capture."
+  ],
+  "untouched_parent_geometry_quality_matching_records": 128,
+  "headless_editor_import": "PASS: Godot 4.7.2 --headless --editor --import --quit, no errors",
+  "passed_assertions_in_partial_prototype_suite": 161,
+  "total_assertions_final_suites": 3454,
+  "total_passed_assertions_final_suites": 3453
+}

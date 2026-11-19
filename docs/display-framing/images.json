@@ -1,0 +1,366 @@
+[
+  {
+    "original_sha256": "02053bef3f5abbd8051385748b2a4fe333c69c2f20b12cd4c3f257b3866066ae",
+    "original_size": "(1280, 720)",
+    "path": "before/endless-1280x720-camera0.jpg",
+    "review_sha256": "0edec3d136663a0c60b456d6e4f1641e4d95da442c4540456dde991c00a74a58",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "9bb43458078a4bfe1deb0acdb8fdde3984862d6f0f023347fb990314adf0febe",
+    "original_size": "(1280, 720)",
+    "path": "before/endless-1280x720-camera1.jpg",
+    "review_sha256": "f1ea482cefea5e5300a1c24589305ee4568832156bad14129c2652ccfbc06129",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "71438c66e8e4a5e8c9d061b056366dfb318324ce15a4899afeb553cf551f4fd6",
+    "original_size": "(1280, 720)",
+    "path": "before/endless-1280x720-camera2.jpg",
+    "review_sha256": "46a0abff4dde4d30c1cab4873fd2b80462ef289b94774716306525e63b3f0a4a",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "d1614e12712715c8e73b188a4579fee46fc272f74a88d9fade064e037ca3f866",
+    "original_size": "(1280, 720)",
+    "path": "before/endless-1280x720-camera3.jpg",
+    "review_sha256": "5e120a994df0ced3bf8dcf38f851503293c450ebd6a980809be683b8806ce209",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "1b65bbf660fd6eec4ef51668335cee4d931476b67bd56e6ab846bec501316711",
+    "original_size": "(1280, 900)",
+    "path": "before/endless-1280x900-camera2.jpg",
+    "review_sha256": "f1bca51ebb2bd6a6747e94fdf834b38747589e9a4bb370940d25e6490bbe7988",
+    "review_size": "(1280, 900)"
+  },
+  {
+    "original_sha256": "42cbd2355640e3f4ca028d353c781bf261baefdb4e9e5a018330cc795663a96e",
+    "original_size": "(1600, 1200)",
+    "path": "before/endless-1600x1200-camera2.jpg",
+    "review_sha256": "9f41b3e2a48a8632c36bfba2e902dd1fc4ac264b4c12cb690a3ef316f5b002dd",
+    "review_size": "(1280, 960)"
+  },
+  {
+    "original_sha256": "30d8042c240354bd0b3e6315da9aa6346e1b0ddb1c52d73e28649bccfb40491b",
+    "original_size": "(1920, 1080)",
+    "path": "before/endless-1920x1080-camera2.jpg",
+    "review_sha256": "3a85cfa9561341f8fe7f88f774573ae690e546318226c45a924b1d4f47fce5dc",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "451e94e3b8526293f16b8312288d4e712e843f7b42a5af18ce9c522889b8dff8",
+    "original_size": "(2560, 1080)",
+    "path": "before/endless-2560x1080-camera2.jpg",
+    "review_sha256": "1dbcf17de4797b2e14b51ef1528a5d995a072224dfee4b59d3acef5a10d55dc7",
+    "review_size": "(1280, 540)"
+  },
+  {
+    "original_sha256": "041bafe5634b0e75fa2a8b0d3278e0045500e0dfe49eca3931484f389439c98d",
+    "original_size": "(2560, 1440)",
+    "path": "before/endless-2560x1440-camera2.jpg",
+    "review_sha256": "d8ff93bb704a15a71bd1da59a724352a3b3f3f50a0a2a6a7c8b380187265675f",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "8d0cfa26d3c8d8fcd13b361d19d631a6720979612fb1de1d4da08c8c383e36db",
+    "original_size": "(3440, 1440)",
+    "path": "before/endless-3440x1440-camera2.jpg",
+    "review_sha256": "991482928871cf02888f7563fb67a5b747fdea637cc55bc49689e7ebdf0ed20e",
+    "review_size": "(1280, 536)"
+  },
+  {
+    "original_sha256": "4ee31fbc69a837b5f034f749e6e141621013fdbabc8520a9bde3993283755a6a",
+    "original_size": "(3840, 2160)",
+    "path": "before/endless-3840x2160-camera2.jpg",
+    "review_sha256": "46acb09cbb2900f02b180630df5c784e1b4f081b3c94fe3ff369a40ff1dc0f21",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "d754bfc135dc7e443e6dfb19ff3a514e456620f0e13e9ce74c85b3c5267aba39",
+    "original_size": "(1280, 720)",
+    "path": "before/prototype-1280x720-camera0.jpg",
+    "review_sha256": "a0a7edd1a989eb1ce9db75d44e4aeaf70f42984643e634aa5a4f5fb581b09182",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "09389da7a70e5b215b165c3cd55c025555eec01bfb46aad6aa45633352ef2c88",
+    "original_size": "(1280, 720)",
+    "path": "before/prototype-1280x720-camera1.jpg",
+    "review_sha256": "761bbc15b3b30d4bffefdcf9958f0cf8b0dc4711d33f9711b30d59c918a17c37",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "18dc557b958aa0d9a25e3da9e99f26446195e6e32012e63bf342cbb7a11cefac",
+    "original_size": "(1280, 720)",
+    "path": "before/prototype-1280x720-camera2.jpg",
+    "review_sha256": "8ce68d0827f737ec86481a5509da7d6418156d6759d0bc2c60d0cf1ae9a69dd0",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "ef59109595186b4ab2116899f4cc14bbb850ef84a39b305bf8f2ac4e33be5b9f",
+    "original_size": "(1280, 720)",
+    "path": "before/prototype-1280x720-camera3.jpg",
+    "review_sha256": "52f7f2a71970df97bca0c41c2f5388b497b95640256e3f259799cfc7d8485fa0",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "6635204d6633d42ea7fbc66a822436e63819a95376b45cc6e5109f95b4596662",
+    "original_size": "(1280, 900)",
+    "path": "before/prototype-1280x900-camera2.jpg",
+    "review_sha256": "ef5d9ed2f427c35da4904489668fb6ecf8fb94972cb2323d862970d17a6248a2",
+    "review_size": "(1280, 900)"
+  },
+  {
+    "original_sha256": "0083e212701f6c0c6ddaa1fe3e99da1d3ff7c77a8a30f382ef726e0fff50340a",
+    "original_size": "(1600, 1200)",
+    "path": "before/prototype-1600x1200-camera2.jpg",
+    "review_sha256": "9dd770891e0c42cdeed54b739e97e715fdee4b48a74340f51a3cf280a2848162",
+    "review_size": "(1280, 960)"
+  },
+  {
+    "original_sha256": "8c85706e0aa5e695fa6ba0fae5c0ce13e36ef736cbbf73bf40d7ff30211cad08",
+    "original_size": "(1920, 1080)",
+    "path": "before/prototype-1920x1080-camera2.jpg",
+    "review_sha256": "fec5cf10e0c0eab137b48fb89755a8ebc9937dbcbd6f07adab79759c70e1cfc6",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "40adaa6db5066bd526263cf3fffc5b16089fa5f5cd9d5b8fa98588e181fceb89",
+    "original_size": "(2560, 1080)",
+    "path": "before/prototype-2560x1080-camera2.jpg",
+    "review_sha256": "b20425c3ce6830b5a496f0595d1452f5a0e98ee5a7891e045a7355530be12490",
+    "review_size": "(1280, 540)"
+  },
+  {
+    "original_sha256": "0f022249df085073f324315b4a89131760879f0a683a1b7717da885f10be71e7",
+    "original_size": "(2560, 1440)",
+    "path": "before/prototype-2560x1440-camera2.jpg",
+    "review_sha256": "3aee1b9db7c0e30d012287f8da7b3890a5cf497950cbc569ae6dd8f9ae966f81",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "3296d6c9ef1c0b1b2ec96340b56f971b52cbb513feca1816288d18f6ff569b80",
+    "original_size": "(3440, 1440)",
+    "path": "before/prototype-3440x1440-camera2.jpg",
+    "review_sha256": "9b2b8129e5fafa79c87b618378bfd71edbbc753803b99707b8ab8aff4db63a24",
+    "review_size": "(1280, 536)"
+  },
+  {
+    "original_sha256": "82c429e671c64c2e3863997f2b7b836592e95b2f14765e8ecb37ca063c72c799",
+    "original_size": "(3840, 2160)",
+    "path": "before/prototype-3840x2160-camera2.jpg",
+    "review_sha256": "b357c9806f2ba05208faa0e89461487313ce963c49efb55be88c9fe63b2d0174",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "02053bef3f5abbd8051385748b2a4fe333c69c2f20b12cd4c3f257b3866066ae",
+    "original_size": "(1280, 720)",
+    "path": "after/endless-1280x720-camera0.jpg",
+    "review_sha256": "0edec3d136663a0c60b456d6e4f1641e4d95da442c4540456dde991c00a74a58",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "9bb43458078a4bfe1deb0acdb8fdde3984862d6f0f023347fb990314adf0febe",
+    "original_size": "(1280, 720)",
+    "path": "after/endless-1280x720-camera1.jpg",
+    "review_sha256": "f1ea482cefea5e5300a1c24589305ee4568832156bad14129c2652ccfbc06129",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "71438c66e8e4a5e8c9d061b056366dfb318324ce15a4899afeb553cf551f4fd6",
+    "original_size": "(1280, 720)",
+    "path": "after/endless-1280x720-camera2.jpg",
+    "review_sha256": "46a0abff4dde4d30c1cab4873fd2b80462ef289b94774716306525e63b3f0a4a",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "d1614e12712715c8e73b188a4579fee46fc272f74a88d9fade064e037ca3f866",
+    "original_size": "(1280, 720)",
+    "path": "after/endless-1280x720-camera3.jpg",
+    "review_sha256": "5e120a994df0ced3bf8dcf38f851503293c450ebd6a980809be683b8806ce209",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "1ab1b81e32e32e3c7aa6d742faf257e80991b599bbe532ff1964647b505b64e9",
+    "original_size": "(1280, 900)",
+    "path": "after/endless-1280x900-camera2.jpg",
+    "review_sha256": "21abc5df8e837b55b78bf81500ee10c0c7dc61000edf9fa4921b5be39cca5d5f",
+    "review_size": "(1280, 900)"
+  },
+  {
+    "original_sha256": "d8d0c63648a779f49b84ed6e9bfaeb0fe49b1a61fcdfa23a8ab19d3ec164e788",
+    "original_size": "(1600, 1200)",
+    "path": "after/endless-1600x1200-camera2.jpg",
+    "review_sha256": "9e9626688f914edc04e2927bc72c8e4bd364ca039fea4af6361d99680a89babd",
+    "review_size": "(1280, 960)"
+  },
+  {
+    "original_sha256": "30d8042c240354bd0b3e6315da9aa6346e1b0ddb1c52d73e28649bccfb40491b",
+    "original_size": "(1920, 1080)",
+    "path": "after/endless-1920x1080-camera2.jpg",
+    "review_sha256": "3a85cfa9561341f8fe7f88f774573ae690e546318226c45a924b1d4f47fce5dc",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "0ab36d768de0b8834cb07d9ae24b66f9c4b932a0af352659a93a0f353b54faa0",
+    "original_size": "(2560, 1080)",
+    "path": "after/endless-2560x1080-camera2.jpg",
+    "review_sha256": "4edf76a928c46957adebbd183ce644188b46d78526a27c559db353619f8f9082",
+    "review_size": "(1280, 540)"
+  },
+  {
+    "original_sha256": "041bafe5634b0e75fa2a8b0d3278e0045500e0dfe49eca3931484f389439c98d",
+    "original_size": "(2560, 1440)",
+    "path": "after/endless-2560x1440-camera2.jpg",
+    "review_sha256": "d8ff93bb704a15a71bd1da59a724352a3b3f3f50a0a2a6a7c8b380187265675f",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "62ca452c62bdcc5ff7db4b63cbd06e212f1168e3a65d709e05662e9b6c635211",
+    "original_size": "(3440, 1440)",
+    "path": "after/endless-3440x1440-camera2.jpg",
+    "review_sha256": "56475751ae3d111637eea6e62a1c2ffcf8118b781182b570b69c666baa4fbddb",
+    "review_size": "(1280, 536)"
+  },
+  {
+    "original_sha256": "4ee31fbc69a837b5f034f749e6e141621013fdbabc8520a9bde3993283755a6a",
+    "original_size": "(3840, 2160)",
+    "path": "after/endless-3840x2160-camera2.jpg",
+    "review_sha256": "46acb09cbb2900f02b180630df5c784e1b4f081b3c94fe3ff369a40ff1dc0f21",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "d754bfc135dc7e443e6dfb19ff3a514e456620f0e13e9ce74c85b3c5267aba39",
+    "original_size": "(1280, 720)",
+    "path": "after/prototype-1280x720-camera0.jpg",
+    "review_sha256": "a0a7edd1a989eb1ce9db75d44e4aeaf70f42984643e634aa5a4f5fb581b09182",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "09389da7a70e5b215b165c3cd55c025555eec01bfb46aad6aa45633352ef2c88",
+    "original_size": "(1280, 720)",
+    "path": "after/prototype-1280x720-camera1.jpg",
+    "review_sha256": "761bbc15b3b30d4bffefdcf9958f0cf8b0dc4711d33f9711b30d59c918a17c37",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "18dc557b958aa0d9a25e3da9e99f26446195e6e32012e63bf342cbb7a11cefac",
+    "original_size": "(1280, 720)",
+    "path": "after/prototype-1280x720-camera2.jpg",
+    "review_sha256": "8ce68d0827f737ec86481a5509da7d6418156d6759d0bc2c60d0cf1ae9a69dd0",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "ef59109595186b4ab2116899f4cc14bbb850ef84a39b305bf8f2ac4e33be5b9f",
+    "original_size": "(1280, 720)",
+    "path": "after/prototype-1280x720-camera3.jpg",
+    "review_sha256": "52f7f2a71970df97bca0c41c2f5388b497b95640256e3f259799cfc7d8485fa0",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "a2a2c622e9592946eb6a02ddc08592c620f5d279d7cba6705c75891afcdfb8ba",
+    "original_size": "(1280, 900)",
+    "path": "after/prototype-1280x900-camera2.jpg",
+    "review_sha256": "afc7b24414d11f9b2789c7a90a83e7ab4ade87eaaf340a5a09dc0469788dce64",
+    "review_size": "(1280, 900)"
+  },
+  {
+    "original_sha256": "86f69da27cdacc5470bc38d880406a75c151f413997c98df664e927ffe086ef0",
+    "original_size": "(1600, 1200)",
+    "path": "after/prototype-1600x1200-camera2.jpg",
+    "review_sha256": "94356de1299b4c06b635105df7113a2692fec32342762eff205e912c781e2d1b",
+    "review_size": "(1280, 960)"
+  },
+  {
+    "original_sha256": "8c85706e0aa5e695fa6ba0fae5c0ce13e36ef736cbbf73bf40d7ff30211cad08",
+    "original_size": "(1920, 1080)",
+    "path": "after/prototype-1920x1080-camera2.jpg",
+    "review_sha256": "fec5cf10e0c0eab137b48fb89755a8ebc9937dbcbd6f07adab79759c70e1cfc6",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "8838425c144d99ecae0c56e8f84461875196a4eea786ef799c082c0ddbeae741",
+    "original_size": "(2560, 1080)",
+    "path": "after/prototype-2560x1080-camera2.jpg",
+    "review_sha256": "9fc53ab601d90456c73a574f0d218390e2c8412ba2d270dcdb65dc9770f103a4",
+    "review_size": "(1280, 540)"
+  },
+  {
+    "original_sha256": "0f022249df085073f324315b4a89131760879f0a683a1b7717da885f10be71e7",
+    "original_size": "(2560, 1440)",
+    "path": "after/prototype-2560x1440-camera2.jpg",
+    "review_sha256": "3aee1b9db7c0e30d012287f8da7b3890a5cf497950cbc569ae6dd8f9ae966f81",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "8a4078011b184f06f481d6646962f3ebbef58de746dcb1014d5f3981a47fb638",
+    "original_size": "(3440, 1440)",
+    "path": "after/prototype-3440x1440-camera2.jpg",
+    "review_sha256": "23bc9bf5e86ff6e52bb841d01839d83c655592256ffad67b03ef50b81b892288",
+    "review_size": "(1280, 536)"
+  },
+  {
+    "original_sha256": "82c429e671c64c2e3863997f2b7b836592e95b2f14765e8ecb37ca063c72c799",
+    "original_size": "(3840, 2160)",
+    "path": "after/prototype-3840x2160-camera2.jpg",
+    "review_sha256": "b357c9806f2ba05208faa0e89461487313ce963c49efb55be88c9fe63b2d0174",
+    "review_size": "(1280, 720)"
+  },
+  {
+    "original_sha256": "68599b7b48c2b129de6697328157f9455bded8023a0939fe637774d3e6ea9dfa",
+    "original_size": "(960, 720)",
+    "path": "native/endless-4x3.jpg",
+    "review_sha256": "215480ddc04af0490c986a0fd7e15225e38647c2a576849f026889055f0bce59",
+    "review_size": "(960, 720)"
+  },
+  {
+    "original_sha256": "2895567a25c3e44f8d10ab03b1b7948928210e8c4b8e36062dc85959a2848ee2",
+    "original_size": "(1920, 1200)",
+    "path": "native/endless-fullscreen.jpg",
+    "review_sha256": "fd6109a6788ae8b8c260e48d002898a951e55843565d8eb173e609c4b012f144",
+    "review_size": "(1280, 800)"
+  },
+  {
+    "original_sha256": "8665bda3d029499e3ed60bfde6099639a37ee309d815200addb279e25eb13651",
+    "original_size": "(1440, 600)",
+    "path": "native/endless-ultrawide.jpg",
+    "review_sha256": "cbbddef76afe836d5a353f963d00555730f2e35683cd98ad3fd1ceacee7da57d",
+    "review_size": "(1280, 533)"
+  },
+  {
+    "original_sha256": "bb97905f02281c13ab6db64ad7cc7bce53e8f6abaca09b769172c88af954d3c5",
+    "original_size": "(960, 720)",
+    "path": "native/prototype-4x3.jpg",
+    "review_sha256": "7e15955bebfb04a3f091f9d7cc7e0fb8a8161895c83c71ec118030e6a773ea1b",
+    "review_size": "(960, 720)"
+  },
+  {
+    "original_sha256": "65bb197eb02d797664f8ceae9a4c90d9d868669f6284292b26a726e14b81b5f2",
+    "original_size": "(1920, 1200)",
+    "path": "native/prototype-fullscreen.jpg",
+    "review_sha256": "275108671a16b8b2c248b169b617a90495b80fa55b0a321ea6070a0e0c6614d6",
+    "review_size": "(1280, 800)"
+  },
+  {
+    "original_sha256": "7a9e52780c2037190a1d2168197d5736877301f3a4371216a451fb73ae315ea6",
+    "original_size": "(1440, 600)",
+    "path": "native/prototype-ultrawide.jpg",
+    "review_sha256": "975e777ff2b75cb3ec8e8210c318a5c4980035e02d6848e871b91cc28e5ad87b",
+    "review_size": "(1280, 533)"
+  },
+  {
+    "original_sha256": "bacc968e058341f5d61b29296733bf0c03f550d8ad2f682578c7bc12e0376705",
+    "original_size": "(3440, 1440)",
+    "path": "transitions/endless-ultrawide-seam.jpg",
+    "review_sha256": "507633745d8c9b0f541440e816bfa2f6d98f962a6e6cd91b69ef756208063a7f",
+    "review_size": "(1280, 536)"
+  },
+  {
+    "original_sha256": "f11091f5bfd94f291fba875f0b3de81f269d1a0513aa2c2202615ef903ff58d4",
+    "original_size": "(3440, 1440)",
+    "path": "transitions/prototype-ultrawide-seam.jpg",
+    "review_sha256": "9111e6c830d0dd54dbb1053c53f53c415f382c813c0079ad7d236e38a22a2936",
+    "review_size": "(1280, 536)"
+  }
+]

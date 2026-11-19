@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SSR display framing review</title>
+<style>body{margin:24px;background:#121722;color:#e8edf6;font:16px system-ui}a{color:#9bd4ff}h1{font-size:26px}label{display:inline-block;margin:0 18px 16px 0}select{padding:8px;background:#253047;color:inherit;border:1px solid #68768e}main{display:grid;grid-template-columns:1fr 1fr;gap:18px}figure{margin:0}img{width:100%;height:auto;background:black}figcaption{padding:8px 0}p{max-width:1100px;line-height:1.5}@media(max-width:800px){main{grid-template-columns:1fr}}</style>
+<h1>SSR display framing: isolated proposal</h1>
+<p><a href="README.md">Evidence and tests</a> · <a href="../DISPLAY_FRAMING.md">Root cause and contract</a>. Fixed 1600×900 gameplay canvas, fitted uniformly with bars. Existing 16:9 composition retained.</p>
+<p>Framing reconstructions, not native 4K quality or FPS captures. Review images downsampled to at most 1280 px. Frozen seed 18 / Default atmosphere; shader animation can differ. All cameras are captured at 720p; Dramatic also covers every requested size.</p>
+<label>Mode <select id="mode"><option value="prototype">Prototype</option><option value="endless">Endless</option></select></label>
+<label>Client size <select id="size"></select></label>
+<label>Camera <select id="camera"><option value="2">Dramatic</option><option value="3">Wide</option><option value="1">Real Pinball</option><option value="0">Top-down</option></select></label>
+<main><figure><figcaption>Before — Expand</figcaption><img id="before" alt="Before framing"></figure><figure><figcaption>After — fixed 16:9 fit</figcaption><img id="after" alt="After framing"></figure></main>
+<p id="detail"></p>
+<script>
+const sizes=["1280x720", "1920x1080", "2560x1440", "3840x2160", "2560x1080", "3440x1440", "1600x1200", "1280x900"];
+const mode=document.getElementById('mode'),size=document.getElementById('size'),camera=document.getElementById('camera');
+sizes.forEach(s=>size.add(new Option(s,s)));size.value='3440x1440';
+function update(event){if(event?.target===camera&&camera.value!=='2')size.value='1280x720';if(event?.target===size&&size.value!=='1280x720')camera.value='2';const name=`${mode.value}-${size.value}-camera${camera.value}.jpg`;['before','after'].forEach(side=>document.getElementById(side).src=`${side}/${name}`);document.getElementById('detail').textContent=`${size.value}: all foreground, background, composite, Retro and HUD layers share the same fit. Camera presets are unchanged. Native F11, pointer mapping and Zone seam evidence appear in the evidence index.`;}
+[mode,size,camera].forEach(x=>x.addEventListener('change',update));update();
+</script></html>

@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Display framing proposal — isolated review, 2026-11-19
+
+Bro isolated this work on `codex/display-framing-contract`, based on pushed main `5ceab0c`, after Launch Tube. It is a review proposal, not an integrated production decision. The old 1280×900 / Expand root already keeps the same composition across 16:9 resolutions, but changes the visible world when switching aspect or entering fullscreen from the default window. The proposed gameplay-only 1600×900 / Keep contract preserves the existing 16:9 camera and Retro density, adds bars elsewhere, and restores editor/host scaling on exit. All four cameras, native input, Prototype, Endless and their Zone crossfades have targeted evidence. See [the display report](DISPLAY_FRAMING.md) and its before/after gallery; tomorrow's decision is whether this fixed reference and its bars are the desired presentation.
+
 ## Optional Launch Tube after closure — 2026-11-18
 
 Alex asked for a player-controlled launch machine without changing old Acts. The optional Launch Tube owns a path from dock to exit and constrains the real physics ball; theme art never drives it. Weak charge rolls back, successful charge releases with materially different speed, and blocked exits return safely. Prototype keeps its existing soft retry and objectives, but a valid active-Act tube returns the ball to dock and waits for a fresh hold/release. Held-through-death input cannot relaunch. Neighboring streamed Acts never own retry; ordinary Acts keep their existing auto-launch.

@@ -88,6 +88,7 @@ func _uses_authoring_builder() -> bool:
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
+ preload("res://scripts/display_framing.gd").attach(self)
  preload("res://scripts/rendering_options.gd").install_profile_controls(self)
  # Runs after camera/animation/light updates, including paused overview input.
  RenderingServer.frame_pre_draw.connect(_update_foreground_contribution)
