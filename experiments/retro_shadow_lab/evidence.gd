@@ -34,6 +34,16 @@ func run(owner: Node) -> void:
 func frames(count: int) -> void:
  for i in count: await lab.get_tree().process_frame
 
+func curve_shader() -> String:
+ return """shader_type canvas_item;
+#include "res://experiments/retro_shadow_lab/response_curve.gdshaderinc"
+void fragment() {
+ const int counts[5] = {8, 4, 3, 2, 0};
+ float input_value = mix(0.25, 1.0, floor(FRAGCOORD.x) / 256.0);
+ float value = lab_response(input_value, 0.5, counts[int(FRAGCOORD.y)], true, 0.75, vec4(1.0), 0.0);
+ COLOR = vec4(vec3(value), 1.0);
+}"""
+
 func check_curve() -> void:
  var view := SubViewport.new()
  view.size = Vector2i(257, 5)
@@ -43,14 +53,7 @@ func check_curve() -> void:
  var strip := ColorRect.new()
  var material := ShaderMaterial.new()
  var program := Shader.new()
- program.code = """shader_type canvas_item;
-#include "res://experiments/retro_shadow_lab/response_curve.gdshaderinc"
-void fragment() {
- const int counts[5] = {8, 4, 3, 2, 0};
- float input_value = mix(0.25, 1.0, floor(FRAGCOORD.x) / 256.0);
- float value = lab_response(input_value, 0.5, counts[int(FRAGCOORD.y)], true, 0.75, vec4(1.0), 0.0);
- COLOR = vec4(vec3(value), 1.0);
-}"""
+ program.code = curve_shader()
  material.shader = program
  strip.material = material
  strip.size = view.size
@@ -360,7 +363,7 @@ func motion_fixtures() -> void:
  for act in [1, 2, 3]:
   lab.act_index = act
   if not await lab.open_game(): return
-  lab.set_mode(3)
+  set_fixture_treatment()
   for preset: int in lab.game.PLAY_CAMERAS:
    lab.game.select_play_camera(preset)
    lab.game.presentation.camera_settings.zoom = 1.8
@@ -371,10 +374,7 @@ func motion_fixtures() -> void:
    # native camera pose to separate the tube's own screen-door art from ours.
    lab.game.select_play_camera(lab.game.PLAY_CAMERAS[0])
    lab.camera(lab.start_focus)
-   for mode in lab.MENU_ORDER:
-    lab.set_mode(mode)
-    await shot("tube-shadow-%d" % mode)
-   lab.set_mode(3)
+   await tube_study()
   var bumper: Dictionary = {}
   var chute: Dictionary = {}
   var start_bumper := Vector2.ZERO
@@ -414,10 +414,28 @@ func motion_fixtures() -> void:
   lab.set_motion(0)
   await close_case()
 
+func set_fixture_treatment() -> void:
+ lab.set_mode(3)
+
+func tube_study() -> void:
+ for mode in lab.MENU_ORDER:
+  lab.set_mode(mode)
+  await shot("tube-shadow-%d" % mode)
+ set_fixture_treatment()
+
+func crossing_modes() -> Array:
+ return [0,3]
+
+func set_crossing_mode(mode: int) -> void:
+ lab.set_mode(mode)
+
+func crossing_extras() -> Dictionary:
+ return {}
+
 func crossing() -> void:
  lab.endless = true
- for mode in [0, 3]:
-  lab.set_mode(mode)
+ for mode: int in crossing_modes():
+  set_crossing_mode(mode)
   if not await lab.open_game(): return
   var game: Node = lab.game
   lab.set_motion(2)
@@ -448,5 +466,6 @@ func crossing() -> void:
   check(overlap and game._background_zone >= 1 and game.library.fallback_builds == 0, "Endless crossfade, disk-only, mode %d" % mode)
   check(lab.full_retro_active(), "Full Retro at the streamed Zone boundary, mode %d" % mode)
   rows.append({"runtime": "Endless", "mode": mode, "startup_ms": lab.open_ms, "prep_ms": prep, "crossing": Report.timing(intervals), "boundary_wait_frames": boundary_wait, "fallback": game.library.fallback_builds, "receiver_inventory": lab.receivers.stats()})
+  rows[-1].merge(crossing_extras())
   lab.set_motion(0)
   await close_case()

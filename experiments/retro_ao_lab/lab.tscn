@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://experiments/retro_ao_lab/lab.gd" id="1"]
+[ext_resource type="Script" path="res://experiments/retro_ao_lab/evidence.gd" id="2"]
+
+[node name="RetroAOLab" type="Node"]
+script = ExtResource("1")
+lab_title = "Retro AO Lab"
+capture_argument = "--ao-evidence"
+capture_script = ExtResource("2")

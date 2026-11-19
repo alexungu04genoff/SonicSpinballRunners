@@ -1,0 +1,33 @@
+suite,rendered,exit_code,seconds,timed_out,script_error,test_project,result
+authored_gimmick,True,0,39.66,False,False,checkout,RESULT | Authored gimmicks | 93 checks | 0 failures
+pinball_mechanics,True,0,15.73,False,False,checkout,RESULT | Pinball mechanics | 58 checks | 0 failures
+soft_retry,True,0,48.08,False,False,checkout,RESULT | Soft retry | 62 checks | 0 failures
+ramp_height_theme,True,0,31.1,False,False,checkout,RESULT | Ramp height and themes | 100 checks | 0 failures
+theme_texture,False,0,10.36,False,False,checkout,RESULT | Theme texture coverage | 172 checks | 0 failures
+endless_reuse,True,0,6.58,False,False,checkout,ENDLESS_REUSE_REGRESSION | checks=131 failures=0
+scorecraft,False,0,7.44,False,False,checkout,RESULT | Scorecraft | 29 checks | 0 failures
+buddy_scoring,False,0,3.3,False,False,checkout,RESULT | Adventure Buddies | 70 checks | 0 failures
+enemy,False,0,6.72,False,False,checkout,RESULT | Enemy integration | 50 checks | 0 failures
+authored_main_game,False,0,10.8,False,False,checkout,RESULT | Authored main game | 70 checks | 0 failures
+traversal_authoring,False,0,268.3,False,False,checkout,RESULT | Traversal authoring | 36 checks | 0 failures
+traversal_prototype,True,0,23.78,False,False,verified isolated traversal fixture,RESULT | Traversal Prototype | 20 checks | 0 failures
+flipper_contact_response,False,0,36.34,False,False,checkout,Exit 0
+telemetry_evidence,False,0,7.25,False,False,checkout,RESULT | Telemetry evidence | 30 checks | 0 failures
+prototype_plan,False,0,18.47,False,False,checkout,RESULT | Prototype plan | 59 checks | 0 failures
+prototype_setup,True,0,65.66,False,False,checkout,RESULT | Prototype setup | 16 checks | 0 failures
+prototype_archive,True,0,70.41,False,False,checkout,RESULT | Prototype archive | 34 checks | 0 failures
+foreground_contribution,True,0,15.0,False,False,checkout,RESULT | foreground contribution | 36 checks | 0 failures
+geometry_bake,False,0,18.09,False,False,checkout,GEOMETRY_BAKE_REGRESSION | checks=2842 failures=0
+act_geometry,False,0,2.16,False,False,checkout,RESULT | Act geometry | 3461 checks | 0 failures
+geometry_density,False,0,2.07,False,False,checkout,GEOMETRY_DENSITY | flower_triangles=96 checks=28 failures=0
+economy_v1,False,0,4.85,False,False,checkout,RESULT | Economy V1 integration | 44 checks | 0 failures
+pinball_vocabulary,False,0,2.45,False,False,checkout,Exit 0
+gimmick_batch,False,0,21.24,False,False,checkout,RESULT | Gimmick batch | 103 checks | 0 failures
+scoring_flow,False,0,7.07,False,False,checkout,RESULT | Scoring flow | 31 checks | 0 failures
+rail_rings,False,0,3.28,False,False,checkout,RESULT | Rail rings | 13 checks | 0 failures
+profile,False,0,0.58,False,False,checkout,Profile regression checks: 0 failures
+prototype_budget,True,0,51.4,False,False,checkout,RESULT | Prototype budget | 57 checks | 0 failures
+prototype_run,True,0,85.71,False,False,checkout,RESULT | Prototype run | 162 checks | 0 failures
+run_telemetry,False,0,0.97,False,False,checkout,RESULT | Run telemetry | 14 checks | 0 failures
+prototype_appearance,True,0,59.99,False,False,checkout,RESULT | Prototype appearance regression | 70 checks | 0 failures
+endless_bake_audit,False,0,20.75,False,False,checkout,ENDLESS_BAKE_AUDIT | variants=56 checks=566 failures=0

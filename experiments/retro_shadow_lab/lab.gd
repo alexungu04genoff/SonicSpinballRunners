@@ -8,6 +8,9 @@ const ACTS := [Fixture.DEFAULT_ACT, "res://data/acts/Authored/RampMania.tres", "
 const MODES := ["Normal", "Clean · 2 levels", "Clean · 4 levels", "Ordered dither · 4 levels", "Clean · 3 levels", "Clean · 8 levels"]
 const MENU_ORDER := [0, 5, 2, 4, 3, 1]
 const PROFILES := ["production", "quality", "performance"]
+@export var lab_title := "Retro Shadow Lab"
+@export var capture_argument := "--shadow-evidence"
+@export var capture_script: GDScript
 var receivers := Receivers.new()
 var fixture: RefCounted
 var game: Node
@@ -52,7 +55,7 @@ func _ready() -> void:
  var window := get_window()
  window.size = Vector2i(1280, 900)
  Review.position_review_window(window)
- window.title = "Retro Shadow Lab"
+ window.title = lab_title
  get_tree().auto_accept_quit = false
  window.close_requested.connect(close)
  DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
@@ -64,8 +67,9 @@ func _ready() -> void:
  Review.Options.settings_path = output.path_join("isolated-graphics.cfg")
  Review.Options.update_quality(Review.profile(PROFILES[profile]), false)
  build_ui()
- if "--shadow-evidence" in OS.get_cmdline_user_args():
-  evidence = load("res://experiments/retro_shadow_lab/evidence.gd").new()
+ if capture_argument in OS.get_cmdline_user_args():
+  var runner: GDScript = capture_script if capture_script else load("res://experiments/retro_shadow_lab/evidence.gd")
+  evidence = runner.new()
   evidence.run.call_deferred(self)
  else:
   open_game.call_deferred()
@@ -163,7 +167,7 @@ func set_native_range() -> void:
 func set_mode(index: int) -> void:
  mode = index
  mode_choice.select(MENU_ORDER.find(index))
- pattern_row.visible = index == 3
+ if pattern_row: pattern_row.visible = index == 3
  receivers.mode = -1 if index == 0 else index
  if game:
   receivers.sync(game)
@@ -280,11 +284,7 @@ func open_game() -> bool:
  start_focus = game.ball.position
  if fixture: game.fps_label.hide()
  game.select_play_camera(game.PLAY_CAMERAS[camera_choice.selected])
- if study_card:
-  preload("penumbra_card.gd").place(game)
-  game.presentation._key_light.shadow_blur = 1.25
-  game.presentation._key_light.light_angular_distance = 4.0
-  game.presentation.camera_settings.zoom = 2.1
+ if study_card: place_study()
  set_focus(focus_choice.selected)
  blur.set_value_no_signal(game.presentation._key_light.shadow_blur)
  angle.set_value_no_signal(game.presentation._key_light.light_angular_distance)
@@ -295,9 +295,15 @@ func open_game() -> bool:
  set_rings(rings)
  set_mode(mode)
  busy = false
- layer.visible = "--shadow-evidence" not in OS.get_cmdline_user_args()
+ layer.visible = capture_argument not in OS.get_cmdline_user_args()
  refresh()
  return true
+
+func place_study() -> void:
+ preload("penumbra_card.gd").place(game)
+ game.presentation._key_light.shadow_blur = 1.25
+ game.presentation._key_light.light_angular_distance = 4.0
+ game.presentation.camera_settings.zoom = 2.1
 
 func failed(message: String) -> bool:
  failures.append(message)

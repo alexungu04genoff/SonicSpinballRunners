@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Depth on the risers — 2026-11-19
+
+Alex wanted that remembered SA2-era depth with full Retro on. The Retro AO Lab gave us two different answers. A slight authored value change across a stair riser reads like part of the architecture. A moving object over a flat dock needs actual contact shading, and native subtle SSAO did that best. Clean 8 and Clean 4 let us inspect the tonal steps independently of the ordered pattern. The live authored material experiment has a substantial first-use stall. Keep the live version in the Lab. The face rule itself is worth considering when authoring terrain. Production uses the existing lighting and native shadows. [Stairs, gameplay, motion and timings](RETRO_AO_LAB.md)
+
 ## Give the sun a limited tonal range — 2026-11-19
 
 Alex wanted the memory of an old soft gradient. The isolated Retro Shadow Lab now lets us turn that same filtered sun shadow into 8, 4, 3 or 2 clean tones and compare it with the ordered pattern we liked. Four tones give the broad penumbra a readable contour. Eight are quieter on regular terrain. The patterned version is our modern Saturn/Dreamcast-inspired alternative. All three use the existing key, casters and full Retro stack. The native shadow remains the game's default. [Matched screenshots, motion and portable review](RETRO_SHADOW_LAB.md)
