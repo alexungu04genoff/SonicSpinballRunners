@@ -26,10 +26,7 @@ func specialize(source: Shader) -> Shader:
  var code := source.code
  # Existing cavity maps in Rooftop and Chemical explicitly keep direct AO at
  # zero. Preserve the authored AO and accept that exact native assignment.
- var zero_direct := RegEx.create_from_string("\\bAO_LIGHT_AFFECT\\s*=\\s*0(?:\\.0+)?\\s*;")
- if "AO_LIGHT_AFFECT" in zero_direct.sub(code,"",true): return null
- for token in ["ALPHA", "unshaded", "depth_test_disabled", "depth_draw_never", "blend_add", "blend_sub", "blend_mul", "hint_screen_texture", "hint_depth_texture", "void light", "skip_vertex_transform", "world_vertex_coords"]:
-  if token in code: return null
+ if not ShadowReceivers.Terrain.supports_face_shader(code): return null
  var fragment := RegEx.create_from_string("void\\s+fragment\\s*\\(\\s*\\)\\s*\\{").search(code)
  if not fragment: return null
  var start := fragment.get_end()

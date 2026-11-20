@@ -1,5 +1,7 @@
 # Retro AO Lab
 
+**Production follow-up, November 20.** Authored terrain faces are now baked into regular Prototype and Endless play. The isolated Lab still starts with AO off for its comparisons. [Production captures and settings](TERRAIN_FACE_SHADING.md)
+
 This review compares ambient depth cues under the complete N64-ish, VHS and CRT presentation. The primary control is ordinary Godot shading with native directional shadows. The Lab opens with ambient occlusion off. It lives in its own scene and has no production entry point. The starting revision was `536b112269ff708a78d6b17ec07c2a1fbdd64587` on `main`.
 
 ## Run the review

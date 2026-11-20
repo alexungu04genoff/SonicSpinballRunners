@@ -49,7 +49,7 @@ func run() -> void:
  await process_frame
  paused = true
  game.presentation.set_camera_follow(false)
- game.retro_filter.set_preset(0)
+ game.retro_filter.set_effects(game.retro_filter.settings.default_effects)
  var identity: int = game.ball.get_instance_id()
  var manager: Node = game.ball.mechanics
  var stored_path: Dictionary = manager.items[2].path.duplicate(true)
@@ -94,7 +94,11 @@ func run() -> void:
   if theme == "chemical_plant":
    var source: ShaderMaterial = definition.ramp_materials().deck
    var material: ShaderMaterial = deck.material_override
-   check(definition.theme_id == "chemical_plant" and material != source and material.shader == source.shader and material.get_meta("atmosphere_hue", "") == "ramps", "Chemical ramp owns a separate material using the current theme shader and ramp atmosphere category")
+   var surface := preload("res://scripts/atmosphere/surface_controls.gd")
+   var expected_deck: ShaderMaterial = source.duplicate()
+   surface.prepare(expected_deck,true)
+   check(definition.theme_id == "chemical_plant" and material != source and material.shader == expected_deck.shader and material.get_meta("atmosphere_hue", "") == "ramps", "Chemical ramp uses the prepared version of its exact theme shader and the ramp atmosphere category")
+   check(surface.FACE_INCLUDE in material.shader.code and surface.FACE_INCLUDE not in source.shader.code,"Face shading is local to the terrain copy of the deck material")
    var actual_texture: Texture2D = material.get_shader_parameter("albedo_texture")
    var source_texture: Texture2D = source.get_shader_parameter("albedo_texture")
    check(actual_texture != null and actual_texture == source_texture, "Chemical ramp retains the authoritative theme deck texture")

@@ -65,7 +65,7 @@ func _ready() -> void:
   if arg == "--penumbra-study": study_card = true; mode = 5
  DirAccess.make_dir_recursive_absolute(output)
  Review.Options.settings_path = output.path_join("isolated-graphics.cfg")
- Review.Options.update_quality(Review.profile(PROFILES[profile]), false)
+ Review.Options.update_quality(lab_profile(profile), false)
  build_ui()
  if capture_argument in OS.get_cmdline_user_args():
   var runner: GDScript = capture_script if capture_script else load("res://experiments/retro_shadow_lab/evidence.gd")
@@ -174,9 +174,17 @@ func set_mode(index: int) -> void:
   if index != 0: receivers.update()
  refresh()
 
+func lab_profile(index: int) -> Dictionary:
+ var settings := Review.profile(PROFILES[index])
+ # Both experiment scenes provide their own treatments over the historical
+ # control image. Keep the production choices out of their A/B comparisons.
+ settings.authored_faces = false
+ settings.clean_eight_shadows = false
+ return settings
+
 func set_profile(index: int) -> void:
  profile = index
- Review.Options.update_quality(Review.profile(PROFILES[index]), false)
+ Review.Options.update_quality(lab_profile(index), false)
  refresh()
 
 func full_retro_active() -> bool:

@@ -1,5 +1,7 @@
 # Retro Shadow Lab
 
+**Production selection, November 20.** The game uses native shadows with authored terrain faces and full Retro. Clean 8 is the optional device setting. The comparisons below record the earlier art study. [Gameplay captures and settings](TERRAIN_FACE_SHADING.md)
+
 **Clean four-level shadows are the strongest art-direction candidate.** On a broad penumbra they give the shadow a deliberate contour and retain a soft outer shoulder. Eight levels give a quieter, low-precision gradient. Switching between them on ordinary Green Hill terrain takes a close look. The neutral card makes the distinction easy to see. The four-level ordered pattern is a separate modern Saturn/Dreamcast-inspired treatment. Historical hardware fidelity was outside the scope of this experiment.
 
 ![Six matched treatments of the same real shadow with the complete Retro stack](retro-shadow-lab/penumbra.jpg)

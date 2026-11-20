@@ -7,6 +7,7 @@ const PROFILE_SCALES := [75, 85, 100]
 const CHOICES := {
  "directional_shadow_resolution": SHADOW_RESOLUTIONS, "directional_shadow_cascades": SHADOW_CASCADES,
  "ultra_filter": [false, true], "fxaa": [false, true], "msaa": PROFILE_MSAA, "scale_percent": PROFILE_SCALES,
+ "authored_faces": [false, true], "clean_eight_shadows": [false, true],
 }
 static var settings_path := "user://graphics_settings.cfg"
 static var _loaded := false
@@ -14,12 +15,13 @@ static var _quality := {}
 static var _profile_fxaa := -1
 static var _views: Array[WeakRef] = []
 static var _lights: Array[WeakRef] = []
+static var clean_eight_enabled := false
 
 static func defaults() -> Dictionary:
  return {"directional_shadow_resolution": int(ProjectSettings.get_setting("rendering/lights_and_shadows/directional_shadow/size", 8192)),
   "directional_shadow_cascades": 4, "ultra_filter": false,
   "fxaa": ProjectSettings.get_setting("rendering/anti_aliasing/quality/screen_space_aa") == Viewport.SCREEN_SPACE_AA_FXAA,
-  "msaa": 4, "scale_percent": 100}
+  "msaa": 4, "scale_percent": 100, "authored_faces": true, "clean_eight_shadows": false}
 
 static func quality() -> Dictionary:
  _load_settings()
@@ -73,6 +75,7 @@ static func update_quality(changes: Dictionary, persist := true) -> Error:
   if error != OK: return error
  var previous := _quality.duplicate()
  _quality.merge(changes, true)
+ if changes.has("authored_faces") or changes.has("clean_eight_shadows"): _apply_terrain()
  if _quality.directional_shadow_resolution != previous.directional_shadow_resolution: _apply_resolution()
  if _quality.ultra_filter != previous.ultra_filter: _apply_filter()
  if _quality.directional_shadow_cascades != previous.directional_shadow_cascades:
@@ -140,6 +143,11 @@ static func _load_settings() -> void:
    if value.is_valid_int() and int(value) in PROFILE_SCALES: _quality.scale_percent = int(value)
  _apply_resolution()
  _apply_filter()
+ _apply_terrain()
+
+static func _apply_terrain() -> void:
+ clean_eight_enabled = _quality.clean_eight_shadows and RenderingServer.get_current_rendering_method() == "forward_plus"
+ RenderingServer.global_shader_parameter_set("authored_terrain_faces", _quality.authored_faces)
 
 static func _apply_views() -> void:
  for reference: WeakRef in _views:

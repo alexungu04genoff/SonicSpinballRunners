@@ -60,6 +60,33 @@ func run() -> void:
  root.add_child(lab)
  for frame in 8: await process_frame
  var panel = lab.lighting_controls
+ check(panel.authored_faces.button_pressed and not panel.clean_eight.button_pressed, "Approved terrain look defaults to authored faces and native shadows")
+ panel.authored_faces.button_pressed = false
+ panel.clean_eight.button_pressed = true
+ if DisplayServer.get_name() != "headless":
+  var forward := RenderingServer.get_current_rendering_method() == "forward_plus"
+  check(Options.clean_eight_enabled == forward and panel.clean_eight.disabled == (not forward),"Clean 8 availability follows the renderer")
+ var terrain_settings := ConfigFile.new()
+ check(terrain_settings.load(Options.settings_path) == OK and not terrain_settings.get_value("rendering","authored_faces",true) and terrain_settings.get_value("rendering","clean_eight_shadows",false), "Terrain appearance choices persist through the device controls")
+ if Options.clean_eight_enabled and DisplayServer.get_name() != "headless":
+  await RenderingServer.frame_post_draw
+  var bands: RefCounted = lab.terrain_shadows.bands
+  check(bands != null and bands.stats().receivers > 0, "Clean 8 reaches the source preview")
+  var ground_synced := false
+  var previous_brightness: float = panel.values["brightness/terrain_ground"]
+  var previous_override: bool = panel.values["override/terrain_ground"]
+  panel.set_value("override/terrain_ground",true)
+  panel.set_value("brightness/terrain_ground",0.75)
+  for owner: Dictionary in bands.owners.values():
+   for source: ShaderMaterial in owner.materials:
+    if source.get_meta("atmosphere_hue","") != "terrain_ground": continue
+    var brightness: Variant = source.get_shader_parameter("atmosphere_brightness")
+    ground_synced = is_equal_approx(float(brightness),0.75) and brightness == owner.materials[source].get_shader_parameter("atmosphere_brightness")
+  check(ground_synced,"Live terrain palette reaches both native and Clean 8 materials")
+  panel.set_value("brightness/terrain_ground",previous_brightness)
+  panel.set_value("override/terrain_ground",previous_override)
+ panel.authored_faces.button_pressed = true
+ panel.clean_eight.button_pressed = false
  panel.settings_path = "user://device-shadow-lab-regression.cfg"
  DirAccess.make_dir_recursive_absolute("user://device-shadow-variants")
  for theme: String in Variants.THEMES:

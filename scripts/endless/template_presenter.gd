@@ -102,6 +102,7 @@ func prepare_act(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
  await _finish_borders()
  preload("res://scripts/authored_act/terrain_clearance.gd").apply(terrain_root, runtime.mechanics.items, preload("res://scripts/act_dimensions.gd").BALL_RADIUS_CELLS * cell_size, SCALE)
  TerrainFacade.consolidate(floor_root, terrain_root, authored_floor_outline, wall_side)
+ preload("res://scripts/rendering/terrain_faces.gd").prepare(self, scenery_root)
 
 func _moving_objects(runtime: Dictionary) -> void:
  var gold := material(Color("ffd568"), 0.08)

@@ -18,6 +18,7 @@ var _fps_elapsed := 0.0
 var _timing_elapsed := 0.0
 var _print_frame_timing := false
 var view_container: SubViewportContainer
+var terrain_shadows := preload("res://scripts/rendering/terrain_shadows.gd").new()
 var debug_open := false
 var play_buttons: HBoxContainer
 var study_buttons: HBoxContainer
@@ -231,6 +232,7 @@ func _build_view() -> void:
  view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
  container.add_child(view)
  _build_presentation()
+ add_child(terrain_shadows)
 
 func _build_presentation() -> void:
  presentation = ThemedPresentation.new()

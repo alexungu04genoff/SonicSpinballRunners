@@ -1,10 +1,10 @@
 # Device shadow quality
 
-Atmosphere owns shadow enablement, opacity, filter radius, physical sun angle, depth/normal bias and maximum distance. Device graphics owns atlas size, cascades, directional filter quality, FXAA, MSAA and native 3D scale.
+Atmosphere owns shadow enablement, opacity, filter radius, physical sun angle, depth/normal bias and maximum distance. Device graphics owns atlas size, cascades, directional filter quality, FXAA, MSAA, native 3D scale and the terrain face and shadow treatments.
 
 ## Controls and defaults
 
-Open **Atmosphere Lab → Shadows**. The six **Device Quality** controls save immediately in the `rendering` section of `user://graphics_settings.cfg`.
+Open **Atmosphere Lab → Shadows**. The **Device Quality** controls save immediately in the `rendering` section of `user://graphics_settings.cfg`.
 
 | Key | Values | No saved preference |
 | --- | --- | --- |
@@ -14,6 +14,10 @@ Open **Atmosphere Lab → Shadows**. The six **Device Quality** controls save im
 | `fxaa` | Off / on | Project screen-space AA, currently off |
 | `msaa` | 0, 2, 4 samples | 4 |
 | `scale_percent` | 75, 85, 100 | 100 |
+| `authored_faces` | Off / on | On |
+| `clean_eight_shadows` | Off / on (Forward+) | Off, native gradient |
+
+**Authored terrain faces** gives risers, sidewalls and undersides a little more depth. **Clean 8 shadow gradient** rounds the filtered directional shadow to eight attenuation levels on eligible terrain. Both switches work with the full Retro stack. [Matched Prototype screenshots and verification](TERRAIN_FACE_SHADING.md)
 
 Legacy `smooth_shadows=true` enables Ultra and FXAA. Explicit new keys take precedence independently. The first successful device save writes both keys and removes the legacy key. Reads preserve the file. Saves merge with the latest file and preserve unrelated keys.
 
@@ -32,7 +36,7 @@ Directional light registrations use weak references and apply 1/2/4 cascades imm
 - Atmosphere runtime configuration used by streamed Zone backdrops. These lights still have shadows explicitly disabled.
 - Temporary foreground/background lights used to warm disk-baked visual recipes. Warm-up viewports also inherit FXAA.
 
-Atmosphere lighting snapshots/blends contain no cascade mode. Cached light metadata does not own it. Registering a light never changes `shadow_enabled` or artistic properties. There are no per-frame scene scans and no geometry or baked-lighting architecture changes. Existing source-fingerprint rules can require an ordinary rebake after this code update; changing device preferences does not invalidate bakes.
+Atmosphere snapshots and blends draw their cascade mode from device policy. Light registration preserves `shadow_enabled` and the artistic properties. The native terrain look uses the ordinary opaque pass. Clean 8 tracks resident Acts and attaches the correction when a new foreground becomes ready. Source changes can require an ordinary rebake. Changing device preferences takes effect with the same disk recipes.
 
 Atlas size and cascade modes are supported by Forward+, Mobile and Compatibility, so the numeric preferences are shared across renderers. Ultra shadow filtering and FXAA require Forward+/Mobile. The Lab disables both toggles in Compatibility and retains the preferences for later supported launches. Angular softness retains its existing Forward+-only control. Headless runs explicitly state that they cannot compare rendered shadows.
 

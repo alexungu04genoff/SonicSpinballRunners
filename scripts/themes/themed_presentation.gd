@@ -117,6 +117,7 @@ func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> voi
  _add_border(authored_floor_outline, floor_obstacles, theme_definition.floor_border_width, 0.0, theme_definition.floor_border_material, floor_root, "FloorPathBorder")
  preload("res://scripts/authored_act/terrain_clearance.gd").apply(terrain_root, runtime.mechanics.items, preload("res://scripts/act_dimensions.gd").BALL_RADIUS_CELLS * cell_size, SCALE)
  TerrainFacade.consolidate(floor_root, terrain_root, authored_floor_outline, wall_side)
+ preload("res://scripts/rendering/terrain_faces.gd").prepare(self, scenery_root)
  _finish_terrain_skin()
  _build_authored_decor(runtime, cell_size)
 

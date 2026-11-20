@@ -29,6 +29,8 @@ const Review = preload("res://scripts/diagnostics/shadow_review.gd")
 var review := "--shadow-review" in OS.get_cmdline_user_args()
 var review_rings: CheckButton
 var ultra_filter: CheckButton
+var authored_faces: CheckButton
+var clean_eight: CheckButton
 var fxaa: CheckButton
 var msaa: OptionButton
 var native_scale: OptionButton
@@ -276,8 +278,10 @@ func _build_device_shadow_controls(controls: VBoxContainer) -> void:
  controls.add_child(note)
  shadow_resolution = _device_choice(controls, "Shadow atlas (px)", RenderingOptions.SHADOW_RESOLUTIONS, "directional_shadow_resolution")
  shadow_cascades = _device_choice(controls, "Cascades", RenderingOptions.SHADOW_CASCADES, "directional_shadow_cascades")
- ultra_filter = _device_toggle(controls, "Ultra shadow filter", "ultra_filter")
- fxaa = _device_toggle(controls, "FXAA", "fxaa")
+ authored_faces = _device_toggle(controls, "Authored terrain faces", "authored_faces")
+ clean_eight = _device_toggle(controls, "Clean 8 shadow gradient", "clean_eight_shadows", RenderingServer.get_current_rendering_method() == "forward_plus")
+ ultra_filter = _device_toggle(controls, "Ultra shadow filter", "ultra_filter", RenderingOptions.smooth_filter_supported())
+ fxaa = _device_toggle(controls, "FXAA", "fxaa", RenderingOptions.smooth_filter_supported())
  msaa = _device_choice(controls, "MSAA samples", RenderingOptions.PROFILE_MSAA, "msaa")
  native_scale = _device_choice(controls, "Native 3D scale (%)", RenderingOptions.PROFILE_SCALES, "scale_percent")
  shadow_quality_status = Label.new()
@@ -299,11 +303,11 @@ func _build_review_controls(parent: Node) -> void:
  review_rings.toggled.connect(func(enabled: bool): Review.show_ring_shadows(game.presentation.ring_visuals, enabled))
  parent.add_child(review_rings)
 
-func _device_toggle(parent: Node, title: String, key: String) -> CheckButton:
+func _device_toggle(parent: Node, title: String, key: String, supported := true) -> CheckButton:
  var toggle := CheckButton.new()
  toggle.text = title
  toggle.focus_mode = Control.FOCUS_NONE
- toggle.disabled = not RenderingOptions.smooth_filter_supported()
+ toggle.disabled = not supported
  toggle.toggled.connect(func(enabled: bool): _change_device({key: enabled}))
  parent.add_child(toggle)
  return toggle
@@ -334,6 +338,8 @@ func _sync_device_shadow_controls() -> void:
  shadow_resolution.select(shadow_resolution.get_item_index(size))
  shadow_cascades.select(shadow_cascades.get_item_index(RenderingOptions.shadow_cascades()))
  var settings := RenderingOptions.quality()
+ authored_faces.set_pressed_no_signal(settings.authored_faces)
+ clean_eight.set_pressed_no_signal(settings.clean_eight_shadows)
  ultra_filter.set_pressed_no_signal(settings.ultra_filter)
  fxaa.set_pressed_no_signal(settings.fxaa)
  msaa.select(msaa.get_item_index(settings.msaa))
@@ -681,11 +687,13 @@ func _apply(source: Dictionary) -> void:
    target.set(key.substr(key.find("/") + 1), source[key])
  var changed_sun: bool = source.get("sun_pitch") != originals.get("sun_pitch") or source.get("sun_yaw") != originals.get("sun_yaw")
  emission.apply_palette(source, game.presentation._key_light, changed_sun)
+ game.terrain_shadows.refresh_preview_materials()
  RenderingOptions.register_light(game.presentation._key_light)
 
 func restore_original() -> void:
  _apply(originals)
  emission.restore()
+ game.terrain_shadows.release_preview_materials()
 
 func save_preset() -> void:
  # Another renderer's lab window may have saved since this one was opened.

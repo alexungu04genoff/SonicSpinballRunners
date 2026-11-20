@@ -89,6 +89,7 @@ func _uses_authoring_builder() -> bool:
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
  preload("res://scripts/rendering_options.gd").install_profile_controls(self)
+ add_child(preload("res://scripts/rendering/terrain_shadows.gd").new())
  # Runs after camera/animation/light updates, including paused overview input.
  RenderingServer.frame_pre_draw.connect(_update_foreground_contribution)
  run_seed = _default_run_seed()

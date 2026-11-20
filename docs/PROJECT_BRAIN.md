@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Authored faces enter the game — 2026-11-20
+
+Alex picked authored terrain faces with native shadows and full Retro. The face rule now lives in the terrain materials that the normal Act baker prepares. It gives risers and undersides a touch more weight while leaving the track bright. Clean 8 is the optional quieter, banded shadow in Atmosphere Lab → Shadows → Device Quality. The ordered pattern and the harder cuts are still in the Shadow Lab. [Gameplay comparison and verification](TERRAIN_FACE_SHADING.md)
+
 ## Depth on the risers — 2026-11-19
 
 Alex wanted that remembered SA2-era depth with full Retro on. The Retro AO Lab gave us two different answers. A slight authored value change across a stair riser reads like part of the architecture. A moving object over a flat dock needs actual contact shading, and native subtle SSAO did that best. Clean 8 and Clean 4 let us inspect the tonal steps independently of the ordered pattern. The live authored material experiment has a substantial first-use stall. Keep the live version in the Lab. The face rule itself is worth considering when authoring terrain. Production uses the existing lighting and native shadows. [Stairs, gameplay, motion and timings](RETRO_AO_LAB.md)

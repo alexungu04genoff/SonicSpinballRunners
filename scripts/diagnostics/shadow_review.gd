@@ -1,5 +1,5 @@
 extends RefCounted
-## Explicit diagnostic profiles. Every case fully specifies all six device settings.
+## Explicit diagnostic profiles. Each case specifies the complete device settings.
 const Options = preload("res://scripts/rendering_options.gd")
 const CASES := ["production", "quality", "performance", "neither", "ultra-only", "both"]
 
