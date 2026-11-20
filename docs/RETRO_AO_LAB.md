@@ -1,10 +1,12 @@
 # Retro AO Lab
 
-**Production follow-up, November 20.** Authored terrain faces are now baked into regular Prototype and Endless play. The isolated Lab still starts with AO off for its comparisons. [Production captures and settings](TERRAIN_FACE_SHADING.md)
+**Production follow-up, November 20.** Authored terrain faces are baked into Prototype and Endless. Atmosphere Lab offers native SSAO and optional clean contact tones separately from cast tones. The isolated Lab still starts with AO off for its comparisons. [Settings, cost and matched captures](DEVICE_SHADOW_QUALITY.md)
 
 This review compares ambient depth cues under the complete N64-ish, VHS and CRT presentation. The primary control is ordinary Godot shading with native directional shadows. The Lab opens with ambient occlusion off. It lives in its own scene and has no production entry point. The starting revision was `536b112269ff708a78d6b17ec07c2a1fbdd64587` on `main`.
 
 ## Run the review
+
+In the current source Lab, **SSAO ×** multiplies native and coarse SSAO by 1–100. At 1× the original evidence settings apply. The Atmosphere Lab offers the same reference under **Shadows → SSAO strength (×)**, with 0 for off and 8× as the production default. The isolated Lab still starts with AO off. Clean 4 and Clean 5 give four or five discrete contact values without ordered dithering. The cast shadow menu offers both counts independently. [Green Hill comparison at 10×, 25×, 50× and 100×](DEVICE_SHADOW_QUALITY.md)
 
 1. Extract the entire Windows package to a writable folder and double-click **Retro AO Lab.cmd**. The same launcher works in a source checkout with Godot 4.7.2 installed. The portable carries its runtime, imported assets and disk-baked review Acts.
 2. Start with **Profile B**, **Native shadows**, **Stair study** and **Hold pose**. Compare the joint beneath the back wall, the horizontal treads, the vertical risers and the underside of the shelf. The amber strip is an unlit reference. Compare Off, Native subtle, Clean 8, Clean 4 and Authored faces before trying Ordered 4.

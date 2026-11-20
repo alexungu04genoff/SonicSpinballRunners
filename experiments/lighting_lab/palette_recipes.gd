@@ -28,7 +28,9 @@ const NEON := {
 
 static func apply(title: String, theme: String, values: Dictionary) -> void:
  var recipe: Dictionary = {}
- if title in ["Sunset", "Golden hour", "Morning"]: recipe = SUNSET.get(theme, {})
+ if title == "Arcade daylight (Sega-inspired)" and theme == "green_hill":
+  recipe = {"ocean_deep": "214c80", "ocean_wave": "518da8", "ocean_reflection": "9ccbc8", "ocean_sun": "ffe1aa", "cloud_shadow": "8e9dc6", "cloud_highlight": "ffebc8", "shore_tint": "efd6a6"}
+ elif title in ["Sunset", "Golden hour", "Morning"]: recipe = SUNSET.get(theme, {})
  elif title in ["Night", "Neon night", "Moonlit", "Dusk", "Blue hour"]: recipe = NIGHT.get(theme, {})
  recipe = recipe.duplicate()
  if title == "Neon night": recipe.merge(NEON.get(theme, {}), true)

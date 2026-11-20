@@ -1,6 +1,6 @@
 # Directional shadows on UHD 620
 
-Use **B** for the next UHD 620 review. It combines the human-approved Retro presentation with denser shadows for small moving casters. **C** is the lower-cost comparison. Production remains **A**. The outstanding decision is whether B meets the laptop's Endless preparation and transition requirements.
+Use **B** for the next UHD 620 review. It combines the human-approved Retro presentation with denser shadows for small moving casters. **C** is the lower-cost comparison. These measurements used the earlier A production profile. The current defaults use a 4096 atlas, four cascades, FXAA, 2× MSAA and 100% scale. [Current settings and comparison](DEVICE_SHADOW_QUALITY.md) The outstanding decision is whether B meets the laptop's Endless preparation and transition requirements.
 
 ## Evidence from the frozen build
 

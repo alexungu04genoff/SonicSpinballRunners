@@ -124,7 +124,7 @@ func run() -> void:
  light.shadow_bias = 0.1
  light.shadow_normal_bias = 2.0 # Simulate a cached recipe's older lighting values.
  runtime.configure("rooftop_run", {"values": {}}, Environment.new(), light)
- check(is_equal_approx(light.shadow_bias, 0.02) and is_equal_approx(light.shadow_normal_bias, 0.55) and is_equal_approx(light.shadow_opacity, 0.85), "Runtime defaults supersede older recipe shadow values")
+ check(is_equal_approx(light.shadow_bias, 0.01) and is_equal_approx(light.shadow_normal_bias, 0.1) and is_equal_approx(light.shadow_opacity, 0.8), "Runtime defaults supersede older recipe shadow values")
  runtime.configure("rooftop_run", {"values": {"sun/shadow_opacity": 0.61, "sun/shadow_enabled": false}}, Environment.new(), light)
  check(is_equal_approx(light.shadow_opacity, 0.61) and not light.shadow_enabled, "Explicit saved shadow overrides remain authoritative")
  light.free()

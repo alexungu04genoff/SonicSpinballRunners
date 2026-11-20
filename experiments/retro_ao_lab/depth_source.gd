@@ -14,8 +14,8 @@ var depth: Texture2DRD
 var shader := RID()
 var pipeline := RID()
 var current := RID()
-var targets := {}
-var wrappers := {}
+var current_size := Vector2i.ZERO
+var targets := {} # Owned by the render thread until the material is rebound.
 
 func _init() -> void:
  effect_callback_type = EFFECT_CALLBACK_TYPE_PRE_OPAQUE
@@ -33,14 +33,19 @@ func _render_callback(_type: int, data: RenderData) -> void:
   shader = rd.shader_create_from_spirv(rd.shader_compile_spirv_from_source(source))
   pipeline = rd.compute_pipeline_create(shader)
  var size := buffers.get_internal_size()
- if not targets.has(size):
+ if current_size != size:
   var format := RDTextureFormat.new()
   format.format = RenderingDevice.DATA_FORMAT_R32_SFLOAT
   format.width = size.x
   format.height = size.y
   format.usage_bits = RenderingDevice.TEXTURE_USAGE_STORAGE_BIT | RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT
-  targets[size] = rd.texture_create(format,RDTextureView.new())
- var dst: RID = targets[size]
+  var target := rd.texture_create(format,RDTextureView.new())
+  if not target.is_valid(): return
+  targets[target] = true
+  publish.call_deferred(target, current)
+  current = target
+  current_size = size
+ var dst := current
  var bindings: Array[RDUniform] = []
  for texture: RID in [src,dst]:
   var uniform := RDUniform.new()
@@ -54,28 +59,25 @@ func _render_callback(_type: int, data: RenderData) -> void:
  rd.compute_list_bind_uniform_set(list,set_rid,0)
  rd.compute_list_dispatch(list,ceili(size.x/8.0),ceili(size.y/8.0),1)
  rd.compute_list_end()
- if current != dst:
-  current = dst
-  publish.call_deferred(dst)
 
-func publish(texture: RID) -> void:
+func publish(texture: RID, previous: RID) -> void:
  if not enabled: return
- if not wrappers.has(texture):
-  var wrapper := Texture2DRD.new()
-  wrapper.texture_rd_rid = texture
-  wrappers[texture] = wrapper
- depth = wrappers[texture]
+ depth = Texture2DRD.new()
+ depth.texture_rd_rid = texture
  depth_ready.emit()
+ if previous.is_valid(): RenderingServer.call_on_render_thread(retire.bind(previous))
+
+func retire(texture: RID) -> void:
+ if targets.erase(texture): RenderingServer.get_rendering_device().free_rid(texture)
 
 func release() -> void:
  enabled = false
  depth = null
- wrappers.clear()
  RenderingServer.call_on_render_thread(dispose)
 
 func dispose() -> void:
  var rd := RenderingServer.get_rendering_device()
  if not rd: return
- for texture: RID in targets.values(): rd.free_rid(texture)
+ for texture: RID in targets: rd.free_rid(texture)
  targets.clear()
  if shader.is_valid(): rd.free_rid(shader)

@@ -1,9 +1,10 @@
 extends "../retro_shadow_lab/lab.gd"
 const Contact = preload("receivers.gd")
 const Depth = preload("depth_source.gd")
-enum AO { OFF, NATIVE, COARSE, CLEAN8, CLEAN4, CLEAN3, CLEAN2, ORDERED, AUTHORED, CONTINUOUS }
-const LABELS := ["AO off", "Native subtle", "Coarse SSAO", "Clean 8", "Clean 4", "Clean 3", "Clean 2", "Ordered 4", "Authored faces", "Continuous contact"]
-const BANDS := [0, 0, 0, 8, 4, 3, 2, 4, 0, 0]
+enum AO { OFF, NATIVE, COARSE, CLEAN8, CLEAN4, CLEAN3, CLEAN2, ORDERED, AUTHORED, CONTINUOUS, CLEAN5 }
+const LABELS := ["AO off", "Native subtle", "Coarse SSAO", "Clean 8", "Clean 4", "Clean 3", "Clean 2", "Ordered 4", "Authored faces", "Continuous contact", "Clean 5"]
+const BANDS := [0, 0, 0, 8, 4, 3, 2, 4, 0, 0, 5]
+const SHADOW_MODES := [0, 5, 6, 2]
 const ENV_FIELDS := ["ssao_enabled", "ssao_radius", "ssao_intensity", "ssao_power", "ssao_detail", "ssao_horizon", "ssao_sharpness", "ssao_light_affect", "ssao_ao_channel_affect"]
 var contact := Contact.new()
 var depth: CompositorEffect
@@ -12,8 +13,10 @@ var prior_compositor: Compositor
 var environment: Environment
 var original := {}
 var treatment := AO.OFF
-var strength := 0.62
-var radius := 0.42
+var strength := AtmosphereFields.NativeSSAO.REFERENCE_STRENGTH
+var radius := AtmosphereFields.NativeSSAO.REFERENCE_RADIUS
+var native_gain := 1.0
+var native_gain_control: SpinBox
 var anchor := 2
 var matrix := 4
 var cell := 0.045
@@ -35,7 +38,7 @@ func build_ui() -> void:
  frame.add_child(panel)
  var box := row()
  ao_choice = choice(box, LABELS, treatment, set_ao)
- mode_choice = choice(box, ["Native shadows", "Clean 8 shadows", "Clean 4 shadows"], 0, func(i): set_mode([0,5,2][i]))
+ mode_choice = choice(box, ["Native shadows", "Clean 8 shadows", "Clean 5 shadows", "Clean 4 shadows"], 0, func(i): set_mode(SHADOW_MODES[i]))
  choice(box, ["Profile A", "Profile B", "Profile C"], profile, set_profile)
  scale_choice = choice(box, ["75% scale", "85% scale", "100% scale"], 1, func(i): set_scale_percent([75,85,100][i]))
  box = row()
@@ -46,9 +49,11 @@ func build_ui() -> void:
  choice(box, ["Hold pose", "Pan + spin", "Play Act / tour"], 0, set_motion)
  box = row()
  number(box,"AO strength",0.0,1.0,0.02,strength,func(v): strength = v; apply_treatment())
- number(box,"Radius",0.06,1.5,0.02,radius,func(v): radius = v; apply_treatment())
+ native_gain_control = number(box,"SSAO ×",1.0,AtmosphereFields.NativeSSAO.MAX_GAIN,0.25,native_gain,func(v): native_gain = v; apply_treatment())
+ native_gain_control.editable = treatment in [AO.NATIVE,AO.COARSE]
+ number(box,"Radius",AtmosphereFields.NativeSSAO.MIN_RADIUS,AtmosphereFields.NativeSSAO.MAX_RADIUS,0.02,radius,func(v): radius = v; apply_treatment())
  zoom = number(box,"Zoom",0.6,2.5,0.05,1.3,func(v): if game: game.presentation.camera_settings.zoom = v; camera(start_focus))
- blur = number(box,"Shadow blur",0.5,2.0,0.05,1.0,func(v): if game: game.presentation._key_light.shadow_blur = v)
+ blur = number(box,"Shadow blur",0.5,AtmosphereFields.MAX_SHADOW_BLUR,0.05,1.0,func(v): if game: game.presentation._key_light.shadow_blur = v)
  angle = number(box,"Sun °",0,5,0.05,0.0,func(v): if game: game.presentation._key_light.light_angular_distance = v)
  dither_controls = row()
  var pattern_label := Label.new()
@@ -82,6 +87,7 @@ func open_game() -> bool:
 
 func set_profile(index: int) -> void:
  super(index)
+ mode_choice.select(SHADOW_MODES.find(index))
  scale_choice.select([75,85,100].find(Review.Options.quality().scale_percent))
 
 func set_scale_percent(value: int) -> void:
@@ -99,6 +105,7 @@ func set_mode(index: int) -> void:
 func set_ao(value: int) -> void:
  treatment = value
  ao_choice.select(value)
+ native_gain_control.editable = treatment in [AO.NATIVE,AO.COARSE]
  dither_controls.visible = value == AO.ORDERED
  apply_treatment()
 
@@ -116,16 +123,9 @@ func apply_treatment() -> void:
  var coarse := treatment == AO.COARSE
  quality(native, coarse)
  for property: String in original: environment.set(property, original[property])
+ environment.ssao_enabled = false
  if native or coarse:
-  environment.ssao_radius = radius
-  environment.ssao_intensity = 1.55 * strength
-  environment.ssao_power = 1.08
-  environment.ssao_detail = 0.08
-  environment.ssao_horizon = 0.09
-  environment.ssao_sharpness = 0.88
-  environment.ssao_light_affect = 0.0
-  environment.ssao_ao_channel_affect = 0.0
-  environment.ssao_enabled = true
+  AtmosphereFields.NativeSSAO.apply(environment,native_gain,radius,AtmosphereFields.NativeSSAO.REFERENCE_POWER,strength)
  var custom := treatment >= AO.CLEAN8
  var reads_depth := custom and treatment != AO.AUTHORED
  game.presentation.camera.compositor = compositor if reads_depth else prior_compositor

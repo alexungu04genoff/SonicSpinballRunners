@@ -8,6 +8,8 @@ const StreamPresentation = preload("res://scripts/endless/endless_presentation.g
 const Hub = preload("res://scripts/endless/mechanics_hub.gd")
 const Character = preload("res://experiments/visual_lab/sonic_presenter.gd")
 const RetroFilter = preload("res://scripts/retro/retro_filter.gd")
+const NativeSSAO = preload("res://scripts/atmosphere/native_ssao.gd")
+const AtmosphereFields = preload("res://scripts/atmosphere/fields.gd")
 const RetroControls = preload("res://scripts/retro/retro_controls.gd")
 signal play_camera_changed(preset: int)
 const PLAY_CAMERAS: Array[int] = [
@@ -17,6 +19,7 @@ const PLAY_CAMERAS: Array[int] = [
  TablePresentation.CameraPreset.TOP_DOWN,
 ]
 var initial_play_camera := TablePresentation.CameraPreset.DRAMATIC_PINBALL
+var terrain_shadows := preload("res://scripts/rendering/terrain_shadows.gd").new()
 var retro_filter: RetroFilter
 var retro_controls: CanvasLayer
 var _composite_view: SubViewport
@@ -31,6 +34,7 @@ var building: RefCounted
 var backgrounds := {}
 var atmosphere_light_defaults := {}
 var _last_atmosphere_blend := Vector3(-1, -1, -1)
+var _foreground_ssao := Vector3(-1.0, -1.0, -1.0)
 var retire_nodes: Array[Node] = []
 var active: RefCounted
 var character: Node3D
@@ -89,7 +93,7 @@ func _uses_authoring_builder() -> bool:
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
  preload("res://scripts/rendering_options.gd").install_profile_controls(self)
- add_child(preload("res://scripts/rendering/terrain_shadows.gd").new())
+ add_child(terrain_shadows)
  # Runs after camera/animation/light updates, including paused overview input.
  RenderingServer.frame_pre_draw.connect(_update_foreground_contribution)
  run_seed = _default_run_seed()
@@ -542,6 +546,7 @@ func _show_background(zone_index: int, theme_id: String, initial := false) -> vo
  environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
  environment.reflected_light_source = Environment.REFLECTION_SOURCE_DISABLED
  presentation._world_environment.environment = environment
+ _foreground_ssao = Vector3(-1.0, -1.0, -1.0)
  _blend_lighting(zone_index, zone_index, 0.0)
 
 func _update_backgrounds() -> void:
@@ -580,6 +585,19 @@ func _blend_lighting(from_zone: int, to_zone: int, weight: float) -> void:
  for property: String in ["shadow_enabled"]:
   light.set(property, before.lighting[property] if weight < 0.5 else after.lighting[property])
  var target: Environment = presentation._world_environment.environment
+ var cast_values: Dictionary = before.values if weight < 0.5 else after.values
+ terrain_shadows.cast_levels = cast_values.get(AtmosphereFields.CAST_LEVELS, 0)
+ var contact_levels := int(cast_values.get(NativeSSAO.LEVELS_KEY, 0))
+ var from_gain := float(before.values.get(NativeSSAO.KEY, NativeSSAO.DEFAULT_GAIN))
+ var to_gain := float(after.values.get(NativeSSAO.KEY, NativeSSAO.DEFAULT_GAIN))
+ var from_radius := float(before.values.get(NativeSSAO.RADIUS_KEY, NativeSSAO.REFERENCE_RADIUS))
+ var to_radius := float(after.values.get(NativeSSAO.RADIUS_KEY, NativeSSAO.REFERENCE_RADIUS))
+ var from_power := float(before.values.get(NativeSSAO.CONTRAST_KEY, NativeSSAO.REFERENCE_POWER))
+ var to_power := float(after.values.get(NativeSSAO.CONTRAST_KEY, NativeSSAO.REFERENCE_POWER))
+ var contact := Vector3(from_gain, from_radius, from_power).lerp(Vector3(to_gain, to_radius, to_power), weight)
+ if contact != _foreground_ssao or contact_levels != terrain_shadows.contact_levels:
+  terrain_shadows.configure_contact(target, contact_levels, contact)
+  _foreground_ssao = contact
  for property: String in ["ambient_light_color", "ambient_light_energy", "tonemap_exposure", "ambient_light_sky_contribution", "adjustment_contrast", "adjustment_saturation", "glow_intensity", "glow_bloom", "glow_hdr_threshold", "fog_density", "fog_light_color", "fog_light_energy", "fog_sky_affect"]:
   target.set(property, lerp(before.environment.get(property), after.environment.get(property), weight))
  for property: String in ["fog_depth_begin", "fog_depth_end", "fog_depth_curve", "glow_strength", "glow_levels/3", "glow_levels/5", "glow_levels/7"]:

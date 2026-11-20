@@ -41,7 +41,7 @@ func run() -> void:
  invalid.set_value("unrelated", "keep", 17)
  invalid.save(Options.settings_path)
  Options._loaded = false
- check(Options.shadow_resolution() == 8192 and Options.shadow_cascades() == 4 and not Options.ultra_filter_enabled(), "Invalid saved values fall back without coercion")
+ check(Options.shadow_resolution() == 4096 and Options.shadow_cascades() == 4 and not Options.ultra_filter_enabled(), "Invalid saved values fall back without coercion")
  check(Options.set_shadow_resolution(3000) == ERR_INVALID_PARAMETER and Options.set_shadow_cascades(3) == ERR_INVALID_PARAMETER, "Invalid setters reject unsupported choices")
  invalid.set_value("rendering", "smooth_shadows", true)
  invalid.save(Options.settings_path)
@@ -66,6 +66,8 @@ func run() -> void:
  if DisplayServer.get_name() != "headless":
   var forward := RenderingServer.get_current_rendering_method() == "forward_plus"
   check(Options.clean_eight_enabled == forward and panel.clean_eight.disabled == (not forward),"Clean 8 availability follows the renderer")
+  var gain: SpinBox = panel.widgets[Fields.NativeSSAO.KEY]
+  check(gain.editable == forward and gain.get_meta("slider").editable == forward, "Both native SSAO controls require Forward+")
  var terrain_settings := ConfigFile.new()
  check(terrain_settings.load(Options.settings_path) == OK and not terrain_settings.get_value("rendering","authored_faces",true) and terrain_settings.get_value("rendering","clean_eight_shadows",false), "Terrain appearance choices persist through the device controls")
  if Options.clean_eight_enabled and DisplayServer.get_name() != "headless":
@@ -161,7 +163,7 @@ func run() -> void:
   runtime.configure(theme, {"values": {Fields.LEGACY_SHADOW_MODE: 0, "sun/shadow_opacity": 0.31}}, Environment.new(), light)
   device_unchanged("Legacy runtime", light)
   check(is_equal_approx(light.shadow_opacity, 0.31) and not runtime.lighting.has("directional_shadow_mode"), "Legacy keeps artistic intent, excludes quality from blending")
-  check(is_equal_approx(light.shadow_blur, 1.0) and is_zero_approx(light.light_angular_distance), "Legacy atmosphere defaults to normal radius and zero angular size")
+  check(is_equal_approx(light.shadow_blur, 10.0) and is_zero_approx(light.light_angular_distance), "Missing shadow settings inherit the approved radius and zero angular size")
   light.free()
  for theme: String in Variants.THEMES: check(registry.revision(theme) == hashes[theme], "No source atmosphere rewrite: " + theme)
  registry.directory = "user://device-shadow-legacy"
@@ -176,13 +178,14 @@ func run() -> void:
  var records := registry.read("green_hill")
  check(registry.error.is_empty() and not records[0].values.has(Fields.LEGACY_SHADOW_MODE), "Legacy variant loads without cascade ownership")
  check(registry.revision("green_hill") == old_hash, "Loading legacy variant preserves exact bytes")
- record.values["sun/shadow_blur"] = 1.5
+ record.values["sun/shadow_blur"] = 25.0
+ record.values["ssao/strength"] = 100.0
  record.values["sun/light_angular_distance"] = 0.25
  check(registry.save("green_hill", [record], old_hash), "Explicit legacy save succeeds")
  var saved_record := registry.read("green_hill")[0]
  var saved_light := DirectionalLight3D.new()
  Runtime.new().configure("green_hill", saved_record, Environment.new(), saved_light)
- check(is_equal_approx(saved_light.shadow_blur, 1.5) and is_equal_approx(saved_light.light_angular_distance, 0.25), "Variant round-trips independent filter radius and physical sun size")
+ check(is_equal_approx(saved_light.shadow_blur, 25.0) and is_equal_approx(saved_light.light_angular_distance, 0.25) and is_equal_approx(saved_record.values["ssao/strength"], 100.0), "Variant round-trips experimental blur, SSAO gain and the legacy physical sun size")
  saved_light.free()
  legacy.load(registry.path("green_hill"))
  check(not legacy.get_value("default", "values").has(Fields.LEGACY_SHADOW_MODE), "Explicit save removes only retired field")

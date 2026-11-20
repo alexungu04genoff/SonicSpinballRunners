@@ -18,10 +18,10 @@ static var _lights: Array[WeakRef] = []
 static var clean_eight_enabled := false
 
 static func defaults() -> Dictionary:
- return {"directional_shadow_resolution": int(ProjectSettings.get_setting("rendering/lights_and_shadows/directional_shadow/size", 8192)),
+ return {"directional_shadow_resolution": int(ProjectSettings.get_setting("rendering/lights_and_shadows/directional_shadow/size", 4096)),
   "directional_shadow_cascades": 4, "ultra_filter": false,
   "fxaa": ProjectSettings.get_setting("rendering/anti_aliasing/quality/screen_space_aa") == Viewport.SCREEN_SPACE_AA_FXAA,
-  "msaa": 4, "scale_percent": 100, "authored_faces": true, "clean_eight_shadows": false}
+  "msaa": 2, "scale_percent": 100, "authored_faces": true, "clean_eight_shadows": false}
 
 static func quality() -> Dictionary:
  _load_settings()

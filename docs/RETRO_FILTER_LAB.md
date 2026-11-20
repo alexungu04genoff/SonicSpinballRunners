@@ -1,6 +1,16 @@
 # Green Hill retro post-processing lab
 
-Optional presentation experiment in the **normal Green Hill application**. Start `Play Green Hill.cmd`. Every launch starts with the user's **N64-ish + VHS + CRT** stack; Pixel is disabled. These project defaults match the supplied tuning screenshots. Further live edits remain session-only, and OFF is still available as a comparison.
+The normal Green Hill application starts with **N64-ish + VHS + CRT**. Open **Retro…** or press **Shift+F4** to tune the picture for the current session.
+
+## CRT at playing distance
+
+The November 20 default targets a tube viewed from the couch. Green Hill’s sky should read as a gradient, the rings should keep a soft highlight, and the track should stay readable during a pan. The RGB grille starts at zero. A 300-line raster uses a narrow beam in dark areas and a wider beam in highlights. The display shader averages the beam over each output pixel and fades unresolved lines when the viewport shrinks. The 300 lines are an artistic choice for this game. [Matched Green Hill crops at original pixel size](terrain-face-shading/green-hill-crt.png)
+
+Sony’s BA-4 training manual describes three beams scanning horizontal lines through an aperture grille onto vertical phosphor stripes. CRT-beans documents the wider bright spots common on consumer CRTs and the effect of diffusion in the glass. Our shader approximates these cues with a luminance-dependent beam, a small horizontal spread and local highlight diffusion. [Sony BA-4 training manual, pp. 7–10](https://www.epanorama.net/sff/Sony/Video/Sony%20CTV25%20BA-4%20Training%20Manual.PDF) · [CRT-beans spot size and glow](https://github.com/libretro/slang-shaders/blob/master/crt/shaders/crt-beans/docs/parameters.md)
+
+For cleaner skies, keep **RGB mask strength** at 0. **Raster lines** controls line spacing independently of the grille. Lower **Scanline strength** to flatten the response, or try 240 raster lines to make it easier to see. **Glow spread** controls how far a bright edge bleeds into its neighbor. Tape grain is 0.004. The earlier startup and stack galleries below document the previous filter.
+
+Alex’s Dell Trinitron still and Sonic close-up guided the final Green Hill tune. The white gloves and road markings have a narrow bright fringe, while the shoe shadow has a dark center. The game responds separately to red, green and blue intensity so saturated colors can fill the raster. Chroma bleed is low enough to preserve the ring and terrain edges. [Video reference](https://www.youtube.com/watch?v=tWPhzjktu80)
 
 ## Controls and live tuning
 
@@ -23,26 +33,26 @@ Persistent developer defaults remain in `data/retro_settings.tres` and `scripts/
 | OFF | Original viewport size, material, filter and MSAA | No identity shader; original rendering path |
 | PIXEL / DITHER | Half size, nearest upscale | 32 quantization intervals/channel, 4×4 dither at 0.65 strength |
 | N64-ish | Divisor 1.9, linear upscale | 119 intervals/channel, 0.75 dither |
-| CRT | Original size | 3.7 px cells, 0.03 scanlines, 0 RGB mask, 0.19 glow, 2.1 px spread, -0.085 brightness, 0.28 vignette; zero convergence |
-| VHS | Original size | 0.9 px chroma offset, 1.1 px bleed, 0.00015 wobble, 0.055 grain, 0.0045 tracking |
+| CRT | Output resolution | 300 lines, 0.34 scanline strength, 0 RGB mask, 0.42 glow, 2.6 px spread, neutral brightness, 0.14 vignette |
+| VHS | Original size | 0.25 px chroma offset, 0.45 px bleed, 0.00015 wobble, 0.004 grain, 0.001 tracking |
 
 ## Stacking and world-only rendering
 
 The fixed order is **Pixel → N64-ish → VHS → CRT**. Pixel and N64 can both be selected: their quantization passes run in order, the larger resolution divisor wins, and N64 selects linear upscale. CRT stays last so its display pattern covers the combined image.
 
-CRT cell size uses output pixels with no hidden resolution-dependent minimum. Small cells can alias when their RGB channels fall below source texel size; the experimental control now honors that choice. Glow and VHS offsets also use output-pixel units.
+RGB grille pitch, glow radius and VHS offsets use output-pixel units. The grille fades below three output pixels per triad.
 
 The normal 1280×900 application reserves 210 pixels for its footer, so its **world is 1280×690**. Half resolution is **640×345**. Divisor 1.1 renders **1163×627**, rounding down to whole texture pixels. Fractional divisors follow F1/window resizing. MSAA and camera composition remain unchanged.
 
 [Godot's SubViewportContainer shrink property](https://docs.godotengine.org/en/stable/classes/class_subviewportcontainer.html#class-subviewportcontainer-property-stretch-shrink) only accepts integers. The adapter therefore places the existing world viewport under a plain child node and displays its texture through a full-size TextureRect. It controls the viewport size directly; no extra viewport or render pass is added. Removing the adapter restores the original viewport parent/index and container presentation.
 
-Every selected pass runs inside the existing world SubViewport before upscale. An explicit `BackBufferCopy` precedes each pass so it reads the previous result in the same frame. OFF hides all copies/passes and restores the original sampler, resolution and material. There are no history buffers, extra SubViewports, temporal accumulation, deliberate presentation delay or physics-timestep changes.
+Pixel, N64 and VHS each take an explicit backbuffer copy in the world SubViewport. CRT runs on the existing world-output TextureRect, where it samples the composed image at display resolution. OFF restores the original sampler, resolution and material.
 
-HUD, menus, character selector, Scorecraft, debug controls, live panel and toast stay in the root viewport. Existing 3D text painted on the table is part of the world and receives the filter. Curvature is absent in the imported CRT implementation. The optional normal-based outline shader remains omitted for Compatibility rendering. VHS has no large tears, dropouts or chroma-loss streaks.
+HUD, menus, character selector, Scorecraft, debug controls, live panel and toast stay in the root viewport. Existing 3D text painted on the table receives the filter. The display shader keeps the picture geometry flat.
 
 ## Same-scene comparison
 
-[Current startup preview](retro-captures/startup-defaults.png) shows the screenshot-matched N64/VHS/CRT stack, Dramatic Pinball at zoom 2, and the fullscreen button.
+[Earlier startup preview](retro-captures/startup-defaults.png) shows the previous N64/VHS/CRT stack, Dramatic Pinball at zoom 2, and the fullscreen button.
 
 The historical images in [retro-captures/stacking](retro-captures/stacking/) predate the chosen startup stack and Dramatic zoom. They use generated seed 18, the same served Sonic ball, camera transform, geometry, rings, paddles, lighting and HUD. Scene and cosmetic animation processing are frozen; only VHS signal noise varies with shader time. No screenshot rescaling or reframing is applied.
 

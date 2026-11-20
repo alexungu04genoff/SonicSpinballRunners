@@ -1,12 +1,17 @@
 extends RefCounted
 ## Shared, bounded authoring vocabulary for production and the Lab.
+const NativeSSAO := preload("res://scripts/atmosphere/native_ssao.gd")
+const MAX_SHADOW_BLUR := 25.0
+const CAST_LEVELS := "shadow/levels"
+const CAST_CHOICES := [0, 8, 5, 4, 3, 2]
 const SHADOW_DEFAULTS := {
  "shadow_enabled": true,
- "shadow_opacity": 0.85,
- "shadow_blur": 1.0,
+ "shadow_opacity": 0.8,
+ "shadow_blur": 10.0,
  "light_angular_distance": 0.0,
- "shadow_bias": 0.02,
- "shadow_normal_bias": 0.55,
+ "shadow_bias": 0.01,
+ "shadow_normal_bias": 0.1,
+ "directional_shadow_max_distance": 40.0,
 }
 
 static func apply_shadow_defaults(light: DirectionalLight3D) -> void:
@@ -57,7 +62,13 @@ const GROUPS := {
  "Shadows": [
   ["Shadows enabled", "sun/shadow_enabled", "bool"],
   ["Opacity", "sun/shadow_opacity", "number", 0.0, 1.0, 0.01],
-  ["Shadow blur", "sun/shadow_blur", "number", 0.5, 2.0, 0.05],
+  ["Shadow blur", "sun/shadow_blur", "number", 0.5, MAX_SHADOW_BLUR, 0.05],
+  ["Cast shadow tones", CAST_LEVELS, "cast_levels"],
+  ["SSAO strength (×)", NativeSSAO.KEY, "number", 0.0, NativeSSAO.MAX_GAIN, 0.25],
+  ["SSAO radius", NativeSSAO.RADIUS_KEY, "number", NativeSSAO.MIN_RADIUS, NativeSSAO.MAX_RADIUS, 0.01],
+  ["SSAO contrast", NativeSSAO.CONTRAST_KEY, "number", 0.25, 8.0, 0.05],
+  ["Contact shadow tones", NativeSSAO.LEVELS_KEY, "cast_levels"],
+  # Read and preserve authored penumbrae in older variants and snapshots.
   ["Sun angle ° (PCSS, costly)", "sun/light_angular_distance", "number", 0.0, 5.0, 0.05],
   ["Depth bias", "sun/shadow_bias", "number", 0.0, 2.0, 0.01],
   ["Normal bias", "sun/shadow_normal_bias", "number", 0.0, 8.0, 0.05],
@@ -156,4 +167,6 @@ static func valid_values(theme: String, values: Dictionary) -> bool:
     if not value is int or value < 0 or value > 4: return false
    "fog_mode":
     if not value is int or value not in [0, 1]: return false
+   "cast_levels":
+    if not value is int or value not in CAST_CHOICES: return false
  return true

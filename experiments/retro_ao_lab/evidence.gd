@@ -1,11 +1,11 @@
 extends "../retro_shadow_lab/evidence.gd"
-const NAMES := ["off","native","coarse","clean8","clean4","clean3","clean2","ordered4","authored","continuous"]
+const NAMES := ["off","native","coarse","clean8","clean4","clean3","clean2","ordered4","authored","continuous","clean5"]
 
 func curve_shader() -> String:
  return """shader_type canvas_item;
 #include "res://experiments/retro_ao_lab/bands.gdshaderinc"
 void fragment() {
- const int counts[5] = {8,4,3,2,0};
+ const int counts[6] = {8,5,4,3,2,0};
  float a = contact_band(floor(FRAGCOORD.x)/256.0,0.5,counts[int(FRAGCOORD.y)]);
  COLOR = vec4(vec3(a),1.0);
 }"""
@@ -87,6 +87,7 @@ func compare(label: String, quick: bool) -> void:
  lab.set_ao(0)
  var reference := await shot(label + "-off")
  var original: Dictionary = lab.original.duplicate()
+ original.ssao_enabled = false # The study's Off reference disables production SSAO.
  for m in NAMES.size():
   var before := Report.pipelines()
   var start := Time.get_ticks_usec()
@@ -139,7 +140,16 @@ func watch_owners() -> Dictionary:
  return watched
 
 func verify_stairs() -> void:
- for m in [3,4,5,6]:
+ for mode in [lab.AO.NATIVE, lab.AO.COARSE]:
+  lab.set_ao(mode)
+  var original := await image()
+  var intensity: float = lab.environment.ssao_intensity
+  lab.native_gain_control.value = 100.0
+  check(is_equal_approx(lab.environment.ssao_intensity, 100.0 * intensity), "100× native SSAO intensity " + NAMES[mode])
+  check(original.get_data() != (await image()).get_data(), "100× contact visible under full Retro " + NAMES[mode])
+  lab.native_gain_control.value = 1.0
+  check(original.get_data() == (await image()).get_data(), "1× restores the reference " + NAMES[mode])
+ for m in [lab.AO.CLEAN8,lab.AO.CLEAN5,lab.AO.CLEAN4,lab.AO.CLEAN3,lab.AO.CLEAN2]:
   lab.set_ao(m)
   var clean := await image()
   lab.anchor = 0

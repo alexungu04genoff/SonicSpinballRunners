@@ -28,7 +28,7 @@ func run() -> void:
  DirAccess.make_dir_recursive_absolute(OUTPUT)
  Options.settings_path = "user://shadow-option-regression.cfg"
  if FileAccess.file_exists(Options.settings_path): DirAccess.remove_absolute(ProjectSettings.globalize_path(Options.settings_path))
- check(not Options.ultra_filter_enabled(), "Ultra + FXAA is opt-in")
+ check(not Options.ultra_filter_enabled() and Options.quality().fxaa, "Fresh settings use the medium shadow filter and FXAA")
  root.size = Vector2i(1280, 900)
  var game = load("res://experiments/lighting_lab/lighting_lab.tscn").instantiate()
  root.add_child(game)
@@ -38,6 +38,7 @@ func run() -> void:
  var baseline: Dictionary = panel.values.duplicate(true)
  var msaa: int = game.view.msaa_3d
  panel.ultra_filter.button_pressed = true
+ panel.fxaa.button_pressed = false
  panel.fxaa.button_pressed = true
  check(Options.ultra_filter_enabled() and game.view.screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA, "Shadow toggle updates the live world viewport")
  check(panel.values == baseline and game.view.msaa_3d == msaa, "Quality choice preserves atmosphere values and MSAA")
@@ -53,6 +54,7 @@ func run() -> void:
  game.view_container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  var registry := Registry.new()
  var retro: Array = game.retro_filter.settings.default_effects.duplicate()
+ var retro_modes: Array = [true] if "--retro=production" in OS.get_cmdline_user_args() else [false, true]
  var physics: int = game.world.get_instance_id()
  for theme: String in Registry.THEMES:
   var records := registry.read(theme)
@@ -66,6 +68,8 @@ func run() -> void:
   game.presentation.reset_camera()
   var environment: Environment = game.presentation._world_environment.environment
   var light: DirectionalLight3D = game.presentation._key_light
+  check(is_equal_approx(light.shadow_opacity, 0.8) and is_equal_approx(light.shadow_blur, 10.0) and is_equal_approx(light.shadow_bias, 0.01) and is_equal_approx(light.shadow_normal_bias, 0.1) and is_equal_approx(light.directional_shadow_max_distance, 40.0), theme + " ships the approved shadow settings")
+  check(is_equal_approx(panel.values["ssao/strength"], 8.0) and environment.ssao_enabled and is_equal_approx(environment.ssao_intensity, 7.688), theme + " ships the approved 8× foreground contact shading")
   for key: String in record.values:
    check(equal(panel.values.get(key), record.values[key]), theme + " Lab loads " + key)
    if key.begins_with("env/"): check(equal(environment.get(key.trim_prefix("env/")), record.values[key]), theme + " live environment " + key)
@@ -80,12 +84,12 @@ func run() -> void:
   check(game.world.get_instance_id() == physics, "Defaults preserve gameplay world")
   if theme in preload("res://scripts/themes/scenery_settings.gd").THEMES:
    check(game.presentation.scenery_settings.density == 2.5, theme + " loads Showcase scenery")
-  for use_retro in [false, true]:
+  for use_retro in retro_modes:
    game.retro_filter.set_effects(retro if use_retro else [])
    await capture(game.view, theme + ("-retro" if use_retro else "-plain"))
   game.presentation.overview_zoom = 1.3
   game.presentation.reset_camera()
-  for use_retro in [false, true]:
+  for use_retro in retro_modes:
    game.retro_filter.set_effects(retro if use_retro else [])
    await capture(game.view, theme + ("-retro" if use_retro else "-plain") + "-play")
   print("ZONE_DEFAULT | ", theme, " | validated and captured")

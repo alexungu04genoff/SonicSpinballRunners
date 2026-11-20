@@ -38,7 +38,7 @@ func curve_shader() -> String:
  return """shader_type canvas_item;
 #include "res://experiments/retro_shadow_lab/response_curve.gdshaderinc"
 void fragment() {
- const int counts[5] = {8, 4, 3, 2, 0};
+ const int counts[6] = {8, 5, 4, 3, 2, 0};
  float input_value = mix(0.25, 1.0, floor(FRAGCOORD.x) / 256.0);
  float value = lab_response(input_value, 0.5, counts[int(FRAGCOORD.y)], true, 0.75, vec4(1.0), 0.0);
  COLOR = vec4(vec3(value), 1.0);
@@ -46,7 +46,7 @@ void fragment() {
 
 func check_curve() -> void:
  var view := SubViewport.new()
- view.size = Vector2i(257, 5)
+ view.size = Vector2i(257, 6)
  view.disable_3d = true
  view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
  lab.add_child(view)
@@ -61,7 +61,7 @@ func check_curve() -> void:
  await frames(4)
  await RenderingServer.frame_post_draw
  var ramp := view.get_texture().get_image()
- for row in 4:
+ for row in 5:
   var bands := {}
   var monotone := true
   var previous := -1
@@ -70,8 +70,8 @@ func check_curve() -> void:
    bands[value] = true
    monotone = monotone and value >= previous
    previous = value
-  var endpoints := ramp.get_pixel(0, row) == ramp.get_pixel(0, 4) and ramp.get_pixel(256, row) == ramp.get_pixel(256, 4)
-  var expected: int = [8, 4, 3, 2][row]
+  var endpoints := ramp.get_pixel(0, row) == ramp.get_pixel(0, 5) and ramp.get_pixel(256, row) == ramp.get_pixel(256, 5)
+  var expected: int = [8, 5, 4, 3, 2][row]
   check(bands.size() == expected and monotone and endpoints, "GPU scalar ramp: exactly %d ordered levels, both native endpoints" % expected)
  view.free()
 

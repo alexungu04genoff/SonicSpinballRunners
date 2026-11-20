@@ -11,7 +11,8 @@ const PARAMETERS := {
   ["n64_color_levels", "Color levels", 1, 256, 1],
   ["n64_dither_strength", "Dither strength", 0, 1, 0.05]],
  Filter.Preset.CRT: [
-  ["crt_cell_size", "Phosphor cell size [px]", 1, 64, 0.1],
+  ["crt_raster_lines", "Raster lines", 180, 540, 1],
+  ["crt_cell_size", "RGB grille pitch [px]", 1, 64, 0.1],
   ["crt_scanlines", "Scanline strength", 0, 1, 0.01],
   ["crt_mask", "RGB mask strength", 0, 1, 0.01],
   ["crt_glow", "Phosphor glow", 0, 1, 0.01],

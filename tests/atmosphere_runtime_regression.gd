@@ -5,7 +5,7 @@ class FixtureGame extends "res://scripts/endless/endless_game.gd":
   var entries: Array[Dictionary] = super._next_planned_zone(documents)
   for entry: Dictionary in entries:
    entry.theme = "ice_cap"
-   entry.atmosphere = {"id": "default" if entry.zone % 2 == 0 else "test_dusk", "values": {} if entry.zone % 2 == 0 else {"sun/shadow_blur": 1.8, "hue/terrain": 0.3, "hue/background": -0.2, "sun/light_color": Color("f4a8dc"), "env/ambient_light_color": Color("6c88af")}}
+   entry.atmosphere = {"id": "default" if entry.zone % 2 == 0 else "test_dusk", "values": {} if entry.zone % 2 == 0 else {"sun/shadow_blur": 25.0, "ssao/strength": 0.0, "ssao/radius": 1.26, "hue/terrain": 0.3, "hue/background": -0.2, "sun/light_color": Color("f4a8dc"), "env/ambient_light_color": Color("6c88af")}}
   return entries
 
 var checks := 0
@@ -82,7 +82,12 @@ func run() -> void:
  game._update_backgrounds()
  preparation.append({"transition_apply_cpu_ms": (Time.get_ticks_usec() - timer) / 1000.0})
  check(game.background_blend > 0.45 and game.background_blend < 0.55, "Distance-driven crossfade between variants")
- check(is_equal_approx(game.presentation._key_light.shadow_blur, lerpf(1.0, 1.8, game.background_blend)) and is_zero_approx(game.presentation._key_light.light_angular_distance), "Foreground blends shadow blur independently of PCSS")
+ check(is_equal_approx(game.presentation._key_light.shadow_blur, lerpf(10.0, 25.0, game.background_blend)) and is_zero_approx(game.presentation._key_light.light_angular_distance), "Foreground blends the default blur to the experimental maximum independently of PCSS")
+ var foreground: Environment = game.presentation._world_environment.environment
+ if RenderingServer.get_current_rendering_method() == "forward_plus":
+  check(foreground.ssao_enabled and is_equal_approx(foreground.ssao_intensity, 7.688 * (1.0 - game.background_blend)), "Foreground blends the default 8× SSAO toward an explicit off variant across Zones")
+  check(is_equal_approx(foreground.ssao_radius, lerpf(0.42, 1.26, game.background_blend)), "Foreground blends the contact radius across Zones")
+ check(not before.environment.ssao_enabled and not after.environment.ssao_enabled, "Contact shading is confined to the playfield")
  check(game.presentation._key_light.light_color.is_equal_approx(before.lighting.light_color.lerp(after.lighting.light_color, game.background_blend)), "Foreground light blends selected variants")
  await frames(90)
  results.append(await sample("ice_cap", "transition", 4))

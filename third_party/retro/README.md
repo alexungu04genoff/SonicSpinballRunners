@@ -25,7 +25,7 @@ PIXEL and N64-ish use this same licensed implementation. N64-ish is an aesthetic
 - Original shaders: [`shaders/crt.gdshader`](https://github.com/punikonta/godot-shader-crt-vhs/blob/6ba87f95c152ec023fc07c4f77e87bdd70783afa/shaders/crt.gdshader) and [`shaders/vhs.gdshader`](https://github.com/punikonta/godot-shader-crt-vhs/blob/6ba87f95c152ec023fc07c4f77e87bdd70783afa/shaders/vhs.gdshader).
 - Both shaders use an explicit `hint_screen_texture` sampler, `SCREEN_UV` and `SCREEN_PIXEL_SIZE` instead of the original sprite texture/coordinates. An explicit world-only backbuffer copy before each pass lets selected effects compose in the same frame. Their effect mathematics are unchanged by this sampler adaptation.
 - `crt_vhs/vhs.gdshader`: attribution header added. Restrained settings come from our adapter/resource.
-- `crt_vhs/crt.gdshader`: attribution header plus the scanline uniforms and scanline block from the same upstream VHS file. This gives CRT its own scanlines without another pass. The larger phosphor cells, brighter glow and glow radius are runtime uniform settings supplied by our adapter/resource.
+- `crt_vhs/crt.gdshader` preserves the earlier CRT comparison, with the attribution header and scanline block from the upstream VHS file. The current game uses its own world-output shader in `scripts/retro/crt_display.gdshader`.
 
 ## Candidates reviewed, not vendored
 

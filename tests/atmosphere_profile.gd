@@ -198,6 +198,7 @@ func sample(theme: String, variant: String, pass_index: int) -> Dictionary:
 func capture(label: String) -> void:
  await RenderingServer.frame_post_draw
  root.get_texture().get_image().save_png(output.path_join(label + ".png"))
+ if "--retro=production" in OS.get_cmdline_user_args(): return
  var effects: Array = game.retro_filter.selected_effects.duplicate()
  var camera: Transform3D = game.presentation.camera.transform
  game.retro_filter.set_effects([])

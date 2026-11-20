@@ -6,7 +6,7 @@ const ROLES := Terrain.ROLES
 const INCLUDE := '#include "res://scripts/rendering/shadow_bands.gdshaderinc"'
 const CLEAN_EIGHT := 5
 var mode := -1 # -1 removes every overlay; 0 submits a zero-delta control.
-const LEVEL_COUNTS := [0, 2, 4, 4, 3, 8]
+const LEVEL_COUNTS := [0, 2, 4, 4, 3, 8, 5]
 var native_range := true
 var levels := Vector4(0.25, 0.50, 0.75, 1.0)
 var binary_dark := 0.50
@@ -60,6 +60,7 @@ func _attach(root: Node3D, scenery: Node3D = null) -> Dictionary:
   if material == null and node is MeshInstance3D: material = node.get_active_material(0)
   if material == null: material = mesh.surface_get_material(0)
   if not material is ShaderMaterial or material.shader == null: continue
+  if material.has_meta("contact_source_material"): material = material.get_meta("contact_source_material")
   var role: String = material.get_meta("atmosphere_hue", "")
   if role not in ROLES or material.next_pass != null: continue
   if not state.materials.has(material):

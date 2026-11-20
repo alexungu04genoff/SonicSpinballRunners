@@ -1,5 +1,7 @@
 # Retro Shadow Lab
 
+In the current source checkout, **Clean 5** sits between Clean 8 and Clean 4. These round the filtered sun shadow to five, eight or four discrete attenuation values. Ordered 4 remains a separate Saturn/Dreamcast-inspired treatment. Atmosphere Lab now exposes the clean cast and contact choices independently. [Matched Green Hill comparisons](DEVICE_SHADOW_QUALITY.md)
+
 **Production selection, November 20.** The game uses native shadows with authored terrain faces and full Retro. Clean 8 is the optional device setting. The comparisons below record the earlier art study. [Gameplay captures and settings](TERRAIN_FACE_SHADING.md)
 
 **Clean four-level shadows are the strongest art-direction candidate.** On a broad penumbra they give the shadow a deliberate contour and retain a soft outer shoulder. Eight levels give a quieter, low-precision gradient. Switching between them on ordinary Green Hill terrain takes a close look. The neutral card makes the distinction easy to see. The four-level ordered pattern is a separate modern Saturn/Dreamcast-inspired treatment. Historical hardware fidelity was outside the scope of this experiment.

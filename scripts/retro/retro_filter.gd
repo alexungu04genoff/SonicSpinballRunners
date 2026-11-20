@@ -3,7 +3,7 @@ extends Node
 const Settings := preload("res://scripts/retro/retro_settings.gd")
 const DITHER := preload("res://third_party/retro/psx/dither.gdshader")
 const DITHER_TEXTURE := preload("res://third_party/retro/psx/psxdither.png")
-const CRT := preload("res://third_party/retro/crt_vhs/crt.gdshader")
+const CRT := preload("res://scripts/retro/crt_display.gdshader")
 const VHS := preload("res://third_party/retro/crt_vhs/vhs.gdshader")
 enum Preset { OFF, PIXEL, N64, CRT, VHS }
 const NAMES := ["OFF", "PIXEL / DITHER", "N64-ish", "CRT", "VHS"]
@@ -18,6 +18,7 @@ var container: SubViewportContainer
 var world_view: SubViewport
 var effect_layer: CanvasLayer
 var passes: Dictionary = {}
+var crt_display := ShaderMaterial.new()
 var _original_material: Material
 var _original_filter: int
 var _original_shrink: int
@@ -53,14 +54,16 @@ func attach(target: SubViewportContainer, viewport: SubViewport) -> void:
  effect_layer.name = "RetroWorldEffects"
  effect_layer.layer = 100
  world_view.add_child(effect_layer)
+ crt_display.shader = CRT
  for effect: int in ORDER:
+  if effect == Preset.CRT: continue # The output draw owns the physical display pattern.
   # Each selected pass reads the result of the previous one in this same frame.
   # Explicit copies prevent Godot's first screen snapshot being reused by every pass.
   var copy := BackBufferCopy.new()
   copy.copy_mode = BackBufferCopy.COPY_MODE_VIEWPORT
   effect_layer.add_child(copy)
   var material := ShaderMaterial.new()
-  material.shader = CRT if effect == Preset.CRT else (VHS if effect == Preset.VHS else DITHER)
+  material.shader = VHS if effect == Preset.VHS else DITHER
   if effect in [Preset.PIXEL, Preset.N64]:
    material.set_shader_parameter("dither_tex", DITHER_TEXTURE)
   var rect := ColorRect.new()
@@ -127,9 +130,9 @@ func apply_settings() -> void:
  container.material = _original_material
  container.texture_filter = sampling
  _resolution_divisor = shrink
- _output.material = _original_material
+ _output.material = crt_display if is_enabled(Preset.CRT) else _original_material
  effect_layer.visible = not selected_effects.is_empty()
- for effect: int in ORDER:
+ for effect: int in passes:
   passes[effect].copy.visible = is_enabled(effect)
   passes[effect].rect.visible = is_enabled(effect)
  for effect: int in [Preset.PIXEL, Preset.N64]:
@@ -138,13 +141,11 @@ func apply_settings() -> void:
    "col_depth": clampf(settings.pixel_color_levels if pixel else settings.n64_color_levels, 1, 256),
    "dith_range": clampf(settings.pixel_dither_strength if pixel else settings.n64_dither_strength, 0, 1),
   })
- _parameters(passes[Preset.CRT].material, {
-  "scanline_intensity": settings.crt_scanlines, "mask_intensity": settings.crt_mask,
-  "vignette_intensity": settings.crt_vignette, "halation_intensity": settings.crt_glow,
-  "halation_radius": settings.crt_glow_radius / shrink,
-  "convergence_intensity": 0.0, "tv_brightness": settings.crt_brightness, "tv_contrast": 1.0,
-  "tv_saturation": 1.0, "corner_radius": 0.0,
-  "border_thickness_horizontal": 0.0, "border_thickness_vertical": 0.0,
+ _parameters(crt_display, {
+  "raster_lines": settings.crt_raster_lines, "scanline_strength": settings.crt_scanlines,
+  "grille_pitch": settings.crt_cell_size, "grille_strength": settings.crt_mask,
+  "glow_strength": settings.crt_glow, "glow_radius": settings.crt_glow_radius,
+  "vignette": settings.crt_vignette, "brightness": settings.crt_brightness,
  })
  _parameters(passes[Preset.VHS].material, {
   "scanline_intensity": 0.025, "luminance_blur": 0.2 / shrink,
@@ -159,18 +160,6 @@ func _refresh_output() -> void:
  if not is_instance_valid(world_view):
   return
  world_view.size = Vector2i(container.size / _resolution_divisor).max(Vector2i(2, 2))
- _refresh_pattern()
-
-func _refresh_pattern() -> void:
- if not passes.has(Preset.CRT):
-  return
- # Honor the chosen size without a hidden resolution-dependent floor.
- # Subpixel RGB channels may alias at small cells; this is an experimental control.
- var cell_size := maxf(settings.crt_cell_size, 1.0)
- _parameters(passes[Preset.CRT].material, {
-  "scanline_count": maxf(1, container.size.y / cell_size),
-  "mask_density": maxf(1, container.size.x / cell_size),
- })
 
 func _parameters(material: ShaderMaterial, values: Dictionary) -> void:
  for parameter: String in values:

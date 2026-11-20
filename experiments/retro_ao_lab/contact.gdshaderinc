@@ -3,6 +3,8 @@
 uniform sampler2D contact_depth : hint_default_black, filter_nearest, repeat_disable;
 uniform float contact_radius = 0.42;
 uniform float contact_strength = 0.62;
+uniform float contact_gain = 1.0;
+uniform float contact_contrast = 1.0;
 uniform int contact_levels = 0;
 uniform bool face_study = false;
 uniform bool contact_ordered = false;

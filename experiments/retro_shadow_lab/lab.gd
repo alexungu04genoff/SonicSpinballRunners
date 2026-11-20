@@ -2,11 +2,12 @@ extends Node
 ## This scene is the only entry point. Review sessions use the disk-backed game.
 const Fixture = preload("res://tests/prototype_appearance_fixture.gd")
 const Review = preload("res://scripts/diagnostics/shadow_review.gd")
+const AtmosphereFields = preload("res://scripts/atmosphere/fields.gd")
 const Receivers = preload("receivers.gd")
 const Endless = preload("res://scripts/diagnostics/grounding_endless.gd")
 const ACTS := [Fixture.DEFAULT_ACT, "res://data/acts/Authored/RampMania.tres", "res://data/acts/Experiments/Side to Side.tres", "res://data/acts/Experiments/Launch Tube Workshop.tres"]
-const MODES := ["Normal", "Clean · 2 levels", "Clean · 4 levels", "Ordered dither · 4 levels", "Clean · 3 levels", "Clean · 8 levels"]
-const MENU_ORDER := [0, 5, 2, 4, 3, 1]
+const MODES := ["Normal", "Clean · 2 levels", "Clean · 4 levels", "Ordered dither · 4 levels", "Clean · 3 levels", "Clean · 8 levels", "Clean · 5 levels"]
+const MENU_ORDER := [0, 5, 6, 2, 4, 3, 1]
 const PROFILES := ["production", "quality", "performance"]
 @export var lab_title := "Retro Shadow Lab"
 @export var capture_argument := "--shadow-evidence"
@@ -130,7 +131,7 @@ func build_ui() -> void:
   tone_fields.append(number(box, ["Dark", "Low", "High", "Lit"][i], 0, 1, 0.01, receivers.levels[i], func(v): receivers.levels[i] = v; receivers.update()))
  tone_row.hide()
  box = row()
- blur = number(box, "Blur", 0.5, 2, 0.05, 1, func(v): if game: game.presentation._key_light.shadow_blur = v)
+ blur = number(box, "Blur", 0.5, AtmosphereFields.MAX_SHADOW_BLUR, 0.05, 1, func(v): if game: game.presentation._key_light.shadow_blur = v)
  angle = number(box, "Sun °", 0, 5, 0.05, 0, func(v): if game: game.presentation._key_light.light_angular_distance = v)
  camera_choice = choice(box, ["Dramatic", "Wide", "Real", "Top-down"], 0, func(i): if game: game.select_play_camera(game.PLAY_CAMERAS[i]); camera(start_focus))
  zoom = number(box, "Zoom", 0.6, 2.5, 0.05, 1.3, func(v): if game: game.presentation.camera_settings.zoom = v; camera(start_focus))

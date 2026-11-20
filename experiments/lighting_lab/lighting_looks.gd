@@ -2,6 +2,7 @@ extends RefCounted
 ## Quick art directions relative to each theme's authored lighting, not production defaults.
 ## Keep shadow quality, material geometry and physics unchanged when choosing a look.
 const LOOKS := {
+ "Arcade daylight (Sega-inspired)": {"ambient": 1.0, "ambient_color": "9299df", "sun": 1.15, "sun_color": "ffda98", "pitch": -26.0, "yaw": 43.0, "exposure": 1.0, "sky": 1.0, "emission": 0.85, "glow": 0.55, "contact_radius": 0.84},
  "Daytime": {"ambient": 1.1, "ambient_color": "dceaff", "sun": 1.05, "sun_color": "fff5e5", "pitch": -55.0, "yaw": -30.0, "exposure": 1.0, "sky": 1.0, "emission": 0.8, "glow": 0.6},
  "Morning": {"ambient": 0.85, "ambient_color": "b8cbe8", "sun": 0.9, "sun_color": "ffe0b8", "pitch": -28.0, "yaw": -55.0, "exposure": 0.98, "sky": 0.8, "emission": 0.8, "glow": 0.6},
  "Golden hour": {"ambient": 0.85, "ambient_color": "c1b6d6", "sun": 1.05, "sun_color": "ffcd8c", "pitch": -28.0, "yaw": 45.0, "exposure": 0.98, "sky": 0.85, "emission": 0.8, "glow": 0.6},
@@ -20,6 +21,7 @@ const LOOKS := {
 # theme's baseline. Theme-owned shader colors have separate semantic recipes.
 # Daytime/Neutral keep the authored palette; all values remain editable in the lab.
 const SKY_PALETTES := {
+ "Arcade daylight (Sega-inspired)": {"top": "5186bf", "horizon": "f5ddba", "bottom": "756d91", "curve": 0.27, "brightness": 1.0, "solid": "3c466b"},
  "Morning": {"top": "477ca5", "horizon": "f5c8b2", "bottom": "526779", "curve": 0.25, "brightness": 0.9, "solid": "302637"},
  "Golden hour": {"top": "476c9e", "horizon": "ffd29c", "bottom": "635060", "curve": 0.3, "brightness": 0.9, "solid": "302330"},
  "Sunset": {"top": "303c72", "horizon": "ef9b83", "bottom": "463047", "curve": 0.3, "brightness": 0.8, "solid": "231322"},
@@ -45,6 +47,12 @@ static func create(title: String, authored: Dictionary, theme := "") -> Dictiona
  result["sun/light_color"] = Color(look.sun_color)
  result["sun_pitch"] = look.pitch
  result["sun_yaw"] = look.yaw
+ if look.has("contact_radius"):
+  result["ssao/radius"] = look.contact_radius
+  result["ssao/levels"] = 0
+  result["ssao/contrast"] = 4.0
+  result["sun/shadow_blur"] = 10.0
+  result["shadow/levels"] = 4
  result["env/background_energy_multiplier"] = float(authored["env/background_energy_multiplier"]) * float(look.sky)
  result["emission"] = look.emission
  result["env/glow_enabled"] = title != "Neutral inspection" and (bool(authored["env/glow_enabled"]) or title in ["Night", "Neon night"])

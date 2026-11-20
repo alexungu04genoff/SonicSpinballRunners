@@ -11,6 +11,7 @@ const RESPONSE := """
   contact_amount = face_cavity(normalize(contact_face_normal), contact_local.y);
  } else {
   float contact_signal = contact_field(SCREEN_UV, VERTEX, normalize(NORMAL), PROJECTION_MATRIX, INV_PROJECTION_MATRIX);
+  contact_signal = 1.0 - pow(1.0 - clamp(contact_signal * contact_gain, 0.0, 1.0), contact_contrast);
   float contact_phase = contact_threshold(FRAGCOORD.xy, (INV_VIEW_MATRIX * vec4(VERTEX, 1.0)).xyz,
    contact_world_n, contact_local, transpose(mat3(MODEL_MATRIX)) * contact_world_n);
   contact_amount = contact_band(contact_signal, contact_phase, contact_levels);
@@ -47,9 +48,10 @@ func specialize(source: Shader) -> Shader:
  shader.code = code
  return shader
 
-func collect(act: RefCounted) -> Dictionary:
+func collect(root: Node3D, scenery: Node3D = null) -> Dictionary:
  var state := {"slots": [], "materials": {}}
- for node: GeometryInstance3D in act.visual.find_children("*", "GeometryInstance3D", true, false):
+ for node: GeometryInstance3D in root.find_children("*", "GeometryInstance3D", true, false):
+  if scenery and scenery.is_ancestor_of(node): continue
   if node.transparency > 0.0 or node.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY: continue
   var mesh := Audit.mesh_of(node)
   if not mesh or mesh.get_surface_count() != 1: continue
@@ -66,6 +68,7 @@ func collect(act: RefCounted) -> Dictionary:
   if not state.materials.has(key):
    var mat: ShaderMaterial = source.duplicate()
    mat.shader = programs[code]
+   mat.set_meta("contact_source_material", source)
    mat.set_shader_parameter("contact_heights", Vector2(bounds.position.y, bounds.size.y))
    for param: String in settings: mat.set_shader_parameter(param, settings[param])
    state.materials[key] = mat
@@ -82,12 +85,19 @@ func show_slots(state: Dictionary, enabled: bool) -> void:
 func sync(game: Node, enabled: bool) -> void:
  if not enabled and owners.is_empty(): return
  var live := {}
- for act: RefCounted in game.resident:
-  if not act.ready: continue
-  var id := act.get_instance_id()
+ if "resident" in game:
+  for act: RefCounted in game.resident:
+   if not act.ready: continue
+   var id := act.get_instance_id()
+   live[id] = true
+   if enabled and not owners.has(id):
+    owners[id] = collect(act.visual)
+    show_slots(owners[id], true)
+ elif game.presentation.terrain_root:
+  var id: int = game.presentation.terrain_root.get_instance_id()
   live[id] = true
   if enabled and not owners.has(id):
-   owners[id] = collect(act)
+   owners[id] = collect(game.presentation, game.presentation.scenery_root)
    show_slots(owners[id], true)
  for id: int in owners.keys():
   if not live.has(id):
@@ -96,6 +106,13 @@ func sync(game: Node, enabled: bool) -> void:
  if enabled != active:
   for state: Dictionary in owners.values(): show_slots(state, enabled)
  active = enabled
+
+func refresh_source_parameters() -> void:
+ for owner: Dictionary in owners.values():
+  for material: ShaderMaterial in owner.materials.values():
+   var source: ShaderMaterial = material.get_meta("contact_source_material")
+   for uniform: Dictionary in source.shader.get_shader_uniform_list():
+    material.set_shader_parameter(uniform.name, source.get_shader_parameter(uniform.name))
 
 func apply(values: Dictionary) -> void:
  settings = values

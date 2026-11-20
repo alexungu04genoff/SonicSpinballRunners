@@ -35,7 +35,8 @@ func run() -> void:
  DirAccess.make_dir_recursive_absolute(output.get_base_dir())
  Options.settings_path = output.get_basename() + "-isolated-graphics.cfg"
  verify(not FileAccess.file_exists(Options.settings_path), "Use a fresh output path; never inherit a previous graphics probe")
- verify(Options.shadow_resolution() == 8192 and Options.shadow_cascades() == 4 and not Options.ultra_filter_enabled(), "Primary attribution uses unchanged production shadows with Smooth/FXAA off")
+ Options.update_quality({"directional_shadow_resolution": 8192, "fxaa": false}, false)
+ verify(Options.shadow_resolution() == 8192 and Options.shadow_cascades() == 4 and not Options.ultra_filter_enabled() and not Options.quality().fxaa, "Reproduce the original pixel-cost study's shadow and FXAA settings")
  session = Session.new()
  session.settings_path = output.get_basename() + "-isolated-session.cfg"
  session.sound_enabled = false

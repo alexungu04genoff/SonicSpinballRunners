@@ -223,6 +223,7 @@ func _build_ui() -> void:
     set_value("ranges/enabled", false)
    )
   for spec: Array in GROUPS.get(group, []):
+   if spec[1] == "sun/light_angular_distance": continue
    if spec[1] == "env/fog_enabled":
     var note := Label.new()
     note.text = "Depth / distance fog: fit start/end to the visible table below. Density is maximum opacity (try 0.5). Exponential fog uses density only. Directional Fog has its own tab."
@@ -381,7 +382,7 @@ func _field(parent: Node, spec: Array) -> void:
    number.custom_arrow_step = spec[5]
    number.allow_greater = true
    number.allow_lesser = true
-   if key.begins_with("directional_fog/") or key.begins_with("env/fog_") or key.begins_with("env/glow_") or key in ["surface_halo_spread", "sun/shadow_blur"]:
+   if key.begins_with("directional_fog/") or key.begins_with("env/fog_") or key.begins_with("env/glow_") or key.begins_with("ssao/") or key in ["surface_halo_spread", "sun/shadow_blur"]:
     number.allow_greater = false
     number.allow_lesser = false
    number.value_changed.connect(func(value: float): set_value(key, value))
@@ -406,6 +407,16 @@ func _field(parent: Node, spec: Array) -> void:
    var toggle := CheckButton.new()
    toggle.toggled.connect(func(value: bool): set_value(key, value))
    field = toggle
+  "cast_levels":
+   var options := OptionButton.new()
+   var is_contact := key == Fields.NativeSSAO.LEVELS_KEY
+   var standard := "Native SSAO" if is_contact else "Device default"
+   for count: int in Fields.CAST_CHOICES:
+    options.add_item(standard if count == 0 else "%d clean tones" % count, count)
+   options.disabled = renderer != "forward_plus"
+   options.tooltip_text = "Replaces native SSAO with clean contact bands on foreground terrain. Requires Forward+ and MSAA. Native SSAO is used with MSAA off." if is_contact else "Steps the filtered cast shadow on eligible terrain without dithering. Two tones give a hard silhouette. Uses an additional terrain pass."
+   options.item_selected.connect(func(index: int): set_value(key, options.get_item_id(index)))
+   field = options
   _:
    var options := OptionButton.new()
    var names := ["Linear", "Reinhard", "Filmic", "ACES", "AgX"] if spec[2] == "tone" else ["1 · Orthogonal", "2 · PSSM", "4 · PSSM"]
@@ -417,14 +428,17 @@ func _field(parent: Node, spec: Array) -> void:
  field.focus_mode = Control.FOCUS_NONE
  row.add_child(field)
  widgets[key] = field
- if key == "sun/shadow_blur": field.tooltip_text = "Scales the normal shadow filter radius. 1.00 is the engine baseline."
+ if key == "sun/shadow_blur": field.tooltip_text = "Directional shadow filter radius. 1× is the normal width. High values can reveal the filter samples."
  if key == "surface_halo_spread":
   field.tooltip_text = "Scales the existing floor/edge material halo radius. 1.00 preserves the authored width. This is separate from screen-space Glow."
- if key == "sun/light_angular_distance" and renderer != "forward_plus":
-  (field as SpinBox).editable = false
-  field.tooltip_text = "Directional soft shadows require Forward+."
- elif key == "sun/light_angular_distance":
-  field.tooltip_text = "Physical penumbra (Forward+). Sun angular size in degrees. Higher values widen contact shadows and can expose shadow-filter dithering. 0.00 disables contact-hardening softness."
+ if key.begins_with("ssao/") and field is SpinBox:
+  (field as SpinBox).editable = renderer == "forward_plus"
+  if key == Fields.NativeSSAO.KEY:
+   field.tooltip_text = "0 = off. 1× matches the subtle Retro AO reference. 8× is the production default. Requires Forward+."
+  elif key == Fields.NativeSSAO.RADIUS_KEY:
+   field.tooltip_text = "Contact shading reach in world units. Compare 0.42, 0.84 and 1.26 at the same strength. Requires Forward+."
+  else:
+   field.tooltip_text = "Shapes the existing SSAO fade. Try 4 for a stronger boundary at the same intensity and radius."
  if spec[2] == "number":
   var slider := HSlider.new()
   slider.scrollable = false
@@ -432,7 +446,8 @@ func _field(parent: Node, spec: Array) -> void:
   slider.max_value = spec[4]
   slider.step = spec[5]
   slider.focus_mode = Control.FOCUS_NONE
-  slider.editable = not (key == "sun/light_angular_distance" and renderer != "forward_plus")
+  slider.editable = (field as SpinBox).editable
+  slider.tooltip_text = field.tooltip_text
   slider.value_changed.connect(func(value: float): set_value(key, value))
   parent.add_child(slider)
   field.set_meta("slider", slider)
@@ -597,6 +612,10 @@ func _bind_palette() -> void:
    number.allow_lesser = false
 
 func _read_value(key: String) -> Variant:
+ if key in [Fields.CAST_LEVELS, Fields.NativeSSAO.LEVELS_KEY]: return 0
+ if key == Fields.NativeSSAO.KEY: return Fields.NativeSSAO.DEFAULT_GAIN
+ if key == Fields.NativeSSAO.RADIUS_KEY: return Fields.NativeSSAO.REFERENCE_RADIUS
+ if key == Fields.NativeSSAO.CONTRAST_KEY: return Fields.NativeSSAO.REFERENCE_POWER
  if DirectionalFog.DEFAULTS.has(key): return DirectionalFog.DEFAULTS[key]
  if key in ["emission", "surface_halo_spread"]: return 1.0
  if key == "sun_pitch": return game.presentation._key_light.rotation_degrees.x
@@ -622,7 +641,7 @@ func _sync_widgets() -> void:
    field.set_value_no_signal(float(values[key]))
    if field.has_meta("slider"): field.get_meta("slider").set_value_no_signal(float(values[key]))
   elif field is ColorPickerButton: field.color = values[key]
-  elif field is OptionButton: field.select(int(values[key]))
+  elif field is OptionButton: field.select(field.get_item_index(int(values[key])))
   elif field is CheckButton: field.set_pressed_no_signal(bool(values[key]))
  var linked: bool = values.get("link/terrain_trim", true)
  for group: String in ["terrain_edges", "terrain_ledges"]:
@@ -671,10 +690,13 @@ func _fit_fog_to_view() -> void:
 
 func _apply(source: Dictionary) -> void:
  DirectionalFog.apply(game.presentation.camera, source)
+ game.terrain_shadows.cast_levels = source.get(Fields.CAST_LEVELS, 0)
+ var contact_curve := Vector3(source[Fields.NativeSSAO.KEY], source[Fields.NativeSSAO.RADIUS_KEY], source[Fields.NativeSSAO.CONTRAST_KEY])
+ game.terrain_shadows.configure_contact(game.presentation._world_environment.environment, source[Fields.NativeSSAO.LEVELS_KEY], contact_curve)
  sync_fog_controls()
  for key: String in source:
-  if key == Fields.LEGACY_SHADOW_MODE: continue
-  if key.begins_with("directional_fog/"): continue
+  if key in [Fields.LEGACY_SHADOW_MODE, Fields.CAST_LEVELS]: continue
+  if key.begins_with("directional_fog/") or key.begins_with("ssao/"): continue
   if key.begins_with("palette/") or key.begins_with("hue/") or key.begins_with("saturation/") or key.begins_with("override/") or key.begins_with("brightness/") or key.begins_with("ranges/") or key.begins_with("stack/") or key.begins_with("link/"): continue
   if key == "emission": emission.apply(float(source[key]))
   elif key == "surface_halo_spread": continue # Applied with the bound material controls below.

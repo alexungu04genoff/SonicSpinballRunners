@@ -34,7 +34,49 @@ func run() -> void:
  check(lab.presentation._key_light.directional_shadow_mode == DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS, "Lab inherits device cascades")
  controls.set_value("env/tonemap_exposure", 0.65)
  controls.set_value("sun_yaw", -25.0)
- controls.set_value("sun/shadow_blur", 1.35)
+ check(not controls.widgets.has("sun/light_angular_distance") and controls.widgets.has("sun_pitch") and controls.widgets.has("sun_yaw"), "Shadows omits PCSS angle while Light retains both sun direction controls")
+ check(controls.widgets["sun/shadow_blur"].max_value == 25.0 and controls.widgets["ssao/strength"].max_value == 100.0, "Editor offers the experimental radius and SSAO ranges")
+ var gain_slider: HSlider = controls.widgets["ssao/strength"].get_meta("slider")
+ gain_slider.ratio = 1.0
+ gain_slider.ratio = 0.0
+ check(is_zero_approx(controls.values["ssao/strength"]), "Dragging the SSAO slider fully left turns contact shading off")
+ controls.widgets["sun/shadow_blur"].value = 25.0
+ controls.widgets["ssao/strength"].value = 100.0
+ controls.widgets["ssao/radius"].value = 0.84
+ controls.widgets["ssao/contrast"].value = 4.0
+ var tones: OptionButton = controls.widgets["shadow/levels"]
+ tones.item_selected.emit(tones.get_item_index(3))
+ var forward := RenderingServer.get_current_rendering_method() == "forward_plus"
+ var preview_env: Environment = lab.presentation._world_environment.environment
+ check(is_equal_approx(lab.presentation._key_light.shadow_blur, 25.0) and preview_env.ssao_enabled == forward and (not forward or is_equal_approx(preview_env.ssao_intensity, 96.1)), "Editing the widgets changes the real light and contact strength")
+ check(not forward or is_equal_approx(preview_env.ssao_radius, 0.84), "The radius control changes contact width independently of intensity")
+ if forward and DisplayServer.get_name() != "headless":
+  var contact_menu: OptionButton = controls.widgets["ssao/levels"]
+  var pixel_profile := Options.pixel_profile()
+  Options.set_pixel_profile(2)
+  for count: int in [4, 5]:
+   contact_menu.item_selected.emit(contact_menu.get_item_index(count))
+   for frame in 5: await process_frame
+   var effect = lab.terrain_shadows.contact
+   check(not preview_env.ssao_enabled and effect and effect.levels == count and effect.depth.depth != null and effect.receivers.inventory().receivers > 0, "Contact menu applies %d clean tones using foreground depth" % count)
+  var old_size: Vector2i = root.size
+  root.size = old_size - Vector2i(100, 50)
+  for frame in 8: await process_frame
+  check(lab.terrain_shadows.contact.depth.depth.get_size() == Vector2(lab.view.size), "Banded contacts follow a resized playfield")
+  root.size = old_size
+  for frame in 5: await process_frame
+  Options.set_pixel_profile(0)
+  for frame in 4: await process_frame
+  check(preview_env.ssao_enabled and not lab.terrain_shadows.contact, "Disabling MSAA restores native SSAO")
+  Options.set_pixel_profile(2)
+  for frame in 5: await process_frame
+  check(not preview_env.ssao_enabled and lab.terrain_shadows.contact and lab.terrain_shadows.contact.levels == 5, "Restoring MSAA resumes the selected contact tones")
+  contact_menu.item_selected.emit(contact_menu.get_item_index(0))
+  Options.set_pixel_profile(pixel_profile.msaa, pixel_profile.scale_percent, pixel_profile.fxaa_override)
+  check(preview_env.ssao_enabled and not lab.terrain_shadows.contact, "Selecting native SSAO releases the banded contact effect")
+ controls.compare.button_pressed = true
+ check(preview_env.ssao_enabled == forward and (not forward or is_equal_approx(preview_env.ssao_intensity, 7.688)) and is_equal_approx(lab.presentation._key_light.shadow_blur, 10.0), "Show Original restores the approved blur and contact shading")
+ controls.compare.button_pressed = false
  var request := lab.prototype_playtest_request()
  check(request.error.is_empty(), "Unsaved Lab atmosphere creates a valid user-local playtest snapshot")
  if not request.error.is_empty():
@@ -69,10 +111,15 @@ func run() -> void:
  var game: Node = session.game
  check(is_instance_valid(game) and game.started, "Prototype starts the single Act with the unsaved Lab atmosphere")
  if is_instance_valid(game) and game.started:
-  check(is_equal_approx(game.presentation._key_light.shadow_blur, 1.35), "Prototype applies Lab shadow blur")
+  check(is_equal_approx(game.presentation._key_light.shadow_blur, 25.0), "Prototype applies the full experimental shadow blur")
+  var world_env: Environment = game.presentation._world_environment.environment
+  check(world_env.ssao_enabled == forward and (not forward or is_equal_approx(world_env.ssao_intensity, 96.1)), "Prototype applies the Lab's 100× SSAO to the playfield")
+  check(not forward or is_equal_approx(world_env.ssao_radius, 0.84), "Prototype carries the selected contact radius through the snapshot")
+  check(game.terrain_shadows.cast_levels == 3 and (not forward or is_equal_approx(world_env.ssao_power, 4.0)), "Prototype restores three cast tones and the native contact curve")
   check(Options.shadow_resolution() == 4096 and Options.shadow_cascades() == 2 and Options.ultra_filter_enabled(), "Prototype retains device quality from the Lab")
   check(game.presentation._key_light.directional_shadow_mode == DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS and game.view.screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA, "Prototype foreground inherits device cascades and FXAA")
   for background: Dictionary in game.backgrounds.values():
+   check(not background.layer.atmosphere.environment.ssao_enabled, "Foreground contact shading leaves the backdrop independent")
    check(background.layer.light.directional_shadow_mode == DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS and not background.layer.light.shadow_enabled and background.layer.view.screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA, "Streamed backdrop inherits policy and remains shadowless")
   for count: int in [1, 4, 2]:
    Options.set_shadow_cascades(count)

@@ -98,10 +98,13 @@ func run() -> void:
  if graphical:
   var startup := await image_now()
   startup.save_png(output + "/startup-defaults.png")
- check(defaults.n64_resolution_divisor == 1.9 and defaults.n64_color_levels == 119 and defaults.n64_dither_strength == 0.75 and defaults.vhs_wobble == 0.00015 and defaults.vhs_grain == 0.029 and defaults.vhs_tracking == 0.0045 and defaults.crt_cell_size == 3.7 and defaults.crt_mask == 0 and defaults.crt_glow == 0.4 and defaults.crt_brightness == -0.085, "User tuning loads from the project defaults resource")
+ check(defaults.n64_resolution_divisor == 1.9 and defaults.n64_color_levels == 119 and defaults.n64_dither_strength == 0.75, "N64 sampling loads from the project defaults")
+ check(defaults.vhs_wobble == 0.00015 and defaults.vhs_grain == 0.004 and defaults.vhs_tracking == 0.001, "Tape grain and tracking load the quieter defaults")
+ check(defaults.crt_raster_lines == 300 and defaults.crt_scanlines == 0.34 and defaults.crt_mask == 0.0 and defaults.crt_glow == 0.42 and defaults.crt_brightness == 0.0, "CRT starts with a luminance-dependent raster, highlight glow and clear grille")
  game.retro_filter.set_preset(Filter.Preset.OFF)
  await frames(4)
  paused = true
+ Engine.time_scale = 0.0 # Freeze shader TIME as well as node processing during image comparisons.
  # Freeze the entire same scene, including cosmetic animations and HUD counters.
  # Only preset shaders change; camera, actors, rings, lights and geometry stay fixed.
  freeze_processes(game)
@@ -202,9 +205,12 @@ func check_stacking(original: Array) -> void:
   var enabled_passes := 0
   var correct := true
   for effect: int in Filter.ORDER:
-   var enabled: bool = adapter.passes[effect].rect.visible
+   var enabled: bool = adapter._output.material == adapter.crt_display
+   if effect != Filter.Preset.CRT:
+    enabled = adapter.passes[effect].rect.visible
+    correct = correct and adapter.passes[effect].copy.visible == enabled
    enabled_passes += int(enabled)
-   correct = correct and enabled == selected.has(effect) and adapter.passes[effect].copy.visible == enabled and controls.checks[effect].button_pressed == enabled
+   correct = correct and enabled == selected.has(effect) and controls.checks[effect].button_pressed == enabled
   check(correct and enabled_passes == selected.size(), "Stack %d renders exactly its selected passes and synchronizes checkboxes" % mask)
   if graphical:
    var frame := await image_now()
@@ -217,10 +223,11 @@ func check_stacking(original: Array) -> void:
  var original_cell: float = adapter.settings.crt_cell_size
  var original_glow: float = adapter.settings.crt_glow
  controls.fields.crt_cell_size.value = 12
+ controls.fields.crt_raster_lines.value = 240
  controls.fields.crt_glow.value = 0.6
  controls.fields.crt_brightness.value = 0.08
  await frames(3)
- check(adapter.settings.crt_cell_size == 12 and is_equal_approx(adapter.settings.crt_brightness, 0.08) and adapter.passes[Filter.Preset.CRT].material.get_shader_parameter("scanline_count") == game.view_container.size.y / 12.0 and adapter.passes[Filter.Preset.CRT].material.get_shader_parameter("halation_intensity") == 0.6, "Live sliders update cell size, brightness and glow without changing selection")
+ check(adapter.crt_display.get_shader_parameter("grille_pitch") == 12 and adapter.crt_display.get_shader_parameter("raster_lines") == 240 and is_equal_approx(adapter.settings.crt_brightness, 0.08) and adapter.crt_display.get_shader_parameter("glow_strength") == 0.6, "Live sliders independently update grille pitch, raster, brightness and glow")
  check(snapshot() == original, "Live tuning preserves gameplay and camera state")
  if graphical:
   var tuned := await image_now()
@@ -252,7 +259,7 @@ func check_ranges(original: Array) -> void:
  controls.fields.crt_cell_size.value = 1.0
  await frames(4)
  check(is_equal_approx(adapter.settings.pixel_resolution_divisor, 1.1) and game.view.size == Vector2i(game.view_container.size / 1.1), "Resolution divisor 1.1 renders the actual fractional viewport size")
- check(adapter.passes[Filter.Preset.CRT].material.get_shader_parameter("mask_density") == game.view_container.size.x, "One-pixel phosphor cells have no hidden size clamp")
+ check(adapter.crt_display.get_shader_parameter("grille_pitch") == 1.0, "Grille accepts one-pixel pitch and filters unresolved detail")
  game.toggle_debug()
  await frames(4)
  check(game.view.size == Vector2i(game.view_container.size / 1.1), "Fractional resolution follows F1 layout resizing")

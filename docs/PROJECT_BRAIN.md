@@ -1,5 +1,11 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Wider shadow and contact studies — 2026-11-20
+
+Alex tuned Green Hill in the live Lab and picked the shared defaults. Shadows use opacity 0.80, blur 10, bias 0.01/0.10 and distance 40. Forward+ uses 8× native SSAO. Fresh devices use a 4096 atlas, four cascades, medium filtering, FXAA on, 2× MSAA, 100% scale, authored faces and native cast shadows. Arcade daylight puts a low warm sun across the lane, cool fill in the recesses and four clean tones in the cast shadow. Cast and contact tones can be chosen separately. Native contact radius and contrast work independently of gain. Light still has sun elevation and azimuth. [Matched Green Hill captures and GPU times](DEVICE_SHADOW_QUALITY.md)
+
+Full Retro stays on. Alex wanted the tube as it reads from the couch. The RGB grille starts at zero and tape grain is down to 0.004. The final world draw handles a 300-line raster with wider beams on highlights and a small amount of light spreading into the surrounding pixels. [Matched CRT comparison and references](RETRO_FILTER_LAB.md)
+
 ## Authored faces enter the game — 2026-11-20
 
 Alex picked authored terrain faces with native shadows and full Retro. The face rule now lives in the terrain materials that the normal Act baker prepares. It gives risers and undersides a touch more weight while leaving the track bright. Clean 8 is the optional quieter, banded shadow in Atmosphere Lab → Shadows → Device Quality. The ordered pattern and the harder cuts are still in the Shadow Lab. [Gameplay comparison and verification](TERRAIN_FACE_SHADING.md)
