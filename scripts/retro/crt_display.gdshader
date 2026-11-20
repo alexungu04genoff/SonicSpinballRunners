@@ -36,7 +36,7 @@ void fragment() {
 	vec3 beam_response = 2.0 * exp(-2.0 * PI * PI * sigma * sigma);
 	float pixel_response = sin(PI * footprint) / (PI * footprint);
 	float resolved = 1.0 - smoothstep(0.30, 0.50, footprint);
-	light *= 1.0 + scanline_strength * resolved * pixel_response * beam_response * cos(TAU * row);
+	light *= 1.0 + scanline_strength * resolved * pixel_response * beam_response * cos(TAU * (row - 0.5));
 
 	// Optional close-up aperture grille. One period is one RGB triad.
 	float phase = TAU * FRAGCOORD.x / grille_pitch;

@@ -27,6 +27,7 @@ const PARAMETERS := {
   ["vhs_tracking", "Tracking", 0, 1, 0.0001]],
 }
 var filter: Filter
+var fixed_raster: CheckButton
 var selector: MenuButton
 var open_button: Button
 var tuning_panel: PanelContainer
@@ -141,6 +142,16 @@ func _build_panel() -> void:
   var group := VBoxContainer.new()
   content.add_child(group)
   groups[effect] = group
+  if effect == Filter.Preset.CRT:
+   fixed_raster = CheckButton.new()
+   fixed_raster.text = "Dreamcast 480p · fit screen"
+   fixed_raster.tooltip_text = "Render 480 progressive lines. Width follows the playfield aspect ratio."
+   fixed_raster.toggled.connect(func(enabled: bool):
+    filter.settings.crt_480p = enabled
+    filter.apply_settings()
+    _sync_controls()
+   )
+   group.add_child(fixed_raster)
   for spec: Array in PARAMETERS[effect]:
    var key: String = spec[0]
    var caption := Label.new()
@@ -211,6 +222,13 @@ func _sync_controls() -> void:
  for key: String in fields:
   fields[key].set_value_no_signal(filter.settings.get(key))
   values[key].text = str(filter.settings.get(key))
+ fixed_raster.set_pressed_no_signal(filter.settings.crt_480p)
+ for key: String in ["crt_raster_lines", "n64_resolution_divisor", "pixel_resolution_divisor"]:
+  fields[key].editable = not filter.uses_480p()
+ if filter.uses_480p():
+  values.crt_raster_lines.text = str(Filter.VGA_LINES)
+  values.n64_resolution_divisor.text = "480p"
+  values.pixel_resolution_divisor.text = "480p"
 
 func _changed(_index: int) -> void:
  _sync_controls()

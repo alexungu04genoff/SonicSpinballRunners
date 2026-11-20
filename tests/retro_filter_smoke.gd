@@ -95,6 +95,8 @@ func run() -> void:
  check(game.retro_filter.selected_effects == [Filter.Preset.N64, Filter.Preset.VHS, Filter.Preset.CRT], "Normal application starts with the selected N64/VHS/CRT stack")
  check(game.presentation.camera_preset == TablePresentation.CameraPreset.DRAMATIC_PINBALL and game.presentation.camera_settings.zoom == 2.0 and game.debug_panel.camera_fields.zoom.value == 2.0, "Dramatic Pinball and zoom 2 are synchronized startup defaults")
  var defaults = game.retro_filter.settings
+ var width_480p := 2 * roundi(game.view_container.size.aspect() * Filter.VGA_LINES * 0.5)
+ check(game.view.size == Vector2i(width_480p, 480) and game.retro_filter.crt_display.get_shader_parameter("raster_lines") == 480 and game.retro_controls.fixed_raster.button_pressed, "Full Retro starts with a 480-line source and matching display raster at the playfield aspect")
  if graphical:
   var startup := await image_now()
   startup.save_png(output + "/startup-defaults.png")
@@ -220,6 +222,7 @@ func check_stacking(original: Array) -> void:
    if mask == 5:
     check(frame.get_data() != Image.load_from_file(ProjectSettings.globalize_path(output + "/pixel.png")).get_data() and frame.get_data() != Image.load_from_file(ProjectSettings.globalize_path(output + "/crt.png")).get_data(), "Pixel plus CRT differs visibly from either individual effect")
  adapter.set_effects([Filter.Preset.PIXEL, Filter.Preset.CRT])
+ controls.fixed_raster.button_pressed = false
  var original_cell: float = adapter.settings.crt_cell_size
  var original_glow: float = adapter.settings.crt_glow
  controls.fields.crt_cell_size.value = 12
@@ -255,6 +258,7 @@ func check_ranges(original: Array) -> void:
  var adapter = game.retro_filter
  var controls = game.retro_controls
  adapter.set_effects([Filter.Preset.PIXEL, Filter.Preset.CRT])
+ controls.fixed_raster.button_pressed = false
  controls.fields.pixel_resolution_divisor.value = 1.1
  controls.fields.crt_cell_size.value = 1.0
  await frames(4)

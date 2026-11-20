@@ -1,0 +1,52 @@
+{
+  "adapter": "NVIDIA GeForce RTX 4060",
+  "cast_tones": 4,
+  "output": "(1920, 1200)",
+  "retro": [
+    2,
+    4,
+    3
+  ],
+  "runs": [
+    {
+      "frame_median_ms": 3.265,
+      "frame_p95_ms": 3.662,
+      "frames_over_16_67_ms": 0,
+      "gpu_median_ms": 0.826000012457371,
+      "gpu_p95_ms": 0.861000001430511,
+      "mode": "adaptive",
+      "source": "(757, 473)"
+    },
+    {
+      "frame_median_ms": 3.218,
+      "frame_p95_ms": 3.582,
+      "frames_over_16_67_ms": 0,
+      "gpu_median_ms": 0.827999994158745,
+      "gpu_p95_ms": 0.841000020503998,
+      "mode": "480p",
+      "source": "(768, 480)"
+    },
+    {
+      "frame_median_ms": 3.418,
+      "frame_p95_ms": 4.716,
+      "frames_over_16_67_ms": 0,
+      "gpu_median_ms": 0.827999994158745,
+      "gpu_p95_ms": 0.841000020503998,
+      "mode": "480p",
+      "source": "(768, 480)"
+    },
+    {
+      "frame_median_ms": 3.197,
+      "frame_p95_ms": 3.574,
+      "frames_over_16_67_ms": 0,
+      "gpu_median_ms": 0.828999996185303,
+      "gpu_p95_ms": 0.88900002092123,
+      "mode": "adaptive",
+      "source": "(757, 473)"
+    }
+  ],
+  "samples_per_run": 240,
+  "ssao": "native 8x",
+  "timed_viewports": "foreground, backdrop, composite, output",
+  "warmup_frames": 60
+}

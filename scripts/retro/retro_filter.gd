@@ -8,6 +8,7 @@ const VHS := preload("res://third_party/retro/crt_vhs/vhs.gdshader")
 enum Preset { OFF, PIXEL, N64, CRT, VHS }
 const NAMES := ["OFF", "PIXEL / DITHER", "N64-ish", "CRT", "VHS"]
 const ORDER := [Preset.PIXEL, Preset.N64, Preset.VHS, Preset.CRT]
+const VGA_LINES := 480
 signal preset_changed(index: int)
 
 var settings: Settings = preload("res://data/retro_settings.tres").duplicate()
@@ -130,6 +131,7 @@ func apply_settings() -> void:
  container.material = _original_material
  container.texture_filter = sampling
  _resolution_divisor = shrink
+ _output.stretch_mode = TextureRect.STRETCH_SCALE if uses_480p() else TextureRect.STRETCH_KEEP_ASPECT_CENTERED
  _output.material = crt_display if is_enabled(Preset.CRT) else _original_material
  effect_layer.visible = not selected_effects.is_empty()
  for effect: int in passes:
@@ -142,24 +144,38 @@ func apply_settings() -> void:
    "dith_range": clampf(settings.pixel_dither_strength if pixel else settings.n64_dither_strength, 0, 1),
   })
  _parameters(crt_display, {
-  "raster_lines": settings.crt_raster_lines, "scanline_strength": settings.crt_scanlines,
+  "raster_lines": VGA_LINES if uses_480p() else settings.crt_raster_lines, "scanline_strength": settings.crt_scanlines,
   "grille_pitch": settings.crt_cell_size, "grille_strength": settings.crt_mask,
   "glow_strength": settings.crt_glow, "glow_radius": settings.crt_glow_radius,
   "vignette": settings.crt_vignette, "brightness": settings.crt_brightness,
  })
  _parameters(passes[Preset.VHS].material, {
-  "scanline_intensity": 0.025, "luminance_blur": 0.2 / shrink,
-  "chroma_bleed": settings.vhs_chroma_bleed / shrink, "chroma_shift": settings.vhs_chroma_offset / shrink,
+  "scanline_intensity": 0.0 if is_enabled(Preset.CRT) else 0.025,
   "wobble_intensity": settings.vhs_wobble, "tape_noise_intensity": settings.vhs_grain,
   "tracking_height": 0.06, "tracking_distortion": settings.vhs_tracking,
   "tracking_noise": 0.015, "chroma_streak_frequency": 0.0, "dropout_frequency": 0.0,
  })
  _refresh_output()
 
+func uses_480p() -> bool:
+ return settings.crt_480p and is_enabled(Preset.CRT)
+
 func _refresh_output() -> void:
  if not is_instance_valid(world_view):
   return
- world_view.size = Vector2i(container.size / _resolution_divisor).max(Vector2i(2, 2))
+ var size := container.size.max(Vector2(2, 2))
+ if uses_480p():
+  # Square pixels and a fixed line count preserve the camera's display aspect.
+  var width := maxi(2, 2 * roundi(size.aspect() * VGA_LINES * 0.5))
+  world_view.size = Vector2i(width, VGA_LINES)
+ else:
+  world_view.size = Vector2i(size / _resolution_divisor).max(Vector2i(2, 2))
+ var output_height := size.y * container.get_screen_transform().y.length()
+ var pixels_per_texel := maxf(output_height / world_view.size.y, 0.001)
+ _parameters(passes[Preset.VHS].material, {
+  "luminance_blur": 0.2 / pixels_per_texel, "chroma_bleed": settings.vhs_chroma_bleed / pixels_per_texel,
+  "chroma_shift": settings.vhs_chroma_offset / pixels_per_texel,
+ })
 
 func _parameters(material: ShaderMaterial, values: Dictionary) -> void:
  for parameter: String in values:

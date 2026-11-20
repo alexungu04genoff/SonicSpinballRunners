@@ -16,6 +16,7 @@ extends Resource
 @export_range(0, 1, 0.05) var n64_dither_strength := 0.9
 
 @export_group("CRT")
+@export var crt_480p := true
 @export_range(180, 540, 1) var crt_raster_lines := 300
 @export_range(1, 64, 0.1) var crt_cell_size := 6.0
 @export_range(0, 1, 0.01) var crt_scanlines := 0.22
