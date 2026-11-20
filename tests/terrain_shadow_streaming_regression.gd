@@ -49,7 +49,7 @@ func run() -> void:
    check(game.retro_filter.selected_effects == game.retro_filter.settings.default_effects and not game.retro_filter.selected_effects.is_empty(),"Full Retro across Zone boundary")
    var retro = game.retro_filter
    var tape: ShaderMaterial = retro.passes[retro.Preset.VHS].material
-   check(retro.crt_display.get_shader_parameter("broad_lines") == 0.5 and is_equal_approx(tape.get_shader_parameter("tape_noise_intensity"), 0.010), "Shared soft grid and grain reach the render materials after the crossfade")
+   check(is_equal_approx(retro.crt_display.get_shader_parameter("broad_lines"), 0.56) and retro.crt_display.get_shader_parameter("raster_lines") == 480 and is_equal_approx(tape.get_shader_parameter("tape_noise_intensity"), 0.010), "Shared soft grid and grain reach the render materials after the crossfade")
    var ready_ids := game.resident.filter(func(a): return a.ready).map(func(a): return a.get_instance_id())
    var owners: Dictionary = policy.bands.owners
    check(owners.size() == ready_ids.size() and owners.keys().all(func(id): return id in ready_ids),"Clean 8 follows ready resident Acts and retires old owners")

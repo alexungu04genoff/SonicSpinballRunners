@@ -102,13 +102,13 @@ func run() -> void:
   startup.save_png(output + "/startup-defaults.png")
  check(defaults.n64_resolution_divisor == 1.9 and defaults.n64_color_levels == 119 and defaults.n64_dither_strength == 0.75, "N64 sampling loads from the project defaults")
  check(defaults.vhs_wobble == 0.00015 and defaults.vhs_grain == 0.010 and defaults.vhs_tracking == 0.001, "Full Retro starts with the shared grain and tracking settings")
- check(defaults.crt_raster_lines == 300 and defaults.crt_broad_lines == 0.50 and defaults.crt_scanlines == 0.52 and defaults.crt_mask == 0.02 and defaults.crt_cell_size == 3.0, "The shared CRT preset starts with the middle frame's beam and grille")
+ check(defaults.crt_raster_lines == 300 and defaults.crt_broad_lines == 0.56 and defaults.crt_scanlines == 0.62 and defaults.crt_mask == 0.02 and defaults.crt_cell_size == 3.0, "The shared CRT preset starts with the stronger beam and the middle frame's grille")
  check(defaults.crt_glow == 0.54 and defaults.crt_glow_radius == 3.0 and defaults.crt_brightness == 0.0, "The shared CRT preset starts with the middle frame's glow and brightness")
  defaults.vhs_grain = 0.013
  game.retro_controls.soft_grid.button_pressed = true
  check(game.retro_filter.crt_display.get_shader_parameter("broad_lines") == 0.5 and defaults.vhs_grain == 0.007 and game.view.size.y == 480, "Quieter comparison restores the original middle frame at the same source resolution")
  game.retro_controls.soft_grid.button_pressed = false
- check(defaults.crt_broad_lines == 0.5 and defaults.vhs_grain == 0.013 and defaults.crt_glow == 0.54, "Closing the comparison restores the previous tuning including a custom grain setting")
+ check(defaults.crt_broad_lines == 0.56 and defaults.vhs_grain == 0.013 and defaults.crt_glow == 0.54, "Closing the comparison restores the previous tuning including a custom grain setting")
  game.retro_controls.reset_tuning()
  check(game.retro_filter.settings.vhs_grain == 0.010, "Reset tuning restores the shared grain default")
  game.retro_filter.set_preset(Filter.Preset.OFF)

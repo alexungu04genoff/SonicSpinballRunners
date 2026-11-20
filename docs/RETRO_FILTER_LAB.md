@@ -4,7 +4,7 @@ All eight themes start with **N64-ish + VHS + CRT**. Open **Retro…** or press 
 
 ## CRT at playing distance
 
-**Soft grid** is the shared CRT default for all themes and zones. It uses the middle frame from the Green Hill comparison, with tape grain raised from 0.007 to 0.010. The 480-line picture retains detail on every row. Alternating the emphasis of adjacent rows gives a broader rhythm, and some highlight glow reaches the gaps. **Compare quieter soft grid** in the Retro panel recalls the original 0.007 setting. Switching it off restores the current tuning. [Full-screen grain comparison](terrain-face-shading/green-hill-soft-grid-grain-comparison.webp) · [Current default at 1920×1200](terrain-face-shading/green-hill-soft-grid-default.png)
+**Soft grid** is the shared CRT default across all eight themes. It draws 480 rows over a 480-line world. Scanline strength is 0.62 and broad scanline blend is 0.56. Together these give the horizontal rows more definition across lit grass and sky. Grain stays at 0.010, glow at 0.54, and grille strength at 0.02. **Compare quieter soft grid** recalls the original middle frame with 0.007 grain. [Full-screen scanline comparison](terrain-face-shading/green-hill-480p-scanline-comparison.webp) · [Current default at 1920×1200](terrain-face-shading/green-hill-480p-scanlines.png) · [Earlier grain comparison](terrain-face-shading/green-hill-soft-grid-grain-comparison.webp)
 
 The captures below use the same camera, 768×480 world, full Retro stack, four clean cast-shadow tones and native SSAO at 8×. Each view contains the complete 1920×1200 frame. The soft grid is a Dreamcast VGA-inspired picture with an intentionally broader raster for the remembered late-Sega look. [Three-way full-screen comparison](terrain-face-shading/green-hill-soft-grid-comparison.jpg) · [Soft grid at original size](terrain-face-shading/green-hill-soft-grid.png)
 
@@ -43,7 +43,7 @@ Persistent developer defaults remain in `data/retro_settings.tres` and `scripts/
 | OFF | Original viewport size, material, filter and MSAA | No identity shader; original rendering path |
 | PIXEL / DITHER | Half size, nearest upscale | 32 quantization intervals/channel, 4×4 dither at 0.65 strength |
 | N64-ish | Divisor 1.9, linear upscale | 119 intervals/channel, 0.75 dither |
-| CRT | 480-line source at the playfield aspect, display shader at output resolution | 0.52 scanline strength, 0.50 broad blend, 0.02 RGB mask, 0.54 glow, 3 px spread, neutral brightness, 0.14 vignette |
+| CRT | 480-line source at the playfield aspect, display shader at output resolution | 0.62 scanline strength, 0.56 broad blend, 0.02 RGB mask, 0.54 glow, 3 px spread, neutral brightness, 0.14 vignette |
 | VHS | Original size | 0.25 px chroma offset, 0.45 px bleed, 0.00015 wobble, 0.010 grain, 0.001 tracking |
 
 ## Stacking and world-only rendering
