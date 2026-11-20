@@ -156,8 +156,8 @@ func _build_panel() -> void:
    )
    group.add_child(fixed_raster)
    soft_grid = CheckButton.new()
-   soft_grid.text = "Preview soft grid"
-   soft_grid.tooltip_text = "Wider, softer rows, a little tape grain and more light around highlights."
+   soft_grid.text = "Compare quieter soft grid"
+   soft_grid.tooltip_text = "Show the original Green Hill middle frame with grain at 0.007. Switch off to restore your current tuning."
    soft_grid.toggled.connect(_preview_soft_grid)
    group.add_child(soft_grid)
   for spec: Array in PARAMETERS[effect]:

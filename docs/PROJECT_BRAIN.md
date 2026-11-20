@@ -4,9 +4,9 @@
 
 Alex tuned Green Hill in the live Lab and picked the shared defaults. Shadows use opacity 0.80, blur 10, bias 0.01/0.10 and distance 40. Forward+ uses 8× native SSAO. Fresh devices use a 4096 atlas, four cascades, medium filtering, FXAA on, 2× MSAA, 100% scale, authored faces and native cast shadows. Arcade daylight puts a low warm sun across the lane, cool fill in the recesses and four clean tones in the cast shadow. Cast and contact tones can be chosen separately. Native contact radius and contrast work independently of gain. Light still has sun elevation and azimuth. [Matched Green Hill captures and GPU times](DEVICE_SHADOW_QUALITY.md)
 
-Full Retro stays on. Alex wanted the tube as it reads from the couch, with a widescreen Dreamcast picture. The playfield now keeps 480 lines and adapts its width to the display. The RGB grille starts at zero, tape grain is 0.004, and bright rings get a narrow glow. [Fullscreen CRT comparisons and GPU times](RETRO_FILTER_LAB.md)
+Full Retro stays on. Alex picked the middle Green Hill frame for all eight themes and zones, with a little more grain at 0.010. The widescreen playfield keeps 480 lines, with a faint RGB grille and enough glow to fill the gaps around bright rings. [Full-screen grain comparison](terrain-face-shading/green-hill-soft-grid-grain-comparison.webp)
 
-Green Hill’s **Preview soft grid** brings back some of the earlier horizontal texture, with more light in the gaps and grain at 0.007. Alex wants to judge it at playing distance before it becomes the default across all eight themes. The separate Laptop profiles reduce world shading cost while keeping the same 480-line display. [Three full frames](terrain-face-shading/green-hill-soft-grid-comparison.jpg) · [Device profiles](DEVICE_SHADOW_QUALITY.md)
+The Retro panel’s **Compare quieter soft grid** brings back the original 0.007 grain for a live comparison. Laptop profiles reduce world shading cost while keeping the same display treatment. [Three original frames](terrain-face-shading/green-hill-soft-grid-comparison.jpg) · [Device profiles](DEVICE_SHADOW_QUALITY.md)
 
 ## Authored faces enter the game — 2026-11-20
 
