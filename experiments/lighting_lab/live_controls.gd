@@ -25,6 +25,9 @@ var vsync: CheckButton
 var shadow_resolution: OptionButton
 var shadow_cascades: OptionButton
 var shadow_quality_status: Label
+const GraphicsProfile := preload("res://scripts/rendering/graphics_profile_picker.gd")
+var graphics_profile: GraphicsProfile
+var shadow_treatment: OptionButton
 const Review = preload("res://scripts/diagnostics/shadow_review.gd")
 var review := "--shadow-review" in OS.get_cmdline_user_args()
 var review_rings: CheckButton
@@ -277,6 +280,17 @@ func _build_device_shadow_controls(controls: VBoxContainer) -> void:
  note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  note.add_theme_font_size_override("font_size", 12)
  controls.add_child(note)
+ graphics_profile = GraphicsProfile.new()
+ graphics_profile.persist = not review
+ controls.add_child(graphics_profile)
+ graphics_profile.applied.connect(func(error: Error):
+  _sync_device_shadow_controls()
+  if error == OK: message.text = "Review quality applied." if review else "Device graphics profile saved."
+ )
+ shadow_treatment = _device_choice(controls, "Shadow treatment", RenderingOptions.CHOICES.shadow_treatment, "shadow_treatment")
+ shadow_treatment.set_item_text(0, "Use atmosphere")
+ shadow_treatment.set_item_text(1, "Smooth cast + native SSAO")
+ shadow_treatment.set_item_text(2, "4 cast tones + native SSAO")
  shadow_resolution = _device_choice(controls, "Shadow atlas (px)", RenderingOptions.SHADOW_RESOLUTIONS, "directional_shadow_resolution")
  shadow_cascades = _device_choice(controls, "Cascades", RenderingOptions.SHADOW_CASCADES, "directional_shadow_cascades")
  authored_faces = _device_toggle(controls, "Authored terrain faces", "authored_faces")
@@ -334,11 +348,18 @@ func _change_device(changes: Dictionary) -> void:
  message.text = ("Review quality applied." if review else "Device quality saved.") if error == OK else "Cannot apply device quality: " + error_string(error)
 
 func _sync_device_shadow_controls() -> void:
+ graphics_profile.sync()
  var size := RenderingOptions.shadow_resolution()
  if shadow_resolution.get_item_index(size) < 0: shadow_resolution.add_item("%d (project default)" % size, size)
  shadow_resolution.select(shadow_resolution.get_item_index(size))
  shadow_cascades.select(shadow_cascades.get_item_index(RenderingOptions.shadow_cascades()))
  var settings := RenderingOptions.quality()
+ shadow_treatment.select(shadow_treatment.get_item_index(settings.shadow_treatment))
+ var use_authored_tones: bool = settings.shadow_treatment == RenderingOptions.ShadowTreatment.ATMOSPHERE and renderer == "forward_plus"
+ clean_eight.disabled = not use_authored_tones
+ for key in [Fields.CAST_LEVELS, Fields.NativeSSAO.LEVELS_KEY]:
+  var tones := widgets.get(key) as OptionButton
+  if tones: tones.disabled = not use_authored_tones
  authored_faces.set_pressed_no_signal(settings.authored_faces)
  clean_eight.set_pressed_no_signal(settings.clean_eight_shadows)
  ultra_filter.set_pressed_no_signal(settings.ultra_filter)

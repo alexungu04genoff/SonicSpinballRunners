@@ -33,7 +33,8 @@ func run() -> void:
   finish()
   return
  if FileAccess.file_exists(Options.settings_path): DirAccess.remove_absolute(Options.settings_path)
- check(Options.shadow_resolution() == int(ProjectSettings.get_setting("rendering/lights_and_shadows/directional_shadow/size")) and Options.shadow_cascades() == 4 and not Options.ultra_filter_enabled(), "No preference preserves shipped defaults")
+ check(Options.initial_quality("Intel(R) UHD Graphics 620") == Options.LAPTOP and Options.initial_quality("NVIDIA GeForce RTX 4060") == Options.defaults(), "Known UHD 620 adapter selects laptop defaults")
+ check(Options.quality() == Options.initial_quality(RenderingServer.get_video_adapter_name()), "No preference loads the device defaults")
  var invalid := ConfigFile.new()
  invalid.set_value("rendering", "directional_shadow_resolution", "4096")
  invalid.set_value("rendering", "directional_shadow_cascades", 3)
@@ -41,7 +42,7 @@ func run() -> void:
  invalid.set_value("unrelated", "keep", 17)
  invalid.save(Options.settings_path)
  Options._loaded = false
- check(Options.shadow_resolution() == 4096 and Options.shadow_cascades() == 4 and not Options.ultra_filter_enabled(), "Invalid saved values fall back without coercion")
+ check(Options.quality() == Options.initial_quality(RenderingServer.get_video_adapter_name()), "Invalid saved values fall back without coercion")
  check(Options.set_shadow_resolution(3000) == ERR_INVALID_PARAMETER and Options.set_shadow_cascades(3) == ERR_INVALID_PARAMETER, "Invalid setters reject unsupported choices")
  invalid.set_value("rendering", "smooth_shadows", true)
  invalid.save(Options.settings_path)
@@ -60,6 +61,19 @@ func run() -> void:
  root.add_child(lab)
  for frame in 8: await process_frame
  var panel = lab.lighting_controls
+ panel.graphics_profile.picker.item_selected.emit(1)
+ check(Options.quality() == Options.LAPTOP and is_equal_approx(lab.view.scaling_3d_scale, 0.85) and lab.presentation._key_light.directional_shadow_mode == DirectionalLight3D.SHADOW_ORTHOGONAL, "Laptop selector updates the device, viewport and real light")
+ panel.graphics_profile.picker.item_selected.emit(2)
+ check(is_equal_approx(lab.view.scaling_3d_scale, 0.75) and panel.widgets[Fields.CAST_LEVELS].disabled, "75 percent option scales the world while the device owns cast tones")
+ if RenderingServer.get_current_rendering_method() == "forward_plus" and DisplayServer.get_name() != "headless":
+  panel.shadow_treatment.item_selected.emit(Options.ShadowTreatment.FOUR_CAST)
+  lab.terrain_shadows.apply()
+  check(lab.terrain_shadows.bands.LEVEL_COUNTS[lab.terrain_shadows.bands.mode] == 4 and lab.terrain_shadows.contact == null, "Four-cast override uses four clean cast tones and native contact")
+  panel.shadow_treatment.item_selected.emit(Options.ShadowTreatment.NATIVE)
+  lab.terrain_shadows.apply()
+  check(lab.terrain_shadows.bands.mode == -1 and lab.terrain_shadows.contact_environment.ssao_enabled, "Smooth override restores native cast and SSAO in the foreground")
+ panel.graphics_profile.picker.item_selected.emit(0)
+ check(Options.quality() == Options.defaults() and panel.graphics_profile.picker.selected == 0, "Desktop selector restores the authored treatment and full scale")
  check(panel.authored_faces.button_pressed and not panel.clean_eight.button_pressed, "Approved terrain look defaults to authored faces and native shadows")
  panel.authored_faces.button_pressed = false
  panel.clean_eight.button_pressed = true

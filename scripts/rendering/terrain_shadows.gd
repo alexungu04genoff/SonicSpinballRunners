@@ -18,8 +18,12 @@ func _ready() -> void:
 func apply() -> void:
  if contact_levels > 0: _sync_contact(false)
  var mode := Bands.CLEAN_EIGHT if Options.clean_eight_enabled else -1
- if cast_levels > 0 and RenderingServer.get_current_rendering_method() == "forward_plus":
-  mode = Bands.LEVEL_COUNTS.find(cast_levels) # The clean four-tone mode precedes ordered four.
+ var count := cast_levels
+ if Options.shadow_treatment != Options.ShadowTreatment.ATMOSPHERE:
+  mode = -1
+  count = 4 if Options.shadow_treatment == Options.ShadowTreatment.FOUR_CAST else 0
+ if count > 0 and RenderingServer.get_current_rendering_method() == "forward_plus":
+  mode = Bands.LEVEL_COUNTS.find(count) # The clean four-tone mode precedes ordered four.
  if not bands and mode < 0: return
  var game := get_parent()
  if not game.presentation or not game.presentation._key_light: return
@@ -38,7 +42,7 @@ func configure_contact(environment: Environment, count: int, curve: Vector3) -> 
 
 func _sync_contact(changed: bool) -> void:
  var game := get_parent()
- var supported: bool = contact_levels > 0 and contact_curve.x > 0.0 and RenderingServer.get_current_rendering_method() == "forward_plus" and game.view.msaa_3d != Viewport.MSAA_DISABLED
+ var supported: bool = Options.shadow_treatment == Options.ShadowTreatment.ATMOSPHERE and contact_levels > 0 and contact_curve.x > 0.0 and RenderingServer.get_current_rendering_method() == "forward_plus" and game.view.msaa_3d != Viewport.MSAA_DISABLED
  if supported:
   if not contact: contact = BandedContact.new()
   if contact_environment.ssao_enabled: contact_environment.ssao_enabled = false

@@ -6,6 +6,8 @@ Alex tuned Green Hill in the live Lab and picked the shared defaults. Shadows us
 
 Full Retro stays on. Alex wanted the tube as it reads from the couch, with a widescreen Dreamcast picture. The playfield now keeps 480 lines and adapts its width to the display. The RGB grille starts at zero, tape grain is 0.004, and bright rings get a narrow glow. [Fullscreen CRT comparisons and GPU times](RETRO_FILTER_LAB.md)
 
+Green Hill’s **Preview soft grid** brings back some of the earlier horizontal texture, with more light in the gaps and grain at 0.007. Alex wants to judge it at playing distance before it becomes the default across all eight themes. The separate Laptop profiles reduce world shading cost while keeping the same 480-line display. [Three full frames](terrain-face-shading/green-hill-soft-grid-comparison.jpg) · [Device profiles](DEVICE_SHADOW_QUALITY.md)
+
 ## Authored faces enter the game — 2026-11-20
 
 Alex picked authored terrain faces with native shadows and full Retro. The face rule now lives in the terrain materials that the normal Act baker prepares. It gives risers and undersides a touch more weight while leaving the track bright. Clean 8 is the optional quieter, banded shadow in Atmosphere Lab → Shadows → Device Quality. The ordered pattern and the harder cuts are still in the Shadow Lab. [Gameplay comparison and verification](TERRAIN_FACE_SHADING.md)

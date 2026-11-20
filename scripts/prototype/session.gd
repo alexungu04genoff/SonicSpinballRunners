@@ -245,6 +245,8 @@ func _show_menu() -> void:
   setup_menu.configure(run_configuration, available_act_paths, start_button)
   setup_menu.advanced.add_child(sound)
  else: stack.add_child(sound)
+ var graphics_parent: Node = stack if testing else setup_menu.advanced
+ graphics_parent.add_child(preload("res://scripts/rendering/graphics_profile_picker.gd").new())
  var controls_button := _action(stack, "Controls", func(): pass)
  var controls_label := _label(stack, "Q / E or LB / RB · Flippers\nArrows or stick · Steer\nX · Launch     Space / A · Special\nEnter / Esc / Menu · Pause     R / Back · Retry\nC / Shift+C · Next / previous camera\nF11 · Fullscreen", 16)
  controls_label.hide()

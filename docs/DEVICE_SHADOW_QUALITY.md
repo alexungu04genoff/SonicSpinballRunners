@@ -6,7 +6,7 @@ Atmosphere owns shadow enablement, opacity, filter radius, physical sun angle, d
 
 Open **Atmosphere Lab → Shadows**. The **Device Quality** controls save immediately in the `rendering` section of `user://graphics_settings.cfg`.
 
-| Key | Values | No saved preference |
+| Key | Values | Desktop default |
 | --- | --- | --- |
 | `directional_shadow_resolution` | 2048, 4096, 8192 | 4096 |
 | `directional_shadow_cascades` | 1, 2, 4 | 4 |
@@ -16,6 +16,9 @@ Open **Atmosphere Lab → Shadows**. The **Device Quality** controls save immedi
 | `scale_percent` | 75, 85, 100 | 100 |
 | `authored_faces` | Off / on | On |
 | `clean_eight_shadows` | Off / on (Forward+) | Off, native gradient |
+| `shadow_treatment` | Use atmosphere / smooth cast + native SSAO / four cast tones + native SSAO | Use atmosphere |
+
+**Graphics profile** is available in **Play Prototype → Customize** and **Atmosphere Lab → Shadows → Device Quality**. Desktop uses the values above. **Laptop · 85%** uses a 2048 shadow atlas, one cascade, 2× MSAA, FXAA, authored terrain faces, smooth cast shadows and native SSAO. **Laptop · 75%** lowers the world’s 3D scale further. Both retain full Retro and the 480-line CRT presentation. On a detected Intel UHD Graphics 620 the initial profile is Laptop · 85%. Saved preferences take precedence. A custom shadow treatment can enable four cast tones while keeping contact shading native.
 
 **Authored terrain faces** gives risers, sidewalls and undersides a little more depth. **Clean 8 shadow gradient** rounds the filtered directional shadow to eight attenuation levels on eligible terrain. Both switches work with the full Retro stack. [Matched Prototype screenshots and verification](TERRAIN_FACE_SHADING.md)
 
