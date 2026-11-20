@@ -103,6 +103,12 @@ func run() -> void:
  check(defaults.n64_resolution_divisor == 1.9 and defaults.n64_color_levels == 119 and defaults.n64_dither_strength == 0.75, "N64 sampling loads from the project defaults")
  check(defaults.vhs_wobble == 0.00015 and defaults.vhs_grain == 0.004 and defaults.vhs_tracking == 0.001, "Tape grain and tracking load the quieter defaults")
  check(defaults.crt_raster_lines == 300 and defaults.crt_scanlines == 0.34 and defaults.crt_mask == 0.0 and defaults.crt_glow == 0.42 and defaults.crt_brightness == 0.0, "CRT starts with a luminance-dependent raster, highlight glow and clear grille")
+ defaults.vhs_grain = 0.013
+ game.retro_controls.soft_grid.button_pressed = true
+ check(game.retro_filter.crt_display.get_shader_parameter("broad_lines") == 0.5 and defaults.vhs_grain == 0.007 and game.view.size.y == 480, "Soft grid previews the wider beam and grain at the same source resolution")
+ game.retro_controls.soft_grid.button_pressed = false
+ check(defaults.crt_broad_lines == 0.0 and defaults.vhs_grain == 0.013 and defaults.crt_glow == 0.42, "Closing the preview restores the previous tuning including a custom grain setting")
+ defaults.vhs_grain = 0.004
  game.retro_filter.set_preset(Filter.Preset.OFF)
  await frames(4)
  paused = true

@@ -2,6 +2,9 @@ extends Resource
 ## Session-only presentation tuning. Divisors keep the current world aspect ratio.
 ## At the normal 1280x690 world area, divisor 2 renders 640x345 (HUD is separate).
 
+const SOFT_GRID := {"crt_480p": true, "crt_broad_lines": 0.50, "crt_scanlines": 0.52,
+ "crt_mask": 0.02, "crt_cell_size": 3.0, "crt_glow": 0.54, "crt_glow_radius": 3.0, "vhs_grain": 0.007}
+
 ## Effect IDs from RetroFilter.Preset; stored in the project tuning resource.
 @export var default_effects: Array[int] = []
 
@@ -17,6 +20,7 @@ extends Resource
 
 @export_group("CRT")
 @export var crt_480p := true
+@export_range(0, 1, 0.01) var crt_broad_lines := 0.0
 @export_range(180, 540, 1) var crt_raster_lines := 300
 @export_range(1, 64, 0.1) var crt_cell_size := 6.0
 @export_range(0, 1, 0.01) var crt_scanlines := 0.22

@@ -14,6 +14,7 @@ const PARAMETERS := {
   ["crt_raster_lines", "Raster lines", 180, 540, 1],
   ["crt_cell_size", "RGB grille pitch [px]", 1, 64, 0.1],
   ["crt_scanlines", "Scanline strength", 0, 1, 0.01],
+  ["crt_broad_lines", "Broad scanline blend", 0, 1, 0.01],
   ["crt_mask", "RGB mask strength", 0, 1, 0.01],
   ["crt_glow", "Phosphor glow", 0, 1, 0.01],
   ["crt_glow_radius", "Glow spread [px]", 0, 8, 0.1],
@@ -28,6 +29,8 @@ const PARAMETERS := {
 }
 var filter: Filter
 var fixed_raster: CheckButton
+var soft_grid: CheckButton
+var _before_soft_grid := {}
 var selector: MenuButton
 var open_button: Button
 var tuning_panel: PanelContainer
@@ -152,6 +155,11 @@ func _build_panel() -> void:
     _sync_controls()
    )
    group.add_child(fixed_raster)
+   soft_grid = CheckButton.new()
+   soft_grid.text = "Preview soft grid"
+   soft_grid.tooltip_text = "Wider, softer rows, a little tape grain and more light around highlights."
+   soft_grid.toggled.connect(_preview_soft_grid)
+   group.add_child(soft_grid)
   for spec: Array in PARAMETERS[effect]:
    var key: String = spec[0]
    var caption := Label.new()
@@ -193,7 +201,20 @@ func _build_panel() -> void:
  tuning_panel.hide()
 
 func reset_tuning() -> void:
+ _before_soft_grid.clear()
+ soft_grid.set_pressed_no_signal(false)
  filter.settings = _defaults.duplicate()
+ filter.apply_settings()
+ _sync_controls()
+
+func _preview_soft_grid(enabled: bool) -> void:
+ if enabled:
+  for key: String in Filter.Settings.SOFT_GRID:
+   _before_soft_grid[key] = filter.settings.get(key)
+   filter.settings.set(key, Filter.Settings.SOFT_GRID[key])
+ else:
+  for key: String in _before_soft_grid: filter.settings.set(key, _before_soft_grid[key])
+  _before_soft_grid.clear()
  filter.apply_settings()
  _sync_controls()
 

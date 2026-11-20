@@ -145,6 +145,7 @@ func apply_settings() -> void:
   })
  _parameters(crt_display, {
   "raster_lines": VGA_LINES if uses_480p() else settings.crt_raster_lines, "scanline_strength": settings.crt_scanlines,
+  "broad_lines": settings.crt_broad_lines,
   "grille_pitch": settings.crt_cell_size, "grille_strength": settings.crt_mask,
   "glow_strength": settings.crt_glow, "glow_radius": settings.crt_glow_radius,
   "vignette": settings.crt_vignette, "brightness": settings.crt_brightness,

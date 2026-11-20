@@ -3,6 +3,7 @@ render_mode unshaded;
 
 uniform float raster_lines = 300.0;
 uniform float scanline_strength = 0.34;
+uniform float broad_lines : hint_range(0.0, 1.0) = 0.0;
 uniform float grille_pitch = 3.0;
 uniform float grille_strength = 0.0;
 uniform float glow_strength = 0.42;
@@ -23,7 +24,8 @@ void fragment() {
 	vec3 light = mix(source.rgb, surround, 0.18 * glow_strength);
 	// Let neighboring highlights spread into dark edges. Black stays black.
 	vec3 halo = 0.35 * (left * left + right * right) + 0.15 * (above * above + below * below);
-	light += glow_strength * (max(halo - source.rgb * source.rgb, vec3(0.0)) + 0.30 * halo);
+	vec3 spill = glow_strength * (max(halo - source.rgb * source.rgb, vec3(0.0)) + 0.30 * halo);
+	light += (1.0 - broad_lines) * spill;
 	light = max(light + brightness, vec3(0.0));
 
 	// First harmonic of a normalized Gaussian beam train. A brighter spot is
@@ -37,11 +39,22 @@ void fragment() {
 	float pixel_response = sin(PI * footprint) / (PI * footprint);
 	float resolved = 1.0 - smoothstep(0.30, 0.50, footprint);
 	light *= 1.0 + scanline_strength * resolved * pixel_response * beam_response * cos(TAU * (row - 0.5));
+	// Alternate the emphasis of adjacent raster rows. Light scattered by the
+	// glass also reaches the gaps. All source rows still contribute detail.
+	if (broad_lines > 0.0) {
+		float pair_footprint = 0.5 * footprint;
+		float pair_response = (1.0 - smoothstep(0.30, 0.50, pair_footprint)) * sin(PI * pair_footprint) / (PI * pair_footprint);
+		float broad_wave = cos(PI * (row - 0.5)) * pair_response;
+		light *= 1.0 + broad_lines * scanline_strength * 0.40 * broad_wave;
+	}
 
 	// Optional close-up aperture grille. One period is one RGB triad.
 	float phase = TAU * FRAGCOORD.x / grille_pitch;
 	vec3 stripes = cos(vec3(phase) + vec3(0.0, -TAU / 3.0, TAU / 3.0));
 	light *= vec3(1.0) + grille_strength * smoothstep(2.0, 3.0, grille_pitch) * stripes;
+	light += broad_lines * spill;
+	// Reserve headroom for bright crests without pushing the shadow floor down.
+	light *= vec3(1.0) - 0.09 * broad_lines * clamp(light, vec3(0.0), vec3(1.0));
 	float edge = smoothstep(0.58, 1.0, length(UV * 2.0 - 1.0) * 0.707107);
 	COLOR = vec4(light * (1.0 - vignette * edge), source.a);
 }
