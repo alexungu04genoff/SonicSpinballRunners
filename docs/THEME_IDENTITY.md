@@ -2,7 +2,7 @@
 
 ## Current art scope — 2026-11-21
 
-The five base-game stages are Green Hill, Casino Night, Ice Cap, Rooftop Run and Aquarium Park. Their [terrain ramps and Loops](LOOP_WORKSHOP.md) reuse the selected stage materials. Earlier comparison sheets below preserve their original roster.
+The five base-game stages are Green Hill, Casino Night, Ice Cap, Rooftop Run and Aquarium Park. Their [terrain ramps and Loops](LOOP_WORKSHOP.md) carry the local construction into the shot. Casino Night uses printed cards in a pinball cabinet, Ice Cap has an upright crystal face, Rooftop Run has a cut-stone arch, and Aquarium Park has a timber bridge. Earlier comparison sheets below preserve their original roster.
 
 ## Larger environments after texturing — 2026-11-17
 

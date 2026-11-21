@@ -17,14 +17,14 @@ Choose **Elevated Ramp / Rail**, then enable **Terrain ramp** for a hill. Place 
 | Stage | What to look for |
 | --- | --- |
 | Green Hill | Grass wraps the track above checker soil. The Loop uses the same materials as the turf-loop landmark. |
-| Casino Night | Cards span the tread, with blue-and-gold cabinet panels around the outside of the turn. |
-| Ice Cap | A pale ice tread and snowy edge meet faceted blue ice banks. |
-| Rooftop Run | Terracotta tread over masonry uses the same selected surfaces as the rooftops. |
-| Aquarium Park | Pale tiles and a red guard follow the curve above palace wall panels. |
+| Casino Night | A crimson cabinet on brass feet carries four printed aces. The ivory faces retain a 5:7 proportion on the hill, elevated rail and Loop. Each lane starts with the ace of hearts. A short, wide ramp fits one smaller ace at its center. |
+| Ice Cap | Snow follows the tread and caps an asymmetric ice arch. Blue crystal courses run level across its shoulders. |
+| Rooftop Run | Terracotta roof tiles cross a limestone arch with radial joints, a crown keystone and two piers. Ramp banks use the adjacent terrain masonry. |
+| Aquarium Park | Blue glazed tile sits on vermilion-edged timber stringers. Bridge feet leave openings below the climbing ramp, and three brass ties secure the Loop. |
 
-The references informed the silhouettes, material choices and transitions. The game ships the project's existing stage artwork. [Green Hill in Generations](https://www.digitallydownloaded.net/2011/10/sonic-generations-demo-now-available.html), [Casino Night in Sonic 2](https://outof.games/news/6403-sonic-the-hedgehog-2-how-the-sequel-put-the-blue-furball-on-the-map/), [Ice Cap snowboarding tiles](https://www.spriters-resource.com/sega_genesis/sonicth3/asset/116010/), [Rooftop Run in Unleashed](https://www.italyformovies.com/film-serie-tv-games/detail/6393/sonic-unleashed-game), [Aquarium Park in Colors](https://spong.com/article/images/22544/Sonic-Colours-Aquarium-Park-Screens/335124).
+The references informed the silhouettes, material choices and transitions. The stage surfaces use existing project art and an original four-ace print for Casino Night. [Green Hill in Generations](https://www.digitallydownloaded.net/2011/10/sonic-generations-demo-now-available.html), [Casino Night in Sonic 2](https://outof.games/news/6403-sonic-the-hedgehog-2-how-the-sequel-put-the-blue-furball-on-the-map/), [Ice Cap snowboarding tiles](https://www.spriters-resource.com/sega_genesis/sonicth3/asset/116010/), [Rooftop Run in Unleashed](https://www.italyformovies.com/film-serie-tv-games/detail/6393/sonic-unleashed-game), [Aquarium Park in Colors](https://spong.com/article/images/22544/Sonic-Colours-Aquarium-Park-Screens/335124).
 
-[Five-stage ramp and Loop comparison](loop-workshop/theme-comparison.webp) · [Green Hill opening and right-flipper shots](loop-workshop/green-hill-shots.mp4)
+[Casino Night card faces in play](loop-workshop/casino-cards.webp) · [Five-stage ramp and Loop comparison](loop-workshop/theme-comparison.webp) · [Green Hill opening and right-flipper shots](loop-workshop/green-hill-shots.mp4)
 
 ## Verification and cost
 

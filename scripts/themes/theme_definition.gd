@@ -103,8 +103,9 @@ func create_decor(_presentation: Node3D) -> RefCounted:
 func build_study(_presentation: Node3D, parent: Node3D, origin: Vector3) -> void:
  parent.position = origin
 
-func terrain_bank_material() -> Material:
- return cliff_material
+func terrain_track_style() -> Dictionary:
+ var style := ramp_materials()
+ return {"profile": &"cliff", "track": style.deck, "wall": cliff_material, "crown": style.deck, "trim": style.edge}
 
 func ramp_materials() -> Dictionary:
  # New themes inherit their existing deck and trim until they supply a ramp style.

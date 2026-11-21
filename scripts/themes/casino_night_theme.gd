@@ -5,8 +5,9 @@ const FLOOR = preload("res://scripts/themes/casino_floor.gdshader")
 const WALL = preload("res://scripts/themes/casino_wall.gdshader")
 const Selected = preload("res://scripts/themes/casino_selected_materials.gd")
 var _library: RefCounted
-var _ramp_deck_material: Material
+var _ramp_deck_material: ShaderMaterial
 var _ramp_guard_material: Material
+var _terrain_track_style: Dictionary = {}
 var _facade_outline := PackedVector2Array()
 var _facade_distances := PackedFloat32Array()
 
@@ -21,7 +22,10 @@ func _init() -> void:
  cliff_material = Selected.surface("9A", 4, Vector2(0.96, 1.6))
  floor_border_material = Selected.surface("2A", 2, Vector2.ONE)
  top_border_material = Selected.surface("6B", 2, Vector2.ONE)
- _ramp_deck_material = Selected.surface("7Cards", 3, Vector2(1.0, 2.2))
+ _ramp_deck_material = _shader(preload("res://scripts/themes/casino_playing_cards.gdshader"))
+ _ramp_deck_material.set_shader_parameter("albedo_texture", Selected.texture("FourAces"))
+ _ramp_deck_material.set_meta("playing_card_lane", true)
+ _ramp_deck_material.set_meta("atmosphere_hue", "ramps")
  _ramp_guard_material = Selected.surface("8B", 2, Vector2.ONE)
  _library = Decor.new(null)
 
@@ -167,8 +171,23 @@ func build_edges(p: Node3D) -> void:
  p.scenery_group_count = layout.occupied.size()
  await _batch_background(local, p)
 
-func terrain_bank_material() -> Material:
- return Selected.surface("3A", 2, Vector2(0.96, 1.0))
+func terrain_track_style() -> Dictionary:
+ if _terrain_track_style.is_empty():
+  var rubber := material(Color("e53438"))
+  rubber.roughness = 0.78
+  # The existing 2A insert has a red enamel face, brass beads and two narrow
+  # plated edges. The Loop maps one full insert across its cheek; the ramp
+  # reveals the same panel progressively as it rises from the playfield.
+  _terrain_track_style = {
+   "profile": &"cabinet",
+   "track": _ramp_deck_material,
+   "wall": Selected.surface("2A", 2, Vector2(0.82, 1.0)),
+   "ramp_wall": Selected.surface("2A", 2, Vector2(0.82, 0.28)),
+   "trim": rubber,
+   "crown": _library.materials.navy,
+   "support": _library.materials.gold
+  }
+ return _terrain_track_style
 
 func ramp_materials() -> Dictionary:
  return {"deck": _ramp_deck_material, "border": _ramp_guard_material,

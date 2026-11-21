@@ -7,7 +7,7 @@ uniform sampler2D response_texture : filter_linear_mipmap_anisotropic, repeat_en
 uniform bool reflections_enabled = true;
 uniform bool has_response_map = true;
 uniform bool flip_vertical = false;
-// 0: world floor, 1: exterior projection, 2: strip, 3: ramp, 5: wall, 6: foliage UV.
+// 0: world floor, 1: exterior projection, 2: strip, 3: ramp, 4/6: mesh UV, 5: wall, 7: cut ice elevation.
 uniform int mapping = 0;
 uniform vec2 repeat_size = vec2(1.0);
 uniform float top_height = 0.325;
@@ -17,14 +17,15 @@ void vertex() {
  world_position = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
  world_normal = normalize(MODEL_NORMAL_MATRIX * NORMAL);
 }
-vec3 sample_surface(sampler2D map, vec2 uv, bool clamp_vertical) {
- vec2 dx = dFdx(uv), dy = dFdy(uv);
- if (clamp_vertical) uv.y = clamp(uv.y, .002, .998);
- return textureGrad(map, uv, dx, dy).rgb;
-}
 vec2 sample_coordinates(vec2 uv, bool clamp_vertical) {
+ // The middle 128 texels of the 256-high wall span two complete staggered
+ // crystal courses. Leave its painted snowline to the separate snow cornice.
+ if (mapping == 7) uv.y = 0.375 + 0.5 * fract(uv.y * 2.0);
  if (clamp_vertical) uv.y = clamp(uv.y, .002, .998);
  return uv;
+}
+vec3 sample_surface(sampler2D map, vec2 uv, bool clamp_vertical) {
+ return textureGrad(map, sample_coordinates(uv, clamp_vertical), dFdx(uv), dFdy(uv)).rgb;
 }
 void fragment() {
  vec2 uv = UV / repeat_size;
@@ -32,6 +33,7 @@ void fragment() {
  if (mapping == 0) uv = world_position.xz / repeat_size;
  if (mapping == 3) uv = vec2(clamp(UV2.x, .002, .998), UV.y / repeat_size.y);
  if (mapping == 5) uv = vec2(UV.x / repeat_size.x, (top_height - world_position.y) / repeat_size.y);
+ if (mapping == 7) uv = UV2 * vec2(1.0, -1.0) / repeat_size;
  vec3 color;
  vec3 response;
  vec3 geometric = NORMAL;

@@ -5,6 +5,7 @@ const TEXTURES := "res://assets/textures/rooftop_run/"
 const CANAL = preload("res://scripts/themes/rooftop_canal.gdshader")
 const STREET_LEVEL := -4.8
 var _library: RefCounted
+var _terrain_track: Dictionary = {}
 var material_maps = preload("res://scripts/themes/rooftop_material_maps.gd").new()
 
 func _init() -> void:
@@ -283,8 +284,15 @@ func build_study(_p: Node3D, parent: Node3D, origin: Vector3) -> void:
   prop.position = Vector3(side * 1.0, 0.04, -0.9)
   prop.scale = Vector3.ONE * 0.65
 
-func terrain_bank_material() -> Material:
- return _texture_material("facade", Vector2(1.7, 1.0), false)
+func terrain_track_style() -> Dictionary:
+ if _terrain_track.is_empty():
+  var tile := _texture_material("top", Vector2(1.25, 1.8), false)
+  var arch := _shader(preload("res://scripts/themes/rooftop_arch_stone.gdshader"))
+  arch.set_shader_parameter("limestone", _library.materials.stone.albedo_color)
+  _terrain_track = {"profile": &"masonry", "track": tile, "crown": tile,
+   "wall": arch, "ramp_wall": side_material,
+   "trim": _library.materials.cream, "support": _library.materials.stone}
+ return _terrain_track
 
 func ramp_materials() -> Dictionary:
  return {"deck": _texture_material("ramp", Vector2(1.2, 1.2), false),

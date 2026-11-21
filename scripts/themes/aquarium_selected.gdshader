@@ -10,6 +10,8 @@ uniform sampler2D cap_response : filter_linear_mipmap_anisotropic, repeat_enable
 uniform float relief_strength : hint_range(0.0,2.0)=.65;
 uniform float cap_strength : hint_range(0.0,2.0)=.60;
 uniform float detail_mix : hint_range(0.0,1.0)=1.0;
+// Alpha sets the glaze coverage of the causeway's ceramic running surface.
+uniform vec4 ceramic_glaze : source_color = vec4(1.0, 1.0, 1.0, 0.0);
 // 0 world surface, 1 exterior projection, 2 contour border, 3 ramp deck,
 // 5 contour wall, 6 route strip. All maps share these exact coordinates.
 uniform int mapping=0;
@@ -83,8 +85,8 @@ void fragment(){
   NORMAL=mapped_normal(cap_normal,VERTEX,geometric,cap_uv,sample_uv,cap_strength);
   response=textureGrad(cap_response,sample_uv,dFdx(cap_uv),dFdy(cap_uv)).rg;
  }
- ALBEDO=atmosphere_shift(color);
- ROUGHNESS=mix(.68,response.r,detail_mix);
+ ALBEDO=atmosphere_shift(mix(color,color*ceramic_glaze.rgb,ceramic_glaze.a));
+ ROUGHNESS=mix(mix(.68,response.r,detail_mix),.35,ceramic_glaze.a);
  // Restrained metallic response keeps brass readable under the approved lighting.
  METALLIC=response.g*.25*detail_mix;
  SPECULAR=.25;

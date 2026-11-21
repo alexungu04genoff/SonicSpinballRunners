@@ -4,6 +4,7 @@ const Decor = preload("res://scripts/decor/aquarium_park_decor.gd")
 const Selected = preload("res://scripts/themes/aquarium_selected_materials.gd")
 var _library: RefCounted
 var _ramp_deck_material: Material
+var _terrain_track: Dictionary = {}
 var _ramp_guard_material: Material
 
 func _init() -> void:
@@ -203,8 +204,17 @@ func _batch(root: Node3D, scheduler: Node = null) -> void:
   root.add_child(instance)
  preload("res://scripts/themes/motion_preserve.gd").restore(root, preserved)
 
-func terrain_bank_material() -> Material:
- return Selected.surface("3B", 2, Vector2(1.6, 1.0))
+func terrain_track_style() -> Dictionary:
+ if _terrain_track.is_empty():
+  var tile := Selected.surface("7B", 3, Vector2(1.0, 1.8))
+  tile.set_shader_parameter("ceramic_glaze", Color("72c8e8"))
+  var vermilion: StandardMaterial3D = _library.materials.wood.duplicate()
+  vermilion.albedo_color = Color("bf4931")
+  vermilion.roughness = 0.47
+  var wood: Material = _library.materials.wood
+  _terrain_track = {"profile": &"bridge", "track": tile, "wall": wood, "crown": wood,
+   "trim": vermilion, "accent": _library.materials.gold, "support": wood}
+ return _terrain_track
 
 func ramp_materials() -> Dictionary:
  return {"deck":_ramp_deck_material,"edge":_ramp_guard_material,"fascia":_ramp_guard_material,"border":_ramp_guard_material,"support":_library.materials.wood,"accent":_library.materials.cyan}

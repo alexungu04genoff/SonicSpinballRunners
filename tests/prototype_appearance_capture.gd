@@ -1,6 +1,7 @@
 extends SceneTree
 ## Production appearance only. Run via tools/capture_prototype_appearance.ps1.
 const Fixture = preload("res://tests/prototype_appearance_fixture.gd")
+const Review = preload("res://scripts/diagnostics/shadow_review.gd")
 var failures := 0
 var captures: Array[Dictionary] = []
 var output := "res://test-results/prototype-appearance"
@@ -28,11 +29,13 @@ func run() -> void:
   return
  root.mode = Window.MODE_WINDOWED
  root.size = Vector2i(1440, 1000)
+ Review.position_review_window(root)
  root.gui_disable_input = true
  DirAccess.make_dir_recursive_absolute(output)
  # Appearance comparisons must not inherit a player's device-quality experiment.
  var options := preload("res://scripts/rendering_options.gd")
  options.settings_path = output.path_join("isolated-graphics.cfg")
+ check(options.set_pixel_profile(4, 100) == OK, "Apply the canonical capture quality")
  check(options.pixel_profile().msaa == 4 and options.pixel_profile().scale_percent == 100, "Canonical identity captures retain 4x MSAA and 100% native scale")
  # Freeze shader animation time as well as gameplay for matched review frames.
  var expected := {}

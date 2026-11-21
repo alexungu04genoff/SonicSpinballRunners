@@ -60,6 +60,8 @@ func run() -> void:
   check(deck.material_override != null and visual.has_node("Fascia") and visual.has_node("EntryArrow"), "Ramp has themed deck, edge thickness and restrained entry marker: " + theme)
   check(game.ball.get_instance_id() == identity and game.ball.mechanics == manager and manager.items[2].path == stored_path, "Theme switch preserves ball, mechanics and exact rail route: " + theme)
   check(visual.find_children("*", "CollisionObject3D", true, false).is_empty(), "Ramp theme remains collisionless: " + theme)
+  if theme == "casino_night":
+   check_card_chart(deck, manager.items[2].properties.width * TablePresentation.SCALE)
   var counts := {}
   var border_uvs := true
   var border_materials := true
@@ -100,3 +102,17 @@ func run() -> void:
  await frames(3)
  print("RESULT | Ramp height and themes | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)
+
+func check_card_chart(deck: MeshInstance3D, width: float) -> void:
+ var arrays := deck.mesh.surface_get_arrays(0)
+ var paper: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
+ var lane: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV2]
+ var full_length := paper[0].x
+ var furthest := 0.0
+ var correct := full_length > 1.4 and deck.material_override.has_meta("playing_card_lane")
+ for i in lane.size():
+  furthest = maxf(furthest, lane[i].y)
+  # Godot stores mesh attributes at GPU precision.
+  correct = correct and absf(paper[i].x - full_length) < 0.01 and absf(paper[i].y - lane[i].y * width) < 0.01
+  correct = correct and (is_zero_approx(lane[i].x) or is_equal_approx(lane[i].x, 1.0))
+ check(correct and absf(furthest - full_length) < 0.02, "Casino card chart preserves paper proportions over a banked production rail and exposes both mouths")

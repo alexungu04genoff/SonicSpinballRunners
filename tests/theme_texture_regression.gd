@@ -43,7 +43,10 @@ func _initialize() -> void:
     else:
      var settings := ConfigFile.new()
      check(settings.load(texture.resource_path + ".import") == OK and settings.get_value("params", "mipmaps/generate", false) and settings.get_value("params", "compress/mode", -1) == 0, "Texture retains lossless mipmapped import: " + texture.resource_path)
-   if i == 4:
+   if i == 4 and id == "casino_night":
+    var print_art: Texture2D = mat.get_shader_parameter("albedo_texture")
+    check(mat.has_meta("playing_card_lane") and print_art != null and print_art.get_width() > 2 * print_art.get_height() and theme.terrain_track_style().track == mat, "Both Casino ramp types use the full-width four-card print")
+   elif i == 4:
     check(mat.get_shader_parameter("mapping") in [3, 4], "Ramp image follows route instead of world coordinates: " + id)
  p.free()
  print("RESULT | Theme texture coverage | %d checks | %d failures" % [checks, failures])

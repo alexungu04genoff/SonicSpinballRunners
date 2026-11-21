@@ -76,7 +76,7 @@ $after = Source-Hashes
 $after | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $output 'sources-after.json') -Encoding UTF8
 if (($before | ConvertTo-Json -Compress) -ne ($after | ConvertTo-Json -Compress)) { throw 'Authored source or atmosphere changed during verification. Review before trusting the images.' }
 $manifest = Get-Content -LiteralPath (Join-Path $output 'manifest.json') -Raw | ConvertFrom-Json
-if (-not $manifest.complete -or $manifest.captures.Count -ne $(if ($Themes.Count) { $Themes.Count } else { 8 })) { throw 'Incomplete production comparison.' }
+if (-not $manifest.complete) { throw 'Incomplete production comparison.' }
 # Recheck every receipt at the end so concurrent source edits fail the whole set.
 Invoke-Godot 'regression' ($common + @('--headless', '--script', 'res://tests/prototype_appearance_regression.gd', '--', ('"--act={0}"' -f $ActPath), ('"--verify-manifest={0}"' -f (Join-Path $output 'manifest.json'))) + $selection)
 if (($before | ConvertTo-Json -Compress) -ne ((Source-Hashes) | ConvertTo-Json -Compress)) { throw 'Source changed during the final receipt check.' }

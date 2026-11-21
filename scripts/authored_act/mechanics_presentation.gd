@@ -157,20 +157,50 @@ func _terrain_ramp(item: Dictionary, path: Dictionary, width: float, peak: float
  root.name = "TerrainRamp_" + str(item.object_id)
  add_child(root)
  var style := table.terrain_ramp_materials()
+ var profile: StringName = style.get("profile", &"cliff")
+ var toe := 0.61
+ if profile == &"glacier": toe = 0.69
+ if profile in [&"masonry", &"cabinet", &"bridge"]: toe = 0.56
+ if profile == &"bridge": path["stringer_depth"] = width * 0.21
  await _rail_strip(root, path, width, peak, Vector2(-0.5, 0.5), Vector2.ZERO, style.deck, "Deck")
  for side: float in [-1.0, 1.0]:
   # The verge follows the camber. A shallow battered face anchors it to the floor.
   await _rail_strip(root, path, width, peak, Vector2(side * 0.5, side * 0.56), Vector2(0, -0.012), style.trim, "Verge", true)
-  await _rail_strip(root, path, width, peak, Vector2(side * 0.56, side * 0.61), Vector2(-0.012, 0), style.wall, "Bank")
+  await _rail_strip(root, path, width, peak, Vector2(side * 0.56, side * toe), Vector2(-0.012, 0), style.wall, "Bank")
+ if profile == &"bridge":
+  await _rail_strip(root, path, width, peak, Vector2(toe, -toe), Vector2.ZERO, style.support, "Soffit")
+  for fraction: float in [0.33, 0.67]:
+   var distance := fraction * float(path.length)
+   var point := RailPath.sample(path, distance)
+   var tangent := RailPath.tangent(path, distance)
+   var shoulder := Vector2(-tangent.y, tangent.x) * float(item.properties.width) * 0.42
+   var height := RailPath.height(path, distance, peak) * table.SCALE - float(path.stringer_depth)
+   if height <= 0.0: continue
+   for side: float in [-1.0, 1.0]:
+    var post := BoxMesh.new()
+    post.size = Vector3(width * 0.13, height, width * 0.13)
+    var support := table.mesh_node(post, style.support, table.map_point(point + shoulder * side, height * 0.5), root)
+    support.rotation.y = -tangent.angle()
 
 func _rail_strip(parent: Node3D, path: Dictionary, width: float, peak: float, edges: Vector2, offsets: Vector2, material: Material, label: String, contour_texture := false) -> void:
  contour_texture = contour_texture or bool(material.get_meta("route_strip_uv",false))
+ var tread_stations := PackedFloat32Array()
+ if label == "Deck" and material.has_meta("playing_card_lane"):
+  # Printed cards use the length over the crest, including the change in height.
+  tread_stations.append(0.0)
+  var previous_height := 0.0
+  for i in range(1, path.points.size()):
+   var height := RailPath.height(path, path.lengths[i], peak)
+   var span: float = path.lengths[i] - path.lengths[i - 1]
+   tread_stations.append(tread_stations[-1] + Vector2(span, height - previous_height).length() * table.SCALE)
+   previous_height = height
  var surface := SurfaceTool.new()
  surface.begin(Mesh.PRIMITIVE_TRIANGLES)
  for i in path.points.size() - 1:
   if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
   var corners: Array[Vector3] = []
   var uvs: Array[Vector2] = []
+  var bank_elevation := PackedVector2Array()
   for index: int in [i, i + 1]:
    if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
    var distance: float = path.lengths[index]
@@ -183,19 +213,33 @@ func _rail_strip(parent: Node3D, path: Dictionary, width: float, peak: float, ed
    corners.append(center + side * width * left + Vector3.UP * offsets.x)
    corners.append(center + side * width * right + Vector3.UP * offsets.y)
    if label == "Bank":
-    corners[-1].y = 0.0
-    uvs.append(Vector2(distance * table.SCALE, 0.0))
-    uvs.append(Vector2(distance * table.SCALE, corners[-2].y))
+    corners[-1].y = maxf(0.0, corners[-2].y - float(path.get("stringer_depth", INF)))
+    for y: float in [corners[-2].y, corners[-1].y]:
+     bank_elevation.append(Vector2(distance * table.SCALE, y))
+     uvs.append(Vector2(distance * table.SCALE, corners[-2].y - y))
     continue
+   if not tread_stations.is_empty():
+    var face_uv := Vector2(tread_stations[-1] / width, tread_stations[index])
+    uvs.append(face_uv)
+    uvs.append(face_uv)
+    continue
+   if label == "Soffit":
+    var bottom := maxf(0.0, center.y - 0.012 - float(path.stringer_depth))
+    corners[-2].y = bottom
+    corners[-1].y = bottom
    uvs.append(Vector2(width * edges.x, distance * table.SCALE))
    uvs.append(Vector2(width * edges.y, distance * table.SCALE))
-  var order := [0, 1, 2, 1, 3, 2] if label in ["Bank", "Verge"] and edges.x > edges.y else [0, 2, 1, 1, 2, 3]
+  var order := [0, 1, 2, 1, 3, 2] if label in ["Bank", "Verge"] and edges.x < 0.0 else [0, 2, 1, 1, 2, 3]
   for vertex: int in order:
    if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
    # Edge artwork follows distance along the route and spans the complete trim.
    # Geometry and the normalized full-deck UV2 used by panel/card decks stay intact.
    surface.set_uv(Vector2(uvs[vertex].y / 0.48, float(vertex % 2)) if contour_texture else uvs[vertex])
-   surface.set_uv2(Vector2((edges.x if vertex % 2 == 0 else edges.y) + 0.5, uvs[vertex].y))
+   if label == "Bank": surface.set_uv2(bank_elevation[vertex])
+   else:
+    var across := (edges.x if vertex % 2 == 0 else edges.y) + 0.5
+    var station := uvs[vertex].y / width if not tread_stations.is_empty() else uvs[vertex].y
+    surface.set_uv2(Vector2(across, station))
    surface.add_vertex(corners[vertex])
  surface.generate_normals()
  # Edge winding reverses on the opposite side; both faces must remain visible.

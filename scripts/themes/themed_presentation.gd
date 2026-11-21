@@ -359,13 +359,13 @@ func _flower(base: Vector3, size: float, target: Node3D = null) -> void:
 
 func loop_materials() -> Dictionary:
  if decor_skin != null and decor_skin.has_method("loop_materials"): return decor_skin.loop_materials()
- var style := ramp_materials()
- return {"track": style.deck, "wall": theme_definition.terrain_bank_material(), "crown": style.deck, "wrap_face": true}
+ return theme_definition.terrain_track_style()
 
 func terrain_ramp_materials() -> Dictionary:
  if decor_skin != null and decor_skin.has_method("loop_materials"): return super.terrain_ramp_materials()
- var style := ramp_materials()
- return {"deck": style.deck, "wall": theme_definition.terrain_bank_material(), "trim": style.get("border", style.edge)}
+ var style: Dictionary = theme_definition.terrain_track_style()
+ return {"profile": style.profile, "deck": style.track, "trim": style.trim,
+  "wall": style.get("ramp_wall", style.wall), "support": style.get("support", style.wall)}
 
 func ramp_materials() -> Dictionary:
  var result: Dictionary = theme_definition.ramp_materials()

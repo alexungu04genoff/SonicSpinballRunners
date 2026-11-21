@@ -3,6 +3,7 @@ extends "res://scripts/themes/theme_definition.gd"
 const Decor = preload("res://scripts/decor/ice_cap_decor.gd")
 const Selected = preload("res://scripts/themes/ice_selected_materials.gd")
 var _library: RefCounted
+var _terrain_track: Dictionary = {}
 
 func _init() -> void:
  theme_id = "ice_cap"
@@ -280,8 +281,13 @@ func _batch(root: Node3D, scheduler: Node = null) -> void:
   instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
   root.add_child(instance)
 
-func terrain_bank_material() -> Material:
- return Selected.surface("3A", 2, Vector2(1.2, 1.0))
+func terrain_track_style() -> Dictionary:
+ if _terrain_track.is_empty():
+  var snow := Selected.surface("5A", 4, Vector2(2.8, 2.8))
+  var ice := Selected.surface("3A", 7, Selected.WALL_REPEAT)
+  _terrain_track = {"profile": &"glacier", "track": snow, "crown": snow,
+   "trim": _library.materials.snow, "wall": ice}
+ return _terrain_track
 
 func ramp_materials() -> Dictionary:
  # Alex replaced the patterned crystal guards with the existing matte snow.
