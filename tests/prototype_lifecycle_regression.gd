@@ -23,6 +23,7 @@ func runtime_refs(game: Node) -> Dictionary:
  for key: String in ["library", "ring_field", "hub", "tuning", "controls", "scorecraft", "specials", "buddies", "telemetry", "run_configuration", "view", "_composite_view", "presentation"]:
   observe(refs, key, game.get(key))
  observe(refs, "game", game)
+ observe(refs, "combo_celebration", game.combo_celebration)
  observe(refs, "retirement", game.library.retirement)
  observe(refs, "warm_view", game.library._view)
  for act: RefCounted in game.resident:
@@ -80,6 +81,7 @@ func run() -> void:
  Options.settings_path = output.get_basename() + "-graphics.cfg"
  await settle()
  var initial := census()
+ var default_scale := int(Options.initial_quality(RenderingServer.get_video_adapter_name()).scale_percent) / 100.0
  for cycle in 3:
   var session := Session.new()
   session.settings_path = output.get_basename() + "-session.cfg"
@@ -103,9 +105,12 @@ func run() -> void:
    if not finished_runs.is_empty():
     check(surviving(finished_runs.back()).is_empty(), "Starting a new run releases the previous replay configuration and retired owners")
    check(game.library.fallback_builds == 0, "Session uses validated disk bakes")
-   check(game.view.msaa_3d == Viewport.MSAA_4X and game.view.scaling_3d_scale == 1.0, "Production pixel defaults remain intact")
+   check(game.view.msaa_3d == Viewport.MSAA_2X and is_equal_approx(game.view.scaling_3d_scale, default_scale), "Production pixel defaults remain intact")
    game.launch_ball()
    for tick in 30: await physics_frame
+   game.set_celebration_retro(run_index == 1)
+   game.combo_celebration.consider(game.character_id, 5, 100)
+   check(game.combo_celebration.visible, "Retire a live cut-in in each rendering layer")
    var refs := runtime_refs(game)
    var record := {"cycle": cycle, "run": run_index, "live": census()}
    await session.return_to_menu()

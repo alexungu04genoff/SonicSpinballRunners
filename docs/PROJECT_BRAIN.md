@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Count the hits past ×4 — 2026-11-21
+
+A fifth fresh builder can still refresh a ×4 combo. Prototype now gives that fifth hit a character cut-in. A completed Ring Link counts too. Scorecraft tells the card the hit number and exactly what that event paid. The little ×4 beside the Ball keeps its original meaning. All four poses are temporary cut-paper stand-ins. The small points line reads best on the crisp HUD layer. [See the moving Ball and both treatments](combo-celebration/README.md).
+
 ## Five stages, two flipper shots — 2026-11-21
 
 Alex picked one stage per game for the current roster. Green Hill, Casino Night, Ice Cap, Rooftop Run and Aquarium Park share the same authored Acts. In the [Workshop](LOOP_WORKSHOP.md), let the yellow spring carry the serve across the hill into the upright Loop. The left flipper feeds a climbing ramp and the right flipper shoots the angled Loop. Small and tall Loops have separate point values. The earlier eight-theme reviews below describe those builds. The pre-pivot Sky Sanctuary source is recorded in the Workshop notes.

@@ -6,12 +6,15 @@ signal combo_ended(reason: String, chain: int, multiplier: int)
 signal score_awarded(details: Dictionary)
 signal combo_supported(kind: StringName, object_id: String)
 signal combo_advanced(kind: StringName, object_id: String, tier: int, started: bool)
+## Presentation receipt for one accepted builder, including a refresh at the cap.
+signal builder_hit_resolved(hits: int, points: int)
 const BUMPER_POINTS := 100
 const RING_POINTS := 15
 const RACK_POINTS := 500
 var config: ScorecraftConfig = preload("res://data/scorecraft.tres")
 var enabled := true
 var chain := 0
+var builder_hits := 0
 var multiplier := 1
 var remaining := 0.0
 var ring_progress := 0
@@ -34,6 +37,7 @@ func _ready() -> void:
  process_mode = Node.PROCESS_MODE_PAUSABLE
 
 func _advance(kind: StringName, object_id: String) -> void:
+ builder_hits += 1
  var started := chain == 0
  var previous := multiplier
  multiplier = 1 if started else mini(multiplier + 1, clampi(config.multiplier_cap, 1, 4))
@@ -77,7 +81,9 @@ func award_bumper(body: Node, special_multiplier: int = 1) -> int:
   return award_homing(&"bumper", bumper_source(body), BUMPER_POINTS, body.get_instance_id())
  var eligible := _build(&"bumper", bumper_source(body))
  var applied := multiplier if eligible else 1
- return _award("bumper", BUMPER_POINTS, applied, 0, eligible, body.get_instance_id(), bumper_source(body), "", eligible or not enabled)
+ var points := _award("bumper", BUMPER_POINTS, applied, 0, eligible, body.get_instance_id(), bumper_source(body), "", eligible or not enabled)
+ if eligible: builder_hit_resolved.emit(builder_hits, points)
+ return points
 
 func award_homing(kind: StringName, object_id: String, base: int, target_id := 0) -> int:
  # Cash out the pre-hit tier, including on an already-used target. No builder.
@@ -86,16 +92,20 @@ func award_homing(kind: StringName, object_id: String, base: int, target_id := 0
  return amount
 
 func award_ring(object_id: String = "") -> int:
+ var linked := false
  if rings_can_build_multiplier():
   ring_progress += 1
   if ring_progress >= maxi(1, config.rings_per_link):
    ring_link_available = false
    ring_progress = 0
    _advance(&"ring_link", object_id)
+   linked = true
   else:
    combo_changed.emit(chain, multiplier)
  # Extra rings earn the current multiplier but cannot sustain it indefinitely.
- return _award("ring", RING_POINTS, multiplier if enabled else 1, 0, false, 0, object_id, "", true)
+ var points := _award("ring", RING_POINTS, multiplier if enabled else 1, 0, false, 0, object_id, "", true)
+ if linked: builder_hit_resolved.emit(builder_hits, points)
+ return points
 
 func award_spinner(points: int) -> int:
  # Ticks use the current tier without advancing or sustaining the combo.
@@ -107,14 +117,17 @@ func award_mechanic(kind: StringName, object_id: String, points: int) -> int:
  var amount := clampi(points, 0, 25) if kind in [&"spinner", &"spinner_tick"] else clampi(points, 0, 100000)
  if kind == &"spinner": kind = &"spinner_tick"
  if kind == &"wall_switch": kind = &"switch"
+ var built := false
  if kind in [&"enemy", &"switch_bank", &"spinner_goal", &"lane_set"]:
-  _build(kind, object_id)
+  built = _build(kind, object_id)
  elif kind in [&"switch", &"lane"]:
   support_combo(kind, object_id)
  elif kind == &"ring_rack":
   support_combo(kind, object_id, false)
  var sensitive := kind in [&"enemy", &"switch", &"spinner_tick", &"lane"]
- return _award(String(kind), amount, multiplier if enabled and sensitive else 1, 0, false, 0, object_id, "", sensitive)
+ var awarded := _award(String(kind), amount, multiplier if enabled and sensitive else 1, 0, false, 0, object_id, "", sensitive)
+ if built: builder_hit_resolved.emit(builder_hits, awarded)
+ return awarded
 
 func award_rack() -> int:
  # Rack completion can refresh an active combo but cannot start or advance it.
@@ -178,6 +191,7 @@ func reset(reason: String, clear_feedback: bool = false) -> void:
  var previous_chain := chain
  var previous_multiplier := multiplier
  chain = 0
+ builder_hits = 0
  multiplier = 1
  remaining = 0.0
  ring_progress = 0

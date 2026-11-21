@@ -33,6 +33,7 @@ var replay_seed: Variant = null
 var hint: Label
 var player_hud: Control
 var score_overlay: Control
+var combo_celebration: Control
 var _ring_award_position := Vector2.INF
 var goal_pending := false
 var combo_glow: Node
@@ -260,6 +261,7 @@ func _record_act(cleared: bool) -> void:
 func _observe_authored_motion(start: Vector2, finish: Vector2) -> void:
  if finished or drafting or is_instance_valid(transfer) or not exit_unlocked: return
  if not active.runtime.goal_ring.crossed(start, finish, ball.radius): return
+ combo_celebration.reset_combo()
  telemetry.goal_touched(elapsed)
  if _has_next_act():
   if not _next_ready():
@@ -406,6 +408,7 @@ func toggle_pause() -> void:
  if not finished and not closing and not drafting: super.toggle_pause()
 
 func prepare_to_close() -> void:
+ if is_instance_valid(combo_celebration): combo_celebration.reset_combo()
  if is_instance_valid(tuning): tuning.clear_temporary("run_buddies")
  if is_instance_valid(transfer):
   transfer.set_process(false)
@@ -443,6 +446,11 @@ func _build_hud() -> void:
  score_overlay = preload("res://scripts/prototype/score_overlay.gd").new()
  score_overlay.game = self
  hud.add_child(score_overlay)
+ combo_celebration = preload("res://scripts/prototype/combo_celebration.gd").new()
+ hud.add_child(combo_celebration)
+ set_celebration_retro("--combo-cut-in-retro" in OS.get_cmdline_user_args())
+ scorecraft.builder_hit_resolved.connect(_on_builder_hit)
+ scorecraft.combo_ended.connect(func(_reason: String, _chain: int, _tier: int): combo_celebration.reset_combo())
  fps_label = Label.new()
  fps_label.name = "FPSCounter"
  fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -485,3 +493,12 @@ func _build_hud() -> void:
  loading_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
  loading_label.add_theme_font_size_override("font_size", 22)
  loading_panel.add_child(loading_label)
+
+func _on_builder_hit(hits: int, points: int) -> void:
+ if started and not goal_pending and not get_tree().paused and _accept_scoring():
+  combo_celebration.consider(character_id, hits, points)
+
+func set_celebration_retro(enabled: bool) -> void:
+ var host: Node = _composite_view if enabled else hud
+ if combo_celebration.get_parent() != host:
+  combo_celebration.reparent(host, false)

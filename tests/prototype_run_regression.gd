@@ -53,7 +53,13 @@ func await_run() -> bool:
 
 func run() -> void:
  session = Session.new()
- session.settings_path = "user://prototype-regression.cfg"
+ # The Zone seam assertions require two different themes, including on reruns
+ # after another test saved a single-theme configuration.
+ DirAccess.make_dir_recursive_absolute("res://test-results")
+ session.settings_path = "res://test-results/prototype-run-%d.cfg" % OS.get_process_id()
+ var fixture_settings := ConfigFile.new()
+ fixture_settings.set_value("run_setup", "selected_themes", ["green_hill", "casino_night"])
+ check(fixture_settings.save(session.settings_path) == OK, "Isolated two-theme run settings are ready")
  session.archive_directory = "user://telemetry/runs/_validation/prototype_run_regression"
  root.add_child(session)
  check(session.state == "menu" and session.overlay_root.visible, "Player starts at the menu")
@@ -134,11 +140,16 @@ func run() -> void:
    check(game.score == total and game.act_score >= target and game.exit_unlocked, "Checkpoint retry keeps legitimately earned points and open exit")
    game.ball.serve_pending = false
    game.ball._teleport_pending = false
+  # Zero-point fresh builders exercise the cut-in at the goal without adding
+  # to the six Act payouts this ledger regression reconciles.
+  for hit in 5: game._on_mechanic_score(&"switch_bank", "goal-builder-%d" % hit, 0, game.active_scoring_id)
+  check(game.combo_celebration.visible, "Goal fixture reaches a live celebration")
   if index < Session.Run.RunPlan.ACT_COUNT - 1:
    var at: Vector2 = game.active.runtime.goal_ring.center
    game.ball.position = at - Vector2.DOWN * 2
    game._observe_authored_motion(at + Vector2.DOWN * 2, at - Vector2.DOWN * 2)
    check(game.drafting and session.state == "draft" and paused and game.active_sequence == index, "Physical Act clear pauses for a mandatory Buddy choice")
+   check(not game.combo_celebration.visible, "Draft immediately dismisses the previous Act's celebration")
    check(not game.buddies.offers().is_empty() and not game.choose_buddy("unknown"), "Draft offers available upgrades and rejects an invalid ID")
    var before_draft: int = game.score
    game.active.runtime.mechanics.complete_feature(&"switch_bank", "during_draft", 100)
@@ -178,7 +189,8 @@ func run() -> void:
    game.ball._teleport_pending = false
    check(game.buddies.levels[chosen] == previous_level + 1 and not game.choose_buddy(chosen), "Buddy choice upgrades once and cannot be submitted twice")
    if index == 2:
-    check(not game.finished and game.active.plan.zone == 1 and game.active_sequence == 3 and not game.buddies.levels.is_empty(), "The Zone boundary preserves the build and continues into Chemical Plant")
+    check(not game.finished and game.active.plan.zone == 1 and game.active_sequence == 3 and not game.buddies.levels.is_empty(), "The Zone boundary preserves the build and enters the next theme")
+    check(not game.combo_celebration.visible and game.scorecraft.builder_hits == 0, "Zone transfer clears the old celebration and streak")
    # Move the frozen integration fixture to the new Act for camera/retirement checks.
    game.ball.position = game.active.spawn()
    if index == 2: await capture("zone-two")
@@ -191,7 +203,10 @@ func run() -> void:
  var copied: String = session.run_data_json()
  var data = JSON.parse_string(copied)
  check(data is Dictionary and data.won and data.acts.size() == 6 and data.total_score == session.last_summary.score, "Successful run exports all six Acts as plain JSON")
- check(data.run_configuration == JSON.parse_string(JSON.stringify(game.effective_configuration().snapshot())) and data.configuration_fingerprint == game.effective_configuration().fingerprint() and data.course == JSON.parse_string(JSON.stringify(game.course_snapshot())), "Copied JSON includes effective configuration, fingerprint and full course")
+ # Match the export's full float precision for authored atmosphere values.
+ var expected_setup = JSON.parse_string(JSON.stringify(game.effective_configuration().snapshot(), "", false, true))
+ var expected_course = JSON.parse_string(JSON.stringify(game.course_snapshot(), "", false, true))
+ check(data.run_configuration == expected_setup and data.configuration_fingerprint == game.effective_configuration().fingerprint() and data.course == expected_course, "Copied JSON includes effective configuration, fingerprint and full course")
  var identities_match := true
  for i in data.acts.size():
   identities_match = identities_match and data.acts[i].theme == data.course[i].theme and data.acts[i].source == data.course[i].source and data.acts[i].target == data.course[i].target
@@ -242,6 +257,7 @@ func run() -> void:
  press("Restart run")
  check(await await_run(), "Restart from pause finishes cleanup and starts a fresh run")
  check(not paused and session.game.score == 0, "Restart releases pause and clears score")
+ check(not session.game.combo_celebration.visible and session.game.combo_celebration.milestone == 0, "Restart owns an empty celebration")
  session.game.toggle_pause()
  await frames()
  press("Return to menu")

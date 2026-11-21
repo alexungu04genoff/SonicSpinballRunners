@@ -1,5 +1,9 @@
 # Sonic Spinball Runners — Living Game Design
 
+## Prototype combo celebrations — 2026-11-21
+
+Prototype celebrates 5, 8, 10 and every subsequent fifth accepted builder hit in one live combo. Count completed Ring Links and fresh builders at the multiplier cap. The scoring multiplier still tops out at ×4. A temporary character pose and the triggering award share a lower-right HUD card for 0.90 seconds while the Ball moves. Higher milestones update a visible card on its original clock. Placement, frequency and final artwork are pending play review. [Four poses, gameplay clip and matched Retro comparison](combo-celebration/README.md)
+
 ## Base-game roster and authored traversal — 2026-11-21
 
 Green Hill (Sonic 1), Casino Night (Sonic 2), Ice Cap (Sonic 3), Rooftop Run (Unleashed) and Aquarium Park (Colors) form the base game. Both run modes use these five themes. The [Loop Workshop](LOOP_WORKSHOP.md) pairs a terrain ramp with an upright Loop, alongside separate flipper shots. Authors set uniform size, direction, entry speed, Ring reward and completion score. The routes are experimental pending a feel review.
