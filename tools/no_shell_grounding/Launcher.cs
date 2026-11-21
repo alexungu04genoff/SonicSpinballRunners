@@ -1,4 +1,4 @@
-// Direct Windows launcher for the unchanged frozen Thursday diagnostics.
+// Direct Windows launcher for the frozen Thursday and Tuesday diagnostics.
 // Build-time tools may use PowerShell; this executable never invokes a shell.
 using System;
 using System.Collections.Generic;
@@ -115,7 +115,11 @@ internal sealed class Launcher : Form
                 copied++;
             }
         }
+#if TUESDAY
+        Save(Path.Combine(output, "payload-verification.json"), new { source_head = manifest["source_head"], files = files.Length, copied = copied, all_match = true, runtime = runtime });
+#else
         Save(Path.Combine(output, "payload-verification.json"), new { original_zip_sha256 = manifest["original_zip_sha256"], files = files.Length, copied = copied, all_match = true, runtime = runtime });
+#endif
         Log("Verified " + files.Length + " frozen files. All runtime writes stay under Results.");
         return runtime;
     }
@@ -129,6 +133,10 @@ internal sealed class Launcher : Form
 
     private static Job[] Jobs()
     {
+#if TUESDAY
+        return new[] { "smooth85", "four85", "four85-low-contact", "four75" }
+            .Select(id => new Job(id, "endless", id, "forward_plus")).ToArray();
+#else
         return new[] {
             new Job("01-prototype-production", "prototype", "production", "forward_plus"),
             new Job("02-endless-production", "endless", "production", "forward_plus", true),
@@ -139,6 +147,7 @@ internal sealed class Launcher : Form
             new Job("07-endless-mobile-vulkan", "endless", "production", "mobile"),
             new Job("08-endless-compatibility-angle", "endless", "production", "gl_compatibility")
         };
+#endif
     }
 
     private List<string> Arguments(Job job, string project, string destination, bool interactive)
@@ -152,12 +161,17 @@ internal sealed class Launcher : Form
             Rectangle desktop = SystemInformation.VirtualScreen;
             args.AddRange(new[] { "--position", (screen.Bounds.X - desktop.X + 20) + "," + (screen.Bounds.Y - desktop.Y + 30) });
         }
+#if TUESDAY
+        args.AddRange(new[] { "--resolution", "1280x900", "--script", "res://tests/laptop_depth_matrix.gd", "--",
+            "--seed=18", "--profile-stages", "--case=" + job.quality, "--output=" + destination });
+#else
         args.AddRange(new[] { "--script", "res://tests/grounding_lab.gd", "--", "--seed=18", "--retro=production", "--profile-stages", "--grounding-lab",
             "--grounding-task=" + (interactive ? "interactive" : "matrix"), "--grounding-runtime=" + job.runtime,
             "--theme=rooftop_run", "--grounding-quality=" + job.quality, "--grounding-seconds=" + (interactive ? "3" : "2.5"), "--output=" + destination });
         if (job.quality == "balanced-no-retro") args.Add("--grounding-retro=off");
         if (job.quality == "reduced-retro") args.Add("--grounding-retro=n64");
         if (job.detailed) args.Add("--grounding-detailed");
+#endif
         return args;
     }
 
@@ -200,8 +214,13 @@ internal sealed class Launcher : Form
         }
         var args = Arguments(job, project, destination, interactive);
         var hashes = new Dictionary<string, string>();
+#if TUESDAY
+        foreach (string relative in new[] { "tests/laptop_depth_matrix.gd", "scripts/diagnostics/grounding_endless.gd", "scripts/diagnostics/render_sampler.gd", "scripts/rendering_options.gd" }) hashes[relative] = Hash(Path.Combine(project, relative));
+        string profile = Path.Combine(root, "Results", "diagnostic-user", Path.GetFileName(output), job.name);
+#else
         foreach (string relative in new[] { "tests/grounding_lab.gd", "scripts/diagnostics/render_audit.gd", "scripts/diagnostics/render_sampler.gd", "scripts/diagnostics/grounding_control.gd", "scripts/diagnostics/scenery_shadow_trial.gd" }) hashes[relative] = Hash(Path.Combine(project, relative));
         string profile = Path.Combine(root, "Results", "diagnostic-user");
+#endif
         var start = new ProcessStartInfo(Path.Combine(project, "Sonic Spinball Runners.exe"), String.Join(" ", args.Select(Quote))) {
             WorkingDirectory = project, UseShellExecute = false, CreateNoWindow = true,
             WindowStyle = interactive ? ProcessWindowStyle.Normal : ProcessWindowStyle.Hidden,
@@ -249,8 +268,33 @@ internal sealed class Launcher : Form
             if (timedOut) throw new TimeoutException("Diagnostic exceeded " + timeout + " seconds; partial results retained.");
             if (process.ExitCode != 0) throw new InvalidOperationException("Diagnostic failed with exit code " + process.ExitCode);
             if (Regex.IsMatch(allErrors, "SCRIPT ERROR:|^ERROR:", RegexOptions.Multiline)) throw new InvalidOperationException("Diagnostic logged errors; see errors.log.");
+#if TUESDAY
+            var report = json.Deserialize<Dictionary<string, object>>(File.ReadAllText(Path.Combine(destination, "report.json")));
+            if ((string)report["case_id"] != job.name || Convert.ToInt32(report["fallback_builds"]) != 0 ||
+                ((System.Collections.ICollection)report["failures"]).Count != 0)
+                throw new InvalidDataException("Invalid case receipt; see report.json.");
+            WriteComparison(job.name, report);
+#endif
         }
     }
+
+#if TUESDAY
+    private void WriteComparison(string name, Dictionary<string, object> report)
+    {
+        string path = Path.Combine(output, "frame-intervals.tsv");
+        bool first = !File.Exists(path);
+        var phases = (Dictionary<string, object>)report["frame_intervals_by_phase"];
+        using (var writer = new StreamWriter(path, true, new UTF8Encoding(false))) {
+            if (first) writer.WriteLine("case\tphase\tframes\tmedian_ms\tp95_ms\tmax_ms");
+            foreach (string phase in new[] { "startup", "next_zone_preparation", "stationary", "normal_play", "camera_tour", "zone_crossfade", "after_crossfade" }) {
+                if (!phases.ContainsKey(phase)) { writer.WriteLine(name + "\t" + phase + "\t0\t\t\t"); continue; }
+                var row = (Dictionary<string, object>)phases[phase];
+                writer.WriteLine(String.Format(CultureInfo.InvariantCulture, "{0}\t{1}\t{2}\t{3:F3}\t{4:F3}\t{5:F3}",
+                    name, phase, row["count"], row["median_ms"], row["p95_ms"], row["max_ms"]));
+            }
+        }
+    }
+#endif
 
     private void Run()
     {
@@ -277,7 +321,7 @@ internal sealed class Launcher : Form
                     Save(Path.Combine(output, "matrix-status.json"), statuses);
                 }
                 Save(Path.Combine(output, "matrix-status.json"), statuses);
-                File.WriteAllText(Path.Combine(output, "RETURN THIS FOLDER.txt"), "Return this entire folder, including failed or partial runs.\r\n" + output + "\r\nThe actual renderer and GPU are in report.json and console.log. The matrix retains the frozen eight cases and 20-minute budget.\r\n");
+                File.WriteAllText(Path.Combine(output, "RETURN THIS FOLDER.txt"), "Return this entire folder, including failed or partial runs.\r\n" + output + "\r\nThe actual renderer and GPU are in report.json and console.log. The matrix has " + jobs.Length + " cases and a 20-minute budget.\r\n");
             }
             Log((result == 0 ? "Finished." : "Finished with failures or partial results.") + Environment.NewLine + output);
         } catch (Exception error) {
