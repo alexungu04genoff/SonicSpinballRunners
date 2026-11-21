@@ -20,7 +20,7 @@ func check(ok: bool, label: String) -> void:
 
 func run() -> void:
  root.size = Vector2i(1440, 1000)
- root.position = Vector2i(-1900, 30)
+ preload("res://scripts/diagnostics/shadow_review.gd").position_review_window(root)
  DirAccess.make_dir_recursive_absolute(output)
  preload("res://scripts/rendering_options.gd").settings_path = output.path_join("graphics.cfg")
  for pair: Array in [["green_hill", "chemical_plant"], ["rooftop_run", "casino_night"], ["sky_sanctuary", "aquarium_park"], ["ice_cap", "ice_cap"], ["rooftop_run", "rooftop_run"]]:

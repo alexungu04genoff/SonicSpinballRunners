@@ -6,7 +6,7 @@ Confirmed: an optional authored dock-to-exit path, with Exposed/Tunnel presentat
 
 ## Environmental motion review contract — 2026-11-18
 
-Seven included themes now have a shared Zone-owned diagnostic motion contract and a disk-backed Prototype Motion Lab. Ordinary gameplay retains Current/C; candidate choices and STATIC/SIGNATURE/FULL tiers remain process-local developer controls. Future promotion is one explicit registry decision per theme. Preserve the hierarchy of one primary environmental signature, optional secondary ambience and stable architecture; do not animate every theme equally. Ice adds no new motion, Lava Reef remains excluded, and the frozen Thursday UHD package is unchanged. See [Theme Life](THEME_LIFE.md) for implementation, evidence and recommendations.
+Seven included themes share a Zone-owned motion controller and a disk-backed Prototype Motion Lab. The November 21 production review selected Casino Night B for its rotating large star signs. The other six themes use C. Diagnostic overrides remain process-local. Each theme can have one primary environmental signal, optional secondary ambience and stable architecture. Lava Reef stays outside this system. See [Theme Life](THEME_LIFE.md) and the [matched gameplay comparisons](THEME_LIFE_PRODUCTION_REVIEW.md).
 
 ## Moving bumper, score chute and gameplay views — 2026-11-18
 

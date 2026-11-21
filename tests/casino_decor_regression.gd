@@ -36,6 +36,10 @@ func _initialize() -> void:
     if not built.has(pool[i]):
      var prop: Node3D = skin.instantiate_slot("act", slot)
      check(only_visual(prop) and prop.get_child_count() > 0, "Original prop is populated and collisionless: " + pool[i])
+     var rotating := prop.find_children("*", "Node3D", true, false).filter(func(node: Node):
+      return node.get_meta("theme_motion", {}).get("kind", "") == "rotate")
+     var expected := int({"star_lantern":1, "reel_tower":1, "jackpot_palace":4}.get(pool[i], 0))
+     check(rotating.size() == expected, "Only architectural star signs rotate: " + pool[i])
      built[pool[i]] = true
      prop.free()
    slot.variant_index = 99

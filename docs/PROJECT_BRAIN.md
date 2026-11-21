@@ -1,8 +1,12 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Theme Life follow-camera review — 2026-11-21
+
+Casino’s big pink stars now rotate in Prototype and Endless. The sign stays readable as Sonic picks up a Ring. Rooftop’s tower clock works at the right edge, but the served shot crops most of its face. Alex can decide how much that occasional glimpse matters. Sky’s cloud drift adds depth beside the ruins at the edge and almost disappears during the shot. Rooftop and Sky keep C. [Three matched clips and desktop costs](THEME_LIFE_PRODUCTION_REVIEW.md)
+
 ## Green Hill floor composition trial — 2026-11-21
 
-On First Try Smooth Decor, one meadow cut follows the lower Ring trail better than the uninterrupted mowing stripes. A small cut-stone seat helps the red bumper land on the turf. Oversized seats took focus away from the targets. This is an isolated Prototype study awaiting Alex's motion/readability review. Rooftop's broad paving also deserves a look. Aquarium and Sky already have lanes. [Four frames, costs and the eight-theme audit](GREEN_HILL_FLOOR_STUDY.md)
+Alex reviewed the A/D pan and rejected the meadow route and bumper sockets for production. The route made Green Hill feel like a board-game track, and the stone sockets read as separate coasters. Keep the production floor. Broad floor composition is parked across themes. The terrain-face shading, lighting, contacts and CRT improvements stand on their own. The isolated artwork and captures stay as evidence. [Floor study and Alex’s verdict](GREEN_HILL_FLOOR_STUDY.md)
 
 Tuesday's direct-EXE matrix compares smooth and four-tone cast at Laptop 85%, a lighter native SSAO sampling tier, and four-tone cast at 75%. It records the served court, moving Ball, tour, next-Zone preparation and crossfade. The laptop decision awaits the UHD 620 measurements. [Laptop instructions](TUESDAY_LAPTOP_DEPTH.md)
 

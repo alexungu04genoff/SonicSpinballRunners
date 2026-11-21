@@ -1,18 +1,20 @@
 # Green Hill floor composition study · November 21, 2026
 
-**D is my pick for visual review.** Follow the lower Ring trail in A and B. In A the mowing stripes run straight past the shot. In B a lighter swath turns with it and leaves the served Sonic on uninterrupted green. C gives the nearest star bumper a small ochre stone footing that is still legible under the CRT. D retains both gains under the four-tone cast treatment. C and D read very similarly at this pose. Most of the improvement is already visible in B.
+**Alex rejected D for production after reviewing the A/D pan.** The pale meadow route made the court feel like a board-game track. The bumper sockets read as separate coasters or pads. Keep the existing production floor and park broad floor composition across themes. The artwork, captures and measurements below document the rejected direction. The approved terrain-face, contact and CRT work stands independently.
+
+Before that review, the study author preferred D. B turned a lighter swath along the lower Ring trail, C added an ochre stone seat to the nearest bumper, and D showed both under four-tone cast. C and D looked similar at the served pose.
 
 ![Four matched gameplay frames](green-hill-floor/comparison.jpg)
 
 Full-resolution captures are [A · shipping desktop defaults](green-hill-floor/A.png), [B · meadow route](green-hill-floor/B.png), [C · route and sockets](green-hill-floor/C.png) and [D · C with four-tone cast](green-hill-floor/D.png).
 
-The three-second pan exposes a weakness in D. At the serve the swath picks up the lower Ring trail. As the camera rises it cuts inside the left-wall Rings, giving the upper court two competing directions. I would review that bend before extending the artwork further. Both halves use the same 72 camera positions with the Ball held. [Watch A and D in motion](green-hill-floor/gameplay-camera-pan.mp4)
+The three-second pan exposes a weakness in D. At the serve the swath picks up the lower Ring trail. As the camera rises it cuts inside the left-wall Rings, giving the upper court two competing directions. Both halves use the same 72 camera positions with the Ball held. [Watch A and D in motion](green-hill-floor/gameplay-camera-pan.mp4)
 
-## What to keep under review
+## Observations from the experiment
 
-The large curve, the quiet green around Sonic and the small visible rim under a target are the parts worth reusing. A pixel comparison puts the scale of the edits in perspective. The route changed 17.4% of the output frame from A to B. The mounts changed a further 2.8% from B to C. The return toward the left Ring bank matters more than the number of colors. A wider first socket covered about three bumper widths and turned the drums into a row of bullseyes. The revised socket is 61% of that diameter. Its small outline does enough work. The narrower flipper hinge seats disappear against the right wall at this camera. A future flipper trial should address the wall joint itself. The pale grass also narrows the value difference under the gold Rings. Alex should judge that section in motion before adopting the palette.
+The route changed 17.4% of the output frame from A to B. The mounts changed a further 2.8% from B to C. A wider first socket covered about three bumper widths and turned the drums into a row of bullseyes. The revised socket is 61% of that diameter. Even at that size, it still read as a separate pad to Alex. The narrower flipper hinge seats disappeared against the right wall. The pale grass also narrowed the value difference under the gold Rings.
 
-The transferable pieces are a route tied to an actual shot, an intentionally quiet neighboring surface, and a mount scaled to its hardware. The two-tone meadow cut and cut-earth/stone colors belong to Green Hill. This Act exercises bumper beds and hinge seats. A ramp landing would need a separate authored example.
+This Act exercised bumper beds and hinge seats. The route and socket studies end here.
 
 ## Matched conditions
 
@@ -39,7 +41,7 @@ D activates the existing overlay on seven eligible terrain receivers. Compared w
 
 ## Eight-theme audit
 
-Priority reflects the value of a floor composition pass in **two matched views of this Act**. The first camera follows the served Ball. The second uses the same projection at (275, 250) to inspect the upper island and Ring turn. Each theme used its production surfaces, Default atmosphere and full Retro. These are findings about visible locations. Other Acts may expose different connections.
+These historical rankings describe what the author saw in **two matched views of this Act** before Alex parked floor composition. The first camera follows the served Ball. The second uses the same projection at (275, 250) to inspect the upper island and Ring turn. Each theme used its production surfaces, Default atmosphere and full Retro.
 
 | Priority | Theme | Largest uniform or repetitive floor | Weakest connection | Hardware that feels placed | Leave visually quiet or already dense |
 | ---: | --- | --- | --- | --- | --- |
@@ -58,7 +60,7 @@ Priority reflects the value of a floor composition pass in **two matched views o
 
 Bake **First Try Smooth Decor** for the desired themes through the normal Act baker. In an imported checkout, run Godot with `--rendering-method forward_plus --rendering-driver vulkan --script res://experiments/green_hill_floor/capture.gd -- --seed=18 --audit --output=res://test-results/floor-study`. Select a fresh output folder. On a desktop, supply the non-primary screen's Godot coordinates at launch. The fixture also selects that display. Omit `--audit` for Green Hill alone.
 
-The final run checked the disk recipes and their source fingerprints, matched the served camera and gameplay state across all eight themes, verified three-pass Retro and required adjacent A/B/C/D images to differ. The restored reference matched exactly. Production launchers and theme definitions have no dependency on the study. The eight-theme review proposes priorities only. The next art decision is whether the route helps a moving player track the Rings and whether the socket is still legible at a glance.
+The final run checked the disk recipes and their source fingerprints, matched the served camera and gameplay state across all eight themes, verified three-pass Retro and required adjacent A/B/C/D images to differ. The restored reference matched exactly. Production launchers and theme definitions have no dependency on the study.
 
 For the motion comparison, replace `--audit` with `--pan`. It writes matched numbered PNGs to `pan-A` and `pan-D` at the original render size. The published clip plays them side by side at 24 fps. Frame readback and PNG encoding are outside the performance sample.
 

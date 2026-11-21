@@ -88,9 +88,8 @@ func bar(root: Node3D, color: String, a: Vector3, b: Vector3, width: float) -> v
  var mesh := box(root, color, (a + b) * 0.5, Vector3(width, a.distance_to(b), width))
  mesh.quaternion = Quaternion(Vector3.UP, (b - a).normalized())
 
-func star(root: Node3D, at: Vector3, size: float, color := "amber") -> void:
- # Only large architectural signs participate; small deck ornaments stay stable.
- if size >= 0.42:
+func star(root: Node3D, at: Vector3, size: float, color := "amber", rotating_sign := false) -> void:
+ if rotating_sign:
   var sign := Node3D.new()
   sign.name = "MechanicalStarSign"
   sign.position = at
@@ -137,7 +136,7 @@ func build_variant(variant: String, landmark_layout := true) -> Node3D:
     root.add_child(machine)
     machine.position.y = 0.22 + i * 0.68
     reels(machine)
-   star(root, Vector3(0, 1.80, 0), 0.44, "pink")
+   star(root, Vector3(0, 1.80, 0), 0.44, "pink", true)
   "casino_pylon": pylon(root)
   "jackpot_palace": palace(root, landmark_layout)
   "star_gateway": gateway(root)
@@ -209,7 +208,7 @@ func lantern(root: Node3D) -> void:
   var y := 1.22 + i * 0.12
   var radius := lerpf(0.43, 0.077, (y - 1.22) / 0.50)
   piece(root, "cylinder", "aqua", Vector3(0, y, 0), Vector3(radius + 0.008, 0.035, radius + 0.008))
- star(root, Vector3(0, 1.27, 0.40), 0.45)
+ star(root, Vector3(0, 1.27, 0.40), 0.45, "amber", true)
  star(root, Vector3(0, 1.82, 0), 0.30, "pink")
 
 func pylon(root: Node3D) -> void:
@@ -230,7 +229,7 @@ func palace(root: Node3D, wide: bool) -> void:
  var rear := Node3D.new()
  rear.rotation.y = PI
  root.add_child(rear)
- star(rear, Vector3(0, 0.88, 0.425), 0.88, "pink")
+ star(rear, Vector3(0, 0.88, 0.425), 0.88, "pink", true)
  var cabinet := Node3D.new()
  root.add_child(cabinet)
  cabinet.position = Vector3(0, 0.62, 0.10)
@@ -238,11 +237,11 @@ func palace(root: Node3D, wide: bool) -> void:
  reels(cabinet)
  box(root, "blue", Vector3(0, 1.68, 0), Vector3(1.32, 0.28, 0.85))
  frame(root, Vector3(0, 1.68, 0.44), Vector2(1.28, 0.25), "pink")
- star(root, Vector3(0, 2.00, 0), 0.52)
+ star(root, Vector3(0, 2.00, 0), 0.52, "amber", true)
  for side: int in [-1, 1]:
   box(root, "red", Vector3(side * (1.02 if wide else 0.55), 0.45, 0), Vector3(0.72 if wide else 0.25, 0.70, 0.70))
   box(root, "gold_light", Vector3(side * (1.02 if wide else 0.55), 0.84, 0), Vector3(0.77 if wide else 0.30, 0.08, 0.77))
-  star(root, Vector3(side * (1.02 if wide else 0.55), 1.08, 0), 0.44, "aqua")
+  star(root, Vector3(side * (1.02 if wide else 0.55), 1.08, 0), 0.44, "aqua", true)
 
 func gateway(root: Node3D) -> void:
  for side: int in [-1, 1]:

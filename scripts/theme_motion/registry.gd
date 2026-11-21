@@ -2,7 +2,7 @@ extends RefCounted
 ## One promotion decision per theme. Diagnostic selection never writes preferences.
 const IDS := ["green_hill", "chemical_plant", "rooftop_run", "casino_night", "sky_sanctuary", "ice_cap", "aquarium_park"]
 const THEMES := IDS
-const PRODUCTION := {"green_hill":"C", "chemical_plant":"C", "rooftop_run":"C", "casino_night":"C", "sky_sanctuary":"C", "ice_cap":"C", "aquarium_park":"C"}
+const PRODUCTION := {"green_hill":"C", "chemical_plant":"C", "rooftop_run":"C", "casino_night":"B", "sky_sanctuary":"C", "ice_cap":"C", "aquarium_park":"C"}
 const TIERS := ["NATIVE", "STATIC", "SIGNATURE", "FULL"]
 const SYSTEMS := {
  "green_hill_ocean":"green_hill", "green_hill_cloud":"green_hill",

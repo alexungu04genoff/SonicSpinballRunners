@@ -27,7 +27,7 @@ func run() -> void:
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--output="): output = argument.trim_prefix("--output=")
  root.size = Vector2i(1440, 1000)
- root.position = Vector2i(-1900, 30)
+ preload("res://scripts/diagnostics/shadow_review.gd").position_review_window(root)
  DirAccess.make_dir_recursive_absolute(output)
  preload("res://scripts/rendering_options.gd").settings_path = output.path_join("graphics.cfg")
  if DisplayServer.get_name() == "headless":
@@ -63,6 +63,7 @@ func run() -> void:
  var b: Node = game.backgrounds[1].layer
  var first_motion: RefCounted = a.motion
  var second_motion: RefCounted = b.motion
+ check(first_motion.candidate == "C" and second_motion.candidate == "B", "Ordinary Endless loads Rooftop C and Casino B on separate Zone owners")
  check(first_motion != second_motion, "Each Endless Zone owns one distinct controller")
  var state := [game.ball.position, game.ball.linear_velocity, game.score, game.active_sequence]
  var identities: Array = game.resident.map(func(act: RefCounted): return act.nodes.map(func(node: Node): return node.get_instance_id()))

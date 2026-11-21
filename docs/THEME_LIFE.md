@@ -1,10 +1,12 @@
 # Theme Life — environmental motion
 
-Starting source: `ecbe1b812f0b0be11b7f3364c83e084fd0424c0a` (latest pushed main when this pass began). Ordinary gameplay retains **C for every theme**. Lava Reef is excluded. No authored Act, texture, material map, atmosphere Default, graphics default, camera preference, gameplay rule or Thursday package is changed.
+**Current production selection, November 21.** Casino Night uses B, the rotating large star signs. Rooftop Run keeps C pending Alex’s call on the clock hands. Sky Sanctuary keeps C after the follow-camera review. Green Hill, Chemical Plant, Ice Cap and Aquarium Park use C. Lava Reef is outside the system. [Six-second comparisons, measured costs and verdicts](THEME_LIFE_PRODUCTION_REVIEW.md)
+
+The following sections preserve the original seven-theme study, starting at `ecbe1b812f0b0be11b7f3364c83e084fd0424c0a`. Its recommendations and measurements below refer to that earlier rendering baseline.
 
 ## Ownership and time
 
-`scripts/theme_motion/registry.gd` is the single promotion table. Its `PRODUCTION` dictionary selects C/A/B per theme; all entries remain C. This is a deterministic presentation choice, not a weighted variant pool. `controller.gd` is a small RefCounted owner attached to each included resident Zone's existing backdrop. Prototype and Endless use the same attachment paths.
+`scripts/theme_motion/registry.gd` is the single promotion table. Its `PRODUCTION` dictionary selects one state per theme. `controller.gd` is a small RefCounted owner attached to each included resident Zone's existing backdrop. Prototype and Endless use the same attachment paths.
 
 Native C uses original shader `TIME` and the existing pause-aware Flicky clocks. No global shader time is introduced. A nonnegative `time_override` sets an explicit environmental time on the Zone's existing private atmosphere materials. `seek(7.25)` is absolute and repeatable; `seek(-1)` restores native time. The controller does not duplicate those materials. Cached recipe materials remain read-only. All selection, tier and time values are process-local.
 
@@ -78,7 +80,7 @@ Controls cover seven themes, C/A/B, tiers, production/N64/off Retro, normal/wide
 
 ## Evidence and decisions
 
-The review recommends **Green Hill C, Chemical Plant C, Rooftop Run A, Casino Night B, Sky Sanctuary A, Ice Cap C and Aquarium Park C**. These are review decisions, not production promotions: the registry still selects C for all seven themes.
+The original review recommended **Green Hill C, Chemical Plant C, Rooftop Run A, Casino Night B, Sky Sanctuary A, Ice Cap C and Aquarium Park C**. The registry selected C for all seven at that handoff.
 
 Open the [review index](theme-life/index.html), [current versus recommended contact sheet](theme-life/contact-sheet.png), or [seven-theme moving overview](theme-life/seven-theme-overview.mp4). The index includes individual C/A/B clips and capture receipts. The main capture uses the canonical Prototype Act with a right-side camera focus. Every one of the 21 theme/state combinations has matching normal, close and wide captures with production Retro, N64 and Retro off, plus normal spawn and left-side views. Normal production Retro and spawn readability govern the recommendation; close, wide and Retro-off images explain visibility and filtering tradeoffs.
 
@@ -235,6 +237,6 @@ This has a practical local consequence: **an all-eight-theme setup cannot start 
 
 Final scope verification found all 480 frozen authored/art/atmosphere/default inputs unchanged, and all 14 canonical Act/shared-theme bake hashes still match the captured media. Review videos and selected compressed stills are committed; raw frames, generated recipes and temporary benchmark caches remain ignored. All visible validation and review windows ran on monitor 2.
 
-Visual approval remains a short review: watch Rooftop A, Casino B and Sky A beside C; judge their pace during ordinary play; confirm Sky's unsaved camera-right lighting preference. The selected defaults, Retro stack and all production motion selections remain unchanged until that decision. Promotion is one `PRODUCTION` registry edit followed by the normal source-hashed bake workflow, not another animation implementation pass.
+The follow-up evaluated Rooftop A, Casino B and Sky A beside C during the same served shot. Promotion used the central registry and the normal bake workflow. [Production review](THEME_LIFE_PRODUCTION_REVIEW.md)
 
 The UHD 620 result still decides whether native CPU transform updates, existing transparency, shader work and warm-up meet the laptop budget, and whether a future SIGNATURE tier should ship. Desktop medians cannot settle those questions. STATIC is already available as a diagnostic control, but time freezing alone is not an optimized low-end renderer.

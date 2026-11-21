@@ -18,7 +18,11 @@ func check(ok: bool, label: String) -> void:
 
 func run() -> void:
  check(Registry.IDS.size() == 7 and "lava_reef" not in Registry.IDS, "Seven-theme scope excludes Lava Reef")
- for theme: String in Registry.IDS: check(Registry.PRODUCTION[theme] == "C", theme + " defaults to production C")
+ for theme: String in Registry.IDS:
+  var owner := Motion.new()
+  owner.configure(theme)
+  var expected := "B" if theme == "casino_night" else "C"
+  check(Registry.PRODUCTION[theme] == expected and owner.candidate == expected and owner.tier == "NATIVE", theme + " uses the reviewed production selection")
  check(not Registry.binding_error({"kind":"arbitrary_script"}).is_empty(), "Unknown binding rejected")
  check(not Registry.binding_error({"kind":"drift","candidate":"A","axis":Vector3.UP,"period":0.0,"amplitude":1.0}).is_empty(), "Invalid period rejected")
  var source := Node3D.new()

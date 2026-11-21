@@ -1,0 +1,1188 @@
+{
+  "rooftop_run": {
+    "clip_sha256": "118d3b65916b4b9952de4aedadc3a1ec68ffad11732b9bac3515636463146b06",
+    "production": "C",
+    "matched_fixture": {
+      "act": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "source_sha256": "91c1dd949734dea6ef241204abaa8c7b48f6d9191572844942204b7ff1cb4e91",
+      "act_bake_sha256": "f6bfd354fd0f1f22a242b3514f0fb3d97009c01d6d19825b8e0856faef52d06e",
+      "theme_bake_sha256": "5387bba8fa7d3f04509fd75d69670aa81cbfbf5a15ffa1433caa379532859787",
+      "pipeline_fingerprint": "bdd1a25742fb7a362fe8f30cbb64724e7ae419aa1f73424d6ff55ace17859375",
+      "scenery_fingerprint": "4f98871f697bec4209c9ab04777ae1bbdf37928512cb85e2cffbf894f10aca27",
+      "retro_settings_sha256": "57de587d69f1fc342f810fba23ea2b436302b268e3e79dc3717854792bdb2715",
+      "atmosphere": {
+        "enabled": true,
+        "id": "default",
+        "name": "Default",
+        "values": {
+          "emission": 0.8,
+          "env/adjustment_enabled": true,
+          "env/adjustment_saturation": 1.02,
+          "env/ambient_light_color": "(0.9373, 0.8563, 0.7451, 1.0)",
+          "env/ambient_light_energy": 0.4,
+          "env/ambient_light_sky_contribution": 0.0,
+          "env/background_energy_multiplier": 1.26,
+          "env/glow_enabled": true,
+          "env/glow_hdr_threshold": 1.1,
+          "env/glow_intensity": 0.14,
+          "env/glow_levels/3": 0.2,
+          "env/glow_levels/5": 0.8,
+          "env/glow_levels/7": 0.25,
+          "env/glow_normalized": true,
+          "env/glow_strength": 1.15,
+          "palette/canal_deep": "(0.149, 0.4784, 0.5765, 1.0)",
+          "palette/canal_reflection": "(0.6588, 0.8353, 0.8902, 1.0)",
+          "palette/distant_haze": "(0.6902, 0.8078, 0.8667, 1.0)",
+          "palette/hardware_base": "(0.21, 0.2658, 0.3114, 1.0)",
+          "palette/mechanism_body": "(0.6644, 0.2779, 0.2135, 1.0)",
+          "sky/ground_bottom_color": "(0.5451, 0.6118, 0.6431, 1.0)",
+          "sky/ground_curve": 0.2,
+          "sky/ground_horizon_color": "(0.749, 0.8667, 0.9137, 1.0)",
+          "sky/sky_curve": 0.2,
+          "sky/sky_horizon_color": "(0.749, 0.8667, 0.9137, 1.0)",
+          "sky/sky_top_color": "(0.149, 0.4784, 0.7882, 1.0)",
+          "sun/light_color": "(1.0, 0.9059, 0.7451, 1.0)",
+          "sun/light_energy": 1.0,
+          "sun/light_specular": 0.8,
+          "sun_pitch": -48.0,
+          "sun_yaw": -58.0
+        },
+        "weight": 1.0
+      },
+      "retro_effects": [
+        2,
+        4,
+        3
+      ]
+    },
+    "disk_acts": 1,
+    "disk_backdrops": 1,
+    "fallback_builds": 0,
+    "spawn": {
+      "act_score": 0,
+      "ball": "(400.0, 500.0)",
+      "camera_fov": 52.0,
+      "camera_projection": 0,
+      "camera_settings": {
+        "dead_zone_x": 18.0,
+        "dead_zone_y": 12.0,
+        "horizontal_response": 2.0,
+        "look_ahead": 0.0,
+        "max_speed": 4000.0,
+        "screen_margin_y": 0.22,
+        "screen_target_y": 0.55,
+        "vertical_response": 28.0,
+        "zoom": 1.3
+      },
+      "camera_size": 1.0,
+      "camera_transform": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (4.0, 2.115734, 6.545638)]",
+      "document": "c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba",
+      "goal_unlocked": false,
+      "rings": 0,
+      "score": 0,
+      "serve_pending": true,
+      "velocity": "(0.0, 0.0)"
+    },
+    "right_edge": {
+      "act_score": 0,
+      "ball": "(400.0, 500.0)",
+      "camera_fov": 52.0,
+      "camera_projection": 0,
+      "camera_settings": {
+        "dead_zone_x": 18.0,
+        "dead_zone_y": 12.0,
+        "horizontal_response": 2.0,
+        "look_ahead": 0.0,
+        "max_speed": 4000.0,
+        "screen_margin_y": 0.22,
+        "screen_target_y": 0.55,
+        "vertical_response": 28.0,
+        "zoom": 1.3
+      },
+      "camera_size": 1.0,
+      "camera_transform": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (5.7, 2.115734, 6.545638)]",
+      "document": "c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba",
+      "goal_unlocked": false,
+      "rings": 0,
+      "score": 0,
+      "serve_pending": true,
+      "velocity": "(0.0, 0.0)"
+    },
+    "matched_play_frames": 80,
+    "matched_play_trace_sha256": "d274eb2192569d6772edd70d7241e778bebd908bccafe94e9fcc66be2f6add6c",
+    "device_defaults": {
+      "authored_faces": true,
+      "clean_eight_shadows": false,
+      "directional_shadow_cascades": 4,
+      "directional_shadow_resolution": 4096,
+      "fxaa": true,
+      "msaa": 2,
+      "scale_percent": 100,
+      "shadow_treatment": 0,
+      "ultra_filter": false
+    },
+    "renderer": "NVIDIA GeForce RTX 4060",
+    "measurements": {
+      "A": {
+        "background": {
+          "active": true,
+          "canvas": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "disable_3d": false,
+          "has_camera_3d": true,
+          "msaa_samples": 2,
+          "native_3d_size": [
+            682,
+            480
+          ],
+          "path": "/root/PrototypeSession/@Node@77/@SubViewportContainer@81/RetroViewportHost/@SubViewport@82/Zone0Backdrop/@SubViewport@1157",
+          "render_cpu_ms": 0.197999998927116,
+          "render_gpu_ms": 0.239999994635582,
+          "role": "background",
+          "scale": 1.0,
+          "screen_space_aa": 1,
+          "shadow": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "size": [
+            682,
+            480
+          ],
+          "update_mode": 4,
+          "visible": {
+            "draws": 21,
+            "objects": 21,
+            "primitives": 6552
+          },
+          "world_rid": "RID(29811368001539)"
+        },
+        "background_gpu": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.252000004053116,
+          "median_ms": 0.219999998807907,
+          "p95_ms": 0.222000002861023,
+          "p99_ms": 0.239999994635582
+        },
+        "foreground": {
+          "active": true,
+          "canvas": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "disable_3d": false,
+          "has_camera_3d": true,
+          "msaa_samples": 2,
+          "native_3d_size": [
+            682,
+            480
+          ],
+          "path": "/root/PrototypeSession/@Node@77/@SubViewportContainer@81/RetroViewportHost/@SubViewport@82/@SubViewportContainer@83/@SubViewport@84",
+          "render_cpu_ms": 0.976999998092651,
+          "render_gpu_ms": 0.538999974727631,
+          "role": "foreground",
+          "scale": 1.0,
+          "screen_space_aa": 1,
+          "shadow": {
+            "draws": 389,
+            "objects": 869,
+            "primitives": 90671
+          },
+          "size": [
+            682,
+            480
+          ],
+          "update_mode": 4,
+          "visible": {
+            "draws": 190,
+            "objects": 237,
+            "primitives": 54017
+          },
+          "world_rid": "RID(14426795147265)"
+        },
+        "foreground_gpu": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.560999989509583,
+          "median_ms": 0.53600001335144,
+          "p95_ms": 0.545000016689301,
+          "p99_ms": 0.555999994277954
+        },
+        "motion": {
+          "animated_materials": 2,
+          "bindings": 27,
+          "candidate": "A",
+          "controllers": 1,
+          "cpu_callbacks": 1,
+          "cpu_motion_usec": 0,
+          "diagnostic_driver_callbacks": 0,
+          "error": "",
+          "moving_meshes": 24,
+          "native_cpu_callbacks": 1,
+          "systems": [
+            "rooftop_canal",
+            "binding"
+          ],
+          "theme": "rooftop_run",
+          "tier": "NATIVE",
+          "time": -1.0,
+          "zone": 0
+        },
+        "pipelines_on_switch": {
+          "canvas": 0.0,
+          "draw": 0.0,
+          "mesh": 0.0,
+          "specialization": 0.0,
+          "surface": 0.0
+        },
+        "resident": {
+          "materials": 103,
+          "shader_programs": 18
+        },
+        "resource_delta": 0.0,
+        "update": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.432,
+          "median_ms": 0.247,
+          "p95_ms": 0.35,
+          "p99_ms": 0.394
+        }
+      },
+      "C": {
+        "background": {
+          "active": true,
+          "canvas": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "disable_3d": false,
+          "has_camera_3d": true,
+          "msaa_samples": 2,
+          "native_3d_size": [
+            682,
+            480
+          ],
+          "path": "/root/PrototypeSession/@Node@77/@SubViewportContainer@81/RetroViewportHost/@SubViewport@82/Zone0Backdrop/@SubViewport@1157",
+          "render_cpu_ms": 0.142000004649162,
+          "render_gpu_ms": 0.217999994754791,
+          "role": "background",
+          "scale": 1.0,
+          "screen_space_aa": 1,
+          "shadow": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "size": [
+            682,
+            480
+          ],
+          "update_mode": 4,
+          "visible": {
+            "draws": 21,
+            "objects": 21,
+            "primitives": 6552
+          },
+          "world_rid": "RID(29811368001539)"
+        },
+        "background_gpu": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.224000006914139,
+          "median_ms": 0.218999996781349,
+          "p95_ms": 0.222000002861023,
+          "p99_ms": 0.223000004887581
+        },
+        "foreground": {
+          "active": true,
+          "canvas": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "disable_3d": false,
+          "has_camera_3d": true,
+          "msaa_samples": 2,
+          "native_3d_size": [
+            682,
+            480
+          ],
+          "path": "/root/PrototypeSession/@Node@77/@SubViewportContainer@81/RetroViewportHost/@SubViewport@82/@SubViewportContainer@83/@SubViewport@84",
+          "render_cpu_ms": 0.926999986171722,
+          "render_gpu_ms": 0.533999979496002,
+          "role": "foreground",
+          "scale": 1.0,
+          "screen_space_aa": 1,
+          "shadow": {
+            "draws": 387,
+            "objects": 868,
+            "primitives": 90659
+          },
+          "size": [
+            682,
+            480
+          ],
+          "update_mode": 4,
+          "visible": {
+            "draws": 190,
+            "objects": 237,
+            "primitives": 54017
+          },
+          "world_rid": "RID(14426795147265)"
+        },
+        "foreground_gpu": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.555000007152557,
+          "median_ms": 0.533999979496002,
+          "p95_ms": 0.546999990940094,
+          "p99_ms": 0.552999973297119
+        },
+        "motion": {
+          "animated_materials": 2,
+          "bindings": 27,
+          "candidate": "C",
+          "controllers": 1,
+          "cpu_callbacks": 0,
+          "cpu_motion_usec": 0,
+          "diagnostic_driver_callbacks": 0,
+          "error": "",
+          "moving_meshes": 0,
+          "native_cpu_callbacks": 0,
+          "systems": [
+            "rooftop_canal"
+          ],
+          "theme": "rooftop_run",
+          "tier": "NATIVE",
+          "time": -1.0,
+          "zone": 0
+        },
+        "pipelines_on_switch": {
+          "canvas": 0.0,
+          "draw": 0.0,
+          "mesh": 0.0,
+          "specialization": 0.0,
+          "surface": 0.0
+        },
+        "resident": {
+          "materials": 103,
+          "shader_programs": 18
+        },
+        "resource_delta": 0.0,
+        "update": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.016,
+          "median_ms": 0.008,
+          "p95_ms": 0.012,
+          "p99_ms": 0.014
+        }
+      }
+    }
+  },
+  "casino_night": {
+    "clip_sha256": "7c5851652fe95d71d4da97b5138a80ce6d9edf9c79aca5aa4cd2e2d2cb0bd472",
+    "production": "B",
+    "matched_fixture": {
+      "act": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "source_sha256": "91c1dd949734dea6ef241204abaa8c7b48f6d9191572844942204b7ff1cb4e91",
+      "act_bake_sha256": "eab636a9f268c51971199e683d09ae8574e883cfd168f3bcba9987ed0b5f2e72",
+      "theme_bake_sha256": "dba77a4cf02d5c1de87049f8668a2a26afbf87426df0c6fd8d02cf25828dfd6a",
+      "pipeline_fingerprint": "c00d04893c003865bf9fc055bd653a784cc506378d7d3bc7a996e282d6969ae9",
+      "scenery_fingerprint": "4f98871f697bec4209c9ab04777ae1bbdf37928512cb85e2cffbf894f10aca27",
+      "retro_settings_sha256": "57de587d69f1fc342f810fba23ea2b436302b268e3e79dc3717854792bdb2715",
+      "atmosphere": {
+        "enabled": true,
+        "id": "default",
+        "name": "Default",
+        "values": {
+          "brightness/terrain_walls": 2.53,
+          "emission": 1.18,
+          "env/adjustment_contrast": 1.01,
+          "env/adjustment_enabled": true,
+          "env/adjustment_saturation": 1.27,
+          "env/ambient_light_color": "(0.7361, 0.7713, 0.9219, 1.0)",
+          "env/ambient_light_energy": 0.42,
+          "env/ambient_light_sky_contribution": 0.0,
+          "env/glow_bloom": 0.0,
+          "env/glow_hdr_threshold": 1.15,
+          "env/glow_intensity": 0.64,
+          "env/glow_levels/3": 0.38,
+          "env/glow_levels/5": 0.37,
+          "env/glow_levels/7": 0.51,
+          "env/glow_normalized": true,
+          "env/glow_strength": 1.24,
+          "env/tonemap_exposure": 1.03,
+          "override/terrain_walls": true,
+          "palette/blue_spill": "(0.4275, 0.5686, 1.0, 1.0)",
+          "palette/marquee": "(1.0, 0.8471, 0.5373, 1.0)",
+          "palette/mechanism_body": "(0.5642, 0.171, 0.5789, 1.0)",
+          "palette/mechanism_light": "(0.3333, 1.0, 0.95, 1.0)",
+          "palette/neon_amber": "(1.0, 0.7059, 0.1804, 1.0)",
+          "palette/neon_aqua": "(0.1608, 0.8431, 1.0, 1.0)",
+          "palette/neon_mint": "(0.3176, 0.9294, 0.7373, 1.0)",
+          "palette/neon_pink": "(1.0, 0.2118, 0.6784, 1.0)",
+          "palette/purple_accent": "(0.4118, 0.2471, 0.7098, 1.0)",
+          "palette/warm_spill": "(1.0, 0.7059, 0.4275, 1.0)",
+          "palette/window_gold": "(1.0, 0.7804, 0.4157, 1.0)",
+          "sky/ground_bottom_color": "(0.025, 0.035, 0.095, 1.0)",
+          "sky/ground_curve": 0.2,
+          "sky/ground_horizon_color": "(0.1, 0.065, 0.2, 1.0)",
+          "sky/sky_curve": 0.2,
+          "sky/sky_horizon_color": "(0.1, 0.065, 0.2, 1.0)",
+          "sky/sky_top_color": "(0.016, 0.025, 0.07, 1.0)",
+          "sun/light_color": "(1.0, 0.9601, 0.8235, 1.0)",
+          "sun/light_energy": 0.54,
+          "sun/light_specular": 0.8,
+          "sun_pitch": -80.0,
+          "sun_yaw": 2.0
+        },
+        "weight": 1.0
+      },
+      "retro_effects": [
+        2,
+        4,
+        3
+      ]
+    },
+    "disk_acts": 1,
+    "disk_backdrops": 1,
+    "fallback_builds": 0,
+    "spawn": {
+      "act_score": 0,
+      "ball": "(400.0, 500.0)",
+      "camera_fov": 52.0,
+      "camera_projection": 0,
+      "camera_settings": {
+        "dead_zone_x": 18.0,
+        "dead_zone_y": 12.0,
+        "horizontal_response": 2.0,
+        "look_ahead": 0.0,
+        "max_speed": 4000.0,
+        "screen_margin_y": 0.22,
+        "screen_target_y": 0.55,
+        "vertical_response": 28.0,
+        "zoom": 1.3
+      },
+      "camera_size": 1.0,
+      "camera_transform": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (4.0, 2.115734, 6.545638)]",
+      "document": "c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba",
+      "goal_unlocked": false,
+      "rings": 0,
+      "score": 0,
+      "serve_pending": true,
+      "velocity": "(0.0, 0.0)"
+    },
+    "right_edge": {
+      "act_score": 0,
+      "ball": "(400.0, 500.0)",
+      "camera_fov": 52.0,
+      "camera_projection": 0,
+      "camera_settings": {
+        "dead_zone_x": 18.0,
+        "dead_zone_y": 12.0,
+        "horizontal_response": 2.0,
+        "look_ahead": 0.0,
+        "max_speed": 4000.0,
+        "screen_margin_y": 0.22,
+        "screen_target_y": 0.55,
+        "vertical_response": 28.0,
+        "zoom": 1.3
+      },
+      "camera_size": 1.0,
+      "camera_transform": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (5.7, 2.115734, 6.545638)]",
+      "document": "c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba",
+      "goal_unlocked": false,
+      "rings": 0,
+      "score": 0,
+      "serve_pending": true,
+      "velocity": "(0.0, 0.0)"
+    },
+    "matched_play_frames": 80,
+    "matched_play_trace_sha256": "d274eb2192569d6772edd70d7241e778bebd908bccafe94e9fcc66be2f6add6c",
+    "device_defaults": {
+      "authored_faces": true,
+      "clean_eight_shadows": false,
+      "directional_shadow_cascades": 4,
+      "directional_shadow_resolution": 4096,
+      "fxaa": true,
+      "msaa": 2,
+      "scale_percent": 100,
+      "shadow_treatment": 0,
+      "ultra_filter": false
+    },
+    "renderer": "NVIDIA GeForce RTX 4060",
+    "measurements": {
+      "B": {
+        "background": {
+          "active": true,
+          "canvas": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "disable_3d": false,
+          "has_camera_3d": true,
+          "msaa_samples": 2,
+          "native_3d_size": [
+            682,
+            480
+          ],
+          "path": "/root/PrototypeSession/@Node@77/@SubViewportContainer@81/RetroViewportHost/@SubViewport@82/Zone0Backdrop/@SubViewport@1161",
+          "render_cpu_ms": 0.151999995112419,
+          "render_gpu_ms": 0.197999998927116,
+          "role": "background",
+          "scale": 1.0,
+          "screen_space_aa": 1,
+          "shadow": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "size": [
+            682,
+            480
+          ],
+          "update_mode": 4,
+          "visible": {
+            "draws": 24,
+            "objects": 24,
+            "primitives": 7572
+          },
+          "world_rid": "RID(28595892256771)"
+        },
+        "background_gpu": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.202000007033348,
+          "median_ms": 0.199000000953674,
+          "p95_ms": 0.20100000500679,
+          "p99_ms": 0.202000007033348
+        },
+        "foreground": {
+          "active": true,
+          "canvas": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "disable_3d": false,
+          "has_camera_3d": true,
+          "msaa_samples": 2,
+          "native_3d_size": [
+            682,
+            480
+          ],
+          "path": "/root/PrototypeSession/@Node@77/@SubViewportContainer@81/RetroViewportHost/@SubViewport@82/@SubViewportContainer@83/@SubViewport@84",
+          "render_cpu_ms": 0.898999989032745,
+          "render_gpu_ms": 0.490000009536743,
+          "role": "foreground",
+          "scale": 1.0,
+          "screen_space_aa": 1,
+          "shadow": {
+            "draws": 488,
+            "objects": 1032,
+            "primitives": 95158
+          },
+          "size": [
+            682,
+            480
+          ],
+          "update_mode": 4,
+          "visible": {
+            "draws": 184,
+            "objects": 238,
+            "primitives": 28293
+          },
+          "world_rid": "RID(12592844111873)"
+        },
+        "foreground_gpu": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.509999990463257,
+          "median_ms": 0.488000005483627,
+          "p95_ms": 0.497999995946884,
+          "p99_ms": 0.508000016212463
+        },
+        "motion": {
+          "animated_materials": 0,
+          "bindings": 51,
+          "candidate": "B",
+          "controllers": 1,
+          "cpu_callbacks": 1,
+          "cpu_motion_usec": 0,
+          "diagnostic_driver_callbacks": 0,
+          "error": "",
+          "moving_meshes": 42,
+          "native_cpu_callbacks": 1,
+          "systems": [
+            "binding"
+          ],
+          "theme": "casino_night",
+          "tier": "NATIVE",
+          "time": -1.0,
+          "zone": 0
+        },
+        "pipelines_on_switch": {
+          "canvas": 0.0,
+          "draw": 0.0,
+          "mesh": 0.0,
+          "specialization": 0.0,
+          "surface": 0.0
+        },
+        "resident": {
+          "materials": 117,
+          "shader_programs": 11
+        },
+        "resource_delta": 0.0,
+        "update": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.938,
+          "median_ms": 0.394,
+          "p95_ms": 0.529,
+          "p99_ms": 0.938
+        }
+      },
+      "C": {
+        "background": {
+          "active": true,
+          "canvas": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "disable_3d": false,
+          "has_camera_3d": true,
+          "msaa_samples": 2,
+          "native_3d_size": [
+            682,
+            480
+          ],
+          "path": "/root/PrototypeSession/@Node@77/@SubViewportContainer@81/RetroViewportHost/@SubViewport@82/Zone0Backdrop/@SubViewport@1161",
+          "render_cpu_ms": 0.164000004529953,
+          "render_gpu_ms": 0.20100000500679,
+          "role": "background",
+          "scale": 1.0,
+          "screen_space_aa": 1,
+          "shadow": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "size": [
+            682,
+            480
+          ],
+          "update_mode": 4,
+          "visible": {
+            "draws": 24,
+            "objects": 24,
+            "primitives": 7572
+          },
+          "world_rid": "RID(28595892256771)"
+        },
+        "background_gpu": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.224000006914139,
+          "median_ms": 0.206000000238419,
+          "p95_ms": 0.209999993443489,
+          "p99_ms": 0.216000005602837
+        },
+        "foreground": {
+          "active": true,
+          "canvas": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "disable_3d": false,
+          "has_camera_3d": true,
+          "msaa_samples": 2,
+          "native_3d_size": [
+            682,
+            480
+          ],
+          "path": "/root/PrototypeSession/@Node@77/@SubViewportContainer@81/RetroViewportHost/@SubViewport@82/@SubViewportContainer@83/@SubViewport@84",
+          "render_cpu_ms": 1.08599996566772,
+          "render_gpu_ms": 0.500999987125397,
+          "role": "foreground",
+          "scale": 1.0,
+          "screen_space_aa": 1,
+          "shadow": {
+            "draws": 488,
+            "objects": 1032,
+            "primitives": 95158
+          },
+          "size": [
+            682,
+            480
+          ],
+          "update_mode": 4,
+          "visible": {
+            "draws": 184,
+            "objects": 237,
+            "primitives": 28257
+          },
+          "world_rid": "RID(12592844111873)"
+        },
+        "foreground_gpu": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.528999984264374,
+          "median_ms": 0.500999987125397,
+          "p95_ms": 0.514999985694885,
+          "p99_ms": 0.519999980926514
+        },
+        "motion": {
+          "animated_materials": 0,
+          "bindings": 51,
+          "candidate": "C",
+          "controllers": 1,
+          "cpu_callbacks": 0,
+          "cpu_motion_usec": 0,
+          "diagnostic_driver_callbacks": 0,
+          "error": "",
+          "moving_meshes": 0,
+          "native_cpu_callbacks": 0,
+          "systems": [],
+          "theme": "casino_night",
+          "tier": "NATIVE",
+          "time": -1.0,
+          "zone": 0
+        },
+        "pipelines_on_switch": {
+          "canvas": 0.0,
+          "draw": 0.0,
+          "mesh": 0.0,
+          "specialization": 0.0,
+          "surface": 0.0
+        },
+        "resident": {
+          "materials": 117,
+          "shader_programs": 11
+        },
+        "resource_delta": 0.0,
+        "update": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.013,
+          "median_ms": 0.007,
+          "p95_ms": 0.01,
+          "p99_ms": 0.012
+        }
+      }
+    }
+  },
+  "sky_sanctuary": {
+    "clip_sha256": "e28231a1f5977ef3e0e2754e5ef12475c3192871967a0e6cb527d28bfeab3e21",
+    "production": "C",
+    "matched_fixture": {
+      "act": "res://data/acts/Authored/First Try Smooth Decor.tres",
+      "source_sha256": "91c1dd949734dea6ef241204abaa8c7b48f6d9191572844942204b7ff1cb4e91",
+      "act_bake_sha256": "c8d2fd948d53f4ebbc2ecda68ce832314504ea25ea9b9caa806f2cb50d040085",
+      "theme_bake_sha256": "3b475f25e9dc3c21ff7953c1cd5e5e014a14bd5f88b25c43a8579ba63336c967",
+      "pipeline_fingerprint": "b0f2815fb09cd09ca0b6fc3789265722a8c4b45d360957dd4e0a77efcde40c39",
+      "scenery_fingerprint": "4f98871f697bec4209c9ab04777ae1bbdf37928512cb85e2cffbf894f10aca27",
+      "retro_settings_sha256": "57de587d69f1fc342f810fba23ea2b436302b268e3e79dc3717854792bdb2715",
+      "atmosphere": {
+        "enabled": true,
+        "id": "default",
+        "name": "Default",
+        "values": {
+          "emission": 0.75,
+          "env/ambient_light_color": "(0.62, 0.78, 0.98, 1.0)",
+          "env/ambient_light_energy": 0.36,
+          "env/ambient_light_sky_contribution": 0.0,
+          "env/glow_enabled": true,
+          "env/glow_hdr_threshold": 1.1,
+          "env/glow_intensity": 0.17,
+          "env/glow_levels/3": 0.2,
+          "env/glow_levels/5": 0.8,
+          "env/glow_levels/7": 0.25,
+          "env/glow_normalized": true,
+          "env/glow_strength": 1.15,
+          "env/tonemap_exposure": 1.02,
+          "palette/bank_highlight": "(0.83, 0.91, 0.97, 1.0)",
+          "palette/bank_shadow": "(0.32, 0.52, 0.73, 1.0)",
+          "palette/ruin_haze": "(0.62, 0.79, 0.93, 1.0)",
+          "palette/sea_highlight": "(0.78, 0.89, 0.97, 1.0)",
+          "palette/sea_shadow": "(0.25, 0.48, 0.72, 1.0)",
+          "sky/ground_bottom_color": "(0.6, 0.7804, 0.8667, 1.0)",
+          "sky/ground_curve": 0.2,
+          "sky/ground_horizon_color": "(0.7882, 0.9059, 0.9412, 1.0)",
+          "sky/sky_curve": 0.2,
+          "sky/sky_horizon_color": "(0.7882, 0.9059, 0.9412, 1.0)",
+          "sky/sky_top_color": "(0.2235, 0.5412, 0.7686, 1.0)",
+          "sun/light_color": "(1.0, 0.98, 0.94, 1.0)",
+          "sun/light_energy": 0.78,
+          "sun/light_specular": 0.8,
+          "sun_pitch": -64.5,
+          "sun_yaw": -26.5
+        },
+        "weight": 1.0
+      },
+      "retro_effects": [
+        2,
+        4,
+        3
+      ]
+    },
+    "disk_acts": 1,
+    "disk_backdrops": 1,
+    "fallback_builds": 0,
+    "spawn": {
+      "act_score": 0,
+      "ball": "(400.0, 500.0)",
+      "camera_fov": 52.0,
+      "camera_projection": 0,
+      "camera_settings": {
+        "dead_zone_x": 18.0,
+        "dead_zone_y": 12.0,
+        "horizontal_response": 2.0,
+        "look_ahead": 0.0,
+        "max_speed": 4000.0,
+        "screen_margin_y": 0.22,
+        "screen_target_y": 0.55,
+        "vertical_response": 28.0,
+        "zoom": 1.3
+      },
+      "camera_size": 1.0,
+      "camera_transform": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (4.0, 2.115734, 6.545638)]",
+      "document": "c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba",
+      "goal_unlocked": false,
+      "rings": 0,
+      "score": 0,
+      "serve_pending": true,
+      "velocity": "(0.0, 0.0)"
+    },
+    "right_edge": {
+      "act_score": 0,
+      "ball": "(400.0, 500.0)",
+      "camera_fov": 52.0,
+      "camera_projection": 0,
+      "camera_settings": {
+        "dead_zone_x": 18.0,
+        "dead_zone_y": 12.0,
+        "horizontal_response": 2.0,
+        "look_ahead": 0.0,
+        "max_speed": 4000.0,
+        "screen_margin_y": 0.22,
+        "screen_target_y": 0.55,
+        "vertical_response": 28.0,
+        "zoom": 1.3
+      },
+      "camera_size": 1.0,
+      "camera_transform": "[X: (1.0, 0.0, 0.0), Y: (0.0, 0.642788, -0.766044), Z: (0.0, 0.766044, 0.642788), O: (5.7, 2.115734, 6.545638)]",
+      "document": "c49b160219d3de874c7816c371fe7017d38c75a6148f0c40ee53a3ef99a094ba",
+      "goal_unlocked": false,
+      "rings": 0,
+      "score": 0,
+      "serve_pending": true,
+      "velocity": "(0.0, 0.0)"
+    },
+    "matched_play_frames": 80,
+    "matched_play_trace_sha256": "d274eb2192569d6772edd70d7241e778bebd908bccafe94e9fcc66be2f6add6c",
+    "device_defaults": {
+      "authored_faces": true,
+      "clean_eight_shadows": false,
+      "directional_shadow_cascades": 4,
+      "directional_shadow_resolution": 4096,
+      "fxaa": true,
+      "msaa": 2,
+      "scale_percent": 100,
+      "shadow_treatment": 0,
+      "ultra_filter": false
+    },
+    "renderer": "NVIDIA GeForce RTX 4060",
+    "measurements": {
+      "A": {
+        "background": {
+          "active": true,
+          "canvas": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "disable_3d": false,
+          "has_camera_3d": true,
+          "msaa_samples": 2,
+          "native_3d_size": [
+            682,
+            480
+          ],
+          "path": "/root/PrototypeSession/@Node@77/@SubViewportContainer@81/RetroViewportHost/@SubViewport@82/Zone0Backdrop/@SubViewport@978",
+          "render_cpu_ms": 0.129999995231628,
+          "render_gpu_ms": 0.160999998450279,
+          "role": "background",
+          "scale": 1.0,
+          "screen_space_aa": 1,
+          "shadow": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "size": [
+            682,
+            480
+          ],
+          "update_mode": 4,
+          "visible": {
+            "draws": 19,
+            "objects": 19,
+            "primitives": 26662
+          },
+          "world_rid": "RID(26091926323203)"
+        },
+        "background_gpu": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.162000000476837,
+          "median_ms": 0.158999994397163,
+          "p95_ms": 0.160999998450279,
+          "p99_ms": 0.162000000476837
+        },
+        "foreground": {
+          "active": true,
+          "canvas": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "disable_3d": false,
+          "has_camera_3d": true,
+          "msaa_samples": 2,
+          "native_3d_size": [
+            682,
+            480
+          ],
+          "path": "/root/PrototypeSession/@Node@77/@SubViewportContainer@81/RetroViewportHost/@SubViewport@82/@SubViewportContainer@83/@SubViewport@84",
+          "render_cpu_ms": 0.78600001335144,
+          "render_gpu_ms": 0.507000029087067,
+          "role": "foreground",
+          "scale": 1.0,
+          "screen_space_aa": 1,
+          "shadow": {
+            "draws": 473,
+            "objects": 747,
+            "primitives": 106579
+          },
+          "size": [
+            682,
+            480
+          ],
+          "update_mode": 4,
+          "visible": {
+            "draws": 174,
+            "objects": 207,
+            "primitives": 29111
+          },
+          "world_rid": "RID(12034498363393)"
+        },
+        "foreground_gpu": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.53600001335144,
+          "median_ms": 0.505999982357025,
+          "p95_ms": 0.515999972820282,
+          "p99_ms": 0.51800000667572
+        },
+        "motion": {
+          "animated_materials": 1,
+          "bindings": 0,
+          "candidate": "A",
+          "controllers": 1,
+          "cpu_callbacks": 0,
+          "cpu_motion_usec": 0,
+          "diagnostic_driver_callbacks": 0,
+          "error": "",
+          "moving_meshes": 180,
+          "native_cpu_callbacks": 0,
+          "systems": [
+            "sanctuary_cloud_volume"
+          ],
+          "theme": "sky_sanctuary",
+          "tier": "NATIVE",
+          "time": -1.0,
+          "zone": 0
+        },
+        "pipelines_on_switch": {
+          "canvas": 0.0,
+          "draw": 0.0,
+          "mesh": 0.0,
+          "specialization": 0.0,
+          "surface": 0.0
+        },
+        "resident": {
+          "materials": 80,
+          "shader_programs": 10
+        },
+        "resource_delta": 0.0,
+        "update": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.037,
+          "median_ms": 0.013,
+          "p95_ms": 0.018,
+          "p99_ms": 0.022
+        }
+      },
+      "C": {
+        "background": {
+          "active": true,
+          "canvas": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "disable_3d": false,
+          "has_camera_3d": true,
+          "msaa_samples": 2,
+          "native_3d_size": [
+            682,
+            480
+          ],
+          "path": "/root/PrototypeSession/@Node@77/@SubViewportContainer@81/RetroViewportHost/@SubViewport@82/Zone0Backdrop/@SubViewport@978",
+          "render_cpu_ms": 0.130999997258186,
+          "render_gpu_ms": 0.157000005245209,
+          "role": "background",
+          "scale": 1.0,
+          "screen_space_aa": 1,
+          "shadow": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "size": [
+            682,
+            480
+          ],
+          "update_mode": 4,
+          "visible": {
+            "draws": 19,
+            "objects": 19,
+            "primitives": 26662
+          },
+          "world_rid": "RID(26091926323203)"
+        },
+        "background_gpu": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.180000007152557,
+          "median_ms": 0.158999994397163,
+          "p95_ms": 0.159999996423721,
+          "p99_ms": 0.162000000476837
+        },
+        "foreground": {
+          "active": true,
+          "canvas": {
+            "draws": 0,
+            "objects": 0,
+            "primitives": 0
+          },
+          "disable_3d": false,
+          "has_camera_3d": true,
+          "msaa_samples": 2,
+          "native_3d_size": [
+            682,
+            480
+          ],
+          "path": "/root/PrototypeSession/@Node@77/@SubViewportContainer@81/RetroViewportHost/@SubViewport@82/@SubViewportContainer@83/@SubViewport@84",
+          "render_cpu_ms": 0.814999997615814,
+          "render_gpu_ms": 0.501999974250793,
+          "role": "foreground",
+          "scale": 1.0,
+          "screen_space_aa": 1,
+          "shadow": {
+            "draws": 473,
+            "objects": 747,
+            "primitives": 106579
+          },
+          "size": [
+            682,
+            480
+          ],
+          "update_mode": 4,
+          "visible": {
+            "draws": 174,
+            "objects": 207,
+            "primitives": 29111
+          },
+          "world_rid": "RID(12034498363393)"
+        },
+        "foreground_gpu": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.522000014781952,
+          "median_ms": 0.507000029087067,
+          "p95_ms": 0.515999972820282,
+          "p99_ms": 0.521000027656555
+        },
+        "motion": {
+          "animated_materials": 0,
+          "bindings": 0,
+          "candidate": "C",
+          "controllers": 1,
+          "cpu_callbacks": 0,
+          "cpu_motion_usec": 0,
+          "diagnostic_driver_callbacks": 0,
+          "error": "",
+          "moving_meshes": 0,
+          "native_cpu_callbacks": 0,
+          "systems": [],
+          "theme": "sky_sanctuary",
+          "tier": "NATIVE",
+          "time": -1.0,
+          "zone": 0
+        },
+        "pipelines_on_switch": {
+          "canvas": 0.0,
+          "draw": 0.0,
+          "mesh": 0.0,
+          "specialization": 0.0,
+          "surface": 0.0
+        },
+        "resident": {
+          "materials": 80,
+          "shader_programs": 10
+        },
+        "resource_delta": 0.0,
+        "update": {
+          "count": 120,
+          "frames_over_100_ms": 0,
+          "frames_over_50_ms": 0,
+          "max_ms": 0.018,
+          "median_ms": 0.007,
+          "p95_ms": 0.012,
+          "p99_ms": 0.014
+        }
+      }
+    }
+  }
+}
