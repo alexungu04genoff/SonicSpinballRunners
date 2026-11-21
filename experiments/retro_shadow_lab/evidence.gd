@@ -167,7 +167,7 @@ func study(theme: String, quick: bool) -> void:
   lab.mode_choice.item_selected.emit(0)
   lab.layer.hide()
   return
- if theme in ["green_hill", "rooftop_run", "chemical_plant", "casino_night", "sky_sanctuary", "ice_cap", "aquarium_park"]:
+ if theme in ["green_hill", "rooftop_run", "casino_night", "ice_cap", "aquarium_park"]:
   lab.camera(Vector2(570, 500))
   for mode in 4:
    lab.set_mode(mode)
@@ -175,7 +175,7 @@ func study(theme: String, quick: bool) -> void:
  if theme == "green_hill":
   await ring_motion()
   await anchors()
- if theme in ["green_hill", "rooftop_run", "sky_sanctuary", "casino_night", "ice_cap"]:
+ if theme in ["green_hill", "rooftop_run", "casino_night", "ice_cap"]:
   lab.camera(lab.start_focus)
   lab.spin(0.0)
   lab.set_tones(true)
@@ -199,7 +199,7 @@ func study(theme: String, quick: bool) -> void:
     await shot("%s-light-%.1f-%.1f-%d" % [theme, study_light.x, study_light.y, mode])
   key.shadow_blur = saved.x
   key.light_angular_distance = saved.y
- if theme in ["green_hill", "casino_night", "chemical_plant", "aquarium_park"]:
+ if theme in ["green_hill", "casino_night", "aquarium_park"]:
   lab.camera(lab.start_focus)
   lab.set_mode(3)
   # With the primary light disconnected its correction must disappear.

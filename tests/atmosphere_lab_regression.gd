@@ -119,8 +119,6 @@ func run() -> void:
    if child.get_meta("atmosphere_scenery", "far") == "far": check(child.visible, "Local inspection preserves far environment: " + theme)
   panel.set_scenery_visible("local", true)
   var night: Dictionary = panel.LightingLooks.create("Night", authored, theme)
-  if theme == "sky_sanctuary":
-   check(night["palette/bank_highlight"].v < 0.65 and night["palette/sea_shadow"].v < 0.25, "Night recipe subdues unshaded clouds")
   if theme == "ice_cap":
    check(game.presentation._world_environment.environment.sky.process_mode == Sky.PROCESS_MODE_QUALITY, "Ice retains cached quality radiance")
    check(not panel.sky_material.shader.code.contains("TIME"), "Ice sky has no per-frame radiance dependency")

@@ -37,7 +37,7 @@ func run() -> void:
  game.tuning.effective.gravity_scale = 0.0
  check(game.act_score == 0 and game.act_score_target == 1000 and not game.exit_unlocked and is_instance_valid(game._score_exit), "Opt-in target starts a separate Act ledger and physical locked exit")
  var barrier_id: int = game._score_exit.get_instance_id()
- game.set_theme("chemical_plant")
+ game.set_theme("casino_night")
  await frames(2)
  var feedback_roots: Array = game.presentation.get_children().filter(func(child): return str(child.name).begins_with("ActScoringFeedback"))
  check(feedback_roots.size() == 1 and game._score_exit.get_instance_id() == barrier_id and not game.exit_unlocked, "Theme reskin preserves one feedback root and the same locked physical exit")

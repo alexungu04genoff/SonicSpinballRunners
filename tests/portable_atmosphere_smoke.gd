@@ -78,7 +78,7 @@ func run() -> void:
  await get_tree().process_frame
  check(game.presentation._key_light.directional_shadow_mode == DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS and game.view.screen_space_aa == Viewport.SCREEN_SPACE_AA_FXAA, "Fresh portable Lab inherits cascades and FXAA")
  check(game.lighting_controls.scenery.values.seed == 123456 and is_equal_approx(float(Variants.new().read("green_hill")[0].weight), weight), "A fresh Lab instance reloads saved scenery and variants")
- for theme: String in ["chemical_plant", "casino_night", "rooftop_run"]:
+ for theme: String in ["casino_night", "rooftop_run"]:
   check(game.set_theme(theme), "Theme selector accepts " + theme)
   await get_tree().process_frame
   await get_tree().process_frame

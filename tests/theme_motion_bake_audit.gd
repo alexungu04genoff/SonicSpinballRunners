@@ -1,5 +1,5 @@
 extends SceneTree
-## Read-only disk authority for the seven-theme motion pass. Never repairs bakes.
+## Read-only disk authority for the base-game motion pass. Never repairs bakes.
 const Bake = preload("res://scripts/endless/geometry_bake.gd")
 const Plan = preload("res://scripts/endless/endless_plan.gd")
 const Prototype = preload("res://scripts/prototype/run_plan.gd")
@@ -48,7 +48,7 @@ func run() -> void:
   item.fresh = item.fresh and row.fresh
  var report := {"scope":Motion.IDS, "authority":"Validated disk recipes", "complete":problems.is_empty(),
   "checks":checks,"failures":problems.size(),"problems":problems,"stale":stale,"summary":summary,"recipes":rows,
-  "limitations":["File bytes exclude external shared bake assets.", "Record/material/signature counts are resident recipe inventories, not rendered draws or frame costs.", "Before snapshot contains file bytes only; record/material deltas are unavailable.", "Lava Reef is excluded and was neither loaded nor modified."]}
+  "limitations":["File bytes exclude external shared bake assets.", "Record/material/signature counts are resident recipe inventories, not rendered draws or frame costs.", "Before snapshot contains file bytes only; record/material deltas are unavailable."]}
  DirAccess.make_dir_recursive_absolute(output.get_base_dir())
  var file := FileAccess.open(output, FileAccess.WRITE)
  if file == null:

@@ -4,7 +4,7 @@ const Profile = preload("res://scripts/prototype/build_profile.gd")
 const Menu = preload("res://scripts/prototype/run_setup_menu.gd")
 const Variants = preload("res://scripts/atmosphere/variants.gd")
 const Palette = preload("res://scripts/themes/theme_atmosphere.gd")
-const THEMES := ["casino_night", "rooftop_run", "green_hill", "aquarium_park", "ice_cap", "chemical_plant"]
+const THEMES := ["green_hill", "casino_night", "ice_cap", "rooftop_run", "aquarium_park"]
 var checks := 0
 var failures := 0
 
@@ -35,6 +35,9 @@ func run() -> void:
  settings.set_value("run_setup", "atmosphere_overrides", {"casino_night": "removed_variant", "lava_reef": "default"})
  restored.read_preferences(settings, paths)
  check(restored.atmosphere_overrides.is_empty(), "Removed variants and excluded themes do not poison saved setup")
+ settings.set_value("run_setup", "selected_themes", ["sky_sanctuary"])
+ restored.read_preferences(settings, paths)
+ check(restored.selected_theme_ids == THEMES, "A retired-only preference migrates to the current roster")
  config.selected_theme_ids.append("lava_reef")
  check(not config.validation_error().is_empty(), "Unavailable theme is rejected")
  config.selected_theme_ids.erase("lava_reef")
@@ -72,7 +75,7 @@ func run() -> void:
  config.selected_act_paths = []
  menu.configure(config, [], button)
  check(not menu.advanced.visible, "Customization starts collapsed")
- check(menu.theme_checks.size() == 6 and menu.atmosphere_choices.size() == 6, "Menu only shows the six allowed themes and their atmosphere pickers")
+ check(menu.theme_checks.size() == THEMES.size() and menu.atmosphere_choices.size() == THEMES.size(), "Menu only shows the five allowed themes and their atmosphere pickers")
  var picker: OptionButton = menu.atmosphere_choices.casino_night
  picker.select(1)
  picker.item_selected.emit(1)

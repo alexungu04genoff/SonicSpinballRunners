@@ -9,11 +9,6 @@ const FIELDS := {
   ["Cloud shadow", "cloud_shadow"], ["Cloud highlight", "cloud_highlight"],
   ["Distant vegetation tint", "vegetation_tint"], ["Distant sand / stone tint", "shore_tint"],
  ],
- "chemical_plant": [
-  ["Industrial body tint", "industrial_body"], ["Industrial metal tint", "industrial_metal"], ["Industrial trim tint", "industrial_trim"],
-  ["Reservoir deep", "reservoir_deep"], ["Reservoir ripple", "reservoir_ripple"],
-  ["Industrial cyan", "industrial_cyan"], ["Signal pink", "signal_pink"],
- ],
  "rooftop_run": [
   ["Roof tint", "roof_tint"],
   ["Canal deep", "canal_deep"], ["Canal reflection", "canal_reflection"],
@@ -28,12 +23,6 @@ const FIELDS := {
   ["Window gold", "window_gold"], ["Marquee", "marquee"],
   ["Warm spill light", "warm_spill"], ["Blue spill light", "blue_spill"],
  ],
- "sky_sanctuary": [
-  ["Ruin stone tint", "ruin_stone"],
-  ["Cloud sea shadow", "sea_shadow"], ["Cloud sea highlight", "sea_highlight"],
-  ["Cloud bank shadow", "bank_shadow"], ["Cloud bank highlight", "bank_highlight"],
-  ["Ruin haze", "ruin_haze"],
- ],
  "ice_cap": [
   ["Snow tint", "snow_tint"], ["Solid ice tint", "ice_tint"], ["Mountain ridge tint", "ridge_tint"],
   ["Sky horizon", "ice_horizon"], ["Sky upper", "ice_upper"],
@@ -44,15 +33,6 @@ const FIELDS := {
   ["Aurora tertiary", "aurora_tertiary"],
   ["Aurora strength", "aurora_strength", "number", 0.0, 3.0, 0.01],
   ["Crystal tint", "crystal_tint"],
- ],
- "lava_reef": [
-  ["Rock / mineral tint", "rock_tint"], ["Mining metal tint", "metal_tint"],
-  ["Magma dark", "magma_dark"], ["Magma hot", "magma_hot"],
-  ["Magma core", "magma_core"], ["Magma crust", "magma_crust"],
-  ["Cavern tint", "cavern_tint"], ["Cavern deep", "cavern_deep"],
-  ["Cavern magma bounce", "cavern_bounce"], ["Crystal dark", "crystal_dark"],
-  ["Crystal highlight", "crystal_highlight"], ["Crystal vein", "crystal_vein"],
-  ["Embers", "ember"], ["Magma bounce lights", "magma_light"],
  ],
  "aquarium_park": [
   ["Architecture tint", "architecture_tint"], ["Roof tint", "roof_tint"],
@@ -72,18 +52,11 @@ const FIELDS := {
 const SHADERS := {
  "green_hill_ocean": {"deep_color": "ocean_deep", "wave_color": "ocean_wave", "reflection_color": "ocean_reflection", "sun_color": "ocean_sun"},
  "green_hill_cloud": {"shadow_color": "cloud_shadow", "highlight_color": "cloud_highlight"},
- "chemical_reservoir": {"deep_color": "reservoir_deep", "ripple_color": "reservoir_ripple"},
  "rooftop_canal": {"deep_color": "canal_deep", "reflection_color": "canal_reflection"},
- "sanctuary_clouds": {"shadow_color": "sea_shadow", "highlight_color": "sea_highlight"},
- "sanctuary_cloud_volume": {"shadow_color": "bank_shadow", "highlight_color": "bank_highlight"},
  "ice_sky": {"horizon_color": "ice_horizon", "upper_color": "ice_upper", "glow_color": "ice_sky_glow", "star_color": "star_tint", "star_intensity": "star_intensity"},
  "ice_lake": {"base_color": "lake_base", "reflection_color": "lake_reflection"},
  "ice_aurora": {"primary_color": "aurora_primary", "secondary_color": "aurora_secondary", "tertiary_color": "aurora_tertiary", "atmosphere_strength": "aurora_strength"},
  "ice_crystal": {"atmosphere_tint": "crystal_tint"},
- "lava_molten": {"dark_color": "magma_dark", "hot_color": "magma_hot", "core_color": "magma_core", "crust_color": "magma_crust"},
- "lava_cavern": {"atmosphere_tint": "cavern_tint", "deep_color": "cavern_deep", "bounce_color": "cavern_bounce"},
- "lava_crystal": {"dark_color": "crystal_dark", "highlight_color": "crystal_highlight", "vein_color": "crystal_vein"},
- "lava_embers": {"ember_color": "ember"},
  "aquarium_water": {"deep_color": "lagoon_deep", "wave_color": "lagoon_wave", "caustic_color": "caustic", "reflection_color": "water_reflection", "lantern_color": "lantern_reflection"},
  "aquarium_glass": {"base_color": "glass_base", "glow_tint": "glass_glow_tint"},
 }

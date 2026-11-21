@@ -61,6 +61,7 @@ func configure(value: RefCounted, available: Array, start: Button) -> void:
  for id: String in Plan.Configuration.Profile.theme_ids():
   var check := CheckBox.new()
   check.text = Registry.NAMES[Registry.IDS.find(id)]
+  check.tooltip_text = preload("res://scripts/themes/theme_roster.gd").GAMES[Registry.IDS.find(id)]
   check.button_pressed = id in configuration.selected_theme_ids
   theme_checks[id] = check
   themes.add_child(check)

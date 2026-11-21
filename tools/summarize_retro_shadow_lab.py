@@ -76,7 +76,7 @@ def summarize(source, output):
             lambda mode, _: f"penumbra-retro-{mode}.png")
     compare("tube.jpg", "Rooftop Run   /   Launch Tube Workshop   /   full Retro",
             lambda mode, _: f"tube-shadow-{mode}.png", (420, 160, 980, 650), (399, 350))
-    for theme in ["green_hill", "sky_sanctuary"]:
+    for theme in ["green_hill"]:
         compare(theme + ".jpg", theme.replace("_", " ").title() + "   /   matched pose   /   full Retro",
                 lambda _, slug: f"{theme}-{slug}.png", (80, 140, 920, 700), (420, 280))
     plate(output, "eight-themes.jpg", "Profile B   /   full Retro   /   clean four-level shadows",
@@ -88,7 +88,7 @@ def summarize(source, output):
           [(caption, frame(source / f"green_hill-{slug}.png").crop((80, 140, 920, 700)))
            for slug, caption in tones], 3, (420, 280))
     cells = []
-    for theme in ["rooftop_run", "chemical_plant", "casino_night", "aquarium_park"]:
+    for theme in ["rooftop_run", "casino_night", "aquarium_park"]:
         for mode in [0, 2]:
             cells.append((theme.replace("_", " ").title() + "   /   " + names[mode],
                           frame(source / f"{theme}-raised-{mode}.png")))

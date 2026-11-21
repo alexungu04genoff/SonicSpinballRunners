@@ -61,9 +61,9 @@ func run() -> void:
    for entry: Dictionary in panel.emission.halo_parameters:
     check(is_equal_approx(entry.material.get_shader_parameter(entry.property), entry.base * 1.8), "Surface width follows the shared control")
    await capture(game.view, theme + ("-retro" if use_retro else "-plain") + "-wide-soft")
-  if theme == "chemical_plant":
+  if theme == "green_hill":
    panel.tabs.current_tab = panel.tabs.get_node("Glow & Fog").get_index()
-   await capture(root, "chemical-controls")
+   await capture(root, "green-hill-controls")
   check(count == game.presentation.find_children("*", "", true, false).size() and ball == game.ball.get_instance_id(), theme + " preserves nodes and gameplay")
   var records: Array[Dictionary] = [Registry.baseline()]
   records[0].values = WIDE.duplicate()

@@ -6,13 +6,10 @@ const Density = preload("res://scripts/presentation_density.gd")
 const PALETTES := {
  "default": ["dc3546", "164ea1", "ffd45b", "f5f4df", "42ce89", "182b42"],
  "green_hill": ["e54a42", "246fc5", "ffcf50", "fff4dd", "48d293", "243e49"],
- "chemical_plant": ["eb426f", "473492", "ffd354", "e0faff", "39dfcc", "242943"],
  "rooftop_run": ["c64b3d", "247d86", "eab85d", "fff0d2", "46b7bb", "36414a"],
  "casino_night": ["ed377e", "382b9e", "ffe05e", "f5ecff", "88ee47", "25203f"],
- "sky_sanctuary": ["48a9b2", "487bb6", "e5c27b", "fff9e5", "7ce5d0", "35475b"],
  "ice_cap": ["6c9ee8", "35568c", "9ef5ff", "f2fbff", "8bdded", "233a59"],
  "aquarium_park": ["b64c57", "267f91", "dfbb78", "f1edcf", "54c9c2", "203846"],
- "lava_reef": ["a34d42", "226f76", "c1a36a", "fff1cf", "59b7ad", "332a3b"],
 }
 const SLOTS := ["rubber", "face", "trim", "mark", "paddle", "base"]
 

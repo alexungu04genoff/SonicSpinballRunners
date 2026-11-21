@@ -1,7 +1,7 @@
 extends "res://scripts/endless/endless_game.gd"
 ## Deterministic diagnostic course; the production streaming implementation is inherited.
 var diagnostic_theme := "rooftop_run"
-var next_theme := "chemical_plant"
+var next_theme := "casino_night"
 
 func _source_paths() -> Array:
  var paths := Plan.PATHS.duplicate()

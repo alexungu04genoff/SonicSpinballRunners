@@ -3,7 +3,7 @@ extends RefCounted
 ## Source instances remain in their own world; only copied collisionless shadow
 ## geometry is submitted to the gameplay world. Static transforms are copied once.
 const Audit = preload("res://scripts/diagnostics/render_audit.gd")
-const THEMES := ["rooftop_run", "sky_sanctuary", "ice_cap", "chemical_plant"]
+const THEMES := ["rooftop_run", "ice_cap"]
 const CELL_SIZE := 3.0
 const MAX_GROUPS := 6
 var roots: Array[Node3D] = []
@@ -110,12 +110,8 @@ static func _semantic_role(theme: String, bounds: AABB, mesh: Mesh, material: Ma
   "rooftop_run":
    if size.y > 2.5 and size.x > 0.9 and size.z > 0.9: return "courtyard_house_body"
    if size.y > 0.3 and size.y < 0.55 and size.x > 1.0 and size.z > 1.0 and Audit.triangles(mesh) <= 20: return "courtyard_house_roof"
-  "sky_sanctuary":
-   if "ruin_stone" in tags and size.y > 0.4 and maxf(size.x, size.z) > 0.2: return "ruin_arch_or_column"
   "ice_cap":
    if "ice" in tags and size.y > 0.7 and size.x < 1.2 and size.z < 1.2: return "opaque_crystal_shaft"
-  "chemical_plant":
-   if size.x > 0.75 and size.z > 0.75 and size.y > 0.45: return "reservoir_body_band"
  return ""
 
 func set_visible(game: Node, enabled: bool, reveal := false) -> void:

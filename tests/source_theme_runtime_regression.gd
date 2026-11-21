@@ -91,9 +91,9 @@ func check_visuals(theme_id: String, label: String) -> void:
  check(p.theme_definition.theme_id == theme_id, "Requested theme is active: " + label)
  check(entirely_visual(p), "Entire presentation, decor and scenery remain collisionless: " + label)
  check(is_instance_valid(p.scenery_root) and p.scenery_root.get_child_count() > 0, "Theme supplies surrounding scenery: " + label)
- check(p._world_environment.environment.glow_enabled == (theme_id in ["casino_night", "lava_reef", "aquarium_park"]), "Glow follows the theme and resets on switching: " + label)
+ check(p._world_environment.environment.glow_enabled == (theme_id in ["casino_night", "aquarium_park"]), "Glow follows the theme and resets on switching: " + label)
  var lights: Array = p.scenery_root.find_children("*", "OmniLight3D", true, false)
- check(lights.size() == (3 if theme_id == "lava_reef" else (2 if theme_id in ["casino_night", "aquarium_park"] else 0)), "Local lights stay bounded and clear on switching: " + label)
+ check(lights.size() == (2 if theme_id in ["casino_night", "aquarium_park"] else 0), "Local lights stay bounded and clear on switching: " + label)
  if game.authored_document == null: return
  var slots: Array = game.authored_document.decor_slots
  var props := authored_props()
@@ -159,7 +159,7 @@ func run() -> void:
   seed_live_state()
   var before := snapshot()
   var green := variants()
-  for theme_id: String in ["chemical_plant", "rooftop_run", "casino_night", "sky_sanctuary", "ice_cap", "lava_reef", "aquarium_park", "green_hill", "aquarium_park", "lava_reef", "ice_cap", "sky_sanctuary", "casino_night", "rooftop_run", "chemical_plant"]:
+  for theme_id: String in THEMES.slice(1) + ["green_hill"] + THEMES.slice(1):
    var label := example + "/" + theme_id
    check(game.set_theme(theme_id), "Visual Lab switches theme while paused: " + label)
    compare(before, label)
@@ -169,9 +169,9 @@ func run() -> void:
    if theme_id == "green_hill": check(variants() == green, "Switching back restores deterministic Green Hill variants")
    manifest[label] = variants()
   check(source == FileAccess.get_file_as_bytes(path), "Theme switching never rewrites the example Act: " + example)
-  var chemical := variants()
+  var aquarium := variants()
   await load_act(example)
-  check(game.presentation.theme_definition.theme_id == "chemical_plant" and variants() == chemical, "Act reload retains the active theme and deterministic variants: " + example)
+  check(game.presentation.theme_definition.theme_id == "aquarium_park" and variants() == aquarium, "Act reload retains the active theme and deterministic variants: " + example)
   # Drive the same signal as the user-facing dropdown without reloading the Act.
   var selector_before := snapshot()
   game.theme_selector.item_selected.emit(0)
@@ -179,7 +179,7 @@ func run() -> void:
   compare(selector_before, example + "/HUD selection")
   game.presentation.set_camera_follow(true)
   var follow_before := snapshot()
-  check(game.set_theme("chemical_plant"), "Theme changes with follow camera enabled")
+  check(game.set_theme("aquarium_park"), "Theme changes with follow camera enabled")
   compare(follow_before, example + "/follow camera")
  var file := FileAccess.open(MANIFEST, FileAccess.WRITE)
  file.store_string(JSON.stringify(manifest, "  "))

@@ -5,7 +5,7 @@ const Configuration = preload("res://scripts/prototype/run_configuration.gd")
 const Document = preload("res://scripts/act_editor/act_geometry.gd")
 const ACTS_PER_ZONE := Configuration.ACTS_PER_ZONE
 # Default aliases retained for existing six-Act development probes.
-const THEMES := ["green_hill", "chemical_plant"]
+const THEMES := Configuration.Registry.IDS
 const ACT_COUNT := 6
 const StreamPlan = preload("res://scripts/endless/endless_plan.gd")
 

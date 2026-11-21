@@ -5,13 +5,10 @@ const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const Shadows = preload("res://scripts/authored_act/gimmick_shadows.gd")
 const STYLES := {
  "green_hill": ["705339", "f5c65c", "69e4a3", "flap"],
- "chemical_plant": ["253549", "e7b54c", "43eeeb", "valve"],
  "rooftop_run": ["384b55", "e0ba77", "fff0be", "ironwork"],
  "casino_night": ["302667", "ffd052", "ff55c8", "neon"],
  "aquarium_park": ["263f5b", "eacb96", "62e9fa", "lantern"],
- "sky_sanctuary": ["d9d3b3", "d1af65", "72eff4", "relic"],
  "ice_cap": ["658ec1", "c8eeff", "87f5ff", "crystal"],
- "lava_reef": ["4b4148", "bd9466", "ff8e42", "forge"],
 }
 
 static func build(p, parent: Node3D, item: Dictionary) -> Dictionary:

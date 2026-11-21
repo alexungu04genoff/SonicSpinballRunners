@@ -26,7 +26,7 @@ func _initialize() -> void:
  check(targets == [1000, 1500, 2000, 2500, 3000, 3500] and RunPlan.target(20) == 11000, "Targets extend the unchanged progression through Act 21")
  for count in [1, 2, 7]:
   for pool_size in range(3, paths.size() + 1):
-   for themes: Array in [["ice_cap"], ["green_hill", "chemical_plant"], RunPlan.Configuration.Registry.IDS.duplicate()]:
+   for themes: Array in [["ice_cap"], ["green_hill", "casino_night"], RunPlan.Configuration.Registry.IDS.duplicate()]:
     configuration = RunPlan.Configuration.new(paths.slice(0, pool_size))
     configuration.zone_count = count
     configuration.selected_theme_ids = themes
@@ -82,7 +82,7 @@ func _initialize() -> void:
   check(not configuration.validation_error().is_empty(), "%d selected Acts is invalid" % size)
  configuration = RunPlan.Configuration.new(paths)
  configuration.zone_count = 7
- configuration.selected_theme_ids = ["lava_reef"]
+ configuration.selected_theme_ids = ["ice_cap"]
  configuration.selected_act_paths.erase(paths[0])
  var settings := ConfigFile.new()
  configuration.write_preferences(settings, paths)

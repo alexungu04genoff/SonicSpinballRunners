@@ -4,7 +4,7 @@ func _initialize() -> void:
  var folder := "res://test-results/atmosphere-variants/export"
  DirAccess.make_dir_recursive_absolute(folder)
  FileAccess.open(folder.path_join("project.godot"), FileAccess.WRITE).store_string("config_version=5\n[application]\nconfig/name=\"Atmosphere export probe\"\n")
- var probe := "extends SceneTree\nfunc _initialize():\n var registry = preload(\"res://scripts/atmosphere/variants.gd\").new()\n for theme in registry.THEMES:\n  var records = registry.read(theme)\n  if not registry.error.is_empty() or records.is_empty():\n   push_error(registry.error)\n   quit(1)\n   return\n print(\"ATMOSPHERE_PACKAGED | eight Theme registries available\")\n quit()\n"
+ var probe := "extends SceneTree\nfunc _initialize():\n var registry = preload(\"res://scripts/atmosphere/variants.gd\").new()\n for theme in registry.THEMES:\n  var records = registry.read(theme)\n  if not registry.error.is_empty() or records.is_empty():\n   push_error(registry.error)\n   quit(1)\n   return\n print(\"ATMOSPHERE_PACKAGED | five Theme registries available\")\n quit()\n"
  FileAccess.open(folder.path_join("probe.gd"), FileAccess.WRITE).store_string(probe)
  var pack := PCKPacker.new()
  var path := folder.path_join("probe.pck")

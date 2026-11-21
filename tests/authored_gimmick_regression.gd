@@ -199,7 +199,7 @@ func run() -> void:
   Models.update(gate_visual)
   theme_styles[gate_visual.root.get_meta("gate_style")] = true
   check(not gate_visual.panel.visible and manager.by_id.s1.active and game.ball.get_instance_id() == identities.ball, "Reskin retains pressed/open state and authoritative ball: " + theme_id)
- check(theme_styles.size() == 8, "Eight distinct gate presentations share one physics path")
+ check(theme_styles.size() == 5, "Five distinct gate presentations share one physics path")
  manager.reset()
  check(not manager.by_id.s1.active and not manager.by_id.gate.open and manager.by_id.open_gate.open and not manager.banks[0].complete, "Reset restores switch, bank and authored gate initial states")
  # Launch strength and angle checked at the first integration that reports a hit.

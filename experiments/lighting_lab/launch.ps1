@@ -3,7 +3,7 @@ param(
     [string]$GodotPath,
     [ValidateSet('Forward', 'Mobile', 'Angle')]
     [string]$Renderer = 'Forward',
-    [ValidateSet('green_hill', 'chemical_plant', 'rooftop_run', 'casino_night', 'sky_sanctuary', 'ice_cap', 'lava_reef', 'aquarium_park')]
+    [ValidateSet('green_hill', 'rooftop_run', 'casino_night', 'ice_cap', 'aquarium_park')]
     [string]$Theme = 'green_hill',
     [string]$Act = 'res://data/acts/Authored/First Try Smooth Decor.tres'
 )

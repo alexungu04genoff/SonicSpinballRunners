@@ -2,7 +2,7 @@ extends RefCounted
 ## Authored presentation inputs beside an Act, independent of gameplay resources.
 const VERSION := 1
 const MAX_SEED := 2147483647
-const THEMES := ["green_hill", "chemical_plant", "rooftop_run", "casino_night", "sky_sanctuary", "ice_cap"]
+const THEMES := ["green_hill", "rooftop_run", "casino_night", "ice_cap"]
 const DEFAULTS := {"seed": 0, "density": 2.5}
 
 static func path_for(act_path: String) -> String:

@@ -27,9 +27,8 @@ func collect_bounds(node: Node3D, boxes: Array[AABB], parent := Transform3D.IDEN
  return true
 
 func run() -> void:
- var expected := {"green_hill": ["turf_loop", "rope_bridge", "palm_island"], "chemical_plant": ["fluid_reactor", "pipe_arch", "reactor_island"], "rooftop_run": ["clock_tower", "aqueduct", "festival_balloons"], "casino_night": ["jackpot_palace", "star_gateway", "roulette_pavilion"], "sky_sanctuary": ["sanctuary_belfry", "sky_aqueduct", "astral_dais"]}
+ var expected := {"green_hill": ["turf_loop", "rope_bridge", "palm_island"], "rooftop_run": ["clock_tower", "aqueduct", "festival_balloons"], "casino_night": ["jackpot_palace", "star_gateway", "roulette_pavilion"]}
  expected["ice_cap"] = ["glacier_crown", "frozen_bridge", "aurora_basin"]
- expected["lava_reef"] = ["rift_crown", "mine_viaduct", "caldera_seal"]
  expected["aquarium_park"] = ["lantern_palace", "moon_bridge", "jellyfish_rotunda"]
  for id: String in Themes.IDS:
   var p := Presentation.new()
@@ -50,7 +49,7 @@ func run() -> void:
     else:
      check(bounds.size.x >= 2.90 and bounds.size.x <= 3.10 and bounds.size.z >= 0.80 and bounds.size.z <= 1.10, id + " long landmark keeps a roughly 3 by 1 cell footprint: " + str(bounds))
     check(absf(bounds.get_center().x) < 0.06 and absf(bounds.get_center().z) < 0.10, id + " landmark stays centered on the authored anchor")
-    if index == 1: check(bounds.size.y <= (1.8 if id == "chemical_plant" else 1.5), id + " span or gateway stays within its height envelope")
+    if index == 1: check(bounds.size.y <= 1.5, id + " span or gateway stays within its height envelope")
     check(visual.get_meta("decor_variant") == expected[id][index], id + " fixed selection is unchanged")
     visual.free()
    slot.variant_mode = "auto"

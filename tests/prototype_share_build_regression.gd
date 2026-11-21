@@ -1,7 +1,7 @@
 extends SceneTree
 ## Run with --main-pack <exported executable> and an isolated APPDATA directory.
 const Session = preload("res://scripts/prototype/session.gd")
-const THEMES := ["casino_night", "chemical_plant", "green_hill", "rooftop_run"]
+const THEMES := ["green_hill", "casino_night", "ice_cap", "rooftop_run", "aquarium_park"]
 var checks := 0
 var failures := 0
 var session: Control
@@ -30,7 +30,7 @@ func run() -> void:
  DirAccess.remove_absolute(session.settings_path)
  root.add_child(session)
  check(session.selected_character == "sonic" and session.practice_mode and not session.sound_enabled, "Fresh package starts with Sonic, Practice and scoring sounds off")
- check(session.run_configuration.zone_count == 3 and session.run_configuration.snapshot().selected_themes == THEMES, "Three Zones use exactly the requested four-theme pool")
+ check(session.run_configuration.zone_count == 3 and session.run_configuration.snapshot().selected_themes == Session.Run.RunPlan.Configuration._unique(THEMES), "Three Zones use exactly the requested five-theme pool")
  check(session.available_act_paths.size() >= 3 and session.run_configuration.selected_act_paths == session.available_act_paths, "All %d production Acts are packaged and selected" % session.available_act_paths.size())
  var deadline := Time.get_ticks_msec() + 180000
  while session.setup_menu.checking and Time.get_ticks_msec() < deadline: await process_frame

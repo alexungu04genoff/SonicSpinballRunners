@@ -23,7 +23,7 @@ func frames(count: int) -> void:
  for index in count: await process_frame
 
 func run() -> void:
- var pairs: Array = [["green_hill", "casino_night"], ["chemical_plant", "rooftop_run"], ["chemical_plant", "casino_night"]]
+ var pairs: Array = [["green_hill", "casino_night"], ["green_hill", "rooftop_run"], ["green_hill", "casino_night"]]
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--output="): output = argument.trim_prefix("--output=")
   if argument.begins_with("--pairs="):

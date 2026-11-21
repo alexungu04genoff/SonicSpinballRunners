@@ -84,6 +84,6 @@ func run() -> void:
   fixture.game.run_configuration.single_act_use_bakes = true
   check(not FileAccess.file_exists(fixture.session.settings_path), "No player preferences written")
   await fixture.close()
- check(Fixture.Registry.IDS.size() == 8, "Registry retains all eight production themes")
+ check(Fixture.Registry.IDS.size() == 5, "Registry retains all five production themes")
  print("RESULT | Prototype appearance regression | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)

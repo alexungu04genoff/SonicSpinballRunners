@@ -11,9 +11,9 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-THEMES = ["green_hill", "chemical_plant", "rooftop_run", "casino_night",
-          "sky_sanctuary", "ice_cap", "aquarium_park"]
-PROXY_THEMES = ["rooftop_run", "sky_sanctuary", "ice_cap", "chemical_plant"]
+THEMES = ["green_hill", "rooftop_run", "casino_night",
+          "ice_cap", "aquarium_park"]
+PROXY_THEMES = ["rooftop_run", "ice_cap"]
 DIRECTIONS = ["Production", "Camera-left", "Camera-right", "Rays up-table",
               "Rays down-table", "High key 70 deg", "Low key 20 deg"]
 MODES = ["0 Production", "1 Side-key", "2 Current + proxies", "3 Side-key + proxies",
@@ -122,7 +122,7 @@ def main():
           subtitle="Foreground hulls use exact source transforms. Visible scenery stays in its own backdrop world.")
     sheet(args.output / "shadow-ownership.png", "Shadow ownership | live instance bounds",
           [(f"{title(theme)} / {kind}", args.results / ("visual-" + theme) / f"ownership_{kind}.png")
-           for theme in ["rooftop_run", "sky_sanctuary"] for kind in ["casters", "shadowless"]], 2, 640,
+           for theme in ["rooftop_run"] for kind in ["casters", "shadowless"]], 2, 640,
           subtitle="Green: authored Decor. Cyan: other foreground. Gold: backdrop. Flags show eligibility; BG lights are shadowless.")
     if args.matrix:
         prototype = args.matrix / "01-prototype-production"

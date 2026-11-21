@@ -5,7 +5,7 @@ const Endless = preload("res://scripts/diagnostics/grounding_endless.gd")
 const Controls = preload("res://scripts/diagnostics/grounding_control.gd")
 const Audit = preload("res://scripts/diagnostics/render_audit.gd")
 const Sampler = preload("res://scripts/diagnostics/render_sampler.gd")
-const THEMES := ["green_hill", "chemical_plant", "rooftop_run", "casino_night", "sky_sanctuary", "ice_cap", "aquarium_park"]
+const THEMES := ["green_hill", "casino_night", "ice_cap", "rooftop_run", "aquarium_park"]
 var output := "res://test-results/grounding-lab"
 var task := "interactive"
 var theme := "rooftop_run"
@@ -130,7 +130,7 @@ func open_game() -> bool:
  else:
   game = Endless.new()
   game.diagnostic_theme = theme
-  game.next_theme = "chemical_plant" if theme != "chemical_plant" else "rooftop_run"
+  game.next_theme = "casino_night" if theme != "casino_night" else "rooftop_run"
   root.add_child(game)
   var deadline := Time.get_ticks_msec() + 180000
   sampler.begin(game)

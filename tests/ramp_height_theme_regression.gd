@@ -60,7 +60,6 @@ func run() -> void:
   check(deck.material_override != null and visual.has_node("Fascia") and visual.has_node("EntryArrow"), "Ramp has themed deck, edge thickness and restrained entry marker: " + theme)
   check(game.ball.get_instance_id() == identity and game.ball.mechanics == manager and manager.items[2].path == stored_path, "Theme switch preserves ball, mechanics and exact rail route: " + theme)
   check(visual.find_children("*", "CollisionObject3D", true, false).is_empty(), "Ramp theme remains collisionless: " + theme)
-  check(visual.has_node("SidePipes") == (theme == "chemical_plant"), "Side pipes belong only to Chemical Plant: " + theme)
   var counts := {}
   var border_uvs := true
   var border_materials := true
@@ -91,42 +90,10 @@ func run() -> void:
   var definition: RefCounted = game.presentation.theme_definition
   check(definition.floor_border_material != null and definition.top_border_material != null and definition.floor_border_width > 0 and definition.top_border_width > 0, "Floor and wall ledge borders are enabled: " + theme)
   check(not game.presentation.terrain_root.find_children("TopSurfaceBorder", "MeshInstance3D", true, false).is_empty() and not game.presentation.terrain_root.find_children("FloorPathBorder", "MeshInstance3D", true, false).is_empty(), "Authored walls and floor contain rendered border meshes: " + theme)
-  if theme == "chemical_plant":
-   var source: ShaderMaterial = definition.ramp_materials().deck
-   var material: ShaderMaterial = deck.material_override
-   var surface := preload("res://scripts/atmosphere/surface_controls.gd")
-   var expected_deck: ShaderMaterial = source.duplicate()
-   surface.prepare(expected_deck,true)
-   check(definition.theme_id == "chemical_plant" and material != source and material.shader == expected_deck.shader and material.get_meta("atmosphere_hue", "") == "ramps", "Chemical ramp uses the prepared version of its exact theme shader and the ramp atmosphere category")
-   check(surface.FACE_INCLUDE in material.shader.code and surface.FACE_INCLUDE not in source.shader.code,"Face shading is local to the terrain copy of the deck material")
-   var actual_texture: Texture2D = material.get_shader_parameter("albedo_texture")
-   var source_texture: Texture2D = source.get_shader_parameter("albedo_texture")
-   check(actual_texture != null and actual_texture == source_texture, "Chemical ramp retains the authoritative theme deck texture")
-   # Selected art is read as an ImageTexture in editor builds, with no resource path.
-   # Compare decoded pixels with the intentional source, not an old texture name/hash.
-   var selected := "res://assets/textures/chemical_plant/selected/7C-yellow.png"
-   var source_path: String = selected if FileAccess.file_exists(selected) else "res://assets/textures/chemical_plant/ramp.png"
-   var expected := Image.load_from_file(ProjectSettings.globalize_path(source_path))
-   var actual := actual_texture.get_image()
-   actual.convert(Image.FORMAT_RGBA8)
-   expected.convert(Image.FORMAT_RGBA8)
-   actual.clear_mipmaps()
-   expected.clear_mipmaps()
-   check(actual.get_size() == expected.get_size() and actual.get_data() == expected.get_data(), "Chemical ramp texture matches current selected artwork (or the shipped base artwork when no selection exists)")
-   var pipes: Node = visual.get_node("SidePipes")
-   check(pipes.get_child_count() == 8 and pipes.has_node("BluePipeLeft") and pipes.has_node("BluePipeRight") and pipes.has_node("CouplingsLeft"), "Both blue pipes, metal couplings and yellow/cyan details use eight batched meshes")
   if DisplayServer.get_name() != "headless":
    await process_frame
    await RenderingServer.frame_post_draw
    root.get_texture().get_image().save_png("res://test-results/ramp-" + theme + ".png")
- if DisplayServer.get_name() != "headless":
-  game.set_theme("chemical_plant")
-  game.presentation.overview_zoom = 2.2
-  game.presentation.overview_focus = Vector2(370, 385)
-  game.presentation.reset_camera()
-  await process_frame
-  await RenderingServer.frame_post_draw
-  game.view.get_texture().get_image().save_png("res://test-results/chemical-ramp-pipes.png")
  await process_frame
  paused = false
  game.queue_free()

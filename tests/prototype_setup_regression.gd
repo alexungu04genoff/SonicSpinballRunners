@@ -23,7 +23,7 @@ func run() -> void:
  await settle(session)
  var setup: VBoxContainer = session.setup_menu
  check(not session.start_button.disabled and session.run_configuration.zone_count == 2 and session.run_configuration.selected_theme_ids == Session.Run.RunPlan.THEMES and session.run_configuration.selected_act_paths == session.available_act_paths, "Fresh menu defaults and valid bakes enable Start")
- check(setup.theme_checks.size() == 8 and setup.act_checks.size() == session.available_act_paths.size(), "Menu discovers the production catalogue")
+ check(setup.theme_checks.size() == 5 and setup.act_checks.size() == session.available_act_paths.size(), "Menu discovers the production catalogue")
  if DisplayServer.get_name() != "headless":
   await process_frame
   await RenderingServer.frame_post_draw

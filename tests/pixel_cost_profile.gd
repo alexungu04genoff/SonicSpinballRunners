@@ -6,7 +6,7 @@ const CASES := {
  "small": {"act": "Reverse C Spring", "theme": "green_hill"},
  "dense": {"act": "RampMania", "theme": "green_hill"},
  "multi": {"act": "", "theme": "green_hill"},
- "busy": {"act": "RampMania", "theme": "chemical_plant"},
+ "busy": {"act": "RampMania", "theme": "casino_night"},
 }
 var workload := "small"
 var session: Control

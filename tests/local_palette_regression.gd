@@ -2,12 +2,9 @@ extends SceneTree
 const Registry := preload("res://scripts/atmosphere/variants.gd")
 const EXPECTED := {
  "green_hill": ["local_sand", "rock_tint"],
- "chemical_plant": ["industrial_body", "industrial_metal", "industrial_trim"],
  "rooftop_run": ["architecture_tint", "roof_tint"],
  "casino_night": ["skyline_tint", "metal_tint"],
- "sky_sanctuary": ["ruin_stone", "ruin_haze"],
  "ice_cap": ["snow_tint", "ice_tint", "ridge_tint"],
- "lava_reef": ["rock_tint", "metal_tint"],
  "aquarium_park": ["architecture_tint", "roof_tint"],
 }
 var checks := 0

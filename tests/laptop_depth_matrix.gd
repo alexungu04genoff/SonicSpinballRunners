@@ -167,7 +167,7 @@ func run() -> void:
  RenderingServer.environment_set_ssao_quality(ao.quality,ao.half_size,ao.adaptive_target,ao.blur_passes,ao.fadeout_from,ao.fadeout_to)
  evidence.ssao_submitted = ao
  game.diagnostic_theme = "green_hill"
- game.next_theme = "chemical_plant"
+ game.next_theme = "casino_night"
  sampler.checkpoint_directory = output
  await measure()
  require(game.library.fallback_builds == 0 and game.library.error.is_empty(), "Disk recipe fallback or loader error")

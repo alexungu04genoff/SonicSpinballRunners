@@ -3,7 +3,7 @@ param(
     [string]$GodotPath = 'C:\Program Files\Godot\Godot.exe',
     [string]$ProjectRoot = (Split-Path $PSScriptRoot -Parent),
     [string]$OutputDirectory = '',
-    [string[]]$Themes = @('green_hill', 'chemical_plant', 'aquarium_park', 'ice_cap'),
+    [string[]]$Themes = @('green_hill', 'aquarium_park', 'ice_cap'),
     [ValidateSet('prototype', 'endless')][string]$Mode = 'prototype',
     [ValidateSet('vulkan_first_use_profile', 'vulkan_resource_probe')][string]$ProfileScript = 'vulkan_first_use_profile',
     [string]$SeedProfile = '',

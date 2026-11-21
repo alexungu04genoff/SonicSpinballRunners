@@ -6,6 +6,9 @@ const RELOAD_PATH := "res://test-results/reload-workflow.tres"
 
 func run() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results"))
+	# Give the camera and clickable HUD the same viewport as the development window.
+	if DisplayServer.get_name() == "headless":
+		root.size = Vector2i(1280, 900)
 	root.gui_embed_subwindows = true
 	var document := fixture()
 	check(document.save_document(RELOAD_PATH) == OK, "Reload fixture saves")
@@ -14,7 +17,7 @@ func run() -> void:
 	root.add_child(game)
 	await frames(5)
 	identities = engine_ids()
-	check(game.set_theme("chemical_plant"), "Choose Chemical Plant before reloading")
+	check(game.set_theme("casino_night"), "Choose Casino Night before reloading")
 	game.presentation.set_camera_follow(false)
 	game.presentation.set_camera_value("zoom", 1.7)
 	var p: TablePresentation = game.presentation
@@ -88,7 +91,7 @@ func run() -> void:
 	check(game.playfield.spawn == document.spawn_position and game.authored_document.activation_y == 555.5 and game.authored_document.exit_start_x == 6, "Reload reads lifecycle and exit markers")
 	var variants: Array = []
 	for prop in game.presentation.decor_root.get_children(): variants.append(prop.get_meta("decor_variant"))
-	check(variants == ["beacon", "valve", "beacon"], "Reload resolves fixed indices through Chemical Plant")
+	check(variants == ["neon_star", "chip_stack", "neon_star"], "Reload resolves fixed indices through Casino Night")
 	check(game.ball.serve_pending and game.ball.position == document.spawn_position and game.score == 0 and game.special_meter == 0, "Reload cleanly resets and serves the ball")
 	check(preferences == [game.theme_id, game.presentation.camera_follow_enabled, game.presentation.camera_preset, game.presentation.camera_settings, game.retro_filter.preset, game.player_view, DisplayServer.window_get_mode()], "Reload preserves theme, camera settings, overview, retro preset and window state")
 	check_identity("Reload retains the authoritative engine, camera and HUD")

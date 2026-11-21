@@ -9,7 +9,7 @@ const ACT := "res://data/acts/Authored/RampMania.tres"
 func _initialize() -> void: run.call_deferred()
 
 func run() -> void:
- var themes := PackedStringArray(["green_hill", "rooftop_run", "chemical_plant"])
+ var themes := PackedStringArray(["green_hill", "rooftop_run"])
  var iterations := 150
  var output := "res://test-results/material-collection-cpu.json"
  var compare_copies := "--compare-material-copies" in OS.get_cmdline_user_args()

@@ -42,7 +42,7 @@ try {
     $env:LOCALAPPDATA = $env:APPDATA
     New-Item -ItemType Directory -Path $env:APPDATA | Out-Null
     $common = @('--path', ('"' + $project + '"'))
-    foreach ($theme in @('green_hill','chemical_plant','casino_night','ice_cap','sky_sanctuary','rooftop_run','aquarium_park','lava_reef')) {
+    foreach ($theme in @('green_hill','casino_night','ice_cap','rooftop_run','aquarium_park')) {
         $fixtures = if ($theme -eq 'green_hill') { @('dense','linked','linked_vertical','smoothed') } else { @('dense') }
         foreach ($fixture in $fixtures) {
             Invoke-Qualification "bake-$fixture-$theme" ($common + @('--headless','res://scenes/act_baker.tscn','--',"--theme=$theme","--act=res://test-results/editor-qualification-fixtures/$fixture.tres",'--quit-after-bake'))

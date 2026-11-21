@@ -61,7 +61,7 @@ foreach ($folder in @('scripts','data','assets','scenes','tests')) {
 }
 $manifest = @{base_head=$base;starting_head='6f9f5c59db237002c37dcd482a964136f2bbe023';excluded_concurrent_changes=$foreign;
     excluded_untracked_sources=$untracked;source_hashes=$hashes;engine_sha256=(Get-FileHash -LiteralPath $GodotPath).Hash;
-    diagnostic_themes=@('green_hill','chemical_plant','rooftop_run','casino_night','sky_sanctuary','ice_cap','aquarium_park');
+    diagnostic_themes=@('green_hill','rooftop_run','casino_night','ice_cap','aquarium_park');
     defaults='Unchanged production defaults. Grounding code loads only through the explicit lab script.'}
 [IO.File]::WriteAllText((Join-Path $output 'grounding-build.json'), ($manifest | ConvertTo-Json -Depth 6))
 Write-Output "GROUNDING_PACKAGE_PREPARED | $output"

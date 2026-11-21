@@ -93,9 +93,8 @@ func _material(material: Material, node: GeometryInstance3D) -> void:
   # motion adds only its explicitly bounded local displacement.
   var margin := 0.0
   if id == "green_hill_cloud": margin = 0.45
-  elif id == "sanctuary_cloud_volume": margin = 1.2
   if margin > node.extra_cull_margin: node.extra_cull_margin = margin
-  if id in ["green_hill_cloud", "sanctuary_cloud_volume", "ice_snow", "ice_aurora"] and not _seen_gpu_nodes.has(node.get_instance_id()):
+  if id in ["green_hill_cloud", "ice_snow", "ice_aurora"] and not _seen_gpu_nodes.has(node.get_instance_id()):
    _seen_gpu_nodes[node.get_instance_id()] = true
    _gpu_nodes.append({"node":weakref(node), "system":id, "instances":node.multimesh.instance_count if node is MultiMeshInstance3D and node.multimesh != null else 1})
   if not _seen_materials.has(material.get_instance_id()):
@@ -192,8 +191,7 @@ func stats() -> Dictionary:
  for entry: Dictionary in _materials:
   if entry.material.get_ref() == null: continue
   var animated := _enabled(entry.system)
-  if entry.system in ["green_hill_cloud", "sanctuary_cloud_volume"]: animated = animated and candidate == "A"
-  elif entry.system == "sanctuary_clouds": animated = animated and candidate == "B"
+  if entry.system in ["green_hill_cloud"]: animated = animated and candidate == "A"
   if animated:
    material_count += 1
    if entry.system not in systems: systems.append(entry.system)

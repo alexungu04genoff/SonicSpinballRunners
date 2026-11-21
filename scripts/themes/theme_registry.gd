@@ -1,7 +1,7 @@
 extends RefCounted
 ## The only list of available production themes; Acts never store these IDs.
-const IDS := ["green_hill", "chemical_plant", "rooftop_run", "casino_night", "sky_sanctuary", "ice_cap", "lava_reef", "aquarium_park"]
-const NAMES := ["Green Hill", "Chemical Plant", "Rooftop Run", "Casino Night", "Sky Sanctuary", "Ice Cap", "Lava Reef", "Aquarium Park"]
+const IDS := preload("res://scripts/themes/theme_roster.gd").IDS
+const NAMES := preload("res://scripts/themes/theme_roster.gd").NAMES
 const GreenHill = preload("res://scripts/themes/green_hill_theme.gd")
 
 static func create(theme_id: String) -> RefCounted:
@@ -18,16 +18,10 @@ static func create(theme_id: String) -> RefCounted:
 static func _create(theme_id: String) -> RefCounted:
  if theme_id == "aquarium_park":
   return load("res://scripts/themes/aquarium_park_theme.gd").new()
- if theme_id == "lava_reef":
-  return load("res://scripts/themes/lava_reef_theme.gd").new()
  if theme_id == "ice_cap":
   return load("res://scripts/themes/ice_cap_theme.gd").new()
- if theme_id == "sky_sanctuary":
-  return load("res://scripts/themes/sky_sanctuary_theme.gd").new()
  if theme_id == "casino_night":
   return load("res://scripts/themes/casino_night_theme.gd").new()
  if theme_id == "rooftop_run":
   return load("res://scripts/themes/rooftop_run_theme.gd").new()
- if theme_id == "chemical_plant":
-  return load("res://scripts/themes/chemical_plant_theme.gd").new()
  return GreenHill.new()

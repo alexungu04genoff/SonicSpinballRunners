@@ -114,7 +114,7 @@ func _check_material(material: Material) -> float:
   # are inspected once too (current palette/normal includes do not move vertices).
   var code: String = material.shader.code
   var motion_id: String = preload("res://scripts/theme_motion/registry.gd").shader_id(material)
-  if motion_id in ["green_hill_cloud", "sanctuary_cloud_volume"]:
+  if motion_id in ["green_hill_cloud"]:
    var source := FileAccess.get_file_as_string("res://scripts/themes/" + motion_id + ".gdshader")
    var vertex := RegEx.create_from_string("(?s)void vertex\\(\\) \\{.*?\\}").search(source)
    if vertex != null and code.contains(vertex.get_string()):

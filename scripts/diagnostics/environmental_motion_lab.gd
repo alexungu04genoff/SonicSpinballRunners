@@ -248,7 +248,7 @@ func _side_light() -> void:
  _apply_side_light(side_light)
 
 func _apply_side_light(enabled: bool) -> void:
- if fixture == null or fixture.game == null or theme_id not in ["rooftop_run", "sky_sanctuary"]: return
+ if fixture == null or fixture.game == null or theme_id != "rooftop_run": return
  for state: Dictionary in production_lights:
   var light := state.reference.get_ref() as DirectionalLight3D
   if light == null: continue

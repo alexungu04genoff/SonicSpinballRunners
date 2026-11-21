@@ -278,7 +278,7 @@ func open_game() -> bool:
  if endless:
   game = Endless.new()
   game.diagnostic_theme = theme
-  game.next_theme = "chemical_plant" if theme != "chemical_plant" else "rooftop_run"
+  game.next_theme = "casino_night" if theme != "casino_night" else "rooftop_run"
   get_tree().root.add_child(game)
   var deadline := Time.get_ticks_msec() + 180000
   while not game.started and game.library.error.is_empty() and Time.get_ticks_msec() < deadline: await get_tree().process_frame

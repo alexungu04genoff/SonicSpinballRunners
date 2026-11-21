@@ -4,7 +4,7 @@ param(
     [string]$ActPath = 'res://data/acts/Authored/First Try Smooth Decor.tres',
     [string]$OutputDirectory = '',
     [switch]$SkipBake,
-    [ValidateSet('green_hill', 'chemical_plant', 'rooftop_run', 'casino_night', 'sky_sanctuary', 'ice_cap', 'lava_reef', 'aquarium_park')]
+    [ValidateSet('green_hill', 'rooftop_run', 'casino_night', 'ice_cap', 'aquarium_park')]
     [string[]]$Themes = @(),
     [string]$CameraTarget = '',
     [double]$CameraZoom = 0,

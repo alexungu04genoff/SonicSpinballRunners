@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 import subprocess
 
-THEMES = ("green_hill", "chemical_plant", "rooftop_run", "casino_night", "sky_sanctuary", "ice_cap", "aquarium_park")
+THEMES = ("green_hill", "rooftop_run", "casino_night", "ice_cap", "aquarium_park")
 
 
 def run(args: list[str]) -> None:

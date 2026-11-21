@@ -13,7 +13,7 @@ func run() -> void:
   return
  output = "res://test-results/atmosphere-signatures/performance"
  var baseline := "res://test-results/atmosphere-signatures/source-before/data/atmospheres"
- var themes: Array = ["chemical_plant", "casino_night"]
+ var themes: Array = ["green_hill", "casino_night"]
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--baseline-atmospheres="): baseline = argument.trim_prefix("--baseline-atmospheres=")
   if argument.begins_with("--output="): output = argument.trim_prefix("--output=")

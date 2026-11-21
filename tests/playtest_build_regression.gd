@@ -1,7 +1,7 @@
 extends SceneTree
 ## Exercise the packaged menu, disk bakes, Buddy draft, HUD and saved Results.
 const Session = preload("res://scripts/prototype/session.gd")
-const THEMES := ["casino_night", "rooftop_run", "green_hill", "aquarium_park", "ice_cap", "chemical_plant"]
+const THEMES := ["green_hill", "casino_night", "ice_cap", "rooftop_run", "aquarium_park"]
 var checks := 0
 var failures := 0
 var output := "user://playtest-verification"
@@ -29,7 +29,7 @@ func run() -> void:
   if argument.begins_with("--playtest-theme="): theme = argument.trim_prefix("--playtest-theme=")
  DirAccess.make_dir_recursive_absolute(output)
  check(ProjectSettings.get_setting("display/window/size/mode") == 3, "Build starts fullscreen")
- check(Session.Run.RunPlan.Configuration.Profile.theme_ids() == THEMES, "Exactly six themes are available")
+ check(Session.Run.RunPlan.Configuration.Profile.theme_ids() == THEMES, "Exactly five themes are available")
  check(Session.Run.RunPlan.Configuration.Profile.character_ids() == ["sonic", "tails"], "Only Sonic and Tails are available")
  var session := Session.new()
  session.settings_path = output.path_join("settings.cfg")

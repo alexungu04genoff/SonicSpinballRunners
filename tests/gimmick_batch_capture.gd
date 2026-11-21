@@ -52,5 +52,5 @@ func run() -> void:
  await RenderingServer.frame_post_draw
  game.view.get_texture().get_image().save_png("res://docs/routing-captures/complete.png")
  game.free()
- print("RESULT | Routing gallery | Eight themes and completed lane state captured")
+ print("RESULT | Routing gallery | Five themes and completed lane state captured")
  quit(0)

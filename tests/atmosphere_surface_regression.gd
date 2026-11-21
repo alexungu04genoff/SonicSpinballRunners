@@ -151,7 +151,7 @@ func check_baked_bindings() -> void:
    check_baked_act(Bake.path_for(path, theme), document, theme, fingerprint)
    cases += 1
   print("ATMOSPHERE_BAKED_THEME | ", theme, " | Acts=", paths.size())
-  check((int(baked_foliage.get(theme, 0)) > 0) == (theme in ["green_hill", "rooftop_run", "sky_sanctuary", "ice_cap", "aquarium_park"]), theme + " baked pool has the audited plant capability")
+  check((int(baked_foliage.get(theme, 0)) > 0) == (theme in ["green_hill", "rooftop_run", "ice_cap", "aquarium_park"]), theme + " baked pool has the audited plant capability")
  print("ATMOSPHERE_BAKED_ACTS | cases=", cases)
 
 func check_trim_controls(panel: Node, theme: String) -> void:

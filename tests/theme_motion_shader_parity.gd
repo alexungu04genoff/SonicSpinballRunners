@@ -2,7 +2,7 @@ extends SceneTree
 ## Render old native equations at fixed TIME samples against neutral overrides.
 ## Optional snapshots override the recorded starting Git revision.
 const STARTING_REVISION := "ecbe1b812f0b0be11b7f3364c83e084fd0424c0a"
-const NAMES := ["green_hill_ocean", "green_hill_cloud", "chemical_reservoir", "rooftop_canal", "sanctuary_clouds", "sanctuary_cloud_volume", "ice_aurora", "ice_snow", "ice_lake", "aquarium_water"]
+const NAMES := ["green_hill_ocean", "green_hill_cloud", "rooftop_canal", "ice_aurora", "ice_snow", "ice_lake", "aquarium_water"]
 var original_directory := "res://test-results/theme-motion/original-shaders"
 var output := "res://test-results/theme-motion/shader-parity.json"
 var view: SubViewport
@@ -55,7 +55,7 @@ func run() -> void:
    push_error("Cannot read original shader from snapshot or Git: " + path)
    failures += 1
    continue
-  if shader_name in ["green_hill_cloud", "sanctuary_cloud_volume", "ice_snow"]:
+  if shader_name in ["green_hill_cloud", "ice_snow"]:
    var sphere := SphereMesh.new()
    sphere.radius = 2.0
    sphere.height = 4.0

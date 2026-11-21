@@ -8,9 +8,6 @@ const RetroControls := preload("res://scripts/retro/retro_controls.gd")
 var retro_filter: RetroFilter
 var retro_controls: CanvasLayer
 var rooftop_materials: CanvasLayer
-var chemical_materials: CanvasLayer
-var sanctuary_materials: CanvasLayer
-var lava_materials: CanvasLayer
 var ice_materials: CanvasLayer
 var aquarium_materials: CanvasLayer
 var fps_label: Label
@@ -97,15 +94,6 @@ func _ready() -> void:
  rooftop_materials = preload("res://experiments/rooftop_lighting/live_materials.gd").new()
  add_child(rooftop_materials)
  rooftop_materials.install(self)
- chemical_materials = preload("res://experiments/chemical_texture_refined/live_controls.gd").new()
- add_child(chemical_materials)
- chemical_materials.install(self)
- sanctuary_materials = preload("res://experiments/sky_texture_choices/live_controls.gd").new()
- add_child(sanctuary_materials)
- sanctuary_materials.install(self)
- lava_materials = preload("res://experiments/lava_texture_refined/live_controls.gd").new()
- add_child(lava_materials)
- lava_materials.install(self)
  ice_materials = preload("res://experiments/ice_texture_refined/live_controls.gd").new()
  add_child(ice_materials)
  ice_materials.install(self)
@@ -259,8 +247,6 @@ func _rebuild_presentation() -> void:
  super._rebuild_presentation()
  character.refresh_playfield()
  if is_instance_valid(rooftop_materials): rooftop_materials.refresh()
- if is_instance_valid(sanctuary_materials): sanctuary_materials.refresh()
- if is_instance_valid(lava_materials): lava_materials.refresh()
  if is_instance_valid(ice_materials): ice_materials.refresh()
  if is_instance_valid(aquarium_materials): aquarium_materials.refresh()
  if player_view:
@@ -596,15 +582,6 @@ func _input(event: InputEvent) -> void:
    get_viewport().set_input_as_handled()
    return
   if is_instance_valid(ice_materials) and not is_source_picker_open() and ice_materials.handle_key(event):
-   get_viewport().set_input_as_handled()
-   return
-  if is_instance_valid(lava_materials) and not is_source_picker_open() and lava_materials.handle_key(event):
-   get_viewport().set_input_as_handled()
-   return
-  if is_instance_valid(sanctuary_materials) and not is_source_picker_open() and sanctuary_materials.handle_key(event):
-   get_viewport().set_input_as_handled()
-   return
-  if is_instance_valid(chemical_materials) and not is_source_picker_open() and chemical_materials.handle_key(event):
    get_viewport().set_input_as_handled()
    return
   if is_instance_valid(rooftop_materials) and not is_source_picker_open() and rooftop_materials.handle_key(event):

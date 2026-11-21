@@ -5,7 +5,7 @@ const Profile = preload("res://scripts/prototype/build_profile.gd")
 const ACTS_PER_ZONE := 3
 var atmosphere_overrides := {}
 var zone_count := 2
-var selected_theme_ids: Array = ["green_hill", "chemical_plant"]
+var selected_theme_ids: Array = []
 var selected_act_paths: Array = []
 var single_act_test := false
 ## Run-local verification option: use the normal validated disk library for one Act.
@@ -71,8 +71,10 @@ func fingerprint() -> String:
 func read_preferences(settings: ConfigFile, available: Array) -> void:
  zone_count = clampi(int(settings.get_value("run_setup", "zone_count", 2)), 1, 7)
  selected_theme_ids = []
- for id: Variant in settings.get_value("run_setup", "selected_themes", Profile.default_themes()):
+ var saved := Array(settings.get_value("run_setup", "selected_themes", Profile.default_themes()))
+ for id: Variant in saved:
   if id in Profile.theme_ids() and id not in selected_theme_ids: selected_theme_ids.append(id)
+ if not saved.is_empty() and selected_theme_ids.is_empty(): selected_theme_ids = Profile.default_themes()
  atmosphere_overrides.clear()
  var saved_variants: Variant = settings.get_value("run_setup", "atmosphere_overrides", {})
  if saved_variants is Dictionary:

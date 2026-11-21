@@ -1,9 +1,9 @@
 extends SceneTree
-## Read-only freshness receipt for the seven-theme diagnostic package.
+## Read-only freshness receipt for the base-game diagnostic package.
 const Bake = preload("res://scripts/endless/geometry_bake.gd")
 const Plan = preload("res://scripts/endless/endless_plan.gd")
 const Document = preload("res://scripts/act_editor/act_geometry.gd")
-const THEMES := ["green_hill", "chemical_plant", "rooftop_run", "casino_night", "sky_sanctuary", "ice_cap", "aquarium_park"]
+const THEMES := ["green_hill", "casino_night", "ice_cap", "rooftop_run", "aquarium_park"]
 func _initialize() -> void:
  run.call_deferred()
 func run() -> void:

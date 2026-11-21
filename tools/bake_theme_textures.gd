@@ -22,24 +22,11 @@ func source(theme: String, surface: String) -> Dictionary:
  var repeat_size: Vector2 = Vector2(config.wall, Sets.DEPTH) if vertical else config.floor
  if surface == "ramp":
   repeat_size = config.ramp
-  if theme == "chemical_plant": name = "chemical_ramp_panels"
-  elif theme == "casino_night": name = "casino_ramp_cards"
-  elif theme == "sky_sanctuary":
-   name = "ramp_deck"
-   parameters.merge({"surface_kind": 2, "base_color": Color("40646f"), "alternate_color": Color("829d9e")})
+  if theme == "casino_night": name = "casino_ramp_cards"
   else: parameters.raised_surface = theme != "ice_cap"
  var code := FileAccess.get_file_as_string("res://scripts/themes/" + name + ".gdshader")
  # Make the initial recipes tileable while retaining their existing visual motifs.
  # Runtime reads the images; these adjustments are not extra procedural shading.
- if prefix == "lava":
-  var rock := FileAccess.get_file_as_string("res://scripts/themes/lava_rock.gdshaderinc")
-  rock = rock.replace("sin(dot(p,", "sin(dot(mod(p, vec2(8.0)),")
-  code = code.replace('#include "res://scripts/themes/lava_rock.gdshaderinc"', rock)
- if prefix == "sanctuary":
-  code = code.replace("vec2 cell = floor(p);", "vec2 cell = mod(floor(p), vec2(14.0));")
-  code = code.replace("vec2(2.8, 4.8)", "vec2(4.117647059, 4.8)")
-  code = code.replace("p.x * 150.0", "p.x * 44.351896286")
-  code = code.replace("p.x * 3.1", "p.x * 2.941176471")
  if prefix == "ice":
   code = code.replace("p.x * 1.8 +", "p.x * 1.570796327 +").replace("p.y * 1.1", "p.y * 0.785398163")
   code = code.replace("p.y * 2.2 - p.x * 0.65", "p.y * 2.35619449 - p.x * 0.785398163")

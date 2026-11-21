@@ -54,10 +54,10 @@ func run() -> void:
   check(ids.size() == 3 and zone_ids.size() == 3, "Every Zone chooses three different authored Acts")
   if not themes.is_empty(): check(themes.back() != zone_a[0].theme, "No adjacent theme repeat")
   themes.append(zone_a[0].theme)
-  if themes.size() == 8:
+  if themes.size() == Plan.Registry.IDS.size():
    var unique := {}
    for theme: String in themes: unique[theme] = true
-   check(unique.size() == 8, "Theme bag visits all eight themes")
+   check(unique.size() == Plan.Registry.IDS.size(), "Theme bag visits every base-game theme")
    themes.clear()
  check(seen_acts.size() == documents.size(), "The seeded run visits every registered Act")
  var tuning := PhysicsTuning.new()

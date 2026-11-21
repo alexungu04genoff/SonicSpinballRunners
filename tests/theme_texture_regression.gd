@@ -44,10 +44,7 @@ func _initialize() -> void:
      var settings := ConfigFile.new()
      check(settings.load(texture.resource_path + ".import") == OK and settings.get_value("params", "mipmaps/generate", false) and settings.get_value("params", "compress/mode", -1) == 0, "Texture retains lossless mipmapped import: " + texture.resource_path)
    if i == 4:
-    # The selected Chemical shader names its normalized-width route mode 2;
-    # the shared terrain shader uses 3/4 and Casino's selected shader uses 3.
-    var selected_chemical := id == "chemical_plant" and mat.shader.code.contains("if (mapping == 2) uv = vec2(UV2.x, UV.y / repeat_size.y);")
-    check(mat.get_shader_parameter("mapping") == 2 if selected_chemical else mat.get_shader_parameter("mapping") in [3, 4], "Ramp image follows route instead of world coordinates: " + id)
+    check(mat.get_shader_parameter("mapping") in [3, 4], "Ramp image follows route instead of world coordinates: " + id)
  p.free()
  print("RESULT | Theme texture coverage | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)

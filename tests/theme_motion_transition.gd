@@ -23,7 +23,7 @@ func run() -> void:
  preload("res://scripts/diagnostics/shadow_review.gd").position_review_window(root)
  DirAccess.make_dir_recursive_absolute(output)
  preload("res://scripts/rendering_options.gd").settings_path = output.path_join("graphics.cfg")
- for pair: Array in [["green_hill", "chemical_plant"], ["rooftop_run", "casino_night"], ["sky_sanctuary", "aquarium_park"], ["ice_cap", "ice_cap"], ["rooftop_run", "rooftop_run"]]:
+ for pair: Array in [["green_hill", "casino_night"], ["rooftop_run", "casino_night"], ["ice_cap", "aquarium_park"], ["ice_cap", "ice_cap"], ["rooftop_run", "rooftop_run"]]:
   await inspect_pair(pair)
  FileAccess.open(output.path_join("manifest.json"), FileAccess.WRITE).store_string(JSON.stringify({"checks":checks,"failures":failures,"records":records,"renderer":Report.metadata()}, "  "))
  print("RESULT | Theme motion transitions | %d checks | %d failures" % [checks, failures])

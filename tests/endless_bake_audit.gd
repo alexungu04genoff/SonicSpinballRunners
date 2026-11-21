@@ -3,8 +3,8 @@ extends SceneTree
 const Bake = preload("res://scripts/endless/geometry_bake.gd")
 const Plan = preload("res://scripts/endless/endless_plan.gd")
 const Document = preload("res://scripts/act_editor/act_geometry.gd")
-const SELECTED_TAGS := {"sky_sanctuary": "sky_selected", "ice_cap": "ice_selected",
- "lava_reef": "lava_selected", "aquarium_park": "aquarium_selected"}
+const SELECTED_TAGS := {"ice_cap": "ice_selected",
+ "aquarium_park": "aquarium_selected"}
 var checks := 0
 var failures := 0
 var variants := 0

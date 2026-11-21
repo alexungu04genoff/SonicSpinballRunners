@@ -38,5 +38,5 @@ func run() -> void:
  game.view.get_texture().get_image().save_png("res://docs/gimmick-captures/open.png")
  game.free()
  await frames(3)
- print("RESULT | Gimmick presentation | Eight themes and open gate captured")
+ print("RESULT | Gimmick presentation | Five themes and open gate captured")
  quit()

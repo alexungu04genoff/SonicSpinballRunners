@@ -17,7 +17,7 @@ func check(ok: bool, label: String) -> void:
   push_error(label)
 
 func run() -> void:
- check(Registry.IDS.size() == 7 and "lava_reef" not in Registry.IDS, "Seven-theme scope excludes Lava Reef")
+ check(Registry.IDS == ["green_hill", "casino_night", "ice_cap", "rooftop_run", "aquarium_park"], "Motion supports the five base-game themes in roster order")
  for theme: String in Registry.IDS:
   var owner := Motion.new()
   owner.configure(theme)

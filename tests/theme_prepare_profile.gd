@@ -7,7 +7,7 @@ func _initialize() -> void:
  call_deferred("run")
 
 func run() -> void:
- var theme := "chemical_plant"
+ var theme := "casino_night"
  var output := "res://test-results/theme-prepare.json"
  for arg: String in OS.get_cmdline_user_args():
   if arg.begins_with("--profile-theme="): theme = arg.trim_prefix("--profile-theme=")

@@ -2,7 +2,7 @@
 param(
     [string]$GodotPath = 'C:\Program Files\Godot\Godot.exe',
     [string]$OutputDirectory = '',
-    [string[]]$Themes = @('green_hill','chemical_plant','rooftop_run','casino_night','sky_sanctuary','ice_cap','aquarium_park'),
+    [string[]]$Themes = @('green_hill','rooftop_run','casino_night','ice_cap','aquarium_park'),
     [switch]$Capture,
     [switch]$Bake,
     [switch]$BenchmarkOnly,
@@ -17,7 +17,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $project = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$allowed = @('green_hill','chemical_plant','rooftop_run','casino_night','sky_sanctuary','ice_cap','aquarium_park')
+$allowed = @('green_hill','rooftop_run','casino_night','ice_cap','aquarium_park')
 if (-not $Themes.Count -or @($Themes | Where-Object { $_ -notin $allowed }).Count) { throw 'Select only the seven included Motion Lab themes.' }
 if (-not $OutputDirectory) { $OutputDirectory = Join-Path $project ('test-results\theme-motion\' + (Get-Date -Format 'yyyyMMdd-HHmmss')) }
 $output = [IO.Path]::GetFullPath($OutputDirectory)

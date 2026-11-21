@@ -11,7 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ENGINE = Path("C:/Program Files/Godot/Godot.exe")
 COMPILER = Path("C:/Windows/Microsoft.NET/Framework64/v4.0.30319/csc.exe")
-THEMES = ("green_hill", "chemical_plant")
+THEMES = ("green_hill", "casino_night")
 CODE = {".gd", ".uid", ".gdshader", ".gdshaderinc", ".tscn", ".tres", ".cfg"}
 
 

@@ -9,7 +9,7 @@ var receipt := {}
 class SelectedEndless extends "res://scripts/endless/endless_game.gd":
  var motion_zone := 0
  func _next_planned_zone(documents: Array) -> Array[Dictionary]:
-  planner.themes = [["rooftop_run", "casino_night", "sky_sanctuary"][motion_zone % 3]]
+  planner.themes = [["rooftop_run", "casino_night", "ice_cap"][motion_zone % 3]]
   motion_zone += 1
   return planner.next_zone(documents)
 

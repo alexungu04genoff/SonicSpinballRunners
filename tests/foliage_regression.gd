@@ -2,7 +2,7 @@ extends SceneTree
 const Bindings := preload("res://scripts/atmosphere/material_bindings.gd")
 const Registry := preload("res://scripts/atmosphere/variants.gd")
 const OUTPUT := "res://test-results/foliage"
-const SUPPORTED := ["green_hill", "rooftop_run", "sky_sanctuary", "ice_cap", "aquarium_park"]
+const SUPPORTED := ["green_hill", "rooftop_run", "ice_cap", "aquarium_park"]
 var checks := 0
 var failures := 0
 func _initialize() -> void: call_deferred("run")

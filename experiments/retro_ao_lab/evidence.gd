@@ -36,7 +36,7 @@ func run(owner: Node) -> void:
    lab.theme = id
    if not await lab.open_game(): break
    await compare(id, false)
-   if id in ["chemical_plant","casino_night","aquarium_park"]: await lighting_control(id)
+   if id in ["casino_night","aquarium_park"]: await lighting_control(id)
    if id == "rooftop_run": await motion_strip(id)
    if id == "aquarium_park": transparency_control()
    await close_case()

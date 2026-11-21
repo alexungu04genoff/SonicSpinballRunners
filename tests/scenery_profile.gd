@@ -35,7 +35,7 @@ func run() -> void:
  panel.fps_overlay.hide()
  panel.reopen.hide()
  game.presentation.set_process(false)
- for theme_id: String in ["green_hill", "chemical_plant", "sky_sanctuary", "ice_cap", "casino_night", "rooftop_run"]:
+ for theme_id: String in ["green_hill", "ice_cap", "casino_night", "rooftop_run"]:
   game.set_theme(theme_id)
   panel.reset_values()
   game.presentation.set_process(false)
