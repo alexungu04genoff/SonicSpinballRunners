@@ -9,7 +9,7 @@ const FEATURED_FAMILIES := {
  "one_way_gate": "One-Way Gate", "diverter": "Diverter", "elevated_rail": "Elevated Rail",
  "dash_panel": "Dash Panel", "spinner": "Spinner", "lane_barrier": "Lane Barrier",
  "moving_bumper": "Moving Bumper", "score_chute": "Score Chute", "magnetic_field": "Magnetic Field",
- "launch_tube": "Launch Tube",
+ "launch_tube": "Launch Tube", "sonic_loop": "Loop-de-loop",
 }
 
 static func summarize(document: Resource) -> Dictionary:

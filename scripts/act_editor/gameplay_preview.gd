@@ -17,6 +17,24 @@ static func draw_object(target: CanvasItem, placement: Dictionary, anchor: Vecto
  var definition: Dictionary = Objects.get_definition(str(placement.get("type", "")))
  if definition.is_empty():
   return
+ if placement.type == "sonic_loop":
+  var props := Objects.properties(placement)
+  var points := rotated_points(placement, cell_size)
+  for i in points.size(): points[i] = anchor + points[i] * scale_factor
+  var color := SELECTION_COLOR if selected else Color(definition.color, 0.6 if ghost else 1.0)
+  target.draw_polyline(points, color, 2.0, true)
+  var forward := Objects.forward(placement)
+  var unit := float(props.scale) * scale_factor
+  var half_mouth := forward.orthogonal() * Objects.LoopPath.HALF_WIDTH * unit
+  target.draw_line(anchor - half_mouth, anchor + half_mouth, color, 3.0)
+  if annotations:
+   for side: float in [-1.0, 1.0]:
+    target.draw_dashed_line(anchor, anchor - forward.rotated(side * Objects.LoopPath.CONE) * 60.0 * unit, color, 1.0, 5.0)
+   _arrow(target, anchor - forward * 36.0 * unit, anchor, color)
+   _arrow(target, points[12], points[15], color)
+   _arrow(target, points[-1], points[-1] + forward * 25.0 * unit, Color("82ffd1"))
+   target.draw_string(ThemeDB.fallback_font, anchor + Vector2(6, 14), "%s×   %d pts   ≥%.0f px/s   ±30°" % [str(props.scale), int(props.completion_score), props.entry_speed], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, color)
+  return
  if placement.type == "moving_bumper" and annotations:
   var props := Objects.properties(placement)
   var left := anchor + Vector2.RIGHT * float(props.patrol_left) * scale_factor

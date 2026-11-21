@@ -283,6 +283,9 @@ func build_study(_p: Node3D, parent: Node3D, origin: Vector3) -> void:
   prop.position = Vector3(side * 1.0, 0.04, -0.9)
   prop.scale = Vector3.ONE * 0.65
 
+func terrain_bank_material() -> Material:
+ return _texture_material("facade", Vector2(1.7, 1.0), false)
+
 func ramp_materials() -> Dictionary:
  return {"deck": _texture_material("ramp", Vector2(1.2, 1.2), false),
   "edge": material_maps.guard(), "support": material(Color("b69b77")), "accent": material(Color("fff0c7")), "fascia": material_maps.guard()}

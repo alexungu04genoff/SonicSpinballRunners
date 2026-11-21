@@ -357,6 +357,16 @@ func _flower(base: Vector3, size: float, target: Node3D = null) -> void:
  if theme_definition.has_method("_flower"):
   theme_definition._flower(self, base, size, target)
 
+func loop_materials() -> Dictionary:
+ if decor_skin != null and decor_skin.has_method("loop_materials"): return decor_skin.loop_materials()
+ var style := ramp_materials()
+ return {"track": style.deck, "wall": theme_definition.terrain_bank_material(), "crown": style.deck, "wrap_face": true}
+
+func terrain_ramp_materials() -> Dictionary:
+ if decor_skin != null and decor_skin.has_method("loop_materials"): return super.terrain_ramp_materials()
+ var style := ramp_materials()
+ return {"deck": style.deck, "wall": theme_definition.terrain_bank_material(), "trim": style.get("border", style.edge)}
+
 func ramp_materials() -> Dictionary:
  var result: Dictionary = theme_definition.ramp_materials()
  if not result.has("border"):
@@ -385,7 +395,7 @@ func _paddle(length: float, radius: float, height: float, base: float, mat: Mate
 
 func _prism(points: PackedVector2Array, height: float, side_mat: Material, top_mat: Material) -> ArrayMesh:
  var mesh := super._prism(points, height, side_mat, top_mat)
- if (theme_definition is GreenHillTheme or theme_definition.theme_id in ["casino_night", "sky_sanctuary", "aquarium_park", "ice_cap"]) and side_mat == theme_definition.side_material:
+ if (theme_definition is GreenHillTheme or theme_definition.theme_id in ["casino_night", "aquarium_park", "ice_cap"]) and side_mat == theme_definition.side_material:
   mesh = theme_definition.wrap_wall_mesh(mesh, points)
  # Authored terrain adds its own bands after unioning outlines. Generated wall
  # flipper housings bypass that path and need a cap band on their existing mesh.

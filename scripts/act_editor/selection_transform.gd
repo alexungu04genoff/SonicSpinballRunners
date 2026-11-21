@@ -140,6 +140,9 @@ static func mirror(document: Resource, selection: Dictionary, pivot: Vector2, ho
    # Reflection of local X, followed by a rotation, also reflects UP-facing forces.
    item.rotation_degrees = (0.0 if horizontal else 180.0) - angle
    if item.type == "triangle_bumper": props.mirror_x = not props.get("mirror_x", false)
+   elif item.type == "sonic_loop":
+    item.rotation_degrees += 180.0
+    props.direction = "counter-clockwise" if props.direction == "clockwise" else "clockwise"
    elif item.type in ["elevated_rail", "lane_barrier", "launch_tube"]:
     for point in props.points.size(): props.points[point] = Vector2(-props.points[point].x, props.points[point].y)
    elif item.type == "teleporter":

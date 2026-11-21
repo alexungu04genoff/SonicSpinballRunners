@@ -12,7 +12,7 @@ static func validation_error(value: Variant) -> String:
    return "Adjacent rail points must be at least 12 pixels apart."
  return ""
 
-static func build(control: PackedVector2Array) -> Dictionary:
+static func build(control: PackedVector2Array, terrain_ramp := false) -> Dictionary:
  var points := PackedVector2Array()
  var lengths := PackedFloat32Array([0.0])
  # Preview callers transform these samples in place, including a one-point draft.
@@ -28,7 +28,7 @@ static func build(control: PackedVector2Array) -> Dictionary:
    points.append(0.5 * ((2.0 * b) + (-a + c) * t + (2.0 * a - 5.0 * b + 4.0 * c - d) * t * t + (-a + 3.0 * b - 3.0 * c + d) * t * t * t))
  points.append(control[-1])
  for i in range(1, points.size()): lengths.append(lengths[-1] + points[i].distance_to(points[i - 1]))
- return {"points": points, "lengths": lengths, "length": float(lengths[-1])}
+ return {"points": points, "lengths": lengths, "length": float(lengths[-1]), "terrain_ramp": terrain_ramp}
 
 static func sample(path: Dictionary, distance: float) -> Vector2:
  var d := clampf(distance, 0.0, path.length)
@@ -43,4 +43,5 @@ static func tangent(path: Dictionary, distance: float) -> Vector2:
 
 static func height(path: Dictionary, distance: float, peak: float) -> float:
  var f := clampf(distance / maxf(1.0, path.length), 0.0, 1.0)
+ if path.get("terrain_ramp", false): return peak * sin(PI * f) ** 2
  return peak * smoothstep(0.0, 0.22, f) * smoothstep(0.0, 0.22, 1.0 - f)

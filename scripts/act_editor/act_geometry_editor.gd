@@ -2562,6 +2562,20 @@ func _refresh_mechanics_properties() -> void:
 				canvas.queue_redraw())
 			mechanics_properties.add_child(timings)
 	var properties := Objects.properties(item)
+	if item.type == "sonic_loop":
+		_mechanic_choice("Traversal", "direction", ["clockwise", "counter-clockwise"], properties.direction)
+		var markers := CheckBox.new()
+		markers.text = "Decorative Ring markers"
+		markers.button_pressed = properties.ring_markers
+		markers.toggled.connect(func(value: bool): set_gameplay_property.call_deferred("ring_markers", value))
+		mechanics_properties.add_child(markers)
+		if canvas.gameplay_brush.is_empty():
+			var warning: String = preload("res://scripts/authored_act/loop_clearance.gd").editor_warning(document, item)
+			if not warning.is_empty():
+				var message := Label.new()
+				message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+				message.text = warning
+				mechanics_properties.add_child(message)
 	if item.type == "teleporter":
 		var help := Label.new()
 		help.text = "Select the entrance, then drag OUT. Exit X/Y are local offsets; Exit angle rotates its arrow. No minimum speed. Leave the arrival area before another transfer."
@@ -2590,6 +2604,13 @@ func _refresh_mechanics_properties() -> void:
 		stationary.pressed.connect(func(): set_enemy_patrol(canvas.selected_gameplay_index, Vector2.ZERO))
 		mechanics_properties.add_child(stationary)
 	if item.type == "elevated_rail":
+		var terrain := CheckBox.new()
+		terrain.name = "TerrainRamp"
+		terrain.text = "Terrain ramp"
+		terrain.tooltip_text = "Build a continuous hill with the stage surface and sides that meet the floor."
+		terrain.button_pressed = properties.terrain_ramp
+		terrain.toggled.connect(func(value: bool): set_gameplay_property.call_deferred("terrain_ramp", value))
+		mechanics_properties.add_child(terrain)
 		var clearance := CheckBox.new()
 		clearance.name = "TerrainClearance"
 		clearance.text = "Terrain clearance (lower crossing)"

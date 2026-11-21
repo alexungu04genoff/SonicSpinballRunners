@@ -280,6 +280,9 @@ func _batch(root: Node3D, scheduler: Node = null) -> void:
   instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
   root.add_child(instance)
 
+func terrain_bank_material() -> Material:
+ return Selected.surface("3A", 2, Vector2(1.2, 1.0))
+
 func ramp_materials() -> Dictionary:
  # Alex replaced the patterned crystal guards with the existing matte snow.
  var guard: StandardMaterial3D = _library.materials.snow.duplicate()

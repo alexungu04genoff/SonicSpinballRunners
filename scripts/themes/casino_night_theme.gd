@@ -167,6 +167,9 @@ func build_edges(p: Node3D) -> void:
  p.scenery_group_count = layout.occupied.size()
  await _batch_background(local, p)
 
+func terrain_bank_material() -> Material:
+ return Selected.surface("3A", 2, Vector2(0.96, 1.0))
+
 func ramp_materials() -> Dictionary:
  return {"deck": _ramp_deck_material, "border": _ramp_guard_material,
   "edge": material(Color("e7bd62")), "support": material(Color("742641")),

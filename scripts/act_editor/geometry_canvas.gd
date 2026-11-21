@@ -647,12 +647,13 @@ func gameplay_hit_indices_at(local_position: Vector2) -> Array[int]:
   var point := pixel_position - Vector2(placement.position)
   if points.size() < 2:
    continue
-  if placement.type not in ["elevated_rail", "lane_barrier", "launch_tube"] and Geometry2D.is_point_in_polygon(point, points):
+  if placement.type not in ["elevated_rail", "lane_barrier", "launch_tube", "sonic_loop"] and Geometry2D.is_point_in_polygon(point, points):
    hits.append(index)
    continue
-  for segment in (points.size() - 1 if placement.type in ["elevated_rail", "lane_barrier", "launch_tube"] else points.size()):
+  for segment in (points.size() - 1 if placement.type in ["elevated_rail", "lane_barrier", "launch_tube", "sonic_loop"] else points.size()):
    var nearest := Geometry2D.get_closest_point_to_segment(point, points[segment], points[(segment + 1) % points.size()])
    var hit_width := maxf(tolerance, float(Objects.properties(placement).width) * 0.5) if placement.type in ["elevated_rail", "launch_tube"] else (maxf(tolerance, float(Objects.properties(placement).post_radius)) if placement.type == "lane_barrier" else tolerance)
+   if placement.type == "sonic_loop": hit_width = maxf(tolerance, Objects.LoopPath.HALF_WIDTH * float(Objects.properties(placement).scale))
    if nearest.distance_to(point) <= hit_width:
     hits.append(index)
     break
@@ -1783,7 +1784,7 @@ func _finish_box_selection() -> void:
     var points := PackedVector2Array()
     for point: Vector2 in ObjectPreview.rotated_points(placement, _local_cell_size()):
      points.append(local_pixels_to_screen(placement.position + point))
-    if _box_hits_points(box, points, placement.type not in ["elevated_rail", "lane_barrier", "launch_tube"]):
+    if _box_hits_points(box, points, placement.type not in ["elevated_rail", "lane_barrier", "launch_tube", "sonic_loop"]):
      if not selection.gameplay.has(index): selection.gameplay.append(index)
   if show_rings:
    for index in document.ring_trails.size():

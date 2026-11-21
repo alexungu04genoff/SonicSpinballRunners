@@ -37,11 +37,17 @@ var table_bounds: Rect2
 var camera_target: Vector2
 var camera_focus: Vector2
 var _camera_offset: Vector3
+var _follow_basis := Basis.IDENTITY
+var _loop_frame := Transform3D.IDENTITY
+var _loop_subject := {}
+var _loop_blend := 0.0
 var _camera_viewport_size: Vector2
 var ball: PlaygroundBall
 var flippers: Array[PlaygroundFlipper] = []
 var ring_field: RingField
 var ball_visual: MeshInstance3D
+var _track_roll := Basis.IDENTITY
+var _was_on_track := false
 var flipper_visuals: Array[Node3D] = []
 var flipper_retracted_visuals: Array[Node3D] = []
 var ring_visuals: Array[MeshInstance3D] = []
@@ -354,6 +360,8 @@ func set_camera_value(key: String, value: float) -> void:
 func reset_camera(at: Vector2 = Vector2.INF) -> void:
  if not is_instance_valid(camera):
   return
+ _loop_blend = 0.0
+ _loop_subject = {}
  var point := ball.position if at == Vector2.INF else at
  camera_focus = _clamp_focus(Vector2(_horizontal_follow_target(point.x), point.y)) if camera_follow_enabled else table_bounds.get_center()
  if not camera_follow_enabled and overview_focus != Vector2.INF:
@@ -429,6 +437,7 @@ func _configure_camera() -> void:
    _camera_offset /= overview_zoom
   camera.position = map_point(camera_focus) + _camera_offset
   camera.look_at(map_point(camera_focus))
+ _follow_basis = camera.basis
  camera.far = _camera_offset.length() + table_bounds.size.length() * SCALE + 10.0
 
 func _update_camera(delta: float) -> void:
@@ -439,6 +448,7 @@ func _update_camera(delta: float) -> void:
    camera.position = map_point(camera_focus) + _camera_offset
  if not camera_follow_enabled or delta <= 0.0:
   return
+ if _loop_blend > 0.0: camera.basis = _follow_basis
  # The ball only supplies observations. No transform or impulse is written to physics.
  var desired := _framed_focus(Vector2(_horizontal_follow_target(ball.position.x), ball.position.y))
  camera_target = camera_focus
@@ -459,6 +469,30 @@ func _update_camera(delta: float) -> void:
  # after the normal movement cap, including at 1x zoom and after long frames.
  camera_focus = _keep_ball_in_view(_clamp_focus(camera_focus))
  camera.position = map_point(camera_focus) + _camera_offset
+ if camera_preset != CameraPreset.TOP_DOWN and (ball.in_loop or _loop_blend > 0.0):
+  _frame_loop(step)
+ else: _loop_blend = 0.0
+
+func _frame_loop(delta: float) -> void:
+ # The ordinary close camera can crop the crown of an upright Loop. Hold the
+ # entire opening in view during the ride and ease back to the live follow pose.
+ if ball.in_loop and not is_same(ball.loop_item, _loop_subject):
+  var path := preload("res://scripts/authored_act/loop_path.gd")
+  var item := ball.loop_item
+  _loop_subject = item
+  var size := float(item.properties.scale)
+  var crest := path.sample(item, path.LENGTH * size * 0.5)
+  var r := path.RADIUS * size
+  var focus := Vector3(crest.x, r + ball.radius, crest.z) * SCALE
+  var face := Vector2.RIGHT.rotated(deg_to_rad(float(item.rotation_degrees)))
+  if face.y < 0.0: face = -face
+  var yaw := clampf(atan2(face.x, face.y), -PI * 0.28, PI * 0.28)
+  var sight := Vector3(0, sin(deg_to_rad(24)), cos(deg_to_rad(24))).rotated(Vector3.UP, yaw)
+  var distance := maxf(_camera_offset.length(), (1.58 * r + 2.0 * ball.radius) * SCALE / tan(deg_to_rad(camera.fov) * 0.5))
+  _loop_frame = Transform3D(Basis.looking_at(-sight), focus + sight * distance)
+ elif not ball.in_loop: _loop_subject = {}
+ _loop_blend = move_toward(_loop_blend, 1.0 if ball.in_loop else 0.0, delta * (3.8 if ball.in_loop else 3.0))
+ camera.transform = camera.transform.interpolate_with(_loop_frame, smoothstep(0, 1, _loop_blend))
 
 func _framed_focus(focus: Vector2, at: Vector2 = Vector2.INF) -> Vector2:
  var point := ball.position if at == Vector2.INF else at
@@ -595,8 +629,13 @@ func _process(delta: float) -> void:
  _update_camera(delta)
  ball_visual.position = map_point(ball.position, ball_height())
  var travel: Vector2 = ball.position - _last_ball_position
- if travel.length() > 0.001 and travel.length() < 100:
+ if ball.has_track_frame:
+  if not _was_on_track: _track_roll = ball.track_frame.inverse() * ball_visual.basis
+  _track_roll = _track_roll.rotated(Vector3.LEFT, ball.track_speed * delta / ball.radius)
+  ball_visual.basis = ball.track_frame * _track_roll
+ elif travel.length() > 0.001 and travel.length() < 100:
   ball_visual.rotate(Vector3(travel.y, 0, -travel.x).normalized(), travel.length() / ball.radius)
+ _was_on_track = ball.has_track_frame
  _last_ball_position = ball.position
  for i in flippers.size():
   flipper_visuals[i].rotation.y = -flippers[i].rotation
@@ -639,6 +678,14 @@ func _debug_circle(center: Vector2, radius: float) -> void:
 func ramp_materials() -> Dictionary:
  return {"deck": material(Color("9bb9c8")), "edge": material(Color("587788")),
   "support": material(Color("4c647b")), "accent": material(Color("dbe7ef"))}
+
+func loop_materials() -> Dictionary:
+ var materials := ramp_materials()
+ return {"track": materials.deck, "wall": materials.edge, "crown": materials.accent}
+
+func terrain_ramp_materials() -> Dictionary:
+ var materials := loop_materials()
+ return {"deck": materials.track, "wall": materials.wall, "trim": materials.crown}
 
 func _pinball_theme_id() -> String:
  # Base and themed renderers share hardware without depending on theme scripts.

@@ -3,6 +3,12 @@ extends Node
 var runtimes: Array[Node] = []
 var rail_owner: Node
 
+func cancel_loop(runtime: Node, safe_spawn: Vector2) -> void:
+ if rail_owner == runtime and runtime.ramp.get("type") == "sonic_loop":
+  runtime.leave_ramp()
+  rail_owner = null
+  runtime.ball.teleport_to(safe_spawn, Vector2.ZERO, true)
+
 func reset() -> void:
  for runtime: Node in runtimes: runtime.reset()
  rail_owner = null
@@ -35,8 +41,10 @@ func observe_motion(state: PhysicsDirectBodyState2D) -> bool:
  return false
 
 func advance_ramp(state: PhysicsDirectBodyState2D, delta: float) -> void:
- if is_instance_valid(rail_owner):
-  rail_owner.advance_ramp(state, delta)
-  if rail_owner.ramp.is_empty():
-   rail_owner = null
-   reset_motion()
+ var owner := rail_owner
+ if not is_instance_valid(owner): return
+ owner.advance_ramp(state, delta)
+ # A blocked return can reset the Ball (and clear this owner) inside advance.
+ if rail_owner == owner and owner.ramp.is_empty():
+  rail_owner = null
+  reset_motion()

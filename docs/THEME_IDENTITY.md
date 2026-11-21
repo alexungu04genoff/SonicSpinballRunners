@@ -1,5 +1,9 @@
 # Theme identity: one imaginary SEGA game
 
+## Current art scope — 2026-11-21
+
+The five base-game stages are Green Hill, Casino Night, Ice Cap, Rooftop Run and Aquarium Park. Their [terrain ramps and Loops](LOOP_WORKSHOP.md) reuse the selected stage materials. Earlier comparison sheets below preserve their original roster.
+
 ## Larger environments after texturing — 2026-11-17
 
 The latest Green Hill screenshot review removes the remaining raised loop-entry cap by tapering the approaches into the grass. Offshore cliffs retain their faceted silhouettes with correctly proportioned checker UVs; small existing palm, rock and sunflower groups give the four distant islands readable landmarks. [Updated matched comparison](green-hill-seams-20261117/green_hill.jpg).

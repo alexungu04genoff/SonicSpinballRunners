@@ -10,6 +10,7 @@ const SAMPLE_SPEED := 300.0
 
 static func description(type: String) -> String:
  return {"spring": "Fixed launch speed · forward-face contact",
+  "sonic_loop": "Cross the mouth inside the marked cone at the indicated forward speed. The exit arrow shows the release direction.",
   "moving_bumper": "End contact at midpoint · return shown for rightward travel",
   "score_chute": "Downward entry · three awards · drops from the bottom",
   "terrain": "300 px/s contact · sample exposed edges · wall restitution",
@@ -155,7 +156,7 @@ static func _rebound(origin: Vector2, normal: Vector2, stats: Dictionary, preser
 
 static func _rail_shot(item: Dictionary, stats: Dictionary) -> Dictionary:
  var props := Objects.properties(item)
- var path := Objects.RailPath.build(props.points)
+ var path := Objects.RailPath.build(props.points, props.get("terrain_ramp", false))
  var angle := deg_to_rad(float(item.rotation_degrees))
  # Match the runtime's fixed-step rail integration in world coordinates.
  for i in path.points.size(): path.points[i] = Vector2(item.position) + path.points[i].rotated(angle)

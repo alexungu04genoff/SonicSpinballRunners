@@ -168,6 +168,11 @@ func _turf_loop(root: Node3D, apron_reach := 1.52) -> void:
     soil.set_uv(Vector2(vertex.x, vertex.y))
     soil.add_vertex(vertex)
   _quad(soil, at - across + down, tip - across, tip + across, at + across + down, end > 0)
+ var skin := loop_materials()
+ presentation.mesh_node(soil.commit(), skin.wall, Vector3.ZERO, root).name = "CheckerCliff"
+ presentation.mesh_node(turf.commit(), skin.track, Vector3.ZERO, root).name = "ContinuousTurfTrack"
+
+func loop_materials() -> Dictionary:
  if _loop_soil == null:
   _loop_soil = presentation.theme_definition._texture_material("3A", Vector2(0.64, 0.64), false)
   # Production bakes use flat turf. The existing UV surface shader preserves
@@ -175,8 +180,7 @@ func _turf_loop(root: Node3D, apron_reach := 1.52) -> void:
   _loop_turf = _loop_soil.duplicate()
   _loop_turf.set_shader_parameter("surface_texture", presentation.theme_definition._selected_texture("5B"))
   _loop_turf.set_shader_parameter("repeat_size", Vector2(2, 2))
- presentation.mesh_node(soil.commit(), _loop_soil, Vector3.ZERO, root).name = "CheckerCliff"
- presentation.mesh_node(turf.commit(), _loop_turf, Vector3.ZERO, root).name = "ContinuousTurfTrack"
+ return {"wall": _loop_soil, "track": _loop_turf, "crown": _loop_turf}
 
 func _quad(surface: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3, reverse := false, coordinates := PackedVector2Array()) -> void:
  var normal := (d - a).cross(b - a).normalized() * (-1.0 if reverse else 1.0)

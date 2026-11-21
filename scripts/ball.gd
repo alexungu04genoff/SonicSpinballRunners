@@ -19,12 +19,19 @@ var launch_tube: Node
 ## Optional shared type action adapter; never owns transforms or collision shapes.
 var type_action_controller: Node
 var on_ramp := false
+var loop_item: Dictionary = {}
+var in_loop: bool:
+ get: return not loop_item.is_empty()
 ## Ball-owned so neighboring streamed Acts cannot recursively transfer it.
 var teleporter_cooldown := 0.0
 var teleporter_arrival := Vector2.INF
 var transfer_serial := 0
 ## Elevation in physics pixels, consumed only by collisionless presentation.
 var ramp_height := 0.0
+## Frame of the running surface and signed travel speed for the character renderer.
+var track_frame := Basis.IDENTITY
+var track_speed := 0.0
+var has_track_frame := false
 var tuning: PhysicsTuning
 var controls: PlaygroundInput
 var steering_contribution: float = 0.0

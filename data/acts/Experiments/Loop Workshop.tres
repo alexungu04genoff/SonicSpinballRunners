@@ -1,0 +1,58 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=3]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+format_version = 19
+library_version = 2
+title = "Loop Workshop"
+grid_size = Vector2i(16, 16)
+cell_size = 50.0
+design_thesis = "Yellow spring feeds the opening hill and loop. Shoot the left flipper up the return ramp or the right flipper into the angled loop. At the small mouth, blue is too slow and red is too oblique. Shoot up-right for the tall loop."
+placements = [{
+"shape_id": "composite", "base_size": Vector2i(16, 16), "anchor": Vector2i(0, 0), "quarter_turns": 0, "flip_h": false, "flip_v": false, "composite_version": 1, "smoothing_strength": 0.0,
+"outline": PackedVector2Array(0, 0, 0.35, 0, 0.35, 12.5, 3.8, 14.1, 3.6, 14.45, 0, 12.8)
+}, {
+"shape_id": "composite", "base_size": Vector2i(16, 16), "anchor": Vector2i(0, 0), "quarter_turns": 0, "flip_h": false, "flip_v": false, "composite_version": 1, "smoothing_strength": 0.0,
+"outline": PackedVector2Array(15.65, 0, 16, 0, 16, 12.7, 10.7, 14.2, 10.55, 13.87, 15.65, 12.4)
+}]
+gameplay_objects = [{
+"type": "sonic_loop", "object_id": "straight_drop", "position": Vector2(342, 301), "rotation_degrees": 90.0,
+"properties": {"scale": 1.0, "direction": "clockwise", "entry_speed": 240.0, "ring_reward": 3.0, "ring_markers": true}
+}, {
+"type": "sonic_loop", "object_id": "flipper_return", "position": Vector2(370.125, 593.375), "rotation_degrees": 142.625,
+"properties": {"scale": 1.0, "direction": "counter-clockwise", "entry_speed": 240.0, "ring_reward": 3.0}
+}, {
+"type": "sonic_loop", "object_id": "small_side", "position": Vector2(385, 165), "rotation_degrees": 270.0,
+"properties": {"scale": 0.5, "completion_score": 500, "direction": "counter-clockwise", "entry_speed": 240.0, "ring_reward": 1.0}
+}, {
+"type": "sonic_loop", "object_id": "tall_right", "position": Vector2(518, 416), "rotation_degrees": 55.0,
+"properties": {"scale": 1.65, "completion_score": 2500, "direction": "clockwise", "entry_speed": 240.0, "ring_reward": 3.0}
+}, {
+"type": "spring", "object_id": "drop_feed", "position": Vector2(87, 213), "rotation_degrees": 90.0, "properties": {"color": "yellow", "width": 30.0, "launch_strength": 420.0}
+}, {
+"type": "spring", "object_id": "weak_straight", "position": Vector2(330, 159), "rotation_degrees": 90.0, "properties": {"color": "blue", "width": 25.0, "launch_strength": 160.0}
+}, {
+"type": "spring", "object_id": "oblique_fast", "position": Vector2(343, 209), "rotation_degrees": 43.7, "properties": {"color": "red", "width": 25.0, "launch_strength": 460.0}
+}, {
+"type": "right_flipper", "object_id": "angled_catch", "position": Vector2(488, 704), "rotation_degrees": 161.66535, "properties": {"length_multiplier": 1.35}
+}, {
+"type": "left_flipper", "object_id": "return_left", "position": Vector2(204, 711), "rotation_degrees": 18.33465, "properties": {"length_multiplier": 1.35}
+}, {
+"type": "elevated_rail", "object_id": "opening_hill", "position": Vector2(148, 195), "rotation_degrees": 0.0,
+"properties": {"points": PackedVector2Array(0, 0, 26, 0, 61, 31, 95, 76, 121, 100, 150, 105, 173, 105), "width": 42.0, "height": 30.0, "drag": 0.06, "terrain_ramp": true, "rings_enabled": false}
+}, {
+"type": "elevated_rail", "object_id": "flipper_climb", "position": Vector2(318, 593), "rotation_degrees": 0.0,
+"properties": {"points": PackedVector2Array(0, 0, 25, -34, 50, -65, 84, -89, 120, -98, 154, -98), "width": 40.0, "height": 40.0, "drag": 0.04, "terrain_ramp": true, "rings_enabled": false}
+}]
+ring_trails = []
+entry_start_x = 7
+entry_width = 2
+exit_start_x = 7
+exit_width = 2
+score_target = 2000
+activation_y = 695.0
+spawn_position = Vector2(87, 38)
+goal_position = Vector2(425, 75)
+goal_diameter_cells = 1.0

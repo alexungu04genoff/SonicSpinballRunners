@@ -1,5 +1,9 @@
 # Endless authored-Act experiment
 
+## Current pool — 2026-11-21
+
+The seven streaming Acts bake into 35 variants across Green Hill, Casino Night, Ice Cap, Rooftop Run and Aquarium Park. The measurements below keep the pool and hardware used for each historical run.
+
 Windows rendering defaults to **Forward+ / Vulkan** (2026-11-01), matching the Act editor and Lighting/Atmosphere Lab. Existing exported executables must be rebuilt to pick up the migration. Bakes remain source-hashed resources; first-use device-specific shader warm-up still happens during play.
 
 Open **Play Endless.cmd** after **Bake Endless.cmd** for the separate graphics, theme and streaming stress test. The main roguelite run is **Play Prototype.cmd**; F5 and **Play Act.cmd** start the standalone authored player. The procedural alpha modes are retired.

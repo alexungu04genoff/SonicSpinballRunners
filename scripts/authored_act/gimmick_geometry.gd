@@ -35,3 +35,20 @@ static func capsule_hit(start: Vector2, motion: Vector2, center: Vector2, forwar
   if t >= 0.0 and t <= 1.0 and absf(x + dx * t) <= half_segment and (result.is_empty() or t < result.fraction):
    result = {"fraction": t, "normal": forward * sign_value}
  return result
+
+static func release_clear(ball: PlaygroundBall, mask: int, point: Vector2, direction: Vector2) -> bool:
+ if direction.length_squared() < 0.9: return false
+ var query := PhysicsShapeQueryParameters2D.new()
+ var circle := CircleShape2D.new()
+ circle.radius = ball.radius + 1.0
+ query.shape = circle
+ query.collision_mask = mask
+ query.exclude = [ball.get_rid()]
+ query.collide_with_areas = false
+ for offset: float in [0.0, ball.radius * 2.0 + 2.0]:
+  query.transform = Transform2D(0.0, point + direction * offset)
+  if not ball.get_world_2d().direct_space_state.intersect_shape(query, 1).is_empty(): return false
+ query.transform = Transform2D(0.0, point)
+ query.motion = direction * (ball.radius * 2.0 + 2.0)
+ var clearance := ball.get_world_2d().direct_space_state.cast_motion(query)
+ return clearance.size() == 2 and clearance[0] >= 1.0

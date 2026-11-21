@@ -439,6 +439,7 @@ func _at_playfield_drain() -> bool:
 
 func _activate(act: RefCounted, initial := false) -> void:
  if not initial and active == act: return
+ if active != null and active != act: hub.cancel_loop(active.runtime.mechanics, act.spawn())
  active = act
  active_sequence = act.plan.sequence
  authored_document = act.document
@@ -637,6 +638,7 @@ func _retire_behind() -> void:
   var act: RefCounted = resident[i]
   if act.plan.sequence >= active_sequence - 1: continue
   if act.bounds().position.y < presentation.camera_focus.y + 500.0: continue
+  hub.cancel_loop(act.runtime.mechanics, active.spawn())
   hub.runtimes.erase(act.runtime.mechanics)
   _queue_retirement(act.root)
   _queue_retirement(act.visual)
@@ -826,6 +828,7 @@ func _startup_error(message: String) -> void:
 func prepare_to_close() -> void:
  # Let any in-flight library coroutine finish before its owner is freed.
  closing = true
+ if active != null: hub.cancel_loop(active.runtime.mechanics, active.spawn())
  set_process(false)
  set_physics_process(false)
  if is_instance_valid(controls): controls.input_blocked = true

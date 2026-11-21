@@ -2,6 +2,7 @@ class_name ActGameplayObjects
 extends RefCounted
 ## Shared authored object definitions, properties and collisionless silhouettes.
 const RailPath = preload("res://scripts/authored_act/rail_path.gd")
+const LoopPath = preload("res://scripts/authored_act/loop_path.gd")
 const Dimensions = preload("res://scripts/act_dimensions.gd")
 const FLIPPER_SWING_DEGREES := rad_to_deg(0.8)
 const CURVE_STEPS := 24
@@ -29,6 +30,7 @@ static func definitions() -> Array[Dictionary]:
   {"id": "dash_panel", "label": "Dash Panel", "color": Color("56eaff")},
   {"id": "buzz_bomber", "label": "Enemy · Buzz Bomber", "color": Color("ffd548")},
   {"id": "launch_tube", "label": "Launch Tube (optional)", "color": Color("72efd1")},
+  {"id": "sonic_loop", "label": "Loop-de-loop", "color": Color("ffba52")},
  ]
 
 static func get_definition(id: String) -> Dictionary:
@@ -52,6 +54,7 @@ static func local_points(placement: Dictionary, cell_size: float) -> PackedVecto
  # The sling keeps its origin relative to the original silhouette, without re-centering.
  var points := PackedVector2Array()
  match placement.get("type", ""):
+  "sonic_loop": return LoopPath.outline(properties(placement))
   "moving_bumper":
    var width := float(properties(placement).width)
    for i in 24:
@@ -136,6 +139,7 @@ static func new_id() -> String:
 
 static func defaults(type: String) -> Dictionary:
  match type:
+  "sonic_loop": return {"scale": 1.0, "direction": "clockwise", "completion_score": LoopPath.POINTS, "entry_speed": 240.0, "ring_reward": 3.0, "ring_markers": true}
   "launch_tube": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(0, -140), Vector2(100, -240), Vector2(140, -340)]), "width": 40.0, "height": 80.0, "presentation": "exposed", "charge_seconds": 1.2, "min_speed": 80.0, "max_speed": 700.0, "resistance": 100.0, "return_speed": 300.0, "feedback_strength": 1.0}
   "left_flipper", "right_flipper": return {"length_multiplier": 1.0}
   "teleporter": return {"radius": 18.0, "exit_x": 150.0, "exit_y": 0.0, "exit_angle": 0.0}
@@ -154,7 +158,7 @@ static func defaults(type: String) -> Dictionary:
   "spring": return {"width": 40.0, "launch_strength": 300.0, "color": "red"}
   "spinner": return {"width": 40.0, "tick_score": 5.0, "decay": 2.0, "max_spin": 40.0, "completion_enabled": true, "target_ticks": 10.0, "completion_bonus": 300.0}
   "magnetic_field": return {"radius": 100.0, "strength": 260.0, "mode": "attract"}
-  "elevated_rail": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(0, -100), Vector2(100, -170)]), "width": 40.0, "height": 40.0, "drag": 0.06, "entry_speed": 100.0, "rings_enabled": true, "ring_spacing": 35.0, "terrain_clearance": false}
+  "elevated_rail": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(0, -100), Vector2(100, -170)]), "width": 40.0, "height": 40.0, "drag": 0.06, "entry_speed": 100.0, "rings_enabled": true, "ring_spacing": 35.0, "terrain_clearance": false, "terrain_ramp": false}
  return {}
 
 static func properties(placement: Dictionary) -> Dictionary:
@@ -166,7 +170,7 @@ static func size_label(type: String) -> String:
  return {"left_flipper": "length", "right_flipper": "length", "drop_target_bank": "target spacing",
   "elevated_rail": "path and width", "launch_tube": "path and width", "lane_barrier": "posts and spacing", "diverter": "length",
   "teleporter": "radius", "magnetic_field": "radius", "buzz_bomber": "size",
-  "round_bumper": "size", "triangle_bumper": "size", "switch_target": "size", "wall_switch": "size"}.get(type, "width")
+  "round_bumper": "size", "triangle_bumper": "size", "switch_target": "size", "wall_switch": "size", "sonic_loop": "uniform scale"}.get(type, "width")
 
 static func resized_properties(item: Dictionary, direction: float) -> Dictionary:
  # Use the dimensions already consumed by runtime collision and presentation.
@@ -186,7 +190,7 @@ static func resized_properties(item: Dictionary, direction: float) -> Dictionary
   var key: String = {"left_flipper": "length_multiplier", "right_flipper": "length_multiplier",
    "drop_target_bank": "spacing", "diverter": "length", "teleporter": "radius",
    "magnetic_field": "radius", "buzz_bomber": "scale", "round_bumper": "scale",
-   "triangle_bumper": "scale", "switch_target": "scale", "wall_switch": "scale"}.get(type, "width")
+   "triangle_bumper": "scale", "switch_target": "scale", "wall_switch": "scale", "sonic_loop": "scale"}.get(type, "width")
   var limits: Array = property_limits(type)[key]
   var minimum := float(limits[0])
   if type == "drop_target_bank": minimum = maxf(minimum, float(props.target_size) + 2.0)
@@ -201,7 +205,7 @@ static func scaled_properties(item: Dictionary, factor: float) -> Dictionary:
  var props := properties(item)
  var dimensions: Array = {
   "left_flipper": ["length_multiplier"], "right_flipper": ["length_multiplier"],
-  "round_bumper": ["scale"], "triangle_bumper": ["scale"],
+  "round_bumper": ["scale"], "triangle_bumper": ["scale"], "sonic_loop": ["scale"],
   "switch_target": ["scale"], "wall_switch": ["scale"],
   "moving_bumper": ["width", "patrol_left", "patrol_right"],
   "buzz_bomber": ["scale", "patrol_left", "patrol_right"],
@@ -218,6 +222,7 @@ static func scaled_properties(item: Dictionary, factor: float) -> Dictionary:
 
 static func property_limits(type: String) -> Dictionary:
  match type:
+  "sonic_loop": return {"scale": [0.5, 2.5], "completion_score": [0.0, 1000000.0], "entry_speed": [100.0, 1000.0], "ring_reward": [0.0, 10.0]}
   "launch_tube": return {"width": [24.0, 120.0], "height": [0.0, 200.0], "charge_seconds": [0.2, 4.0], "min_speed": [20.0, 500.0], "max_speed": [100.0, 1600.0], "resistance": [10.0, 600.0], "return_speed": [60.0, 800.0], "feedback_strength": [0.0, 1.0]}
   "left_flipper", "right_flipper": return {"length_multiplier": [0.25, 4.0]}
   "teleporter": return {"radius": [10.0, 60.0], "exit_x": [-10000.0, 10000.0], "exit_y": [-10000.0, 10000.0], "exit_angle": [-180.0, 180.0]}
@@ -256,7 +261,13 @@ static func property_errors(placement: Dictionary) -> PackedStringArray:
     errors.append(str(key) + " is outside its supported finite range.")
    elif key in ["target_ticks", "target_count"] and float(values[key]) != floorf(float(values[key])):
     errors.append("Target count must be a whole number." if key == "target_count" else "Spinner target ticks must be a whole number.")
-  elif key in ["completion_enabled", "rings_enabled", "terrain_clearance", "mirror_x"] and typeof(values[key]) != TYPE_BOOL:
+   elif key == "completion_score" and float(values[key]) != floorf(float(values[key])):
+    errors.append("Completion score must be a whole number.")
+   elif key == "ring_reward" and float(values[key]) != floorf(float(values[key])):
+    errors.append("Ring reward must be a whole number.")
+  elif key == "direction" and values[key] not in ["clockwise", "counter-clockwise"]:
+   errors.append("Choose clockwise or counter-clockwise traversal.")
+  elif key in ["completion_enabled", "rings_enabled", "terrain_clearance", "terrain_ramp", "mirror_x", "ring_markers"] and typeof(values[key]) != TYPE_BOOL:
    errors.append("Enable flags must be boolean.")
   elif key == "starting_direction" and values[key] not in ["left", "right"]:
    errors.append("Starting direction must be left or right.")
@@ -306,6 +317,7 @@ const SWITCH_RADIUS := 18.0
 const COLORS := {"blue": Color("2689ff"), "red": Color("ff414c"), "yellow": Color("ffcf35"), "green": Color("40e99b")}
 
 static func forward(item: Dictionary) -> Vector2:
+ if item.get("type") == "sonic_loop": return LoopPath.forward(item)
  return Vector2.UP.rotated(deg_to_rad(float(item.rotation_degrees)))
 
 static func spring_trajectory(item: Dictionary, gravity_scale: float, ball_radius: float = Dimensions.BALL_RADIUS_CELLS * 50.0) -> PackedVector2Array:

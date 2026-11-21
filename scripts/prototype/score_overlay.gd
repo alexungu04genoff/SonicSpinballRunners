@@ -88,4 +88,5 @@ func _draw() -> void:
   if not get_viewport_rect().grow(40).has_point(point): continue
   var color: Color = popup.color
   color.a = 1.0 - smoothstep(0.35, LIFETIME, popup.age)
-  _text("+%d" % popup.total, point + Vector2(-18, -42 - popup.age * 38), 21, color)
+  var caption := "LOOP! +%d" if popup.kind == "loop" else "+%d"
+  _text(caption % popup.total, point + Vector2(-18, -42 - popup.age * 38), 21, color)

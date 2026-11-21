@@ -34,6 +34,7 @@ gameplay_objects = [{
 "ring_spacing": PackedByteArray(3, 0, 0, 0, 0, 0, 12, 66),
 "rings_enabled": false,
 "terrain_clearance": false,
+"terrain_ramp": false,
 "width": PackedByteArray(3, 0, 0, 0, 0, 0, 32, 66)
 },
 "rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),
@@ -49,6 +50,7 @@ gameplay_objects = [{
 "ring_spacing": PackedByteArray(3, 0, 0, 0, 0, 0, 12, 66),
 "rings_enabled": false,
 "terrain_clearance": true,
+"terrain_ramp": false,
 "width": PackedByteArray(3, 0, 0, 0, 0, 0, 32, 66)
 },
 "rotation_degrees": PackedByteArray(3, 0, 0, 0, 0, 0, 0, 0),

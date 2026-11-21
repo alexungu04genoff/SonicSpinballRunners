@@ -165,6 +165,7 @@ func _foreground_safety_hold() -> bool:
 func _activate(act: RefCounted, initial := false) -> void:
  if finished or drafting or (not initial and active == act): return
  if not initial:
+  hub.cancel_loop(active.runtime.mechanics, act.spawn())
   _record_act(true)
   pending_act = act
   drafting = true
@@ -355,6 +356,9 @@ func _award_position(details: Dictionary) -> Vector2:
  if active != null:
   var object_id := str(details.get("object_id", "")).trim_prefix(active_scoring_id + ":").get_slice(":lane:", 0)
   var item: Dictionary = active.runtime.mechanics.by_id.get(object_id, {})
+  if details.kind == &"loop" and item.get("type") == "sonic_loop":
+   var end := ActGameplayObjects.LoopPath.sample(item, ActGameplayObjects.LoopPath.LENGTH * float(item.properties.scale))
+   return Vector2(end.x, end.z)
   if item.has("position"): return item.position
  return ball.position
 

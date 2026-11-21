@@ -11,6 +11,7 @@ signal traversal_event(kind: StringName, object_id: String, phase: StringName)
 signal drop_target_event(bank_id: String, target_id: String, phase: StringName, target_count: int)
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const RailPath = preload("res://scripts/authored_act/rail_path.gd")
+const LoopPath = Objects.LoopPath
 const Contact = preload("res://scripts/authored_act/gimmick_geometry.gd")
 const Lanes = preload("res://scripts/authored_act/passing_lanes.gd")
 const Banks = preload("res://scripts/act_editor/switch_banks.gd")
@@ -33,7 +34,9 @@ var progress := 0.0
 var speed := 0.0
 var age := 0.0
 var chute_entry := Vector2.ZERO
+var loop_entry_offset := Vector2.ZERO
 var reentry_time := 0.0
+var last_track_id := ""
 var _saved_layer := 2
 var _saved_mask := 1
 var _travel_origin: Variant = null
@@ -74,6 +77,7 @@ func add_object(placement: Dictionary, descriptor: Dictionary) -> void:
   item["patrol_phase"] = 0.0
   item["patrol_offset"] = 0.0
  if item.type == "score_chute": item["lit_bars"] = 0
+ if item.type == "sonic_loop": item["rings_paid"] = false
  if item.type == "drop_target_bank":
   item["targets"] = []
   item["complete"] = false
@@ -95,7 +99,7 @@ func add_object(placement: Dictionary, descriptor: Dictionary) -> void:
  if item.type == "elevated_rail":
   var control: PackedVector2Array = item.properties.points.duplicate()
   for i in control.size(): control[i] = item.position + control[i].rotated(deg_to_rad(float(item.rotation_degrees)))
-  item["path"] = RailPath.build(control)
+  item["path"] = RailPath.build(control, item.properties.terrain_ramp)
  items.append(item)
  by_id[item.object_id] = item
  descriptor["mechanic"] = item
@@ -115,6 +119,7 @@ func reset() -> void:
   item.passing = false
   item.pulse = 0.0
   item.launch_count = 0
+  if item.type == "sonic_loop": item.rings_paid = false
   if item.type == "moving_bumper":
    item.patrol_phase = 0.0
    item.patrol_offset = 0.0
@@ -164,9 +169,15 @@ func leave_ramp(completed := false) -> void:
  if ramp.get("type") == "score_chute": ramp.lit_bars = 0
  var leaving_id: String = ramp.get("object_id", "")
  if is_instance_valid(ball) and not ramp.is_empty():
+  if ramp.type == "sonic_loop":
+   ball.loop_item = {}
+   ball.transfer_serial += 1
   ball.collision_layer = _saved_layer
   ball.collision_mask = _saved_mask
   ball.gravity_scale = float(ball.tuning.effective.gravity_scale)
+  last_track_id = leaving_id
+  ball.has_track_frame = false
+  ball.track_speed = 0.0
   ball.on_ramp = false
   ball.ramp_height = 0.0
  ramp = {}
@@ -298,6 +309,16 @@ func observe_motion(state: PhysicsDirectBodyState2D, sample_travel := true) -> b
    chute_entry = entry
    item.lit_bars = 0
    _capture(item)
+   advance_ramp(state, state.step * (1.0 - fraction))
+   return true
+  elif item.type == "sonic_loop" and scoring_active and (reentry_time <= 0.0 or item.object_id != last_track_id):
+   var fraction := LoopPath.entry_fraction(start, end, state.linear_velocity, item, ball.radius)
+   if fraction < 0.0: continue
+   loop_entry_offset = start.lerp(end, fraction) - Vector2(item.position)
+   _capture(item)
+   ball.loop_item = item
+   ball.transfer_serial += 1
+   speed = clampf(state.linear_velocity.dot(Objects.forward(item)), 420.0, 900.0)
    advance_ramp(state, state.step * (1.0 - fraction))
    return true
   elif item.type == "elevated_rail" and reentry_time <= 0.0:
@@ -569,6 +590,9 @@ func _advance_chute(state: PhysicsDirectBodyState2D) -> void:
 func advance_ramp(state: PhysicsDirectBodyState2D, dt: float) -> void:
  if ramp.is_empty(): return
  age += dt
+ if ramp.type == "sonic_loop":
+  _advance_loop(state, dt)
+  return
  if ramp.type == "score_chute":
   _advance_chute(state)
   return
@@ -596,6 +620,11 @@ func advance_ramp(state: PhysicsDirectBodyState2D, dt: float) -> void:
  state.linear_velocity = Vector2.ZERO
  state.angular_velocity = 0.0
  ball.ramp_height = RailPath.height(path, progress, ramp.properties.height)
+ tangent = RailPath.tangent(path, progress)
+ rise = RailPath.height(path, progress + 0.5, ramp.properties.height) - RailPath.height(path, progress - 0.5, ramp.properties.height)
+ ball.track_frame = Basis.looking_at(Vector3(tangent.x, rise, tangent.y).normalized())
+ ball.track_speed = speed
+ ball.has_track_frame = true
  if scoring_active: rail_traveled.emit(str(ramp.object_id), previous_progress, progress)
  if at_end or at_start:
   var outgoing := RailPath.tangent(path, progress) * speed
@@ -607,6 +636,40 @@ func advance_ramp(state: PhysicsDirectBodyState2D, dt: float) -> void:
   reentry_time = 0.3
   state.linear_velocity = outgoing
   ball._previous_step_velocity = outgoing
+
+func _advance_loop(state: PhysicsDirectBodyState2D, dt: float) -> void:
+ var item := ramp
+ var size_value := float(item.properties.scale)
+ var length := LoopPath.LENGTH * size_value
+ progress = clampf(progress + speed * dt, 0.0, length)
+ var sample := LoopPath.sample(item, progress)
+ var point := Vector2(sample.x, sample.z) + loop_entry_offset * (1.0 - smoothstep(0.0, LoopPath.LEAD * size_value, progress))
+ state.transform = Transform2D(0.0, point)
+ state.linear_velocity = Vector2.ZERO
+ state.angular_velocity = 0.0
+ ball.ramp_height = sample.y
+ ball.track_frame = LoopPath.local_frame(progress / size_value, item.properties.direction == "clockwise").rotated(Vector3.UP, -deg_to_rad(float(item.rotation_degrees)))
+ ball.track_speed = speed
+ ball.has_track_frame = true
+ var completed := progress >= length
+ if not completed and (speed >= 0.0 or progress > 0.0): return
+ var direction := Objects.forward(item) * signf(speed)
+ if not Contact.release_clear(ball, _saved_mask, point, direction):
+  if completed: speed = -absf(speed)
+  else: ball.teleport_to(ball.serve_position, Vector2.ZERO, true)
+  return
+ var outgoing := direction * absf(speed)
+ leave_ramp()
+ state.linear_velocity = outgoing
+ ball._previous_step_velocity = outgoing
+ reentry_time = 0.2
+ if completed and scoring_active and (not scoring_allowed.is_valid() or scoring_allowed.call()):
+  var award := int(item.properties.ring_reward)
+  if not item.rings_paid and award > 0:
+   item.rings_paid = true
+   mechanic_rings.emit(&"loop", item.object_id, award)
+  if item.properties.completion_score > 0:
+   mechanic_score.emit(&"loop", item.object_id, int(item.properties.completion_score))
 
 func _exit_clear(point: Vector2) -> bool:
  var shape := CircleShape2D.new()

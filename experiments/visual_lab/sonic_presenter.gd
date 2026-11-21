@@ -15,6 +15,8 @@ var _event_cooldown := 0.0
 var ball: PlaygroundBall
 var table: TablePresentation
 var spin_root: Node3D
+var rolling_mesh: MeshInstance3D
+var riding_track := false
 var marker: Node3D
 var close_camera: Camera3D
 var study_root: Node3D
@@ -75,7 +77,7 @@ func _build_visuals() -> void:
  var sphere := table.sphere(spin_radius)
  sphere.radial_segments = 32
  sphere.rings = 16
- table.mesh_node(sphere, spin_surface, Vector3.ZERO, spin_root)
+ rolling_mesh = table.mesh_node(sphere, spin_surface, Vector3.ZERO, spin_root)
  marker = Node3D.new()
  marker.name = "AuthoritativeBallContactMarker"
  add_child(marker)
@@ -368,8 +370,19 @@ func _process(delta: float) -> void:
  _update_pose_transform(physics_delta)
  # Keep the curled animation spinning at the apex as well as during travel.
  # The smoothed board-plane axis avoids sudden tumbles when velocity reverses.
+ if riding_track and (not ball.has_track_frame or close_view):
+  spin_root.basis *= rolling_mesh.basis
+  rolling_mesh.basis = Basis.IDENTITY
+  riding_track = false
  if not close_view and not ball.serve_pending and not capture_hold:
-  _advance_spin(physics_delta, ball.linear_velocity)
+  if ball.has_track_frame:
+   if not riding_track:
+    rolling_mesh.basis = ball.track_frame.inverse() * spin_root.basis.orthonormalized()
+   spin_root.basis = ball.track_frame
+   rolling_mesh.rotate(Vector3.LEFT, ball.track_speed * physics_delta / ball.radius)
+   riding_track = true
+  else:
+   _advance_spin(physics_delta, ball.linear_velocity)
  if close_view and not capture_hold:
   spin_root.rotate(Vector3(1, 0, 0.5).normalized(), delta * 22.0)
  _update_effects(physics_delta)

@@ -513,11 +513,12 @@ func scoring_feedback_text() -> String:
 func _on_mechanic_score(kind: StringName, object_id: String, points: int, owner_id: String = "") -> void:
  if not _accept_scoring(owner_id): return
  scorecraft.award_mechanic(kind, (active_scoring_id if owner_id.is_empty() else owner_id) + ":" + object_id, points)
+ if kind == &"loop": status_message = "LOOP! +%d" % int(scorecraft.last_award.total)
 
-func _on_mechanic_rings(_kind: StringName, _object_id: String, amount: int, owner_id: String = "") -> void:
+func _on_mechanic_rings(kind: StringName, _object_id: String, amount: int, owner_id: String = "") -> void:
  if not _accept_scoring(owner_id): return
  award_virtual_rings(amount)
- status_message = "LANE REWARD  +%d RINGS" % amount
+ if kind != &"loop": status_message = "LANE REWARD  +%d RINGS" % amount
 
 func award_virtual_rings(amount: int) -> void:
  # Counter only: never emit a pickup, run Scorecraft, charge Special, or recurse.
@@ -623,7 +624,7 @@ func _physics_process(delta: float) -> void:
    launch_ball()
  # Rail travel is authoritative ball motion too. It can cross an Activation
  # marker even though rings and lower-table bumper contacts are suspended.
- if not ball.serve_pending and not ball._teleport_pending and respawn_time < 0.0:
+ if not ball.in_loop and not ball.serve_pending and not ball._teleport_pending and respawn_time < 0.0:
   var start := previous_goal_position if _goal_motion_ready else ball.position
   _observe_authored_motion(start, ball.position)
   _goal_motion_ready = true

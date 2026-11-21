@@ -2,6 +2,8 @@
 
 Sonic momentum, pinball physics and a configurable roguelite run, built with Godot 4 / GDScript for Windows. An invisible 2D ball owns collisions; collisionless 3D scenery, characters and effects follow it.
 
+Green Hill represents Sonic 1, Casino Night represents Sonic 2, Ice Cap represents Sonic 3, Rooftop Run represents Unleashed and Aquarium Park represents Colors. Try the [Loop Workshop](docs/LOOP_WORKSHOP.md) for terrain ramps and upright, scoreable Loops.
+
 ## Two workflows
 
 - **Gameplay:** Act Geometry Editor → Play Act → Bake Prototype → Play Prototype.
@@ -11,15 +13,17 @@ Sonic momentum, pinball physics and a configurable roguelite run, built with God
 
 **Act Geometry Editor.cmd** authors terrain, gameplay objects, decor, ring trails, Spawn, Goal and connectors with undo/redo. Save, load and Verify share the runtime geometry rules; Verify does not guarantee reachability. The editor's **Play** button opens that saved Act in **Prototype**, defaulting to single-Act Practice: earn 1,000 points, then touch the Goal Ring to finish. Save edits, then pause and **Restart run** to reload. This authoring preview builds the selected Act and theme without production bakes. Its records and preferences do not overwrite normal runs. **Play Act.cmd** and Godot F5 open the normal Prototype menu; `Play Act.cmd -ActPath "data/acts/Experiments/Lockbox.tres"` directly tests a saved Act.
 
-**Bake Prototype.cmd** prepares all five production Acts in all eight themes: 40 variants. Committed `.tres` files in `data/acts/Authored` are production content discovered by run setup:
+**Bake Prototype.cmd** prepares all seven production Acts in the five base-game themes (35 variants). Committed `.tres` files in `data/acts/Authored` are production content discovered by run setup:
 
+- DropTarget-SW-SP-DT
 - First Try Smooth Decor
+- GateDash
 - RampMania
 - Reverse C Spring
 - Secret Entry
 - SpringUp
 
-**Bake Endless.cmd** prepares the separate seven-Act stress pool in `data/endless` across all eight themes: 56 variants. **Play Endless.cmd** streams three shuffled Acts per Zone with no score gates and unlimited checkpoint retries. It keeps the historical Second Simple and Third Complex snapshots as useful streaming fixtures. Its tour, warm-up, caches and profiler support graphics work. See [Endless](docs/ENDLESS_MODE.md).
+**Bake Endless.cmd** prepares the separate seven-Act stress pool in `data/endless` across all five themes (35 variants). **Play Endless.cmd** streams three shuffled Acts per Zone with no score gates and unlimited checkpoint retries. It keeps the historical Second Simple and Third Complex snapshots as useful streaming fixtures. Its tour, warm-up, caches and profiler support graphics work. See [Endless](docs/ENDLESS_MODE.md).
 
 Two specialist launchers remain deliberately: **Authored Act Playtest.cmd** exposes the diagnostic 2D/3D player used by editor tests; **Play Green Hill.cmd** is retained for ongoing local art-review work. Use the six workflow launchers above for ordinary development.
 

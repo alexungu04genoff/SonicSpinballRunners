@@ -2,7 +2,7 @@
 
 Windows rendering defaults to **Forward+ / Vulkan** (2026-11-01), matching the Act editor and Lighting/Atmosphere Lab. Existing exported executables must be rebuilt to pick up the migration. Bakes remain source-hashed resources; first-use device-specific shader warm-up still happens during play.
 
-Current workflow: **Act Geometry Editor → Play Act → Bake Prototype → Play Prototype**. Production content is the five committed Acts in `data/acts/Authored`: First Try Smooth Decor, RampMania, Reverse C Spring, Secret Entry and SpringUp. All eight themes are supported. Earlier dated verification counts below describe their original snapshots; they are not the current pool size. Current scoring is [economy V1](ACT_SCORING.md), with [telemetry v4](PROTOTYPE_TELEMETRY.md), 35 px default rail-ring spacing, and the final configured Goal Ring ending the run.
+Current workflow: **Act Geometry Editor → Play Act → Bake Prototype → Play Prototype**. Production content is the seven committed Acts in `data/acts/Authored`, with five base-game themes. The [Loop Workshop](LOOP_WORKSHOP.md) is available through Editor Play. Earlier dated verification counts below describe their original snapshots; they are not the current pool size. Current scoring is [economy V1](ACT_SCORING.md), with [telemetry v4](PROTOTYPE_TELEMETRY.md), 35 px default rail-ring spacing, and the final configured Goal Ring ending the run.
 
 ## Editor Play uses Prototype
 

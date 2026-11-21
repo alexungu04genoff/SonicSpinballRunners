@@ -1,5 +1,9 @@
 # Sonic Spinball Runners — Living Game Design
 
+## Base-game roster and authored traversal — 2026-11-21
+
+Green Hill (Sonic 1), Casino Night (Sonic 2), Ice Cap (Sonic 3), Rooftop Run (Unleashed) and Aquarium Park (Colors) form the base game. Both run modes use these five themes. The [Loop Workshop](LOOP_WORKSHOP.md) pairs a terrain ramp with an upright Loop, alongside separate flipper shots. Authors set uniform size, direction, entry speed, Ring reward and completion score. The routes are experimental pending a feel review.
+
 ## Optional Launch Tube — 2026-11-18
 
 Confirmed: an optional authored dock-to-exit path, with Exposed/Tunnel presentation and hold/release Launch input. Charge materially changes traversal and exit speed; weak or blocked launches return to dock. The real ball remains contained with gameplay collision, steering and scoring disabled, then returns to ordinary physics at a clear exit. Terrain is unchanged. Death retains the current soft-retry/objective state and requires a fresh player charge; a button held through death cannot relaunch. Only the active Act owns retry, and Acts without a tube retain their existing behavior. Editor transforms, persistence and disk-backed Prototype/Endless share the object. The new Workshop is experimental; no production Act or roster changes. Charge duration, speed and visual intensity remain tunable feel choices. See [architecture, authoring and verification](LAUNCH_TUBE.md).

@@ -142,7 +142,7 @@ static func _compile(document: Resource, tuning: PhysicsTuning, controls: Playgr
     body = moving
     mechanics.add_object(placement, descriptor)
     descriptor.mechanic.body = moving
-   "score_chute", "teleporter", "drop_target_bank", "slingshot", "spinner", "magnetic_field", "elevated_rail", "one_way_gate", "switch_target", "wall_switch", "spring", "lane_barrier", "diverter", "dash_panel", "buzz_bomber":
+   "sonic_loop", "score_chute", "teleporter", "drop_target_bank", "slingshot", "spinner", "magnetic_field", "elevated_rail", "one_way_gate", "switch_target", "wall_switch", "spring", "lane_barrier", "diverter", "dash_panel", "buzz_bomber":
     body = lane_barrier_body(placement, wall_material) if placement.type == "lane_barrier" else Node2D.new()
     body.position = placement.position
     body.rotation_degrees = placement.rotation_degrees
@@ -176,6 +176,11 @@ static func _compile(document: Resource, tuning: PhysicsTuning, controls: Playgr
  var rail_error := "" if validated else _validate_rail_clearance(result, ball.radius)
  if rail_error.is_empty() and not validated:
   rail_error = preload("res://scripts/authored_act/teleporter.gd").validation_error(result, document.terrain_bounds(), ball.radius)
+ if rail_error.is_empty() and not validated:
+  for item: Dictionary in mechanics.items:
+   if item.type == "sonic_loop":
+    rail_error = preload("res://scripts/authored_act/loop_clearance.gd").check(item, document.terrain_bounds(), result.terrain, result.objects, cell_size, ball.radius)
+    if not rail_error.is_empty(): break
  if not rail_error.is_empty():
   act_root.free()
   ball.radius = previous_radius

@@ -147,18 +147,4 @@ func advance(delta: float, held: bool, input_blocked := false) -> void:
   if distance <= 0.0: _redock()
 
 func exit_is_clear(point: Vector2, direction: Vector2) -> bool:
- if direction.length_squared() < 0.9: return false
- var query := PhysicsShapeQueryParameters2D.new()
- var circle := CircleShape2D.new()
- circle.radius = ball.radius + 1.0
- query.shape = circle
- query.collision_mask = _saved_mask
- query.exclude = [ball.get_rid()]
- query.collide_with_areas = false
- for offset: float in [0.0, ball.radius * 2.0 + 2.0]:
-  query.transform = Transform2D(0.0, point + direction * offset)
-  if not ball.get_world_2d().direct_space_state.intersect_shape(query, 1).is_empty(): return false
- query.transform = Transform2D(0.0, point)
- query.motion = direction * (ball.radius * 2.0 + 2.0)
- var clearance := ball.get_world_2d().direct_space_state.cast_motion(query)
- return clearance.size() == 2 and clearance[0] >= 1.0
+ return preload("res://scripts/authored_act/gimmick_geometry.gd").release_clear(ball, _saved_mask, point, direction)

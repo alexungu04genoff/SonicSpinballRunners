@@ -203,6 +203,9 @@ func _batch(root: Node3D, scheduler: Node = null) -> void:
   root.add_child(instance)
  preload("res://scripts/themes/motion_preserve.gd").restore(root, preserved)
 
+func terrain_bank_material() -> Material:
+ return Selected.surface("3B", 2, Vector2(1.6, 1.0))
+
 func ramp_materials() -> Dictionary:
  return {"deck":_ramp_deck_material,"edge":_ramp_guard_material,"fascia":_ramp_guard_material,"border":_ramp_guard_material,"support":_library.materials.wood,"accent":_library.materials.cyan}
 
