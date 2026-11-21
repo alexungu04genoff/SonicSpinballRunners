@@ -2,7 +2,9 @@
 
 Windows rendering defaults to **Forward+ / Vulkan** (2026-11-01), matching the Act editor and Lighting/Atmosphere Lab. Existing exported executables must be rebuilt to pick up the migration. Bakes remain source-hashed resources; first-use device-specific shader warm-up still happens during play.
 
-Current workflow: **Act Geometry Editor → Play Act → Bake Prototype → Play Prototype**. Production content is the seven committed Acts in `data/acts/Authored`, with five base-game themes. The [Loop Workshop](LOOP_WORKSHOP.md) is available through Editor Play. Earlier dated verification counts below describe their original snapshots; they are not the current pool size. Current scoring is [economy V1](ACT_SCORING.md), with [telemetry v4](PROTOTYPE_TELEMETRY.md), 35 px default rail-ring spacing, and the final configured Goal Ring ending the run.
+Current workflow: **Act Geometry Editor → Play Act → Bake Prototype → Play Prototype**. Production content is the eight committed Acts in `data/acts/Authored`, with five base-game themes. The [Loop Workshop](LOOP_WORKSHOP.md) is available through Editor Play. Earlier dated verification counts below describe their original snapshots; they are not the current pool size. Current scoring is [economy V1](ACT_SCORING.md), with [telemetry v4](PROTOTYPE_TELEMETRY.md), 35 px default rail-ring spacing, and the final configured Goal Ring ending the run.
+
+Clover Scoop is an 8-by-8 Easy Act. Aim the right flipper at the yellow spring for a loop shot worth 1,000 points. The ring racks, Buzz Bomber and bumper offer a scoring route around it. [Watch the opening shot](clover-scoop.mp4)
 
 ## Editor Play uses Prototype
 
@@ -10,7 +12,7 @@ The Act editor's **Play** action launches the saved Act directly in the current 
 
 This explicit authoring path builds only the selected Act and theme in memory; no production bake is required. Save edits in the editor, then pause and **Restart run** to load a fresh copy. The test menu offers character, theme and Challenge/Practice choices. Tests archive their ordinary telemetry with `single_act_test: true` in the configuration, but do not overwrite normal preferences or best records. Normal multi-Act runs retain disk bakes and their three-distinct-Acts-per-Zone rules.
 
-**Play Act.cmd**, **Play Prototype.cmd**, and Godot F5 open Prototype. To test a file directly, use `Play Act.cmd -ActPath "data/acts/Experiments/Lockbox.tres"` with optional `-Theme chemical_plant`. Existing exported tools need rebuilding to receive the changed Play action. Source verification: nine Act-test checks passed both headlessly and rendered, plus 41 existing run-plan checks.
+**Play Act.cmd**, **Play Prototype.cmd**, and Godot F5 open Prototype. To test a file directly, use `Play Act.cmd -ActPath "data/acts/Authored/Clover Scoop.tres"` with optional `-Theme green_hill`. Existing exported tools need rebuilding to receive the changed Play action. Source verification: nine Act-test checks passed both headlessly and rendered, plus 41 existing run-plan checks.
 
 **Atmosphere Lab / Lighting Lab** use this same Prototype Act-test flow through **Play Prototype**. The selected theme and current unsaved appearance are captured for that test without publishing variants. The existing runtime applies the preview to foreground and background, and telemetry records it. See [Lab controls and preview behavior](LIGHTING_LAB.md).
 

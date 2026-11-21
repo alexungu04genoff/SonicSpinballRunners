@@ -38,7 +38,7 @@ func run() -> void:
  root.add_child(session)
  check(session.run_configuration.snapshot().selected_themes == Session.Run.RunPlan.Configuration._unique(THEMES) and session.selected_character == "sonic" and not session.practice_mode, "Fresh package defaults to all allowed themes, Sonic and Challenge")
  var setup: VBoxContainer = session.setup_menu
- check(session.available_act_paths.size() == 7 and setup.act_checks.values().all(func(checkbox): return checkbox.button_pressed), "All seven Acts start enabled")
+ check(session.available_act_paths.size() == 8 and "res://data/acts/Authored/Clover Scoop.tres" in setup.act_checks and setup.act_checks.values().all(func(checkbox): return checkbox.button_pressed), "All eight Acts, including Clover Scoop, start enabled")
  check(session.run_configuration.atmosphere_overrides.is_empty() and not setup.advanced.visible, "Random atmospheres and a collapsed Customize panel are the defaults")
  var menu_deadline := Time.get_ticks_msec() + 180000
  while setup.checking and Time.get_ticks_msec() < menu_deadline: await process_frame

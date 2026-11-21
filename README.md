@@ -13,8 +13,9 @@ Green Hill represents Sonic 1, Casino Night represents Sonic 2, Ice Cap represen
 
 **Act Geometry Editor.cmd** authors terrain, gameplay objects, decor, ring trails, Spawn, Goal and connectors with undo/redo. Save, load and Verify share the runtime geometry rules; Verify does not guarantee reachability. The editor's **Play** button opens that saved Act in **Prototype**, defaulting to single-Act Practice: earn 1,000 points, then touch the Goal Ring to finish. Save edits, then pause and **Restart run** to reload. This authoring preview builds the selected Act and theme without production bakes. Its records and preferences do not overwrite normal runs. **Play Act.cmd** and Godot F5 open the normal Prototype menu; `Play Act.cmd -ActPath "data/acts/Experiments/Lockbox.tres"` directly tests a saved Act.
 
-**Bake Prototype.cmd** prepares all seven production Acts in the five base-game themes (35 variants). Committed `.tres` files in `data/acts/Authored` are production content discovered by run setup:
+**Bake Prototype.cmd** prepares all eight production Acts in the five base-game themes (40 variants). Committed `.tres` files in `data/acts/Authored` are production content discovered by run setup:
 
+- [Clover Scoop](data/acts/Authored/Clover%20Scoop.tres) — Easy. Shoot the yellow spring to ride the loop into the Goal Ring.
 - DropTarget-SW-SP-DT
 - First Try Smooth Decor
 - GateDash

@@ -4,6 +4,8 @@
 
 Alex picked one stage per game for the current roster. Green Hill, Casino Night, Ice Cap, Rooftop Run and Aquarium Park share the same authored Acts. In the [Workshop](LOOP_WORKSHOP.md), let the yellow spring carry the serve across the hill into the upright Loop. The left flipper feeds a climbing ramp and the right flipper shoots the angled Loop. Small and tall Loops have separate point values. The earlier eight-theme reviews below describe those builds. The pre-pivot Sky Sanctuary source is recorded in the Workshop notes.
 
+Clover Scoop joins the Prototype pool as an Easy Act. It borrows SpringUp’s serve above one flipper and First Try’s short ring guides. The yellow spring sends Sonic across a small upright loop and into the right-hand goal pocket. The two smoothed banks can be unpacked with Unsmooth into their original 29 half-size stamps.
+
 ## Theme Life follow-camera review — 2026-11-21
 
 Casino’s big pink stars now rotate in Prototype and Endless. The sign stays readable as Sonic picks up a Ring. Rooftop’s tower clock works at the right edge, but the served shot crops most of its face. Alex can decide how much that occasional glimpse matters. Sky’s cloud drift adds depth beside the ruins at the edge and almost disappears during the shot. Rooftop and Sky keep C. [Three matched clips and desktop costs](THEME_LIFE_PRODUCTION_REVIEW.md)
