@@ -1,0 +1,68 @@
+{
+  "archive": "Tuesday-UHD620-2026-11-24.zip",
+  "archive_sha256": "87e3f99d3a13f0e1b0bfc193543feb35cf1400346cb871c1e4ac4befa75b3623",
+  "source_head": "b72e71be6d4a526b15bf37265f238eb182f923ac",
+  "verified_payload_files": 3583,
+  "cases": {
+    "smooth85": {
+      "adapter": "NVIDIA GeForce RTX 4060",
+      "startup_ms": 14298.864,
+      "next_zone_prep_ms": 12675.598,
+      "disk_acts": 6,
+      "disk_themes": 2,
+      "fallback_builds": 0,
+      "normal_play_max_displacement_px": 354.590179443359,
+      "crossfade_frames": 622,
+      "scale": 0.850000023841858,
+      "cast_levels": 0,
+      "ssao_quality": 2,
+      "engine_exit_objectdb_warning_instances": 75,
+      "process_seconds": 51.6036206
+    },
+    "four85": {
+      "adapter": "NVIDIA GeForce RTX 4060",
+      "startup_ms": 14009.109,
+      "next_zone_prep_ms": 12753.952,
+      "disk_acts": 6,
+      "disk_themes": 2,
+      "fallback_builds": 0,
+      "normal_play_max_displacement_px": 354.590179443359,
+      "crossfade_frames": 573,
+      "scale": 0.850000023841858,
+      "cast_levels": 4,
+      "ssao_quality": 2,
+      "engine_exit_objectdb_warning_instances": 29,
+      "process_seconds": 49.625176499999995
+    },
+    "four85-low-contact": {
+      "adapter": "NVIDIA GeForce RTX 4060",
+      "startup_ms": 14292.4,
+      "next_zone_prep_ms": 13387.988,
+      "disk_acts": 6,
+      "disk_themes": 2,
+      "fallback_builds": 0,
+      "normal_play_max_displacement_px": 354.590179443359,
+      "crossfade_frames": 602,
+      "scale": 0.850000023841858,
+      "cast_levels": 4,
+      "ssao_quality": 1,
+      "engine_exit_objectdb_warning_instances": 38,
+      "process_seconds": 50.3558356
+    },
+    "four75": {
+      "adapter": "NVIDIA GeForce RTX 4060",
+      "startup_ms": 14338.254,
+      "next_zone_prep_ms": 13018.965,
+      "disk_acts": 6,
+      "disk_themes": 2,
+      "fallback_builds": 0,
+      "normal_play_max_displacement_px": 354.590179443359,
+      "crossfade_frames": 598,
+      "scale": 0.75,
+      "cast_levels": 4,
+      "ssao_quality": 2,
+      "engine_exit_objectdb_warning_instances": 40,
+      "process_seconds": 50.0957577
+    }
+  }
+}

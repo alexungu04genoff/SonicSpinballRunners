@@ -24,3 +24,9 @@ The laptop atlas/cascade reduction already applies in every case. Prefer the low
 ## Build machine
 
 Use an imported checkout with fresh Green Hill and Chemical Plant Endless bakes and the authored opening Act baked for both themes. Run `python tools/package_laptop_depth.py <new-output.zip>`. The package uses the established Windows .NET launcher, bundled Godot license notices and a per-file SHA-256 manifest. The frozen Thursday package remains independently reproducible.
+
+## Desktop qualification
+
+The extracted November 24 ZIP verified 3,583 payload files and ran all four cases on the RTX 4060. Each loaded six disk Acts and both backdrops with zero fallback builds. The identical launch displaced the Ball by 354.59 px in every case. All four recorded the crossfade, stationary and destination screenshots, and frame intervals for all seven phases. The four processes took about 50 seconds each on this desktop. [Qualification receipt and ZIP SHA-256](laptop-depth/desktop-qualification.json) · [Desktop frame intervals](laptop-depth/desktop-frame-intervals.tsv)
+
+No script or renderer errors occurred in the delivered run. Godot emitted its existing ObjectDB warning on process exit. A separate verbose reproduction showed two plain zero-reference RefCounted objects, consistent with the documented threaded-loader issue. The launcher retains the original logs. The UHD 620 pacing and visual decision still needs Tuesday's run. [Engine lifecycle investigation](LIFECYCLE_AUDIT.md)
