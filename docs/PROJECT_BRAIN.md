@@ -1,5 +1,11 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Green Hill floor composition trial — 2026-11-21
+
+On First Try Smooth Decor, one meadow cut follows the lower Ring trail better than the uninterrupted mowing stripes. A small cut-stone seat helps the red bumper land on the turf. Oversized seats took focus away from the targets. This is an isolated Prototype study awaiting Alex's motion/readability review. Rooftop's broad paving also deserves a look. Aquarium and Sky already have lanes. [Four frames, costs and the eight-theme audit](GREEN_HILL_FLOOR_STUDY.md)
+
+Tuesday's direct-EXE matrix compares smooth and four-tone cast at Laptop 85%, a lighter native SSAO sampling tier, and four-tone cast at 75%. It records the served court, moving Ball, tour, next-Zone preparation and crossfade. The laptop decision awaits the UHD 620 measurements. [Laptop instructions](TUESDAY_LAPTOP_DEPTH.md)
+
 ## Wider shadow and contact studies — 2026-11-20
 
 Alex tuned Green Hill in the live Lab and picked the shared defaults. Shadows use opacity 0.80, blur 10, bias 0.01/0.10 and distance 40. Forward+ uses 8× native SSAO. Fresh devices use a 4096 atlas, four cascades, medium filtering, FXAA on, 2× MSAA, 100% scale, authored faces and native cast shadows. Arcade daylight puts a low warm sun across the lane, cool fill in the recesses and four clean tones in the cast shadow. Cast and contact tones can be chosen separately. Native contact radius and contrast work independently of gain. Light still has sun elevation and azimuth. [Matched Green Hill captures and GPU times](DEVICE_SHADOW_QUALITY.md)

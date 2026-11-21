@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="640" height="640" viewBox="0 0 640 640">
+  <defs>
+    <!-- Two courses of cut sandstone around a recessed, eight-sided earth bed. -->
+    <g id="socket" transform="scale(.61)">
+      <path fill="#997449" d="M-15 -37 H15 L37 -15 V15 L15 37 H-15 L-37 15 V-15 Z"/>
+      <path fill="#b09863" d="M-14 -33 H14 L33 -14 V14 L14 33 H-14 L-33 14 V-14 Z"/>
+      <path fill="#886e49" d="M-11 -27 H11 L27 -11 V11 L11 27 H-11 L-27 11 V-11 Z"/>
+    </g>
+    <g id="hinge" transform="scale(.56)">
+      <path fill="#9c814f" d="M-21 -15 L-14 -21 H14 L21 -14 V14 L14 21 H-14 L-21 14 Z"/>
+      <path fill="#ba9e62" d="M-17 -12 L-11 -17 H11 L17 -11 V11 L11 17 H-11 L-17 11 Z"/>
+    </g>
+  </defs>
+  <use xlink:href="#socket" x="250" y="400"/>
+  <use xlink:href="#socket" x="400" y="450"/>
+  <use xlink:href="#socket" x="350" y="350"/>
+  <use xlink:href="#socket" x="450" y="200"/>
+  <use xlink:href="#hinge" x="250" y="600"/>
+  <use xlink:href="#hinge" x="350" y="600"/>
+  <use xlink:href="#hinge" x="500" y="400"/>
+  <use xlink:href="#hinge" x="100" y="400"/>
+  <path fill="#a68d59" d="M170 518 L170 511 L211 475 L224 521 Z"/>
+  <path fill="#92794c" d="M177 515 L210 482 L220 517 Z"/>
+</svg>
