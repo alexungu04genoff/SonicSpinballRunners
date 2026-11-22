@@ -104,8 +104,7 @@ func clip() -> void:
   if card.character_pose.is_visible_in_tree():
    seen_tricks[card.milestone] = true
    posed_frames += 1
-   var offset: Vector3 = card.character_pose.global_position - game.character.spin_root.global_position
-   follows_ball = follows_ball and not game.character.rolling_mesh.visible and Vector2(offset.x, offset.z).length() < 0.001
+   follows_ball = follows_ball and not game.character.rolling_mesh.visible and card.character_pose.global_position.is_equal_approx(game.character.spin_root.global_position)
    follows_ball = follows_ball and not game.ball.freeze and game.ball.collision_mask == collision_mask and game.ball.collision_layer == collision_layer
   previous = game.ball.position
   var image := root.get_texture().get_image()
@@ -256,7 +255,20 @@ func run() -> void:
    hit()
    check(scoring.multiplier == tier and card.visible and card.milestone == tier and card.points == game.score - start_score, "%s gets the exact receipt at ×%d" % [id, tier])
    var duration: float = [0.20, 0.25, 0.30][tier - 2]
-   card._process(duration - 0.001)
+   var neutral: Basis = game.presentation.camera.global_basis.orthonormalized()
+   var direction := 0.0
+   if unfolds:
+    var relative: Basis = neutral.inverse() * pose.global_basis.orthonormalized()
+    var angle := atan2(relative.z.x, relative.z.z)
+    direction = signf(angle)
+    check(relative.y.is_equal_approx(Vector3.UP) and is_equal_approx(absf(rad_to_deg(angle)), 30.0) and pose.global_position.is_equal_approx(game.character.spin_root.global_position), id + " enters the trick at the roll center, turned 30 degrees to one side")
+   card._process(duration * 0.5)
+   if unfolds: check(pose.global_basis.orthonormalized().is_equal_approx(neutral) and pose.global_position.is_equal_approx(game.character.spin_root.global_position), id + " faces the player at the roll center halfway through the trick")
+   card._process(duration * 0.5 - 0.001)
+   if unfolds:
+    var relative: Basis = neutral.inverse() * pose.global_basis.orthonormalized()
+    check(relative.y.is_equal_approx(Vector3.UP) and absf(rad_to_deg(atan2(relative.z.x, relative.z.z)) + direction * 30.0) < 0.01, id + " finishes 30 degrees on the opposite side")
+    check(pose.global_position.is_equal_approx(game.character.spin_root.global_position), id + " finishes at exactly the rolling model's pivot")
    check(pose.visible == unfolds and game.character.rolling_mesh.visible != unfolds, "The ×%d trick holds for its full beat" % tier)
    card._process(0.002)
    check(not pose.visible and game.character.rolling_mesh.visible and card.visible, "The ×%d trick restores the Ball while the receipt stays readable" % tier)

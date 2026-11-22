@@ -28,6 +28,7 @@ var milestone := 0
 var points := 0
 var age := 0.0
 var trick_remaining := 0.0
+var trick_duration := 0.0
 var _title_font := SystemFont.new()
 var character_pose: CharacterPose
 
@@ -58,7 +59,8 @@ func consider(id: String, hits: int, award: int) -> void:
  points = award
  if _on_ball(id):
   character_pose.start_trick()
-  trick_remaining = TRICK_SECONDS.get(hits, MILESTONE_TRICK_SECONDS) if character_pose.visible else 0.0
+  trick_duration = TRICK_SECONDS.get(hits, MILESTONE_TRICK_SECONDS)
+  trick_remaining = trick_duration if character_pose.visible else 0.0
  if not visible:
   age = 0.0
   show()
@@ -86,7 +88,7 @@ func _process(delta: float) -> void:
  age += delta
  if trick_remaining > 0.0:
   trick_remaining = maxf(0.0, trick_remaining - delta)
-  if trick_remaining > 0.0: character_pose.place_trick()
+  if trick_remaining > 0.0: character_pose.place_trick(1.0 - trick_remaining / trick_duration)
   else: character_pose.restore_ball()
  if age >= DURATION:
   hide()

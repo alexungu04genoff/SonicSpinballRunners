@@ -168,17 +168,21 @@ func run() -> void:
   elif clip != lab.roll_clip and clip != lab.Assets.FLIGHT_CLIPS.get(character, "") and clip != lab.Assets.DASH_RING[game.character_id]:
    lab._process(0.17)
    var model: Node3D = lab.held if clip in lab.trick_names else lab.rig
-   check(model.global_basis.orthonormalized().is_equal_approx(lab.orbit.global_basis.orthonormalized()), clip + " faces the top-down camera as the animation plays")
    if clip in lab.trick_names:
+    var relative: Basis = lab.orbit.global_basis.orthonormalized().inverse() * model.global_basis.orthonormalized()
+    var yaw_degrees := absf(rad_to_deg(atan2(relative.z.x, relative.z.z)))
+    check(relative.y.is_equal_approx(Vector3.UP) and yaw_degrees > 6.0 and yaw_degrees < 7.0, clip + " turns toward the player during playback")
     lab._toggle_playback()
     lab.yaw = 0.45
     lab.pitch = 0.48
+    lab._process(0.1)
     lab._aim_camera()
-    check(model.global_basis.orthonormalized().is_equal_approx(lab.orbit.global_basis.orthonormalized()), "A held trick stays upright when orbiting with playback paused")
+    check(model.global_basis.orthonormalized().is_equal_approx(lab.orbit.global_basis.orthonormalized() * relative), "A paused trick keeps its facing angle when orbiting")
     lab.yaw = 0.0
     lab.pitch = 0.0
     lab._aim_camera()
     lab._toggle_playback()
+   else: check(model.global_basis.orthonormalized().is_equal_approx(lab.orbit.global_basis.orthonormalized()), clip + " faces the top-down camera as the animation plays")
   if clip == lab.Assets.BOOST[character]:
    var skins := lab.rig.find_children("*", "MeshInstance3D", true, false) as Array
    check(not skins.is_empty() and skins[0].is_visible_in_tree() and skins[0].skin != null, "A visible skinned mesh is bound to the original Runners skeleton")
@@ -471,7 +475,8 @@ func review_flight(session: Node, game: Node) -> void:
   card._process(0.3)
   expected = (expected + 1) % 3
   check(pose.visible and pose.mesh == pose.tricks[expected] and not pose.motion_rig.visible, character.capitalize() + " performs the next trick at hit %d" % milestone)
-  check(pose.global_basis.orthonormalized().is_equal_approx(game.presentation.camera.global_basis.orthonormalized()), character.capitalize() + "'s live trick %d faces the play camera" % (expected + 1))
+  var relative: Basis = game.presentation.camera.global_basis.orthonormalized().inverse() * pose.global_basis.orthonormalized()
+  check(relative.y.is_equal_approx(Vector3.UP) and is_equal_approx(absf(rad_to_deg(atan2(relative.z.x, relative.z.z))), 20.625), character.capitalize() + "'s trick turns horizontally relative to the play camera")
   card._process(card.DURATION)
   check(pose.motion_rig.visible and not game.character.rolling_mesh.visible, "The live flight rig resumes after the trick")
  specials._physics_process(specials.flight_remaining + 0.01)

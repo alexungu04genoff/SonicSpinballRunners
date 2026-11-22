@@ -40,17 +40,22 @@ func review_centers(lab: Node, id: String) -> void:
   var rolling: bool = clip == preview.roll_clip
   var moving: bool = preview.rig.visible
   var is_boost: bool = clip == Assets.BOOST[id]
-  var phases := 16 if is_boost else (8 if rolling or moving else 1)
+  var phases := 16 if is_boost else 8
   var worst := 0.0
   for phase in phases:
    var t := float(phase) / phases
    if is_boost: lab.character.roll_heading = Vector2.UP.rotated(TAU * t)
    if clip == Assets.FLIGHT_CLIPS.get(id): preview.flight_heading.x = -1.0 if phase % 2 == 0 else 1.0
    if rolling: preview.roll_angle = t * TAU
+   if preview.held.visible: preview.trick_time = t * 2.0 * preview.Celebration.MILESTONE_TRICK_SECONDS
    if moving: preview.player.seek(t * preview.player.current_animation_length, true)
    preview._orient_model()
    await RenderingServer.frame_post_draw
    var model: MeshInstance3D = skinned if moving else (preview.curl if rolling else preview.held)
+   if preview.held.visible:
+    check(model.global_position.is_equal_approx(lab.character.spin_root.global_position), id + " turns around the roll center at every trick angle")
+    # Measure the authored silhouette head-on. Shoes and quills turn with the pose.
+    if t != 0.25 and t != 0.75: continue
    var mesh: Mesh = model.bake_mesh_from_current_skeleton_pose() if moving else model.mesh
    var footprint := Rect2()
    var first := true

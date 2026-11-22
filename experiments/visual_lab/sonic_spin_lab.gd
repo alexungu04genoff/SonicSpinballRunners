@@ -3,6 +3,7 @@ extends PanelContainer
 signal resume_requested
 const Assets = preload("res://experiments/visual_lab/runners_sonic_assets.gd")
 const Pose = preload("res://scripts/prototype/sonic_combo_pose.gd")
+const Celebration = preload("res://scripts/prototype/combo_celebration.gd")
 const CLIPS := {
  "sn_ball_loop": "Spin ball", "sn_jump_trick": "Jump trick 1", "sn_jump_trick_02": "Jump trick 2",
  "sn_jump_trick_03": "Jump trick 3", "sn_boost_loop": "Boost run",
@@ -38,6 +39,8 @@ var playing := true
 var yaw := 0.0
 var pitch := 0.0
 var roll_angle := 0.0
+var trick_time := 0.0
+var trick_turn := 0.0
 var tail_time := 0.0
 var flight_heading := Vector2.RIGHT
 var hint: Label
@@ -219,7 +222,10 @@ func _select_clip(index: int) -> void:
  var rolling := active_clip == roll_clip
  var trick := trick_names.find(active_clip)
  held.visible = trick >= 0 and not tricks.is_empty()
- if held.visible: held.mesh = tricks[trick]
+ if held.visible:
+  held.mesh = tricks[trick]
+  trick_time = 0.0
+  trick_turn = pose.pick_trick_turn()
  if curl: curl.visible = rolling
  if trailing_tails: trailing_tails.visible = rolling
  if rig:
@@ -309,6 +315,7 @@ func view_state() -> Dictionary:
  for id: String in sliders: values[id] = sliders[id].value
  return {"clip": active_clip, "playing": playing, "sliders": values, "pitch": pitch, "yaw": yaw,
   "angle": roll_angle, "tails": tail_time, "heading": flight_heading, "shell": shell_on_poses.button_pressed,
+  "trick_time": trick_time, "trick_turn": trick_turn,
   "time": player.current_animation_position if player and player.is_playing() else 0.0}
 
 func restore_view(saved: Dictionary) -> void:
@@ -325,6 +332,8 @@ func restore_view(saved: Dictionary) -> void:
  if player and player.is_playing(): player.seek(saved.time, true)
  if playing != saved.playing: _toggle_playback()
  roll_angle = saved.angle
+ trick_time = saved.trick_time
+ trick_turn = saved.trick_turn
  tail_time = saved.tails
  flight_heading = saved.heading
  _update_preview()
@@ -352,6 +361,7 @@ func _process(delta: float) -> void:
  var flying: bool = active_clip == Assets.FLIGHT_CLIPS.get(pose.character, "")
  if playing:
   if player and rig.visible: player.advance(delta)
+  if held.visible: trick_time = fposmod(trick_time + delta, 2.0 * Celebration.MILESTONE_TRICK_SECONDS)
   if flying:
    var steer: float = game.controls.virtual_steering if game.controls.virtual_enabled else Input.get_axis("steer_left", "steer_right")
    if not is_zero_approx(steer): flight_heading = Vector2(signf(steer), 0)
@@ -372,6 +382,9 @@ func _orient_model() -> void:
   # The two exterior tails share the heading. Only the shell and body spin.
   frame = game.character.spin_root.basis.orthonormalized()
   if trailing_tails: Assets.sample_roll_tails(trailing_tails, tail_time)
+ elif held.visible:
+  var progress := pingpong(trick_time / Celebration.MILESTONE_TRICK_SECONDS, 1.0)
+  frame = Pose.trick_basis(orbit, trick_turn, progress)
  elif active_clip == Assets.DASH_RING.get(pose.character):
   var direction: Vector2 = pose.motion_direction if pose.motion == &"spring" else Vector2.UP
   frame = Pose.spring_basis(orbit, pivot.global_position, direction)
@@ -386,9 +399,7 @@ func _orient_model() -> void:
  pivot.global_basis = frame.scaled(Vector3.ONE * pose.radius)
  # Lift in table space even when the camera is looking straight down.
  var lift := 0.0
- if held.visible:
-  lift = Pose.trick_lift(art.global_basis, held.mesh.get_aabb(), pose.radius)
- elif rig and rig.visible:
+ if rig and rig.visible:
   var fit_yaw := flight_heading.x * Pose.FLIGHT_TURN if active_clip == Assets.FLIGHT_CLIPS.get(pose.character) else atan2(frame.z.x, frame.z.z)
   rig.position = -Assets.pose_center(pose.motion_fit, player, fit_yaw) / source_radius
   var half_height := -rig.position.y * art.global_basis.get_scale().y

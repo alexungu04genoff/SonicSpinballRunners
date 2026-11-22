@@ -4,6 +4,7 @@ const Assets = preload("res://experiments/visual_lab/runners_sonic_assets.gd")
 const LEGACY_POSE := "res://experiments/visual_lab/local/runtime/sonic_sa1_combo.glb"
 const Presenter = preload("res://experiments/visual_lab/sonic_presenter.gd")
 const FLIGHT_TURN := PI / 6.0
+const TRICK_TURN := PI / 6.0
 const DEFAULTS := {"model": 1.0, "ball": 1.0, "blur": 1.0, "speed": Presenter.RUNNERS_ROLL_SPEED, "opacity": 0.30}
 var settings := DEFAULTS.duplicate()
 var boost_speed := Assets.BOOST_SPEED
@@ -11,6 +12,8 @@ var presenter: Node3D
 var radius: float
 var tricks: Array[Mesh] = []
 var trick_index := -1
+var trick_turn := 0.0
+var trick_rng := RandomNumberGenerator.new()
 var runners_roll: MeshInstance3D
 var trailing_tails: MeshInstance3D
 var tail_time := 0.0
@@ -236,10 +239,6 @@ static func player_facing_basis(camera: Camera3D, steering_side := 0.0) -> Basis
 static func flight_lift(half_height: float, ball_radius: float) -> float:
  return maxf(0.0, half_height - ball_radius) + ball_radius * 0.3
 
-static func trick_lift(frame: Basis, bounds: AABB, ball_radius: float) -> float:
- var oriented := Transform3D(frame, Vector3.ZERO) * bounds
- return maxf(0.0, -oriented.position.y - ball_radius * 0.82)
-
 static func spring_basis(camera: Camera3D, at: Vector3, direction: Vector2) -> Basis:
  var view := player_facing_basis(camera)
  var screen := camera.unproject_position(at + TablePresentation.map_point(direction)) - camera.unproject_position(at)
@@ -313,19 +312,23 @@ func start_trick() -> void:
   sets[character].trick_index = trick_index
   mesh = tricks[trick_index]
  if motion in [&"loop", &"target_boost"] or presenter.specials.smash_remaining > 0.0: return
+ trick_turn = pick_trick_turn()
  show()
  _sync_visibility()
- place_trick()
+ place_trick(0.0)
 
-func place_trick() -> void:
+func pick_trick_turn() -> float:
+ return TRICK_TURN if trick_rng.randi_range(0, 1) else -TRICK_TURN
+
+static func trick_basis(camera: Camera3D, turn: float, progress: float) -> Basis:
+ var angle := lerpf(-turn, turn, smoothstep(0.0, 1.0, progress))
+ return player_facing_basis(camera) * Basis(Vector3.UP, angle)
+
+func place_trick(progress: float) -> void:
  if not visible: return
- var facing := player_facing_basis(presenter.table.camera)
  var model_scale := radius * float(settings.model) if not tricks.is_empty() else radius * 4.4
- var frame := Transform3D(facing.scaled(Vector3.ONE * model_scale), Vector3.ZERO)
- var center: Vector3 = presenter.spin_root.global_position
- # Lift the lowest corner just clear of the surface under the moving Ball.
- frame.origin = center + Vector3.UP * trick_lift(frame.basis, mesh.get_aabb(), radius)
- global_transform = frame
+ var facing := trick_basis(presenter.table.camera, trick_turn, progress)
+ global_transform = Transform3D(facing.scaled(Vector3.ONE * model_scale), presenter.spin_root.global_position)
 
 func restore_ball() -> void:
  if not visible: return
