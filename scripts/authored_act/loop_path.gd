@@ -11,7 +11,7 @@ const PITCH_ANGLE := atan2(LANE_SHIFT, TAU * RADIUS)
 const CONE := PI / 6.0
 const STEPS := 24
 const POINTS := 1000
-const RIDE_SPEED_FACTOR := 0.7
+const RIDE_SPEED_FACTOR := 0.525
 # The flared banks start on the rising tread and end at the outside of each shoulder.
 const BANK_START_ANGLE := PI / 5.0
 const BANK_DEPTH := RADIUS * 0.14

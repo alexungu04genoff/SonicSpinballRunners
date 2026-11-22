@@ -66,7 +66,7 @@ func ride(game: Node, item: Dictionary) -> PackedVector3Array:
   var tick := Engine.get_physics_frames()
   if tick > last_tick:
    var dt := float(tick - last_tick) / Engine.physics_ticks_per_second
-   var expected: float = manager.speed * 0.7
+   var expected: float = manager.speed * 0.525
    paced = paced and absf((manager.progress - last_distance) / dt - expected) < 0.1 and is_equal_approx(game.ball.track_speed, expected)
    observed_ticks += 1
   last_tick = tick
@@ -85,7 +85,7 @@ func ride(game: Node, item: Dictionary) -> PackedVector3Array:
  check(inverted and rendered_inverted, "Rendered character turns upside down at the crest")
  if pose.motion_rig:
   check(boost_held and pose.motion == &"" and pose.runners_roll.is_visible_in_tree(), "Boost lasts for the entire authored Loop and the curl returns on release")
- check(paced and observed_ticks > 0, "Actual track travel and animation speed follow 70 percent of captured speed")
+ check(paced and observed_ticks > 0, "The Ball covers the track at 52.5 percent of its captured speed")
  check(deviation < 0.15, "Real body follows the authored centerline and height after entry (%.3f px)" % deviation)
  check(game.ball.linear_velocity.normalized().dot(Objects.forward(item)) > 0.999, "Exit velocity follows the authored tangent")
  check(absf(game.ball.linear_velocity.length() - release_speed) < 6.0, "The slowed ride preserves captured launch momentum at release")
@@ -197,11 +197,13 @@ func blocked_release(game: Node, item: Dictionary) -> void:
  for stop_return: bool in [false, true]:
   shoot(game, item)
   check(await wait_for(func(): return game.ball.in_loop, 30), "Enter before live obstruction")
+  var entry_speed := absf(game.active.runtime.mechanics.speed)
   var entrance: StaticBody2D
   if stop_return: entrance = blocker(game, Vector2(item.position) - forward * 9)
   var pose = game.combo_celebration.character_pose
+  check(await wait_for(func(): return game.ball.in_loop and game.ball.track_speed < 0, 300), "The obstructed Loop reaches its return leg")
+  check(is_equal_approx(game.ball.track_speed, -0.525 * entry_speed), "Rollback uses the same guided speed in reverse")
   if pose.motion_rig:
-   check(await wait_for(func(): return game.ball.in_loop and game.ball.track_speed < 0, 300), "The obstructed Loop reaches its return leg")
    # process_frame is emitted before the presenter samples the new track velocity.
    await process_frame
    var heading: Vector3 = pose.motion_rig.global_basis.z.normalized()

@@ -365,7 +365,7 @@ func review_traversal(session: Node, game: Node) -> void:
  if ball.in_loop:
   session._open_spin_lab()
   var loop_player: AnimationPlayer = session.spin_lab.player
-  check(is_equal_approx(loop_player.get_playing_speed() / loop_player.current_animation_length, 3.375), "F8 previews the faster Loop stride during a ride")
+  check(is_equal_approx(loop_player.get_playing_speed() / loop_player.current_animation_length, 3.0), "F8 previews three strides per second during a Loop ride")
   session._resume_spin_lab()
  var boosted := ball.in_loop
  var inverted := false

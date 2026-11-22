@@ -68,7 +68,10 @@ func review_panel_and_loop(id: String, panel: Vector2) -> void:
   if game.ball.in_loop: break
   await frames(1)
  check(game.ball.in_loop and pose.motion == &"loop" and player.current_animation == pose.Assets.BOOST[id], id + " carries its Boost into the Loop")
- if pose.motion == &"loop": check_stride_at_travel_speeds(pose, 3.375)
+ if pose.motion == &"loop":
+  var captured_speed: float = game.active.runtime.mechanics.speed
+  check(is_equal_approx(game.ball.track_speed, captured_speed * 0.525), id + " rides at 52.5 percent of captured speed")
+  check_stride_at_travel_speeds(pose, 3.0)
  for i in 360:
   if not game.ball.in_loop: break
   await frames(1)
