@@ -6,7 +6,7 @@ Each character combines a physics profile with one shared Type Action. Sonic, Sh
 
 ## Speed: Target Boost
 
-Speed characters uncurl into their own Sonic Runners boost animations during the guided approach. Their feet face the table and their heading turns around its normal to follow the live target. Target Boost uses the same stride rate as dash panels, Loops and the F8 preview. At the default 1.5× setting, each stride takes about 0.30 seconds for every character. Physical contact or cancellation restores the roll. With the painted character art, a tapered wake points away from the target. The F8 preview inherits the active clip and target heading.
+Speed characters uncurl into their own Sonic Runners boost animations during the guided approach. Their feet face the table and their heading turns around its normal to follow the live target. Target Boost uses the same stride rate as dash panels, Loops and the F8 preview. At the default 1.2× setting, each stride takes about 0.37 seconds for every character, regardless of travel speed. Physical contact or cancellation restores the roll. With the painted character art, a tapered wake points away from the target. The F8 preview inherits the active clip and target heading.
 
 Acquisition preserves the existing full-ball clear-path checks and fresh combo-builder priority, choosing the nearest eligible target within each priority class. Valid targets are active-Act round/triangle bumpers and living enemies. Very close targets no longer have the old 55-pixel exclusion. A failed acquisition keeps the meter.
 

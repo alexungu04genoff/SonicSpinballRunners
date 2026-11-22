@@ -103,7 +103,7 @@ func run() -> void:
   if preview.player:
    var prefix: String = Assets.PREFIX[id]
    check(not choose(preview.picker, prefix + "_run_loop") and not choose(preview.picker, prefix + "_dash_loop"), id + " exposes only Boost for running")
-   check(choose(preview.picker, Assets.BOOST[id]) and preview.player.current_animation == Assets.BOOST[id] and is_equal_approx(preview.player.get_playing_speed() / preview.player.current_animation_length, 3.375), id + " plays its own fast Boost run")
+   check(choose(preview.picker, Assets.BOOST[id]) and preview.player.current_animation == Assets.BOOST[id] and is_equal_approx(preview.player.get_playing_speed() / preview.player.current_animation_length, 2.7), id + " plays its own Boost at 2.7 strides per second")
    if "--review-centers" in OS.get_cmdline_user_args(): await review_centers(lab, id)
  check(choose(lab.character_picker, "tails"), "Return to Tails for Flight review")
  await process_frame
