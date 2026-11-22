@@ -56,6 +56,7 @@ func ride(game: Node, item: Dictionary) -> PackedVector3Array:
  var boost_held := true
  var paced := true
  var release_speed := absf(manager.speed)
+ var expected_ride_speed := Path.LENGTH * float(item.properties.scale) / 2.0
  var observed_ticks := 0
  var last_distance: float = manager.progress
  var last_tick := Engine.get_physics_frames()
@@ -66,8 +67,7 @@ func ride(game: Node, item: Dictionary) -> PackedVector3Array:
   var tick := Engine.get_physics_frames()
   if tick > last_tick:
    var dt := float(tick - last_tick) / Engine.physics_ticks_per_second
-   var expected: float = manager.speed * 0.525
-   paced = paced and absf((manager.progress - last_distance) / dt - expected) < 0.1 and is_equal_approx(game.ball.track_speed, expected)
+   paced = paced and absf((manager.progress - last_distance) / dt - expected_ride_speed) < 0.1 and is_equal_approx(game.ball.track_speed, expected_ride_speed)
    observed_ticks += 1
   last_tick = tick
   last_distance = manager.progress
@@ -85,7 +85,7 @@ func ride(game: Node, item: Dictionary) -> PackedVector3Array:
  check(inverted and rendered_inverted, "Rendered character turns upside down at the crest")
  if pose.motion_rig:
   check(boost_held and pose.motion == &"" and pose.runners_roll.is_visible_in_tree(), "Boost lasts for the entire authored Loop and the curl returns on release")
- check(paced and observed_ticks > 0, "The Ball covers the track at 52.5 percent of its captured speed")
+ check(paced and observed_ticks > 0, "The Ball covers half the authored track length per second")
  check(deviation < 0.15, "Real body follows the authored centerline and height after entry (%.3f px)" % deviation)
  check(game.ball.linear_velocity.normalized().dot(Objects.forward(item)) > 0.999, "Exit velocity follows the authored tangent")
  check(absf(game.ball.linear_velocity.length() - release_speed) < 6.0, "The slowed ride preserves captured launch momentum at release")
@@ -197,12 +197,12 @@ func blocked_release(game: Node, item: Dictionary) -> void:
  for stop_return: bool in [false, true]:
   shoot(game, item)
   check(await wait_for(func(): return game.ball.in_loop, 30), "Enter before live obstruction")
-  var entry_speed := absf(game.active.runtime.mechanics.speed)
+  var forward_ride_speed: float = game.ball.track_speed
   var entrance: StaticBody2D
   if stop_return: entrance = blocker(game, Vector2(item.position) - forward * 9)
   var pose = game.combo_celebration.character_pose
   check(await wait_for(func(): return game.ball.in_loop and game.ball.track_speed < 0, 300), "The obstructed Loop reaches its return leg")
-  check(is_equal_approx(game.ball.track_speed, -0.525 * entry_speed), "Rollback uses the same guided speed in reverse")
+  check(is_equal_approx(game.ball.track_speed, -forward_ride_speed), "Rollback uses the same two-second pace in reverse")
   if pose.motion_rig:
    # process_frame is emitted before the presenter samples the new track velocity.
    await process_frame
@@ -247,7 +247,8 @@ func prototype(game: Node) -> void:
   last_trace = trace
   lengths[id] = trace.size()
  print("RIDE | 550 px/s | ticks ", lengths)
- check(lengths.small_side < lengths.straight_drop and lengths.straight_drop < lengths.tall_right, "Larger track takes longer at the same speed")
+ for id: String in lengths:
+  check(absi(int(lengths[id]) - 2 * Engine.physics_ticks_per_second) <= 1, id + " completes in two seconds")
  var score_before: int = game.score
  var rings_before: int = game.rings_collected
  var practice_loop: Dictionary = manager.by_id.small_side

@@ -70,7 +70,7 @@ The Atmosphere Lab now shows the same characters as Prototype. F8 opens the char
 
 ## Loop banks and pace — 2026-11-22
 
-Free shots can cross the center of the arch. Both ground-level banks return the Ball like terrain. Only a valid shot into the marked mouth starts the ride. Guided travel runs at 52.5% of the captured speed, including on rollback, and release restores the full shot. [Loop Workshop](LOOP_WORKSHOP.md)
+Free shots can cross the center of the arch. Both ground-level banks return the Ball like terrain. Only a valid shot into the marked mouth starts the ride. A complete pass takes two seconds regardless of Loop size or entry speed. A blocked exit sends the Ball back at the same pace. Release restores the captured shot speed. [Loop Workshop](LOOP_WORKSHOP.md)
 
 ## Grounded Launch Tube — 2026-11-22
 

@@ -643,7 +643,7 @@ func _advance_loop(state: PhysicsDirectBodyState2D, dt: float) -> void:
  var item := ramp
  var size_value := float(item.properties.scale)
  var length := LoopPath.LENGTH * size_value
- var ride_speed := speed * LoopPath.RIDE_SPEED_FACTOR
+ var ride_speed := signf(speed) * length / LoopPath.RIDE_SECONDS
  progress = clampf(progress + ride_speed * dt, 0.0, length)
  var sample := LoopPath.sample(item, progress)
  var point := Vector2(sample.x, sample.z) + loop_entry_offset * (1.0 - smoothstep(0.0, LoopPath.LEAD * size_value, progress))

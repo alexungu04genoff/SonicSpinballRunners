@@ -16,7 +16,7 @@ Power characters use **Table Smash**. The Ball holds its position on the playfie
 
 ## Base-game roster and authored traversal — 2026-11-21
 
-Green Hill (Sonic 1), Casino Night (Sonic 2), Ice Cap (Sonic 3), Rooftop Run (Unleashed) and Aquarium Park (Colors) form the base game. Both run modes use these five themes. The [Loop Workshop](LOOP_WORKSHOP.md) pairs a terrain ramp with an upright Loop, alongside separate flipper shots. Authors set uniform size, direction, entry speed, Ring reward and completion score. A loose Ball can cross the opening and rebound off either ground-level bank. A captured Ball rides the Loop at 52.5% of its captured speed and regains the full captured speed on release. The routes are experimental pending a feel review.
+Green Hill (Sonic 1), Casino Night (Sonic 2), Ice Cap (Sonic 3), Rooftop Run (Unleashed) and Aquarium Park (Colors) form the base game. Both run modes use these five themes. The [Loop Workshop](LOOP_WORKSHOP.md) pairs a terrain ramp with an upright Loop, alongside separate flipper shots. Authors set uniform size, direction, entry speed, Ring reward and completion score. A loose Ball can cross the opening and rebound off either ground-level bank. A full Loop ride takes two seconds at every authored scale. The Ball regains its captured speed on release. The routes are experimental pending a feel review.
 
 ## Optional Launch Tube — 2026-11-18
 
