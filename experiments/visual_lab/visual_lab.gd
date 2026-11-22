@@ -3,6 +3,7 @@ extends "res://scripts/game.gd"
 const ThemedPresentation := preload("res://scripts/themes/themed_presentation.gd")
 const ThemeRegistry := preload("res://scripts/themes/theme_registry.gd")
 const SonicPresenter := preload("res://experiments/visual_lab/sonic_presenter.gd")
+const Celebration = preload("res://scripts/prototype/combo_celebration.gd")
 const RetroFilter := preload("res://scripts/retro/retro_filter.gd")
 const RetroControls := preload("res://scripts/retro/retro_controls.gd")
 var retro_filter: RetroFilter
@@ -21,6 +22,7 @@ var play_buttons: HBoxContainer
 var study_buttons: HBoxContainer
 var overview_button: Button
 var character: Node3D
+var character_pose: Celebration.CharacterPose
 var lab_ui: CanvasLayer
 var act_ui: CanvasLayer
 var pose_label: Label
@@ -241,11 +243,13 @@ func _build_presentation() -> void:
  character.table = presentation
  character.specials = specials
  presentation.add_child(character)
+ character_pose = Celebration.attach_character_pose(character)
 
 func _rebuild_presentation() -> void:
  if is_instance_valid(rooftop_materials): rooftop_materials.restore_lighting()
  super._rebuild_presentation()
  character.refresh_playfield()
+ character_pose = Celebration.attach_character_pose(character)
  if is_instance_valid(rooftop_materials): rooftop_materials.refresh()
  if is_instance_valid(ice_materials): ice_materials.refresh()
  if is_instance_valid(aquarium_materials): aquarium_materials.refresh()

@@ -135,8 +135,11 @@ func _apply_roll_settings() -> void:
  var sphere: SphereMesh = presenter.rolling_mesh.mesh
  sphere.radius = radius * float(settings.ball)
  sphere.height = sphere.radius * 2.0
+ presenter.trail.silhouette_scale = float(settings.ball)
  presenter.roll_speed_scale = float(settings.speed) if Assets.CURLS.has(character) else 1.0
  if runners_roll:
+  var shell_scale := float(settings.ball) if float(settings.opacity) > 0.0 else 0.0
+  presenter.trail.silhouette_scale = maxf(float(settings.model), shell_scale)
   runners_roll.scale = Vector3.ONE * radius * float(settings.model)
   if trailing_tails: trailing_tails.scale = runners_roll.scale
   presenter.rolling_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

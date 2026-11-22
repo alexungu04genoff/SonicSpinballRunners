@@ -26,6 +26,49 @@ func check_ribbon_join(trail: MeshInstance3D, center: Vector3, camera: Camera3D)
   check(is_zero_approx(uv[0].x) and absf(uv[2].x - stride) < 0.01, "Head distance uses ball radii even across a long frame")
   check(uv[-1].x >= trail.JOIN_RADII and colors[0].a > 0.99 and colors[-1].a < 0.01, "Body reaches full width and oldest end still fades out")
 
+func check_silhouette_fade() -> void:
+ var view := SubViewport.new()
+ view.size = Vector2i(320, 200)
+ view.own_world_3d = true
+ view.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+ root.add_child(view)
+ var camera := Camera3D.new()
+ camera.environment = Environment.new()
+ camera.environment.background_mode = Environment.BG_COLOR
+ camera.environment.background_color = Color.BLACK
+ view.add_child(camera)
+ var trail := preload("res://experiments/visual_lab/motion_trail.gd").new()
+ view.add_child(trail)
+ trail.tint = Color.WHITE
+ trail.radius = 0.2
+ var head := Vector3(0.8, 0.15, -5.0)
+ for i in 41:
+  trail.advance(0.001, head + Vector3.LEFT * trail.radius * (40 - i) * 0.25, true, camera)
+ camera.fov = 28.0
+ camera.size = 2.5
+ for projection in [Camera3D.PROJECTION_PERSPECTIVE, Camera3D.PROJECTION_ORTHOGONAL]:
+  camera.projection = projection
+  for scale_factor: float in [1.0, 1.5]:
+   trail.silhouette_scale = scale_factor
+   trail.advance(0.0, head, false, camera)
+   await process_frame
+   await RenderingServer.frame_post_draw
+   var pixels := view.get_texture().get_image()
+   var levels: Array[float] = []
+   for distance: float in [1.0, 1.35, 1.65, 2.0]:
+    var point := head + Vector3.LEFT * trail.radius * scale_factor * distance
+    levels.append(pixels.get_pixelv(Vector2i(camera.unproject_position(point).round())).r)
+   check(levels[0] < 0.01 and levels[1] > levels[0] and levels[2] > levels[1] and levels[3] > levels[2], "Ribbon fades to zero at the visible rim and brightens gradually behind it")
+  # The ball can cross an older section after emission stops or direction reverses.
+  var crossing := head + Vector3.LEFT * trail.radius * 5.0
+  var crossing_pixel := camera.unproject_position(crossing)
+  trail.advance(0.0, crossing - camera.project_ray_normal(crossing_pixel) * 1.8, false, camera)
+  await process_frame
+  await RenderingServer.frame_post_draw
+  var under_ball := Vector2i(crossing_pixel.round())
+  check(view.get_texture().get_image().get_pixelv(under_ball).r < 0.01, "An older trail segment cannot shine through the ball")
+ view.free()
+
 func run() -> void:
  var game = load("res://experiments/visual_lab/visual_lab.tscn").instantiate()
  root.add_child(game)
@@ -44,8 +87,10 @@ func run() -> void:
  var velocity: Vector2 = game.ball.linear_velocity
  var position: Vector2 = game.ball.position
  for id in CharacterSpecials.CHARACTER_IDS:
-  actor.character_id = id
-  actor._apply_character_color()
+  game.specials.select_character(id)
+  var roll: MeshInstance3D = game.character_pose.runners_roll
+  if roll or "--require-runners-set" in OS.get_cmdline_user_args():
+   check(roll != null and roll.is_visible_in_tree() and roll.name == "Runners%sRoll" % id.capitalize(), id + " previews the current Runners curl")
   for step in 32:
    var angle := float(step) / 31.0 * 1.8
    var point := center + Vector3(sin(angle) * 0.7, 0.0, cos(angle) * 0.7)
@@ -57,7 +102,9 @@ func run() -> void:
   if DisplayServer.get_name() != "headless":
    await RenderingServer.frame_post_draw
    game.view.get_texture().get_image().save_png("res://test-results/character-motion-" + id + ".png")
- if DisplayServer.get_name() != "headless": check_ribbon_join(trail, center, camera)
+ if DisplayServer.get_name() != "headless":
+  check_ribbon_join(trail, center, camera)
+  await check_silhouette_fade()
  var ages: Array = trail.ages.duplicate()
  trail.advance(0.0, actor.spin_root.position, true, camera)
  check(trail.ages == ages, "Paused ribbon retains its age and samples")
@@ -83,8 +130,7 @@ func run() -> void:
   actor._advance_spin(1.0 / 120.0, Vector2.ZERO)
  check(actor.spin_root.basis.is_equal_approx(at_60), "Spin rate remains consistent at 60 and 120 FPS")
  if DisplayServer.get_name() != "headless":
-  actor.character_id = "sonic"
-  actor._apply_character_color()
+  game.specials.select_character("sonic")
   for frame in 18:
    actor._advance_spin(1.0 / 30.0, Vector2.ZERO)
    await RenderingServer.frame_post_draw

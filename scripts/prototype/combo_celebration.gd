@@ -32,9 +32,6 @@ var trick_duration := 0.0
 var _title_font := SystemFont.new()
 var character_pose: CharacterPose
 
-func install_character_pose(presenter: Node3D) -> void:
- character_pose = attach_character_pose(presenter)
-
 static func attach_character_pose(presenter: Node3D) -> CharacterPose:
  var pose := CharacterPose.new()
  pose.name = "CharacterComboPose"

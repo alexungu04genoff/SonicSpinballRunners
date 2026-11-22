@@ -448,7 +448,7 @@ func _build_hud() -> void:
  hud.add_child(score_overlay)
  combo_celebration = preload("res://scripts/prototype/combo_celebration.gd").new()
  hud.add_child(combo_celebration)
- combo_celebration.install_character_pose(character)
+ combo_celebration.character_pose = character_pose
  set_celebration_retro("--combo-cut-in-retro" in OS.get_cmdline_user_args())
  scorecraft.builder_hit_resolved.connect(_on_builder_hit)
  scorecraft.combo_ended.connect(func(_reason: String, _chain: int, _tier: int): combo_celebration.reset_combo())

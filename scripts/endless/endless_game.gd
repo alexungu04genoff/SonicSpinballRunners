@@ -38,6 +38,7 @@ var _foreground_ssao := Vector3(-1.0, -1.0, -1.0)
 var retire_nodes: Array[Node] = []
 var active: RefCounted
 var character: Node3D
+var character_pose: Node3D
 var active_sequence := 0
 var next_zone_to_plan := 0
 var library_ready := false
@@ -226,6 +227,7 @@ func _build_presentation() -> void:
  character.table = presentation
  character.specials = specials
  presentation.add_child(character)
+ character_pose = preload("res://scripts/prototype/combo_celebration.gd").attach_character_pose(character)
 
 func _process(delta: float) -> void:
  if closing: return

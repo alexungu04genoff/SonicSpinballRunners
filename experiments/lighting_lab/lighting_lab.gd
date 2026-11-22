@@ -3,10 +3,8 @@ extends "res://experiments/visual_lab/visual_lab.gd"
 var lighting_controls: CanvasLayer
 const PlaytestSnapshot = preload("res://scripts/atmosphere/playtest_snapshot.gd")
 const SpinPreview = preload("res://experiments/visual_lab/sonic_spin_lab.gd")
-const Celebration = preload("res://scripts/prototype/combo_celebration.gd")
 const Profile = preload("res://scripts/prototype/build_profile.gd")
 const PLAY_CAMERAS = preload("res://scripts/endless/endless_game.gd").PLAY_CAMERAS
-var character_pose: SpinPreview.Pose
 var character_tab: VBoxContainer
 var character_picker: OptionButton
 var preview: SpinPreview
@@ -82,14 +80,9 @@ func _rebuild_presentation() -> void:
  if inspecting: _remove_preview()
  if is_instance_valid(lighting_controls): lighting_controls.restore_original()
  super._rebuild_presentation()
- character_pose = Celebration.attach_character_pose(character)
  _hide_material_controls()
  if is_instance_valid(lighting_controls): lighting_controls.bind_theme()
  if inspecting: _show_preview()
-
-func _build_presentation() -> void:
- super._build_presentation()
- character_pose = Celebration.attach_character_pose(character)
 
 func _install_character_tab() -> void:
  character_tab = VBoxContainer.new()

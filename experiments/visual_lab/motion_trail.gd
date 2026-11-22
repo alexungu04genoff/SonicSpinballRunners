@@ -8,6 +8,7 @@ var ages: Array[float] = []
 var ribbon := ImmediateMesh.new()
 var tint := Color("59c9ff")
 var radius := 0.17
+var silhouette_scale := 1.0
 
 func _init() -> void:
  name = "CharacterMotionRibbon"
@@ -17,14 +18,24 @@ func _init() -> void:
  shader.code = """shader_type spatial;
 render_mode unshaded, blend_add, cull_disabled, depth_draw_never;
 uniform float join_radii;
+uniform vec4 ball_center_inv_radius;
+const float TRAIL_OPACITY = 0.75;
+varying vec3 from_ball;
+void vertex() {
+ from_ball = mat3(MODELVIEW_MATRIX) * ((VERTEX - ball_center_inv_radius.xyz) * ball_center_inv_radius.w);
+}
 void fragment() {
  float across = abs(UV.y * 2.0 - 1.0);
  float join_fade = smoothstep(0.15, join_radii, UV.x);
  float half_width = mix(0.28, 1.0, join_fade);
  float edge = 1.0 - smoothstep(0.83 * half_width, half_width, across);
+ // Distance from the ball center to this pixel's view ray, in ball radii.
+ // Older sections that curve back across the ball receive the same feather.
+ float rim = length(cross(from_ball, VIEW));
+ float rim_fade = smoothstep(1.05, 2.0, rim);
  float streak = pow(max(0.0, cos(UV.y * 25.1327 + (1.0 - COLOR.a) * 3.0)), 18.0);
- ALBEDO = mix(COLOR.rgb, vec3(1.0), 0.24 + streak * 0.12);
- ALPHA = COLOR.a * edge * join_fade * 0.7;
+ ALBEDO = mix(COLOR.rgb, vec3(1.0), (0.24 + streak * 0.12) * rim_fade);
+ ALPHA = COLOR.a * edge * join_fade * rim_fade * 0.7 * TRAIL_OPACITY;
 }
 """
  var material := ShaderMaterial.new()
@@ -55,10 +66,11 @@ func advance(delta: float, head: Vector3, emitting: bool, camera: Camera3D) -> v
  visible = points.size() > 1
  if not visible:
   return
+ var inverse_radius := 1.0 / maxf(radius, 0.0001)
+ material_override.set_shader_parameter("ball_center_inv_radius", Vector4(head.x, head.y, head.z, inverse_radius / maxf(silhouette_scale, 0.0001)))
  ribbon.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
  var previous_side := Vector3.ZERO
  var behind_head := 0.0
- var inverse_radius := 1.0 / maxf(radius, 0.0001)
  for i in points.size():
   var before: Vector3 = points[maxi(0, i - 1)]
   var after: Vector3 = points[mini(points.size() - 1, i + 1)]
