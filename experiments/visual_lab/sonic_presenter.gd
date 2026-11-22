@@ -9,6 +9,8 @@ var target_marker: Node3D
 var flight_wind: MeshInstance3D
 var boost_wake: MeshInstance3D
 var boost_material := ShaderMaterial.new()
+var boost_start := Vector2.ZERO
+var boost_reach := 1.0
 var homing_direction := Vector2.UP
 const MIN_EVENT_DURATION := 0.24
 const EVENT_COOLDOWN := 0.18
@@ -173,7 +175,9 @@ func _on_character_changed(id: String) -> void:
  if close_view:
   select_preview("idle")
 
-func _on_homing_started(_target: Node2D, direction: Vector2) -> void:
+func _on_homing_started(target: Node2D, direction: Vector2) -> void:
+ boost_start = ball.global_position
+ boost_reach = maxf(ball.radius, boost_start.distance_to(target.global_position))
  homing_direction = direction.normalized()
  if close_view:
   return
@@ -266,7 +270,7 @@ func _build_effects() -> void:
  wake.rings = 20
  boost_material.shader = preload("res://experiments/visual_lab/target_boost.gdshader")
  boost_wake = table.mesh_node(wake, boost_material, Vector3.ZERO, self)
- boost_wake.custom_aabb = AABB(Vector3(-2.1, -1.55, -2.1), Vector3(4.2, 7.15, 4.2))
+ boost_wake.custom_aabb = AABB(Vector3(-2.1, -1.55, -2.1), Vector3(4.2, 8.75, 4.2))
  boost_wake.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  boost_wake.hide()
 
@@ -304,6 +308,7 @@ func _update_effects(delta: float) -> void:
   var size := ball.radius * TablePresentation.SCALE
   boost_wake.global_transform = Transform3D((frame * Basis(Vector3.RIGHT, -PI / 2.0)).scaled(Vector3.ONE * size), spin_root.global_position)
   boost_material.set_shader_parameter("phase", _pose_time)
+  boost_material.set_shader_parameter("travel", clampf(boost_start.distance_to(ball.global_position) / boost_reach, 0.0, 1.0))
  if boost_wake.visible or close_view or ball.serve_pending or ball.position.distance_to(_last_position) > 100.0:
   trail.reset()
  else:
