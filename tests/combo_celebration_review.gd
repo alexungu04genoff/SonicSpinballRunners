@@ -135,10 +135,11 @@ func check_roll_heading() -> void:
    actor._process(dt)
    check(tails.global_transform.is_equal_approx(before), "Rolling around the axle leaves the two tails in place")
    var pose = game.combo_celebration.character_pose
+   var start_time: float = pose.tail_time
    pose._process(dt)
-   var frame: float = actor.roll_angle * 8.0 / TAU
+   var frame: float = fposmod(start_time + dt, 8.0 / 60.0) * 60.0
    var target := clampi(roundi(frame), 1, 7)
-   check(tails.get_blend_shape_count() == 7 and is_equal_approx(tails.get_blend_shape_value(target - 1), maxf(0.0, 1.0 - absf(frame - target))), "Live tails play their original shape at the current roll phase")
+   check(tails.get_blend_shape_count() == 7 and is_equal_approx(tails.get_blend_shape_value(target - 1), maxf(0.0, 1.0 - absf(frame - target))), "Live tails play their original shape on the native animation clock")
  var last_heading: Basis = actor.spin_root.basis
  ball.linear_velocity = Vector2.ZERO
  actor._process(dt)

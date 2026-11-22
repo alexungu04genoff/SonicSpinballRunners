@@ -10,6 +10,7 @@ var drain := false
 var upright_roll: MeshInstance3D
 var trailing_tails: MeshInstance3D
 var start_roll_angle := 0.0
+var start_tail_time := 0.0
 const DURATION := 1.25
 
 func begin(owner_game: Node, target: Vector2, drained: bool) -> void:
@@ -25,7 +26,9 @@ func begin(owner_game: Node, target: Vector2, drained: bool) -> void:
   if not drain and not start.is_equal_approx(destination): heading = start.direction_to(destination)
   proxy.basis = game.character.flat_roll_frame(heading)
   upright_roll = proxy.get_child(game.character.rolling_mesh.get_index())
-  if game.character.character_id == "tails": trailing_tails = proxy.get_node_or_null("TrailingTails")
+  if game.character.character_id == "tails":
+   trailing_tails = proxy.get_node_or_null("TrailingTails")
+   start_tail_time = game.combo_celebration.character_pose.tail_time
   start_roll_angle = game.character.roll_angle
  game.character.hide()
  _draw(0.0)
@@ -61,7 +64,7 @@ func _draw(progress: float) -> void:
  if upright_roll:
   var angle := start_roll_angle + progress * TAU * float(game.character.roll_speed_scale)
   upright_roll.basis = Basis(Vector3.RIGHT, angle)
-  if trailing_tails: preload("res://experiments/visual_lab/runners_sonic_assets.gd").sample_roll_tails(trailing_tails, angle)
+  if trailing_tails: preload("res://experiments/visual_lab/runners_sonic_assets.gd").sample_roll_tails(trailing_tails, start_tail_time + elapsed)
  else:
   proxy.rotation.z = progress * TAU
 

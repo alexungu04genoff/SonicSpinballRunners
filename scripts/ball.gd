@@ -5,6 +5,9 @@ signal bumper_hit(collider: Node)
 signal physical_impact(collider: Node2D, normal: Vector2, speed: float)
 signal launch_started
 signal launched(impulse: Vector2)
+signal traversal_launched(source: StringName, velocity: Vector2)
+signal loop_changed(riding: bool)
+signal reposition_requested
 const RADIUS: float = 14.0
 ## Generated tables keep the legacy radius; authored Acts set their cell-relative size.
 var radius: float = RADIUS:
@@ -19,7 +22,11 @@ var launch_tube: Node
 ## Optional shared type action adapter; never owns transforms or collision shapes.
 var type_action_controller: Node
 var on_ramp := false
-var loop_item: Dictionary = {}
+var loop_item: Dictionary = {}:
+ set(value):
+  var was_riding := not loop_item.is_empty()
+  loop_item = value
+  if was_riding != in_loop: loop_changed.emit(in_loop)
 var in_loop: bool:
  get: return not loop_item.is_empty()
 ## Ball-owned so neighboring streamed Acts cannot recursively transfer it.
@@ -79,6 +86,7 @@ func _ready() -> void:
  physics_material_override.bounce = 0.0
 
 func teleport_to(where: Vector2, velocity: Vector2 = Vector2.ZERO, waiting: bool = false) -> void:
+ reposition_requested.emit()
  teleporter_cooldown = 0.0
  teleporter_arrival = Vector2.INF
  # Reset/serve and explicit rail constraints own full velocity replacement.

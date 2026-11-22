@@ -25,7 +25,7 @@ func runtime_refs(game: Node) -> Dictionary:
  observe(refs, "game", game)
  observe(refs, "combo_celebration", game.combo_celebration)
  observe(refs, "character_pose", game.combo_celebration.character_pose)
- observe(refs, "flight_rig", game.combo_celebration.character_pose.flight)
+ observe(refs, "motion_rig", game.combo_celebration.character_pose.motion_rig)
  observe(refs, "retirement", game.library.retirement)
  observe(refs, "warm_view", game.library._view)
  for act: RefCounted in game.resident:

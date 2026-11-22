@@ -65,8 +65,11 @@ func _dash_shot() -> void:
  await frames(6)
 
 func _traversal_checks() -> void:
+ var launches: Array = []
+ game.ball.traversal_launched.connect(func(kind: StringName, velocity: Vector2): launches.append([kind, velocity]))
  await _spring_shot()
  await _dash_shot()
+ check(launches.size() == 2 and launches[0][0] == &"spring" and launches[1][0] == &"dash_panel" and launches[0][1].y < 0.0 and launches[1][1].y < 0.0, "The real spring and dash panel each publish their outgoing shot once")
  check(game.score == 0 and game.scorecraft.chain == 0 and game.special_meter == 0, "Physical spring and dash cannot start combos, award points or charge specials")
  await move_in_run(Vector2(60, 800), Vector2(900, 0))
  await frames(8)

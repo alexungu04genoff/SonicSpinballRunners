@@ -37,6 +37,7 @@ var playing := true
 var yaw := 0.0
 var pitch := 0.0
 var roll_angle := 0.0
+var tail_time := 0.0
 var flight_heading := Vector2.RIGHT
 var hint: Label
 
@@ -65,9 +66,10 @@ func _ready() -> void:
  _build_stage()
  _load_models()
  _build_controls()
- if pose.flying and player and player.has_animation(Assets.FLIGHT):
+ tail_time = pose.tail_time
+ if pose.motion != &"" and player:
   for i in picker.item_count:
-   if picker.get_item_metadata(i) == Assets.FLIGHT: picker.select(i)
+   if picker.get_item_metadata(i) == pose.motion_player.current_animation: picker.select(i)
  _select_clip(picker.selected)
 
 func _build_stage() -> void:
@@ -218,6 +220,8 @@ func _select_clip(index: int) -> void:
     rig.scale = Vector3.ONE / source_radius
     player.play(active_clip)
     player.advance(0.0)
+    if pose.motion != &"" and active_clip == pose.motion_player.current_animation:
+     player.seek(pose.motion_player.current_animation_position, true)
  roll_angle = game.character.roll_angle if rolling else 0.0
  _update_preview()
 
@@ -300,6 +304,7 @@ func _process(delta: float) -> void:
   if not is_zero_approx(steer): flight_heading = Vector2(signf(steer), 0)
  elif active_clip == roll_clip:
   roll_angle = fmod(roll_angle + delta * TAU * float(sliders.speed.value), TAU)
+  tail_time = fposmod(tail_time + delta, Assets.TAIL_WEAVE_DURATION)
  else: return
  _orient_model()
 
@@ -311,9 +316,17 @@ func _orient_model() -> void:
  if rolling:
   # The two exterior tails share the heading. Only the shell and body spin.
   frame = game.character.spin_root.basis.orthonormalized()
-  if trailing_tails: Assets.sample_roll_tails(trailing_tails, roll_angle)
+  if trailing_tails: Assets.sample_roll_tails(trailing_tails, tail_time)
+ elif active_clip == Assets.DASH_RING[pose.character]:
+  var direction: Vector2 = pose.motion_direction if pose.motion == &"spring" else Vector2.UP
+  frame = Pose.spring_basis(orbit, pivot.global_position, direction)
+ elif pose.motion == &"loop" and active_clip == Assets.BOOST[pose.character]:
+  frame = pose.motion_rig.global_basis.orthonormalized()
  else:
-  frame = Pose.player_facing_basis(orbit, flight_heading.x if active_clip == Assets.FLIGHT else 0.0)
+  var side := 0.0
+  if active_clip == Assets.FLIGHT: side = flight_heading.x
+  elif pose.motion == &"dash_panel" and active_clip == Assets.BOOST[pose.character]: side = pose.motion_direction.x
+  frame = Pose.player_facing_basis(orbit, side)
  pivot.global_basis = frame.scaled(Vector3.ONE * pose.radius)
  # Lift in table space even when the camera is looking straight down.
  var lift := 0.0
@@ -321,7 +334,11 @@ func _orient_model() -> void:
   lift = Pose.trick_lift(art.global_basis, held.mesh.get_aabb(), pose.radius)
  elif rig and rig.visible:
   var half_height := -rig.position.y * art.global_basis.get_scale().y
-  lift = Pose.flight_lift(half_height, pose.radius) if active_clip == Assets.FLIGHT else maxf(0.0, half_height - pose.radius * 0.82)
+  if pose.motion == &"loop" and active_clip == Assets.BOOST[pose.character]:
+   art.global_position = pivot.global_position + frame.y * maxf(0.0, half_height - pose.radius)
+   return
+  var airborne := active_clip in [Assets.FLIGHT, Assets.DASH_RING[pose.character], Assets.BOOST[pose.character]]
+  lift = Pose.flight_lift(half_height, pose.radius) if airborne else maxf(0.0, half_height - pose.radius * 0.82)
  art.global_position = pivot.global_position + Vector3.UP * lift
 
 func finish() -> void:

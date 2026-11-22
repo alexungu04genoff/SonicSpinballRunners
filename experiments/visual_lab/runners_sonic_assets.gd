@@ -3,15 +3,18 @@ extends RefCounted
 const LOCAL_SET := "res://experiments/visual_lab/local/runtime/sonic_runners_poses.glb"
 const CURLS := {"sonic": "sn_ball_loop", "tails": "tl_jump_ball_loop"}
 const FLIGHT := "tl_jump_bunk_loop"
+const DASH_RING := {"sonic": "sn_dashring_loop", "tails": "tl_dashring_loop"}
+const BOOST := {"sonic": "sn_boost_loop", "tails": "tl_boost_loop"}
+const TAIL_WEAVE_DURATION := 8.0 / 60.0
 
 static func trick_names(id: String) -> Array:
  var prefix := "tl" if id == "tails" else "sn"
  return [prefix + "_jump_trick", prefix + "_jump_trick_02", prefix + "_jump_trick_03"]
 
-static func sample_roll_tails(tails: MeshInstance3D, angle: float) -> void:
+static func sample_roll_tails(tails: MeshInstance3D, seconds: float) -> void:
  # Frame zero is the base mesh. The last source frame returns to that shape.
  var count := tails.get_blend_shape_count()
- var frame := fposmod(angle, TAU) * (count + 1) / TAU
+ var frame := fposmod(seconds, TAIL_WEAVE_DURATION) * (count + 1) / TAIL_WEAVE_DURATION
  for i in count:
   tails.set_blend_shape_value(i, maxf(0.0, 1.0 - absf(frame - (i + 1))))
 

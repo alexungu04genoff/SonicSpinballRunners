@@ -1,5 +1,5 @@
 extends MeshInstance3D
-## Collisionless roll, trick and flight visuals at the live Ball.
+## Collisionless character animations at the live Ball.
 const Assets = preload("res://experiments/visual_lab/runners_sonic_assets.gd")
 const LEGACY_POSE := "res://experiments/visual_lab/local/runtime/sonic_sa1_combo.glb"
 const Presenter = preload("res://experiments/visual_lab/sonic_presenter.gd")
@@ -13,23 +13,31 @@ var tricks: Array[Mesh] = []
 var trick_index := -1
 var runners_roll: MeshInstance3D
 var trailing_tails: MeshInstance3D
+var tail_time := 0.0
 var original_shadow: GeometryInstance3D.ShadowCastingSetting
 var character := ""
 var sets := {}
 var sonic_fallback: Mesh
-var flight: Node3D
-var flight_player: AnimationPlayer
-var flight_center := Vector3.ZERO
-var flight_source_radius := 1.0
+var motion_rig: Node3D
+var motion_player: AnimationPlayer
+var motion_center := Vector3.ZERO
+var source_radius := 1.0
+var motion: StringName = &""
+var motion_direction := Vector2.UP
+var boost_remaining := 0.0
+var launch_serial := 0
 var flight_heading := Vector2.RIGHT
-var flying := false
+var flying: bool:
+ get: return motion == &"flight"
 var inspecting := false
 var replacing_roll := false
+var trick_hidden_on_loop := false
 
 func prepare(actor: Node3D, fallback: Texture2D, path := Assets.LOCAL_SET) -> void:
  presenter = actor
  radius = presenter.ball.radius * TablePresentation.SCALE
  set_process(false)
+ set_physics_process(false)
  if path == Assets.LOCAL_SET:
   var legacy := Assets.static_meshes(LEGACY_POSE)
   if legacy.size() == 1: sonic_fallback = legacy.values()[0]
@@ -49,11 +57,15 @@ func prepare(actor: Node3D, fallback: Texture2D, path := Assets.LOCAL_SET) -> vo
  presenter.specials.character_changed.connect(_select_roll)
  presenter.specials.flight_started.connect(_start_flight)
  presenter.specials.flight_ended.connect(_end_flight)
+ presenter.specials.homing_started.connect(func(_target: Node2D, _direction: Vector2): _stop_motion())
+ presenter.ball.traversal_launched.connect(_on_traversal_launch)
+ presenter.ball.loop_changed.connect(_on_loop_changed)
+ presenter.ball.reposition_requested.connect(_stop_motion)
  _select_roll(presenter.character_id, path)
 
 func _select_roll(id: String, sonic_path := Assets.LOCAL_SET) -> void:
  if is_instance_valid(runners_roll): runners_roll.hide()
- if flying: _end_flight("Character changed")
+ _stop_motion()
  if trailing_tails: trailing_tails.hide()
  if Assets.CURLS.has(id) and not sets.has(id):
   var path := sonic_path if id == "sonic" else "res://experiments/visual_lab/local/runtime/tails_runners_poses.glb"
@@ -65,11 +77,25 @@ func _select_roll(id: String, sonic_path := Assets.LOCAL_SET) -> void:
    poses.trick_index = -1
    if id == "tails":
     presenter.spin_root.add_child(poses.trailing_tails)
-    _load_flight(poses.roll.mesh)
+   var rig := Assets.animated_scene(id)
+   if rig:
+    var player: AnimationPlayer = rig.find_child("AnimationPlayer", true, false)
+    if player:
+     var pivot := Node3D.new()
+     pivot.name = "%sMotion" % id.capitalize()
+     pivot.hide()
+     presenter.add_child(pivot)
+     pivot.add_child(rig)
+     player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
+     poses.motion_rig = pivot
+     poses.motion_player = player
+    else: rig.free()
  character = id
  var selected: Dictionary = sets.get(id, {})
  runners_roll = selected.get("roll")
  trailing_tails = selected.get("trailing_tails")
+ motion_rig = selected.get("motion_rig")
+ motion_player = selected.get("motion_player")
  tricks.assign(selected.get("tricks", []))
  settings = selected.get("settings", DEFAULTS.duplicate())
  trick_index = selected.get("trick_index", -1)
@@ -99,41 +125,74 @@ func _process(delta: float) -> void:
  var speed := absf(ball.track_speed) if ball.has_track_frame else ball.linear_velocity.length()
  var exposure := 0.0 if ball.serve_pending else smoothstep(5.0, 32.0, speed / ball.radius)
  runners_roll.set_instance_shader_parameter("roll_exposure", exposure * float(settings.blur))
- if trailing_tails and trailing_tails.visible: Assets.sample_roll_tails(trailing_tails, presenter.roll_angle)
- if flying:
-  _place_flight()
-  if is_inside_tree() and not get_tree().paused: flight_player.advance(delta)
+ var elapsed := delta if is_inside_tree() and not get_tree().paused else 0.0
+ if trailing_tails and trailing_tails.visible:
+  tail_time = fposmod(tail_time + elapsed, Assets.TAIL_WEAVE_DURATION)
+  Assets.sample_roll_tails(trailing_tails, tail_time)
+ if motion != &"":
+  _place_motion()
+  motion_player.advance(elapsed)
 
-func _load_flight(curl: Mesh) -> void:
- var bake: Dictionary = curl.get_meta("bake", {})
- var center: Array = bake.get("preview_centers", {}).get(Assets.FLIGHT, [])
- flight_source_radius = bake.get("runners_source_radius", 0.0)
- if center.size() != 3 or flight_source_radius <= 0.0: return
- var rig := Assets.animated_scene("tails")
- if rig == null: return
- flight_player = rig.find_child("AnimationPlayer", true, false)
- if flight_player == null or not flight_player.has_animation(Assets.FLIGHT):
-  rig.free()
-  flight_player = null
+func _play_motion(kind: StringName, clip: String) -> void:
+ if motion_player == null or not motion_player.has_animation(clip):
+  _stop_motion()
   return
- flight_center = Vector3(center[0], center[1], center[2])
- flight = Node3D.new()
- flight.name = "TailsFlight"
- flight.hide()
- presenter.add_child(flight)
- flight.add_child(rig)
- rig.position = -flight_center
- flight_player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
- flight_player.get_animation(Assets.FLIGHT).loop_mode = Animation.LOOP_LINEAR
+ var bake: Dictionary = runners_roll.mesh.get_meta("bake", {})
+ var center: Array = bake.get("preview_centers", {}).get(clip, [])
+ source_radius = bake.get("runners_source_radius", 0.0)
+ if center.size() != 3 or source_radius <= 0.0:
+  _stop_motion()
+  return
+ motion = kind
+ if kind == &"loop" and active:
+  trick_hidden_on_loop = true
+  replacing_roll = false
+ motion_center = Vector3(center[0], center[1], center[2])
+ motion_rig.get_child(0).position = -motion_center
+ if motion_player.current_animation != clip:
+  motion_player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
+  motion_player.play(clip)
+  motion_player.advance(0.0)
+ _place_motion()
+ set_physics_process(kind in [&"spring", &"dash_panel"])
+ _sync_visibility()
+
+func _on_traversal_launch(kind: StringName, velocity: Vector2) -> void:
+ if not motion_rig or presenter.ball.in_loop: return
+ launch_serial = presenter.ball.transfer_serial
+ motion_direction = velocity.normalized()
+ if kind == &"spring":
+  if velocity.y < -0.0001: _play_motion(kind, Assets.DASH_RING[character])
+  else: _stop_motion()
+ elif kind == &"dash_panel":
+  boost_remaining = 1.0
+  _play_motion(kind, Assets.BOOST[character])
+
+func _on_loop_changed(riding: bool) -> void:
+ if riding and motion_rig:
+  _play_motion(&"loop", Assets.BOOST[character])
+ elif motion == &"loop": _stop_motion()
+
+func _physics_process(delta: float) -> void:
+ if get_tree().paused: return
+ var ball: PlaygroundBall = presenter.ball
+ if ball.serve_pending or ball._teleport_pending or ball.transfer_serial != launch_serial:
+  _stop_motion()
+  return
+ if motion == &"dash_panel":
+  boost_remaining -= delta
+  if boost_remaining <= 0.000001:
+   _stop_motion()
+   return
+ elif motion == &"spring" and (ball.on_ramp or ball.linear_velocity.y >= 0.0):
+  _stop_motion()
+  return
+ if not ball.linear_velocity.is_zero_approx(): motion_direction = ball.linear_velocity.normalized()
 
 func _start_flight() -> void:
- if character != "tails" or flight == null or flying: return
- flying = true
+ if character != "tails" or flying or presenter.ball.in_loop: return
  flight_heading = initial_flight_heading()
- flight_player.play(Assets.FLIGHT)
- flight_player.advance(0.0)
- _place_flight()
- _sync_visibility()
+ _play_motion(&"flight", Assets.FLIGHT)
 
 func initial_flight_heading() -> Vector2:
  var horizontal: float = presenter.roll_heading.x
@@ -149,18 +208,42 @@ static func trick_lift(frame: Basis, bounds: AABB, ball_radius: float) -> float:
  var oriented := Transform3D(frame, Vector3.ZERO) * bounds
  return maxf(0.0, -oriented.position.y - ball_radius * 0.82)
 
-func _place_flight() -> void:
- var steer: float = presenter.ball.controls.steering
- if not is_zero_approx(steer): flight_heading = Vector2(signf(steer), 0)
- var fit := radius * float(settings.model) / flight_source_radius
- var frame := player_facing_basis(presenter.table.camera, flight_heading.x)
- var lift := flight_lift(flight_center.y * fit, radius)
- flight.global_transform = Transform3D(frame.scaled(Vector3.ONE * fit), presenter.spin_root.global_position + Vector3.UP * lift)
+static func spring_basis(camera: Camera3D, at: Vector3, direction: Vector2) -> Basis:
+ var view := player_facing_basis(camera)
+ var screen := camera.unproject_position(at + TablePresentation.map_point(direction)) - camera.unproject_position(at)
+ var elevation := asin(clampf(view.z.y, -1.0, 1.0))
+ var facing := view * Basis(Vector3.RIGHT, 0.1 * elevation)
+ return facing * Basis(Vector3.BACK, -Vector2.UP.angle_to(screen)) if not screen.is_zero_approx() else facing
+
+func _place_motion() -> void:
+ var camera: Camera3D = presenter.table.camera
+ var anchor: Vector3 = presenter.spin_root.global_position
+ var frame: Basis
+ var fit := radius * float(settings.model) / source_radius
+ var lift := Vector3.UP * flight_lift(motion_center.y * fit, radius)
+ match motion:
+  &"spring": frame = spring_basis(camera, anchor, motion_direction)
+  &"loop":
+   var ball: PlaygroundBall = presenter.ball
+   var forwards := -ball.track_frame.z if ball.track_speed >= 0.0 else ball.track_frame.z
+   frame = Basis.looking_at(forwards, ball.track_frame.y, true)
+   lift = ball.track_frame.y * maxf(0.0, motion_center.y * fit - radius)
+  &"flight":
+   var steer: float = presenter.ball.controls.steering
+   if not is_zero_approx(steer): flight_heading = Vector2(signf(steer), 0)
+   frame = player_facing_basis(camera, flight_heading.x)
+  _: frame = player_facing_basis(camera, motion_direction.x)
+ motion_rig.global_transform = Transform3D(frame.scaled(Vector3.ONE * fit), anchor + lift)
 
 func _end_flight(_reason: String) -> void:
- if not flying: return
- flying = false
- flight_player.stop()
+ if flying: _stop_motion()
+
+func _stop_motion() -> void:
+ if motion == &"": return
+ motion = &""
+ boost_remaining = 0.0
+ motion_player.stop()
+ set_physics_process(false)
  _sync_visibility()
 
 func inspect(enabled: bool) -> void:
@@ -168,10 +251,11 @@ func inspect(enabled: bool) -> void:
  _sync_visibility()
 
 func _sync_visibility() -> void:
- var regular := not inspecting and not replacing_roll
- presenter.rolling_mesh.visible = regular and not flying
- if trailing_tails: trailing_tails.visible = regular and not flying
- if flight: flight.visible = regular and flying
+ var regular := not inspecting and (not replacing_roll or motion == &"loop")
+ presenter.rolling_mesh.visible = regular and motion == &""
+ if trailing_tails: trailing_tails.visible = presenter.rolling_mesh.visible
+ if motion_rig: motion_rig.visible = regular and motion != &""
+ if motion == &"loop": hide()
 
 func apply_settings(values: Dictionary) -> void:
  settings.merge(values, true)
@@ -187,6 +271,12 @@ func show_blend(amount: float) -> void:
  # The unfolding mesh emerges from the sphere. Keep both roll bases intact
  # because the track presenter composes them when crossing a Loop boundary.
  active = true
+ if motion == &"loop": trick_hidden_on_loop = true
+ if trick_hidden_on_loop:
+  replacing_roll = false
+  hide()
+  _sync_visibility()
+  return
  replacing_roll = amount >= 0.45
  _sync_visibility()
  visible = replacing_roll if not tricks.is_empty() else amount > 0.001
@@ -204,6 +294,7 @@ func show_blend(amount: float) -> void:
 func restore_ball() -> void:
  if not active: return
  active = false
+ trick_hidden_on_loop = false
  hide()
  if is_instance_valid(presenter) and is_instance_valid(presenter.rolling_mesh):
   replacing_roll = false

@@ -52,8 +52,12 @@ func ride(game: Node, item: Dictionary) -> PackedVector3Array:
  var deviation := 0.0
  var inverted := false
  var rendered_inverted := false
+ var pose = game.combo_celebration.character_pose
+ var boost_held := true
  for i in 500:
   if not game.ball.in_loop: break
+  if pose.motion_rig:
+   boost_held = boost_held and pose.motion == &"loop" and pose.motion_rig.is_visible_in_tree() and not game.character.rolling_mesh.visible
   var point := Vector3(game.ball.position.x, game.ball.ramp_height, game.ball.position.y)
   trace.append(point)
   if game.ball.has_track_frame and game.ball.track_frame.y.y < -0.97:
@@ -66,6 +70,8 @@ func ride(game: Node, item: Dictionary) -> PackedVector3Array:
  check(not game.ball.in_loop and not game.ball.on_ramp and game.hub.rail_owner == null, "Completed traversal releases its real body")
  check(game.ball.collision_mask != 0 and game.ball.collision_layer != 0 and game.ball.gravity_scale > 0, "Ordinary physics restored")
  check(inverted and rendered_inverted, "Rendered character turns upside down at the crest")
+ if pose.motion_rig:
+  check(boost_held and pose.motion == &"" and pose.runners_roll.is_visible_in_tree(), "Boost lasts for the entire authored Loop and the curl returns on release")
  check(deviation < 0.15, "Real body follows the authored centerline and height after entry (%.3f px)" % deviation)
  check(game.ball.linear_velocity.normalized().dot(Objects.forward(item)) > 0.999, "Exit velocity follows the authored tangent")
  return trace
@@ -153,6 +159,13 @@ func blocked_release(game: Node, item: Dictionary) -> void:
   check(await wait_for(func(): return game.ball.in_loop, 30), "Enter before live obstruction")
   var entrance: StaticBody2D
   if stop_return: entrance = blocker(game, Vector2(item.position) - forward * 9)
+  var pose = game.combo_celebration.character_pose
+  if pose.motion_rig:
+   check(await wait_for(func(): return game.ball.in_loop and game.ball.track_speed < 0, 300), "The obstructed Loop reaches its return leg")
+   # process_frame is emitted before the presenter samples the new track velocity.
+   await process_frame
+   var heading: Vector3 = pose.motion_rig.global_basis.z.normalized()
+   check(pose.motion == &"loop" and heading.dot(game.ball.track_frame.z) > 0.95, "Boost keeps playing and faces backward along the track on rollback")
   check(await wait_for(func(): return not game.ball.in_loop, 400), "Obstructed Loop releases ownership")
   await frames(2)
   if stop_return:

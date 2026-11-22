@@ -445,6 +445,7 @@ func _observe_travel(state: PhysicsDirectBodyState2D, start: Vector2, end: Vecto
    item.launch_count += 1
    state.linear_velocity = Objects.dash_velocity(state.linear_velocity, item)
    ball._reset_steering("Dash Panel")
+   ball.traversal_launched.emit(&"dash_panel", state.linear_velocity)
    traversal_event.emit(&"dash_panel", item.object_id, &"used")
 
 func _observe_gimmicks(state: PhysicsDirectBodyState2D, start: Vector2, motion: Vector2) -> bool:
@@ -549,6 +550,7 @@ func _observe_gimmicks(state: PhysicsDirectBodyState2D, start: Vector2, motion: 
    state.linear_velocity = Objects.forward(item) * float(item.properties.launch_strength)
    state.angular_velocity = 0.0
    ball._reset_steering("Spring launch")
+   ball.traversal_launched.emit(&"spring", state.linear_velocity)
    traversal_event.emit(&"spring", item.object_id, &"used")
    return true
  return false

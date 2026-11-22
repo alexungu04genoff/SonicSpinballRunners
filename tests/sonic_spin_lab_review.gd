@@ -1,6 +1,7 @@
 extends SceneTree
 ## Exercises the pause menu, the live table viewport and session-scoped controls.
 const Session = preload("res://scripts/prototype/session.gd")
+const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const Review = preload("res://scripts/diagnostics/shadow_review.gd")
 var checks := 0
 var failures := 0
@@ -60,12 +61,12 @@ func run() -> void:
   check(lab.trailing_tails.get_surface_override_material(0) == null, "The exterior tails retain their original skin at full spin blur")
   check(lab.trailing_tails.get_blend_shape_count() == 7, "The original eight-frame roll keeps all seven poses after the base frame")
   if lab.trailing_tails.get_blend_shape_count() == 7:
-   lab.roll_angle = TAU * 1.5 / 8.0
+   lab.tail_time = 1.5 / 60.0
    lab._orient_model()
    check(is_equal_approx(lab.trailing_tails.get_blend_shape_value(0), 0.5) and is_equal_approx(lab.trailing_tails.get_blend_shape_value(1), 0.5), "Preview interpolates the original tail motion between frames")
-   lab.roll_angle = TAU
+   lab.tail_time = lab.Assets.TAIL_WEAVE_DURATION
    lab._orient_model()
-   check(is_zero_approx(lab.trailing_tails.get_blend_shape_value(0)) and is_zero_approx(lab.trailing_tails.get_blend_shape_value(1)), "A full revolution wraps to the authored start pose")
+   check(is_zero_approx(lab.trailing_tails.get_blend_shape_value(0)) and is_zero_approx(lab.trailing_tails.get_blend_shape_value(1)), "The native weave period wraps to the authored start pose")
  await capture("in-game-spin")
  var wheel := InputEventMouseButton.new()
  wheel.button_index = MOUSE_BUTTON_WHEEL_UP
@@ -90,8 +91,11 @@ func run() -> void:
  check(is_equal_approx(lab.art.scale.x, 1.42) and is_equal_approx(lab.shell.scale.x, 0.8) and is_equal_approx(lab.shell.transparency, 0.45) and is_equal_approx(lab.curl.get_instance_shader_parameter("roll_exposure"), 0.4), "All material and size sliders act independently")
  if tails: check(lab.trailing_tails.scale.is_equal_approx(lab.art.scale), "The exterior tails follow model size independently of the shell size")
  angle = lab.roll_angle
+ var weave: float = lab.tail_time
  lab._process(0.1)
  check(lab.roll_angle == angle, "Zero spin speed holds the model in place")
+ if tails:
+  check(is_equal_approx(lab.tail_time, fposmod(weave + 0.1, lab.Assets.TAIL_WEAVE_DURATION)), "The tails keep their original cadence with the curled body stopped")
  for i in lab.cameras.item_count:
   lab.cameras.select(i)
   lab.cameras.item_selected.emit(i)
@@ -104,7 +108,7 @@ func run() -> void:
   if clip == lab.roll_clip: check(lab.curl.visible, "Roll selects the shader-equipped mesh")
   elif clip in lab.trick_names: check(lab.held.visible and lab.held.mesh != null, "Baked trick keeps its original mesh")
   else: check(lab.rig.visible and lab.player.current_animation == clip, "Original Action plays: " + clip)
-  if clip != lab.roll_clip and clip != lab.Assets.FLIGHT:
+  if clip != lab.roll_clip and clip != lab.Assets.FLIGHT and clip != lab.Assets.DASH_RING[game.character_id]:
    lab._process(0.17)
    var model: Node3D = lab.held if clip in lab.trick_names else lab.rig
    check(model.global_basis.orthonormalized().is_equal_approx(lab.orbit.global_basis.orthonormalized()), clip + " faces the top-down camera as the animation plays")
@@ -170,11 +174,101 @@ func run() -> void:
   root.push_input(shortcut)
   check(session.state == "playing" and not paused, "Escape returns to play")
  if tails: await review_flight(session, game)
+ await review_traversal(session, game)
  session.archive_attempted = true
  await session._close_run("review")
  session.free()
  print("RESULT | In-game %s spin lab | %d checks | %d failures" % ["Tails" if tails else "Sonic", checks, failures])
  quit(1 if failures else 0)
+
+func review_traversal(session: Node, game: Node) -> void:
+ var pose = game.combo_celebration.character_pose
+ var ball: PlaygroundBall = game.ball
+ var manager: Node = game.active.runtime.mechanics
+ if game.character_id == "tails":
+  for speed: float in [0.0, 1200.0]:
+   pose.tail_time = 0.0
+   ball.linear_velocity = Vector2.RIGHT * speed
+   pose._process(1.5 / 60.0)
+   check(is_equal_approx(pose.trailing_tails.get_blend_shape_value(0), 0.5) and is_equal_approx(pose.trailing_tails.get_blend_shape_value(1), 0.5), "The live tail weave has the same cadence at %d px/s" % speed)
+ var spring: Dictionary = manager.by_id.scoop_kicker
+ var direction := Objects.forward(spring)
+ game.auto_launch_time = -1.0
+ game.respawn_time = -1.0
+ ball.teleport_to(spring.position + direction * 35.0, -direction * 500.0)
+ for i in 25:
+  await physics_frame
+  if pose.motion == &"spring": break
+ check(pose.motion == &"spring" and pose.motion_player.current_animation == pose.Assets.DASH_RING[game.character_id], "Hitting the Clover Scoop spring starts the original ring dash")
+ if pose.motion == &"spring":
+  var camera: Camera3D = game.presentation.camera
+  var anchor: Vector3 = pose.motion_rig.global_position
+  var origin := camera.unproject_position(anchor)
+  var head := camera.unproject_position(anchor + pose.motion_rig.global_basis.y.normalized()) - origin
+  var travel := camera.unproject_position(anchor + TablePresentation.map_point(direction)) - origin
+  check(head.normalized().dot(travel.normalized()) > 0.98, "The ring-dash pose points along the angled launch in screen space")
+  session._open_spin_lab()
+  check(session.spin_lab.active_clip == pose.Assets.DASH_RING[game.character_id], "F8 selects the live spring animation")
+  session.spin_lab.sliders.zoom.value = 4.0
+  await capture("spring-ring-dash")
+  session._resume_spin_lab()
+  # Sample the actual outgoing movement before forcing a clean apex.
+  await physics_frame
+  check(ball.linear_velocity.y < 0 and pose.motion == &"spring", "The upward spring pose survives the first integration")
+  ball.linear_velocity = Vector2(100, 0)
+  pose._physics_process(1.0 / 120.0)
+  check(pose.motion == &"" and pose.runners_roll.is_visible_in_tree(), "The first level or downward velocity restores the curl")
+ ball.traversal_launched.emit(&"dash_panel", Vector2.RIGHT * 550)
+ check(pose.motion == &"dash_panel" and pose.motion_player.current_animation == pose.Assets.BOOST[game.character_id] and not game.character.rolling_mesh.visible, "Dash panel selects the character's Boost and hides the curl")
+ pose._process(0.075)
+ check(is_equal_approx(pose.motion_player.current_animation_position, 0.075), "Boost plays at native speed")
+ pose._physics_process(0.75)
+ ball.traversal_launched.emit(&"dash_panel", Vector2.RIGHT * 550)
+ pose._physics_process(119.0 / 120.0)
+ check(pose.motion == &"dash_panel", "Boost stays visible through tick 119 after a second dash panel")
+ session._open_spin_lab()
+ check(session.spin_lab.active_clip == pose.Assets.BOOST[game.character_id], "F8 selects the live panel boost")
+ session.spin_lab.sliders.zoom.value = 4.0
+ await capture("dash-panel-boost")
+ session._resume_spin_lab()
+ pose._physics_process(1.0 / 120.0)
+ check(pose.motion == &"" and pose.runners_roll.is_visible_in_tree(), "The curl returns at exactly one second of panel boost")
+ var loop: Dictionary = manager.by_id.clover_loop
+ direction = Objects.forward(loop)
+ ball.teleport_to(loop.position - direction * 14.0, direction * 550.0)
+ while ball._teleport_pending: await physics_frame
+ ball.traversal_launched.emit(&"dash_panel", direction * 550.0)
+ pose._process(0.075)
+ for i in 30:
+  await physics_frame
+  if ball.in_loop: break
+ check(ball.in_loop and pose.motion == &"loop", "Crossing the Clover Loop mouth switches to Boost")
+ check(pose.motion_player.current_animation_position >= 0.074, "Panel-to-Loop handoff carries the running stride into the Loop")
+ var boosted := ball.in_loop
+ var inverted := false
+ for i in 360:
+  if not ball.in_loop: break
+  boosted = boosted and pose.motion_rig.is_visible_in_tree() and pose.motion_player.current_animation == pose.Assets.BOOST[game.character_id] and not game.character.rolling_mesh.visible
+  if ball.track_frame.y.y < -0.95:
+   pose._process(0.0)
+   if not inverted:
+    game.combo_celebration.consider(game.character_id, 5, 100)
+    game.combo_celebration._process(0.2)
+    check(pose.motion_rig.is_visible_in_tree() and not pose.visible, "A combo receipt at the crest keeps the Loop boost visible")
+    if not output.is_empty():
+     session._open_spin_lab()
+     # View across the track to see the character beneath the tread at the crest.
+     var side := ball.track_frame.x
+     session.spin_lab.pitch = 1.35
+     session.spin_lab.yaw = atan2(side.x, side.z)
+     session.spin_lab.sliders.zoom.value = 2.5
+     session.spin_lab._aim_camera()
+     await capture("loop-boost-crest")
+     session._resume_spin_lab()
+   inverted = inverted or pose.motion_rig.global_basis.y.normalized().dot(ball.track_frame.y) > 0.99
+  await physics_frame
+ check(boosted and inverted, "Boost covers the entire real ride and the character's feet follow the surface through inversion")
+ check(not ball.in_loop and pose.motion == &"" and pose.runners_roll.is_visible_in_tree(), "Exiting the Loop immediately restores the curl")
 
 func capture_roll_cycle(lab: Control) -> void:
  lab._toggle_playback()
@@ -182,6 +276,7 @@ func capture_roll_cycle(lab: Control) -> void:
  lab._aim_camera()
  for i in 12:
   lab.roll_angle = TAU * i / 12.0
+  lab.tail_time = i / 24.0
   lab._orient_model()
   await capture("tails-roll-%02d" % i)
  lab._toggle_playback()
@@ -203,9 +298,9 @@ func review_flight(session: Node, game: Node) -> void:
  var activated := specials.activate()
  check(activated and pose.flying and game.special_meter == specials.definition.meter_capacity - specials.definition.meter_cost, "Charged Fly starts the recovered animation and spends the usual meter")
  if not activated or not pose.flying: return
- check(pose.flight.is_visible_in_tree() and not pose.trailing_tails.visible and not game.character.rolling_mesh.visible and pose.flight_player.current_animation == pose.Assets.FLIGHT, "Only the animated flight rig occupies the live Ball")
- check_flight_facing(pose.flight, game.presentation.camera, -1.0, "Left steering turns toward screen left while facing the player despite rightward momentum")
- var skeleton: Skeleton3D = pose.flight.find_children("*", "Skeleton3D", true, false)[0]
+ check(pose.motion_rig.is_visible_in_tree() and not pose.trailing_tails.visible and not game.character.rolling_mesh.visible and pose.motion_player.current_animation == pose.Assets.FLIGHT, "Only the animated flight rig occupies the live Ball")
+ check_flight_facing(pose.motion_rig, game.presentation.camera, -1.0, "Left steering turns toward screen left while facing the player despite rightward momentum")
+ var skeleton: Skeleton3D = pose.motion_rig.find_children("*", "Skeleton3D", true, false)[0]
  var tails_before := {}
  for i in skeleton.get_bone_count():
   if skeleton.get_bone_name(i).to_lower().contains("tail"): tails_before[i] = skeleton.get_bone_global_pose(i)
@@ -218,16 +313,16 @@ func review_flight(session: Node, game: Node) -> void:
  game.controls._physics_process(0.0)
  game.ball.linear_velocity = Vector2(-300, -60)
  pose._process(0.016)
- check_flight_facing(pose.flight, game.presentation.camera, 1.0, "Reversing steering turns toward screen right against a leftward shot")
+ check_flight_facing(pose.motion_rig, game.presentation.camera, 1.0, "Reversing steering turns toward screen right against a leftward shot")
  game.controls.virtual_steering = 0.0
  game.controls._physics_process(0.0)
  pose._process(0.016)
- check_flight_facing(pose.flight, game.presentation.camera, 1.0, "Neutral steering keeps the last flight heading")
+ check_flight_facing(pose.motion_rig, game.presentation.camera, 1.0, "Neutral steering keeps the last flight heading")
  var time_left := specials.flight_remaining
- var original_phase: float = pose.flight_player.current_animation_position
+ var original_phase: float = pose.motion_player.current_animation_position
  session._open_spin_lab()
  var lab = session.spin_lab
- check(paused and lab.active_clip == pose.Assets.FLIGHT and not pose.flight.visible, "F8 during Fly opens the matching clip")
+ check(paused and lab.active_clip == pose.Assets.FLIGHT and not pose.motion_rig.visible, "F8 during Fly opens the matching clip")
  lab.sliders.zoom.value = 3.0
  lab.pitch = 0.65
  for direction: int in [-1, 1]:
@@ -250,7 +345,7 @@ func review_flight(session: Node, game: Node) -> void:
     lab.picker.item_selected.emit(i)
     await capture("tails-trick-%d" % (trick + 1))
  session._resume_spin_lab()
- check(not paused and pose.flight.visible and is_equal_approx(original_phase, pose.flight_player.current_animation_position) and is_equal_approx(time_left, specials.flight_remaining), "Resume preserves the real Flight phase and remaining time")
+ check(not paused and pose.motion_rig.visible and is_equal_approx(original_phase, pose.motion_player.current_animation_position) and is_equal_approx(time_left, specials.flight_remaining), "Resume preserves the real Flight phase and remaining time")
  await capture("tails-flight-in-play")
  card.reset_combo()
  var expected: int = pose.trick_index
@@ -259,12 +354,12 @@ func review_flight(session: Node, game: Node) -> void:
   card.consider("tails", milestone, 100)
   card._process(0.3)
   expected = (expected + 1) % 3
-  check(pose.visible and pose.mesh == pose.tricks[expected] and not pose.flight.visible, "Tails performs the next trick at hit %d" % milestone)
+  check(pose.visible and pose.mesh == pose.tricks[expected] and not pose.motion_rig.visible, "Tails performs the next trick at hit %d" % milestone)
   check(pose.global_basis.orthonormalized().is_equal_approx(game.presentation.camera.global_basis.orthonormalized()), "Tails's live trick %d faces the play camera" % (expected + 1))
   card._process(card.DURATION)
-  check(pose.flight.visible and not game.character.rolling_mesh.visible, "The live flight rig resumes after the trick")
+  check(pose.motion_rig.visible and not game.character.rolling_mesh.visible, "The live flight rig resumes after the trick")
  specials._physics_process(specials.flight_remaining + 0.01)
- check(not pose.flying and not pose.flight.visible and pose.runners_roll.is_visible_in_tree() and pose.trailing_tails.is_visible_in_tree(), "Flight expiry restores the translucent shell, curled body and trailing tails")
+ check(not pose.flying and not pose.motion_rig.visible and pose.runners_roll.is_visible_in_tree() and pose.trailing_tails.is_visible_in_tree(), "Flight expiry restores the translucent shell, curled body and trailing tails")
  game.special_meter = specials.definition.meter_capacity
  if specials.activate():
   specials.reset(false, "Checkpoint transfer")
