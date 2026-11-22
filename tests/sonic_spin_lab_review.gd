@@ -46,7 +46,8 @@ func run() -> void:
  var game = session.game
  check(paused and lab.orbit.get_viewport() == game.presentation.camera.get_viewport() and lab.pivot.get_world_3d() == game.character.get_world_3d(), "Inspector uses the actual paused table and play viewport")
  var tails: bool = game.character_id == "tails"
- check(lab.picker.item_count == (17 if tails else 15) and lab.cameras.item_count == 4, "Original clips and the four gameplay cameras are selectable")
+ var character: String = game.character_id
+ check(lab.picker.item_count == {"sonic": 15, "tails": 17, "knuckles": 16}[character] and lab.cameras.item_count == 4, "Original clips and the four gameplay cameras are selectable")
  var point: Vector2 = game.ball.position
  check(is_equal_approx(lab.sliders.speed.value, 2.0) and is_equal_approx(lab.sliders.opacity.value, 0.30) and is_equal_approx(lab.sliders.blur.value, 1.0), "Inspection opens with the selected roll defaults")
  var score: int = game.score
@@ -110,6 +111,8 @@ func run() -> void:
   else: check(lab.rig.visible and lab.player.current_animation == clip, "Original Action plays: " + clip)
   if clip == lab.Assets.BOOST[game.character_id]:
    check(lab.rig.global_basis.y.normalized().is_equal_approx(Vector3.UP) and lab.sliders.boost.is_visible_in_tree() and is_equal_approx(lab.player.current_animation_length / lab.player.get_playing_speed(), 8.0 / 27.0), "Boost preview matches Sonic's approved stride period")
+  elif clip == lab.Assets.POWER_DIVE.get(character):
+   check(lab.rig.global_basis.z.normalized().is_equal_approx(Vector3.DOWN), "Knuckles's original forward axis points into the table for the slam")
   elif clip != lab.roll_clip and clip != lab.Assets.FLIGHT and clip != lab.Assets.DASH_RING[game.character_id]:
    lab._process(0.17)
    var model: Node3D = lab.held if clip in lab.trick_names else lab.rig
@@ -124,7 +127,7 @@ func run() -> void:
     lab.pitch = 0.0
     lab._aim_camera()
     lab._toggle_playback()
-  if clip in ["sn_run_loop", "tl_run_loop"]:
+  if clip.ends_with("_run_loop") and not clip.contains("stumble"):
    var skins := lab.rig.find_children("*", "MeshInstance3D", true, false) as Array
    check(not skins.is_empty() and skins[0].is_visible_in_tree() and skins[0].skin != null, "A visible skinned mesh is bound to the original Runners skeleton")
    var skeleton: Skeleton3D = lab.rig.find_children("*", "Skeleton3D", true, false)[0]
@@ -176,12 +179,69 @@ func run() -> void:
   root.push_input(shortcut)
   check(session.state == "playing" and not paused, "Escape returns to play")
  if tails: await review_flight(session, game)
+ if character == "knuckles": await review_smash(session, game)
  await review_traversal(session, game)
  session.archive_attempted = true
  await session._close_run("review")
  session.free()
- print("RESULT | In-game %s spin lab | %d checks | %d failures" % ["Tails" if tails else "Sonic", checks, failures])
+ print("RESULT | In-game %s spin lab | %d checks | %d failures" % [character.capitalize(), checks, failures])
  quit(1 if failures else 0)
+
+func review_smash(session: Node, game: Node) -> void:
+ var pose = game.combo_celebration.character_pose
+ var specials: CharacterSpecials = game.specials
+ var events: Array[int] = []
+ specials.area_started.connect(func(_source: String, _at: Vector2, _size: Vector2): events.append(Engine.get_physics_frames()))
+ game.auto_launch_time = -1.0
+ var ball: PlaygroundBall = game.ball
+ ball.teleport_to(game.active.spawn(), Vector2.RIGHT * 75.0)
+ while ball._teleport_pending: await physics_frame
+ game.select_play_camera(TablePresentation.CameraPreset.DRAMATIC_PINBALL)
+ game.presentation.camera_settings.zoom = 2.0
+ game.presentation.reset_camera(ball.position)
+ game.special_meter = specials.definition.meter_capacity
+ var start := Engine.get_physics_frames()
+ check(specials.activate() and not specials.activate() and events.is_empty(), "Power starts once and waits for impact")
+ var origin := specials.smash_origin
+ var wave: AreaSpecialFeedback
+ for node in game.presentation.get_children():
+  if node is AreaSpecialFeedback: wave = node
+ check(is_instance_valid(wave), "Prototype installs its shockwave on the live table")
+ var saw_rise := false
+ var saw_dive := false
+ var saw_wave := false
+ var anchored := true
+ var dive_playing := true
+ var frame := 0
+ while (events.is_empty() or Engine.get_physics_frames() - events.back() < 45) and frame < 350:
+  await process_frame
+  var remaining := specials.smash_remaining
+  if is_instance_valid(wave) and wave.effect.is_visible_in_tree():
+   saw_wave = not events.is_empty() and is_zero_approx(remaining)
+  if remaining > 0.0: anchored = anchored and ball.position.distance_to(origin) < 0.2
+  if remaining > 1.0 and specials.smash_height_fraction() > 0.25:
+   saw_rise = pose.runners_roll.is_visible_in_tree() and not pose.motion_rig.visible
+  if remaining > 0.0 and remaining < 0.95:
+   saw_dive = true
+   dive_playing = dive_playing and pose.motion == &"smash" and pose.motion_player.current_animation == pose.Assets.POWER_DIVE.knuckles and pose.motion_rig.global_basis.z.normalized().is_equal_approx(Vector3.DOWN)
+  if not output.is_empty():
+   await RenderingServer.frame_post_draw
+   root.get_texture().get_image().save_jpg(output.path_join("smash-%03d.jpg" % frame), 0.95)
+  frame += 1
+ check(saw_rise and anchored, "The curled character jumps above a fixed contact point")
+ check(saw_dive and dive_playing, "The recovered Power attack plays fists down throughout the descent")
+ check(events.size() == 1 and absi(events[0] - start - Engine.physics_ticks_per_second * 2) <= 1, "One wave lands after two seconds of real physics ticks")
+ check(saw_wave, "The expanding shockwave is visible at impact on the live table")
+ check(pose.runners_roll.is_visible_in_tree() and not pose.motion_rig.visible, "Impact restores the curl")
+ game.special_meter = specials.definition.meter_capacity
+ check(specials.activate(), "A second charged jump can start")
+ session.game.toggle_pause()
+ var held := specials.smash_remaining
+ for i in 4: await process_frame
+ check(specials.smash_remaining == held, "Pause freezes the Power action clock")
+ session.game.toggle_pause()
+ ball.teleport_to(origin)
+ check(specials.smash_remaining == 0.0 and events.size() == 1, "Reposition cancels the pending wave")
 
 func review_traversal(session: Node, game: Node) -> void:
  var pose = game.combo_celebration.character_pose

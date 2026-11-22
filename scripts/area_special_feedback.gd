@@ -16,6 +16,7 @@ func _ready() -> void:
  effect.mesh = ring
  material = game.presentation.material(Color("ff6052"))
  material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+ material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
  effect.material_override = material
  effect.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  add_child(effect)
@@ -29,7 +30,7 @@ func clear() -> void:
  effect.visible = false
 
 func show_area(_source: String, origin: Vector2, size: Vector2) -> void:
- effect.position = TablePresentation.map_point(origin, 0.45)
+ effect.position = TablePresentation.map_point(origin, 0.08)
  radius = size.x * TablePresentation.SCALE
  material.albedo_color = game.specials.definition.color.lightened(0.4)
  remaining = 0.3
@@ -40,7 +41,7 @@ func _animate() -> void:
  var progress := 1.0 - remaining / 0.3
  var spread := lerpf(0.08, 1.0, ease(progress, 0.4)) * radius
  effect.scale = Vector3(spread, maxf(0.01, (1.0 - progress) * 0.7), spread)
- effect.position.y = lerpf(0.45, 0.12, minf(1.0, progress * 4.0))
+ material.albedo_color.a = 1.0 - smoothstep(0.55, 1.0, progress)
 
 func _process(delta: float) -> void:
  if remaining <= 0.0: return

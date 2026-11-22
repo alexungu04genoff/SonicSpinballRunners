@@ -22,7 +22,7 @@ The existing temporary modifier and bounded rescue lift are shared unchanged: 1.
 
 ## Power: Table Smash
 
-Press Special with charge to immediately release the former radial area machinery at the ball. No direction input, wall impact, glide or speed threshold is required. The expanding collisionless ring drops onto the table; it never changes collisions.
+Press Special at full charge to hold the physical Ball at its current table coordinates. The curled model rises for one second. At the apex, Knuckles uncurls and plays his Runners Power attack for a one-second accelerating descent. His controller calls this clip `SecondJump` (`kn_jump_bunk_loop`). The original attack travels forward, so the presenter points the fists along the table’s downward normal. At two seconds the Ball resumes from rest and one expanding shockwave awards nearby targets. Pause holds the action clock. Reposition, retry, character change or transfer cancels a pending impact. The painted Ball follows the same jump and landing when local model assets are unavailable.
 
 The radius is provisionally 300 px, with a hard 600 px tuning ceiling. Like the former radial blast, it crosses walls within that radius but only affects eligible objects in the active Act:
 
@@ -50,5 +50,5 @@ Manual checks for Alex:
 1. Replay the same Act as Sonic, then Shadow. Both should show Speed · Target Boost and use identical action tuning; their normal profile feel remains different.
 2. Dash at a barely separated bumper/enemy, a medium target and a near-400 px target. Try moving toward and away, a closing/blocked route and a target beside a drain. Look for bounded approach, one cash-out and readable recoil.
 3. Use Flight during a fall, steer both ways, pause/resume and drain/retry. Check rescue usefulness and smooth return to normal gravity/control.
-4. Smash while stationary near Rings, enemies and bumpers. Check immediate reactions and no remote recharge. Switches, Drop Targets and directional mechanisms must remain unchanged.
+4. Smash while stationary near Rings, enemies and bumpers. Check that targets react once on landing, two seconds after pressing Special, and that remote hits grant no meter. Switches, Drop Targets and directional mechanisms must remain unchanged.
 5. For the separate first-Buzz-kill issue, run **Buzz Death Diagnostic.cmd** on the work laptop. Compare legacy, opaque and off; see [measurements and report paths](BUZZ_FIRST_KILL.md).

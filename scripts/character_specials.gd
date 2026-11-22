@@ -11,6 +11,9 @@ signal special_hit(target: Node2D, multiplier: int)
 signal flight_started
 signal flight_lift_applied
 signal flight_ended(reason: String)
+signal smash_started
+signal smash_diving
+signal smash_ended
 signal area_started(source: String, origin: Vector2, size: Vector2)
 signal area_target_activated(source: String, target: Node2D, multiplier: int)
 signal area_completed(source: String, targets: int, rings: int)
@@ -21,6 +24,8 @@ signal meter_replenished(amount: float)
 const CHARACTERS := {"sonic": preload("res://data/characters/sonic.tres"), "tails": preload("res://data/characters/tails.tres"), "knuckles": preload("res://data/characters/knuckles.tres"), "shadow": preload("res://data/characters/shadow.tres")}
 const CHARACTER_IDS: Array[String] = ["sonic", "tails", "knuckles", "shadow"]
 const FLIGHT_KEY := "type_flight"
+const SMASH_RISE := 1.0
+const SMASH_DIVE := 1.0
 var game: Node
 var character_id := "sonic"
 var definition: CharacterDefinition = CHARACTERS.sonic
@@ -35,6 +40,8 @@ var flight_remaining := 0.0
 var _dash_exit_pending := false
 var _dash_exit_direction := Vector2.ZERO
 var _area_pending := false
+var smash_remaining := 0.0
+var smash_origin := Vector2.ZERO
 var feedback := "Collect rings and hit bumpers to charge"
 var _scan_remaining := 0.0
 var _flight_modifier := PhysicsModifier.new()
@@ -45,6 +52,7 @@ func _ready() -> void:
  _flight_modifier.display_name = "Fly · Flight (temporary)"
  game.ball.type_action_controller = self
  game.ball.physical_impact.connect(_on_impact)
+ game.ball.reposition_requested.connect(_cancel_smash)
 
 func select_character(id: String) -> void:
  if not CHARACTERS.has(id):
@@ -144,7 +152,17 @@ func activate() -> bool:
    if lift > 0.0: flight_lift_applied.emit()
   feedback = "FLIGHT — guide the shot"
   flight_started.emit()
- elif action.kind != TypeAction.Kind.POWER:
+ elif action.kind == TypeAction.Kind.POWER:
+  if game.ball.in_loop or (is_instance_valid(game.ball.launch_tube) and game.ball.launch_tube.contained):
+   feedback = "Finish the ride before using Table Smash"
+   return false
+  smash_origin = game.ball.position
+  smash_remaining = SMASH_RISE + SMASH_DIVE
+  game.ball.linear_velocity = Vector2.ZERO
+  game.ball.angular_velocity = 0.0
+  game.ball._reset_steering("Table Smash")
+  feedback = "TABLE SMASH — jump"
+ else:
   return false
  # Prevent synchronous callback reentry while a radial use is being resolved.
  _area_pending = action.kind == TypeAction.Kind.POWER
@@ -152,11 +170,36 @@ func activate() -> bool:
  meter_spent.emit(definition.meter_cost)
  meter_changed.emit(game.special_meter)
  special_activated.emit(character_id)
- if action.kind == TypeAction.Kind.POWER:
-  # Spend before pickup callbacks. Remote awards cannot refill their own cost.
-  _release_area("table_smash", game.ball.position)
-  _area_pending = false
+ if smash_remaining > 0.0: smash_started.emit()
  return true
+
+func smash_height_fraction() -> float:
+ if smash_remaining <= 0.0: return 0.0
+ if smash_remaining > SMASH_DIVE:
+  return 1.0 - pow((smash_remaining - SMASH_DIVE) / SMASH_RISE, 2)
+ return 1.0 - pow(1.0 - smash_remaining / SMASH_DIVE, 2)
+
+func _cancel_smash() -> void:
+ if smash_remaining <= 0.0: return
+ smash_remaining = 0.0
+ _area_pending = false
+ smash_ended.emit()
+
+func _advance_smash(delta: float) -> void:
+ if not can_use() or game.ball.in_loop or (is_instance_valid(game.ball.launch_tube) and game.ball.launch_tube.contained):
+  _cancel_smash()
+  return
+ var rising := smash_remaining > SMASH_DIVE
+ smash_remaining = maxf(0.0, smash_remaining - delta)
+ if is_equal_approx(smash_remaining, SMASH_DIVE): smash_remaining = SMASH_DIVE
+ if is_zero_approx(smash_remaining):
+  smash_remaining = 0.0
+  _release_area("table_smash", smash_origin)
+  _area_pending = false
+  smash_ended.emit()
+ elif rising and smash_remaining <= SMASH_DIVE:
+  feedback = "TABLE SMASH — slam"
+  smash_diving.emit()
 
 func _on_impact(body: Node2D, _normal: Vector2, _speed: float) -> void:
  if homing_remaining > 0.0 and body != pending_target:
@@ -256,6 +299,7 @@ func clear_homing(reason: String = "Cancelled") -> void:
 
 func reset(clear_meter: bool = false, reason: String = "Reset") -> void:
  game._target_awards.clear()
+ _cancel_smash()
  _area_pending = false
  clear_homing(reason)
  _dash_exit_pending = false
@@ -285,6 +329,7 @@ func _update_flight() -> void:
  game.tuning.set_temporary(FLIGHT_KEY, _flight_modifier)
 
 func _physics_process(delta: float) -> void:
+ if smash_remaining > 0.0: _advance_smash(delta)
  if flight_remaining > 0.0:
   flight_remaining = maxf(0.0, flight_remaining - delta)
   if flight_remaining > 0.0:

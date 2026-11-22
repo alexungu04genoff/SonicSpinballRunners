@@ -136,11 +136,12 @@ func _build_controls() -> void:
  panel.add_child(picker)
  var clips := {}
  for sonic_clip: String in CLIPS:
-  var clip := sonic_clip.replace("sn_", "tl_") if pose.character == "tails" else sonic_clip
+  var clip := sonic_clip.replace("sn_", str(Assets.PREFIX.get(pose.character, "")) + "_")
   if sonic_clip == "sn_ball_loop": clip = roll_clip
   clips[clip] = CLIPS[sonic_clip]
-  if clip == roll_clip and pose.character == "tails": clips[Assets.FLIGHT] = "Flight"
+  if clip == roll_clip and Assets.FLIGHT_CLIPS.has(pose.character): clips[Assets.FLIGHT_CLIPS[pose.character]] = "Flight"
  if pose.character == "tails": clips["tl_jump_cannonball_loop"] = "Cannonball"
+ if Assets.POWER_DIVE.has(pose.character): clips[Assets.POWER_DIVE[pose.character]] = "Table Smash · power dive"
  if pose.character == "shadow": clips = {Assets.BOOST.shadow: "Boost"}
  if embedded and not Assets.CURLS.has(pose.character):
   clips = {roll_clip: "Spin ball"}
@@ -379,6 +380,8 @@ func _orient_model() -> void:
  elif active_clip == Assets.DASH_RING.get(pose.character):
   var direction: Vector2 = pose.motion_direction if pose.motion == &"spring" else Vector2.UP
   frame = Pose.spring_basis(orbit, pivot.global_position, direction)
+ elif active_clip == Assets.POWER_DIVE.get(pose.character):
+  frame = Pose.smash_basis(game.character.roll_heading)
  elif active_clip == Assets.BOOST.get(pose.character):
   frame = pose.motion_rig.global_basis.orthonormalized() if pose.motion in [&"loop", &"target_boost", &"dash_panel"] else game.character.flat_roll_frame(game.character.roll_heading)
  else:
@@ -392,6 +395,10 @@ func _orient_model() -> void:
   lift = Pose.trick_lift(art.global_basis, held.mesh.get_aabb(), pose.radius)
  elif rig and rig.visible:
   var half_height := -rig.position.y * art.global_basis.get_scale().y
+  if active_clip == Assets.POWER_DIVE.get(pose.character):
+   lift = pose.smash_lift(sliders.model.value)
+   art.global_position = pivot.global_position + Vector3.UP * lift
+   return
   if active_clip == Assets.BOOST.get(pose.character):
    var offset := half_height - pose.radius
    art.global_position = pivot.global_position + frame.y * (maxf(0.0, offset) if pose.motion == &"loop" else offset)

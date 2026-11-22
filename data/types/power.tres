@@ -4,4 +4,4 @@
 script = ExtResource("1")
 kind = 2
 action_name = "Table Smash"
-description = "Smash the table: nearby Rings, enemies and bumpers react within 300px in this Act. Base awards, no remote recharge. Switches and other mechanisms are excluded."
+description = "Rise in place for one second, then dive for one second. Impact sends a 300 px shockwave through nearby Rings, enemies and bumpers in this Act. Remote hits pay base points."

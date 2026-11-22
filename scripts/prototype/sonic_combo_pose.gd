@@ -58,6 +58,9 @@ func prepare(actor: Node3D, fallback: Texture2D, path := Assets.LOCAL_SET) -> vo
  presenter.specials.flight_ended.connect(_end_flight)
  presenter.specials.homing_started.connect(_start_target_boost)
  presenter.specials.homing_ended.connect(_end_target_boost)
+ presenter.specials.smash_started.connect(_start_smash)
+ presenter.specials.smash_diving.connect(_dive_smash)
+ presenter.specials.smash_ended.connect(_stop_motion)
  presenter.ball.traversal_launched.connect(_on_traversal_launch)
  presenter.ball.loop_changed.connect(_on_loop_changed)
  presenter.ball.reposition_requested.connect(_stop_motion)
@@ -89,7 +92,7 @@ func _select_roll(id: String, sonic_path := Assets.LOCAL_SET) -> void:
 func _load_character(id: String, sonic_path: String) -> Dictionary:
  var poses := {}
  if Assets.CURLS.has(id):
-  var path := sonic_path if id == "sonic" else "res://experiments/visual_lab/local/runtime/tails_runners_poses.glb"
+  var path := sonic_path if id == "sonic" else "res://experiments/visual_lab/local/runtime/%s_runners_poses.glb" % id
   poses = Assets.load_set(path, presenter.spin_surface, id)
   if poses.is_empty(): return poses
   presenter.rolling_mesh.add_child(poses.roll)
@@ -169,7 +172,7 @@ func _play_motion(kind: StringName, clip: String) -> void:
  _sync_visibility()
 
 func _on_traversal_launch(kind: StringName, velocity: Vector2) -> void:
- if not motion_rig or presenter.ball.in_loop or motion == &"target_boost": return
+ if not motion_rig or presenter.ball.in_loop or motion == &"target_boost" or presenter.specials.smash_remaining > 0.0: return
  launch_serial = presenter.ball.transfer_serial
  motion_direction = velocity.normalized()
  if kind == &"spring":
@@ -201,9 +204,9 @@ func _physics_process(delta: float) -> void:
  if not ball.linear_velocity.is_zero_approx(): motion_direction = ball.linear_velocity.normalized()
 
 func _start_flight() -> void:
- if character != "tails" or flying or presenter.ball.in_loop: return
+ if not Assets.FLIGHT_CLIPS.has(character) or flying or presenter.ball.in_loop: return
  flight_heading = initial_flight_heading()
- _play_motion(&"flight", Assets.FLIGHT)
+ _play_motion(&"flight", Assets.FLIGHT_CLIPS[character])
 
 func _start_target_boost(_target: Node2D, direction: Vector2) -> void:
  if motion_rig and presenter.specials.action.kind == TypeAction.Kind.SPEED:
@@ -212,6 +215,22 @@ func _start_target_boost(_target: Node2D, direction: Vector2) -> void:
 
 func _end_target_boost(_reason: String) -> void:
  if motion == &"target_boost": _stop_motion()
+
+func _start_smash() -> void:
+ restore_ball()
+ _stop_motion()
+
+func _dive_smash() -> void:
+ if motion_rig and Assets.POWER_DIVE.has(character):
+  _play_motion(&"smash", Assets.POWER_DIVE[character])
+
+static func smash_basis(heading: Vector2) -> Basis:
+ return Presenter.flat_roll_frame(heading) * Basis(Vector3.RIGHT, PI / 2.0)
+
+func smash_lift(scale_factor: float) -> float:
+ # At zero jump height the leading glove meets the surface below the Ball.
+ var curl_radius: float = motion_fit.runners_source_radius
+ return float(motion_fit.get("slam_front", curl_radius)) * radius * scale_factor / curl_radius - radius
 
 func initial_flight_heading() -> Vector2:
  var horizontal: float = presenter.roll_heading.x
@@ -241,6 +260,9 @@ func _place_motion() -> void:
  var fit := radius * float(settings.model) / source_radius
  var lift := Vector3.UP * flight_lift(motion_center.y * fit, radius)
  match motion:
+  &"smash":
+   frame = smash_basis(presenter.roll_heading)
+   lift = Vector3.UP * smash_lift(float(settings.model))
   &"spring": frame = spring_basis(camera, anchor, motion_direction)
   &"target_boost", &"dash_panel":
    if motion == &"target_boost" and not presenter.specials.homing_direction.is_zero_approx():
@@ -293,7 +315,7 @@ func start_trick() -> void:
   trick_index = (trick_index + 1) % tricks.size()
   sets[character].trick_index = trick_index
   mesh = tricks[trick_index]
- if motion in [&"loop", &"target_boost"]: return
+ if motion in [&"loop", &"target_boost"] or presenter.specials.smash_remaining > 0.0: return
  show()
  _sync_visibility()
  place_trick()

@@ -49,6 +49,16 @@ func run() -> void:
  check(not game.specials.activate() and game.special_meter == 99, "Power requires full charge")
  game.special_meter = 100
  check(game.specials.activate() and game.special_meter == 0, "Power spends full meter before remote awards")
+ var origin: Vector2 = game.ball.position
+ check(areas.is_empty() and game.score == before, "Starting the jump pays no radial awards")
+ await frames(10)
+ check(game.ball.position.distance_to(origin) < 0.1 and game.specials.smash_remaining > 1.0, "The physical Ball holds its table position during the jump")
+ game.specials._advance_smash(game.specials.smash_remaining - 1.0)
+ check(is_equal_approx(game.specials.smash_height_fraction(), 1.0) and areas.is_empty(), "The dive starts at the apex after one second")
+ game.specials._advance_smash(0.99)
+ check(areas.is_empty() and game.specials.smash_height_fraction() < 0.03, "The wave waits until the final physics step of the descent")
+ timer = game.scorecraft.remaining
+ game.specials._advance_smash(0.01)
  check(game.score - before == 230 and areas.back().targets == 2 and areas.back().rings == 2, "Table Smash pays two distinct bumpers and two rings at base value, excluding distant targets")
  check(game.ball.bumper_hit_count == contacts and game.scorecraft.chain == chain and game.scorecraft.remaining == timer, "Remote smash impersonates no contacts, combo links or timer refresh")
  for snapshot: Dictionary in excluded:
@@ -69,6 +79,9 @@ func run() -> void:
  game.special_meter = 60
  check(game.specials.activate() and game.special_meter == 0, "Configured partial meter cost is spent exactly once without remote recharge")
  game.specials.definition = original_definition
+ game.specials.select_character("tails")
+ await frames(5)
+ check(game.specials.smash_remaining == 0.0 and areas.size() == 1, "Switching character cancels the pending impact")
  check(CharacterSpecials.CHARACTERS.sonic.type_action == CharacterSpecials.CHARACTERS.shadow.type_action, "Sonic and Shadow share the exact Speed tuning resource")
  check(CharacterSpecials.CHARACTERS.sonic.profile != CharacterSpecials.CHARACTERS.shadow.profile, "Shared Speed retains distinct character physics profiles")
  for id: String in CharacterSpecials.CHARACTER_IDS:

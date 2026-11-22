@@ -1,6 +1,6 @@
 """Bake original Runners poses and a directional color map for the roll shader.
 
-Pass "-- tails" for Tails or "-- shadow" for Shadow's target boost calibration.
+Pass "-- tails" or "-- knuckles" for their poses, or "-- shadow" for boost calibration.
 """
 import json
 from math import cos, floor, pi, radians, sin, tau
@@ -18,6 +18,7 @@ CHARACTER = sys.argv[sys.argv.index("--") + 1] if "--" in sys.argv else "sonic"
 PREFIX, CURL, ANGLES = {
     "sonic": ("sn", "sn_ball_loop", (-40, -60, -43)),
     "tails": ("tl", "tl_jump_ball_loop", (-35, -40, -38)),
+    "knuckles": ("kn", "kn_jump_ball_loop", (-45, -65, -40)),
     "shadow": ("sh", "sh_jump_ball_loop", ()),
 }[CHARACTER]
 SOURCE = ROOT / "runners-decomp" / CHARACTER / f"{CHARACTER.title()} Runners - original animations.glb"
@@ -178,6 +179,9 @@ def bake():
         posed.append(obj)
         if name == CURL:
             mesh["preview_centers"] = centers
+            if CHARACTER == "knuckles":
+                attack = vertices(bpy.data.actions["kn_jump_bunk_loop"])
+                mesh["slam_front"] = float(-attack[:, 1].min() - centers["kn_jump_bunk_loop"][2])
             bake_roll_map(mesh)
     bpy.ops.object.select_all(action="DESELECT")
     for obj in posed:

@@ -156,7 +156,7 @@ func _physics_process(delta: float) -> void:
   return
  if not ball.serve_pending: elapsed += delta
  var ordinary_motion := not ball.serve_pending and not ball._teleport_pending and not ball.freeze and not loading_act and respawn_time < 0.0
- telemetry.observe_motion(delta, ball.linear_velocity.length(), ordinary_motion and not ball.on_ramp and specials.homing_remaining <= 0.0,
+ telemetry.observe_motion(delta, ball.linear_velocity.length(), ordinary_motion and not ball.on_ramp and specials.homing_remaining <= 0.0 and specials.smash_remaining <= 0.0,
   specials.flight_remaining if ordinary_motion else 0.0)
  super._physics_process(delta)
 

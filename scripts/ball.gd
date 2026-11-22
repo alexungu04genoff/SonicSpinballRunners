@@ -208,6 +208,14 @@ func _integrate_forces(state: PhysicsDirectBodyState2D) -> void:
   return
  var stats: Dictionary = tuning.effective
  gravity_scale = stats.gravity_scale
+ if is_instance_valid(type_action_controller) and type_action_controller.smash_remaining > 0.0:
+  state.transform = Transform2D(0.0, type_action_controller.smash_origin)
+  state.linear_velocity = Vector2.ZERO
+  state.angular_velocity = 0.0
+  _previous_step_velocity = Vector2.ZERO
+  flipper_launch_pending = false
+  _flipper_strike.clear()
+  return
  var dt: float = state.step
  for id: int in _contact_cooldowns.keys():
   _contact_cooldowns[id] -= dt

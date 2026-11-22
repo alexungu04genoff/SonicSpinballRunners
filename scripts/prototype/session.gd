@@ -77,7 +77,7 @@ func _ready() -> void:
  start_spin_lab = "--spin-lab" in arguments
  if start_spin_lab:
   selected_character = "sonic"
-  for id: String in ["sonic", "tails", "shadow"]:
+  for id: String in CharacterSpecials.CHARACTER_IDS:
    if "--character=" + id in arguments: selected_character = id
   preload("res://scripts/diagnostics/shadow_review.gd").position_review_window(get_window())
  var act_argument := arguments.find("--act")

@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Knuckles and the Power shockwave — 2026-11-22
+
+Knuckles now uses the same curl, blur, trick cycle, spring and Boost rules as Sonic and Tails, with his own 16 Runners clips. The Power special stops the shot over one spot, lifts the curled character for a second, then drives him fists-first into the table for a second. His source animation is the spinning two-fist forward attack. We turn it straight down for the SA2-style landing. One 300 px shockwave fires on impact. Speed, Flight and Power own their special behavior separately from the shared presentation.
+
 ## Count the hits past ×4 — 2026-11-21
 
 A fifth fresh builder can still refresh a ×4 combo. Prototype now gives that fifth hit a character cut-in. A completed Ring Link counts too. Scorecraft tells the card the hit number and exactly what that event paid. The little ×4 beside the Ball keeps its original meaning. All four poses are temporary cut-paper stand-ins. The small points line reads best on the crisp HUD layer. [See the moving Ball and both treatments](combo-celebration/README.md).

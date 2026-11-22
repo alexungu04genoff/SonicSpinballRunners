@@ -220,6 +220,7 @@ func _build_presentation() -> void:
  view.add_child(presentation)
  presentation.build_authored(authored_runtime, playfield.bounds, authored_document.cell_size)
  presentation.reset_camera(ball.position)
+ _add_area_feedback()
  character = Character.new()
  character.ball = ball
  character.table = presentation

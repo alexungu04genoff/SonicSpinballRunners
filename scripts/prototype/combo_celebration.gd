@@ -67,7 +67,7 @@ func reset_combo() -> void:
  dismiss()
 
 func _on_ball(id: String) -> bool:
- return is_instance_valid(character_pose) and character_pose.character == id and (id == "sonic" or (id == "tails" and character_pose.runners_roll != null))
+ return is_instance_valid(character_pose) and character_pose.character == id and (id == "sonic" or character_pose.runners_roll != null)
 
 func dismiss() -> void:
  trick_remaining = 0.0

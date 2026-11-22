@@ -12,6 +12,7 @@ var homing_direction := Vector2.UP
 const MIN_EVENT_DURATION := 0.24
 const EVENT_COOLDOWN := 0.18
 const RUNNERS_ROLL_SPEED := 2.0
+const Runners = preload("res://experiments/visual_lab/runners_sonic_assets.gd")
 var state: int = State.SPIN
 var _event_cooldown := 0.0
 var ball: PlaygroundBall
@@ -71,7 +72,7 @@ func _build_visuals() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
  if is_instance_valid(specials):
   character_id = specials.character_id
- roll_speed_scale = RUNNERS_ROLL_SPEED if character_id in ["sonic", "tails"] else 1.0
+ roll_speed_scale = RUNNERS_ROLL_SPEED if Runners.CURLS.has(character_id) else 1.0
  spin_root = Node3D.new()
  spin_root.name = "RollingVisualOnly"
  add_child(spin_root)
@@ -162,7 +163,7 @@ func _on_character_changed(id: String) -> void:
  if character_id == id:
   return
  character_id = id
- roll_speed_scale = RUNNERS_ROLL_SPEED if id in ["sonic", "tails"] else 1.0
+ roll_speed_scale = RUNNERS_ROLL_SPEED if Runners.CURLS.has(id) else 1.0
  riding_track = false
  rolling_mesh.rotation = Vector3.ZERO
  spin_root.rotation = Vector3.ZERO
@@ -368,6 +369,8 @@ func _update_pose_transform(_delta: float) -> void:
  var ball_scale := 1.0 if close_view or table.authored_mode else 1.12
  spin_root.scale = Vector3.ONE * ball_scale
  spin_root.position = anchor + Vector3.UP * (table.ball_height() if table.authored_mode else TablePresentation.BALL_HEIGHT + 0.025)
+ if is_instance_valid(specials) and not close_view:
+  spin_root.position.y += 7.0 * ball.radius * TablePresentation.SCALE * specials.smash_height_fraction()
  spin_root.visible = true
  marker.position = TablePresentation.map_point(ball.position, 0.015)
 
@@ -404,7 +407,7 @@ func _process(delta: float) -> void:
  close_camera.look_at(focus)
 
 func _update_roll(delta: float) -> void:
- if character_id in ["sonic", "tails"]:
+ if Runners.CURLS.has(character_id):
   _update_upright_roll(delta)
   return
  if riding_track and (not ball.has_track_frame or close_view):
@@ -424,7 +427,7 @@ func _update_roll(delta: float) -> void:
   spin_root.rotate(Vector3(1, 0, 0.5).normalized(), delta * 22.0)
 
 static func flat_roll_frame(heading: Vector2) -> Basis:
- # Both Runners models face +Z. Local X is the axle through their sides.
+ # Runners models face +Z. Local X is the axle through their sides.
  return Basis.looking_at(Vector3(heading.x, 0, heading.y), Vector3.UP, true)
 
 func roll_velocity() -> Vector2:

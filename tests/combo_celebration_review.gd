@@ -248,7 +248,7 @@ func run() -> void:
   for cached: Dictionary in pose.sets.values():
    if cached.has("roll"): check(cached.roll.visible == (cached.roll == pose.runners_roll), "Only the selected character's curl can appear")
   check(not card.visible and card.milestone == 0, "Character selection clears the previous pose")
-  var unfolds := id == "sonic" or (id == "tails" and pose.runners_roll != null)
+  var unfolds := id == "sonic" or pose.runners_roll != null
   hit()
   check(not card.visible and not pose.visible, "The first builder leaves the Ball rolling")
   for tier: int in [2, 3, 4]:

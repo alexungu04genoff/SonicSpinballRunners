@@ -41,7 +41,7 @@ func run() -> void:
  if is_instance_valid(game) and game.started:
   game.auto_launch_time = -1.0
   game.controls.virtual_enabled = true
-  for id: String in ["sonic", "tails", "shadow"]:
+  for id: String in ["sonic", "tails", "knuckles", "shadow"]:
    await review_panel_and_loop(id, panel.position)
   for id: String in ["sonic", "shadow"]:
    await review_character(id, session)

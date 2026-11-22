@@ -171,7 +171,11 @@ func check_specials() -> void:
 	var score_before: int = game.score
 	var contacts: int = game.ball.bumper_hit_count
 	game.special_meter = 100
-	check(game.specials.activate() and areas.back().source == "table_smash" and areas.back().targets == 2 and areas.back().rings > 0, "Power immediately finds authored targets and the same RingField", str(areas))
+	check(game.specials.activate() and areas.is_empty(), "Power starts the jump before scoring")
+	for tick in 250:
+		await physics_frame
+		if not areas.is_empty(): break
+	check(not areas.is_empty() and areas.back().source == "table_smash" and areas.back().targets == 2 and areas.back().rings > 0, "Power impact finds authored targets and the same RingField", str(areas))
 	check(game.score > score_before and game.special_meter == 0 and game.ball.bumper_hit_count == contacts and game.scorecraft.chain == 0, "Table Smash uses fixed remote awards without fake contacts or recharge")
 	game.ring_field.set_physics_process(true)
 	game.set_physics_process(true)
