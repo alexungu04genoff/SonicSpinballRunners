@@ -6,7 +6,7 @@ Sonic and Tails each have a local spin preview on the paused playfield. Press F8
 
 Prototype celebrates 5, 8, 10 and every subsequent fifth accepted builder hit in one live combo. Count completed Ring Links and fresh builders at the multiplier cap. The scoring multiplier still tops out at ×4. With local Runners assets, Sonic and Tails each cycle through their own three original jump tricks at the moving Ball. Curl blur grows with speed. Each celebration lasts 0.90 seconds and shows the hit count and triggering award. A higher milestone changes the trick and receipt on the original clock. Without local assets, the procedural shell, Sonic illustration and character corner cards provide the shared presentation. [Combo review and reproduction](combo-celebration/README.md)
 
-During Tails's Fly special, his original twin-tail flight loop plays at its native speed. Left or right steering turns him immediately and neutral holds the last facing. A combo trick briefly interrupts the visual, then Tails returns to flight for the remainder of the special. The 2D Ball owns movement and collisions throughout.
+Sonic and Tails roll along the table. Their three combo tricks and every other non-roll pose stay upright to the active camera in play and in F8. During Tails's Fly special, his original twin-tail loop plays at its native speed. Steering turns him 30 degrees toward screen left or right while his face stays visible. Neutral holds the last facing. A combo trick briefly interrupts the visual, then Tails returns to flight for the remainder of the special. The 2D Ball owns movement and collisions throughout.
 
 ## Base-game roster and authored traversal — 2026-11-21
 

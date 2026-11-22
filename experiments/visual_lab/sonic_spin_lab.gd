@@ -225,17 +225,12 @@ func _update_preview() -> void:
  var rolling := active_clip == roll_clip
  art.scale = Vector3.ONE * sliders.model.value
  if trailing_tails: trailing_tails.scale = art.scale
- var half_height := 0.0
- if held.visible: half_height = -held.mesh.get_aabb().position.y
- elif rig and rig.visible: half_height = -rig.position.y
- art.position.y = maxf(0.0, half_height * float(sliders.model.value) - 0.82)
  shell.scale = Vector3.ONE * sliders.ball.value
  shell.visible = (rolling or shell_on_poses.button_pressed) and sliders.opacity.value > 0.0
  shell.transparency = 1.0 - sliders.opacity.value
  if curl: curl.set_instance_shader_parameter("roll_exposure", sliders.blur.value)
  sliders.blur.editable = rolling and curl != null
- sliders.speed.editable = active_clip != Assets.FLIGHT
- _orient_model()
+ sliders.speed.editable = rolling
  var values := {}
  for id: String in Pose.DEFAULTS: values[id] = sliders[id].value
  pose.apply_settings(values)
@@ -254,6 +249,7 @@ func _aim_camera() -> void:
  orbit.near = minf(camera.near, pose.radius * 0.1)
  orbit.far = camera.far
  orbit.global_transform = Transform3D(frame, focus + frame.z * (distance / zoom if camera.projection == Camera3D.PROJECTION_PERSPECTIVE else distance))
+ _orient_model()
 
 func _select_camera(index: int) -> void:
  game.select_play_camera(cameras.get_item_id(index))
@@ -302,21 +298,31 @@ func _process(delta: float) -> void:
  if active_clip == Assets.FLIGHT:
   var steer: float = game.controls.virtual_steering if game.controls.virtual_enabled else Input.get_axis("steer_left", "steer_right")
   if not is_zero_approx(steer): flight_heading = Vector2(signf(steer), 0)
- roll_angle = fmod(roll_angle + delta * TAU * float(sliders.speed.value), TAU)
+ elif active_clip == roll_clip:
+  roll_angle = fmod(roll_angle + delta * TAU * float(sliders.speed.value), TAU)
+ else: return
  _orient_model()
 
 func _orient_model() -> void:
- var frame := Basis(Vector3.UP, roll_angle)
  var rolling := active_clip == roll_clip
  art.rotation.x = roll_angle if rolling else 0.0
  shell.rotation.x = art.rotation.x
+ var frame: Basis
  if rolling:
   # The two exterior tails share the heading. Only the shell and body spin.
   frame = game.character.spin_root.basis.orthonormalized()
   if trailing_tails: Assets.sample_roll_tails(trailing_tails, roll_angle)
- elif active_clip == Assets.FLIGHT:
-  frame = game.character.flat_roll_frame(flight_heading)
- pivot.basis = frame.scaled(Vector3.ONE * pose.radius)
+ else:
+  frame = Pose.player_facing_basis(orbit, flight_heading.x if active_clip == Assets.FLIGHT else 0.0)
+ pivot.global_basis = frame.scaled(Vector3.ONE * pose.radius)
+ # Lift in table space even when the camera is looking straight down.
+ var lift := 0.0
+ if held.visible:
+  lift = Pose.trick_lift(art.global_basis, held.mesh.get_aabb(), pose.radius)
+ elif rig and rig.visible:
+  var half_height := -rig.position.y * art.global_basis.get_scale().y
+  lift = Pose.flight_lift(half_height, pose.radius) if active_clip == Assets.FLIGHT else maxf(0.0, half_height - pose.radius * 0.82)
+ art.global_position = pivot.global_position + Vector3.UP * lift
 
 func finish() -> void:
  if is_instance_valid(orbit): orbit.free()

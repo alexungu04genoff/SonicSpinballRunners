@@ -20,6 +20,10 @@ func capture(name: String) -> void:
  await RenderingServer.frame_post_draw
  check(root.get_texture().get_image().save_png(output.path_join(name + ".png")) == OK, "Saved " + name)
 
+func check_flight_facing(model: Node3D, camera: Camera3D, side: float, message: String) -> void:
+ var relative := camera.global_basis.orthonormalized().inverse() * model.global_basis.orthonormalized()
+ check(relative.y.is_equal_approx(Vector3.UP) and relative.z.z > 0.75 and relative.z.x * side > 0.25, message)
+
 func run() -> void:
  Review.position_review_window(root)
  for arg in OS.get_cmdline_user_args():
@@ -92,6 +96,7 @@ func run() -> void:
   lab.cameras.select(i)
   lab.cameras.item_selected.emit(i)
   check(game.presentation.camera_preset == lab.cameras.get_item_id(i) and lab.orbit.current, "Inspection uses the selected real camera preset")
+ lab.sliders.speed.value = 2.0
  for i in lab.picker.item_count:
   lab.picker.select(i)
   lab.picker.item_selected.emit(i)
@@ -99,6 +104,20 @@ func run() -> void:
   if clip == lab.roll_clip: check(lab.curl.visible, "Roll selects the shader-equipped mesh")
   elif clip in lab.trick_names: check(lab.held.visible and lab.held.mesh != null, "Baked trick keeps its original mesh")
   else: check(lab.rig.visible and lab.player.current_animation == clip, "Original Action plays: " + clip)
+  if clip != lab.roll_clip and clip != lab.Assets.FLIGHT:
+   lab._process(0.17)
+   var model: Node3D = lab.held if clip in lab.trick_names else lab.rig
+   check(model.global_basis.orthonormalized().is_equal_approx(lab.orbit.global_basis.orthonormalized()), clip + " faces the top-down camera as the animation plays")
+   if clip in lab.trick_names:
+    lab._toggle_playback()
+    lab.yaw = 0.45
+    lab.pitch = 0.48
+    lab._aim_camera()
+    check(model.global_basis.orthonormalized().is_equal_approx(lab.orbit.global_basis.orthonormalized()), "A held trick stays upright when orbiting with playback paused")
+    lab.yaw = 0.0
+    lab.pitch = 0.0
+    lab._aim_camera()
+    lab._toggle_playback()
   if clip in ["sn_run_loop", "tl_run_loop"]:
    var skins := lab.rig.find_children("*", "MeshInstance3D", true, false) as Array
    check(not skins.is_empty() and skins[0].is_visible_in_tree() and skins[0].skin != null, "A visible skinned mesh is bound to the original Runners skeleton")
@@ -110,6 +129,7 @@ func run() -> void:
    for bone in skeleton.get_bone_count(): moved = moved or not skeleton.get_bone_pose(bone).is_equal_approx(bones[bone])
    check(moved, "Run animates bones while the gameplay tree is paused")
    await capture("in-game-run")
+ lab.sliders.speed.value = 0.0
  var inspect_camera: WeakRef = weakref(lab.orbit)
  var inspect_model: WeakRef = weakref(lab.pivot)
  lab.resume_requested.emit()
@@ -184,7 +204,7 @@ func review_flight(session: Node, game: Node) -> void:
  check(activated and pose.flying and game.special_meter == specials.definition.meter_capacity - specials.definition.meter_cost, "Charged Fly starts the recovered animation and spends the usual meter")
  if not activated or not pose.flying: return
  check(pose.flight.is_visible_in_tree() and not pose.trailing_tails.visible and not game.character.rolling_mesh.visible and pose.flight_player.current_animation == pose.Assets.FLIGHT, "Only the animated flight rig occupies the live Ball")
- check(pose.flight.global_basis.z.normalized().is_equal_approx(Vector3.LEFT), "Left steering faces left despite rightward momentum")
+ check_flight_facing(pose.flight, game.presentation.camera, -1.0, "Left steering turns toward screen left while facing the player despite rightward momentum")
  var skeleton: Skeleton3D = pose.flight.find_children("*", "Skeleton3D", true, false)[0]
  var tails_before := {}
  for i in skeleton.get_bone_count():
@@ -198,11 +218,11 @@ func review_flight(session: Node, game: Node) -> void:
  game.controls._physics_process(0.0)
  game.ball.linear_velocity = Vector2(-300, -60)
  pose._process(0.016)
- check(pose.flight.global_basis.z.normalized().is_equal_approx(Vector3.RIGHT), "Reversing steering immediately faces right against a leftward shot")
+ check_flight_facing(pose.flight, game.presentation.camera, 1.0, "Reversing steering turns toward screen right against a leftward shot")
  game.controls.virtual_steering = 0.0
  game.controls._physics_process(0.0)
  pose._process(0.016)
- check(pose.flight.global_basis.z.normalized().is_equal_approx(Vector3.RIGHT), "Neutral steering keeps the last flight heading")
+ check_flight_facing(pose.flight, game.presentation.camera, 1.0, "Neutral steering keeps the last flight heading")
  var time_left := specials.flight_remaining
  var original_phase: float = pose.flight_player.current_animation_position
  session._open_spin_lab()
@@ -215,21 +235,32 @@ func review_flight(session: Node, game: Node) -> void:
   lab.yaw = 0.32 * direction
   lab._aim_camera()
   lab._process(0.12)
-  check(lab.pivot.global_basis.z.normalized().is_equal_approx(Vector3.RIGHT * direction), "Preview follows flight steering")
+  check_flight_facing(lab.rig, lab.orbit, direction, "Preview follows screen-relative steering after orbiting")
   await capture("tails-flight-left" if direction < 0 else "tails-flight-right")
  game.controls.virtual_steering = 0.0
  lab._process(0.05)
- check(lab.pivot.global_basis.z.normalized().is_equal_approx(Vector3.RIGHT), "The preview keeps its heading with the stick released")
+ check_flight_facing(lab.rig, lab.orbit, 1.0, "The preview keeps its heading with the stick released")
+ if not output.is_empty():
+  lab.yaw = 0.1
+  lab.pitch = 0.4
+  for i in lab.picker.item_count:
+   var trick: int = lab.trick_names.find(lab.picker.get_item_metadata(i))
+   if trick >= 0:
+    lab.picker.select(i)
+    lab.picker.item_selected.emit(i)
+    await capture("tails-trick-%d" % (trick + 1))
  session._resume_spin_lab()
  check(not paused and pose.flight.visible and is_equal_approx(original_phase, pose.flight_player.current_animation_position) and is_equal_approx(time_left, specials.flight_remaining), "Resume preserves the real Flight phase and remaining time")
  await capture("tails-flight-in-play")
  card.reset_combo()
  var expected: int = pose.trick_index
  for milestone: int in [5, 8, 10, 15]:
+  game.select_play_camera(game.PLAY_CAMERAS[(expected + 1) % game.PLAY_CAMERAS.size()])
   card.consider("tails", milestone, 100)
   card._process(0.3)
   expected = (expected + 1) % 3
   check(pose.visible and pose.mesh == pose.tricks[expected] and not pose.flight.visible, "Tails performs the next trick at hit %d" % milestone)
+  check(pose.global_basis.orthonormalized().is_equal_approx(game.presentation.camera.global_basis.orthonormalized()), "Tails's live trick %d faces the play camera" % (expected + 1))
   card._process(card.DURATION)
   check(pose.flight.visible and not game.character.rolling_mesh.visible, "The live flight rig resumes after the trick")
  specials._physics_process(specials.flight_remaining + 0.01)

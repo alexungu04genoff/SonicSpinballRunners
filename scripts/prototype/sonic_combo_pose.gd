@@ -3,6 +3,7 @@ extends MeshInstance3D
 const Assets = preload("res://experiments/visual_lab/runners_sonic_assets.gd")
 const LEGACY_POSE := "res://experiments/visual_lab/local/runtime/sonic_sa1_combo.glb"
 const Presenter = preload("res://experiments/visual_lab/sonic_presenter.gd")
+const FLIGHT_TURN := PI / 6.0
 const DEFAULTS := {"model": 1.0, "ball": 1.0, "blur": 1.0, "speed": Presenter.RUNNERS_ROLL_SPEED, "opacity": 0.30}
 var settings := DEFAULTS.duplicate()
 var presenter: Node3D
@@ -138,13 +139,23 @@ func initial_flight_heading() -> Vector2:
  var horizontal: float = presenter.roll_heading.x
  return flight_heading if is_zero_approx(horizontal) else Vector2(signf(horizontal), 0)
 
+static func player_facing_basis(camera: Camera3D, steering_side := 0.0) -> Basis:
+ return camera.global_basis.orthonormalized() * Basis(Vector3.UP, steering_side * FLIGHT_TURN)
+
+static func flight_lift(half_height: float, ball_radius: float) -> float:
+ return maxf(0.0, half_height - ball_radius) + ball_radius * 0.3
+
+static func trick_lift(frame: Basis, bounds: AABB, ball_radius: float) -> float:
+ var oriented := Transform3D(frame, Vector3.ZERO) * bounds
+ return maxf(0.0, -oriented.position.y - ball_radius * 0.82)
+
 func _place_flight() -> void:
  var steer: float = presenter.ball.controls.steering
  if not is_zero_approx(steer): flight_heading = Vector2(signf(steer), 0)
  var fit := radius * float(settings.model) / flight_source_radius
- var frame: Basis = presenter.flat_roll_frame(flight_heading)
- var lift := maxf(0.0, flight_center.y * fit - radius) + radius * 0.3
- flight.transform = Transform3D(frame.scaled(Vector3.ONE * fit), presenter.spin_root.position + Vector3.UP * lift)
+ var frame := player_facing_basis(presenter.table.camera, flight_heading.x)
+ var lift := flight_lift(flight_center.y * fit, radius)
+ flight.global_transform = Transform3D(frame.scaled(Vector3.ONE * fit), presenter.spin_root.global_position + Vector3.UP * lift)
 
 func _end_flight(_reason: String) -> void:
  if not flying: return
@@ -180,15 +191,14 @@ func show_blend(amount: float) -> void:
  _sync_visibility()
  visible = replacing_roll if not tricks.is_empty() else amount > 0.001
  if not visible: return
- var facing: Basis = presenter.table.camera.global_basis.orthonormalized()
+ var facing := player_facing_basis(presenter.table.camera)
  # Original Runners meshes all use the curl's source units. Opening the
  # pose changes its silhouette, never its character scale, even on entry.
  var model_scale := radius * float(settings.model) if not tricks.is_empty() else radius * 4.4 * lerpf(0.22, 1.0, amount)
  var frame := Transform3D(facing.scaled(Vector3.ONE * model_scale), Vector3.ZERO)
- var bounds := frame * mesh.get_aabb()
  var center: Vector3 = presenter.spin_root.global_position
  # Lift the lowest corner just clear of the surface under the moving Ball.
- frame.origin = center + Vector3.UP * maxf(0.0, -bounds.position.y - radius * 0.82)
+ frame.origin = center + Vector3.UP * trick_lift(frame.basis, mesh.get_aabb(), radius)
  global_transform = frame
 
 func restore_ball() -> void:
