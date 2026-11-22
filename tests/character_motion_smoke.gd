@@ -14,6 +14,18 @@ func check(ok: bool, label: String) -> void:
  else:
   print("PASS | ", label)
 
+func check_ribbon_join(trail: MeshInstance3D, center: Vector3, camera: Camera3D) -> void:
+ for stride: float in [0.4, 3.6]:
+  trail.reset()
+  for step in 9:
+   trail.advance(1.0 / 60.0, center + Vector3.RIGHT * step * stride * trail.radius, true, camera)
+  var arrays: Array = trail.mesh.surface_get_arrays(0)
+  var uv: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV]
+  var colors: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
+  check(trail.mesh.get_surface_count() == 1 and uv.size() == 2 * trail.points.size(), "Join fits the existing two-vertex ribbon sections")
+  check(is_zero_approx(uv[0].x) and absf(uv[2].x - stride) < 0.01, "Head distance uses ball radii even across a long frame")
+  check(uv[-1].x >= trail.JOIN_RADII and colors[0].a > 0.99 and colors[-1].a < 0.01, "Body reaches full width and oldest end still fades out")
+
 func run() -> void:
  var game = load("res://experiments/visual_lab/visual_lab.tscn").instantiate()
  root.add_child(game)
@@ -45,6 +57,7 @@ func run() -> void:
   if DisplayServer.get_name() != "headless":
    await RenderingServer.frame_post_draw
    game.view.get_texture().get_image().save_png("res://test-results/character-motion-" + id + ".png")
+ if DisplayServer.get_name() != "headless": check_ribbon_join(trail, center, camera)
  var ages: Array = trail.ages.duplicate()
  trail.advance(0.0, actor.spin_root.position, true, camera)
  check(trail.ages == ages, "Paused ribbon retains its age and samples")

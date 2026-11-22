@@ -2,6 +2,7 @@ extends MeshInstance3D
 ## A time-faded ribbon in presentation space. Never participates in collisions.
 const LIFETIME := 0.38
 const MAX_POINTS := 64
+const JOIN_RADII := 1.8
 var points: Array[Vector3] = []
 var ages: Array[float] = []
 var ribbon := ImmediateMesh.new()
@@ -15,19 +16,20 @@ func _init() -> void:
  var shader := Shader.new()
  shader.code = """shader_type spatial;
 render_mode unshaded, blend_add, cull_disabled, depth_draw_never;
+uniform float join_radii;
 void fragment() {
  float across = abs(UV.y * 2.0 - 1.0);
- float edge = 1.0 - smoothstep(0.83, 1.0, across);
- float life = 1.0 - UV.x;
- float fade = clamp(life, 0.0, 1.0);
- float streak = pow(max(0.0, cos(UV.y * 25.1327 + UV.x * 3.0)), 18.0);
+ float join_fade = smoothstep(0.15, join_radii, UV.x);
+ float half_width = mix(0.28, 1.0, join_fade);
+ float edge = 1.0 - smoothstep(0.83 * half_width, half_width, across);
+ float streak = pow(max(0.0, cos(UV.y * 25.1327 + (1.0 - COLOR.a) * 3.0)), 18.0);
  ALBEDO = mix(COLOR.rgb, vec3(1.0), 0.24 + streak * 0.12);
- ALPHA = fade * edge * 0.7;
-
+ ALPHA = COLOR.a * edge * join_fade * 0.7;
 }
 """
  var material := ShaderMaterial.new()
  material.shader = shader
+ material.set_shader_parameter("join_radii", JOIN_RADII)
  material_override = material
 
 func reset() -> void:
@@ -55,9 +57,14 @@ func advance(delta: float, head: Vector3, emitting: bool, camera: Camera3D) -> v
   return
  ribbon.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
  var previous_side := Vector3.ZERO
+ var behind_head := 0.0
+ var inverse_radius := 1.0 / maxf(radius, 0.0001)
  for i in points.size():
   var before: Vector3 = points[maxi(0, i - 1)]
   var after: Vector3 = points[mini(points.size() - 1, i + 1)]
+  # True distance keeps the join the same size even when a frame spans several radii.
+  if i > 0 and behind_head < JOIN_RADII:
+   behind_head += before.distance_to(points[i]) * inverse_radius
   var tangent := (before - after).normalized()
   var facing := (camera.global_position - to_global(points[i])).normalized()
   var side := tangent.cross(facing).normalized()
@@ -66,14 +73,14 @@ func advance(delta: float, head: Vector3, emitting: bool, camera: Camera3D) -> v
   if previous_side.dot(side) < 0.0:
    side = -side
   previous_side = side
-  var life := clampf(1.0 - ages[i] / LIFETIME, 0.0, 1.0)
-  var width := radius * (1.05 + (1.0 - life) * 0.4)
-  var color := Color(tint, 1.0)
+  var age := clampf(ages[i] / LIFETIME, 0.0, 1.0)
+  var offset := side * radius * (1.05 + age * 0.4)
   # Fade the oldest end even while a new trail is still filling its lifetime.
   var tail_fade := pow(float(i) / float(points.size() - 1), 4.0)
-  for edge in 2:
-   ribbon.surface_set_color(color)
-   ribbon.surface_set_uv(Vector2(maxf(1.0 - life, tail_fade), float(edge)))
-   ribbon.surface_add_vertex(points[i] + side * width * (-1.0 if edge == 0 else 1.0))
+  ribbon.surface_set_color(Color(tint, 1.0 - maxf(age, tail_fade)))
+  ribbon.surface_set_uv(Vector2(behind_head, 0.0))
+  ribbon.surface_add_vertex(points[i] - offset)
+  ribbon.surface_set_uv(Vector2(behind_head, 1.0))
+  ribbon.surface_add_vertex(points[i] + offset)
  ribbon.surface_end()
 
