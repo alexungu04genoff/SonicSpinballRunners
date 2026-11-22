@@ -2,7 +2,7 @@
 
 ## Sonic at the Ball
 
-At a milestone, Sonic unfolds over 0.12 seconds, holds for 0.62 seconds and returns to the roll over 0.16 seconds. His static pose faces the play camera at the moving Ball. During a Loop the receipt appears while the character keeps running. The contact marker and the 2D collision body keep following gameplay. The score multiplier moves beside the pose, and the exact hit receipt appears in the lower-right corner. F9 moves the receipt between compositing layers. The world mesh receives the table's lighting and Retro treatment in either mode.
+At a milestone, Sonic cuts from the curl to a full-size, camera-facing pose at the moving Ball. Hits 2, 3 and 4 hold for 0.20, 0.25 and 0.30 seconds respectively. Later milestones hold for 0.40 seconds. When the hold ends, the curl or active traversal animation returns immediately. During a Loop or Target Boost the receipt appears while the character keeps running. The contact marker and the 2D collision body keep following gameplay. The score multiplier moves beside the pose, and the exact hit receipt appears in the lower-right corner. F9 moves the receipt between compositing layers. The world mesh receives the table's lighting and Retro treatment in either mode.
 
 The local bake uses the game's original `sn_ball_loop`, `sn_jump_trick`, `sn_jump_trick_02` and `sn_jump_trick_03`. All four use one model scale calibrated from curled Sonic. Raising a shoe or extending a glove changes his silhouette at his original proportions. The curl spins with the existing rolling presentation. Its original texture stays sharp below five ball radii per second and reaches the full directional smear at 32. The three tricks are held poses in the source. Each accepted milestone selects the next pose, even across combo resets. A new run starts at trick one. The 2D Ball owns the trajectory and collisions.
 
@@ -46,9 +46,9 @@ The 316 × 116 card sits 18 logical pixels from the bottom-right corner. At 1280
 
 Scorecraft counts each fresh builder it accepts during the current combo, including fresh builders that refresh the ×4 tier. A completed Ring Link counts once. Ordinary Rings, repeated builders, support events, spinner ticks and Special cash-outs add no hits. Tier decay preserves the count while the combo is live. A combo reset clears it.
 
-Prototype shows the selected character at 5, 8, 10, 15, 20 and each further multiple of five. The smaller line labels the hit count and displays the triggering award after Buddy contributions. A zero-point builder shows the hits alone. The multiplier beside the Ball and all ledger values retain their Scorecraft meanings.
+Prototype shows the selected character at 2, 3, 4, 5, 8, 10, 15, 20 and each further multiple of five. The smaller line labels the hit count and displays the triggering award after Buddy contributions. A zero-point builder shows the hits alone. The multiplier beside the Ball and all ledger values retain their Scorecraft meanings.
 
-Entrance takes 0.12 seconds, hold takes 0.62 and exit takes 0.16. A higher milestone updates the same card for the remainder of its original lifetime. Duplicate and lower receipts have no effect, including after the card expires. Pause dismisses the pose. Resume can show the next earned milestone. Combo end, character change, retry, drain, goal, draft, Act or Zone change, Results and run closure clear the old celebration. The card sleeps while hidden. Both layer choices reuse the existing viewports.
+The HUD receipt takes 0.12 seconds to enter, holds for 0.62 and exits over 0.16. A higher milestone updates a visible receipt on its original clock and starts a full hold for the new on-Ball pose. Duplicate and lower receipts have no effect, including after the receipt expires. Pause dismisses the pose. Resume can show the next earned milestone. Combo end, character change, retry, drain, goal, draft, Act or Zone change, Results and run closure clear the old celebration. Processing stops once the receipt and pose have both finished. Both layer choices reuse the existing viewports.
 
 ## Display treatment in the original trial
 
@@ -74,7 +74,7 @@ $review = 'res://tests/combo_celebration_review.gd'
 | 9 | Pay the Act target and touch the goal. Choose a Buddy to inspect the next Act. |
 | F9 | Move the same card between the HUD and the gameplay Retro stack |
 
-The interactive fixture parks the Ball for repeated timing trials. The capture fixture releases the real Ball and injects distinct scoring events on fixed frames. The clip records three seconds at 30 fps. The Ball travels 100.5 table pixels during the 27 frames with a visible cut-in. Native PNGs for each character and both treatments use a held camera after the clip. Intermediate frames and fixture settings live under `test-results`.
+The interactive fixture parks the Ball for repeated timing trials. The capture fixture releases the real Ball and injects distinct scoring events on fixed frames. The clip records three seconds at 30 fps, showing the two-, three-, four- and five-hit tricks. Pass `--review-trick-cycle` to include the eight- and ten-hit milestones. Native PNGs for each character and both treatments use a held camera after the clip. Intermediate frames and fixture settings live under `test-results`.
 
 ```powershell
 & $godot --path . --position 20,30 --fixed-fps 30 --script $review -- --capture-dir=res://test-results/combo-review-media

@@ -9,7 +9,6 @@ var settings := DEFAULTS.duplicate()
 var boost_speed := Assets.BOOST_SPEED
 var presenter: Node3D
 var radius: float
-var active := false
 var tricks: Array[Mesh] = []
 var trick_index := -1
 var runners_roll: MeshInstance3D
@@ -32,8 +31,6 @@ var flight_heading := Vector2.RIGHT
 var flying: bool:
  get: return motion == &"flight"
 var inspecting := false
-var replacing_roll := false
-var trick_suppressed := false
 
 func prepare(actor: Node3D, fallback: Texture2D, path := Assets.LOCAL_SET) -> void:
  presenter = actor
@@ -67,6 +64,7 @@ func prepare(actor: Node3D, fallback: Texture2D, path := Assets.LOCAL_SET) -> vo
  _select_roll(presenter.character_id, path)
 
 func _select_roll(id: String, sonic_path := Assets.LOCAL_SET) -> void:
+ restore_ball()
  if is_instance_valid(runners_roll): runners_roll.hide()
  _stop_motion()
  if trailing_tails: trailing_tails.hide()
@@ -157,10 +155,7 @@ func _play_motion(kind: StringName, clip: String) -> void:
   _stop_motion()
   return
  motion = kind
- if kind in [&"loop", &"target_boost"] and active:
-  trick_suppressed = true
-  replacing_roll = false
-  hide()
+ if kind in [&"loop", &"target_boost"]: restore_ball()
  motion_center = Vector3(center[0], center[1], center[2])
  motion_rig.get_child(0).position = -motion_center
  if motion_player.current_animation != clip:
@@ -281,7 +276,7 @@ func inspect(enabled: bool) -> void:
  _sync_visibility()
 
 func _sync_visibility() -> void:
- var regular := not inspecting and not replacing_roll
+ var regular := not inspecting and not visible
  presenter.rolling_mesh.visible = regular and motion == &""
  if trailing_tails: trailing_tails.visible = presenter.rolling_mesh.visible
  if motion_rig: motion_rig.visible = regular and motion != &""
@@ -293,30 +288,20 @@ func apply_settings(values: Dictionary, boost_scale: float) -> void:
   Assets.set_playback_speed(motion_player, character, boost_speed)
  _apply_roll_settings()
 
-func next_trick() -> void:
- if tricks.is_empty(): return
- trick_index = (trick_index + 1) % tricks.size()
- sets[character].trick_index = trick_index
- mesh = tricks[trick_index]
-
-func show_blend(amount: float) -> void:
- # The unfolding mesh emerges from the sphere. Keep both roll bases intact
- # because the track presenter composes them when crossing a Loop boundary.
- active = true
- if motion in [&"loop", &"target_boost"]: trick_suppressed = true
- if trick_suppressed:
-  replacing_roll = false
-  hide()
-  _sync_visibility()
-  return
- replacing_roll = amount >= 0.45
+func start_trick() -> void:
+ if not tricks.is_empty():
+  trick_index = (trick_index + 1) % tricks.size()
+  sets[character].trick_index = trick_index
+  mesh = tricks[trick_index]
+ if motion in [&"loop", &"target_boost"]: return
+ show()
  _sync_visibility()
- visible = replacing_roll if not tricks.is_empty() else amount > 0.001
+ place_trick()
+
+func place_trick() -> void:
  if not visible: return
  var facing := player_facing_basis(presenter.table.camera)
- # Original Runners meshes all use the curl's source units. Opening the
- # pose changes its silhouette, never its character scale, even on entry.
- var model_scale := radius * float(settings.model) if not tricks.is_empty() else radius * 4.4 * lerpf(0.22, 1.0, amount)
+ var model_scale := radius * float(settings.model) if not tricks.is_empty() else radius * 4.4
  var frame := Transform3D(facing.scaled(Vector3.ONE * model_scale), Vector3.ZERO)
  var center: Vector3 = presenter.spin_root.global_position
  # Lift the lowest corner just clear of the surface under the moving Ball.
@@ -324,10 +309,6 @@ func show_blend(amount: float) -> void:
  global_transform = frame
 
 func restore_ball() -> void:
- if not active: return
- active = false
- trick_suppressed = false
+ if not visible: return
  hide()
- if is_instance_valid(presenter) and is_instance_valid(presenter.rolling_mesh):
-  replacing_roll = false
-  _sync_visibility()
+ _sync_visibility()

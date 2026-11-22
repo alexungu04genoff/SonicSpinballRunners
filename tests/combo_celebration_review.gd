@@ -81,35 +81,38 @@ func clip() -> void:
  var travel := 0.0
  var live_frames := 0
  var posed_frames := 0
+ var seen_tricks := {}
  var follows_ball := true
  var collision_layer: int = game.ball.collision_layer
  var collision_mask: int = game.ball.collision_mask
  var previous: Vector2 = game.ball.position
  for frame in 90:
   await process_frame
-  if frame == 17:
+  if frame == 12:
    game.scorecraft.reset("Review chain")
-   for i in 4: hit()
-  if frame == 22: hit()
+   for i in 2: hit()
+  if frame in [18, 26, 35]: hit()
   if "--review-trick-cycle" in OS.get_cmdline_user_args():
-   if frame == 31:
+   if frame == 45:
     for i in 3: hit()
-   if frame == 39:
+   if frame == 54:
     for i in 2: hit()
   await RenderingServer.frame_post_draw
   if card.visible:
    live_frames += 1
    travel += previous.distance_to(game.ball.position)
-   if not game.character.rolling_mesh.visible:
-    posed_frames += 1
-    var offset: Vector3 = card.character_pose.global_position - game.character.spin_root.global_position
-    follows_ball = follows_ball and card.character_pose.is_visible_in_tree() and Vector2(offset.x, offset.z).length() < 0.001
-    follows_ball = follows_ball and not game.ball.freeze and game.ball.collision_mask == collision_mask and game.ball.collision_layer == collision_layer
+  if card.character_pose.is_visible_in_tree():
+   seen_tricks[card.milestone] = true
+   posed_frames += 1
+   var offset: Vector3 = card.character_pose.global_position - game.character.spin_root.global_position
+   follows_ball = follows_ball and not game.character.rolling_mesh.visible and Vector2(offset.x, offset.z).length() < 0.001
+   follows_ball = follows_ball and not game.ball.freeze and game.ball.collision_mask == collision_mask and game.ball.collision_layer == collision_layer
   previous = game.ball.position
   var image := root.get_texture().get_image()
   check(image.save_jpg(path.path_join("%03d.jpg" % frame), 0.95) == OK, "Save movie frame")
  check(live_frames >= 24 and travel > game.ball.radius * 2, "Ball travels during the cut-in")
  check(posed_frames >= 18 and follows_ball, "The pose replaces the rolling mesh on the moving, colliding Ball")
+ check(seen_tricks.has_all([2, 3, 4, 5]), "The moving Ball shows every early trick and the five-hit milestone")
  check(not card.character_pose.visible and game.character.rolling_mesh.visible, "The original roll returns after the moving pose")
  print("COMBO_CLIP | visible frames=", live_frames, " | posed frames=", posed_frames, " | Ball distance=", travel)
 
@@ -230,7 +233,7 @@ func run() -> void:
  var fallback := preload("res://scripts/prototype/sonic_combo_pose.gd").new()
  fallback.prepare(game.character, card.POSES.sonic, local.path_join("missing.glb"))
  game.character.add_child(fallback)
- fallback.show_blend(1.0)
+ fallback.start_trick()
  check(fallback.mesh is QuadMesh and fallback.visible and not game.character.rolling_mesh.visible, "The shared Sonic artwork takes the Ball's place when the local model is absent")
  fallback.restore_ball()
  fallback.free()
@@ -245,15 +248,28 @@ func run() -> void:
   for cached: Dictionary in pose.sets.values():
    if cached.has("roll"): check(cached.roll.visible == (cached.roll == pose.runners_roll), "Only the selected character's curl can appear")
   check(not card.visible and card.milestone == 0, "Character selection clears the previous pose")
-  for i in 4: hit()
-  check(scoring.builder_hits == 4 and scoring.multiplier == 4 and not card.visible, "Four builders use ordinary HUD feedback")
+  var unfolds := id == "sonic" or (id == "tails" and pose.runners_roll != null)
+  hit()
+  check(not card.visible and not pose.visible, "The first builder leaves the Ball rolling")
+  for tier: int in [2, 3, 4]:
+   var start_score: int = game.score
+   hit()
+   check(scoring.multiplier == tier and card.visible and card.milestone == tier and card.points == game.score - start_score, "%s gets the exact receipt at ×%d" % [id, tier])
+   var duration: float = [0.20, 0.25, 0.30][tier - 2]
+   card._process(duration - 0.001)
+   check(pose.visible == unfolds and game.character.rolling_mesh.visible != unfolds, "The ×%d trick holds for its full beat" % tier)
+   card._process(0.002)
+   check(not pose.visible and game.character.rolling_mesh.visible and card.visible, "The ×%d trick restores the Ball while the receipt stays readable" % tier)
   var before: int = game.score
   hit()
   check(scoring.multiplier == 4 and card.visible and card.character == id and card.milestone == 5 and card.points == game.score - before, "Fifth builder displays the selected pose and exact award")
   card._process(0.3)
-  var unfolds := id == "sonic" or (id == "tails" and pose.runners_roll != null)
-  check(card.character_pose.visible == unfolds and game.character.rolling_mesh.visible != unfolds, "Sonic and locally installed Tails unfold from the Ball")
+  check(card.character_pose.visible == unfolds and game.character.rolling_mesh.visible != unfolds and not card.visible, "A late fifth hit holds its own pose through the receipt deadline")
   if pose.trailing_tails: check(not pose.trailing_tails.visible, "Tricks use only their own authored tails")
+  card._process(0.101)
+  check(not pose.visible and game.character.rolling_mesh.visible and not card.is_processing(), "The five-hit trick ends at 0.40 seconds and the hidden card sleeps")
+  five()
+  card._process(0.2)
   if not output.is_empty(): await still(id)
   if id == "sonic" and not output.is_empty():
    game.set_celebration_retro(true)
@@ -269,10 +285,10 @@ func run() -> void:
  for i in 2: hit()
  check(card.milestone == 5, "Six and seven preserve the displayed milestone")
  hit()
- check(card.milestone == 8 and card.age == age, "Eight upgrades the existing card in place")
+ check(card.visible and card.milestone == 8 and card.age == age, "Eight upgrades the existing card in place")
  hit()
  hit(125)
- check(card.milestone == 10 and card.points == 125 and card.age == age, "Ten upgrades without extending the original deadline")
+ check(card.milestone == 10 and card.points == 125 and card.age == age, "Ten upgrades without extending the original receipt deadline")
  card._process(card.DURATION - age + 0.001)
  scoring.builder_hit_resolved.emit(10, 125)
  check(not card.visible and not card.is_processing(), "Expired card sleeps and ignores a duplicate receipt")
@@ -292,19 +308,15 @@ func run() -> void:
   var previous_index: int = pose.trick_index
   var expected: int = previous_index
   var reached := 0
-  for target: int in [5, 8, 10, 15]:
+  for target: int in [2, 3, 4, 5, 8, 10, 15]:
    for i in range(reached, target): hit()
    reached = target
    expected = (expected + 1) % 3
    check(card.milestone == target and pose.trick_index == expected and pose.mesh == pose.tricks[expected], "Each earned Sonic milestone advances one original trick")
-   if target == 5: card._process(0.3)
-   else: check(is_equal_approx(card.age, 0.3), "A new trick preserves the celebration deadline")
-   card._place()
+   card._process(0.10)
    var trick_bounds := screen_bounds(pose)
    check(pose.global_basis.get_scale().is_equal_approx(pose.runners_roll.global_basis.get_scale()), "Trick %d uses the curled model's character scale" % (expected + 1))
-   pose.show_blend(0.46)
-   check(pose.visible and not game.character.rolling_mesh.visible and pose.global_basis.get_scale().is_equal_approx(pose.runners_roll.global_basis.get_scale()), "Sonic keeps one body scale through the transition")
-   card._place()
+   check(pose.visible and not game.character.rolling_mesh.visible, "Rapid scoring cuts directly to the latest earned trick")
    print("TRICK_SIZE | ", expected + 1, " | ", trick_bounds)
    if not output.is_empty(): await still("runners-trick-%d" % (expected + 1))
   var ball: PlaygroundBall = game.ball
@@ -335,7 +347,7 @@ func run() -> void:
  scoring.reset("Review chain")
  hit()
  for i in scoring.config.rings_per_link: scoring.award_ring("link-ring-%d" % i)
- check(scoring.builder_hits == 2, "One completed Ring Link counts as one builder")
+ check(scoring.builder_hits == 2 and card.milestone == 2 and pose.visible, "A completed Ring Link earns the two-hit trick")
  hit()
  hit()
  var bumper := Node2D.new()

@@ -17,10 +17,13 @@ const ENTER := 0.12
 const HOLD := 0.62
 const EXIT := 0.16
 const DURATION := ENTER + HOLD + EXIT
+const TRICK_SECONDS := {2: 0.20, 3: 0.25, 4: 0.30}
+const MILESTONE_TRICK_SECONDS := 0.40
 var character := ""
 var milestone := 0
 var points := 0
 var age := 0.0
+var trick_remaining := 0.0
 var _title_font := SystemFont.new()
 var character_pose: CharacterPose
 
@@ -41,11 +44,13 @@ func _ready() -> void:
 
 func consider(id: String, hits: int, award: int) -> void:
  if hits <= milestone or not POSES.has(id): return
- if hits != 5 and hits != 8 and (hits < 10 or hits % 5 != 0): return
+ if hits < 2 or (hits > 5 and hits != 8 and hits % 5 != 0): return
  character = id
  milestone = hits
  points = award
- if _on_ball(id): character_pose.next_trick()
+ if _on_ball(id):
+  character_pose.start_trick()
+  trick_remaining = TRICK_SECONDS.get(hits, MILESTONE_TRICK_SECONDS) if character_pose.visible else 0.0
  if not visible:
   age = 0.0
   show()
@@ -61,6 +66,7 @@ func _on_ball(id: String) -> bool:
  return is_instance_valid(character_pose) and character_pose.character == id and (id == "sonic" or (id == "tails" and character_pose.runners_roll != null))
 
 func dismiss() -> void:
+ trick_remaining = 0.0
  if is_instance_valid(character_pose): character_pose.restore_ball()
  hide()
  set_process(false)
@@ -70,8 +76,13 @@ func _notification(what: int) -> void:
 
 func _process(delta: float) -> void:
  age += delta
+ if trick_remaining > 0.0:
+  trick_remaining = maxf(0.0, trick_remaining - delta)
+  if trick_remaining > 0.0: character_pose.place_trick()
+  else: character_pose.restore_ball()
  if age >= DURATION:
-  dismiss()
+  hide()
+  set_process(trick_remaining > 0.0)
   return
  _place()
 
@@ -80,8 +91,6 @@ func _place() -> void:
  var logical := get_window().get_visible_rect().size
  scale = get_viewport_rect().size / logical
  var reveal := smoothstep(0.0, ENTER, age) * (1.0 - smoothstep(ENTER + HOLD, DURATION, age))
- if _on_ball(character):
-  character_pose.show_blend(reveal)
  position = (logical - CARD - MARGIN + Vector2(36.0 * (1.0 - reveal), 0)) * scale
  modulate.a = reveal
 
