@@ -1,6 +1,7 @@
 extends Node
 ## Presentation-only checkpoint travel; the run owns the inert physics ball.
 signal arrived
+const SageActor = preload("res://experiments/visual_lab/sage/actor.gd")
 var game: Node
 var proxy: Node3D
 var start := Vector2.ZERO
@@ -9,6 +10,8 @@ var elapsed := 0.0
 var drain := false
 var upright_roll: MeshInstance3D
 var trailing_tails: MeshInstance3D
+var cyber_ball: SageActor
+var start_cyber_time := 0.0
 var start_roll_angle := 0.0
 var start_tail_time := 0.0
 const DURATION := 1.25
@@ -19,10 +22,19 @@ func begin(owner_game: Node, target: Vector2, drained: bool) -> void:
  destination = target
  drain = drained
  process_mode = Node.PROCESS_MODE_PAUSABLE
- game.combo_celebration.character_pose.finish_shell_fade()
- proxy = game.character.spin_root.duplicate()
+ var pose = game.combo_celebration.character_pose
+ pose.finish_shell_fade()
+ proxy = Node3D.new() if pose.sage else game.character.spin_root.duplicate()
  game.presentation.add_child(proxy)
- if preload("res://experiments/visual_lab/runners_sonic_assets.gd").CURLS.has(game.character.character_id):
+ if pose.sage:
+  cyber_ball = SageActor.new()
+  proxy.add_child(cyber_ball)
+  cyber_ball.prepare_ball()
+  cyber_ball.play(SageActor.BALL)
+  cyber_ball.scale = Vector3.ONE * float(pose.radius) / cyber_ball.ball_radius
+  cyber_ball.shell.set_shader_parameter("opacity", pose.sage.shell.get_shader_parameter("opacity"))
+  start_cyber_time = pose.sage.elapsed
+ elif preload("res://experiments/visual_lab/runners_sonic_assets.gd").CURLS.has(game.character.character_id):
   var heading: Vector2 = game.character.roll_heading
   if not drain and not start.is_equal_approx(destination): heading = start.direction_to(destination)
   proxy.basis = game.character.flat_roll_frame(heading)
@@ -62,7 +74,9 @@ func _draw(progress: float) -> void:
  proxy.position = TablePresentation.map_point(point, game.presentation.ball_height() + lift)
  proxy.scale = Vector3.ONE * maxf(0.001, size)
  proxy.visible = size > 0.001
- if upright_roll:
+ if cyber_ball:
+  cyber_ball.sample(start_cyber_time + elapsed)
+ elif upright_roll:
   var angle := start_roll_angle + progress * TAU * float(game.character.roll_speed_scale)
   upright_roll.basis = Basis(Vector3.RIGHT, angle)
   if trailing_tails: preload("res://experiments/visual_lab/runners_sonic_assets.gd").sample_roll_tails(trailing_tails, start_tail_time + elapsed)

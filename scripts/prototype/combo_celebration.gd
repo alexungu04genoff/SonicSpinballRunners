@@ -16,7 +16,7 @@ const INK := {
  "sonic": Color("#69dcff"), "tails": Color("#ffcd62"),
  "knuckles": Color("#ff9778"), "shadow": Color("#ff8498"),
  "rouge": Color("#ff9bd2"), "amy": Color("#ff729e"), "blaze": Color("#c99aff"),
- "cream": Color("#ffd49d"), "big": Color("#c3a5ef"),
+ "cream": Color("#ffd49d"), "big": Color("#c3a5ef"), "sage": Color("#ff657a"),
 }
 const CARD := Vector2(316, 116)
 const MARGIN := Vector2(18, 18)
@@ -52,14 +52,14 @@ func _ready() -> void:
  dismiss()
 
 func consider(id: String, hits: int, award: int) -> void:
- if hits <= milestone or not POSES.has(id): return
+ if hits <= milestone or not INK.has(id): return
  if hits < 2 or (hits > 5 and hits != 8 and hits % 5 != 0): return
  character = id
  milestone = hits
  points = award
  if _on_ball(id):
-  character_pose.start_trick()
   trick_duration = TRICK_SECONDS.get(hits, MILESTONE_TRICK_SECONDS)
+  character_pose.start_trick(trick_duration)
   trick_remaining = trick_duration if character_pose.visible else 0.0
  if not visible:
   age = 0.0
@@ -73,7 +73,8 @@ func reset_combo() -> void:
  dismiss()
 
 func _on_ball(id: String) -> bool:
- return is_instance_valid(character_pose) and character_pose.character == id and (id == "sonic" or character_pose.runners_roll != null)
+ if not is_instance_valid(character_pose) or character_pose.character != id: return false
+ return id == "sonic" or character_pose.runners_roll != null or (character_pose.sage != null and character_pose.sage.animated)
 
 func dismiss() -> void:
  trick_remaining = 0.0
@@ -125,7 +126,12 @@ func _draw() -> void:
   Vector2(1, 112)]), accent.darkened(0.62))
  draw_line(Vector2(102, 110), Vector2(138, 9), accent, 2, true)
  draw_rect(Rect2(141, 7, 174, 3), accent)
- draw_texture_rect(POSES[character], Rect2(3, -6, 127, 127), false)
+ if POSES.has(character):
+  draw_texture_rect(POSES[character], Rect2(3, -6, 127, 127), false)
+ elif character == "sage":
+  draw_circle(Vector2(65, 57), 35, Color("#100f19"), true, -1, true)
+  draw_arc(Vector2(65, 57), 31, -2.8, -0.25, 24, accent, 3, true)
+  draw_polyline(PackedVector2Array([Vector2(36, 66), Vector2(56, 66), Vector2(66, 46), Vector2(92, 46)]), accent, 3, true)
  draw_string(_title_font, Vector2(143, 36), character.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, 20, accent)
  _draw_fitted(_title_font, Vector2(129, 72), "COMBO ×%d" % milestone, 29, Color.WHITE)
  var feedback := "%d HITS" % milestone

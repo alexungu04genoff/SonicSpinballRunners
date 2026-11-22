@@ -96,6 +96,11 @@ func run() -> void:
   var preview := lab.preview
   check(preview.active_character == id and lab.character.character_id == id, "Table and inspector share " + id)
   check(lab.debug_panel.act_controls.character_selector.selected == CharacterSpecials.CHARACTER_IDS.find(id), "Replay Act reflects " + id)
+  if id == "sage":
+   check(preview.sage and preview.sage.ball_root.is_visible_in_tree() and not preview.shell.visible, "Sage previews her own procedural cyber ball")
+   if preview.sage.animated:
+    check(preview.picker.item_count == 8 and choose(preview.picker, "Flight") and preview.sage.action == "Flight", "Sage exposes her own rig and seven clips in the character screen")
+   continue
   check(preview.picker.item_count > 0 and preview.picker.get_item_text(0) == "Spin ball", "Every character has a usable roll")
   if lab.character_pose.runners_roll:
    check(preview.curl and preview.curl.is_visible_in_tree(), id + " shows the Runners curl")

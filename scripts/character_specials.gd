@@ -31,8 +31,9 @@ const CHARACTERS := {
  "blaze": preload("res://data/characters/blaze.tres"),
  "cream": preload("res://data/characters/cream.tres"),
  "big": preload("res://data/characters/big.tres"),
+ "sage": preload("res://data/characters/sage.tres"),
 }
-const CHARACTER_IDS: Array[String] = ["sonic", "tails", "knuckles", "shadow", "rouge", "amy", "blaze", "cream", "big"]
+const CHARACTER_IDS: Array[String] = ["sonic", "tails", "knuckles", "shadow", "rouge", "amy", "blaze", "cream", "big", "sage"]
 const FLIGHT_KEY := "type_flight"
 const SMASH_RISE := 1.0
 const SMASH_DIVE := 1.0

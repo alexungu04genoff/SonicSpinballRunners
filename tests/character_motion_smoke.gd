@@ -89,7 +89,9 @@ func run() -> void:
  for id in CharacterSpecials.CHARACTER_IDS:
   game.specials.select_character(id)
   var roll: MeshInstance3D = game.character_pose.runners_roll
-  if roll or "--require-runners-set" in OS.get_cmdline_user_args():
+  if id == "sage":
+   check(game.character_pose.sage.is_visible_in_tree() and not roll and not actor.rolling_mesh.visible, "Sage has an independent procedural ball")
+  elif roll or "--require-runners-set" in OS.get_cmdline_user_args():
    check(roll != null and roll.is_visible_in_tree() and roll.name == "Runners%sRoll" % id.capitalize(), id + " previews the current Runners curl")
   for step in 32:
    var angle := float(step) / 31.0 * 1.8

@@ -24,7 +24,7 @@ var special_meter: float = 0.0
 @export var scorecraft_enabled := true
 @export var scorecraft_config: ScorecraftConfig = preload("res://data/scorecraft.tres")
 var scorecraft: Scorecraft
-@export_enum("sonic", "tails", "knuckles", "shadow", "rouge", "amy", "blaze", "cream", "big") var character_id := "sonic"
+@export_enum("sonic", "tails", "knuckles", "shadow", "rouge", "amy", "blaze", "cream", "big", "sage") var character_id := "sonic"
 var _target_awards: Dictionary = {}
 var specials: CharacterSpecials
 var status_message: String = "Press Enter / gamepad X to launch"

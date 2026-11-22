@@ -1,0 +1,54 @@
+[gd_scene load_steps=4 format=3]
+
+[sub_resource type="Environment" id="Environment"]
+background_mode = 1
+background_color = Color(0.245, 0.285, 0.345, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.84, 0.89, 1, 1)
+ambient_light_energy = 0.68
+reflected_light_source = 1
+fog_enabled = true
+fog_light_color = Color(0.245, 0.285, 0.345, 1)
+fog_density = 0.026
+
+[sub_resource type="StandardMaterial3D" id="FloorMaterial"]
+albedo_color = Color(0.32, 0.36, 0.42, 1)
+roughness = 1.0
+
+[sub_resource type="PlaneMesh" id="Floor"]
+material = SubResource("FloorMaterial")
+size = Vector2(60, 60)
+
+[node name="Studio" type="Node3D"]
+
+[node name="Environment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment")
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+mesh = SubResource("Floor")
+
+[node name="Key" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-62, -15, 0)
+light_color = Color(1, 0.94, 0.9, 1)
+light_energy = 1.25
+light_angular_distance = 4.0
+shadow_enabled = true
+shadow_opacity = 0.28
+directional_shadow_mode = 0
+directional_shadow_max_distance = 10.0
+
+[node name="Rim" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-18, 135, 0)
+light_color = Color(0.77, 0.85, 1, 1)
+light_energy = 0.9
+
+[node name="FaceFill" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-15, 15, 0)
+light_color = Color(1, 0.95, 0.90, 1)
+light_energy = 0.45
+
+[node name="Camera" type="Camera3D" parent="."]
+projection = 1
+size = 1.45
+near = 0.02
+far = 60.0

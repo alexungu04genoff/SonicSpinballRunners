@@ -25,6 +25,7 @@ var trailing_tails: MeshInstance3D
 var held := MeshInstance3D.new()
 var tricks: Array[Mesh] = []
 var rig: Node3D
+var sage: Pose.Sage
 var player: AnimationPlayer
 var source_radius := 1.0
 var picker := OptionButton.new()
@@ -67,15 +68,16 @@ func _ready() -> void:
  scroll.add_child(panel)
  if not embedded: pose = game.combo_celebration.character_pose
  active_character = pose.character
- roll_clip = Assets.CURLS.get(pose.character, "painted_roll" if embedded else "")
+ roll_clip = Pose.Sage.BALL if pose.sage else Assets.CURLS.get(pose.character, "painted_roll" if embedded else "")
  trick_names = Assets.trick_names(pose.character)
  _build_stage()
  _load_models()
  _build_controls()
  tail_time = pose.tail_time
- if pose.motion != &"" and player:
+ if pose.motion != &"" and (player or sage):
+  var current: String = pose.sage.action if sage else pose.motion_player.current_animation
   for i in picker.item_count:
-   if picker.get_item_metadata(i) == pose.motion_player.current_animation: picker.select(i)
+   if picker.get_item_metadata(i) == current: picker.select(i)
  _select_clip(picker.selected)
 
 func _build_stage() -> void:
@@ -105,6 +107,12 @@ func _build_stage() -> void:
  art.add_child(held)
 
 func _load_models() -> void:
+ if pose.sage:
+  sage = Pose.Sage.new()
+  art.add_child(sage)
+  sage.prepare_gameplay()
+  sage.scale = Vector3.ONE / sage.ball_radius
+  return
  if is_instance_valid(pose.runners_roll):
   curl = pose.runners_roll.duplicate()
   curl.transform = Transform3D.IDENTITY
@@ -135,7 +143,21 @@ func _build_controls() -> void:
   _label(panel, "%s spin preview" % pose.character.capitalize(), 24)
  _label(panel, "Animation")
  panel.add_child(picker)
+ var clips := _available_clips()
+ for clip: String in clips:
+  if clip == roll_clip or (sage and sage.animated) or (clip in trick_names and not tricks.is_empty()) or (player and player.has_animation(clip)):
+   picker.add_item(clips[clip])
+   picker.set_item_metadata(picker.item_count - 1, clip)
+ picker.item_selected.connect(_select_clip)
+ _build_view_controls()
+
+func _available_clips() -> Dictionary:
  var clips := {}
+ if sage:
+  clips[roll_clip] = roll_clip
+  if sage.animated:
+   for clip: String in sage.CLIPS: clips[clip] = clip
+  return clips
  for sonic_clip: String in CLIPS:
   var clip := sonic_clip.replace("sn_", str(Assets.PREFIX.get(pose.character, "")) + "_")
   if sonic_clip == "sn_ball_loop": clip = roll_clip
@@ -146,11 +168,9 @@ func _build_controls() -> void:
  if embedded and not Assets.CURLS.has(pose.character):
   clips = {roll_clip: "Spin ball"}
   if player and Assets.BOOST.has(pose.character): clips[Assets.BOOST[pose.character]] = "Boost run"
- for clip: String in clips:
-  if clip == roll_clip or (clip in trick_names and not tricks.is_empty()) or (player and player.has_animation(clip)):
-   picker.add_item(clips[clip])
-   picker.set_item_metadata(picker.item_count - 1, clip)
- picker.item_selected.connect(_select_clip)
+ return clips
+
+func _build_view_controls() -> void:
  _label(panel, "Table camera")
  panel.add_child(cameras)
  for preset: int in game.PLAY_CAMERAS: cameras.add_item(TablePresentation.CAMERA_NAMES[preset], preset)
@@ -162,9 +182,12 @@ func _build_controls() -> void:
  _slider("blur", "Spin blur", 0.0, 1.0, 0.01)
  _slider("speed", "Spin speed", 0.0, 8.0, 0.05)
  _slider("boost", "Boost speed", 0.25, 3.0, 0.05)
- _slider("opacity", "Shell opacity", 0.0, 1.0, 0.01)
+ _slider("opacity", "Core opacity" if sage else "Shell opacity", 0.0, 1.0, 0.01)
  shell_on_poses.text = "Show shell on other animations"
  panel.add_child(shell_on_poses)
+ if sage:
+  for id: String in ["model", "ball", "blur", "speed", "boost"]: sliders[id].get_parent().hide()
+  shell_on_poses.hide()
  shell_on_poses.toggled.connect(func(_on: bool): _update_preview())
  var buttons := HBoxContainer.new()
  panel.add_child(buttons)
@@ -181,7 +204,9 @@ func _build_controls() -> void:
  resume.pressed.connect(func(): resume_requested.emit())
  hint = _label(panel, "", 14)
  hint.modulate = Color("#afd3df")
- if curl == null or player == null or tricks.is_empty():
+ if sage and not sage.animated:
+  _label(panel, "Install Sage’s local rig to preview her seven animations.", 14).autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ elif not sage and (curl == null or player == null or tricks.is_empty()):
   var note := _label(panel, "Available clips depend on the local Runners model and pose bake.", 14)
   note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
@@ -216,11 +241,17 @@ func _slider(id: String, caption: String, minimum: float, maximum: float, step: 
 func _select_clip(index: int) -> void:
  var previous := active_clip
  active_clip = picker.get_item_metadata(index)
- var flight_clip: String = Assets.FLIGHT_CLIPS.get(pose.character, "")
+ var flight_clip: String = "Flight" if sage else Assets.FLIGHT_CLIPS.get(pose.character, "")
  if active_clip == flight_clip:
   flight_heading = pose.flight_heading if pose.flying else pose.initial_flight_heading()
  hint.text = ("Steer with ← / → or the left stick\n" if active_clip == flight_clip else "") + "Drag table to orbit · Wheel to zoom\n" + ("F8 to return to table" if embedded else "C to cycle cameras · F8 to resume")
  var rolling := active_clip == roll_clip
+ if sage:
+  held.hide()
+  shell.hide()
+  sage.play(active_clip, not previous.is_empty())
+  _update_preview()
+  return
  if not previous.is_empty() and (previous == roll_clip) != rolling:
   shell_fade.start(1.0 - shell.transparency if shell.visible else 0.0)
  var trick := trick_names.find(active_clip)
@@ -243,6 +274,12 @@ func _select_clip(index: int) -> void:
  _update_preview()
 
 func _update_preview() -> void:
+ if sage:
+  pose.settings.opacity = sliders.opacity.value
+  pose.sage.shell.set_shader_parameter("opacity", sliders.opacity.value)
+  sage.shell.set_shader_parameter("opacity", sliders.opacity.value)
+  _aim_camera()
+  return
  var rolling := active_clip == roll_clip
  art.scale = Vector3.ONE * sliders.model.value
  if trailing_tails: trailing_tails.scale = art.scale
@@ -325,7 +362,7 @@ func view_state() -> Dictionary:
  return {"clip": active_clip, "playing": playing, "sliders": values, "pitch": pitch, "yaw": yaw,
   "angle": roll_angle, "tails": tail_time, "heading": flight_heading, "shell": shell_on_poses.button_pressed,
   "trick_time": trick_time,
-  "time": player.current_animation_position if player and player.is_playing() else 0.0}
+  "time": sage.elapsed if sage else (player.current_animation_position if player and player.is_playing() else 0.0)}
 
 func restore_view(saved: Dictionary) -> void:
  if saved.is_empty(): return
@@ -339,6 +376,7 @@ func restore_view(saved: Dictionary) -> void:
    _select_clip(index)
    break
  if player and player.is_playing(): player.seek(saved.time, true)
+ if sage: sage.sample(saved.time)
  if playing != saved.playing: _toggle_playback()
  roll_angle = saved.angle
  trick_time = saved.trick_time
@@ -354,6 +392,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 func _reset() -> void:
  for key: String in Pose.DEFAULTS: sliders[key].value = Pose.DEFAULTS[key]
+ if sage: sliders.opacity.value = sage.CORE_OPACITY
  sliders.boost.value = Assets.BOOST_SPEED
  sliders.zoom.value = 2.5
  shell_on_poses.button_pressed = false
@@ -365,6 +404,15 @@ func _reset() -> void:
 
 func _process(delta: float) -> void:
  if active_clip.is_empty(): return
+ if sage:
+  if playing:
+   if active_clip == "Flight":
+    var steering: float = game.controls.virtual_steering if game.controls.virtual_enabled else Input.get_axis("steer_left", "steer_right")
+    if not is_zero_approx(steering): flight_heading = Vector2(signf(steering), 0.0)
+   sage.sample(sage.elapsed + delta)
+  if embedded: pivot.global_position = game.character.spin_root.global_position
+  _aim_camera()
+  return
  var rolling := active_clip == roll_clip
  var flying: bool = active_clip == Assets.FLIGHT_CLIPS.get(pose.character, "")
  if playing:
@@ -385,6 +433,14 @@ func _process(delta: float) -> void:
  elif playing: _orient_model()
 
 func _orient_model() -> void:
+ if sage:
+  if not sage.animated: return
+  var view := orbit.global_basis.orthonormalized()
+  sage.steer(flight_heading.x if active_clip == "Flight" else 0.0)
+  if active_clip == "Ring Dash": view = Pose.spring_basis(orbit, pivot.global_position, pose.motion_direction)
+  elif active_clip == "Boost Hover": view = game.character.flat_roll_frame(game.character.roll_heading)
+  sage.pose_on_table(view, sage.elapsed)
+  return
  var rolling := active_clip == roll_clip
  art.rotation.x = roll_angle if rolling else 0.0
  shell.rotation.x = art.rotation.x

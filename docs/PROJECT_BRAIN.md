@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Sage Flight experiment
+
+Sage is the tenth character. She and Cream each have a roster entry, physics profile, animation set and run identity. They share the Flight action. Sage uses a smoky black cyber ball with red circuitry and a local 3,278-triangle rig. Her seven clips also work in the standalone Sage Lab and the playfield inspector. [Sage Lab](combo-celebration/README.md)
+
 ## Nine playable characters
 
 Cream shares the Flight action and controlled physics tuning with Tails. Big shares the Power action and heavy-impact tuning with Knuckles. Each has 17 original Runners clips. Cream steers with her ear-flight loop. Big uses his own attack for the one-second dive that ends Table Smash. Both share the roster's three-trick rotation, spring, panel and Loop presentation.

@@ -241,6 +241,22 @@ func run() -> void:
  fallback.free()
  for id: String in CharacterSpecials.CHARACTER_IDS:
   game.specials.select_character(id)
+  if id == "sage":
+   var sage = pose.sage
+   check(is_instance_valid(sage) and not pose.runners_roll and not game.character.rolling_mesh.visible, "Sage owns her cyber ball")
+   hit()
+   for tier: int in [2, 3, 4, 5]:
+    var initial_score: int = game.score
+    hit()
+    check(card.visible and card.character == id and card.milestone == tier and card.points == game.score - initial_score, "Sage receives her own builder award")
+    if sage.animated:
+     check(sage.action == sage.VICTORIES[(tier - 2) % 3] and sage.victory_hold > 0.0, "Sage cycles her own victory animation")
+     pose._process(sage.victory_reveal + sage.victory_hold)
+     check(sage.rig.basis.is_equal_approx(game.presentation.camera.global_basis.orthonormalized()), "The rig plays its baked 60-degree sweep exactly once")
+     pose._process(0.001)
+     check(sage.victory_hold == 0.0 and sage.action == sage.BALL, "Sage returns to her own ball after the pose")
+   if not output.is_empty(): await still(id)
+   continue
   if "--require-runners-set" in OS.get_cmdline_user_args():
    check(is_instance_valid(pose.runners_roll) and pose.tricks.size() == 3, id + " loads its own curl and all three tricks")
   if id == "tails": check_roll_heading()

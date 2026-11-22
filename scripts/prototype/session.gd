@@ -351,7 +351,7 @@ func _can_inspect_character() -> bool:
  if not is_instance_valid(game) or not game.started: return false
  if game.finished or game.closing or game.drafting or game.loading_boundary or is_instance_valid(game.transfer): return false
  var pose = game.combo_celebration.character_pose
- return is_instance_valid(pose.runners_roll)
+ return is_instance_valid(pose.runners_roll) or is_instance_valid(pose.sage)
 
 func _open_spin_lab() -> void:
  if not _can_inspect_character() or is_instance_valid(spin_lab): return

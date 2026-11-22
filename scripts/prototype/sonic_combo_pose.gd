@@ -4,6 +4,7 @@ const Assets = preload("res://experiments/visual_lab/runners_sonic_assets.gd")
 const LEGACY_POSE := "res://experiments/visual_lab/local/runtime/sonic_sa1_combo.glb"
 const Presenter = preload("res://experiments/visual_lab/sonic_presenter.gd")
 const ShellFade = preload("res://experiments/visual_lab/round_shell_fade.gd")
+const Sage = preload("res://experiments/visual_lab/sage/gameplay_actor.gd")
 const FLIGHT_TURN := PI / 6.0
 const TRICK_TURN := PI / 6.0
 const DEFAULTS := {"model": 1.0, "ball": 1.0, "blur": 1.0, "speed": Presenter.RUNNERS_ROLL_SPEED, "opacity": 0.45}
@@ -35,6 +36,7 @@ var flying: bool:
 var inspecting := false
 var shell_fade := ShellFade.new()
 var action_shell: MeshInstance3D
+var sage: Sage
 
 func prepare(actor: Node3D, fallback: Texture2D, path := Assets.LOCAL_SET) -> void:
  presenter = actor
@@ -81,11 +83,24 @@ func _select_roll(id: String, sonic_path := Assets.LOCAL_SET) -> void:
  restore_ball()
  if is_instance_valid(runners_roll): runners_roll.hide()
  _stop_motion()
+ if sage:
+  sage.victory_hold = 0.0
+  sage.hide()
  if trailing_tails: trailing_tails.hide()
- if Assets.BOOST.has(id) and not sets.has(id):
+ if id == "sage" and not sets.has(id):
+  var actor := Sage.new()
+  actor.name = "SagePresentation"
+  presenter.add_child(actor)
+  actor.prepare_gameplay()
+  var sage_settings := DEFAULTS.duplicate()
+  sage_settings.opacity = Sage.CORE_OPACITY
+  sets[id] = {"sage": actor, "settings": sage_settings}
+ elif Assets.BOOST.has(id) and not sets.has(id):
   sets[id] = _load_character(id, sonic_path)
  character = id
  var selected: Dictionary = sets.get(id, {})
+ sage = selected.get("sage")
+ if sage: sage.play(Sage.BALL)
  var markings: Texture2D = selected.get("shell_markings")
  presenter.spin_surface.set_shader_parameter("use_shell_markings", markings != null)
  presenter.spin_surface.set_shader_parameter("runners_shell", markings)
@@ -99,7 +114,7 @@ func _select_roll(id: String, sonic_path := Assets.LOCAL_SET) -> void:
  trick_index = selected.get("trick_index", -1)
  mesh = tricks[maxi(trick_index, 0)] if not tricks.is_empty() else sonic_fallback
  if runners_roll: runners_roll.show()
- set_process(runners_roll != null)
+ set_process(runners_roll != null or sage != null)
  _apply_roll_settings()
  _sync_visibility(false)
 
@@ -150,6 +165,9 @@ func _apply_roll_settings() -> void:
   presenter.rolling_mesh.cast_shadow = original_shadow
 
 func _process(delta: float) -> void:
+ if sage:
+  if not inspecting: sage.advance_on_ball(self, 0.0 if get_tree().paused else delta)
+  return
  var ball: PlaygroundBall = presenter.ball
  var speed: float = absf(ball.track_speed) if ball.has_track_frame and not ball.serve_pending else presenter.roll_velocity().length()
  var exposure := smoothstep(5.0, 32.0, speed / ball.radius)
@@ -185,20 +203,26 @@ func _play_motion(kind: StringName, clip: String) -> void:
  set_physics_process(kind in [&"spring", &"dash_panel"])
  _sync_visibility()
 
+func _start_common_motion(kind: StringName, clips: Dictionary) -> void:
+ if sage:
+  motion = kind
+  set_physics_process(kind in [&"spring", &"dash_panel"])
+ elif clips.has(character): _play_motion(kind, clips[character])
+
 func _on_traversal_launch(kind: StringName, velocity: Vector2) -> void:
- if not motion_rig or presenter.ball.in_loop or motion == &"target_boost" or presenter.specials.smash_remaining > 0.0: return
+ if (not motion_rig and not sage) or presenter.ball.in_loop or motion == &"target_boost" or presenter.specials.smash_remaining > 0.0: return
  launch_serial = presenter.ball.transfer_serial
  motion_direction = velocity.normalized()
  if kind == &"spring":
-  if velocity.y < -0.0001 and Assets.DASH_RING.has(character): _play_motion(kind, Assets.DASH_RING[character])
+  if velocity.y < -0.0001: _start_common_motion(kind, Assets.DASH_RING)
   else: _stop_motion()
  elif kind == &"dash_panel":
   boost_remaining = 1.0
-  _play_motion(kind, Assets.BOOST[character])
+  _start_common_motion(kind, Assets.BOOST)
 
 func _on_loop_changed(riding: bool) -> void:
- if riding and motion_rig:
-  _play_motion(&"loop", Assets.BOOST[character])
+ if riding and (motion_rig or sage):
+  _start_common_motion(&"loop", Assets.BOOST)
  elif motion == &"loop": _stop_motion()
 
 func _physics_process(delta: float) -> void:
@@ -218,9 +242,9 @@ func _physics_process(delta: float) -> void:
  if not ball.linear_velocity.is_zero_approx(): motion_direction = ball.linear_velocity.normalized()
 
 func _start_flight() -> void:
- if not Assets.FLIGHT_CLIPS.has(character) or flying or presenter.ball.in_loop: return
+ if flying or presenter.ball.in_loop or (not sage and not Assets.FLIGHT_CLIPS.has(character)): return
  flight_heading = initial_flight_heading()
- _play_motion(&"flight", Assets.FLIGHT_CLIPS[character])
+ _start_common_motion(&"flight", Assets.FLIGHT_CLIPS)
 
 func _start_target_boost(_target: Node2D, direction: Vector2) -> void:
  if motion_rig and presenter.specials.action.kind == TypeAction.Kind.SPEED:
@@ -301,8 +325,8 @@ func _stop_motion() -> void:
  if motion == &"": return
  motion = &""
  boost_remaining = 0.0
- motion_player.stop()
- set_process(runners_roll != null)
+ if motion_player: motion_player.stop()
+ set_process(runners_roll != null or sage != null)
  set_physics_process(false)
  _sync_visibility()
 
@@ -317,7 +341,8 @@ func _sync_visibility(animate := true) -> void:
  elif runners_roll and presenter.rolling_mesh.visible != rolling:
   var base := float(settings.opacity)
   shell_fade.start(shell_fade.opacity(base if presenter.rolling_mesh.visible else 0.0, base))
- presenter.rolling_mesh.visible = rolling
+ presenter.rolling_mesh.visible = rolling and not sage
+ if sage: sage.visible = not inspecting
  if trailing_tails: trailing_tails.visible = presenter.rolling_mesh.visible
  if motion_rig: motion_rig.visible = regular and motion != &""
  _draw_shell()
@@ -347,7 +372,10 @@ func apply_settings(values: Dictionary, boost_scale: float) -> void:
   Assets.set_playback_speed(motion_player, character, boost_speed, motion == &"loop")
  _apply_roll_settings()
 
-func start_trick() -> void:
+func start_trick(duration := 0.40) -> void:
+ if sage:
+  if motion != &"loop": sage.celebrate(duration)
+  return
  if not tricks.is_empty():
   trick_index = (trick_index + 1) % tricks.size()
   sets[character].trick_index = trick_index
@@ -369,6 +397,7 @@ func place_trick(progress: float) -> void:
  global_transform = Transform3D(facing.scaled(Vector3.ONE * model_scale), presenter.spin_root.global_position)
 
 func restore_ball() -> void:
+ if sage: sage.victory_hold = 0.0
  if not visible: return
  hide()
  _sync_visibility()

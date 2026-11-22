@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CharacterDefinition" load_steps=4 format=3]
+[ext_resource type="Script" path="res://scripts/character_definition.gd" id="1"]
+[ext_resource type="Resource" path="res://data/sage.tres" id="2"]
+[ext_resource type="Resource" path="res://data/types/fly.tres" id="3"]
+[resource]
+script = ExtResource("1")
+display_name = "Sage"
+profile = ExtResource("2")
+color = Color(1, 0.29, 0.39, 1)
+ball_color = Color(0.08, 0.035, 0.085, 1)
+type_action = ExtResource("3")

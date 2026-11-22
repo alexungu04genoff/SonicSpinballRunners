@@ -54,28 +54,35 @@ func run() -> void:
 func review_panel_and_loop(id: String, panel: Vector2) -> void:
  game.specials.select_character(id)
  var pose = game.combo_celebration.character_pose
- if not pose.motion_rig:
+ if pose.sage and not pose.sage.animated:
+  check(pose.sage.ball_root.visible, "Sage keeps her procedural ball without the optional rig")
+  return
+ if not pose.motion_rig and not pose.sage:
   check("--require-runners-set" not in OS.get_cmdline_user_args(), id + " has local Boost art")
   return
  game.ball.teleport_to(panel + Vector2.DOWN * 65.0, Vector2.UP * 820.0)
  for i in 40:
   await frames(1)
   if pose.motion == &"dash_panel": break
- var player: AnimationPlayer = pose.motion_player
- check(pose.motion == &"dash_panel" and player.current_animation == pose.Assets.BOOST[id], id + " hits a dash panel and plays its own Boost")
- if pose.motion == &"dash_panel": check_stride_at_travel_speeds(pose, EXPECTED_BOOST_CYCLES)
+ var player: AnimationPlayer = pose.sage.player if pose.sage else pose.motion_player
+ var boost: String = "Boost Hover" if pose.sage else pose.Assets.BOOST[id]
+ if pose.sage: pose._process(0.0)
+ check(pose.motion == &"dash_panel" and player.current_animation == boost, id + " hits a dash panel and plays its own Boost")
+ if pose.motion == &"dash_panel" and not pose.sage: check_stride_at_travel_speeds(pose, EXPECTED_BOOST_CYCLES)
  for i in 100:
   if game.ball.in_loop: break
   await frames(1)
- check(game.ball.in_loop and pose.motion == &"loop" and player.current_animation == pose.Assets.BOOST[id], id + " carries its Boost into the Loop")
+ check(game.ball.in_loop and pose.motion == &"loop" and player.current_animation == boost, id + " carries its Boost into the Loop")
  var entry_tick := Engine.get_physics_frames()
- if pose.motion == &"loop":
+ if pose.motion == &"loop" and not pose.sage:
   check_stride_at_travel_speeds(pose, 3.0)
  for i in 360:
   if not game.ball.in_loop: break
   await frames(1)
  check(absi(Engine.get_physics_frames() - entry_tick - 2 * Engine.physics_ticks_per_second) <= 1, id + " completes a Loop in two seconds")
- check(not game.ball.in_loop and pose.motion == &"" and game.character.rolling_mesh.visible, id + " returns to the ball on release")
+ if pose.sage: pose._process(0.0)
+ var rolling: bool = pose.sage.action == pose.sage.BALL if pose.sage else game.character.rolling_mesh.visible
+ check(not game.ball.in_loop and pose.motion == &"" and rolling, id + " returns to the ball on release")
 
 func check_stride_at_travel_speeds(pose: Node, cadence: float) -> void:
  var player: AnimationPlayer = pose.motion_player

@@ -1,6 +1,6 @@
 # Shared character type actions V1
 
-Each character combines a physics profile with one shared Type Action. Sonic, Shadow and Amy use **Speed · Target Boost**. Tails, Rouge and Cream use **Fly · Flight**. Knuckles, Blaze and Big use **Power · Table Smash**.
+Each character combines a physics profile with one shared Type Action. Sonic, Shadow and Amy use **Speed · Target Boost**. Tails, Rouge, Cream and Sage use **Fly · Flight**. Knuckles, Blaze and Big use **Power · Table Smash**.
 
 `CharacterDefinition` retains identity, colors, profile and charge rules. Its `type_action` references one resource in `data/types/`. Characters of the same type reference the same action. `TypeAction` owns the type, action label, description and tuning. `CharacterSpecials` dispatches by type, never by character name. Future Fly characters can reference `fly.tres` without another ability implementation.
 

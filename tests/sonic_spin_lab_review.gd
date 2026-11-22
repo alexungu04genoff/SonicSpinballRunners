@@ -61,6 +61,19 @@ func run() -> void:
  check(paused and lab.orbit.get_viewport() == game.presentation.camera.get_viewport() and lab.pivot.get_world_3d() == game.character.get_world_3d(), "Inspector uses the actual paused table and play viewport")
  var tails: bool = game.character_id == "tails"
  var character: String = game.character_id
+ if character == "sage":
+  check(lab.sage and lab.active_clip == "Cyber Ball" and not lab.shell.visible and lab.sage.ball_root.is_visible_in_tree(), "F8 opens Sage's own cyber ball")
+  check(lab.picker.item_count == (8 if lab.sage.animated else 1), "Sage offers exactly the available animations")
+  for i in lab.picker.item_count:
+   lab.picker.select(i)
+   lab._select_clip(i)
+   lab._process(0.5)
+   check(lab.sage.action == lab.picker.get_item_metadata(i), "The selected Sage clip plays on her rig")
+  lab.sliders.opacity.value = 0.63
+  session._resume_spin_lab()
+  check(not paused and game.character_pose.sage.visible and is_equal_approx(game.character_pose.sage.shell.get_shader_parameter("opacity"), 0.63), "F8 returns to Sage with her own material settings")
+  await finish_review(session, character)
+  return
  check(lab.picker.item_count == {"sonic": 14, "tails": 16, "knuckles": 15, "shadow": 14, "rouge": 15, "amy": 14, "blaze": 15, "cream": 15, "big": 15}[character] and lab.cameras.item_count == 4, "Gameplay clips and the four gameplay cameras are selectable")
  var point: Vector2 = game.ball.position
  check(is_equal_approx(lab.sliders.speed.value, 2.0) and is_equal_approx(lab.sliders.opacity.value, 0.45) and is_equal_approx(lab.sliders.blur.value, 1.0), "Inspection opens with the selected roll defaults")
@@ -239,6 +252,9 @@ func run() -> void:
  if game.specials.action.kind == TypeAction.Kind.FLY: await review_flight(session, game)
  if game.specials.action.kind == TypeAction.Kind.POWER: await review_smash(session, game)
  await review_traversal(session, game)
+ await finish_review(session, character)
+
+func finish_review(session: Node, character: String) -> void:
  session.archive_attempted = true
  await session._close_run("review")
  session.free()
