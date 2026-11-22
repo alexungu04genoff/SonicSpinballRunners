@@ -15,6 +15,7 @@
 - Keep automated testing lightweight: a handful of deterministic regression checks for profile resolution, modifier stacking/reset, scoring, authored loading, and streaming as those systems exist. Use available Godot headless checks for scripts, startup, and scenes. Do not introduce substantial test dependencies or a custom framework for the sandbox.
 - Run the game when possible. Report checks actually executed, failures, and what still needs manual playtesting. The user judges feel, flipper timing, camera readability, and polish; maintain only a short useful checklist.
 - Keep all visible app, editor, game, and graphical test work on the second (non-primary) monitor. Headless checks may run in the background.
+- When opening Godot, select the non-primary monitor at launch, including for the first window before a scene or test can reposition it. Check the display layout again if the monitors change.
 - Godot window coordinates start at the virtual desktop's top-left. Query `DisplayServer.screen_get_position()`; do not pass negative primary-relative Windows monitor coordinates directly to `--position`.
 - Commit and push completed, meaningful, verified work to GitHub autonomously, including directly to `main`; no repeated permission is needed. Run relevant checks before pushing and use focused, descriptive commits.
 - Preserve existing work. Discuss force-pushes, rewriting shared history, or deleting significant existing work before acting. Do not perform public deployments or releases, or download external assets, without the user's approval.
