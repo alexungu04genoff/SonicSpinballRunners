@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="ActGeometry" format=3]
+
+[ext_resource type="Script" path="res://scripts/act_editor/act_geometry.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+format_version = 19
+library_version = 2
+title = "Spin Alley"
+grid_size = Vector2i(22, 16)
+cell_size = 50.0
+design_thesis = "Serve into a clear rolling lane. The paired flippers send the ball back across the checkerboard."
+placements = [{
+"shape_id": "composite", "base_size": Vector2i(22, 16), "anchor": Vector2i(0, 0), "quarter_turns": 0, "flip_h": false, "flip_v": false,
+"composite_version": 1, "smoothing_strength": 0.0,
+"outline": PackedVector2Array(0, 0, 0.5, 0, 0.5, 16, 0, 16)
+}, {
+"shape_id": "composite", "base_size": Vector2i(22, 16), "anchor": Vector2i(0, 0), "quarter_turns": 0, "flip_h": false, "flip_v": false,
+"composite_version": 1, "smoothing_strength": 0.0,
+"outline": PackedVector2Array(21.5, 0, 22, 0, 22, 16, 21.5, 16)
+}, {
+"shape_id": "composite", "base_size": Vector2i(22, 16), "anchor": Vector2i(0, 0), "quarter_turns": 0, "flip_h": false, "flip_v": false,
+"composite_version": 1, "smoothing_strength": 0.0,
+"outline": PackedVector2Array(0.5, 0, 10, 0, 10, 0.5, 0.5, 0.5)
+}, {
+"shape_id": "composite", "base_size": Vector2i(22, 16), "anchor": Vector2i(0, 0), "quarter_turns": 0, "flip_h": false, "flip_v": false,
+"composite_version": 1, "smoothing_strength": 0.0,
+"outline": PackedVector2Array(12, 0, 21.5, 0, 21.5, 0.5, 12, 0.5)
+}]
+gameplay_objects = [{
+"type": "left_flipper", "object_id": "workshop_left", "position": Vector2(475, 715), "rotation_degrees": 18.334649444, "properties": {}
+}, {
+"type": "right_flipper", "object_id": "workshop_right", "position": Vector2(590, 715), "rotation_degrees": 161.665350556, "properties": {}
+}]
+ring_trails = []
+decor_seed = "spin-alley"
+decor_slots = [{"slot_id": "west_flowers", "slot_type": "small", "placement_hint": "surface", "position": Vector2(462, 450), "variant_mode": "auto", "rotation_degrees": 0.0, "scale": 1.0}, {"slot_id": "east_grove", "slot_type": "medium", "placement_hint": "edge", "position": Vector2(660, 405), "variant_mode": "auto", "rotation_degrees": 0.0, "scale": 1.0}]
+entry_start_x = 10
+entry_width = 2
+exit_start_x = 10
+exit_width = 2
+score_target = 20000
+activation_y = 500.0
+spawn_position = Vector2(545, 485)
+goal_position = Vector2(985, 75)
+goal_diameter_cells = 1.0

@@ -1,5 +1,21 @@
 # Combo celebration review
 
+## Fullscreen Green Hill compilation
+
+The nine standalone review Acts live under `data/acts/Experiments`. Open them in the Act editor to play them individually. Plunger Lane, Spring Meadow and Loop Clearing isolate their trajectories. Trick Garden has ten distinct bumpers. Special Arena has an unobstructed target for Speed, open steering space for Fly and a target inside the Power shockwave.
+
+With the local Runners rig and curl bake installed, the following command records Sonic in the configured Prototype. Supply the Godot screen index of the non-primary monitor. The recorder checks fullscreen and rejects the primary display. It requires Godot 4, Python, FFmpeg and FFprobe.
+
+```powershell
+python experiments/character_reels/record.py sonic --screen 0
+```
+
+The same command accepts any playable character ID. Add `--stage "Special Arena"` to record just their special. Add `--resume` to reuse completed Acts after an interrupted run. The full command assembles the chaptered MP4 under `test-results/Green Hill Character Reels/`. Captures and source assets stay local.
+
+Gameplay chapters use the Dramatic Pinball follow camera and the game's retro composite. The recorder centers the active character in the image plane and checks its projection on each frame. The combo sequence cuts between ten physical bumper approaches. Longer victory holds and the slowed second special angle show the motion in detail. Both gameplay and animation inspection use the shared camera-relative victory turn, including Sage's animated poses. The final section plays the character's full local animation library on the inspection Act, including clips used only for inspection.
+
+Flight uses a fixed reference center for Tails, Rouge and Cream. Their tails, wings and ears can animate without shifting the character's body over the Ball. Sage uses her own centered rig with a small vertical hover. All four flyers keep their last facing after the stick returns to neutral.
+
 ## Sonic at the Ball
 
 At a milestone, Sonic cuts from the curl to a full-size, camera-facing pose at the moving Ball. Hits 2, 3 and 4 hold for 0.20, 0.25 and 0.30 seconds respectively. Later milestones hold for 0.40 seconds. When the hold ends, the curl or active traversal animation returns immediately. During a Loop or Target Boost the receipt appears while the character keeps running. The contact marker and the 2D collision body keep following gameplay. The score multiplier moves beside the pose, and the exact hit receipt appears in the lower-right corner. F9 moves the receipt between compositing layers. The world mesh receives the table's lighting and Retro treatment in either mode.

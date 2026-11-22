@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Green Hill animation review
+
+Nine experiment Acts isolate the plunger, rolls and flippers, spring, dash panel, rails, Loop, specials, tricks and source animations. The fullscreen recorder keeps the character centered in Dramatic Pinball. Trick Garden counts ten separate bumper contacts. Special Arena records the approach, impact or Flight expiry, and a slower second angle. [Capture commands and review notes](combo-celebration/README.md)
+
 ## Sage Flight experiment
 
 Sage is the tenth character. She and Cream each have a roster entry, physics profile, animation set and run identity. They share the Flight action. Sage uses a smoky black cyber ball with red circuitry and a local 3,278-triangle rig. Her seven clips also work in the standalone Sage Lab and the playfield inspector. [Sage Lab](combo-celebration/README.md)
