@@ -12,7 +12,7 @@ const BOOST_SPEED := 1.5
 # Sonic's reference stride is 80 frames at 60 Hz, played at 3x on boost entry.
 const BOOST_CYCLES_PER_SECOND := 2.25
 # The eight original curl shapes make one relaxed sweep behind the ball.
-const TAIL_WEAVE_DURATION := 0.8
+const TAIL_WEAVE_DURATION := 0.8 / 0.7
 
 static func set_playback_speed(player: AnimationPlayer, id: String, boost_scale: float) -> void:
  if player.current_animation == BOOST.get(id):

@@ -2,7 +2,7 @@
 
 ## Seven playable characters — 2026-11-22
 
-Amy shares Speed with Sonic and Shadow. Rouge steers through Flight like Tails. Blaze uses the same two-second Table Smash as Knuckles. Each has her own Runners curl, three tricks, spring and Boost clips. Boost completes 3.375 cycles per second at the approved 1.5× setting. Tails now takes 0.8 seconds to weave his two tails once while rolling. His flight animation still plays at its original speed.
+Amy shares Speed with Sonic and Shadow. Rouge steers through Flight like Tails. Blaze uses the same two-second Table Smash as Knuckles. Each has her own Runners curl, three tricks, spring and Boost clips. Boost completes 3.375 cycles per second at the approved 1.5× setting. Tails now takes about 1.14 seconds to weave his two tails once while rolling. His flight animation still plays at its original speed.
 
 ## Knuckles and the Power shockwave — 2026-11-22
 

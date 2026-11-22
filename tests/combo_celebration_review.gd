@@ -140,9 +140,9 @@ func check_roll_heading() -> void:
    var pose = game.combo_celebration.character_pose
    var start_time: float = pose.tail_time
    pose._process(dt)
-   var frame: float = fposmod(start_time + dt, 0.8) * 10.0
+   var frame: float = fposmod((start_time + dt) * 7.0, 8.0)
    var target := clampi(roundi(frame), 1, 7)
-   check(tails.get_blend_shape_count() == 7 and is_equal_approx(tails.get_blend_shape_value(target - 1), maxf(0.0, 1.0 - absf(frame - target))), "Live tails interpolate eight original shapes over a 0.8-second sweep")
+   check(tails.get_blend_shape_count() == 7 and is_equal_approx(tails.get_blend_shape_value(target - 1), maxf(0.0, 1.0 - absf(frame - target))), "Live tails interpolate through seven authored shapes per second")
  var last_heading: Basis = actor.spin_root.basis
  ball.linear_velocity = Vector2.ZERO
  actor._process(dt)

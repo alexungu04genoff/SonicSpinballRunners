@@ -30,7 +30,7 @@ func sample_motion(lab: Control) -> void:
  var folder := output.path_join("motion")
  DirAccess.make_dir_recursive_absolute(folder)
  lab.set_process(false)
- for frame in 96:
+ for frame in 192:
   lab._process(1.0 / 24.0)
   await RenderingServer.frame_post_draw
   var shot := root.get_texture().get_image().get_region(Rect2i(396, 162, 488, 488))
@@ -76,7 +76,7 @@ func run() -> void:
   check(lab.trailing_tails.get_surface_override_material(0) == null, "The exterior tails retain their original skin at full spin blur")
   check(lab.trailing_tails.get_blend_shape_count() == 7, "The original eight-frame roll keeps all seven poses after the base frame")
   if lab.trailing_tails.get_blend_shape_count() == 7:
-   lab.tail_time = 0.15
+   lab.tail_time = 1.5 / 7.0
    lab._orient_model()
    check(is_equal_approx(lab.trailing_tails.get_blend_shape_value(0), 0.5) and is_equal_approx(lab.trailing_tails.get_blend_shape_value(1), 0.5), "Preview interpolates the original tail motion between frames")
    lab.tail_time = lab.Assets.TAIL_WEAVE_DURATION
@@ -303,7 +303,7 @@ func review_traversal(session: Node, game: Node) -> void:
   for speed: float in [0.0, 1200.0]:
    pose.tail_time = 0.0
    ball.linear_velocity = Vector2.RIGHT * speed
-   pose._process(0.15)
+   pose._process(1.5 / 7.0)
    check(is_equal_approx(pose.trailing_tails.get_blend_shape_value(0), 0.5) and is_equal_approx(pose.trailing_tails.get_blend_shape_value(1), 0.5), "The live tail weave has the same cadence at %d px/s" % speed)
  var spring: Dictionary = manager.by_id.scoop_kicker
  var direction := Objects.forward(spring)
