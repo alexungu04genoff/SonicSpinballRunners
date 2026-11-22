@@ -52,6 +52,10 @@ Alex wanted the memory of an old soft gradient. The isolated Retro Shadow Lab no
 
 Alex's UHD 620 passed the 85% / 2× presentation in motion. Full Retro helped the frozen build reach about 60 FPS steady at 2048/1. The separate single-Act Lab looked good at 4096/4 with FXAA and Medium filtering. Bro kept the Production reference and made the four FXAA/filter combinations independently measurable. The Lab now gives each atmosphere a normal shadow blur radius and a separate physical sun angle. Ring casting has a live review switch. [Evidence, matched Ring motion and laptop review](SHADOW_REVIEW.md)
 
+## Loop banks and pace — 2026-11-22
+
+Free shots can cross the center of the arch. Both ground-level banks return the Ball like terrain. Only a valid shot into the marked mouth starts the ride. Guided travel runs at 70% of the captured speed, including on rollback, and release restores the full shot. [Loop Workshop](LOOP_WORKSHOP.md)
+
 ## Grounded Launch Tube — 2026-11-22
 
 The launcher now cuts its ramp-textured lane through the walls at table height. Move a tube and the next play or bake derives the new opening from the original terrain. Sonic and Tails wind up at the dock and roll along the lane, including on a weak return. The default full charge starts at 410 px/s with 55 px/s² resistance. The Workshop still demonstrates weak, medium and full shots. [Launch Tube](LAUNCH_TUBE.md)

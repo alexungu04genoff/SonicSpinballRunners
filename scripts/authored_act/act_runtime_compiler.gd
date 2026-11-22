@@ -127,7 +127,12 @@ static func _compile(document: Resource, tuning: PhysicsTuning, controls: Playgr
     body = moving
     mechanics.add_object(placement, descriptor)
     descriptor.mechanic.body = moving
-   "sonic_loop", "score_chute", "teleporter", "drop_target_bank", "slingshot", "spinner", "magnetic_field", "elevated_rail", "one_way_gate", "switch_target", "wall_switch", "spring", "lane_barrier", "diverter", "dash_panel", "buzz_bomber":
+   "sonic_loop":
+    body = _loop_body(Objects.properties(placement), wall_material)
+    body.position = placement.position
+    body.rotation_degrees = placement.rotation_degrees
+    mechanics.add_object(placement, descriptor)
+   "score_chute", "teleporter", "drop_target_bank", "slingshot", "spinner", "magnetic_field", "elevated_rail", "one_way_gate", "switch_target", "wall_switch", "spring", "lane_barrier", "diverter", "dash_panel", "buzz_bomber":
     body = lane_barrier_body(placement, wall_material) if placement.type == "lane_barrier" else Node2D.new()
     body.position = placement.position
     body.rotation_degrees = placement.rotation_degrees
@@ -212,6 +217,20 @@ static func _add_terrain(act_root: Node2D, terrain: Array[Dictionary], points: P
  body.add_child(collision)
  act_root.add_child(body)
  terrain.append({"shape_id": shape_id, "points": points, "closed": closed, "body": body, "collision": collision, "color": color})
+
+static func _loop_body(properties: Dictionary, material: PhysicsMaterial) -> StaticBody2D:
+ var body := StaticBody2D.new()
+ body.name = "LoopBanks"
+ body.collision_layer = 1
+ body.collision_mask = 2
+ body.physics_material_override = material
+ for footprint in Objects.LoopPath.ground_banks(properties):
+  var collider := CollisionShape2D.new()
+  var hull := ConvexPolygonShape2D.new()
+  hull.points = footprint
+  collider.shape = hull
+  body.add_child(collider)
+ return body
 
 static func lane_barrier_body(placement: Dictionary, material: PhysicsMaterial) -> StaticBody2D:
  var body := StaticBody2D.new()

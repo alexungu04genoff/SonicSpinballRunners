@@ -643,7 +643,8 @@ func _advance_loop(state: PhysicsDirectBodyState2D, dt: float) -> void:
  var item := ramp
  var size_value := float(item.properties.scale)
  var length := LoopPath.LENGTH * size_value
- progress = clampf(progress + speed * dt, 0.0, length)
+ var ride_speed := speed * LoopPath.RIDE_SPEED_FACTOR
+ progress = clampf(progress + ride_speed * dt, 0.0, length)
  var sample := LoopPath.sample(item, progress)
  var point := Vector2(sample.x, sample.z) + loop_entry_offset * (1.0 - smoothstep(0.0, LoopPath.LEAD * size_value, progress))
  state.transform = Transform2D(0.0, point)
@@ -651,7 +652,7 @@ func _advance_loop(state: PhysicsDirectBodyState2D, dt: float) -> void:
  state.angular_velocity = 0.0
  ball.ramp_height = sample.y
  ball.track_frame = LoopPath.local_frame(progress / size_value, item.properties.direction == "clockwise").rotated(Vector3.UP, -deg_to_rad(float(item.rotation_degrees)))
- ball.track_speed = speed
+ ball.track_speed = ride_speed
  ball.has_track_frame = true
  var completed := progress >= length
  if not completed and (speed >= 0.0 or progress > 0.0): return

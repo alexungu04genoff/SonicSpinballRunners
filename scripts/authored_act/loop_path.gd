@@ -11,6 +11,10 @@ const PITCH_ANGLE := atan2(LANE_SHIFT, TAU * RADIUS)
 const CONE := PI / 6.0
 const STEPS := 24
 const POINTS := 1000
+const RIDE_SPEED_FACTOR := 0.7
+# The flared banks start on the rising tread and end at the outside of each shoulder.
+const BANK_START_ANGLE := PI / 5.0
+const BANK_DEPTH := RADIUS * 0.14
 
 static func angle_at(distance: float) -> float:
  return TAU * clampf((distance - LEAD) / ARC, 0.0, 1.0)
@@ -54,6 +58,26 @@ static func outline(props: Dictionary) -> PackedVector2Array:
   var p := local_sample(d, props.direction == "clockwise")
   points.append(Vector2(p.x, p.z) * float(props.scale))
  return points
+
+## Two ground-level footprints, in local Act pixels. The space between them
+## stays open across the bore, including beneath the high section of track.
+static func ground_banks(props: Dictionary) -> Array[PackedVector2Array]:
+ var banks: Array[PackedVector2Array] = []
+ var clockwise: bool = props.direction == "clockwise"
+ for flank: float in [1.0, -1.0]:
+  var corners := PackedVector2Array()
+  for angle: float in [BANK_START_ANGLE, PI * 0.5]:
+   var station := LEAD + ARC * (angle if flank > 0.0 else TAU - angle) / TAU
+   var frame := local_frame(station, clockwise)
+   var center := local_sample(station, clockwise)
+   if angle > BANK_START_ANGLE: center -= frame.y * BANK_DEPTH
+   for side: float in [-1.0, 1.0]:
+    var edge := center + side * HALF_WIDTH * frame.x
+    corners.append(Vector2(edge.x, edge.z) * float(props.scale))
+  var hull := Geometry2D.convex_hull(corners)
+  hull.resize(hull.size() - 1) # Godot closes the hull by repeating its first point.
+  banks.append(hull)
+ return banks
 
 static func entry_fraction(start: Vector2, end: Vector2, velocity: Vector2, item: Dictionary, ball_radius: float) -> float:
  var forward := forward(item)

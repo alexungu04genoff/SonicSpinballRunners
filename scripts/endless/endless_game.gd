@@ -491,6 +491,8 @@ func _sync_resident() -> void:
    var body: Node2D = act.runtime.objects[i].body
    presentation.bumper_visuals[body.get_instance_id()] = act.nodes[act.recipe.bumpers[i]]
    field._add_bumper(body, float(act.runtime.objects[i].get("radius", 0.0)))
+  for item: Dictionary in act.runtime.objects:
+   if item.type == "sonic_loop": field.terrain_bodies.append(item.body)
   for terrain: Dictionary in act.runtime.terrain:
    field.terrain_bodies.append(terrain.body)
  field.bounds = bounds

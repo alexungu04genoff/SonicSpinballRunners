@@ -43,6 +43,17 @@ func geometry(document: Resource) -> void:
   item.properties.direction = "counter-clockwise"
   var mirror := Path.sample(item, Path.LENGTH * scale_value / 2.0)
   check(is_equal_approx(crest.y, mirror.y) and is_equal_approx(crest.y, 2.0 * Path.RADIUS * scale_value) and Vector2(crest.x - mirror.x, crest.z - mirror.z).length() > 65.0 * scale_value, "Both directions reach the full vertical diameter")
+  for direction: String in ["clockwise", "counter-clockwise"]:
+   var props: Dictionary = item.properties.duplicate()
+   props.direction = direction
+   var banks := Path.ground_banks(props)
+   var hand := 1.0 if direction == "clockwise" else -1.0
+   var pass_point := Vector2(Path.LANE_SHIFT * 0.5, -Path.LEAD * hand) * scale_value
+   check(banks.size() == 2 and banks.all(func(bank): return not Geometry2D.is_point_in_polygon(pass_point, bank)), "Center stays clear at each direction and size")
+   for side: int in 2:
+    var depth := -Path.LEAD + (-0.9 if side == 0 else 0.9) * Path.RADIUS
+    var point := Vector2(side * Path.LANE_SHIFT, hand * depth) * scale_value
+    check(Geometry2D.is_point_in_polygon(point, banks[side]), "Both grounded banks match the authored size and handedness")
  item.rotation_degrees = 0.0
  item.properties.direction = "clockwise"
  for speed: float in [239.99, 240.0, 241.0]:

@@ -28,6 +28,7 @@ static func from_authored(act: Resource, compiled: Dictionary) -> PlayfieldData:
  for trail: Dictionary in act.ring_trails:
   result.ring_positions.append_array(RingTrails.positions(trail))
  for item: Dictionary in compiled.objects:
+  if item.type == "sonic_loop": result.terrain_bodies.append(item.body)
   if item.type in ["round_bumper", "triangle_bumper", "moving_bumper"]:
    result._add_bumper(item.body, float(item.radius) if item.type == "round_bumper" else 0.0)
  for item: Dictionary in compiled.terrain:

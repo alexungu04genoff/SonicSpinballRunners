@@ -10,10 +10,16 @@ static func near_outline(point: Vector2, points: PackedVector2Array, closed: boo
   if point.distance_to(Geometry2D.get_closest_point_to_segment(point, points[i], points[(i + 1) % points.size()])) <= radius: return true
  return false
 
-static func hardware_clear(point: Vector2, radius: float, objects: Array, cell_size: float) -> bool:
+static func hardware_clear(point: Vector2, radius: float, objects: Array, cell_size: float, own_loop: Dictionary = {}) -> bool:
  for item: Dictionary in objects:
   var props := Objects.properties(item)
-  if item.type in ["sonic_loop", "teleporter", "launch_tube", "score_chute", "magnetic_field", "elevated_rail", "spinner", "switch_target", "wall_switch", "dash_panel", "buzz_bomber"]: continue
+  if item.type == "sonic_loop":
+   if not own_loop.is_empty() and item.get("object_id", "") == own_loop.get("object_id", "") and item.position == own_loop.position: continue
+   var local := (point - Vector2(item.position)).rotated(-deg_to_rad(float(item.rotation_degrees)))
+   for bank in Objects.LoopPath.ground_banks(props):
+    if near_outline(local, bank, true, radius): return false
+   continue
+  if item.type in ["teleporter", "launch_tube", "score_chute", "magnetic_field", "elevated_rail", "spinner", "switch_target", "wall_switch", "dash_panel", "buzz_bomber"]: continue
   if item.type in ["left_flipper", "right_flipper"]:
    var length := Objects.flipper_length(item, cell_size)
    var side := 1.0 if item.type == "left_flipper" else -1.0

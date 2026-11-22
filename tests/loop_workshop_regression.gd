@@ -54,10 +54,23 @@ func ride(game: Node, item: Dictionary) -> PackedVector3Array:
  var rendered_inverted := false
  var pose = game.combo_celebration.character_pose
  var boost_held := true
+ var paced := true
+ var release_speed := absf(manager.speed)
+ var observed_ticks := 0
+ var last_distance: float = manager.progress
+ var last_tick := Engine.get_physics_frames()
  for i in 500:
   if not game.ball.in_loop: break
   if pose.motion_rig:
    boost_held = boost_held and pose.motion == &"loop" and pose.motion_rig.is_visible_in_tree() and not game.character.rolling_mesh.visible
+  var tick := Engine.get_physics_frames()
+  if tick > last_tick:
+   var dt := float(tick - last_tick) / Engine.physics_ticks_per_second
+   var expected: float = manager.speed * 0.7
+   paced = paced and absf((manager.progress - last_distance) / dt - expected) < 0.1 and is_equal_approx(game.ball.track_speed, expected)
+   observed_ticks += 1
+  last_tick = tick
+  last_distance = manager.progress
   var point := Vector3(game.ball.position.x, game.ball.ramp_height, game.ball.position.y)
   trace.append(point)
   if game.ball.has_track_frame and game.ball.track_frame.y.y < -0.97:
@@ -72,8 +85,10 @@ func ride(game: Node, item: Dictionary) -> PackedVector3Array:
  check(inverted and rendered_inverted, "Rendered character turns upside down at the crest")
  if pose.motion_rig:
   check(boost_held and pose.motion == &"" and pose.runners_roll.is_visible_in_tree(), "Boost lasts for the entire authored Loop and the curl returns on release")
+ check(paced and observed_ticks > 0, "Actual track travel and animation speed follow 70 percent of captured speed")
  check(deviation < 0.15, "Real body follows the authored centerline and height after entry (%.3f px)" % deviation)
  check(game.ball.linear_velocity.normalized().dot(Objects.forward(item)) > 0.999, "Exit velocity follows the authored tangent")
+ check(absf(game.ball.linear_velocity.length() - release_speed) < 6.0, "The slowed ride preserves captured launch momentum at release")
  return trace
 
 func flipper_shot(game: Node, left: bool) -> void:
@@ -147,6 +162,31 @@ func blocker(game: Node, where: Vector2) -> StaticBody2D:
  game.ball.get_parent().add_child(body)
  body.global_position = where
  return body
+
+func check_ground_passage(game: Node, item: Dictionary) -> void:
+ var transform := Transform2D(deg_to_rad(float(item.rotation_degrees)), item.position)
+ var across := transform.basis_xform(Vector2.RIGHT)
+ var depth := -Path.LEAD
+ var ball: PlaygroundBall = game.ball
+ var starting_score: int = game.score
+ var contacts: Array[Node] = []
+ var observe := func(body: Object, _normal: Vector2, _speed: float): contacts.append(body)
+ ball.physical_impact.connect(observe)
+ ball.teleport_to(transform * Vector2(-42, depth), across * 420.0)
+ check(await wait_for(func(): return (transform.affine_inverse() * ball.position).x > 86.0, 60), "A sideways free shot crosses the entire blue opening")
+ check(not ball.in_loop and contacts.is_empty(), "Passing below the arch stays in ordinary free flight")
+ for end: float in [-1.0, 1.0]:
+  contacts.clear()
+  var x := 0.0 if end < 0.0 else Path.LANE_SHIFT
+  var start := Vector2(x - Path.HALF_WIDTH - 22.0, depth + end * Path.RADIUS * 0.90)
+  ball.teleport_to(transform * start, across * 420.0)
+  check(await wait_for(func(): return not contacts.is_empty(), 30), "An ordinary shot contacts the solid bank")
+  var loop_body: Node2D
+  for object: Dictionary in game.active.runtime.objects:
+   if object.object_id == item.object_id: loop_body = object.body
+  check(loop_body in contacts and ball.linear_velocity.dot(across) < 0.0, "Each pink bank produces a physical terrain rebound")
+ ball.physical_impact.disconnect(observe)
+ check(starting_score == game.score and not ball.in_loop, "Ordinary crossings and banks never pay a Loop reward")
 
 func blocked_release(game: Node, item: Dictionary) -> void:
  var forward := Objects.forward(item)
@@ -225,6 +265,7 @@ func prototype(game: Node) -> void:
  check(await wait_for(func(): return ball.has_track_frame and ball.track_speed < -10 and game.character.riding_track, 160), "Character follows signed travel when the ramp rolls back")
  check(await wait_for(func(): return not ball.on_ramp and not ball.has_track_frame, 240), "Rollback releases the real Ball at the ramp entrance")
  await rejection_pads(game)
+ await check_ground_passage(game, straight)
  await blocked_release(game, straight)
  shoot(game, straight)
  check(await wait_for(func(): return ball.in_loop, 30), "Reset fixture enters")

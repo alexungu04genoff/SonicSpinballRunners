@@ -10,7 +10,7 @@ const SAMPLE_SPEED := 300.0
 
 static func description(type: String) -> String:
  return {"spring": "Fixed launch speed · forward-face contact",
-  "sonic_loop": "Cross the mouth inside the marked cone at the indicated forward speed. The exit arrow shows the release direction.",
+  "sonic_loop": "Cross the open center freely. Shaded banks rebound like terrain. Enter the marked mouth at the indicated angle and speed to ride the loop.",
   "moving_bumper": "End contact at midpoint · return shown for rightward travel",
   "score_chute": "Downward entry · three awards · drops from the bottom",
   "terrain": "300 px/s contact · sample exposed edges · wall restitution",

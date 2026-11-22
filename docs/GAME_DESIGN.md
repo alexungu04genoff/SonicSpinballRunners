@@ -10,7 +10,7 @@ Sonic and Tails roll along the table. Their three combo tricks face the active c
 
 ## Base-game roster and authored traversal — 2026-11-21
 
-Green Hill (Sonic 1), Casino Night (Sonic 2), Ice Cap (Sonic 3), Rooftop Run (Unleashed) and Aquarium Park (Colors) form the base game. Both run modes use these five themes. The [Loop Workshop](LOOP_WORKSHOP.md) pairs a terrain ramp with an upright Loop, alongside separate flipper shots. Authors set uniform size, direction, entry speed, Ring reward and completion score. The routes are experimental pending a feel review.
+Green Hill (Sonic 1), Casino Night (Sonic 2), Ice Cap (Sonic 3), Rooftop Run (Unleashed) and Aquarium Park (Colors) form the base game. Both run modes use these five themes. The [Loop Workshop](LOOP_WORKSHOP.md) pairs a terrain ramp with an upright Loop, alongside separate flipper shots. Authors set uniform size, direction, entry speed, Ring reward and completion score. A loose Ball can cross the opening and rebound off either ground-level bank. A captured Ball rides the Loop at 0.7× its release speed. The routes are experimental pending a feel review.
 
 ## Optional Launch Tube — 2026-11-18
 

@@ -1,16 +1,20 @@
 extends RefCounted
 ## Spatial checks belong to Play/Bake and the inspector. Draft placement stays editable.
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
+const TubeCut = preload("res://scripts/authored_act/launch_tube_cut.gd")
 const Obstacle = preload("res://scripts/authored_act/teleporter.gd")
 const Path = Objects.LoopPath
 
 static func editor_warning(document: Resource, placement: Dictionary) -> String:
  var terrain := []
+ var tube_cuts := TubeCut.footprints(document.gameplay_objects)
  for piece: Dictionary in document.placements:
   var points: PackedVector2Array = document.SHAPES.transformed_points(piece)
   var anchor: Vector2 = document.SHAPES.placement_position(piece)
   for i in points.size(): points[i] = (points[i] + anchor) * float(document.cell_size)
-  terrain.append({"points":points, "closed":document.SHAPES.definition_for_placement(piece).closed})
+  var closed: bool = document.SHAPES.definition_for_placement(piece).closed
+  for contour in TubeCut.carve(points, closed, tube_cuts):
+   terrain.append({"points": contour, "closed": closed})
  var item := placement.duplicate()
  item.properties = Objects.properties(placement)
  return check(item, document.terrain_bounds(), terrain, document.gameplay_objects, document.cell_size, float(document.cell_size) * Objects.Dimensions.BALL_RADIUS_CELLS)
@@ -36,7 +40,7 @@ static func check(item: Dictionary, bounds: Rect2, terrain: Array, hardware: Arr
    for piece: Dictionary in terrain:
     if Obstacle.near_outline(at, piece.points, piece.closed, half_width + step_length * 0.5):
      return label + section + " intersects terrain below safe crossing height."
-   if not Obstacle.hardware_clear(at, half_width + step_length * 0.5, hardware, cell):
+   if not Obstacle.hardware_clear(at, half_width + step_length * 0.5, hardware, cell, item):
     return label + section + " intersects solid hardware or a flipper sweep."
    for other: Dictionary in hardware:
     if other.type != "moving_bumper": continue

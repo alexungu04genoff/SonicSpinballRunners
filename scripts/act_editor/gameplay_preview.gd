@@ -22,6 +22,10 @@ static func draw_object(target: CanvasItem, placement: Dictionary, anchor: Vecto
   var points := rotated_points(placement, cell_size)
   for i in points.size(): points[i] = anchor + points[i] * scale_factor
   var color := SELECTION_COLOR if selected else Color(definition.color, 0.6 if ghost else 1.0)
+  var transform := Transform2D(deg_to_rad(float(placement.rotation_degrees)), Vector2.ZERO).scaled(Vector2.ONE * scale_factor)
+  transform.origin = anchor
+  for bank in Objects.LoopPath.ground_banks(props):
+   target.draw_colored_polygon(transform * bank, Color(color, 0.26))
   target.draw_polyline(points, color, 2.0, true)
   var forward := Objects.forward(placement)
   var unit := float(props.scale) * scale_factor
