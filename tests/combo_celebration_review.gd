@@ -42,6 +42,17 @@ func still(file: String) -> void:
  await RenderingServer.frame_post_draw
  check(root.get_texture().get_image().save_png(output.path_join(file + ".png")) == OK, "Save " + file)
 
+func screen_bounds(model: MeshInstance3D) -> Rect2:
+ var camera: Camera3D = game.presentation.camera
+ var to_screen := Vector2(root.size) / camera.get_viewport().get_visible_rect().size
+ var bounds := Rect2()
+ for surface in model.mesh.get_surface_count():
+  var vertices: PackedVector3Array = model.mesh.surface_get_arrays(surface)[Mesh.ARRAY_VERTEX]
+  for i in vertices.size():
+   var p := camera.unproject_position(model.to_global(vertices[i])) * to_screen
+   bounds = Rect2(p, Vector2.ZERO) if surface == 0 and i == 0 else bounds.expand(p)
+ return bounds
+
 func review_key(event: InputEvent) -> void:
  if not event is InputEventKey or not event.pressed or event.echo: return
  if not is_instance_valid(game) or paused or game.finished or game.closing or is_instance_valid(game.transfer): return
@@ -80,6 +91,11 @@ func clip() -> void:
    game.scorecraft.reset("Review chain")
    for i in 4: hit()
   if frame == 22: hit()
+  if "--review-trick-cycle" in OS.get_cmdline_user_args():
+   if frame == 31:
+    for i in 3: hit()
+   if frame == 39:
+    for i in 2: hit()
   await RenderingServer.frame_post_draw
   if card.visible:
    live_frames += 1
@@ -139,6 +155,9 @@ func run() -> void:
  check(game.library.fallback_builds == 0, "Review runs the disk-backed Prototype")
  if "--require-sonic-model" in OS.get_cmdline_user_args():
   check(card.sonic_pose.mesh is ArrayMesh, "Capture uses the baked Runners model")
+ var pose = card.sonic_pose
+ if "--require-runners-set" in OS.get_cmdline_user_args():
+  check(is_instance_valid(pose.runners_roll) and pose.tricks.size() == 3, "Original curled Sonic and all three tricks loaded")
  if "--interactive" in OS.get_cmdline_user_args():
   settle_ball()
   root.title = "Combo review   |   1–4 Character   5 / 8 / 0 Hits   Enter Pause   9 Goal   F9 Retro"
@@ -166,6 +185,9 @@ func run() -> void:
  fallback.free()
  for id: String in ["sonic", "tails", "knuckles", "shadow"]:
   game.specials.select_character(id)
+  if is_instance_valid(pose.runners_roll):
+   var shell: MeshInstance3D = game.character.rolling_mesh
+   check(shell.mesh is SphereMesh and pose.runners_roll.visible == (id == "sonic") and (shell.transparency > 0.0) == (id == "sonic"), "Sonic gets a translucent original ball over the curl and other characters keep their opaque ball")
   check(not card.visible and card.milestone == 0, "Character selection clears the previous pose")
   for i in 4: hit()
   check(scoring.builder_hits == 4 and scoring.multiplier == 4 and not card.visible, "Four builders use ordinary HUD feedback")
@@ -205,6 +227,45 @@ func run() -> void:
  game.toggle_pause()
  check(not paused and not card.visible, "Resume cannot revive the pose")
  game.specials.select_character("sonic")
+ if is_instance_valid(pose.runners_roll):
+  if not output.is_empty(): await still("runners-roll")
+  var curl_bounds := screen_bounds(pose.runners_roll)
+  print("ROLL_SIZE | ", curl_bounds)
+  var previous_index: int = pose.trick_index
+  var expected: int = previous_index
+  var reached := 0
+  for target: int in [5, 8, 10, 15]:
+   for i in range(reached, target): hit()
+   reached = target
+   expected = (expected + 1) % 3
+   check(card.milestone == target and pose.trick_index == expected and pose.mesh == pose.tricks[expected], "Each earned Sonic milestone advances one original trick")
+   if target == 5: card._process(0.3)
+   else: check(is_equal_approx(card.age, 0.3), "A new trick preserves the celebration deadline")
+   card._place()
+   var trick_bounds := screen_bounds(pose)
+   check(pose.global_basis.get_scale().is_equal_approx(pose.runners_roll.global_basis.get_scale()), "Trick %d uses the curled model's character scale" % (expected + 1))
+   pose.show_blend(0.46)
+   check(pose.visible and not game.character.rolling_mesh.visible and pose.global_basis.get_scale().is_equal_approx(pose.runners_roll.global_basis.get_scale()), "Sonic keeps one body scale through the transition")
+   card._place()
+   print("TRICK_SIZE | ", expected + 1, " | ", trick_bounds)
+   if not output.is_empty(): await still("runners-trick-%d" % (expected + 1))
+  var ball: PlaygroundBall = game.ball
+  var velocity := ball.linear_velocity
+  ball.linear_velocity = Vector2.ZERO
+  pose._process(0.0)
+  check(is_zero_approx(pose.runners_roll.get_instance_shader_parameter("roll_exposure")), "Curled Sonic keeps sharp textures at rest")
+  check(is_equal_approx(1.0 - game.character.rolling_mesh.transparency, pose.SHELL_REST_OPACITY) and is_zero_approx(pose.runners_roll.transparency), "Resting Sonic stays opaque under the light shell")
+  ball.linear_velocity = Vector2.RIGHT * ball.radius * 40
+  pose._process(0.0)
+  check(is_equal_approx(pose.runners_roll.get_instance_shader_parameter("roll_exposure"), 1.0), "Fast free roll reaches full directional exposure")
+  check(is_equal_approx(1.0 - game.character.rolling_mesh.transparency, pose.SHELL_SPIN_OPACITY), "The painted shell reaches its spin opacity alongside the model blur")
+  ball.has_track_frame = true
+  ball.track_speed = -ball.radius * 18
+  pose._process(0.0)
+  check(is_equal_approx(pose.runners_roll.get_instance_shader_parameter("roll_exposure"), smoothstep(5.0, 32.0, 18.0)), "Track exposure follows signed track speed in either direction")
+  ball.has_track_frame = false
+  ball.track_speed = 0.0
+  ball.linear_velocity = velocity
  five()
  card._process(0.3)
  game.toggle_pause()

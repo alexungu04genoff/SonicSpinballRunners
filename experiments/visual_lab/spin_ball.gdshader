@@ -5,6 +5,10 @@ render_mode diffuse_burley;
 uniform vec4 fur_color : source_color = vec4(0.025, 0.20, 0.80, 1.0);
 uniform int character_style = 0; // Sonic, Tails, Knuckles, Shadow.
 uniform float blur_amount : hint_range(0.0, 3.0) = 2.7;
+uniform bool runners_model = false;
+uniform sampler2D runners_skin : source_color, repeat_enable, filter_linear_mipmap;
+uniform sampler2D runners_shell : source_color, repeat_enable, filter_linear_mipmap;
+instance uniform float roll_exposure : hint_range(0.0, 1.0) = 0.0;
 varying vec3 sphere_position;
 
 void vertex() {
@@ -54,8 +58,7 @@ vec3 curled_colors(vec3 d) {
  return color;
 }
 
-void fragment() {
- vec3 direction = normalize(sphere_position);
+vec3 painted_roll(vec3 direction) {
  vec3 color = vec3(0.0);
  float weight_sum = 0.0;
  // Sample around the local roll axis: a soft exposure smear, not transparency.
@@ -69,7 +72,33 @@ void fragment() {
   weight_sum += weight;
  }
  // Retain some pose definition beneath the directional exposure smear.
- ALBEDO = mix(curled_colors(direction), color / weight_sum, 0.94);
+ return mix(curled_colors(direction), color / weight_sum, 0.94);
+}
+
+vec3 textured_roll(vec3 direction, vec2 skin_uv) {
+ vec3 sharp = texture(runners_skin, skin_uv).rgb;
+ if (roll_exposure <= 0.0) { return sharp; }
+ vec2 shell_uv = vec2(atan(direction.z, direction.y) / TAU + 0.5,
+                      acos(clamp(direction.x, -1.0, 1.0)) / PI);
+ vec2 step_uv = vec2(0.75 * blur_amount * roll_exposure / TAU, 0.0);
+ vec3 smear = vec3(0.0);
+ float weights = 0.0;
+ for (int i = -16; i <= 16; i++) {
+  float fraction = float(i) / 16.0;
+  float weight = 1.0 - abs(fraction) * (30.0 / 42.0);
+  smear += texture(runners_shell, shell_uv + fraction * step_uv).rgb * weight;
+  weights += weight;
+ }
+ return mix(sharp, smear / weights, 0.76 * roll_exposure);
+}
+
+void fragment() {
+ vec3 direction = normalize(sphere_position);
+ if (runners_model) {
+  ALBEDO = textured_roll(direction, UV);
+ } else {
+  ALBEDO = painted_roll(direction);
+ }
  ROUGHNESS = 0.58;
  SPECULAR = 0.32;
 }

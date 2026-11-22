@@ -4,7 +4,9 @@
 
 A fifth fresh builder can still refresh a ×4 combo. Prototype now gives that fifth hit a character cut-in. A completed Ring Link counts too. Scorecraft tells the card the hit number and exactly what that event paid. The little ×4 beside the Ball keeps its original meaning. All four poses are temporary cut-paper stand-ins. The small points line reads best on the crisp HUD layer. [See the moving Ball and both treatments](combo-celebration/README.md).
 
-Alex clarified the next day that Sonic should uncurl *from the Ball*. The local Runners rig now supplies one rigid, sideways SA1 pose. The knees fold on their own bend planes and the ankles follow the shins. Sonic holds the shape for 0.62 seconds, then curls back into the moving Ball. Only the mesh switches. The hit receipt stays in the corner. On a fresh checkout Sonic's original cut-paper art stands in at the Ball, and the other three characters still use their cards.
+Alex clarified the next day that Sonic should uncurl *from the Ball*. We tried a sideways SA1 pose, then recovered Sonic's original Runners animation set. Local Prototype now uses his real curl, with speed-driven blur across the original fur and shoes. Each celebration advances through the three Runners jump tricks in order. The third has the raised shoe and pointing glove from the SA1 reference. The usual hold is 0.62 seconds, then Sonic curls back into the moving Ball. The hit receipt stays in the corner. On a fresh checkout Sonic's cut-paper art stands in at the Ball, and the other three characters still use their cards.
+
+The original painted ball now sits over curled Sonic as a translucent shell. F8 opens a small inspector on the live table. Alex can compare all 15 Runners actions, zoom, change cameras and adjust the model, shell and spin. Resume keeps the visual settings for that run. The physics Ball keeps its configured radius.
 
 ## Five stages, two flipper shots — 2026-11-21
 

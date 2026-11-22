@@ -16,6 +16,7 @@ var ball: PlaygroundBall
 var table: TablePresentation
 var spin_root: Node3D
 var rolling_mesh: MeshInstance3D
+var roll_speed_scale := 1.0
 var riding_track := false
 var marker: Node3D
 var close_camera: Camera3D
@@ -379,7 +380,7 @@ func _process(delta: float) -> void:
    if not riding_track:
     rolling_mesh.basis = ball.track_frame.inverse() * spin_root.basis.orthonormalized()
    spin_root.basis = ball.track_frame
-   rolling_mesh.rotate(Vector3.LEFT, ball.track_speed * physics_delta / ball.radius)
+   rolling_mesh.rotate(Vector3.LEFT, ball.track_speed * physics_delta * roll_speed_scale / ball.radius)
    riding_track = true
   else:
    _advance_spin(physics_delta, ball.linear_velocity)
@@ -404,4 +405,4 @@ func _advance_spin(delta: float, velocity: Vector2) -> void:
   # Use normalized linear interpolation there to avoid invalid-axis log spam.
   _spin_axis = (_spin_axis.lerp(axis, weight) if _spin_axis.dot(axis) > 0.9999 else _spin_axis.slerp(axis, weight)).normalized()
  var angular_speed := clampf(velocity.length() / ball.radius, 22.0, 36.0)
- spin_root.rotate(_spin_axis, angular_speed * delta)
+ spin_root.rotate(_spin_axis, angular_speed * delta * roll_speed_scale)

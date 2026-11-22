@@ -1,6 +1,6 @@
 # Historical model provenance and local-use boundary
 
-**Local Sonic combo pose, 2026-11-22.** Prototype can display one rigid pose baked from the preserved Runners Sonic rig. The bake, its embedded textures and captures stay under the ignored `local/` and `captures/` directories. Shared builds use the repository-authored Sonic illustration. [Pose recipe and review](../../docs/combo-celebration/README.md)
+**Original Sonic Runners animations, 2026-11-22.** The local model comes from `CharacterModelSonic.unity`. Its renderer references `Mesh_Body_d31`. Its animator references 15 distinct clips, including the curl and three held jump tricks. The local animated GLB and Blender scene preserve those actions. Prototype uses static samples from four clips and a directional color map baked from the curled model. The two upstream checkouts, extracted files, textures, generated meshes and captures stay in the ignored local folders. The earlier hand-posed SA1 study remains an optional fallback. [Client decompilation](https://github.com/itsmattkc/RunnersDecomp/tree/aab6c1e6558d07a014a9d3cf5ca4c99ff9217587) · [Asset bundle decompilation](https://github.com/itsmattkc/RunnersAssetBundleDecomp/tree/1ddd372be38dbba7e17f7a53c055a51264693782) · [Pose recipe and review](../../docs/combo-celebration/README.md)
 
 **Archived during repository cleanup, 2026-10-30.** The records below describe the earlier imported Sonic/Tails model experiment and its original preparation workflow.
 

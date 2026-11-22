@@ -29,6 +29,8 @@ var run_configuration: RefCounted
 var setup_menu: VBoxContainer
 var start_button: Button
 var pause_camera_picker: OptionButton
+var spin_lab: PanelContainer
+var start_spin_lab := false
 var archive_directory := Archive.DIRECTORY
 var archive_attempted := false
 var archive_result := {}
@@ -72,6 +74,10 @@ func _ready() -> void:
  overlay.layer = 40
  add_child(overlay)
  var arguments := OS.get_cmdline_user_args()
+ start_spin_lab = "--spin-lab" in arguments
+ if start_spin_lab:
+  selected_character = "sonic"
+  preload("res://scripts/diagnostics/shadow_review.gd").position_review_window(get_window())
  var act_argument := arguments.find("--act")
  if act_argument >= 0 and act_argument + 1 < arguments.size():
   var preview_path := ""
@@ -300,6 +306,7 @@ func _start_configured_run(configuration: RefCounted, character_id: String, prac
  transitioning = false
 
 func _close_run(reason := "returned_to_menu") -> void:
+ _close_spin_lab()
  _flush_run_feel()
  if is_instance_valid(game):
   if not archive_attempted: _archive_run(game.run_summary(false, reason))
@@ -330,9 +337,39 @@ func _show_pause() -> void:
  pause_camera_picker.item_selected.connect(func(index: int):
   game.select_play_camera(pause_camera_picker.get_item_id(index)))
  stack.add_child(pause_camera_picker)
+ if _can_inspect_sonic(): _action(stack, "Sonic spin preview   [F8]", _open_spin_lab)
  _action(stack, "Restart run", start_run)
  _action(stack, "Return to menu", return_to_menu)
  _action(stack, "Quit", _quit)
+
+func _can_inspect_sonic() -> bool:
+ if not is_instance_valid(game) or not game.started or game.character_id != "sonic": return false
+ if game.finished or game.closing or game.drafting or game.loading_boundary or is_instance_valid(game.transfer): return false
+ return is_instance_valid(game.combo_celebration.sonic_pose.runners_roll)
+
+func _open_spin_lab() -> void:
+ if not _can_inspect_sonic() or is_instance_valid(spin_lab): return
+ if not get_tree().paused: game.toggle_pause()
+ if not get_tree().paused: return
+ state = "spin_lab"
+ overlay_root.hide()
+ spin_lab = preload("res://experiments/visual_lab/sonic_spin_lab.gd").new()
+ spin_lab.game = game
+ spin_lab.resume_requested.connect(_resume_spin_lab)
+ overlay.add_child(spin_lab)
+
+func _close_spin_lab() -> void:
+ if not is_instance_valid(spin_lab): return
+ spin_lab.finish()
+ spin_lab.hide()
+ spin_lab.process_mode = Node.PROCESS_MODE_DISABLED
+ spin_lab.queue_free()
+ spin_lab = null
+
+func _resume_spin_lab() -> void:
+ _close_spin_lab()
+ state = "playing"
+ if get_tree().paused: game.toggle_pause()
 
 func _on_draft_started(act_result: Dictionary, offers: Array[Dictionary]) -> void:
  state = "draft"
@@ -494,12 +531,28 @@ func _process(_delta: float) -> void:
   _action(stack, "Quit", _quit)
   return
  if not game.started or game.finished or game.loading_boundary: return
+ if start_spin_lab and state == "playing":
+  start_spin_lab = false
+  _open_spin_lab()
+  return
+ if state == "spin_lab" and not get_tree().paused:
+  _resume_spin_lab()
+  return
  if get_tree().paused and state == "playing": _show_pause()
  elif not get_tree().paused and state == "paused":
   state = "playing"
   overlay_root.hide()
 
 func _input(event: InputEvent) -> void:
+ if event is InputEventKey and event.pressed and not event.echo:
+  if state == "spin_lab" and event.keycode in [KEY_F8, KEY_ESCAPE]:
+   get_viewport().set_input_as_handled()
+   _resume_spin_lab()
+   return
+  if state in ["playing", "paused"] and event.keycode == KEY_F8 and _can_inspect_sonic():
+   get_viewport().set_input_as_handled()
+   _open_spin_lab()
+   return
  if not event is InputEventKey or state not in ["playing", "paused"] or not is_instance_valid(game) or not game.started: return
  if event.keycode in [KEY_ENTER, KEY_KP_ENTER]:
   if state == "paused" and is_instance_valid(pause_camera_picker) and pause_camera_picker.has_focus(): return

@@ -45,6 +45,7 @@ func consider(id: String, hits: int, award: int) -> void:
  character = id
  milestone = hits
  points = award
+ if id == "sonic" and is_instance_valid(sonic_pose): sonic_pose.next_trick()
  if not visible:
   age = 0.0
   show()
