@@ -251,8 +251,14 @@ func run() -> void:
     check(card.visible and card.character == id and card.milestone == tier and card.points == game.score - initial_score, "Sage receives her own builder award")
     if sage.animated:
      check(sage.action == sage.VICTORIES[(tier - 2) % 3] and sage.victory_hold > 0.0, "Sage cycles her own victory animation")
-     pose._process(sage.victory_reveal + sage.victory_hold)
-     check(sage.rig.basis.is_equal_approx(game.presentation.camera.global_basis.orthonormalized()), "The rig plays its baked 60-degree sweep exactly once")
+     var duration: float = sage.victory_hold
+     pose._process(sage.victory_reveal)
+     var root_bone: int = sage.skeleton.find_bone("Root")
+     var neutral: Quaternion = sage.skeleton.get_bone_pose_rotation(root_bone)
+     for phase: float in [0.0, 0.5, 1.0]:
+      if phase > 0.0: pose._process(duration * 0.5)
+      check(sage.rig.basis.is_equal_approx(pose.trick_basis(game.presentation.camera, phase)), "Sage shares the roster's victory turn")
+      check(neutral.is_equal_approx(sage.skeleton.get_bone_pose_rotation(root_bone)), "Sage's root keeps a single facing under the shared turn")
      pose._process(0.001)
      check(sage.victory_hold == 0.0 and sage.action == sage.BALL, "Sage returns to her own ball after the pose")
    if not output.is_empty(): await still(id)

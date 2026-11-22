@@ -33,7 +33,7 @@ func advance_on_ball(controller: Node, delta: float) -> void:
  if victory_hold > 0.0:
   clip = VICTORIES[victory_index]
   var progress := clampf((elapsed + delta - victory_reveal) / victory_hold, 0.0, 1.0)
-  # The root bone already sweeps from 30 degrees left to 30 degrees right.
+  frame = VictoryTurn.basis(camera.global_basis, progress)
   pose_at = progress * player.get_animation(clip).length
   lift = Vector3.ZERO
   if progress >= 1.0: victory_hold = 0.0

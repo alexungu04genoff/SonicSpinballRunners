@@ -189,7 +189,7 @@ func _scrub(value: float) -> void:
 func _steer(direction: int) -> void:
  actor.steer(direction)
  (%Steering.get_child(direction + 2) as Button).button_pressed = true
- actor.pose_on_table(pose_basis, seconds)
+ actor.pose_on_table(pose_basis, playhead)
 
 func _process(delta: float) -> void:
  if inspecting and playing:
@@ -198,7 +198,7 @@ func _process(delta: float) -> void:
   _show_frame()
 
 func _show_frame() -> void:
- actor.pose_on_table(pose_basis, seconds)
+ actor.pose_on_table(pose_basis, playhead)
  actor.sample(seconds, playhead)
  timeline.set_value_no_signal(playhead)
  %Time.text = "%.2f / %.2f s" % [playhead, timeline.max_value]

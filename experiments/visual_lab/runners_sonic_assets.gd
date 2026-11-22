@@ -30,7 +30,9 @@ static func pose_center(fit: Dictionary, player: AnimationPlayer, yaw := 0.0) ->
  var clip := player.current_animation
  var tracks: Dictionary = fit.get("pose_center_tracks", {})
  var samples: Array = tracks.get(clip, [])
- if samples.size() < 3:
+ # Spinning tails, ears and beating wings change the silhouette during Flight.
+ # Anchor the body at the reference center throughout each flying clip.
+ if clip in FLIGHT_CLIPS.values() or samples.size() < 3:
   var first: Array = fit.get("preview_centers", {}).get(clip, [0, 0.48, 0])
   return Vector3(first[0], first[1], first[2])
  var time := player.current_animation_position

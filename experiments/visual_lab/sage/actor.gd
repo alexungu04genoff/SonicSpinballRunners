@@ -9,6 +9,7 @@ const CORE_OPACITY := 0.90
 const CLIPS := ["Hover", "Flight", "Boost Hover", "Ring Dash", "Victory Reach", "Victory Guard", "Victory Kick"]
 const STEERED := ["Flight", "Boost Hover", "Ring Dash"]
 const BALL := "Cyber Ball"
+const VictoryTurn = preload("res://scripts/prototype/victory_turn.gd")
 const HEIGHT := 0.736
 
 var rig: Node3D
@@ -55,6 +56,15 @@ func prepare(model_path := MODEL) -> bool:
  player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
  for clip: String in CLIPS:
   if not player.has_animation(clip): return false
+  if clip.begins_with("Victory"):
+   # The local study includes a baked camera turn. Keep its neutral root facing
+   # and let the shared victory presentation turn the complete character.
+   var anim := player.get_animation(clip)
+   for track in anim.get_track_count():
+    if anim.track_get_type(track) != Animation.TYPE_ROTATION_3D: continue
+    if anim.track_get_path(track).get_concatenated_subnames() != &"Root": continue
+    var neutral := anim.rotation_track_interpolate(track, anim.length * 0.5)
+    for key in anim.track_get_key_count(track): anim.track_set_key_value(track, key, neutral)
  prepare_ball()
  play("Hover")
  return true
@@ -148,4 +158,7 @@ func pose_on_table(table_basis: Basis, time: float) -> void:
  if not rig_clip.begins_with("Victory"):
   lift = Vector3.UP * ball_radius * (0.65 + 0.10 * sin(time * TAU / 1.6))
  var yaw := deg_to_rad(30.0) * heading if rig_clip in STEERED else 0.0
- rig.transform = Transform3D(table_basis * Basis(Vector3.UP, yaw), lift - table_basis.y * HEIGHT * 0.5)
+ var facing := table_basis * Basis(Vector3.UP, yaw)
+ if rig_clip.begins_with("Victory"):
+  facing = VictoryTurn.basis(table_basis, time / player.get_animation(rig_clip).length)
+ rig.transform = Transform3D(facing, lift - facing.y * HEIGHT * 0.5)

@@ -72,6 +72,7 @@ func run() -> void:
   lab.sliders.opacity.value = 0.63
   session._resume_spin_lab()
   check(not paused and game.character_pose.sage.visible and is_equal_approx(game.character_pose.sage.shell.get_shader_parameter("opacity"), 0.63), "F8 returns to Sage with her own material settings")
+  if game.character_pose.sage.animated: check_sage_flight(game)
   await finish_review(session, character)
   return
  check(lab.picker.item_count == {"sonic": 14, "tails": 16, "knuckles": 15, "shadow": 14, "rouge": 15, "amy": 14, "blaze": 15, "cream": 15, "big": 15}[character] and lab.cameras.item_count == 4, "Gameplay clips and the four gameplay cameras are selectable")
@@ -422,6 +423,30 @@ func capture_roll_cycle(lab: Control) -> void:
   await capture("tails-roll-%02d" % i)
  lab._toggle_playback()
 
+func check_sage_flight(game: Node) -> void:
+ var controller = game.character_pose
+ var sage = controller.sage
+ game.ball.serve_pending = false
+ game.ball._teleport_pending = false
+ game.controls.virtual_enabled = true
+ game.controls.input_blocked = false
+ game.special_meter = game.specials.definition.meter_capacity
+ check(game.specials.activate(), "Sage activates shared Flight")
+ var anchored := true
+ for side: float in [-1.0, 1.0, 0.0]:
+  game.controls.virtual_steering = side
+  game.controls._physics_process(0.0)
+  for sample in 60:
+   controller._process(1.0 / 60.0)
+   var center: Vector3 = sage.rig.position + sage.rig.basis.y * sage.HEIGHT * 0.5
+   anchored = anchored and Vector2(center.x, center.z).length() < 0.0001 and absf(center.y / sage.ball_radius - 0.65) <= 0.1001
+  check_flight_facing(sage.rig, game.presentation.camera, -1.0 if side < 0.0 else 1.0, "Sage follows steering and retains the last heading in neutral")
+ check(anchored and sage.action == "Flight", "Sage stays over the Ball throughout her bounded hover")
+ game.specials._physics_process(game.specials.flight_remaining + 0.01)
+ controller._process(0.0)
+ controller._process(sage.MORPH_SECONDS + 0.01)
+ check(sage.action == sage.BALL and is_equal_approx(sage.assembly, 1.0), "Sage reassembles her ball when Flight expires")
+
 func review_flight(session: Node, game: Node) -> void:
  var card = game.combo_celebration
  var pose = card.character_pose
@@ -452,6 +477,13 @@ func review_flight(session: Node, game: Node) -> void:
  for i: int in animated_before:
   if not skeleton.get_bone_global_pose(i).is_equal_approx(animated_before[i]): moving_bones += 1
  check(moving_bones >= 2, "The original Flight action animates " + ("the tails" if character == "tails" else character.capitalize()))
+ var initial: Vector3 = pose.motion_rig.get_child(0).position
+ var anchor: Vector3 = pose.motion_rig.global_position
+ var stable := true
+ for sample in ceili(pose.motion_player.current_animation_length * 60.0) + 1:
+  pose._process(1.0 / 60.0)
+  stable = stable and initial.is_equal_approx(pose.motion_rig.get_child(0).position) and anchor.is_equal_approx(pose.motion_rig.global_position)
+ check(stable, character.capitalize() + " keeps a stable Flight anchor for the full animation cycle")
  game.controls.virtual_steering = 0.65
  game.controls._physics_process(0.0)
  game.ball.linear_velocity = Vector2(-300, -60)

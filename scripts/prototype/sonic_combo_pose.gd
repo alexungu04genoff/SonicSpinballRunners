@@ -6,7 +6,7 @@ const Presenter = preload("res://experiments/visual_lab/sonic_presenter.gd")
 const ShellFade = preload("res://experiments/visual_lab/round_shell_fade.gd")
 const Sage = preload("res://experiments/visual_lab/sage/gameplay_actor.gd")
 const FLIGHT_TURN := PI / 6.0
-const TRICK_TURN := PI / 6.0
+const VictoryTurn = preload("res://scripts/prototype/victory_turn.gd")
 const DEFAULTS := {"model": 1.0, "ball": 1.0, "blur": 1.0, "speed": Presenter.RUNNERS_ROLL_SPEED, "opacity": 0.45}
 var settings := DEFAULTS.duplicate()
 var boost_speed := Assets.BOOST_SPEED
@@ -386,9 +386,7 @@ func start_trick(duration := 0.40) -> void:
  place_trick(0.0)
 
 static func trick_basis(camera: Camera3D, progress: float) -> Basis:
- # Give each endpoint a visible beat even on the shortest combo.
- var angle := lerpf(-TRICK_TURN, TRICK_TURN, smoothstep(1.0 / 6.0, 5.0 / 6.0, progress))
- return player_facing_basis(camera) * Basis(Vector3.UP, angle)
+ return VictoryTurn.basis(camera.global_basis, progress)
 
 func place_trick(progress: float) -> void:
  if not visible: return

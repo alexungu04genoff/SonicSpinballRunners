@@ -439,7 +439,8 @@ func _orient_model() -> void:
   sage.steer(flight_heading.x if active_clip == "Flight" else 0.0)
   if active_clip == "Ring Dash": view = Pose.spring_basis(orbit, pivot.global_position, pose.motion_direction)
   elif active_clip == "Boost Hover": view = game.character.flat_roll_frame(game.character.roll_heading)
-  sage.pose_on_table(view, sage.elapsed)
+  var phase_time := fposmod(sage.elapsed, sage.player.get_animation(sage.rig_clip).length)
+  sage.pose_on_table(view, phase_time)
   return
  var rolling := active_clip == roll_clip
  art.rotation.x = roll_angle if rolling else 0.0
