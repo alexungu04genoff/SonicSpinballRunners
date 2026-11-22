@@ -69,6 +69,10 @@ func clip() -> void:
  game.launch_ball()
  var travel := 0.0
  var live_frames := 0
+ var posed_frames := 0
+ var follows_ball := true
+ var collision_layer: int = game.ball.collision_layer
+ var collision_mask: int = game.ball.collision_mask
  var previous: Vector2 = game.ball.position
  for frame in 90:
   await process_frame
@@ -80,11 +84,18 @@ func clip() -> void:
   if card.visible:
    live_frames += 1
    travel += previous.distance_to(game.ball.position)
+   if not game.character.rolling_mesh.visible:
+    posed_frames += 1
+    var offset: Vector3 = card.sonic_pose.global_position - game.character.spin_root.global_position
+    follows_ball = follows_ball and card.sonic_pose.is_visible_in_tree() and Vector2(offset.x, offset.z).length() < 0.001
+    follows_ball = follows_ball and not game.ball.freeze and game.ball.collision_mask == collision_mask and game.ball.collision_layer == collision_layer
   previous = game.ball.position
   var image := root.get_texture().get_image()
   check(image.save_jpg(path.path_join("%03d.jpg" % frame), 0.95) == OK, "Save movie frame")
  check(live_frames >= 24 and travel > game.ball.radius * 2, "Ball travels during the cut-in")
- print("COMBO_CLIP | visible frames=", live_frames, " | Ball distance=", travel)
+ check(posed_frames >= 18 and follows_ball, "The pose replaces the rolling mesh on the moving, colliding Ball")
+ check(not card.sonic_pose.visible and game.character.rolling_mesh.visible, "The original roll returns after the moving pose")
+ print("COMBO_CLIP | visible frames=", live_frames, " | posed frames=", posed_frames, " | Ball distance=", travel)
 
 func run() -> void:
  for argument: String in OS.get_cmdline_user_args():
@@ -126,6 +137,8 @@ func run() -> void:
   return
  card = game.combo_celebration
  check(game.library.fallback_builds == 0, "Review runs the disk-backed Prototype")
+ if "--require-sonic-model" in OS.get_cmdline_user_args():
+  check(card.sonic_pose.mesh is ArrayMesh, "Capture uses the baked Runners model")
  if "--interactive" in OS.get_cmdline_user_args():
   settle_ball()
   root.title = "Combo review   |   1–4 Character   5 / 8 / 0 Hits   Enter Pause   9 Goal   F9 Retro"
@@ -144,6 +157,13 @@ func run() -> void:
  Engine.time_scale = 0.0
  game.presentation.reset_camera(game.ball.position)
  var scoring: Scorecraft = game.scorecraft
+ var fallback := preload("res://scripts/prototype/sonic_combo_pose.gd").new()
+ fallback.prepare(game.character, card.POSES.sonic, local.path_join("missing.glb"))
+ game.character.add_child(fallback)
+ fallback.show_blend(1.0)
+ check(fallback.mesh is QuadMesh and fallback.visible and not game.character.rolling_mesh.visible, "The shared Sonic artwork takes the Ball's place when the local model is absent")
+ fallback.restore_ball()
+ fallback.free()
  for id: String in ["sonic", "tails", "knuckles", "shadow"]:
   game.specials.select_character(id)
   check(not card.visible and card.milestone == 0, "Character selection clears the previous pose")
@@ -153,6 +173,7 @@ func run() -> void:
   hit()
   check(scoring.multiplier == 4 and card.visible and card.character == id and card.milestone == 5 and card.points == game.score - before, "Fifth builder displays the selected pose and exact award")
   card._process(0.3)
+  check(card.sonic_pose.visible == (id == "sonic") and game.character.rolling_mesh.visible == (id != "sonic"), "Only Sonic unfolds from the Ball")
   if not output.is_empty(): await still(id)
   if id == "sonic" and not output.is_empty():
    game.set_celebration_retro(true)
@@ -183,6 +204,15 @@ func run() -> void:
  check(paused and not card.visible, "Pause dismisses an active pose")
  game.toggle_pause()
  check(not paused and not card.visible, "Resume cannot revive the pose")
+ game.specials.select_character("sonic")
+ five()
+ card._process(0.3)
+ game.toggle_pause()
+ check(not card.sonic_pose.visible and game.character.rolling_mesh.visible, "Pause restores Sonic's roll immediately")
+ game.toggle_pause()
+ five()
+ card._process(card.DURATION)
+ check(not card.sonic_pose.visible and game.character.rolling_mesh.visible, "Natural expiry restores Sonic's roll")
  scoring.reset("Review chain")
  hit()
  for i in scoring.config.rings_per_link: scoring.award_ring("link-ring-%d" % i)
@@ -204,8 +234,10 @@ func run() -> void:
  scoring.award_homing(&"bumper", "review-finish", 100)
  check(scoring.builder_hits == 0 and not card.visible, "Target Dash cash-out ends the hit streak")
  five()
+ card._process(0.3)
  game._on_retry_requested()
  check(is_instance_valid(game.transfer) and not card.visible and scoring.builder_hits == 0, "Retry clears the cut-in and hit count")
+ check(not card.sonic_pose.visible and game.transfer.proxy.get_child(0).visible, "The checkpoint transfer borrows the restored rolling mesh")
  game.transfer._process(game.transfer.DURATION)
  settle_ball()
  five()
@@ -226,8 +258,9 @@ func run() -> void:
  game._finish_run(false)
  check(session.state == "results" and not card.visible, "Results dismisses the active cut-in")
  var old_card: WeakRef = weakref(card)
+ var old_pose: WeakRef = weakref(card.sonic_pose)
  await close()
- check(old_card.get_ref() == null, "Session teardown releases the card")
+ check(old_card.get_ref() == null and old_pose.get_ref() == null, "Session teardown releases the card and on-table pose")
  print("RESULT | Combo celebration | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)
 

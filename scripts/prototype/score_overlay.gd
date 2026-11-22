@@ -73,7 +73,14 @@ func _draw() -> void:
  if not visible: return
  var at := screen_point(game.ball.position, game.presentation.ball_height())
  var tint: Color = COMBO_COLORS[clampi(displayed_multiplier - 1, 0, 3)]
- if displayed_multiplier >= 2: _text("×%d" % displayed_multiplier, at + Vector2(23, -18), FONT_SIZE, tint)
+ if displayed_multiplier >= 2:
+  var marker := at + Vector2(23, -18)
+  var pose: MeshInstance3D = game.combo_celebration.sonic_pose
+  if is_instance_valid(pose) and pose.is_visible_in_tree():
+   var edge := pose.to_global(Vector3.RIGHT * pose.mesh.get_aabb().end.x)
+   var projected: Vector2 = game.presentation.camera.unproject_position(edge)
+   marker.x = maxf(marker.x, projected.x * get_viewport_rect().size.x / game.view.size.x + 8)
+  _text("×%d" % displayed_multiplier, marker, FONT_SIZE, tint)
  if game.active != null:
   var goal: Node3D = game.active.runtime.goal_ring
   var goal_screen := screen_point(goal.center, goal.radius * TablePresentation.SCALE * 2.0)

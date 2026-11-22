@@ -1,6 +1,8 @@
 # Historical model provenance and local-use boundary
 
-**Archived during repository cleanup, 2026-10-30.** These records describe the retired imported Sonic/Tails model experiment. Current ball-form presentation loads none of these models. Preparation scripts and model-loading code were removed; local source assets and this provenance record were preserved. The instructions below document past work, not current setup.
+**Local Sonic combo pose, 2026-11-22.** Prototype can display one rigid pose baked from the preserved Runners Sonic rig. The bake, its embedded textures and captures stay under the ignored `local/` and `captures/` directories. Shared builds use the repository-authored Sonic illustration. [Pose recipe and review](../../docs/combo-celebration/README.md)
+
+**Archived during repository cleanup, 2026-10-30.** The records below describe the earlier imported Sonic/Tails model experiment and its original preparation workflow.
 
 This is a local visual experiment using fan-uploaded commercial game models. A fan upload is not an open license. The public branch contains integration code, original procedural scenery code, this provenance record, and preparation instructions; it does not contain third-party archives, models, textures, derived GLBs/Blender files, or renders containing them.
 

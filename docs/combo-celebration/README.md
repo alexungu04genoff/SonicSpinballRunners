@@ -1,5 +1,26 @@
 # Combo celebration review
 
+## Sonic at the Ball
+
+At a milestone, Sonic unfolds over 0.12 seconds, holds for 0.62 seconds and returns to the roll over 0.16 seconds. His static pose faces the play camera at the moving Ball, including on a track. The contact marker and the 2D collision body keep following gameplay. The score multiplier moves beside the pose, and the exact hit receipt appears in the lower-right corner. F9 moves the receipt between compositing layers. The world mesh receives the table's lighting and Retro treatment in either mode.
+
+The local bake uses the prepared Sonic Runners rig. The raised sneaker, folded trailing leg and two pointing gloves follow Alex's Sonic Adventure reference. The bake keeps each knee and ankle in a common bend plane. The runtime loads a single static mesh with embedded materials. A clean checkout uses the existing Sonic illustration on a camera-facing quad at the Ball. The other three characters use their corner cards.
+
+To reproduce with the prepared `experiments/visual_lab/local/runtime/sonic.glb` available, run the following from the repository root. The generated mesh sits beside its source. The model, studio renders and gameplay captures containing it stay local. [Asset provenance](../../experiments/visual_lab/ASSETS.md)
+
+```powershell
+& 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe' -b --factory-startup --python-exit-code 1 -P tools/bake_sonic_combo_pose.py
+& 'C:\Program Files\Godot\Godot.exe' --path . --position 20,30 --fixed-fps 30 --script res://tests/combo_celebration_review.gd -- --capture-dir=res://test-results/sa1-final --require-sonic-model
+```
+
+To use an artist's saved pose, select the rig in the local Blender scene, save it, then run the command below. The exporter reads the visible joint rotations and preserves the scene file. It checks each leg against the torso beyond the hip socket before writing the gameplay mesh.
+
+```powershell
+& 'C:\Program Files\Blender Foundation\Blender 5.2\blender.exe' -b 'experiments/visual_lab/local/Sonic SA1 - Foot Study.blend' --python-exit-code 1 -P tools/bake_sonic_combo_pose.py -- --from-rig
+```
+
+## Original four-card trial
+
 ![Four character poses at five hits](four-poses.png)
 
 The 316 × 116 card sits 18 logical pixels from the bottom-right corner. At 1280 × 900 its bounding box occupies 3.2% of the screen. The Ball, live score popups, pause control and Special gauge remain visible in the recorded shot. [Three-second gameplay clip](gameplay.mp4)
@@ -12,7 +33,7 @@ Prototype shows the selected character at 5, 8, 10, 15, 20 and each further mult
 
 Entrance takes 0.12 seconds, hold takes 0.62 and exit takes 0.16. A higher milestone updates the same card for the remainder of its original lifetime. Duplicate and lower receipts have no effect, including after the card expires. Pause dismisses the pose. Resume can show the next earned milestone. Combo end, character change, retry, drain, goal, draft, Act or Zone change, Results and run closure clear the old celebration. The card sleeps while hidden. Both layer choices reuse the existing viewports.
 
-## Display treatment
+## Display treatment in the original trial
 
 ![Native-size crops from the matched Sonic frames](treatment.png)
 
@@ -50,6 +71,8 @@ Supply one static, transparent, square pose per character. Each placeholder is 2
 For play review, try a rapid flipper rally and watch a shot into the far lower-right corner with Wide or Top-down selected. The follow-camera clip establishes the center clearance. The card can temporarily cover hardware near that edge.
 
 ## Verification
+
+The on-Ball Sonic review passed 139 checks in Forward+/Vulkan with the local mesh required. The rolling mesh gave way to Sonic for 23 of the 27 celebration frames. The Ball traveled 100.5 table pixels. The fixture also exercised the shared-build illustration, natural expiry, pause and checkpoint recovery. The six-session lifecycle review passed 45 checks and observed the Sonic mesh during teardown.
 
 Godot 4.7.2 passed 128 checks in the Forward+/Vulkan capture fixture, 32 in its headless run and 10 in a keyboard-control smoke run. The two-Zone Prototype regression passed 176 checks, including drafts, the Zone seam, Results, replay, restart and menu. Six repeated Vulkan sessions passed 45 lifecycle checks, alternating live cards between the HUD and Retro viewport. All card weak references expired and node/orphan counts returned to baseline.
 

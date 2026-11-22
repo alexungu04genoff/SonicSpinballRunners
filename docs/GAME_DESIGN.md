@@ -1,8 +1,8 @@
 # Sonic Spinball Runners — Living Game Design
 
-## Prototype combo celebrations — 2026-11-21
+## Prototype combo celebrations — 2026-11-22
 
-Prototype celebrates 5, 8, 10 and every subsequent fifth accepted builder hit in one live combo. Count completed Ring Links and fresh builders at the multiplier cap. The scoring multiplier still tops out at ×4. A temporary character pose and the triggering award share a lower-right HUD card for 0.90 seconds while the Ball moves. Higher milestones update a visible card on its original clock. Placement, frequency and final artwork are pending play review. [Four poses, gameplay clip and matched Retro comparison](combo-celebration/README.md)
+Prototype celebrates 5, 8, 10 and every subsequent fifth accepted builder hit in one live combo. Count completed Ring Links and fresh builders at the multiplier cap. The scoring multiplier still tops out at ×4. Sonic briefly uncurls at the moving Ball into an SA1-style pose using a static bake of the locally prepared Runners mesh. Shared builds use the repository's Sonic illustration at the same spot. The corner receipt shows the hit count and triggering award. Tails, Knuckles and Shadow use temporary corner cards. Each celebration lasts 0.90 seconds. A higher milestone updates the receipt on its original clock. Placement, frequency and final art are pending play review. [Combo review and reproduction](combo-celebration/README.md)
 
 ## Base-game roster and authored traversal — 2026-11-21
 

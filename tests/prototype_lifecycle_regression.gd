@@ -24,6 +24,7 @@ func runtime_refs(game: Node) -> Dictionary:
   observe(refs, key, game.get(key))
  observe(refs, "game", game)
  observe(refs, "combo_celebration", game.combo_celebration)
+ observe(refs, "sonic_pose", game.combo_celebration.sonic_pose)
  observe(refs, "retirement", game.library.retirement)
  observe(refs, "warm_view", game.library._view)
  for act: RefCounted in game.resident:
@@ -110,6 +111,7 @@ func run() -> void:
    for tick in 30: await physics_frame
    game.set_celebration_retro(run_index == 1)
    game.combo_celebration.consider(game.character_id, 5, 100)
+   game.combo_celebration._process(0.3)
    check(game.combo_celebration.visible, "Retire a live cut-in in each rendering layer")
    var refs := runtime_refs(game)
    var record := {"cycle": cycle, "run": run_index, "live": census()}
