@@ -9,9 +9,9 @@ const STAGES := {
  "Spring Meadow": ["spring"],
  "Dash Causeway": ["panel"],
  "Rail Terrace": ["rail", "ramp"],
- "Loop Clearing": ["loop", "rollback"],
- "Special Arena": ["special", "special_replay"],
- "Trick Garden": ["combos", "poses"],
+ "Loop Clearing": ["loop"],
+ "Special Arena": ["special"],
+ "Trick Garden": ["combos"],
  "Animation Green": ["library"],
 }
 const SHOTS := {

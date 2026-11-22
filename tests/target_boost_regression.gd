@@ -4,7 +4,7 @@ const Session = preload("res://scripts/prototype/session.gd")
 const Document = preload("res://scripts/act_editor/act_geometry.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const Review = preload("res://scripts/diagnostics/shadow_review.gd")
-const EXPECTED_BOOST_CYCLES := 2.7
+const EXPECTED_BOOST_CYCLES := 2.8125
 
 func run() -> void:
  Review.position_review_window(root)
@@ -69,13 +69,21 @@ func review_panel_and_loop(id: String, panel: Vector2) -> void:
  if pose.sage: pose._process(0.0)
  check(pose.motion == &"dash_panel" and player.current_animation == boost, id + " hits a dash panel and plays its own Boost")
  if pose.motion == &"dash_panel" and not pose.sage: check_stride_at_travel_speeds(pose, EXPECTED_BOOST_CYCLES)
+ if pose.motion == &"dash_panel" and pose.sage:
+  var anchor: Vector3 = pose.sage.rig.position
+  var stable := true
+  for tick in ceili(player.current_animation_length * 60.0):
+   pose._process(1.0 / 60.0)
+   stable = stable and anchor.is_equal_approx(pose.sage.rig.position)
+  check(stable, "Sage holds the Boost Hover anchor for a complete cycle")
+  check(is_equal_approx(player.current_animation_position, fposmod(pose.sage.elapsed * 1.25, player.current_animation_length)), "Sage samples Boost Hover at 1.25x")
  for i in 100:
   if game.ball.in_loop: break
   await frames(1)
  check(game.ball.in_loop and pose.motion == &"loop" and player.current_animation == boost, id + " carries its Boost into the Loop")
  var entry_tick := Engine.get_physics_frames()
  if pose.motion == &"loop" and not pose.sage:
-  check_stride_at_travel_speeds(pose, 3.0)
+  check_stride_at_travel_speeds(pose, 3.125)
  for i in 360:
   if not game.ball.in_loop: break
   await frames(1)
@@ -86,6 +94,7 @@ func review_panel_and_loop(id: String, panel: Vector2) -> void:
 
 func check_stride_at_travel_speeds(pose: Node, cadence: float) -> void:
  var player: AnimationPlayer = pose.motion_player
+ var local_anchor: Vector3 = pose.motion_rig.get_child(0).position
  var ball: PlaygroundBall = game.ball
  var velocity := ball.linear_velocity
  var track_speed := ball.track_speed
@@ -96,6 +105,7 @@ func check_stride_at_travel_speeds(pose: Node, cadence: float) -> void:
   ball.track_speed = speed
   var phase := player.current_animation_position / length
   pose._process(0.125)
+  check(local_anchor.is_equal_approx(pose.motion_rig.get_child(0).position), pose.character + " keeps a fixed rig anchor through the Boost stride")
   var expected := fposmod(phase + 0.125 * cadence, 1.0)
   check(is_equal_approx(player.current_animation_position / length, expected), "%s %s advances at %s strides/s at %d px/s" % [pose.character, pose.motion, cadence, speed])
  ball.linear_velocity = velocity
@@ -142,14 +152,14 @@ func review_character(id: String, session: Node) -> void:
    check(root.get_texture().get_image().save_png("res://test-results/target-boost/%s.png" % id) == OK, "Capture active " + id + " boost")
   session._open_spin_lab()
   var lab = session.spin_lab
-  check(lab.active_clip == pose.Assets.BOOST[id] and lab.pivot.global_basis.orthonormalized().is_equal_approx(rig.global_basis.orthonormalized()) and is_equal_approx(lab.sliders.boost.value, 1.2) and is_equal_approx(lab.player.get_playing_speed() / lab.player.current_animation_length, EXPECTED_BOOST_CYCLES), "F8 opens at the same heading and shared stride rate as gameplay")
+  check(lab.active_clip == pose.Assets.BOOST[id] and lab.pivot.global_basis.orthonormalized().is_equal_approx(rig.global_basis.orthonormalized()) and is_equal_approx(lab.sliders.boost.value, 1.25) and is_equal_approx(lab.player.get_playing_speed() / lab.player.current_animation_length, EXPECTED_BOOST_CYCLES), "F8 opens at the same heading and shared stride rate as gameplay")
   var phase: float = lab.player.current_animation_position
   lab.sliders.boost.value = 2.0
   lab._process(0.05)
   check(is_equal_approx(lab.player.current_animation_position, fposmod(phase + 0.05 * 4.5 * lab.player.current_animation_length, lab.player.current_animation_length)), "Boost speed changes the actual preview stride without restarting the clip")
   session._resume_spin_lab()
   check(is_equal_approx(pose.motion_player.get_playing_speed() / pose.motion_player.current_animation_length, 4.5), "Resume applies the selected stride rate")
-  pose.apply_settings(pose.settings.duplicate(), 1.2)
+  pose.apply_settings(pose.settings.duplicate(), 1.25)
  else:
   check(game.character.boost_wake.is_visible_in_tree(), id + " has a directional boost with painted assets")
  for i in 230:

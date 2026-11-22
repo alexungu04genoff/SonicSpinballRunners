@@ -8,13 +8,14 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
 STAGES = ("Plunger Lane", "Spin Alley", "Spring Meadow", "Dash Causeway", "Rail Terrace",
-          "Loop Clearing", "Special Arena", "Trick Garden", "Animation Green")
+          "Loop Clearing", "Special Arena", "Trick Garden")
 CAPTURES = ROOT / "test-results" / "character-reels"
 DELIVERY = ROOT / "test-results" / "Green Hill Character Reels"
 
 
 def encode(actor, indexes):
-    rows = [row for index in indexes for row in json.loads(index.read_text(encoding="utf-8"))]
+    rows = [row for index in indexes for row in json.loads(index.read_text(encoding="utf-8"))
+            if row["key"] not in {"poses", "special_replay", "rollback"}]
     offset = 0
     blocks = [";FFMETADATA1"]
     for row in rows:

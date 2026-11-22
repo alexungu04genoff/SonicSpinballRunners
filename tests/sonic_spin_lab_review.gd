@@ -178,7 +178,7 @@ func run() -> void:
   elif clip in lab.trick_names: check(lab.held.visible and lab.held.mesh != null, "Baked trick keeps its original mesh")
   else: check(lab.rig.visible and lab.player.current_animation == clip, "Original Action plays: " + clip)
   if clip == lab.Assets.BOOST[game.character_id]:
-   check(lab.rig.global_basis.y.normalized().is_equal_approx(Vector3.UP) and lab.sliders.boost.is_visible_in_tree() and is_equal_approx(lab.player.get_playing_speed() / lab.player.current_animation_length, 2.7), "Boost preview plays 2.7 strides per second")
+   check(lab.rig.global_basis.y.normalized().is_equal_approx(Vector3.UP) and lab.sliders.boost.is_visible_in_tree() and is_equal_approx(lab.player.get_playing_speed() / lab.player.current_animation_length, 2.8125), "Boost preview plays 2.8125 strides per second")
   elif clip == lab.Assets.POWER_DIVE.get(character):
    check(lab.rig.global_basis.z.normalized().is_equal_approx(Vector3.DOWN), character.capitalize() + "'s original forward axis points into the table for the slam")
   elif clip != lab.roll_clip and clip != lab.Assets.FLIGHT_CLIPS.get(character, "") and clip != lab.Assets.DASH_RING[game.character_id]:
@@ -358,7 +358,7 @@ func review_traversal(session: Node, game: Node) -> void:
  ball.traversal_launched.emit(&"dash_panel", Vector2.RIGHT * 550)
  check(pose.motion == &"dash_panel" and pose.motion_player.current_animation == pose.Assets.BOOST[game.character_id] and not game.character.rolling_mesh.visible, "Dash panel selects the character's Boost and hides the curl")
  pose._process(0.075)
- check(is_equal_approx(pose.motion_player.current_animation_position / pose.motion_player.current_animation_length, 0.075 * 2.7), "Panel Boost advances at 2.7 strides per second")
+ check(is_equal_approx(pose.motion_player.current_animation_position / pose.motion_player.current_animation_length, 0.075 * 2.8125), "Panel Boost advances at 2.8125 strides per second")
  pose._physics_process(0.75)
  ball.traversal_launched.emit(&"dash_panel", Vector2.RIGHT * 550)
  pose._physics_process(119.0 / 120.0)
@@ -384,7 +384,7 @@ func review_traversal(session: Node, game: Node) -> void:
  if ball.in_loop:
   session._open_spin_lab()
   var loop_player: AnimationPlayer = session.spin_lab.player
-  check(is_equal_approx(loop_player.get_playing_speed() / loop_player.current_animation_length, 3.0), "F8 previews three strides per second during a Loop ride")
+  check(is_equal_approx(loop_player.get_playing_speed() / loop_player.current_animation_length, 3.125), "F8 previews 3.125 strides per second during a Loop ride")
   session._resume_spin_lab()
  var boosted := ball.in_loop
  var inverted := false

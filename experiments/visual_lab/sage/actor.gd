@@ -150,7 +150,8 @@ func sample(time: float, pose_time := -1.0) -> void:
   var duration := player.current_animation_length
   if duration > 0.0:
    # Hold the last sample when the user scrubs a looping clip to its endpoint.
-   var frame := fposmod(time, duration) if pose_time < 0.0 else clampf(pose_time, 0.0, duration - 0.000001)
+   var clip_time := time * preload("res://experiments/visual_lab/runners_sonic_assets.gd").BOOST_SPEED if action == "Boost Hover" else time
+   var frame := fposmod(clip_time, duration) if pose_time < 0.0 else clampf(pose_time, 0.0, duration - 0.000001)
    player.seek(frame, true)
 
 func pose_on_table(table_basis: Basis, time: float) -> void:

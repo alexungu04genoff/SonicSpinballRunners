@@ -8,8 +8,8 @@ const FLIGHT := "tl_jump_bunk_loop"
 const FLIGHT_CLIPS := {"tails": FLIGHT, "rouge": "ru_jump_bunk_loop", "cream": "cr_jump_bunk_loop"}
 const DASH_RING := {"sonic": "sn_dashring_loop", "tails": "tl_dashring_loop", "knuckles": "kn_dashring_loop", "shadow": "sh_dashring_loop", "rouge": "ru_dashring_loop", "amy": "am_dashring_loop", "blaze": "bl_dashring_loop", "cream": "cr_dashring_loop", "big": "bg_dashring_loop"}
 const BOOST := {"sonic": "sn_boost_loop", "tails": "tl_boost_loop", "shadow": "sh_boost_loop", "knuckles": "kn_boost_loop", "rouge": "ru_boost_loop", "amy": "am_boost_loop", "blaze": "bl_boost_loop", "cream": "cr_boost_loop", "big": "bg_boost_loop"}
-const BOOST_SPEED := 1.2
-const DEFAULT_LOOP_CYCLES_PER_SECOND := 3.0
+const BOOST_SPEED := 1.25
+const DEFAULT_LOOP_CYCLES_PER_SECOND := 3.125
 # Sonic's reference stride is 80 frames at 60 Hz, played at 3x on boost entry.
 const BOOST_CYCLES_PER_SECOND := 2.25
 # The eight original curl shapes make one relaxed sweep behind the ball.
@@ -30,9 +30,9 @@ static func pose_center(fit: Dictionary, player: AnimationPlayer, yaw := 0.0) ->
  var clip := player.current_animation
  var tracks: Dictionary = fit.get("pose_center_tracks", {})
  var samples: Array = tracks.get(clip, [])
- # Spinning tails, ears and beating wings change the silhouette during Flight.
- # Anchor the body at the reference center throughout each flying clip.
- if clip in FLIGHT_CLIPS.values() or samples.size() < 3:
+ # Running limbs and flying appendages change the silhouette each frame.
+ # Keep the body anchored while the original skeletal animation plays.
+ if clip in FLIGHT_CLIPS.values() or clip in BOOST.values() or samples.size() < 3:
   var first: Array = fit.get("preview_centers", {}).get(clip, [0, 0.48, 0])
   return Vector3(first[0], first[1], first[2])
  var time := player.current_animation_position
