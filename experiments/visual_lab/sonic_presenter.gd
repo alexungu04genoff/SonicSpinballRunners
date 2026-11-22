@@ -7,6 +7,7 @@ var spin_material: StandardMaterial3D
 var spin_surface: ShaderMaterial
 var target_marker: Node3D
 var flight_wind: MeshInstance3D
+var boost_wake: MeshInstance3D
 var homing_direction := Vector2.UP
 const MIN_EVENT_DURATION := 0.24
 const EVENT_COOLDOWN := 0.18
@@ -180,6 +181,7 @@ func _on_homing_started(_target: Node2D, direction: Vector2) -> void:
  _pulse(Color("80dbff"))
 
 func _on_homing_ended(_reason: String) -> void:
+ boost_wake.hide()
  if state == State.HOMING:
   state = State.SPIN
 
@@ -253,6 +255,18 @@ func _build_effects() -> void:
  flight_wind.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  flight_wind.visible = false
  target_marker.visible = false
+ # The painted ball gets a tapered wake when a character rig is unavailable.
+ var wake := CylinderMesh.new()
+ wake.top_radius = 0.0
+ wake.bottom_radius = 0.55
+ wake.height = 2.0
+ wake.radial_segments = 8
+ var wake_material := table.material(Color(0.65, 0.9, 1.0, 0.60))
+ wake_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+ wake_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+ boost_wake = table.mesh_node(wake, wake_material, Vector3.ZERO, rolling_mesh)
+ boost_wake.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+ boost_wake.hide()
 
 func _pulse(color: Color) -> void:
  pulse_time = 0.32
@@ -282,6 +296,11 @@ func resume_gameplay() -> void:
  _set_pose("roll", true)
 
 func _update_effects(delta: float) -> void:
+ boost_wake.visible = state == State.HOMING and rolling_mesh.is_visible_in_tree() and not close_view
+ if boost_wake.visible:
+  var frame := flat_roll_frame(specials.homing_direction)
+  var size := ball.radius * TablePresentation.SCALE
+  boost_wake.global_transform = Transform3D((frame * Basis(Vector3.RIGHT, -PI / 2.0)).scaled(Vector3.ONE * size), spin_root.global_position - frame.z * size * 1.7)
  if close_view or ball.serve_pending or ball.position.distance_to(_last_position) > 100.0:
   trail.reset()
  else:
@@ -408,6 +427,11 @@ static func flat_roll_frame(heading: Vector2) -> Basis:
  # Both Runners models face +Z. Local X is the axle through their sides.
  return Basis.looking_at(Vector3(heading.x, 0, heading.y), Vector3.UP, true)
 
+func roll_velocity() -> Vector2:
+ if is_instance_valid(ball.launch_tube) and ball.launch_tube.contained: return ball.launch_tube.roll_velocity()
+ if ball.serve_pending: return Vector2.ZERO
+ return ball.linear_velocity
+
 func _update_upright_roll(delta: float) -> void:
  var frame: Basis
  var spin_rate := 0.0
@@ -424,10 +448,10 @@ func _update_upright_roll(delta: float) -> void:
  else:
   if close_view:
    spin_rate = 22.0
-  elif not ball.serve_pending and delta > 0.0:
-   var velocity := ball.linear_velocity
+  elif delta > 0.0:
+   var velocity := roll_velocity()
    if velocity.length_squared() > 1.0: roll_heading = velocity.normalized()
-   spin_rate = clampf(velocity.length() / ball.radius, 22.0, 36.0)
+   spin_rate = clampf(velocity.length() / ball.radius, 0.0 if ball.serve_pending else 22.0, 36.0)
   frame = flat_roll_frame(roll_heading)
  roll_angle = fposmod(roll_angle + spin_rate * delta * roll_speed_scale, TAU)
  spin_root.basis = frame.scaled(Vector3.ONE * spin_root.scale.x)

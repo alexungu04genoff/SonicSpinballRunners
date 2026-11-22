@@ -56,6 +56,9 @@ func prepare_act(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
    floor_polygons.append(VisualDetail.contour(ribbon))
  # Infer the facade from the actual rendered walls. Simplifying both independently
  # creates different segments/normals at the same wall-to-floor join.
+ if runtime.has("floor_outlines"):
+  floor_polygons.clear()
+  for outline: PackedVector2Array in runtime.floor_outlines: floor_polygons.append(VisualDetail.contour(outline))
  authored_floor_outline = await _geometry_job(_authored_floor_boundary.bind(floor_bounds, floor_polygons))
  await stream_checkpoint()
  stage = "floor mesh"

@@ -124,6 +124,45 @@ func authoring() -> void:
  check(editor.document.placements == terrain, "Path gestures never cut or modify terrain")
  editor.free()
 
+func terrain_checks() -> void:
+ var cut = preload("res://scripts/authored_act/launch_tube_cut.gd")
+ var wall := PackedVector2Array([Vector2(0, 0), Vector2(200, 0), Vector2(200, 160), Vector2(0, 160)])
+ var item := {"type": "launch_tube", "position": Vector2(-30, 80), "rotation_degrees": 90.0,
+  "properties": {"points": PackedVector2Array([Vector2.ZERO, Vector2(0, -260)]), "width": 40.0}}
+ var cuts: Array[Dictionary] = cut.footprints([item])
+ var solids: Array[PackedVector2Array] = cut.carve(wall, true, cuts)
+ check(solids.size() == 2, "Rotated tube splits the solid across its entire width")
+ for point: Vector2 in [Vector2(100, 61), Vector2(100, 99)]:
+  check(solids.all(func(piece): return not Geometry2D.is_point_in_polygon(point, piece)), "Lane interior is clear on both sides")
+ for point: Vector2 in [Vector2(100, 55), Vector2(100, 105)]:
+  check(solids.any(func(piece): return Geometry2D.is_point_in_polygon(point, piece)), "Terrain beside the cut stays solid")
+ var open: Array[PackedVector2Array] = cut.carve(PackedVector2Array([Vector2(100, 0), Vector2(100, 160)]), false, cuts)
+ check(open.size() == 2 and open.all(func(piece): return piece.size() == 2), "Open wall keeps two disconnected segments")
+ item.position = Vector2(50, 80)
+ item.properties.points[1] = Vector2(0, -50)
+ cuts = cut.footprints([item])
+ solids = cut.carve(wall, true, cuts)
+ check(not solids.is_empty() and solids.all(func(piece): return not Geometry2D.is_point_in_polygon(Vector2(75, 80), piece) and not Geometry2D.triangulate_polygon(piece).is_empty()), "A fully enclosed tube carves a triangulable opening")
+ check(solids.any(func(piece): return Geometry2D.is_point_in_polygon(Vector2(75, 35), piece)), "An enclosed cut preserves the surrounding wall")
+ var swallowed := PackedVector2Array([Vector2(60, 78), Vector2(70, 78), Vector2(65, 83)])
+ check(cut.carve(swallowed, true, cuts).is_empty(), "Terrain wholly inside the bore disappears")
+
+func legacy_tuning() -> void:
+ var source := FileAccess.get_file_as_string(WORKSHOP)
+ for maximum: float in [700.0, 650.0]:
+  var fixture := source.replace('"width": 40.0', '"height": 80.0, "max_speed": %.1f, "resistance": 100.0, "width": 40.0' % maximum)
+  var path := "res://test-results/launch-tube/legacy-%d.tres" % int(maximum)
+  var file := FileAccess.open(path, FileAccess.WRITE)
+  file.store_string(fixture)
+  file.close()
+  var doc: Resource = Act.load_document(path).document
+  check(doc != null, "Previously saved launch tube loads")
+  if doc == null: continue
+  var values := Objects.properties(doc.gameplay_objects[0])
+  check(not values.has("height"), "Legacy rise no longer elevates the route")
+  var stock := Objects.defaults("launch_tube")
+  check(values.max_speed == (stock.max_speed if maximum == 700.0 else maximum) and values.resistance == (stock.resistance if maximum == 700.0 else 100.0), "Old factory tune updates while custom speeds survive")
+
 func obstacle(at: Vector2, size: Vector2) -> StaticBody2D:
  var body := StaticBody2D.new()
  body.position = at
@@ -221,6 +260,18 @@ func physics_checks() -> void:
  adapter.free()
  tube.detach()
  check(ball.collision_layer == 2 and ball.collision_mask == 1 and ball.launch_tube == null, "Source replacement/teardown restores body properties")
+ # Measure the charge examples on the authored Workshop route with the real body.
+ var workshop: Resource = Act.load_document(WORKSHOP).document
+ tube.configure(Objects.properties(workshop.gameplay_objects[0]))
+ tube.position = Vector2(700, 500)
+ fire(0.5)
+ check(await until(func(): return not tube.contained), "Half charge clears the Workshop")
+ var half_exit: float = releases.back().length()
+ fire(1.0)
+ check(await until(func(): return not tube.contained), "Full charge clears the Workshop")
+ var full_exit: float = releases.back().length()
+ check(half_exit > 90.0 and half_exit < 160.0 and full_exit > 320.0 and full_exit < 370.0, "Measured Workshop exits stay in the playable tuning range")
+ print("Workshop exit speeds | half=%.1f full=%.1f px/s" % [half_exit, full_exit])
  world.free()
  controls.free()
  tuning.free()
@@ -228,6 +279,8 @@ func physics_checks() -> void:
 func run() -> void:
  DirAccess.make_dir_recursive_absolute("res://test-results/launch-tube")
  await authoring()
+ terrain_checks()
+ legacy_tuning()
  await physics_checks()
  print("RESULT | Launch Tube | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)

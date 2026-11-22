@@ -11,6 +11,7 @@ const Mechanics = preload("res://scripts/authored_act/pinball_mechanics.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const Dimensions = preload("res://scripts/act_dimensions.gd")
 const Bake = preload("res://scripts/endless/geometry_bake.gd")
+const TubeCut = preload("res://scripts/authored_act/launch_tube_cut.gd")
 const Clearance = preload("res://scripts/authored_act/terrain_clearance.gd")
 
 static func compile(document: Resource, tuning: PhysicsTuning, controls: PlaygroundInput, ball: PlaygroundBall, baked_shapes: Array = []) -> Dictionary:
@@ -23,9 +24,9 @@ static func compile_baked(document: Resource, tuning: PhysicsTuning, controls: P
   return {"root": null, "error": "A verified full Act bake is required."}
  if not bake.matches_geometry(document, bake.theme_id, current_pipeline) or not bake.has_validated_collisions(document):
   return {"root": null, "error": "Act validation is missing or stale. Run Bake Endless.cmd."}
- return _compile(document, tuning, controls, ball, bake.collisions, true)
+ return _compile(document, tuning, controls, ball, bake.collisions, true, bake.carved_terrain)
 
-static func _compile(document: Resource, tuning: PhysicsTuning, controls: PlaygroundInput, ball: PlaygroundBall, baked_shapes: Array, validated: bool) -> Dictionary:
+static func _compile(document: Resource, tuning: PhysicsTuning, controls: PlaygroundInput, ball: PlaygroundBall, baked_shapes: Array, validated: bool, baked_cuts := {}) -> Dictionary:
  var started := Time.get_ticks_usec()
  var terrain: Array[Dictionary] = []
  var objects: Array[Dictionary] = []
@@ -68,6 +69,10 @@ static func _compile(document: Resource, tuning: PhysicsTuning, controls: Playgr
  bumper_material.friction = 0.0
  bumper_material.bounce = 0.85
  var terrain_started := Time.get_ticks_usec()
+ var cuts: Array[Dictionary] = []
+ if not validated: cuts = TubeCut.footprints(document.gameplay_objects)
+ result.carved_terrain = baked_cuts.duplicate()
+ var floor_outlines: Array[PackedVector2Array] = []
  for index in document.placements.size():
   var placement: Dictionary = document.placements[index]
   var definition: Dictionary = Shapes.definition_for_placement(placement)
@@ -75,39 +80,19 @@ static func _compile(document: Resource, tuning: PhysicsTuning, controls: Playgr
   var anchor := Shapes.placement_position(placement) * float(document.cell_size)
   for point: Vector2 in Shapes.transformed_points(placement):
    points.append(point * float(document.cell_size) + anchor)
-  var body := StaticBody2D.new()
-  body.name = "Terrain_%d" % index
-  body.collision_layer = 1
-  body.collision_mask = 2
-  body.physics_material_override = wall_material
-  var collision: Node2D
-  if index < baked_shapes.size():
-   collision = Node2D.new()
-   for record: Dictionary in baked_shapes[index]:
-    var piece := CollisionShape2D.new()
-    piece.shape = record.shape
-    piece.transform = record.transform
-    body.add_child(piece)
-  elif definition.closed:
-   var polygon := CollisionPolygon2D.new()
-   polygon.build_mode = CollisionPolygon2D.BUILD_SOLIDS
-   polygon.polygon = points
-   collision = polygon
-  else:
-   # Concave segment pairs are two-sided wall surfaces, never an implicit solid.
-   # Only consecutive authored vertices are connected; endpoints remain open.
-   var segments := PackedVector2Array()
-   for point_index in range(points.size() - 1):
-    segments.append(points[point_index])
-    segments.append(points[point_index + 1])
-   var path := ConcavePolygonShape2D.new()
-   path.segments = segments
-   var segment_collision := CollisionShape2D.new()
-   segment_collision.shape = path
-   collision = segment_collision
-  body.add_child(collision)
-  act_root.add_child(body)
-  result.terrain.append({"shape_id": placement.shape_id, "points": points, "closed": definition.closed, "body": body, "collision": collision, "color": definition.color})
+  var contours: Array = [points]
+  if validated:
+   contours = baked_cuts.get(index, contours)
+  elif not cuts.is_empty():
+   contours = TubeCut.carve(points, definition.closed, cuts)
+   if contours.size() != 1 or contours[0] != points: result.carved_terrain[index] = contours
+  if not cuts.is_empty() or not baked_cuts.is_empty():
+   if definition.closed: floor_outlines.append(points)
+   else: floor_outlines.append_array(Geometry2D.offset_polyline(points, cell_size * 0.02, Geometry2D.JOIN_ROUND, Geometry2D.END_ROUND))
+  for contour: PackedVector2Array in contours:
+   _add_terrain(act_root, terrain, contour, definition.closed, placement.shape_id, definition.color, wall_material, baked_shapes)
+ # A cut through a perimeter wall opens the lane on the existing table footprint.
+ if not result.carved_terrain.is_empty(): result.floor_outlines = floor_outlines
  result.timings.terrain_ms = float(Time.get_ticks_usec() - terrain_started) / 1000.0
  var objects_started := Time.get_ticks_usec()
  result.launch_tubes = []
@@ -192,6 +177,41 @@ static func _compile(document: Resource, tuning: PhysicsTuning, controls: Playgr
  result.root = act_root
  result.timings.total_ms = float(Time.get_ticks_usec() - started) / 1000.0
  return result
+
+static func _add_terrain(act_root: Node2D, terrain: Array[Dictionary], points: PackedVector2Array, closed: bool, shape_id: String, color: Color, wall_material: PhysicsMaterial, baked_shapes: Array) -> void:
+ var body := StaticBody2D.new()
+ body.name = "Terrain_%d" % terrain.size()
+ body.collision_layer = 1
+ body.collision_mask = 2
+ body.physics_material_override = wall_material
+ var collision: Node2D
+ if terrain.size() < baked_shapes.size():
+  collision = Node2D.new()
+  for record: Dictionary in baked_shapes[terrain.size()]:
+   var piece := CollisionShape2D.new()
+   piece.shape = record.shape
+   piece.transform = record.transform
+   body.add_child(piece)
+ elif closed:
+  var polygon := CollisionPolygon2D.new()
+  polygon.build_mode = CollisionPolygon2D.BUILD_SOLIDS
+  polygon.polygon = points
+  collision = polygon
+ else:
+  # Concave segment pairs are two-sided wall surfaces, never an implicit solid.
+  # Only consecutive authored vertices are connected; endpoints remain open.
+  var segments := PackedVector2Array()
+  for point_index in range(points.size() - 1):
+   segments.append(points[point_index])
+   segments.append(points[point_index + 1])
+  var path := ConcavePolygonShape2D.new()
+  path.segments = segments
+  var segment_collision := CollisionShape2D.new()
+  segment_collision.shape = path
+  collision = segment_collision
+ body.add_child(collision)
+ act_root.add_child(body)
+ terrain.append({"shape_id": shape_id, "points": points, "closed": closed, "body": body, "collision": collision, "color": color})
 
 static func lane_barrier_body(placement: Dictionary, material: PhysicsMaterial) -> StaticBody2D:
  var body := StaticBody2D.new()

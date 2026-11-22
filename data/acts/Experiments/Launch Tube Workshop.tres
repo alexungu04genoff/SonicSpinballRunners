@@ -33,7 +33,7 @@ placements = [{
 }]
 gameplay_objects = [{
 "type": "launch_tube", "object_id": "workshop_tube", "position": Vector2(115, 515), "rotation_degrees": 0.0,
-"properties": {"points": PackedVector2Array(0, 0, 0, -170, 100, -245, 185, -345), "width": 40.0, "height": 80.0, "presentation": "exposed", "charge_seconds": 1.2, "min_speed": 80.0, "max_speed": 700.0, "resistance": 100.0, "return_speed": 300.0}
+"properties": {"points": PackedVector2Array(0, 0, 0, -170, 100, -245, 185, -345), "width": 40.0, "presentation": "exposed", "charge_seconds": 1.2, "return_speed": 300.0}
 }, {
 "type": "left_flipper", "object_id": "workshop_left", "position": Vector2(245, 555), "rotation_degrees": 18.334649444, "properties": {}
 }, {

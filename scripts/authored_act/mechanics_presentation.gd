@@ -27,6 +27,7 @@ func build(presenter: TablePresentation, runtime: Dictionary) -> void:
    "elevated_rail": await _rail(item)
    "launch_tube", "moving_bumper", "score_chute", "drop_target_bank", "slingshot", "one_way_gate", "switch_target", "wall_switch", "spring", "lane_barrier", "diverter", "dash_panel":
     var entry := Gimmicks.build(table, self, item)
+    if item.type == "launch_tube": await _tube_lane(entry)
     if item.type == "moving_bumper": table.bumper_visuals[descriptor.body.get_instance_id()] = entry.puck
     gimmicks.append(entry)
     Gimmicks.update(entry)
@@ -79,10 +80,35 @@ func _field(item: Dictionary) -> void:
   mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  fields.append({"arcs": arcs, "radius": radius, "repel": repel})
 
-func _rail(item: Dictionary) -> void:
- var path: Dictionary = item.path.duplicate()
- var width := float(item.properties.width) * table.SCALE
- var peak := float(item.properties.height)
+func _tube_lane(entry: Dictionary) -> void:
+ var path: Dictionary = entry.path
+ var width_pixels := float(entry.item.properties.width)
+ var width := width_pixels * table.SCALE
+ await _set_strip_edges(path, width_pixels)
+ var style := table.ramp_materials()
+ style.deck = Hardware.ramp_material(table, style.deck, "deck")
+ await _ramp_lane(entry.root, path, width, 0.0, 0.012, style)
+ if entry.item.properties.presentation == "tunnel":
+  var spring_line := float(entry.hub_height) - 0.012
+  for facet in 6:
+   var a := PI * facet / 6.0
+   var b := PI * (facet + 1) / 6.0
+   var edges := Vector2(-cos(a), -cos(b)) * 0.5
+   var heights := Vector2.ONE * spring_line + Vector2(sin(a), sin(b)) * width * 0.5
+   await _rail_strip(entry.root, path, width, 0.0, edges, heights, style.deck, "TunnelRoof")
+
+func _ramp_lane(root: Node3D, path: Dictionary, width: float, peak: float, thickness: float, style: Dictionary) -> void:
+ # Three meshes keep a readable deck, edge trim and real fascia/underside.
+ # All vertices follow the same elevation samples used by the physical ball.
+ await _rail_strip(root, path, width, peak, Vector2(-0.5, 0.5), Vector2.ZERO, style.deck, "Deck")
+ for side: float in [-1.0, 1.0]:
+  if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
+  var border: Material = style.get("border", style.edge)
+  await _rail_strip(root, path, width, peak, Vector2(side * 0.44, side * 0.54), Vector2(0.035, 0.035), border if border != null else style.edge, "EdgeCap", border != null and style.has("border"))
+  await _rail_strip(root, path, width, peak, Vector2(side * 0.54, side * 0.54), Vector2(-thickness, 0.035), style.get("fascia", style.support), "Fascia")
+  await _rail_strip(root, path, width, peak, Vector2(side * 0.44, side * 0.44), Vector2(0.0, 0.035), style.edge, "InnerEdge")
+
+func _set_strip_edges(path: Dictionary, width_pixels: float) -> void:
  # Bound the inside offset by local bend radius so wide strips cannot fold
  # over themselves. This is visual edging only; the authoritative route is unchanged.
  var inside := PackedFloat32Array()
@@ -95,9 +121,15 @@ func _rail(item: Dictionary) -> void:
    var turn := incoming.angle_to(outgoing)
    if absf(turn) > 0.0001:
     var radius := (incoming.length() + outgoing.length()) * 0.5 / absf(turn)
-    factor = signf(turn) * minf(1.0, radius * 0.8 / (float(item.properties.width) * 0.54))
+    factor = signf(turn) * minf(1.0, radius * 0.8 / (width_pixels * 0.54))
   inside.append(factor)
  path["inside_edge_scale"] = inside
+
+func _rail(item: Dictionary) -> void:
+ var path: Dictionary = item.path.duplicate()
+ var width := float(item.properties.width) * table.SCALE
+ var peak := float(item.properties.height)
+ await _set_strip_edges(path, float(item.properties.width))
  if path.get("terrain_ramp", false):
   await _terrain_ramp(item, path, width, peak)
   return
@@ -108,15 +140,7 @@ func _rail(item: Dictionary) -> void:
  var root := Node3D.new()
  root.name = "ElevatedRail_" + str(item.get("object_id", "route"))
  add_child(root)
- # Three meshes keep a readable deck, edge trim and real fascia/underside.
- # All vertices follow the same elevation samples used by the physical ball.
- await _rail_strip(root, path, width, peak, Vector2(-0.5, 0.5), Vector2.ZERO, style.deck, "Deck")
- for side: float in [-1.0, 1.0]:
-  if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
-  var border: Material = style.get("border", style.edge)
-  await _rail_strip(root, path, width, peak, Vector2(side * 0.44, side * 0.54), Vector2(0.035, 0.035), border if border != null else style.edge, "EdgeCap", border != null and style.has("border"))
-  await _rail_strip(root, path, width, peak, Vector2(side * 0.54, side * 0.54), Vector2(-thickness, 0.035), style.get("fascia",style.support), "Fascia")
-  await _rail_strip(root, path, width, peak, Vector2(side * 0.44, side * 0.44), Vector2(0.0, 0.035), style.edge, "InnerEdge")
+ await _ramp_lane(root, path, width, peak, thickness, style)
  await _rail_strip(root, path, width, peak, Vector2(0.54, -0.54), Vector2(-thickness, -thickness), style.support, "Underside")
  # Slim paired timber/metal/stone posts leave the lane center visually open.
  var distance := 50.0
@@ -185,7 +209,7 @@ func _terrain_ramp(item: Dictionary, path: Dictionary, width: float, peak: float
 func _rail_strip(parent: Node3D, path: Dictionary, width: float, peak: float, edges: Vector2, offsets: Vector2, material: Material, label: String, contour_texture := false) -> void:
  contour_texture = contour_texture or bool(material.get_meta("route_strip_uv",false))
  var tread_stations := PackedFloat32Array()
- if label == "Deck" and material.has_meta("playing_card_lane"):
+ if label in ["Deck", "TunnelRoof"] and material.has_meta("playing_card_lane"):
   # Printed cards use the length over the crest, including the change in height.
   tread_stations.append(0.0)
   var previous_height := 0.0

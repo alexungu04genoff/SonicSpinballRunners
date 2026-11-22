@@ -141,6 +141,7 @@ func _build(theme_id: String, id: int) -> void:
   # was never used by disk-only play and duplicated data in every sidecar.
   baked.geometry_job_count = p.computed_jobs
   baked.collisions = shapes[id]
+  baked.carved_terrain = runtimes[id].carved_terrain
   baked.physics_validated = true
   baked.visual_recipe = recipe
   _assets.share(recipe)

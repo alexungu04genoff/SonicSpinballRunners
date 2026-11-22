@@ -32,6 +32,8 @@ func capture(path: String) -> void:
 
 func run() -> void:
  root.size = Vector2i(1440, 1000)
+ preload("res://scripts/diagnostics/shadow_review.gd").position_review_window(root)
+ print("Tube review screen ", root.current_screen, " at ", DisplayServer.screen_get_position(root.current_screen))
  var output := "res://test-results/launch-tube/presentation"
  DirAccess.make_dir_recursive_absolute(output)
  var themes: Array = Fixture.Registry.IDS.duplicate()

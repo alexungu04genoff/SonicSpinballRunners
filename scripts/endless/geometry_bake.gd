@@ -12,6 +12,8 @@ const DEPENDENCIES := ["res://scripts/presentation.gd", "res://scripts/themes/th
 @export var theme_id := ""
 @export var geometry_job_count := 0
 @export var collisions: Array = []
+## Only intersected placements need replacement contours. A fully cut wall has none.
+@export var carved_terrain: Dictionary = {}
 @export var physics_validated := false
 @export var visual_recipe: Resource
 @export var environment: Environment
@@ -77,7 +79,16 @@ static func theme_path(theme: String) -> String:
  return "res://data/endless/themes.bake/" + theme + ".res"
 
 func has_validated_collisions(document: Resource) -> bool:
- if not physics_validated or collisions.size() != document.placements.size(): return false
+ if not physics_validated: return false
+ var contour_count: int = document.placements.size()
+ for index: Variant in carved_terrain:
+  if not index is int or index < 0 or index >= document.placements.size(): return false
+  var contours: Variant = carved_terrain[index]
+  if not contours is Array: return false
+  for points: Variant in contours:
+   if not points is PackedVector2Array or points.size() < 2: return false
+  contour_count += contours.size() - 1
+ if collisions.size() != contour_count: return false
  for pieces: Variant in collisions:
   if not pieces is Array or pieces.is_empty(): return false
   for piece: Variant in pieces:

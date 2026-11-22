@@ -747,4 +747,11 @@ static func _decode_object_properties(document: Resource) -> String:
     var decoded: Variant = _decode_numeric_payload(payload)
     if decoded == null: return "Invalid stored gameplay property: " + str(key)
     item.properties[key] = decoded
+  if item.get("type") == "launch_tube" and item.properties.has("height"):
+   # The retired rise identifies tubes saved by the elevated-tube editor.
+   # Upgrade its exact factory tune once and retain each custom tune verbatim.
+   item.properties.erase("height")
+   if item.properties.get("min_speed", 80.0) == 80.0 and item.properties.get("max_speed") == 700.0 and item.properties.get("resistance", 100.0) == 100.0:
+    item.properties.erase("max_speed")
+    item.properties.erase("resistance")
  return ""

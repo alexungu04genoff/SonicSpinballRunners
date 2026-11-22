@@ -65,8 +65,14 @@ func run() -> void:
  check(is_equal_approx(shots[0].velocity.length(), 170.0) and is_equal_approx(shots[1].velocity.length(), 200.0), "Bumper min/max use base Sonic rebound")
  var path := Preview.trajectory(shots[0])
  check(path[0].is_equal_approx(shots[0].origin) and is_equal_approx(path[-1].y, path[0].y), "Ballistic flight returns to launch height")
+ var tube_shots := Preview.shots(Objects.make_placement("launch_tube"), 50.0)
+ check(tube_shots[0].has("path") and tube_shots[1].has("velocity") and tube_shots[2].has("velocity"), "Default tube guide shows weak rollback and two successful exits")
+ check(tube_shots[2].velocity.length() < 410.0 and tube_shots[2].velocity.length() > tube_shots[1].velocity.length(), "The full-charge guide includes tube resistance")
  var scene: Control = load("res://scenes/act_geometry_editor.tscn").instantiate()
  root.add_child(scene)
+ # Startup can restore the last edited Act. Brush checks require an empty draft.
+ scene.new_document()
+ scene.workspace_tools.autosave_enabled.set_pressed_no_signal(false)
  for dimensions in [Vector2i(1280, 900), Vector2i(1920, 1080)]:
   root.size = dimensions
   await process_frame

@@ -140,7 +140,7 @@ static func new_id() -> String:
 static func defaults(type: String) -> Dictionary:
  match type:
   "sonic_loop": return {"scale": 1.0, "direction": "clockwise", "completion_score": LoopPath.POINTS, "entry_speed": 240.0, "ring_reward": 3.0, "ring_markers": true}
-  "launch_tube": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(0, -140), Vector2(100, -240), Vector2(140, -340)]), "width": 40.0, "height": 80.0, "presentation": "exposed", "charge_seconds": 1.2, "min_speed": 80.0, "max_speed": 700.0, "resistance": 100.0, "return_speed": 300.0, "feedback_strength": 1.0}
+  "launch_tube": return {"points": PackedVector2Array([Vector2.ZERO, Vector2(0, -140), Vector2(100, -240), Vector2(140, -340)]), "width": 40.0, "presentation": "exposed", "charge_seconds": 1.2, "min_speed": 80.0, "max_speed": 410.0, "resistance": 55.0, "return_speed": 300.0, "feedback_strength": 1.0}
   "left_flipper", "right_flipper": return {"length_multiplier": 1.0}
   "teleporter": return {"radius": 18.0, "exit_x": 150.0, "exit_y": 0.0, "exit_angle": 0.0}
   "drop_target_bank": return {"target_count": 5.0, "spacing": 32.0, "target_size": 22.0, "color": "green", "completion_bonus": 500.0, "reset_delay": 0.0}
@@ -211,7 +211,7 @@ static func scaled_properties(item: Dictionary, factor: float) -> Dictionary:
   "buzz_bomber": ["scale", "patrol_left", "patrol_right"],
   "drop_target_bank": ["spacing", "target_size"], "diverter": ["length"],
   "teleporter": ["radius", "exit_x", "exit_y"], "magnetic_field": ["radius"],
-  "lane_barrier": ["post_radius"], "elevated_rail": ["width", "height"], "launch_tube": ["width", "height"]
+  "lane_barrier": ["post_radius"], "elevated_rail": ["width", "height"], "launch_tube": ["width"]
  }.get(item.type, ["width"])
  for key: String in dimensions: props[key] = float(props[key]) * factor
  if item.type in ["elevated_rail", "lane_barrier", "launch_tube"]:
@@ -223,7 +223,7 @@ static func scaled_properties(item: Dictionary, factor: float) -> Dictionary:
 static func property_limits(type: String) -> Dictionary:
  match type:
   "sonic_loop": return {"scale": [0.5, 2.5], "completion_score": [0.0, 1000000.0], "entry_speed": [100.0, 1000.0], "ring_reward": [0.0, 10.0]}
-  "launch_tube": return {"width": [24.0, 120.0], "height": [0.0, 200.0], "charge_seconds": [0.2, 4.0], "min_speed": [20.0, 500.0], "max_speed": [100.0, 1600.0], "resistance": [10.0, 600.0], "return_speed": [60.0, 800.0], "feedback_strength": [0.0, 1.0]}
+  "launch_tube": return {"width": [24.0, 120.0], "charge_seconds": [0.2, 4.0], "min_speed": [20.0, 500.0], "max_speed": [100.0, 1600.0], "resistance": [10.0, 600.0], "return_speed": [60.0, 800.0], "feedback_strength": [0.0, 1.0]}
   "left_flipper", "right_flipper": return {"length_multiplier": [0.25, 4.0]}
   "teleporter": return {"radius": [10.0, 60.0], "exit_x": [-10000.0, 10000.0], "exit_y": [-10000.0, 10000.0], "exit_angle": [-180.0, 180.0]}
   "drop_target_bank": return {"target_count": [2.0, 12.0], "spacing": [16.0, 80.0], "target_size": [10.0, 50.0], "completion_bonus": [0.0, 100000.0], "reset_delay": [0.0, 60.0]}

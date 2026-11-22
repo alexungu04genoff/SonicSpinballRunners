@@ -122,8 +122,8 @@ func _apply_roll_settings() -> void:
 
 func _process(delta: float) -> void:
  var ball: PlaygroundBall = presenter.ball
- var speed := absf(ball.track_speed) if ball.has_track_frame else ball.linear_velocity.length()
- var exposure := 0.0 if ball.serve_pending else smoothstep(5.0, 32.0, speed / ball.radius)
+ var speed: float = absf(ball.track_speed) if ball.has_track_frame and not ball.serve_pending else presenter.roll_velocity().length()
+ var exposure := smoothstep(5.0, 32.0, speed / ball.radius)
  runners_roll.set_instance_shader_parameter("roll_exposure", exposure * float(settings.blur))
  var elapsed := delta if is_inside_tree() and not get_tree().paused else 0.0
  if trailing_tails and trailing_tails.visible:

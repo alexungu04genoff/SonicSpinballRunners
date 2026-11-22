@@ -22,6 +22,11 @@ func configure(values: Dictionary) -> void:
  properties = values.duplicate(true)
  path = Path.build(properties.points)
 
+## Visual rolling speed while the constrained body has zero physics velocity.
+func roll_velocity() -> Vector2:
+ var rolling_speed := charge * float(properties.max_speed) if phase == Phase.CHARGING else speed
+ return global_transform.basis_xform(Path.tangent(path, distance)).normalized() * rolling_speed
+
 func dock_position() -> Vector2:
  return to_global(Path.sample(path, 0.0))
 
@@ -90,7 +95,6 @@ func integrate(state: PhysicsDirectBodyState2D, delta: float) -> void:
  ball.steering_acceleration_applied = 0.0
  ball.steering_impulse_applied = 0.0
  ball.steering_block_reason = "Contained in Launch Tube"
- ball.ramp_height = Path.height(path, distance, float(properties.height)) if properties.presentation == "exposed" else 0.0
  if phase == Phase.OUTBOUND and distance >= float(path.length):
   var direction := global_transform.basis_xform(Path.tangent(path, path.length)).normalized()
   if exit_is_clear(point, direction):

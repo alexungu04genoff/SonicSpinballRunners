@@ -91,7 +91,9 @@ func build_authored(runtime: Dictionary, bounds: Rect2, cell_size: float) -> voi
  # The deck runs beneath the outer walls, with no exterior rectangular shelf.
  # This is a visual footprint only; it never fills or alters physical geometry.
  var floor_bounds := Rect2(bounds.position, bounds.size - Vector2(0, cell_size * AuthoredActData.RED_GUTTER_CELLS))
- authored_floor_outline = _authored_floor_boundary(floor_bounds)
+ var floor_outlines: Array[PackedVector2Array] = []
+ floor_outlines.assign(runtime.get("floor_outlines", []))
+ authored_floor_outline = _authored_floor_boundary(floor_bounds, floor_outlines)
  var floor_root := Node3D.new()
  floor_root.name = "AuthoredPlayfieldFloor"
  terrain_root.add_child(floor_root)

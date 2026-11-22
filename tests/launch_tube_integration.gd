@@ -58,13 +58,28 @@ func prepare() -> void:
  tunnel.gameplay_objects[0].properties.presentation = "tunnel"
  check(tunnel.save_document(TUNNEL) == OK, "Tunnel fixture saves through the ordinary Act format")
 
-func launch(game: Node) -> void:
+func hits_terrain(game: Node, point: Vector2) -> bool:
+ var query := PhysicsPointQueryParameters2D.new()
+ query.position = game.active.plan.offset + point
+ query.collision_mask = 1
+ return not game.ball.get_world_2d().direct_space_state.intersect_point(query, 1).is_empty()
+
+func check_moving_roll(game: Node, phase: String) -> void:
+ var angle: float = game.character.roll_angle
+ await frames(2)
+ check(not is_equal_approx(angle, game.character.roll_angle) and game.ball.linear_velocity.is_zero_approx(), "%s animates during %s while physically contained" % [game.character.character_id, phase])
+
+func launch(game: Node, check_character := false) -> void:
  game.controls.virtual_launch = false
  await frames(3)
  game.controls.virtual_launch = true
  var tube: Node = game.ball.launch_tube
  check(await until(func(): return tube.charge >= 0.98), "Player-controlled hold charges the active tube")
+ if check_character: await check_moving_roll(game, "charge")
  game.controls.virtual_launch = false
+ if check_character:
+  check(await until(func(): return tube.phase == tube.Phase.OUTBOUND), "Launch enters traversal")
+  await check_moving_roll(game, "outbound travel")
  check(await until(func(): return not tube.contained), "Player release exits into ordinary gameplay")
 
 func prototype_check() -> void:
@@ -87,6 +102,9 @@ func prototype_check() -> void:
  var tube: Node = game.ball.launch_tube
  check(is_instance_valid(tube) and tube.contained and game.ball.serve_pending, "Prototype initially docks instead of auto-launching")
  check(game.library.fallback_builds == 0 and game.library.visual_bake_hits == 1, "Prototype uses the current disk recipe with zero fallback")
+ await frames(2)
+ check(not hits_terrain(game, Vector2(115, 348)), "The baked bore cuts through the Workshop wall collision")
+ check(hits_terrain(game, Vector2(75, 348)) and hits_terrain(game, Vector2(155, 348)), "Both terrain banks still collide beside the lane")
  check(not game.ring_field.scoring_enabled and not game._accept_scoring(game.active_scoring_id), "Contained Prototype suppresses ring and gameplay scoring")
  check(not game.specials.can_use(), "Contained Prototype cannot use a character action")
  game.controls.virtual_enabled = false
@@ -102,9 +120,10 @@ func prototype_check() -> void:
  check(await until(func(): return tube.charge >= 0.15), "The real Prototype X binding holds a charge")
  key(KEY_X, false)
  check(await until(func(): return tube.phase == tube.Phase.RETURNING), "Releasing the real X binding fires a weak rollback")
+ await check_moving_roll(game, "rollback")
  check(await until(func(): return tube.phase == tube.Phase.DOCKED), "Real keyboard weak launch re-docks safely")
  game.controls.virtual_enabled = true
- await launch(game)
+ await launch(game, true)
  check(game.ring_field.scoring_enabled and game._accept_scoring(game.active_scoring_id), "Successful exit restores scoring")
  game.ball.freeze = true
  game.set_physics_process(false)
@@ -131,7 +150,8 @@ func prototype_check() -> void:
  game.controls.virtual_launch = false
  await frames(5)
  check(tube.contained and tube.charge == 0.0 and not tube.require_release, "Release after death only arms a fresh charge")
- await launch(game)
+ game.specials.select_character("tails")
+ await launch(game, true)
  game.ball.freeze = true
  manager._activate_switch(manager.by_id.workshop_switch)
  check(game.score == score, "Preserved switch does not pay a duplicate reward after relaunch")

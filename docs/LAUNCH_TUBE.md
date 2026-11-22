@@ -6,7 +6,7 @@ Confirmed direction: an authored launch object, absent from all existing product
 
 Open the experimental Act in **Act Geometry Editor**, or choose **Gameplay → Launch Tube (optional)**. Click the dock and route points, then press Enter. Select the tube and enable **Edit path points** to drag points; Shift-click inserts and right-click removes. The first point is the dock and the final tangent is the exit direction. Place the dock at Spawn and leave the exit plus one ball diameter ahead clear. Invalid numeric values and degenerate paths are rejected through the usual Act validation.
 
-The route may cross terrain. It does not cut, lower, rebuild or otherwise modify terrain. **Exposed** uses an open faceted cradle with a configurable visual rise; **Tunnel** uses a closed shell at table height. Both modes use identical authoritative 2D traversal. No terrain geometry belongs to the tube.
+Both modes cut a lane at table height through solid terrain and open walls. The compiler derives the visible banks and 2D collisions from the same cut. Moving or deleting the tube restores the underlying authored terrain on the next play or bake. **Exposed** leaves the textured ramp deck visible. **Tunnel** covers it with a faceted arch using the same stage material.
 
 Undo/Redo, shared snapping, exact transforms, H/V mirrors, copy/paste, duplicate, assemblies and save/reopen use the existing editor paths and format 19. Scaling changes the path and presentation dimensions without silently changing launch speed. Copies receive independent identities. If several tubes exist, the dock nearest the active Act's Spawn owns serving and retry; ties use authored order. Other tubes never capture a moving ball. This supports reusable assemblies without inventing a new route-selection mechanic.
 
@@ -26,21 +26,20 @@ Only the active Act's runtime supplies a retry dock. Streamed Acts instantiate t
 
 ## Presentation and tuning
 
-The collisionless model uses the existing eight-theme mechanism palette: a faceted shell, sparse collars, eight charge indicators, dock compression/spin, one traversal pulse and one brief exit ring. It adds no dynamic lights or particles, and does not change theme artwork, atmosphere defaults or Theme Life choices. Disk recipes use the existing mechanic binding/retirement infrastructure.
+The deck and edge trim use the active stage’s ramp materials. Dock and exit collars, eight charge indicators, a traversal pulse and a brief exit ring use the mechanism palette. Sonic and Tails spin up while charging and roll along the path in either direction. It adds no dynamic lights or particles, and does not change theme artwork, atmosphere defaults or Theme Life choices. Disk recipes use the existing mechanic binding/retirement infrastructure.
 
 Starting values are deliberately configurable, not final feel decisions:
 
 | Property | Default | Meaning |
 | --- | ---: | --- |
 | Charge seconds | 1.2 | Hold duration for full charge |
-| Minimum / maximum speed | 80 / 700 px/s | Initial traversal speed range |
-| Resistance | 100 px/s² | Outbound deceleration |
+| Minimum / maximum speed | 80 / 410 px/s | Initial traversal speed range |
+| Resistance | 55 px/s² | Outbound deceleration |
 | Return speed | 300 px/s | Rollback speed limit |
-| Width | 40 px | Presentation width |
-| Height | 80 px | Exposed visual rise; Tunnel stays at table height |
+| Width | 40 px | Deck width. The cut includes the ramp’s edge trim. |
 | Feedback strength | 1.0 | 0–1; reduces motion/effect size, with 0 disabling charge indicators, pulse, burst and dock animation |
 
-Tomorrow's human review is limited to charge pace, the medium/full speed spread and feedback/readability in motion. Automated checks establish mechanics and persistence; they do not establish game feel.
+Older saved tubes with the original 80 / 700 px/s and 100 px/s² factory tune adopt the new defaults on load. Custom speed and resistance settings persist. Playtest the medium/full speed spread and feedback in motion. Automated checks establish mechanics and persistence; they do not establish game feel.
 
 ## Verification entry points
 
