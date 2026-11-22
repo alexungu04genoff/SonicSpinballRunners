@@ -4,8 +4,15 @@ const LOCAL_SET := "res://experiments/visual_lab/local/runtime/sonic_runners_pos
 const CURLS := {"sonic": "sn_ball_loop", "tails": "tl_jump_ball_loop"}
 const FLIGHT := "tl_jump_bunk_loop"
 const DASH_RING := {"sonic": "sn_dashring_loop", "tails": "tl_dashring_loop"}
-const BOOST := {"sonic": "sn_boost_loop", "tails": "tl_boost_loop"}
+const BOOST := {"sonic": "sn_boost_loop", "tails": "tl_boost_loop", "shadow": "sh_boost_loop"}
+const BOOST_SPEED := 1.5
+# RunSpeed = 0.6 is the first full Boost sample in each original Unity blend tree.
+const BOOST_ENTRY_RATE := {"sonic": 3.0, "tails": 3.0, "shadow": 2.8}
+const SHADOW_FIT := "res://experiments/visual_lab/local/runtime/shadow_boost_fit.json"
 const TAIL_WEAVE_DURATION := 8.0 / 60.0
+
+static func playback_speed(id: String, clip: String, boost_scale: float) -> float:
+ return float(BOOST_ENTRY_RATE[id]) * boost_scale if BOOST.get(id) == clip else 1.0
 
 static func trick_names(id: String) -> Array:
  var prefix := "tl" if id == "tails" else "sn"

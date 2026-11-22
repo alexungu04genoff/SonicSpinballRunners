@@ -1,10 +1,12 @@
 # Shared character type actions V1
 
-Confirmed direction, 2026-11-04: a character is a shared Type Action plus its existing physics profile. Sonic and Shadow use **Speed · Target Dash**, Tails uses **Fly · Flight**, and Knuckles uses **Power · Table Smash**. No signatures, Team Tags, new characters, Buddy redesign or Scorecraft rebalance are included. Authored Acts are unchanged.
+Confirmed direction, 2026-11-04: a character is a shared Type Action plus its existing physics profile. Sonic and Shadow use **Speed · Target Boost**, Tails uses **Fly · Flight**, and Knuckles uses **Power · Table Smash**. No signatures, Team Tags, new characters, Buddy redesign or Scorecraft rebalance are included. Authored Acts are unchanged.
 
 `CharacterDefinition` retains identity, colors, profile and charge rules. Its `type_action` references one resource in `data/types/`; both Speed characters reference the same resource. `TypeAction` owns the type, action label, description and tuning. `CharacterSpecials` dispatches by type, never by character name. Future Fly characters can reference `fly.tres` without another ability implementation.
 
-## Speed: Target Dash
+## Speed: Target Boost
+
+Sonic and Shadow uncurl into their own Sonic Runners boost animations during the guided approach. Their feet face the table and their heading turns around its normal to follow the live target. At the default 1.5× setting, the 1⅓-second source clip completes in 0.30 seconds for Sonic and 0.32 seconds for Shadow. The original Runners controllers play the raw clip at 3× and 2.8× respectively upon entering Boost. Physical contact or cancellation restores the roll. With the painted character art, a tapered wake points away from the target. The F8 preview inherits the active clip and target heading.
 
 Acquisition preserves the existing full-ball clear-path checks and fresh combo-builder priority, choosing the nearest eligible target within each priority class. Valid targets are active-Act round/triangle bumpers and living enemies. Very close targets no longer have the old 55-pixel exclusion. A failed acquisition keeps the meter.
 
@@ -45,7 +47,7 @@ All eleven passed locally on Godot 4.7.2; authored gameplay also passed 72 check
 
 Manual checks for Alex:
 
-1. Replay the same Act as Sonic, then Shadow. Both should show Speed · Target Dash and use identical action tuning; their normal profile feel remains different.
+1. Replay the same Act as Sonic, then Shadow. Both should show Speed · Target Boost and use identical action tuning; their normal profile feel remains different.
 2. Dash at a barely separated bumper/enemy, a medium target and a near-400 px target. Try moving toward and away, a closing/blocked route and a target beside a drain. Look for bounded approach, one cash-out and readable recoil.
 3. Use Flight during a fall, steer both ways, pause/resume and drain/retry. Check rescue usefulness and smooth return to normal gravity/control.
 4. Smash while stationary near Rings, enemies and bumpers. Check immediate reactions and no remote recharge. Switches, Drop Targets and directional mechanisms must remain unchanged.

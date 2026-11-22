@@ -131,7 +131,7 @@ func activate() -> bool:
   homing_direction = offset.normalized()
   homing_remaining = action.dash_duration(offset.length(), -game.ball.linear_velocity.dot(homing_direction))
   _dash_exit_pending = false
-  feedback = "TARGET DASH — physical contact cashes out the combo"
+  feedback = "TARGET BOOST — physical contact cashes out the combo"
   homing_started.emit(pending_target, homing_direction)
  elif action.kind == TypeAction.Kind.FLY:
   flight_remaining = action.flight_duration
@@ -175,7 +175,7 @@ func integrate_guidance(state: PhysicsDirectBodyState2D) -> void:
  var offset: Vector2 = pending_target.global_position - state.transform.origin
  if homing_remaining == 0.0 or offset.length() > action.target_range * 1.5:
   clear_homing("Expired")
-  feedback = "Target Dash ended — no bonus"
+  feedback = "Target Boost ended — no bonus"
   return
  # Revalidate a moving/closing route using the full ball, never steer through walls.
  var query := PhysicsTestMotionParameters2D.new()
@@ -189,7 +189,7 @@ func integrate_guidance(state: PhysicsDirectBodyState2D) -> void:
  homing_direction = offset.normalized()
  var contact_radius: float = game.ball.radius + (12.0 if enemy else game.playfield.bumper_radius(pending_target))
  state.linear_velocity = action.guided_velocity(state.linear_velocity, offset, contact_radius, state.step)
- game.ball._reset_steering("Target Dash")
+ game.ball._reset_steering("Target Boost")
 
 func finish_guidance(state: PhysicsDirectBodyState2D) -> void:
  if not _dash_exit_pending: return
@@ -202,7 +202,7 @@ func finish_guidance(state: PhysicsDirectBodyState2D) -> void:
   velocity += _dash_exit_direction * maxf(0.0, action.dash_contact_speed - outward)
  state.linear_velocity = velocity.limit_length(action.dash_exit_speed)
  _dash_exit_direction = Vector2.ZERO
- game.ball._reset_steering("Target Dash exit")
+ game.ball._reset_steering("Target Boost exit")
 
 func _area_contains(_source: String, origin: Vector2, point: Vector2) -> bool:
  return origin.distance_squared_to(point) <= pow(clampf(action.smash_radius, 0.0, 600.0), 2)
@@ -238,7 +238,7 @@ func hit_multiplier(body: Node2D) -> int:
  if homing_remaining > 0.0 and is_instance_valid(pending_target) and body == pending_target:
   _dash_exit_direction = -homing_direction
   clear_homing("Hit")
-  feedback = "TARGET DASH HIT! Combo cashed out"
+  feedback = "TARGET BOOST HIT! Combo cashed out"
   special_hit.emit(body, 5)
   return 5 # Existing Scorecraft cash-out marker, not a new 5x multiplier.
  return 1

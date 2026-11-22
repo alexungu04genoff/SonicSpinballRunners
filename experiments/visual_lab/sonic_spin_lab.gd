@@ -61,7 +61,7 @@ func _ready() -> void:
  panel.add_theme_constant_override("separation", 8)
  scroll.add_child(panel)
  pose = game.combo_celebration.character_pose
- roll_clip = Assets.CURLS[pose.character]
+ roll_clip = Assets.CURLS.get(pose.character, "")
  trick_names = Assets.trick_names(pose.character)
  _build_stage()
  _load_models()
@@ -107,9 +107,8 @@ func _load_models() -> void:
    trailing_tails = pose.trailing_tails.duplicate()
    pivot.add_child(trailing_tails)
   tricks = pose.tricks
-  var bake: Dictionary = curl.mesh.get_meta("bake", {})
-  source_radius = bake.get("runners_source_radius", 1.0)
-  centers = bake.get("preview_centers", {})
+ source_radius = pose.motion_fit.get("runners_source_radius", 1.0)
+ centers = pose.motion_fit.get("preview_centers", {})
  rig = Assets.animated_scene(pose.character)
  if rig != null:
   art.add_child(rig)
@@ -127,7 +126,7 @@ func _label(parent: Control, caption: String, size_px := 16) -> Label:
  return label
 
 func _build_controls() -> void:
- _label(panel, "%s spin preview" % pose.character.capitalize(), 24)
+ _label(panel, "Shadow boost preview" if pose.character == "shadow" else "%s spin preview" % pose.character.capitalize(), 24)
  _label(panel, "Animation")
  panel.add_child(picker)
  var clips := {}
@@ -137,6 +136,7 @@ func _build_controls() -> void:
   clips[clip] = CLIPS[sonic_clip]
   if clip == roll_clip and pose.character == "tails": clips[Assets.FLIGHT] = "Flight"
  if pose.character == "tails": clips["tl_jump_cannonball_loop"] = "Cannonball"
+ if pose.character == "shadow": clips = {Assets.BOOST.shadow: "Boost"}
  for clip: String in clips:
   if clip == roll_clip or (clip in trick_names and not tricks.is_empty()) or (player and player.has_animation(clip)):
    picker.add_item(clips[clip])
@@ -152,6 +152,7 @@ func _build_controls() -> void:
  _slider("ball", "Ball shell size", 0.25, 2.0, 0.01)
  _slider("blur", "Spin blur", 0.0, 1.0, 0.01)
  _slider("speed", "Spin speed", 0.0, 8.0, 0.05)
+ _slider("boost", "Boost speed", 0.25, 3.0, 0.05)
  _slider("opacity", "Shell opacity", 0.0, 1.0, 0.01)
  shell_on_poses.text = "Show shell on other animations"
  panel.add_child(shell_on_poses)
@@ -171,7 +172,7 @@ func _build_controls() -> void:
  resume.pressed.connect(func(): resume_requested.emit())
  hint = _label(panel, "", 14)
  hint.modulate = Color("#afd3df")
- if curl == null or picker.item_count < clips.size():
+ if (not roll_clip.is_empty() and curl == null) or picker.item_count < clips.size():
   var note := _label(panel, "Available clips depend on the local Runners model and pose bake.", 14)
   note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
@@ -235,6 +236,10 @@ func _update_preview() -> void:
  if curl: curl.set_instance_shader_parameter("roll_exposure", sliders.blur.value)
  sliders.blur.editable = rolling and curl != null
  sliders.speed.editable = rolling
+ var boosting: bool = active_clip == Assets.BOOST[pose.character]
+ sliders.boost.get_parent().visible = boosting
+ sliders.speed.get_parent().visible = not boosting
+ if player: player.speed_scale = Assets.playback_speed(pose.character, active_clip, sliders.boost.value)
  var values := {}
  for id: String in Pose.DEFAULTS: values[id] = sliders[id].value
  pose.apply_settings(values)
@@ -317,15 +322,14 @@ func _orient_model() -> void:
   # The two exterior tails share the heading. Only the shell and body spin.
   frame = game.character.spin_root.basis.orthonormalized()
   if trailing_tails: Assets.sample_roll_tails(trailing_tails, tail_time)
- elif active_clip == Assets.DASH_RING[pose.character]:
+ elif active_clip == Assets.DASH_RING.get(pose.character):
   var direction: Vector2 = pose.motion_direction if pose.motion == &"spring" else Vector2.UP
   frame = Pose.spring_basis(orbit, pivot.global_position, direction)
- elif pose.motion == &"loop" and active_clip == Assets.BOOST[pose.character]:
-  frame = pose.motion_rig.global_basis.orthonormalized()
+ elif active_clip == Assets.BOOST[pose.character]:
+  frame = pose.motion_rig.global_basis.orthonormalized() if pose.motion in [&"loop", &"target_boost", &"dash_panel"] else game.character.flat_roll_frame(game.character.roll_heading)
  else:
   var side := 0.0
   if active_clip == Assets.FLIGHT: side = flight_heading.x
-  elif pose.motion == &"dash_panel" and active_clip == Assets.BOOST[pose.character]: side = pose.motion_direction.x
   frame = Pose.player_facing_basis(orbit, side)
  pivot.global_basis = frame.scaled(Vector3.ONE * pose.radius)
  # Lift in table space even when the camera is looking straight down.
@@ -334,10 +338,11 @@ func _orient_model() -> void:
   lift = Pose.trick_lift(art.global_basis, held.mesh.get_aabb(), pose.radius)
  elif rig and rig.visible:
   var half_height := -rig.position.y * art.global_basis.get_scale().y
-  if pose.motion == &"loop" and active_clip == Assets.BOOST[pose.character]:
-   art.global_position = pivot.global_position + frame.y * maxf(0.0, half_height - pose.radius)
+  if active_clip == Assets.BOOST[pose.character]:
+   var offset := half_height - pose.radius
+   art.global_position = pivot.global_position + frame.y * (maxf(0.0, offset) if pose.motion == &"loop" else offset)
    return
-  var airborne := active_clip in [Assets.FLIGHT, Assets.DASH_RING[pose.character], Assets.BOOST[pose.character]]
+  var airborne := active_clip in [Assets.FLIGHT, Assets.DASH_RING.get(pose.character)]
   lift = Pose.flight_lift(half_height, pose.radius) if airborne else maxf(0.0, half_height - pose.radius * 0.82)
  art.global_position = pivot.global_position + Vector3.UP * lift
 

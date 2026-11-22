@@ -18,9 +18,11 @@ The baker reads `experiments/visual_lab/local/runners-decomp/sonic/Sonic Runners
 
 ### Springs, dash panels and Loops
 
-An upward spring plays Sonic’s `sn_dashring_loop` or Tails’s `tl_dashring_loop` until the Ball reaches its apex. The model points along the projected shot and turns 90% toward the camera. Each dash panel starts a fresh second of `sn_boost_loop` or `tl_boost_loop`. A Loop picks up the running stride at entry. The character follows the tangent, with feet toward the running surface, through the crest and any rollback. Releasing the Ball restores the curl. These animations use their native playback speed.
+An upward spring plays Sonic’s `sn_dashring_loop` or Tails’s `tl_dashring_loop` until the Ball reaches its apex. The model points along the projected shot and turns 90% toward the camera. Each dash panel starts a fresh second of `sn_boost_loop` or `tl_boost_loop`. A Loop picks up the running stride at entry. The character follows the tangent, with feet toward the running surface, through the crest and any rollback. Releasing the Ball restores the curl. Boost defaults to 1.5× the original Runners boost-entry pace during the Speed special, dash panels, Loops and F8 inspection. Select Boost in F8 to adjust **Boost speed** independently of the curl. One unit equals 3× the raw clip for Sonic and Tails, or 2.8× for Shadow, matching their Unity controllers at RunSpeed 0.6. Resume keeps the rate for the active character. On the flat table, the original stride stays upright, with its floor at the playing surface. The spring ring dash uses its native speed.
 
 ### Inspect on the table
+
+For the Speed special, Sonic uses `sn_boost_loop` and Shadow uses `sh_boost_loop` from their respective local Runners GLBs. Put Shadow's extracted rig at `experiments/visual_lab/local/runners-decomp/shadow/Shadow Runners - original animations.glb`. Run the same Blender bake command above with `-- shadow` to measure his curl radius and boost center. It writes `local/runtime/shadow_boost_fit.json`. The animated models and their captures stay local.
 
 Press **F8** during a Sonic or Tails run or choose the character's spin preview from Pause. Both launchers open the same panel in Clover Scoop. Gameplay pauses at the current Ball position with the table's lighting and Retro settings. Drag outside the panel to orbit, scroll to zoom from 0.5× to 10×, or press C / Shift+C to cycle through the four gameplay cameras. [Sonic Spin Lab](<../../Sonic Spin Lab.cmd>) · [Tails Spin Lab](<../../Tails Spin Lab.cmd>)
 

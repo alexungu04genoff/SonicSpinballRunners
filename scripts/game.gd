@@ -506,8 +506,8 @@ func scoring_feedback_text() -> String:
  if scorecraft.feedback_remaining <= 0.0 or scorecraft.last_award.is_empty(): return ""
  var award: Dictionary = scorecraft.last_award
  var label: String = {"ring_rack": "RING RACK COMPLETE", "switch_bank": "SWITCH BANK COMPLETE", "spinner_goal": "SPINNER BONUS", "lane_set": "LANE SET COMPLETE"}.get(award.kind, String(award.kind).replace("_", " ").to_upper())
- if not String(award.ability).is_empty(): label = ("TARGET DASH" if award.ability == "homing" else String(award.ability).replace("_", " ").to_upper()) + " " + label
- elif int(award.special_bonus) > 0: label = "TARGET DASH"
+ if not String(award.ability).is_empty(): label = ("TARGET BOOST" if award.ability == "homing" else String(award.ability).replace("_", " ").to_upper()) + " " + label
+ elif int(award.special_bonus) > 0: label = "TARGET BOOST"
  return "%s +%d%s" % [label, int(award.total), " ×%d" % int(award.multiplier) if int(award.multiplier) > 1 else ""]
 
 func _on_mechanic_score(kind: StringName, object_id: String, points: int, owner_id: String = "") -> void:

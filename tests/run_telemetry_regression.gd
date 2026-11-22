@@ -37,7 +37,7 @@ func _initialize() -> void:
  check(Telemetry.ratio(10, 0) == null, "Zero-duration rates do not produce infinity")
  var summary := {"won": false, "seed": 18, "practice": true, "character": "sonic", "score": 1800, "normal_score": 1300, "buddy_contributions": {"feature_fox": 500}, "buddies": {"feature_fox": 2}, "seconds": 45.0, "drains": 2, "acts": [{"telemetry": result}]}
  var exported := Telemetry.export_run(summary)
- check(exported.character_type == "speed" and exported.type_action == "Target Dash" and result.type_actions.uses == 0, "Export includes type/action identity and counters reset at Act boundaries")
+ check(exported.character_type == "speed" and exported.type_action == "Target Boost" and result.type_actions.uses == 0, "Export includes type/action identity and counters reset at Act boundaries")
  check(exported.mode == "practice" and exported.buddy_score == 500 and exported.buddies.feature_fox.level == 2, "Run mode and Buddy build exported")
  check(JSON.parse_string(JSON.stringify(exported)).acts[0].goal_touched_time_seconds == null, "JSON round trip preserves nulls")
  print("RESULT | Run telemetry | %d checks | %d failures" % [checks, failures])

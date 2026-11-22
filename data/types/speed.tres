@@ -3,5 +3,5 @@
 [resource]
 script = ExtResource("1")
 kind = 0
-action_name = "Target Dash"
-description = "Guide toward a clear target with bounded speed. Physical hit pays base × combo + 400, then ends the chain. Controlled recoil returns to normal physics."
+action_name = "Target Boost"
+description = "Boost toward a clear enemy or bumper and turn to follow it. Physical hit pays base × combo + 400, then ends the chain. Controlled recoil returns to normal physics."

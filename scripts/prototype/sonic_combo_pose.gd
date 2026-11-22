@@ -4,7 +4,7 @@ const Assets = preload("res://experiments/visual_lab/runners_sonic_assets.gd")
 const LEGACY_POSE := "res://experiments/visual_lab/local/runtime/sonic_sa1_combo.glb"
 const Presenter = preload("res://experiments/visual_lab/sonic_presenter.gd")
 const FLIGHT_TURN := PI / 6.0
-const DEFAULTS := {"model": 1.0, "ball": 1.0, "blur": 1.0, "speed": Presenter.RUNNERS_ROLL_SPEED, "opacity": 0.30}
+const DEFAULTS := {"model": 1.0, "ball": 1.0, "blur": 1.0, "speed": Presenter.RUNNERS_ROLL_SPEED, "opacity": 0.30, "boost": Assets.BOOST_SPEED}
 var settings := DEFAULTS.duplicate()
 var presenter: Node3D
 var radius: float
@@ -20,6 +20,7 @@ var sets := {}
 var sonic_fallback: Mesh
 var motion_rig: Node3D
 var motion_player: AnimationPlayer
+var motion_fit := {}
 var motion_center := Vector3.ZERO
 var source_radius := 1.0
 var motion: StringName = &""
@@ -31,7 +32,7 @@ var flying: bool:
  get: return motion == &"flight"
 var inspecting := false
 var replacing_roll := false
-var trick_hidden_on_loop := false
+var trick_suppressed := false
 
 func prepare(actor: Node3D, fallback: Texture2D, path := Assets.LOCAL_SET) -> void:
  presenter = actor
@@ -57,7 +58,8 @@ func prepare(actor: Node3D, fallback: Texture2D, path := Assets.LOCAL_SET) -> vo
  presenter.specials.character_changed.connect(_select_roll)
  presenter.specials.flight_started.connect(_start_flight)
  presenter.specials.flight_ended.connect(_end_flight)
- presenter.specials.homing_started.connect(func(_target: Node2D, _direction: Vector2): _stop_motion())
+ presenter.specials.homing_started.connect(_start_target_boost)
+ presenter.specials.homing_ended.connect(_end_target_boost)
  presenter.ball.traversal_launched.connect(_on_traversal_launch)
  presenter.ball.loop_changed.connect(_on_loop_changed)
  presenter.ball.reposition_requested.connect(_stop_motion)
@@ -67,35 +69,15 @@ func _select_roll(id: String, sonic_path := Assets.LOCAL_SET) -> void:
  if is_instance_valid(runners_roll): runners_roll.hide()
  _stop_motion()
  if trailing_tails: trailing_tails.hide()
- if Assets.CURLS.has(id) and not sets.has(id):
-  var path := sonic_path if id == "sonic" else "res://experiments/visual_lab/local/runtime/tails_runners_poses.glb"
-  var poses := Assets.load_set(path, presenter.spin_surface, id)
-  sets[id] = poses
-  if not poses.is_empty():
-   presenter.rolling_mesh.add_child(poses.roll)
-   poses.settings = DEFAULTS.duplicate()
-   poses.trick_index = -1
-   if id == "tails":
-    presenter.spin_root.add_child(poses.trailing_tails)
-   var rig := Assets.animated_scene(id)
-   if rig:
-    var player: AnimationPlayer = rig.find_child("AnimationPlayer", true, false)
-    if player:
-     var pivot := Node3D.new()
-     pivot.name = "%sMotion" % id.capitalize()
-     pivot.hide()
-     presenter.add_child(pivot)
-     pivot.add_child(rig)
-     player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
-     poses.motion_rig = pivot
-     poses.motion_player = player
-    else: rig.free()
+ if Assets.BOOST.has(id) and not sets.has(id):
+  sets[id] = _load_character(id, sonic_path)
  character = id
  var selected: Dictionary = sets.get(id, {})
  runners_roll = selected.get("roll")
  trailing_tails = selected.get("trailing_tails")
  motion_rig = selected.get("motion_rig")
  motion_player = selected.get("motion_player")
+ motion_fit = selected.get("motion_fit", {})
  tricks.assign(selected.get("tricks", []))
  settings = selected.get("settings", DEFAULTS.duplicate())
  trick_index = selected.get("trick_index", -1)
@@ -104,6 +86,37 @@ func _select_roll(id: String, sonic_path := Assets.LOCAL_SET) -> void:
  set_process(runners_roll != null)
  _apply_roll_settings()
  _sync_visibility()
+
+func _load_character(id: String, sonic_path: String) -> Dictionary:
+ var poses := {}
+ if Assets.CURLS.has(id):
+  var path := sonic_path if id == "sonic" else "res://experiments/visual_lab/local/runtime/tails_runners_poses.glb"
+  poses = Assets.load_set(path, presenter.spin_surface, id)
+  if poses.is_empty(): return poses
+  presenter.rolling_mesh.add_child(poses.roll)
+  poses.trick_index = -1
+  poses.motion_fit = poses.roll.mesh.get_meta("bake", {})
+  if id == "tails": presenter.spin_root.add_child(poses.trailing_tails)
+ elif id == "shadow" and FileAccess.file_exists(Assets.SHADOW_FIT):
+  var fit = JSON.parse_string(FileAccess.get_file_as_string(Assets.SHADOW_FIT))
+  if fit is Dictionary: poses.motion_fit = fit
+ if not poses.has("motion_fit"): return poses
+ poses.settings = DEFAULTS.duplicate()
+ var rig := Assets.animated_scene(id)
+ if not rig: return poses
+ var player: AnimationPlayer = rig.find_child("AnimationPlayer", true, false)
+ if not player:
+  rig.free()
+  return poses
+ var pivot := Node3D.new()
+ pivot.name = "%sMotion" % id.capitalize()
+ pivot.hide()
+ presenter.add_child(pivot)
+ pivot.add_child(rig)
+ player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
+ poses.motion_rig = pivot
+ poses.motion_player = player
+ return poses
 
 func _apply_roll_settings() -> void:
  var sphere: SphereMesh = presenter.rolling_mesh.mesh
@@ -124,7 +137,7 @@ func _process(delta: float) -> void:
  var ball: PlaygroundBall = presenter.ball
  var speed: float = absf(ball.track_speed) if ball.has_track_frame and not ball.serve_pending else presenter.roll_velocity().length()
  var exposure := smoothstep(5.0, 32.0, speed / ball.radius)
- runners_roll.set_instance_shader_parameter("roll_exposure", exposure * float(settings.blur))
+ if runners_roll: runners_roll.set_instance_shader_parameter("roll_exposure", exposure * float(settings.blur))
  var elapsed := delta if is_inside_tree() and not get_tree().paused else 0.0
  if trailing_tails and trailing_tails.visible:
   tail_time = fposmod(tail_time + elapsed, Assets.TAIL_WEAVE_DURATION)
@@ -137,28 +150,30 @@ func _play_motion(kind: StringName, clip: String) -> void:
  if motion_player == null or not motion_player.has_animation(clip):
   _stop_motion()
   return
- var bake: Dictionary = runners_roll.mesh.get_meta("bake", {})
- var center: Array = bake.get("preview_centers", {}).get(clip, [])
- source_radius = bake.get("runners_source_radius", 0.0)
+ var center: Array = motion_fit.get("preview_centers", {}).get(clip, [])
+ source_radius = motion_fit.get("runners_source_radius", 0.0)
  if center.size() != 3 or source_radius <= 0.0:
   _stop_motion()
   return
  motion = kind
- if kind == &"loop" and active:
-  trick_hidden_on_loop = true
+ if kind in [&"loop", &"target_boost"] and active:
+  trick_suppressed = true
   replacing_roll = false
+  hide()
  motion_center = Vector3(center[0], center[1], center[2])
  motion_rig.get_child(0).position = -motion_center
+ motion_player.speed_scale = Assets.playback_speed(character, clip, settings.boost)
  if motion_player.current_animation != clip:
   motion_player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
   motion_player.play(clip)
   motion_player.advance(0.0)
  _place_motion()
+ set_process(true)
  set_physics_process(kind in [&"spring", &"dash_panel"])
  _sync_visibility()
 
 func _on_traversal_launch(kind: StringName, velocity: Vector2) -> void:
- if not motion_rig or presenter.ball.in_loop: return
+ if not runners_roll or not motion_rig or presenter.ball.in_loop or motion == &"target_boost": return
  launch_serial = presenter.ball.transfer_serial
  motion_direction = velocity.normalized()
  if kind == &"spring":
@@ -169,7 +184,7 @@ func _on_traversal_launch(kind: StringName, velocity: Vector2) -> void:
   _play_motion(kind, Assets.BOOST[character])
 
 func _on_loop_changed(riding: bool) -> void:
- if riding and motion_rig:
+ if riding and runners_roll and motion_rig:
   _play_motion(&"loop", Assets.BOOST[character])
  elif motion == &"loop": _stop_motion()
 
@@ -193,6 +208,14 @@ func _start_flight() -> void:
  if character != "tails" or flying or presenter.ball.in_loop: return
  flight_heading = initial_flight_heading()
  _play_motion(&"flight", Assets.FLIGHT)
+
+func _start_target_boost(_target: Node2D, direction: Vector2) -> void:
+ if motion_rig and presenter.specials.action.kind == TypeAction.Kind.SPEED:
+  motion_direction = direction
+  _play_motion(&"target_boost", Assets.BOOST[character])
+
+func _end_target_boost(_reason: String) -> void:
+ if motion == &"target_boost": _stop_motion()
 
 func initial_flight_heading() -> Vector2:
  var horizontal: float = presenter.roll_heading.x
@@ -223,6 +246,12 @@ func _place_motion() -> void:
  var lift := Vector3.UP * flight_lift(motion_center.y * fit, radius)
  match motion:
   &"spring": frame = spring_basis(camera, anchor, motion_direction)
+  &"target_boost", &"dash_panel":
+   if motion == &"target_boost" and not presenter.specials.homing_direction.is_zero_approx():
+    motion_direction = presenter.specials.homing_direction
+   frame = Presenter.flat_roll_frame(motion_direction)
+   # The original stride is authored around a floor at local Y = 0.
+   lift = Vector3.UP * (motion_center.y * fit - radius)
   &"loop":
    var ball: PlaygroundBall = presenter.ball
    var forwards := -ball.track_frame.z if ball.track_speed >= 0.0 else ball.track_frame.z
@@ -232,7 +261,6 @@ func _place_motion() -> void:
    var steer: float = presenter.ball.controls.steering
    if not is_zero_approx(steer): flight_heading = Vector2(signf(steer), 0)
    frame = player_facing_basis(camera, flight_heading.x)
-  _: frame = player_facing_basis(camera, motion_direction.x)
  motion_rig.global_transform = Transform3D(frame.scaled(Vector3.ONE * fit), anchor + lift)
 
 func _end_flight(_reason: String) -> void:
@@ -243,6 +271,7 @@ func _stop_motion() -> void:
  motion = &""
  boost_remaining = 0.0
  motion_player.stop()
+ set_process(runners_roll != null)
  set_physics_process(false)
  _sync_visibility()
 
@@ -251,14 +280,15 @@ func inspect(enabled: bool) -> void:
  _sync_visibility()
 
 func _sync_visibility() -> void:
- var regular := not inspecting and (not replacing_roll or motion == &"loop")
+ var regular := not inspecting and not replacing_roll
  presenter.rolling_mesh.visible = regular and motion == &""
  if trailing_tails: trailing_tails.visible = presenter.rolling_mesh.visible
  if motion_rig: motion_rig.visible = regular and motion != &""
- if motion == &"loop": hide()
 
 func apply_settings(values: Dictionary) -> void:
  settings.merge(values, true)
+ if motion_player and motion != &"":
+  motion_player.speed_scale = Assets.playback_speed(character, motion_player.current_animation, settings.boost)
  _apply_roll_settings()
 
 func next_trick() -> void:
@@ -271,8 +301,8 @@ func show_blend(amount: float) -> void:
  # The unfolding mesh emerges from the sphere. Keep both roll bases intact
  # because the track presenter composes them when crossing a Loop boundary.
  active = true
- if motion == &"loop": trick_hidden_on_loop = true
- if trick_hidden_on_loop:
+ if motion in [&"loop", &"target_boost"]: trick_suppressed = true
+ if trick_suppressed:
   replacing_roll = false
   hide()
   _sync_visibility()
@@ -294,7 +324,7 @@ func show_blend(amount: float) -> void:
 func restore_ball() -> void:
  if not active: return
  active = false
- trick_hidden_on_loop = false
+ trick_suppressed = false
  hide()
  if is_instance_valid(presenter) and is_instance_valid(presenter.rolling_mesh):
   replacing_roll = false

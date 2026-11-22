@@ -76,7 +76,9 @@ func _ready() -> void:
  var arguments := OS.get_cmdline_user_args()
  start_spin_lab = "--spin-lab" in arguments
  if start_spin_lab:
-  selected_character = "tails" if "--character=tails" in arguments else "sonic"
+  selected_character = "sonic"
+  for id: String in ["sonic", "tails", "shadow"]:
+   if "--character=" + id in arguments: selected_character = id
   preload("res://scripts/diagnostics/shadow_review.gd").position_review_window(get_window())
  var act_argument := arguments.find("--act")
  if act_argument >= 0 and act_argument + 1 < arguments.size():
@@ -337,7 +339,7 @@ func _show_pause() -> void:
  pause_camera_picker.item_selected.connect(func(index: int):
   game.select_play_camera(pause_camera_picker.get_item_id(index)))
  stack.add_child(pause_camera_picker)
- if _can_inspect_character(): _action(stack, "%s spin preview   [F8]" % game.character_id.capitalize(), _open_spin_lab)
+ if _can_inspect_character(): _action(stack, "Shadow boost preview   [F8]" if game.character_id == "shadow" else "%s spin preview   [F8]" % game.character_id.capitalize(), _open_spin_lab)
  _action(stack, "Restart run", start_run)
  _action(stack, "Return to menu", return_to_menu)
  _action(stack, "Quit", _quit)
@@ -345,7 +347,8 @@ func _show_pause() -> void:
 func _can_inspect_character() -> bool:
  if not is_instance_valid(game) or not game.started: return false
  if game.finished or game.closing or game.drafting or game.loading_boundary or is_instance_valid(game.transfer): return false
- return is_instance_valid(game.combo_celebration.character_pose.runners_roll)
+ var pose = game.combo_celebration.character_pose
+ return is_instance_valid(pose.runners_roll) or (pose.character == "shadow" and is_instance_valid(pose.motion_rig))
 
 func _open_spin_lab() -> void:
  if not _can_inspect_character() or is_instance_valid(spin_lab): return

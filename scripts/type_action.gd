@@ -3,7 +3,7 @@ extends Resource
 ## One shared tuning resource per type; characters only choose one and a profile.
 enum Kind { SPEED, FLY, POWER }
 @export var kind: Kind = Kind.SPEED
-@export var action_name := "Target Dash"
+@export var action_name := "Target Boost"
 @export_multiline var description := ""
 @export var target_range := 400.0
 @export var dash_speed := 520.0

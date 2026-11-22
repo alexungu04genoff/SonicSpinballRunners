@@ -1,7 +1,8 @@
 """Bake original Runners poses and a directional color map for the roll shader.
 
-Run in background Blender with the extracted animated GLB. Pass "-- tails" for Tails.
+Pass "-- tails" for Tails or "-- shadow" for Shadow's target boost calibration.
 """
+import json
 from math import cos, floor, pi, radians, sin, tau
 from pathlib import Path
 import sys
@@ -17,6 +18,7 @@ CHARACTER = sys.argv[sys.argv.index("--") + 1] if "--" in sys.argv else "sonic"
 PREFIX, CURL, ANGLES = {
     "sonic": ("sn", "sn_ball_loop", (-40, -60, -43)),
     "tails": ("tl", "tl_jump_ball_loop", (-35, -40, -38)),
+    "shadow": ("sh", "sh_jump_ball_loop", ()),
 }[CHARACTER]
 SOURCE = ROOT / "runners-decomp" / CHARACTER / f"{CHARACTER.title()} Runners - original animations.glb"
 OUTPUT = ROOT / "runtime" / f"{CHARACTER}_runners_poses.glb"
@@ -121,10 +123,22 @@ def bake():
         bpy.context.scene.frame_set(round(action.frame_range[0]))
         return skin.evaluated_get(bpy.context.evaluated_depsgraph_get())
 
+    def vertices(action):
+        evaluated = first_frame(action)
+        return np.array([evaluated.matrix_world @ v.co for v in evaluated.data.vertices])
+
+    if CHARACTER == "shadow":
+        curl = vertices(bpy.data.actions[CURL])
+        radius = np.linalg.norm(curl - (curl.min(axis=0) + curl.max(axis=0)) / 2, axis=1).max()
+        boost = vertices(bpy.data.actions["sh_boost_loop"])
+        x, y, z = (boost.min(axis=0) + boost.max(axis=0)) / 2
+        fit = {"runners_source_radius": float(radius), "preview_centers": {"sh_boost_loop": [float(x), float(z), float(-y)]}}
+        (OUTPUT.parent / "shadow_boost_fit.json").write_text(json.dumps(fit), encoding="utf-8")
+        return
+
     centers = {}
     for action in bpy.data.actions:
-        evaluated = first_frame(action)
-        points = np.array([evaluated.matrix_world @ v.co for v in evaluated.data.vertices])
+        points = vertices(action)
         x, y, z = (points.min(axis=0) + points.max(axis=0)) / 2
         centers[action.name] = [float(x), float(z), float(-y)]
     posed = []
