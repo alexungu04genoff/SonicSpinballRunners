@@ -7,5 +7,6 @@ script = ExtResource("1")
 display_name = "Shadow"
 profile = ExtResource("2")
 color = Color(0.95, 0.22, 0.25, 1)
+boost_color = Color(1, 0.78, 0.08, 1)
 ball_color = Color(0.025, 0.025, 0.035, 1)
 type_action = ExtResource("3")

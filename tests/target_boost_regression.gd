@@ -131,6 +131,7 @@ func review_character(id: String, session: Node) -> void:
  if "--require-runners-set" in OS.get_cmdline_user_args(): check(rig != null, id + " has its original Runners rig")
  if rig:
   check(pose.motion == &"target_boost" and pose.motion_player.current_animation == pose.Assets.BOOST[id] and rig.is_visible_in_tree() and not game.character.rolling_mesh.visible, id + " uncurls into its own Boost clip")
+  check(game.character.boost_wake.is_visible_in_tree(), id + " has its colored wake with the animated runner")
   check_stride_at_travel_speeds(pose, EXPECTED_BOOST_CYCLES)
   var original: Vector2 = specials.homing_direction
   target.position += Vector2(-55, 140)

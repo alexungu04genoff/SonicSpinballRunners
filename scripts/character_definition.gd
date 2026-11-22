@@ -5,6 +5,7 @@ extends Resource
 @export var profile: PhysicsProfile
 @export var type_action: TypeAction
 @export var color := Color("5fbaff")
+@export var boost_color := Color("1378ff")
 @export var ball_color := Color("075dd2")
 @export var meter_capacity := 100.0
 @export var meter_cost := 100.0

@@ -8,6 +8,7 @@ var spin_surface: ShaderMaterial
 var target_marker: Node3D
 var flight_wind: MeshInstance3D
 var boost_wake: MeshInstance3D
+var boost_material := ShaderMaterial.new()
 var homing_direction := Vector2.UP
 const MIN_EVENT_DURATION := 0.24
 const EVENT_COOLDOWN := 0.18
@@ -179,7 +180,9 @@ func _on_homing_started(_target: Node2D, direction: Vector2) -> void:
  state = State.HOMING
  event_time = 0.0
  _set_pose("homing", true)
- _pulse(Color("80dbff"))
+ var accent: Color = specials.definition.boost_color
+ boost_material.set_shader_parameter("tint", accent)
+ _pulse(accent)
 
 func _on_homing_ended(_reason: String) -> void:
  boost_wake.hide()
@@ -193,7 +196,7 @@ func _on_special_hit(_target: Node2D, _multiplier: int) -> void:
  event_pose = "impact"
  event_time = 0.28
  _set_pose("impact", true)
- _pulse(Color("e1faff"))
+ _pulse(specials.definition.boost_color.lightened(0.18))
 
 func _on_flight_started() -> void:
  if close_view:
@@ -256,16 +259,14 @@ func _build_effects() -> void:
  flight_wind.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  flight_wind.visible = false
  target_marker.visible = false
- # The painted ball gets a tapered wake when a character rig is unavailable.
- var wake := CylinderMesh.new()
- wake.top_radius = 0.0
- wake.bottom_radius = 0.55
+ var wake := SphereMesh.new()
+ wake.radius = 1.0
  wake.height = 2.0
- wake.radial_segments = 8
- var wake_material := table.material(Color(0.65, 0.9, 1.0, 0.60))
- wake_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
- wake_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
- boost_wake = table.mesh_node(wake, wake_material, Vector3.ZERO, rolling_mesh)
+ wake.radial_segments = 40
+ wake.rings = 20
+ boost_material.shader = preload("res://experiments/visual_lab/target_boost.gdshader")
+ boost_wake = table.mesh_node(wake, boost_material, Vector3.ZERO, self)
+ boost_wake.custom_aabb = AABB(Vector3(-2.1, -1.55, -2.1), Vector3(4.2, 7.15, 4.2))
  boost_wake.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  boost_wake.hide()
 
@@ -297,12 +298,13 @@ func resume_gameplay() -> void:
  _set_pose("roll", true)
 
 func _update_effects(delta: float) -> void:
- boost_wake.visible = state == State.HOMING and rolling_mesh.is_visible_in_tree() and not close_view
+ boost_wake.visible = state == State.HOMING and not close_view
  if boost_wake.visible:
   var frame := flat_roll_frame(specials.homing_direction)
   var size := ball.radius * TablePresentation.SCALE
-  boost_wake.global_transform = Transform3D((frame * Basis(Vector3.RIGHT, -PI / 2.0)).scaled(Vector3.ONE * size), spin_root.global_position - frame.z * size * 1.7)
- if close_view or ball.serve_pending or ball.position.distance_to(_last_position) > 100.0:
+  boost_wake.global_transform = Transform3D((frame * Basis(Vector3.RIGHT, -PI / 2.0)).scaled(Vector3.ONE * size), spin_root.global_position)
+  boost_material.set_shader_parameter("phase", _pose_time)
+ if boost_wake.visible or close_view or ball.serve_pending or ball.position.distance_to(_last_position) > 100.0:
   trail.reset()
  else:
   trail.advance(delta, spin_root.position, ball.linear_velocity.length() > 260.0, table.camera)
