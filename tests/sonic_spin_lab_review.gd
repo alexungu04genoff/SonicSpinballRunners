@@ -109,7 +109,7 @@ func run() -> void:
   elif clip in lab.trick_names: check(lab.held.visible and lab.held.mesh != null, "Baked trick keeps its original mesh")
   else: check(lab.rig.visible and lab.player.current_animation == clip, "Original Action plays: " + clip)
   if clip == lab.Assets.BOOST[game.character_id]:
-   check(lab.rig.global_basis.y.normalized().is_equal_approx(Vector3.UP) and lab.sliders.boost.is_visible_in_tree() and is_equal_approx(lab.player.get_playing_speed(), 4.5), "Boost preview runs upright at 1.5x the original boost-entry pace")
+   check(lab.rig.global_basis.y.normalized().is_equal_approx(Vector3.UP) and lab.sliders.boost.is_visible_in_tree() and is_equal_approx(lab.player.current_animation_length / lab.player.get_playing_speed(), 8.0 / 27.0), "Boost preview matches Sonic's approved stride period")
   elif clip != lab.roll_clip and clip != lab.Assets.FLIGHT and clip != lab.Assets.DASH_RING[game.character_id]:
    lab._process(0.17)
    var model: Node3D = lab.held if clip in lab.trick_names else lab.rig
@@ -223,7 +223,7 @@ func review_traversal(session: Node, game: Node) -> void:
  ball.traversal_launched.emit(&"dash_panel", Vector2.RIGHT * 550)
  check(pose.motion == &"dash_panel" and pose.motion_player.current_animation == pose.Assets.BOOST[game.character_id] and not game.character.rolling_mesh.visible, "Dash panel selects the character's Boost and hides the curl")
  pose._process(0.075)
- check(is_equal_approx(pose.motion_player.current_animation_position, 0.075 * 4.5), "Boost advances at 1.5x the original boost-entry rate")
+ check(is_equal_approx(pose.motion_player.current_animation_position / pose.motion_player.current_animation_length, 0.075 * 3.375), "Panel Boost advances at the approved 3.375 strides per second")
  pose._physics_process(0.75)
  ball.traversal_launched.emit(&"dash_panel", Vector2.RIGHT * 550)
  pose._physics_process(119.0 / 120.0)

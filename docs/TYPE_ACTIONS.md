@@ -6,7 +6,7 @@ Confirmed direction, 2026-11-04: a character is a shared Type Action plus its ex
 
 ## Speed: Target Boost
 
-Sonic and Shadow uncurl into their own Sonic Runners boost animations during the guided approach. Their feet face the table and their heading turns around its normal to follow the live target. At the default 1.5× setting, the 1⅓-second source clip completes in 0.30 seconds for Sonic and 0.32 seconds for Shadow. The original Runners controllers play the raw clip at 3× and 2.8× respectively upon entering Boost. Physical contact or cancellation restores the roll. With the painted character art, a tapered wake points away from the target. The F8 preview inherits the active clip and target heading.
+Sonic and Shadow uncurl into their own Sonic Runners boost animations during the guided approach. Their feet face the table and their heading turns around its normal to follow the live target. Target Boost uses the same stride rate as dash panels, Loops and the F8 preview. At the default 1.5× setting, each stride takes about 0.30 seconds for every character. Physical contact or cancellation restores the roll. With the painted character art, a tapered wake points away from the target. The F8 preview inherits the active clip and target heading.
 
 Acquisition preserves the existing full-ball clear-path checks and fresh combo-builder priority, choosing the nearest eligible target within each priority class. Valid targets are active-Act round/triangle bumpers and living enemies. Very close targets no longer have the old 55-pixel exclusion. A failed acquisition keeps the meter.
 

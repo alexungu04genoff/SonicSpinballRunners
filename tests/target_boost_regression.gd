@@ -4,6 +4,7 @@ const Session = preload("res://scripts/prototype/session.gd")
 const Document = preload("res://scripts/act_editor/act_geometry.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const Review = preload("res://scripts/diagnostics/shadow_review.gd")
+var expected_boost_setting := 1.5
 
 func run() -> void:
  Review.position_review_window(root)
@@ -17,7 +18,12 @@ func run() -> void:
  act.exit_width = 2
  var bumper := Objects.make_placement("round_bumper")
  bumper.position = Vector2(500, 450)
- act.gameplay_objects = [bumper]
+ var panel := Objects.make_placement("dash_panel")
+ panel.position = Vector2(220, 700)
+ var loop := Objects.make_placement("sonic_loop")
+ loop.position = Vector2(220, 580)
+ loop.properties.direction = "clockwise"
+ act.gameplay_objects = [bumper, panel, loop]
  var path := directory.path_join("target.tres")
  check(act.save_document(path) == OK, "Save test Act with one clear bumper")
  var session := Session.new()
@@ -35,6 +41,8 @@ func run() -> void:
  if is_instance_valid(game) and game.started:
   game.auto_launch_time = -1.0
   game.controls.virtual_enabled = true
+  for id: String in ["sonic", "tails", "shadow"]:
+   await review_panel_and_loop(id, panel.position)
   for id: String in ["sonic", "shadow"]:
    await review_character(id, session)
  session.archive_attempted = true
@@ -42,6 +50,27 @@ func run() -> void:
  session.free()
  print("RESULT | Target Boost | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)
+
+func review_panel_and_loop(id: String, panel: Vector2) -> void:
+ game.specials.select_character(id)
+ var pose = game.combo_celebration.character_pose
+ if not pose.motion_rig:
+  check("--require-runners-set" not in OS.get_cmdline_user_args(), id + " has local Boost art")
+  return
+ game.ball.teleport_to(panel + Vector2.DOWN * 65.0, Vector2.UP * 820.0)
+ for i in 40:
+  await frames(1)
+  if pose.motion == &"dash_panel": break
+ var player: AnimationPlayer = pose.motion_player
+ check(pose.motion == &"dash_panel" and player.current_animation == pose.Assets.BOOST[id] and is_equal_approx(player.current_animation_length / player.get_playing_speed(), 8.0 / 27.0), id + " hits a dash panel at Sonic's preview stride period")
+ for i in 100:
+  if game.ball.in_loop: break
+  await frames(1)
+ check(game.ball.in_loop and pose.motion == &"loop" and is_equal_approx(player.current_animation_length / player.get_playing_speed(), 8.0 / 27.0), id + " carries the same stride into the Loop")
+ for i in 360:
+  if not game.ball.in_loop: break
+  await frames(1)
+ check(not game.ball.in_loop and pose.motion == &"" and game.character.rolling_mesh.visible, id + " returns to the ball on release")
 
 func review_character(id: String, session: Node) -> void:
  var specials: CharacterSpecials = game.specials
@@ -61,8 +90,8 @@ func review_character(id: String, session: Node) -> void:
  if "--require-runners-set" in OS.get_cmdline_user_args(): check(rig != null, id + " has its original Runners rig")
  if rig:
   check(pose.motion == &"target_boost" and pose.motion_player.current_animation == pose.Assets.BOOST[id] and rig.is_visible_in_tree() and not game.character.rolling_mesh.visible, id + " uncurls into its own Boost clip")
-  var native_rate := 2.8 if id == "shadow" else 3.0
-  check(is_equal_approx(pose.motion_player.get_playing_speed(), 1.5 * native_rate), id + " plays Boost at 1.5x its Runners boost-entry cadence")
+  var cycles_per_second := 2.25 * expected_boost_setting
+  check(is_equal_approx(pose.motion_player.get_playing_speed() / pose.motion_player.current_animation_length, cycles_per_second), id + " uses the shared Boost cadence for Target Boost")
   var original: Vector2 = specials.homing_direction
   target.position += Vector2(-55, 140)
   await frames(4)
@@ -83,13 +112,14 @@ func review_character(id: String, session: Node) -> void:
    check(root.get_texture().get_image().save_png("res://test-results/target-boost/%s.png" % id) == OK, "Capture active " + id + " boost")
   session._open_spin_lab()
   var lab = session.spin_lab
-  check(lab.active_clip == pose.Assets.BOOST[id] and lab.pivot.global_basis.orthonormalized().is_equal_approx(rig.global_basis.orthonormalized()) and is_equal_approx(lab.player.get_playing_speed(), 1.5 * native_rate), "F8 inspects the upright boost at the live heading and playback rate")
+  check(lab.active_clip == pose.Assets.BOOST[id] and lab.pivot.global_basis.orthonormalized().is_equal_approx(rig.global_basis.orthonormalized()) and is_equal_approx(lab.sliders.boost.value, expected_boost_setting) and is_equal_approx(lab.player.get_playing_speed() / lab.player.current_animation_length, cycles_per_second), "F8 opens at the same heading and shared stride rate as gameplay")
   var phase: float = lab.player.current_animation_position
   lab.sliders.boost.value = 2.0
+  expected_boost_setting = 2.0
   lab._process(0.05)
-  check(is_equal_approx(lab.player.current_animation_position, fposmod(phase + 0.05 * 2.0 * native_rate, lab.player.current_animation_length)), "Boost speed changes the actual preview stride without restarting the clip")
+  check(is_equal_approx(lab.player.current_animation_position, fposmod(phase + 0.05 * 4.5 * lab.player.current_animation_length, lab.player.current_animation_length)), "Boost speed changes the actual preview stride without restarting the clip")
   session._resume_spin_lab()
-  check(is_equal_approx(pose.motion_player.get_playing_speed(), 2.0 * native_rate), "Resume applies this character's selected boost cadence")
+  check(is_equal_approx(pose.motion_player.get_playing_speed() / pose.motion_player.current_animation_length, 4.5), "Resume applies the selected stride rate")
  else:
   check(game.character.boost_wake.is_visible_in_tree(), id + " has a directional boost with painted assets")
  for i in 230:

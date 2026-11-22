@@ -188,7 +188,10 @@ func _slider(id: String, caption: String, minimum: float, maximum: float, step: 
  slider.min_value = minimum
  slider.max_value = maximum
  slider.step = step
- slider.value = 2.5 if id == "zoom" else float(pose.settings[id])
+ match id:
+  "zoom": slider.value = 2.5
+  "boost": slider.value = pose.boost_speed
+  _: slider.value = float(pose.settings[id])
  slider.custom_minimum_size.y = 26
  group.add_child(slider)
  sliders[id] = slider
@@ -239,10 +242,10 @@ func _update_preview() -> void:
  var boosting: bool = active_clip == Assets.BOOST[pose.character]
  sliders.boost.get_parent().visible = boosting
  sliders.speed.get_parent().visible = not boosting
- if player: player.speed_scale = Assets.playback_speed(pose.character, active_clip, sliders.boost.value)
+ if player: Assets.set_playback_speed(player, pose.character, sliders.boost.value)
  var values := {}
  for id: String in Pose.DEFAULTS: values[id] = sliders[id].value
- pose.apply_settings(values)
+ pose.apply_settings(values, sliders.boost.value)
  _aim_camera()
 
 func _aim_camera() -> void:
@@ -293,6 +296,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 func _reset() -> void:
  for key: String in Pose.DEFAULTS: sliders[key].value = Pose.DEFAULTS[key]
+ sliders.boost.value = Assets.BOOST_SPEED
  sliders.zoom.value = 2.5
  shell_on_poses.button_pressed = false
  pitch = 0.0

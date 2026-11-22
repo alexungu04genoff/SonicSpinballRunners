@@ -4,8 +4,9 @@ const Assets = preload("res://experiments/visual_lab/runners_sonic_assets.gd")
 const LEGACY_POSE := "res://experiments/visual_lab/local/runtime/sonic_sa1_combo.glb"
 const Presenter = preload("res://experiments/visual_lab/sonic_presenter.gd")
 const FLIGHT_TURN := PI / 6.0
-const DEFAULTS := {"model": 1.0, "ball": 1.0, "blur": 1.0, "speed": Presenter.RUNNERS_ROLL_SPEED, "opacity": 0.30, "boost": Assets.BOOST_SPEED}
+const DEFAULTS := {"model": 1.0, "ball": 1.0, "blur": 1.0, "speed": Presenter.RUNNERS_ROLL_SPEED, "opacity": 0.30}
 var settings := DEFAULTS.duplicate()
+var boost_speed := Assets.BOOST_SPEED
 var presenter: Node3D
 var radius: float
 var active := false
@@ -162,29 +163,29 @@ func _play_motion(kind: StringName, clip: String) -> void:
   hide()
  motion_center = Vector3(center[0], center[1], center[2])
  motion_rig.get_child(0).position = -motion_center
- motion_player.speed_scale = Assets.playback_speed(character, clip, settings.boost)
  if motion_player.current_animation != clip:
   motion_player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
   motion_player.play(clip)
   motion_player.advance(0.0)
+ Assets.set_playback_speed(motion_player, character, boost_speed)
  _place_motion()
  set_process(true)
  set_physics_process(kind in [&"spring", &"dash_panel"])
  _sync_visibility()
 
 func _on_traversal_launch(kind: StringName, velocity: Vector2) -> void:
- if not runners_roll or not motion_rig or presenter.ball.in_loop or motion == &"target_boost": return
+ if not motion_rig or presenter.ball.in_loop or motion == &"target_boost": return
  launch_serial = presenter.ball.transfer_serial
  motion_direction = velocity.normalized()
  if kind == &"spring":
-  if velocity.y < -0.0001: _play_motion(kind, Assets.DASH_RING[character])
+  if velocity.y < -0.0001 and Assets.DASH_RING.has(character): _play_motion(kind, Assets.DASH_RING[character])
   else: _stop_motion()
  elif kind == &"dash_panel":
   boost_remaining = 1.0
   _play_motion(kind, Assets.BOOST[character])
 
 func _on_loop_changed(riding: bool) -> void:
- if riding and runners_roll and motion_rig:
+ if riding and motion_rig:
   _play_motion(&"loop", Assets.BOOST[character])
  elif motion == &"loop": _stop_motion()
 
@@ -285,10 +286,11 @@ func _sync_visibility() -> void:
  if trailing_tails: trailing_tails.visible = presenter.rolling_mesh.visible
  if motion_rig: motion_rig.visible = regular and motion != &""
 
-func apply_settings(values: Dictionary) -> void:
+func apply_settings(values: Dictionary, boost_scale: float) -> void:
  settings.merge(values, true)
+ boost_speed = boost_scale
  if motion_player and motion != &"":
-  motion_player.speed_scale = Assets.playback_speed(character, motion_player.current_animation, settings.boost)
+  Assets.set_playback_speed(motion_player, character, boost_speed)
  _apply_roll_settings()
 
 func next_trick() -> void:

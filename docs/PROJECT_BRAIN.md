@@ -12,7 +12,7 @@ Tails now has his own curl, three tricks and all 17 of his Runners actions in F8
 
 For both characters, an upward spring plays the Runners ring dash along the shot until the apex. A dash panel starts a second of Boost. A Loop keeps Boost running as long as it owns the Ball, including upside down and on rollback. The curl comes back at release. F8 can inspect any of those live poses.
 
-The Speed special is now Target Boost. Sonic runs and Shadow skates toward the locked target using their own Runners clips. Both stay upright and turn with the target, even while their incoming momentum is still carrying them sideways. Boost starts at 1.5× its Runners boost-entry cadence in the special, on dash panels and through Loops. F8 lets Alex tune it while watching the stride. Contact keeps the existing combo cash-out. Shadow’s boost uses the scale measured from his own curl.
+The Speed special is now Target Boost. Sonic runs and Shadow skates toward the locked target using their own Runners clips. Both stay upright and turn with the target, even while their incoming momentum is still carrying them sideways. All Boost animations use the pace Alex picked in Sonic’s preview, about 0.30 seconds per stride at 1.5×. The F8 slider sets the pace for the whole run, including Shadow on panels and Loops. Contact keeps the existing combo cash-out. Shadow’s boost uses the scale measured from his own curl.
 
 ## Five stages, two flipper shots — 2026-11-21
 
