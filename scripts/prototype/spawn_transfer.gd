@@ -19,6 +19,7 @@ func begin(owner_game: Node, target: Vector2, drained: bool) -> void:
  destination = target
  drain = drained
  process_mode = Node.PROCESS_MODE_PAUSABLE
+ game.combo_celebration.character_pose.finish_shell_fade()
  proxy = game.character.spin_root.duplicate()
  game.presentation.add_child(proxy)
  if preload("res://experiments/visual_lab/runners_sonic_assets.gd").CURLS.has(game.character.character_id):

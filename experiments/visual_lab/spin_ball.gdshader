@@ -6,6 +6,7 @@ uniform vec4 fur_color : source_color = vec4(0.025, 0.20, 0.80, 1.0);
 uniform int character_style = 0; // CharacterSpecials.CHARACTER_IDS order.
 uniform float blur_amount : hint_range(0.0, 3.0) = 2.7;
 uniform bool runners_model = false;
+uniform bool use_shell_markings = false;
 uniform sampler2D runners_skin : source_color, repeat_enable, filter_linear_mipmap;
 uniform sampler2D runners_shell : source_color, repeat_enable, filter_linear_mipmap;
 uniform float smear_mix : hint_range(0.0, 1.0) = 0.76;
@@ -88,11 +89,14 @@ vec3 painted_roll(vec3 direction) {
  return mix(curled_colors(direction), color / weight_sum, 0.94);
 }
 
+vec2 roll_map_uv(vec3 direction) {
+ return vec2(atan(direction.z, direction.y) / TAU + 0.5, acos(clamp(direction.x, -1.0, 1.0)) / PI);
+}
+
 vec3 textured_roll(vec3 direction, vec2 skin_uv) {
  vec3 sharp = texture(runners_skin, skin_uv).rgb;
  if (roll_exposure <= 0.0) { return sharp; }
- vec2 shell_uv = vec2(atan(direction.z, direction.y) / TAU + 0.5,
-                      acos(clamp(direction.x, -1.0, 1.0)) / PI);
+ vec2 shell_uv = roll_map_uv(direction);
  vec2 step_uv = vec2(0.75 * blur_amount * roll_exposure / TAU, 0.0);
  vec3 smear = vec3(0.0);
  float weights = 0.0;
@@ -111,6 +115,13 @@ void fragment() {
   ALBEDO = textured_roll(direction, UV);
  } else {
   ALBEDO = painted_roll(direction);
+  if (use_shell_markings) {
+   vec2 uv = roll_map_uv(direction);
+   vec2 blur = vec2(0.015 * blur_amount, 0.0);
+   vec3 markings = 0.5 * texture(runners_shell, uv).rgb
+                 + 0.25 * (texture(runners_shell, uv - blur).rgb + texture(runners_shell, uv + blur).rgb);
+   ALBEDO = mix(ALBEDO, markings, 0.8);
+  }
  }
  ROUGHNESS = 0.58;
  SPECULAR = 0.32;

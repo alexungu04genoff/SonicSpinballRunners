@@ -3,17 +3,16 @@ extends MeshInstance3D
 const Assets = preload("res://experiments/visual_lab/runners_sonic_assets.gd")
 const LEGACY_POSE := "res://experiments/visual_lab/local/runtime/sonic_sa1_combo.glb"
 const Presenter = preload("res://experiments/visual_lab/sonic_presenter.gd")
+const ShellFade = preload("res://experiments/visual_lab/round_shell_fade.gd")
 const FLIGHT_TURN := PI / 6.0
 const TRICK_TURN := PI / 6.0
-const DEFAULTS := {"model": 1.0, "ball": 1.0, "blur": 1.0, "speed": Presenter.RUNNERS_ROLL_SPEED, "opacity": 0.30}
+const DEFAULTS := {"model": 1.0, "ball": 1.0, "blur": 1.0, "speed": Presenter.RUNNERS_ROLL_SPEED, "opacity": 0.45}
 var settings := DEFAULTS.duplicate()
 var boost_speed := Assets.BOOST_SPEED
 var presenter: Node3D
 var radius: float
 var tricks: Array[Mesh] = []
 var trick_index := -1
-var trick_turn := 0.0
-var trick_rng := RandomNumberGenerator.new()
 var runners_roll: MeshInstance3D
 var trailing_tails: MeshInstance3D
 var tail_time := 0.0
@@ -34,6 +33,8 @@ var flight_heading := Vector2.RIGHT
 var flying: bool:
  get: return motion == &"flight"
 var inspecting := false
+var shell_fade := ShellFade.new()
+var action_shell: MeshInstance3D
 
 func prepare(actor: Node3D, fallback: Texture2D, path := Assets.LOCAL_SET) -> void:
  presenter = actor
@@ -55,6 +56,13 @@ func prepare(actor: Node3D, fallback: Texture2D, path := Assets.LOCAL_SET) -> vo
  cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
  hide()
  if path != Assets.LOCAL_SET and not FileAccess.file_exists(path): return
+ action_shell = MeshInstance3D.new()
+ action_shell.name = "ActionTransitionShell"
+ action_shell.mesh = presenter.rolling_mesh.mesh
+ action_shell.material_override = presenter.spin_surface
+ action_shell.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+ action_shell.hide()
+ presenter.add_child(action_shell)
  original_shadow = presenter.rolling_mesh.cast_shadow
  presenter.specials.character_changed.connect(_select_roll)
  presenter.specials.flight_started.connect(_start_flight)
@@ -78,6 +86,9 @@ func _select_roll(id: String, sonic_path := Assets.LOCAL_SET) -> void:
   sets[id] = _load_character(id, sonic_path)
  character = id
  var selected: Dictionary = sets.get(id, {})
+ var markings: Texture2D = selected.get("shell_markings")
+ presenter.spin_surface.set_shader_parameter("use_shell_markings", markings != null)
+ presenter.spin_surface.set_shader_parameter("runners_shell", markings)
  runners_roll = selected.get("roll")
  trailing_tails = selected.get("trailing_tails")
  motion_rig = selected.get("motion_rig")
@@ -90,7 +101,7 @@ func _select_roll(id: String, sonic_path := Assets.LOCAL_SET) -> void:
  if runners_roll: runners_roll.show()
  set_process(runners_roll != null)
  _apply_roll_settings()
- _sync_visibility()
+ _sync_visibility(false)
 
 func _load_character(id: String, sonic_path: String) -> Dictionary:
  var poses := {}
@@ -141,6 +152,9 @@ func _process(delta: float) -> void:
  var exposure := smoothstep(5.0, 32.0, speed / ball.radius)
  if runners_roll: runners_roll.set_instance_shader_parameter("roll_exposure", exposure * float(settings.blur))
  var elapsed := delta if is_inside_tree() and not get_tree().paused else 0.0
+ if shell_fade.elapsed < ShellFade.DURATION:
+  shell_fade.advance(elapsed)
+  _draw_shell()
  if trailing_tails and trailing_tails.visible:
   tail_time = fposmod(tail_time + elapsed, Assets.TAIL_WEAVE_DURATION)
   Assets.sample_roll_tails(trailing_tails, tail_time)
@@ -291,13 +305,37 @@ func _stop_motion() -> void:
 
 func inspect(enabled: bool) -> void:
  inspecting = enabled
- _sync_visibility()
+ _sync_visibility(false)
 
-func _sync_visibility() -> void:
+func _sync_visibility(animate := true) -> void:
  var regular := not inspecting and not visible
- presenter.rolling_mesh.visible = regular and motion == &""
+ var rolling := regular and motion == &""
+ if not animate or inspecting or (is_inside_tree() and get_tree().paused): shell_fade.elapsed = ShellFade.DURATION
+ elif runners_roll and presenter.rolling_mesh.visible != rolling:
+  var base := float(settings.opacity)
+  shell_fade.start(shell_fade.opacity(base if presenter.rolling_mesh.visible else 0.0, base))
+ presenter.rolling_mesh.visible = rolling
  if trailing_tails: trailing_tails.visible = presenter.rolling_mesh.visible
  if motion_rig: motion_rig.visible = regular and motion != &""
+ _draw_shell()
+
+func _draw_shell() -> void:
+ if not action_shell: return
+ if not runners_roll:
+  action_shell.hide()
+  return
+ var rolling: bool = presenter.rolling_mesh.visible
+ var base := float(settings.opacity)
+ var opacity := shell_fade.opacity(base if rolling else 0.0, base)
+ presenter.rolling_mesh.transparency = 1.0 - (opacity if rolling else base)
+ action_shell.visible = not inspecting and not rolling and opacity > 0.0
+ if action_shell.visible:
+  action_shell.global_transform = presenter.rolling_mesh.global_transform
+  action_shell.transparency = 1.0 - opacity
+
+func finish_shell_fade() -> void:
+ shell_fade.elapsed = ShellFade.DURATION
+ _draw_shell()
 
 func apply_settings(values: Dictionary, boost_scale: float) -> void:
  settings.merge(values, true)
@@ -312,22 +350,19 @@ func start_trick() -> void:
   sets[character].trick_index = trick_index
   mesh = tricks[trick_index]
  if motion in [&"loop", &"target_boost"] or presenter.specials.smash_remaining > 0.0: return
- trick_turn = pick_trick_turn()
  show()
  _sync_visibility()
  place_trick(0.0)
 
-func pick_trick_turn() -> float:
- return TRICK_TURN if trick_rng.randi_range(0, 1) else -TRICK_TURN
-
-static func trick_basis(camera: Camera3D, turn: float, progress: float) -> Basis:
- var angle := lerpf(-turn, turn, smoothstep(0.0, 1.0, progress))
+static func trick_basis(camera: Camera3D, progress: float) -> Basis:
+ # Give each endpoint a visible beat even on the shortest combo.
+ var angle := lerpf(-TRICK_TURN, TRICK_TURN, smoothstep(1.0 / 6.0, 5.0 / 6.0, progress))
  return player_facing_basis(camera) * Basis(Vector3.UP, angle)
 
 func place_trick(progress: float) -> void:
  if not visible: return
  var model_scale := radius * float(settings.model) if not tricks.is_empty() else radius * 4.4
- var facing := trick_basis(presenter.table.camera, trick_turn, progress)
+ var facing := trick_basis(presenter.table.camera, progress)
  global_transform = Transform3D(facing.scaled(Vector3.ONE * model_scale), presenter.spin_root.global_position)
 
 func restore_ball() -> void:

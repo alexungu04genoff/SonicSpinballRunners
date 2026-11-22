@@ -40,7 +40,7 @@ var yaw := 0.0
 var pitch := 0.0
 var roll_angle := 0.0
 var trick_time := 0.0
-var trick_turn := 0.0
+var shell_fade := Pose.ShellFade.new()
 var tail_time := 0.0
 var flight_heading := Vector2.RIGHT
 var hint: Label
@@ -214,18 +214,20 @@ func _slider(id: String, caption: String, minimum: float, maximum: float, step: 
  update.call(slider.value)
 
 func _select_clip(index: int) -> void:
+ var previous := active_clip
  active_clip = picker.get_item_metadata(index)
  var flight_clip: String = Assets.FLIGHT_CLIPS.get(pose.character, "")
  if active_clip == flight_clip:
   flight_heading = pose.flight_heading if pose.flying else pose.initial_flight_heading()
  hint.text = ("Steer with ← / → or the left stick\n" if active_clip == flight_clip else "") + "Drag table to orbit · Wheel to zoom\n" + ("F8 to return to table" if embedded else "C to cycle cameras · F8 to resume")
  var rolling := active_clip == roll_clip
+ if not previous.is_empty() and (previous == roll_clip) != rolling:
+  shell_fade.start(1.0 - shell.transparency if shell.visible else 0.0)
  var trick := trick_names.find(active_clip)
  held.visible = trick >= 0 and not tricks.is_empty()
  if held.visible:
   held.mesh = tricks[trick]
   trick_time = 0.0
-  trick_turn = pose.pick_trick_turn()
  if curl: curl.visible = rolling
  if trailing_tails: trailing_tails.visible = rolling
  if rig:
@@ -246,8 +248,7 @@ func _update_preview() -> void:
  if trailing_tails: trailing_tails.scale = art.scale
  shell.scale = Vector3.ONE * sliders.ball.value
  var painted_ball := rolling and curl == null
- shell.visible = painted_ball or ((rolling or shell_on_poses.button_pressed) and sliders.opacity.value > 0.0)
- shell.transparency = 0.0 if painted_ball else 1.0 - sliders.opacity.value
+ _draw_shell()
  sliders.opacity.editable = not painted_ball
  if curl: curl.set_instance_shader_parameter("roll_exposure", sliders.blur.value)
  sliders.blur.editable = rolling and curl != null
@@ -260,6 +261,14 @@ func _update_preview() -> void:
  for id: String in Pose.DEFAULTS: values[id] = sliders[id].value
  pose.apply_settings(values, sliders.boost.value)
  _aim_camera()
+
+func _draw_shell() -> void:
+ var rolling := active_clip == roll_clip
+ var strength := float(sliders.opacity.value) if curl else 1.0
+ var rest := strength if rolling or shell_on_poses.button_pressed else 0.0
+ var opacity := shell_fade.opacity(rest, strength)
+ shell.visible = opacity > 0.0
+ shell.transparency = 1.0 - opacity
 
 func _aim_camera() -> void:
  var camera: Camera3D = game.presentation.camera
@@ -315,7 +324,7 @@ func view_state() -> Dictionary:
  for id: String in sliders: values[id] = sliders[id].value
  return {"clip": active_clip, "playing": playing, "sliders": values, "pitch": pitch, "yaw": yaw,
   "angle": roll_angle, "tails": tail_time, "heading": flight_heading, "shell": shell_on_poses.button_pressed,
-  "trick_time": trick_time, "trick_turn": trick_turn,
+  "trick_time": trick_time,
   "time": player.current_animation_position if player and player.is_playing() else 0.0}
 
 func restore_view(saved: Dictionary) -> void:
@@ -333,7 +342,6 @@ func restore_view(saved: Dictionary) -> void:
  if playing != saved.playing: _toggle_playback()
  roll_angle = saved.angle
  trick_time = saved.trick_time
- trick_turn = saved.trick_turn
  tail_time = saved.tails
  flight_heading = saved.heading
  _update_preview()
@@ -360,8 +368,11 @@ func _process(delta: float) -> void:
  var rolling := active_clip == roll_clip
  var flying: bool = active_clip == Assets.FLIGHT_CLIPS.get(pose.character, "")
  if playing:
+  if shell_fade.elapsed < Pose.ShellFade.DURATION:
+   shell_fade.advance(delta)
+   _draw_shell()
   if player and rig.visible: player.advance(delta)
-  if held.visible: trick_time = fposmod(trick_time + delta, 2.0 * Celebration.MILESTONE_TRICK_SECONDS)
+  if held.visible: trick_time = fposmod(trick_time + delta, Celebration.MILESTONE_TRICK_SECONDS)
   if flying:
    var steer: float = game.controls.virtual_steering if game.controls.virtual_enabled else Input.get_axis("steer_left", "steer_right")
    if not is_zero_approx(steer): flight_heading = Vector2(signf(steer), 0)
@@ -383,8 +394,7 @@ func _orient_model() -> void:
   frame = game.character.spin_root.basis.orthonormalized()
   if trailing_tails: Assets.sample_roll_tails(trailing_tails, tail_time)
  elif held.visible:
-  var progress := pingpong(trick_time / Celebration.MILESTONE_TRICK_SECONDS, 1.0)
-  frame = Pose.trick_basis(orbit, trick_turn, progress)
+  frame = Pose.trick_basis(orbit, trick_time / Celebration.MILESTONE_TRICK_SECONDS)
  elif active_clip == Assets.DASH_RING.get(pose.character):
   var direction: Vector2 = pose.motion_direction if pose.motion == &"spring" else Vector2.UP
   frame = Pose.spring_basis(orbit, pivot.global_position, direction)

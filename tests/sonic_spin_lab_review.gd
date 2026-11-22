@@ -63,7 +63,7 @@ func run() -> void:
  var character: String = game.character_id
  check(lab.picker.item_count == {"sonic": 14, "tails": 16, "knuckles": 15, "shadow": 14, "rouge": 15, "amy": 14, "blaze": 15}[character] and lab.cameras.item_count == 4, "Gameplay clips and the four gameplay cameras are selectable")
  var point: Vector2 = game.ball.position
- check(is_equal_approx(lab.sliders.speed.value, 2.0) and is_equal_approx(lab.sliders.opacity.value, 0.30) and is_equal_approx(lab.sliders.blur.value, 1.0), "Inspection opens with the selected roll defaults")
+ check(is_equal_approx(lab.sliders.speed.value, 2.0) and is_equal_approx(lab.sliders.opacity.value, 0.45) and is_equal_approx(lab.sliders.blur.value, 1.0), "Inspection opens with the selected roll defaults")
  var score: int = game.score
  var angle: float = lab.roll_angle
  for frame in 6: await process_frame
@@ -170,8 +170,8 @@ func run() -> void:
    var model: Node3D = lab.held if clip in lab.trick_names else lab.rig
    if clip in lab.trick_names:
     var relative: Basis = lab.orbit.global_basis.orthonormalized().inverse() * model.global_basis.orthonormalized()
-    var yaw_degrees := absf(rad_to_deg(atan2(relative.z.x, relative.z.z)))
-    check(relative.y.is_equal_approx(Vector3.UP) and yaw_degrees > 6.0 and yaw_degrees < 7.0, clip + " turns toward the player during playback")
+    var yaw_degrees := rad_to_deg(atan2(relative.z.x, relative.z.z))
+    check(relative.y.is_equal_approx(Vector3.UP) and yaw_degrees > -11.0 and yaw_degrees < -9.0, clip + " approaches center from the left during playback")
     lab._toggle_playback()
     lab.yaw = 0.45
     lab.pitch = 0.48
@@ -476,7 +476,7 @@ func review_flight(session: Node, game: Node) -> void:
   expected = (expected + 1) % 3
   check(pose.visible and pose.mesh == pose.tricks[expected] and not pose.motion_rig.visible, character.capitalize() + " performs the next trick at hit %d" % milestone)
   var relative: Basis = game.presentation.camera.global_basis.orthonormalized().inverse() * pose.global_basis.orthonormalized()
-  check(relative.y.is_equal_approx(Vector3.UP) and is_equal_approx(absf(rad_to_deg(atan2(relative.z.x, relative.z.z))), 20.625), character.capitalize() + "'s trick turns horizontally relative to the play camera")
+  check(relative.y.is_equal_approx(Vector3.UP) and is_equal_approx(rad_to_deg(atan2(relative.z.x, relative.z.z)), 27.421875), character.capitalize() + "'s trick turns right relative to the play camera")
   card._process(card.DURATION)
   check(pose.motion_rig.visible and not game.character.rolling_mesh.visible, "The live flight rig resumes after the trick")
  specials._physics_process(specials.flight_remaining + 0.01)

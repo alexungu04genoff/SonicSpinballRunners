@@ -241,7 +241,7 @@ func run() -> void:
   if id == "tails": check_roll_heading()
   if is_instance_valid(pose.runners_roll):
    var shell: MeshInstance3D = game.character.rolling_mesh
-   check(shell.mesh is SphereMesh and pose.runners_roll.visible and shell.transparency > 0.0, "The selected Runners character wears a translucent shell")
+   check(shell.mesh is SphereMesh and pose.runners_roll.visible and is_equal_approx(1.0 - shell.transparency, 0.45), id + " wears the 45 percent outer shell")
   else:
    check(is_zero_approx(game.character.rolling_mesh.transparency), "The procedural shell stays opaque without a Runners model")
   for cached: Dictionary in pose.sets.values():
@@ -256,22 +256,31 @@ func run() -> void:
    check(scoring.multiplier == tier and card.visible and card.milestone == tier and card.points == game.score - start_score, "%s gets the exact receipt at ×%d" % [id, tier])
    var duration: float = [0.20, 0.25, 0.30][tier - 2]
    var neutral: Basis = game.presentation.camera.global_basis.orthonormalized()
-   var direction := 0.0
+   if tier == 2 and pose.runners_roll:
+    pose._process(0.025)
+    check(pose.action_shell.is_visible_in_tree() and is_equal_approx(1.0 - pose.action_shell.transparency, 0.675) and pose.action_shell.get_child_count() == 0 and not pose.runners_roll.is_visible_in_tree(), id + " pulses just the round shell while the trick plays")
+    pose._process(0.076)
+    check(not pose.action_shell.visible and pose.visible, id + " clears the shell before the shortest trick ends")
    if unfolds:
     var relative: Basis = neutral.inverse() * pose.global_basis.orthonormalized()
     var angle := atan2(relative.z.x, relative.z.z)
-    direction = signf(angle)
-    check(relative.y.is_equal_approx(Vector3.UP) and is_equal_approx(absf(rad_to_deg(angle)), 30.0) and pose.global_position.is_equal_approx(game.character.spin_root.global_position), id + " enters the trick at the roll center, turned 30 degrees to one side")
+    check(relative.y.is_equal_approx(Vector3.UP) and is_equal_approx(rad_to_deg(angle), -30.0) and pose.global_position.is_equal_approx(game.character.spin_root.global_position), id + " enters the trick at the roll center, turned 30 degrees left")
    card._process(duration * 0.5)
    if unfolds: check(pose.global_basis.orthonormalized().is_equal_approx(neutral) and pose.global_position.is_equal_approx(game.character.spin_root.global_position), id + " faces the player at the roll center halfway through the trick")
-   card._process(duration * 0.5 - 0.001)
+   card._process(duration / 3.0)
    if unfolds:
     var relative: Basis = neutral.inverse() * pose.global_basis.orthonormalized()
-    check(relative.y.is_equal_approx(Vector3.UP) and absf(rad_to_deg(atan2(relative.z.x, relative.z.z)) + direction * 30.0) < 0.01, id + " finishes 30 degrees on the opposite side")
+    check(relative.y.is_equal_approx(Vector3.UP) and is_equal_approx(rad_to_deg(atan2(relative.z.x, relative.z.z)), 30.0), id + " reaches 30 degrees right with a sixth of the hold left")
     check(pose.global_position.is_equal_approx(game.character.spin_root.global_position), id + " finishes at exactly the rolling model's pivot")
+   card._process(duration / 6.0 - 0.001)
    check(pose.visible == unfolds and game.character.rolling_mesh.visible != unfolds, "The ×%d trick holds for its full beat" % tier)
    card._process(0.002)
    check(not pose.visible and game.character.rolling_mesh.visible and card.visible, "The ×%d trick restores the Ball while the receipt stays readable" % tier)
+   if tier == 2 and pose.runners_roll:
+    pose._process(0.025)
+    check(is_equal_approx(1.0 - game.character.rolling_mesh.transparency, 0.675) and not pose.action_shell.visible and pose.runners_roll.is_visible_in_tree(), id + " pulses the same shell on the return to roll")
+    pose._process(0.076)
+    check(is_equal_approx(1.0 - game.character.rolling_mesh.transparency, 0.45), id + " settles back to the regular shell opacity")
   var before: int = game.score
   hit()
   check(scoring.multiplier == 4 and card.visible and card.character == id and card.milestone == 5 and card.points == game.score - before, "Fifth builder displays the selected pose and exact award")
@@ -336,11 +345,11 @@ func run() -> void:
   ball.linear_velocity = Vector2.ZERO
   pose._process(0.0)
   check(is_zero_approx(pose.runners_roll.get_instance_shader_parameter("roll_exposure")), "Curled Sonic keeps sharp textures at rest")
-  check(is_equal_approx(1.0 - game.character.rolling_mesh.transparency, 0.3) and is_zero_approx(pose.runners_roll.transparency), "Sonic's shell is 30 percent opaque at rest")
+  check(is_equal_approx(1.0 - game.character.rolling_mesh.transparency, 0.45) and is_zero_approx(pose.runners_roll.transparency), "Sonic's shell is 45 percent opaque at rest")
   ball.linear_velocity = Vector2.RIGHT * ball.radius * 40
   pose._process(0.0)
   check(is_equal_approx(pose.runners_roll.get_instance_shader_parameter("roll_exposure"), 1.0), "Fast free roll reaches full directional exposure")
-  check(is_equal_approx(1.0 - game.character.rolling_mesh.transparency, 0.3), "The shell stays 30 percent opaque at full blur")
+  check(is_equal_approx(1.0 - game.character.rolling_mesh.transparency, 0.45), "The shell stays 45 percent opaque at full blur")
   ball.has_track_frame = true
   ball.track_speed = -ball.radius * 18
   pose._process(0.0)

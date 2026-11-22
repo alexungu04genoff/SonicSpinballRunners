@@ -109,6 +109,7 @@ static func load_set(path: String, painted: ShaderMaterial, id: String) -> Dicti
  var tricks: Array[Mesh] = []
  for clip: String in tricks_for_character: tricks.append(poses[clip])
  var result := {"roll": roll, "tricks": tricks}
+ if id in ["rouge", "amy", "blaze"]: result.shell_markings = shell
  if id == "tails":
   var tails := MeshInstance3D.new()
   tails.name = "TrailingTails"
