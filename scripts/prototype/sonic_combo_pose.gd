@@ -2,9 +2,8 @@ extends MeshInstance3D
 ## A rigid, camera-facing celebration at the live Ball. The rig is posed offline.
 const Assets = preload("res://experiments/visual_lab/runners_sonic_assets.gd")
 const LEGACY_POSE := "res://experiments/visual_lab/local/runtime/sonic_sa1_combo.glb"
-const SHELL_REST_OPACITY := 0.14
-const SHELL_SPIN_OPACITY := 0.30
-const DEFAULTS := {"model": 1.0, "ball": 1.0, "blur": 1.0, "speed": 1.0, "opacity": SHELL_SPIN_OPACITY}
+const Presenter = preload("res://experiments/visual_lab/sonic_presenter.gd")
+const DEFAULTS := {"model": 1.0, "ball": 1.0, "blur": 1.0, "speed": Presenter.SONIC_ROLL_SPEED, "opacity": 0.30}
 var settings := DEFAULTS.duplicate()
 var presenter: Node3D
 var radius: float
@@ -52,6 +51,7 @@ func _select_roll(id: String) -> void:
  set_process(runners_roll.visible)
  if runners_roll.visible:
   presenter.rolling_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+  presenter.rolling_mesh.transparency = 1.0 - float(settings.opacity)
   _process(0.0)
  else:
   presenter.rolling_mesh.transparency = 0.0
@@ -61,8 +61,6 @@ func _process(_delta: float) -> void:
  var ball: PlaygroundBall = presenter.ball
  var speed := absf(ball.track_speed) if ball.has_track_frame else ball.linear_velocity.length()
  var exposure := 0.0 if ball.serve_pending else smoothstep(5.0, 32.0, speed / ball.radius)
- # The existing painted sphere and its opaque curled child share the roll pivot.
- presenter.rolling_mesh.transparency = 1.0 - float(settings.opacity) * lerpf(SHELL_REST_OPACITY / SHELL_SPIN_OPACITY, 1.0, exposure)
  runners_roll.set_instance_shader_parameter("roll_exposure", exposure * float(settings.blur))
 
 func apply_settings(values: Dictionary) -> void:

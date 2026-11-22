@@ -2,7 +2,7 @@
 
 ## Prototype combo celebrations — 2026-11-22
 
-Sonic's local spin preview opens on the paused playfield with F8. It provides camera presets, orbit, zoom, animation playback, and independent controls for Sonic's size, the original translucent ball shell, spin speed and blur. Resuming retains the visual tuning for the current run.
+Sonic's local spin preview opens on the paused playfield with F8. It provides camera presets, orbit, zoom, animation playback, and independent controls for Sonic's size, the original translucent ball shell, spin speed and blur. The defaults are 30% shell opacity, 2× spin speed and 100% blur strength. Sonic faces his travel direction and spins in a plane perpendicular to the surface beneath him, including on ramps and Loops. Resuming retains the visual tuning for the current run.
 
 Prototype celebrates 5, 8, 10 and every subsequent fifth accepted builder hit in one live combo. Count completed Ring Links and fresh builders at the multiplier cap. The scoring multiplier still tops out at ×4. With the local Sonic Runners assets installed, Sonic rolls in his original curled pose. The surface blur grows with speed. At each milestone he uncurls at the moving Ball into the next of three original jump tricks. The sequence repeats across combos within the run. The corner receipt shows the hit count and triggering award. Each celebration lasts 0.90 seconds. A higher milestone changes the pose and receipt on the original clock. Shared builds use the procedural roll and repository-authored Sonic illustration. Tails, Knuckles and Shadow use temporary corner cards. Placement, blur and timing are pending play review. [Combo review and reproduction](combo-celebration/README.md)
 

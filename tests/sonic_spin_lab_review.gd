@@ -42,6 +42,7 @@ func run() -> void:
  check(paused and lab.orbit.get_viewport() == game.presentation.camera.get_viewport() and lab.pivot.get_world_3d() == game.character.get_world_3d(), "Inspector uses the actual paused table and play viewport")
  check(lab.picker.item_count == 15 and lab.cameras.item_count == 4, "Original clips and the four gameplay cameras are selectable")
  var point: Vector2 = game.ball.position
+ check(is_equal_approx(lab.sliders.speed.value, 2.0) and is_equal_approx(lab.sliders.opacity.value, 0.30) and is_equal_approx(lab.sliders.blur.value, 1.0), "Inspection opens with the selected Sonic defaults")
  var score: int = game.score
  var angle: float = lab.roll_angle
  for frame in 6: await process_frame
@@ -115,9 +116,15 @@ func run() -> void:
  var shortcut := InputEventKey.new()
  shortcut.keycode = KEY_F8
  shortcut.pressed = true
+ game.ball.serve_pending = false
+ game.ball.linear_velocity = Vector2(230, -140)
+ game.character._process(1.0 / 60.0)
  root.push_input(shortcut)
  check(session.state == "spin_lab" and paused, "F8 opens the preview during ordinary play")
  if session.state == "spin_lab":
+  session.spin_lab._process(0.04)
+  var preview_axle: Vector3 = session.spin_lab.pivot.global_basis.x.normalized()
+  check(preview_axle.is_equal_approx(game.character.rolling_mesh.global_basis.x.normalized()), "The paused curl keeps the live roll axle on a diagonal heading")
   shortcut.keycode = KEY_C
   var old_preset: int = game.presentation.camera_preset
   root.push_input(shortcut)

@@ -7,6 +7,8 @@ var start := Vector2.ZERO
 var destination := Vector2.ZERO
 var elapsed := 0.0
 var drain := false
+var sonic_roll: MeshInstance3D
+var start_roll_angle := 0.0
 const DURATION := 1.25
 
 func begin(owner_game: Node, target: Vector2, drained: bool) -> void:
@@ -17,6 +19,12 @@ func begin(owner_game: Node, target: Vector2, drained: bool) -> void:
  process_mode = Node.PROCESS_MODE_PAUSABLE
  proxy = game.character.spin_root.duplicate()
  game.presentation.add_child(proxy)
+ if game.character.character_id == "sonic":
+  var heading: Vector2 = game.character.sonic_heading
+  if not drain and not start.is_equal_approx(destination): heading = start.direction_to(destination)
+  proxy.basis = game.character.flat_roll_frame(heading)
+  sonic_roll = proxy.get_child(game.character.rolling_mesh.get_index())
+  start_roll_angle = game.character.sonic_roll_angle
  game.character.hide()
  _draw(0.0)
 
@@ -48,7 +56,10 @@ func _draw(progress: float) -> void:
  proxy.position = TablePresentation.map_point(point, game.presentation.ball_height() + lift)
  proxy.scale = Vector3.ONE * maxf(0.001, size)
  proxy.visible = size > 0.001
- proxy.rotation.z = progress * TAU
+ if sonic_roll:
+  sonic_roll.basis = Basis(Vector3.RIGHT, start_roll_angle + progress * TAU * game.character.roll_speed_scale)
+ else:
+  proxy.rotation.z = progress * TAU
 
 func _exit_tree() -> void:
  if is_instance_valid(proxy): proxy.queue_free()

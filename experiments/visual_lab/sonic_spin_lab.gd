@@ -196,7 +196,7 @@ func _select_clip(index: int) -> void:
     rig.scale = Vector3.ONE / source_radius
     player.play(active_clip)
     player.advance(0.0)
- roll_angle = 0.0
+ roll_angle = game.character.sonic_roll_angle if rolling else 0.0
  _update_preview()
 
 func _update_preview() -> void:
@@ -211,7 +211,7 @@ func _update_preview() -> void:
  shell.transparency = 1.0 - sliders.opacity.value
  if curl: curl.set_instance_shader_parameter("roll_exposure", sliders.blur.value)
  sliders.blur.editable = rolling and curl != null
- pivot.rotation = Vector3(roll_angle, 0, 0) if rolling else Vector3(0, roll_angle, 0)
+ _orient_model()
  var values := {}
  for id: String in Pose.DEFAULTS: values[id] = sliders[id].value
  pose.apply_settings(values)
@@ -276,8 +276,13 @@ func _process(delta: float) -> void:
  if active_clip.is_empty() or not playing: return
  if player and rig.visible: player.advance(delta)
  roll_angle = fmod(roll_angle + delta * TAU * float(sliders.speed.value), TAU)
- if active_clip == "sn_ball_loop": pivot.rotation.x = roll_angle
- else: pivot.rotation.y = roll_angle
+ _orient_model()
+
+func _orient_model() -> void:
+ var frame := Basis(Vector3.UP, roll_angle)
+ if active_clip == "sn_ball_loop":
+  frame = game.character.spin_root.basis.orthonormalized() * Basis(Vector3.RIGHT, roll_angle)
+ pivot.basis = frame.scaled(Vector3.ONE * pose.radius)
 
 func finish() -> void:
  if is_instance_valid(orbit): orbit.free()

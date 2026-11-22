@@ -10,13 +10,16 @@ var flight_wind: MeshInstance3D
 var homing_direction := Vector2.UP
 const MIN_EVENT_DURATION := 0.24
 const EVENT_COOLDOWN := 0.18
+const SONIC_ROLL_SPEED := 2.0
 var state: int = State.SPIN
 var _event_cooldown := 0.0
 var ball: PlaygroundBall
 var table: TablePresentation
 var spin_root: Node3D
 var rolling_mesh: MeshInstance3D
-var roll_speed_scale := 1.0
+var roll_speed_scale := SONIC_ROLL_SPEED
+var sonic_heading := Vector2.DOWN
+var sonic_roll_angle := 0.0
 var riding_track := false
 var marker: Node3D
 var close_camera: Camera3D
@@ -67,6 +70,7 @@ func _build_visuals() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
  if is_instance_valid(specials):
   character_id = specials.character_id
+ roll_speed_scale = SONIC_ROLL_SPEED if character_id == "sonic" else 1.0
  spin_root = Node3D.new()
  spin_root.name = "RollingVisualOnly"
  add_child(spin_root)
@@ -157,6 +161,10 @@ func _on_character_changed(id: String) -> void:
  if character_id == id:
   return
  character_id = id
+ roll_speed_scale = SONIC_ROLL_SPEED if id == "sonic" else 1.0
+ riding_track = false
+ rolling_mesh.rotation = Vector3.ZERO
+ spin_root.rotation = Vector3.ZERO
  resume_gameplay()
  _apply_character_color()
  if close_view:
@@ -369,8 +377,17 @@ func _process(delta: float) -> void:
   animation_delta = 0.0
  _pose_time += animation_delta
  _update_pose_transform(physics_delta)
- # Keep the curled animation spinning at the apex as well as during travel.
- # The smoothed board-plane axis avoids sudden tumbles when velocity reverses.
+ _update_roll(animation_delta)
+ _update_effects(physics_delta)
+ _last_position = ball.position
+ var focus := spin_root.position
+ close_camera.position = focus + Vector3(0.65, 0.65, 2.4)
+ close_camera.look_at(focus)
+
+func _update_roll(delta: float) -> void:
+ if character_id == "sonic":
+  _update_sonic_roll(delta)
+  return
  if riding_track and (not ball.has_track_frame or close_view):
   spin_root.basis *= rolling_mesh.basis
   rolling_mesh.basis = Basis.IDENTITY
@@ -380,17 +397,41 @@ func _process(delta: float) -> void:
    if not riding_track:
     rolling_mesh.basis = ball.track_frame.inverse() * spin_root.basis.orthonormalized()
    spin_root.basis = ball.track_frame
-   rolling_mesh.rotate(Vector3.LEFT, ball.track_speed * physics_delta * roll_speed_scale / ball.radius)
+   rolling_mesh.rotate(Vector3.LEFT, ball.track_speed * delta * roll_speed_scale / ball.radius)
    riding_track = true
   else:
-   _advance_spin(physics_delta, ball.linear_velocity)
+   _advance_spin(delta, ball.linear_velocity)
  if close_view and not capture_hold:
   spin_root.rotate(Vector3(1, 0, 0.5).normalized(), delta * 22.0)
- _update_effects(physics_delta)
- _last_position = ball.position
- var focus := spin_root.position
- close_camera.position = focus + Vector3(0.65, 0.65, 2.4)
- close_camera.look_at(focus)
+
+static func flat_roll_frame(heading: Vector2) -> Basis:
+ # Runners Sonic faces model +Z. Local X is the axle through his sides.
+ return Basis.looking_at(Vector3(heading.x, 0, heading.y), Vector3.UP, true)
+
+func _update_sonic_roll(delta: float) -> void:
+ var frame: Basis
+ var spin_rate := 0.0
+ riding_track = ball.has_track_frame and not close_view and not ball.serve_pending
+ if riding_track:
+  # The track's -Z points up-course. Turn around its surface normal on rollback.
+  var forward := -ball.track_frame.z
+  if ball.track_speed < 0.0 or (is_zero_approx(ball.track_speed) and forward.dot(spin_root.basis.z) < 0.0):
+   forward = -forward
+  frame = Basis.looking_at(forward, ball.track_frame.y, true)
+  var planar := Vector2(forward.x, forward.z)
+  if planar.length_squared() > 0.000001: sonic_heading = planar.normalized()
+  spin_rate = absf(ball.track_speed) / ball.radius
+ else:
+  if close_view:
+   spin_rate = 22.0
+  elif not ball.serve_pending and delta > 0.0:
+   var velocity := ball.linear_velocity
+   if velocity.length_squared() > 1.0: sonic_heading = velocity.normalized()
+   spin_rate = clampf(velocity.length() / ball.radius, 22.0, 36.0)
+  frame = flat_roll_frame(sonic_heading)
+ sonic_roll_angle = fposmod(sonic_roll_angle + spin_rate * delta * roll_speed_scale, TAU)
+ spin_root.basis = frame.scaled(Vector3.ONE * spin_root.scale.x)
+ rolling_mesh.basis = Basis(Vector3.RIGHT, sonic_roll_angle)
 
 func _advance_spin(delta: float, velocity: Vector2) -> void:
  if delta <= 0.0:

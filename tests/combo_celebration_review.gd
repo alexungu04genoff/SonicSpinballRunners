@@ -113,6 +113,41 @@ func clip() -> void:
  check(not card.sonic_pose.visible and game.character.rolling_mesh.visible, "The original roll returns after the moving pose")
  print("COMBO_CLIP | visible frames=", live_frames, " | posed frames=", posed_frames, " | Ball distance=", travel)
 
+func check_roll_heading() -> void:
+ var actor = game.character
+ var ball: PlaygroundBall = game.ball
+ var velocity := ball.linear_velocity
+ var dt := 1.0 / 60.0
+ for travel: Vector2 in [Vector2.UP, Vector2.RIGHT, Vector2(1, 1), Vector2(-1, -1), Vector2.DOWN]:
+  ball.linear_velocity = travel.normalized() * ball.radius * 28.0
+  var phase: float = actor.sonic_roll_angle
+  actor._process(dt)
+  var facing := Vector3(travel.x, 0, travel.y).normalized()
+  var heading: Basis = actor.spin_root.global_basis.orthonormalized()
+  var axle: Vector3 = actor.rolling_mesh.global_basis.x.normalized()
+  check(heading.y.is_equal_approx(Vector3.UP) and heading.z.is_equal_approx(facing) and axle.is_equal_approx(Vector3.UP.cross(facing)), "Sonic turns upright through " + str(travel))
+  check(is_equal_approx(angle_difference(phase, actor.sonic_roll_angle), 28.0 * 2.0 * dt), "The shell and curl advance at twice the base spin rate")
+ var last_heading: Basis = actor.spin_root.basis
+ ball.linear_velocity = Vector2.ZERO
+ actor._process(dt)
+ check(last_heading.is_equal_approx(actor.spin_root.basis), "Sonic holds his heading at an apex")
+ ball.has_track_frame = true
+ var loop_path = preload("res://scripts/authored_act/loop_path.gd")
+ ball.track_frame = loop_path.local_frame(loop_path.LEAD + loop_path.ARC * 0.5, true)
+ for speed: float in [240.0, -240.0]:
+  ball.track_speed = speed
+  actor._process(dt)
+  var frame: Basis = actor.spin_root.basis.orthonormalized()
+  var axle: Vector3 = actor.rolling_mesh.global_basis.x.normalized()
+  check(frame.y.is_equal_approx(ball.track_frame.y) and frame.z.is_equal_approx(-ball.track_frame.z * signf(speed)) and is_zero_approx(axle.dot(frame.y)), "Sonic follows the Loop surface and signed traversal")
+ ball.has_track_frame = false
+ ball.track_speed = 0.0
+ ball.track_frame = Basis.IDENTITY
+ ball.linear_velocity = Vector2.RIGHT * 180.0
+ actor._process(dt)
+ check(actor.spin_root.global_basis.y.normalized().is_equal_approx(Vector3.UP) and is_zero_approx(actor.rolling_mesh.global_basis.x.y), "Leaving an inverted Loop restores upright rolling immediately")
+ ball.linear_velocity = velocity
+
 func run() -> void:
  for argument: String in OS.get_cmdline_user_args():
   if argument.begins_with("--capture-dir="): output = argument.trim_prefix("--capture-dir=")
@@ -174,6 +209,7 @@ func run() -> void:
  settle_ball()
  # Lock the camera and shader clock only for matched stills and callback checks.
  Engine.time_scale = 0.0
+ check_roll_heading()
  game.presentation.reset_camera(game.ball.position)
  var scoring: Scorecraft = game.scorecraft
  var fallback := preload("res://scripts/prototype/sonic_combo_pose.gd").new()
@@ -254,11 +290,11 @@ func run() -> void:
   ball.linear_velocity = Vector2.ZERO
   pose._process(0.0)
   check(is_zero_approx(pose.runners_roll.get_instance_shader_parameter("roll_exposure")), "Curled Sonic keeps sharp textures at rest")
-  check(is_equal_approx(1.0 - game.character.rolling_mesh.transparency, pose.SHELL_REST_OPACITY) and is_zero_approx(pose.runners_roll.transparency), "Resting Sonic stays opaque under the light shell")
+  check(is_equal_approx(1.0 - game.character.rolling_mesh.transparency, 0.3) and is_zero_approx(pose.runners_roll.transparency), "Sonic's shell is 30 percent opaque at rest")
   ball.linear_velocity = Vector2.RIGHT * ball.radius * 40
   pose._process(0.0)
   check(is_equal_approx(pose.runners_roll.get_instance_shader_parameter("roll_exposure"), 1.0), "Fast free roll reaches full directional exposure")
-  check(is_equal_approx(1.0 - game.character.rolling_mesh.transparency, pose.SHELL_SPIN_OPACITY), "The painted shell reaches its spin opacity alongside the model blur")
+  check(is_equal_approx(1.0 - game.character.rolling_mesh.transparency, 0.3), "The shell stays 30 percent opaque at full blur")
   ball.has_track_frame = true
   ball.track_speed = -ball.radius * 18
   pose._process(0.0)
@@ -299,6 +335,8 @@ func run() -> void:
  game._on_retry_requested()
  check(is_instance_valid(game.transfer) and not card.visible and scoring.builder_hits == 0, "Retry clears the cut-in and hit count")
  check(not card.sonic_pose.visible and game.transfer.proxy.get_child(0).visible, "The checkpoint transfer borrows the restored rolling mesh")
+ game.transfer._process(game.transfer.DURATION * 0.15)
+ check(game.transfer.proxy.basis.y.normalized().is_equal_approx(Vector3.UP) and is_zero_approx(game.transfer.sonic_roll.global_basis.x.normalized().y), "Sonic's checkpoint return rolls on a level axle")
  game.transfer._process(game.transfer.DURATION)
  settle_ball()
  five()
