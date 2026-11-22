@@ -25,6 +25,8 @@ PREFIX, CURL, ANGLES = {
     "rouge": ("ru", "ru_jump_ball_loop", (-40, -45, -25)),
     "amy": ("am", "am_jump_ball_loop", (-40, -45, -25)),
     "blaze": ("bl", "bl_jump_ball_loop", (-40, -45, -25)),
+    "cream": ("cr", "cr_jump_ball_loop", (-40, -45, -25)),
+    "big": ("bg", "bg_jump_ball_loop", (-40, -45, -25)),
 }[CHARACTER]
 SOURCE = ROOT / "runners-decomp" / CHARACTER / f"{CHARACTER.title()} Runners - original animations.glb"
 OUTPUT = ROOT / "runtime" / f"{CHARACTER}_runners_poses.glb"
@@ -178,7 +180,7 @@ def bake():
         if name == CURL:
             mesh["preview_centers"] = centers
             mesh["pose_center_tracks"] = center_tracks
-            if CHARACTER in ["knuckles", "blaze"]:
+            if CHARACTER in ["knuckles", "blaze", "big"]:
                 attack_name = f"{PREFIX}_jump_bunk_loop"
                 mesh["slam_front"] = fronts[attack_name]
             bake_roll_map(mesh)

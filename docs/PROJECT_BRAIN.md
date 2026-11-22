@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Nine playable characters
+
+Cream shares the Flight action and controlled physics tuning with Tails. Big shares the Power action and heavy-impact tuning with Knuckles. Each has 17 original Runners clips. Cream steers with her ear-flight loop. Big uses his own attack for the one-second dive that ends Table Smash. Both share the roster's three-trick rotation, spring, panel and Loop presentation.
+
 ## Seven playable characters — 2026-11-22
 
 Amy shares Speed with Sonic and Shadow. Rouge steers through Flight like Tails. Blaze uses the same two-second Table Smash as Knuckles. Each has her own Runners curl, three tricks, spring and Boost clips. At the default 1.2× setting, everyone completes 2.7 strides per second on a panel or Target Boost and 3 on a Loop, including rollback. Tails now takes about 1.14 seconds to weave his two tails once while rolling. His flight animation still plays at its original speed.

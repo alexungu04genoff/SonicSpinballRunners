@@ -61,6 +61,9 @@ func review_key(event: InputEvent) -> void:
  settle_ball()
  if key == KEY_F9:
   game.set_celebration_retro(card.get_parent() == game.hud)
+ elif key in [KEY_8, KEY_9] and event.alt_pressed:
+  game.specials.select_character(CharacterSpecials.CHARACTER_IDS[key - KEY_1])
+  five()
  elif key == KEY_9:
   # Top up the real target and take the normal goal/draft transition.
   game._on_mechanic_score(&"switch", "review-target", game.act_score_target, game.active_scoring_id)
@@ -212,7 +215,7 @@ func run() -> void:
   check(is_instance_valid(pose.runners_roll) and pose.tricks.size() == 3, "Original curled Sonic and all three tricks loaded")
  if "--interactive" in OS.get_cmdline_user_args():
   settle_ball()
-  root.title = "Combo review   |   1–7 Character   Shift+5 / 8 / 0 Hits   Enter Pause   9 Goal   F9 Retro"
+  root.title = "Combo review   |   1–7 / Alt+8 / Alt+9 Character   Shift+5 / 8 / 0 Hits   Enter Pause   9 Goal   F9 Retro"
   root.window_input.connect(review_key)
   return
  preload("res://tests/render_profile_support.gd").disable_native_input(session)
@@ -238,6 +241,8 @@ func run() -> void:
  fallback.free()
  for id: String in CharacterSpecials.CHARACTER_IDS:
   game.specials.select_character(id)
+  if "--require-runners-set" in OS.get_cmdline_user_args():
+   check(is_instance_valid(pose.runners_roll) and pose.tricks.size() == 3, id + " loads its own curl and all three tricks")
   if id == "tails": check_roll_heading()
   if is_instance_valid(pose.runners_roll):
    var shell: MeshInstance3D = game.character.rolling_mesh

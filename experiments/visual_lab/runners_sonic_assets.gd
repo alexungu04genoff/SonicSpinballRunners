@@ -1,13 +1,13 @@
 extends RefCounted
 ## Local-only Runners assets shared by the Prototype and the spin preview.
 const LOCAL_SET := "res://experiments/visual_lab/local/runtime/sonic_runners_poses.glb"
-const CURLS := {"sonic": "sn_ball_loop", "tails": "tl_jump_ball_loop", "knuckles": "kn_jump_ball_loop", "shadow": "sh_jump_ball_loop", "rouge": "ru_jump_ball_loop", "amy": "am_jump_ball_loop", "blaze": "bl_jump_ball_loop"}
-const PREFIX := {"sonic": "sn", "tails": "tl", "knuckles": "kn", "shadow": "sh", "rouge": "ru", "amy": "am", "blaze": "bl"}
-const POWER_DIVE := {"knuckles": "kn_jump_bunk_loop", "blaze": "bl_jump_bunk_loop"}
+const CURLS := {"sonic": "sn_ball_loop", "tails": "tl_jump_ball_loop", "knuckles": "kn_jump_ball_loop", "shadow": "sh_jump_ball_loop", "rouge": "ru_jump_ball_loop", "amy": "am_jump_ball_loop", "blaze": "bl_jump_ball_loop", "cream": "cr_jump_ball_loop", "big": "bg_jump_ball_loop"}
+const PREFIX := {"sonic": "sn", "tails": "tl", "knuckles": "kn", "shadow": "sh", "rouge": "ru", "amy": "am", "blaze": "bl", "cream": "cr", "big": "bg"}
+const POWER_DIVE := {"knuckles": "kn_jump_bunk_loop", "blaze": "bl_jump_bunk_loop", "big": "bg_jump_bunk_loop"}
 const FLIGHT := "tl_jump_bunk_loop"
-const FLIGHT_CLIPS := {"tails": FLIGHT, "rouge": "ru_jump_bunk_loop"}
-const DASH_RING := {"sonic": "sn_dashring_loop", "tails": "tl_dashring_loop", "knuckles": "kn_dashring_loop", "shadow": "sh_dashring_loop", "rouge": "ru_dashring_loop", "amy": "am_dashring_loop", "blaze": "bl_dashring_loop"}
-const BOOST := {"sonic": "sn_boost_loop", "tails": "tl_boost_loop", "shadow": "sh_boost_loop", "knuckles": "kn_boost_loop", "rouge": "ru_boost_loop", "amy": "am_boost_loop", "blaze": "bl_boost_loop"}
+const FLIGHT_CLIPS := {"tails": FLIGHT, "rouge": "ru_jump_bunk_loop", "cream": "cr_jump_bunk_loop"}
+const DASH_RING := {"sonic": "sn_dashring_loop", "tails": "tl_dashring_loop", "knuckles": "kn_dashring_loop", "shadow": "sh_dashring_loop", "rouge": "ru_dashring_loop", "amy": "am_dashring_loop", "blaze": "bl_dashring_loop", "cream": "cr_dashring_loop", "big": "bg_dashring_loop"}
+const BOOST := {"sonic": "sn_boost_loop", "tails": "tl_boost_loop", "shadow": "sh_boost_loop", "knuckles": "kn_boost_loop", "rouge": "ru_boost_loop", "amy": "am_boost_loop", "blaze": "bl_boost_loop", "cream": "cr_boost_loop", "big": "bg_boost_loop"}
 const BOOST_SPEED := 1.2
 const DEFAULT_LOOP_CYCLES_PER_SECOND := 3.0
 # Sonic's reference stride is 80 frames at 60 Hz, played at 3x on boost entry.
@@ -112,7 +112,7 @@ static func load_set(path: String, painted: ShaderMaterial, id: String) -> Dicti
  var tricks: Array[Mesh] = []
  for clip: String in tricks_for_character: tricks.append(poses[clip])
  var result := {"roll": roll, "tricks": tricks}
- if id in ["rouge", "amy", "blaze"]: result.shell_markings = shell
+ if id in ["rouge", "amy", "blaze", "cream", "big"]: result.shell_markings = shell
  if id == "tails":
   var tails := MeshInstance3D.new()
   tails.name = "TrailingTails"

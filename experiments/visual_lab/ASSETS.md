@@ -1,6 +1,6 @@
 # Historical model provenance and local-use boundary
 
-The local Amy, Rouge and Blaze scenes supply 16, 17 and 16 controller clips respectively. The converter reads the skinned body, original inverse bind matrices, diffuse textures and joint curves from the existing Runners asset bundle checkout. Generated models, Blender scenes and screenshots stay local. [Conversion and bake](../../docs/combo-celebration/README.md)
+The local Amy, Rouge and Blaze scenes supply 16, 17 and 16 controller clips respectively. Cream and Big each supply 17 clips, including their three tricks and their respective Flight and Power attacks. The converter reads the skinned body, original inverse bind matrices, diffuse textures and joint curves from the existing Runners asset bundle checkout. Generated models, Blender scenes and screenshots stay local. [Conversion and bake](../../docs/combo-celebration/README.md)
 
 **Original Knuckles animations, 2026-11-22.** The local `CharacterModelKnuckles.unity` rig supplies 16 clips, including a curl, three held tricks, spring and boost. Its Power glide enters the controller's `SecondJump` state and plays `kn_jump_bunk_loop`, a ten-frame two-fist spin at 60 Hz. Table Smash rotates that forward attack toward the table. The extracted rig, baked meshes and recordings stay local. [Shared type actions](../../docs/TYPE_ACTIONS.md)
 

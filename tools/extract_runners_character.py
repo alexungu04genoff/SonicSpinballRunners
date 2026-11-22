@@ -212,5 +212,5 @@ def export(character):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("character", choices=["amy", "blaze", "rouge", "sonic", "knuckles", "shadow", "tails"])
+    parser.add_argument("character", choices=["amy", "big", "blaze", "cream", "rouge", "sonic", "knuckles", "shadow", "tails"])
     export(parser.parse_args().character)

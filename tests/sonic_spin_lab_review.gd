@@ -61,7 +61,7 @@ func run() -> void:
  check(paused and lab.orbit.get_viewport() == game.presentation.camera.get_viewport() and lab.pivot.get_world_3d() == game.character.get_world_3d(), "Inspector uses the actual paused table and play viewport")
  var tails: bool = game.character_id == "tails"
  var character: String = game.character_id
- check(lab.picker.item_count == {"sonic": 14, "tails": 16, "knuckles": 15, "shadow": 14, "rouge": 15, "amy": 14, "blaze": 15}[character] and lab.cameras.item_count == 4, "Gameplay clips and the four gameplay cameras are selectable")
+ check(lab.picker.item_count == {"sonic": 14, "tails": 16, "knuckles": 15, "shadow": 14, "rouge": 15, "amy": 14, "blaze": 15, "cream": 15, "big": 15}[character] and lab.cameras.item_count == 4, "Gameplay clips and the four gameplay cameras are selectable")
  var point: Vector2 = game.ball.position
  check(is_equal_approx(lab.sliders.speed.value, 2.0) and is_equal_approx(lab.sliders.opacity.value, 0.45) and is_equal_approx(lab.sliders.blur.value, 1.0), "Inspection opens with the selected roll defaults")
  var score: int = game.score
@@ -111,16 +111,18 @@ func run() -> void:
    lab.picker.item_selected.emit(i)
    lab._process(0.10)
    await capture(clip)
-   if motion_samples and not tails and clip == lab.Assets.BOOST[character]:
+   if not tails and clip == lab.Assets.BOOST[character]:
     lab.yaw = 1.0
     lab.pitch = 0.45
     lab._aim_camera()
     await capture("boost-stride")
-    await sample_motion(lab)
+    if motion_samples: await sample_motion(lab)
     lab.pitch = 0.0
     lab.yaw = 0.0
     lab._aim_camera()
   lab._reset()
+  # Sample the steady roll sliders after the gallery's return-to-curl pulse.
+  lab._process(lab.shell_fade.DURATION)
  var wheel := InputEventMouseButton.new()
  wheel.button_index = MOUSE_BUTTON_WHEEL_UP
  wheel.position = Vector2(800, 420)

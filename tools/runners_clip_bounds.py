@@ -72,7 +72,7 @@ def clip_bounds(path):
         # Ground headings repeat every quarter turn for an axis-aligned box.
         # Flight also uses these samples when steering 30 degrees either way.
         yaw_tracks = {}
-        if name.endswith("_boost_loop") or name in ("tl_jump_bunk_loop", "ru_jump_bunk_loop"):
+        if name.endswith("_boost_loop") or name in ("tl_jump_bunk_loop", "ru_jump_bunk_loop", "cr_jump_bunk_loop"):
             for yaw in range(15, 90, 15):
                 angle = np.deg2rad(yaw)
                 yaw_tracks[yaw] = (np.array([[np.cos(angle), np.sin(angle)],

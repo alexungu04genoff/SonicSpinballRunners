@@ -86,6 +86,8 @@ func run() -> void:
  check(CharacterSpecials.CHARACTERS.sonic.type_action == CharacterSpecials.CHARACTERS.amy.type_action, "Amy shares the exact Speed tuning resource")
  check(CharacterSpecials.CHARACTERS.tails.type_action == CharacterSpecials.CHARACTERS.rouge.type_action, "Rouge shares the exact Flight tuning resource")
  check(CharacterSpecials.CHARACTERS.knuckles.type_action == CharacterSpecials.CHARACTERS.blaze.type_action, "Blaze shares the exact Power tuning resource")
+ check(CharacterSpecials.CHARACTERS.knuckles.type_action == CharacterSpecials.CHARACTERS.big.type_action, "Big shares the exact Power tuning resource")
+ check(CharacterSpecials.CHARACTERS.tails.type_action == CharacterSpecials.CHARACTERS.cream.type_action, "Cream shares the exact Flight tuning resource")
  check(CharacterSpecials.CHARACTERS.sonic.profile != CharacterSpecials.CHARACTERS.shadow.profile, "Shared Speed retains distinct character physics profiles")
  for id: String in CharacterSpecials.CHARACTER_IDS:
   game.specials.select_character(id)

@@ -41,6 +41,8 @@ vec3 curled_colors(vec3 d) {
   color = mix(color, vec3(0.72, 0.69, 0.59), glove);
   float shoe = form(d, vec3(x * 0.47, -0.64, 0.85), vec3(0.40, 0.40, 0.48));
   vec3 shoe_color = character_style == 2 ? vec3(0.73, 0.43, 0.045) : (character_style == 4 ? vec3(0.72, 0.12, 0.42) : (character_style == 6 ? vec3(0.46, 0.16, 0.68) : vec3(0.92, 0.018, 0.025)));
+  if (character_style == 7) shoe_color = vec3(0.89, 0.24, 0.035);
+  if (character_style == 8) shoe_color = vec3(0.34, 0.23, 0.12);
   color = mix(color, shoe_color, shoe);
   // Narrow straps leave most of each shoe red; avoid a single white blob.
   float strap = shoe * (1.0 - smoothstep(0.02, 0.055, abs(d.y + 0.38)));
@@ -67,6 +69,14 @@ vec3 curled_colors(vec3 d) {
   if (character_style == 6) {
    float cuff = glove * smoothstep(0.24, 0.42, abs(d.x));
    color = mix(color, vec3(0.94, 0.76, 0.22), cuff);
+  }
+  if (character_style == 7) {
+   float ear_tip = form(d, vec3(x * 0.65, -0.22, -0.8), vec3(0.23, 0.42, 0.38));
+   color = mix(color, vec3(0.89, 0.34, 0.08), ear_tip);
+  }
+  if (character_style == 8) {
+   float stripe = form(d, vec3(x * 0.78, 0.38, -0.35), vec3(0.24, 0.20, 0.68));
+   color = mix(color, vec3(0.13, 0.075, 0.19), stripe);
   }
  }
  return color;

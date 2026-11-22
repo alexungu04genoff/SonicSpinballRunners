@@ -1,6 +1,6 @@
 # Shared character type actions V1
 
-Each character combines a physics profile with one shared Type Action. Sonic, Shadow and Amy use **Speed · Target Boost**. Tails and Rouge use **Fly · Flight**. Knuckles and Blaze use **Power · Table Smash**.
+Each character combines a physics profile with one shared Type Action. Sonic, Shadow and Amy use **Speed · Target Boost**. Tails, Rouge and Cream use **Fly · Flight**. Knuckles, Blaze and Big use **Power · Table Smash**.
 
 `CharacterDefinition` retains identity, colors, profile and charge rules. Its `type_action` references one resource in `data/types/`. Characters of the same type reference the same action. `TypeAction` owns the type, action label, description and tuning. `CharacterSpecials` dispatches by type, never by character name. Future Fly characters can reference `fly.tres` without another ability implementation.
 
@@ -22,7 +22,7 @@ The existing temporary modifier and bounded rescue lift are shared unchanged: 1.
 
 ## Power: Table Smash
 
-Press Special at full charge to hold the physical Ball at its current table coordinates. The curled model rises for one second. At the apex, Knuckles or Blaze uncurls and plays the character's Runners Power attack for a one-second accelerating descent (`kn_jump_bunk_loop` or `bl_jump_bunk_loop`). The original attack travels forward, so the presenter points the fists along the table’s downward normal. At two seconds the Ball resumes from rest and one expanding shockwave awards nearby targets. Pause holds the action clock. Reposition, retry, character change or transfer cancels a pending impact. The painted Ball follows the same jump and landing when local model assets are unavailable.
+Press Special at full charge to hold the physical Ball at its current table coordinates. The curled model rises for one second. At the apex, the selected character uncurls and plays their Runners Power attack for a one-second accelerating descent (`kn_jump_bunk_loop`, `bl_jump_bunk_loop` or `bg_jump_bunk_loop`). The original attack travels forward, so the presenter points the attack along the table’s downward normal. At two seconds the Ball resumes from rest and one expanding shockwave awards nearby targets. Pause holds the action clock. Reposition, retry, character change or transfer cancels a pending impact. The painted Ball follows the same jump and landing when local model assets are unavailable.
 
 The radius is provisionally 300 px, with a hard 600 px tuning ceiling. Like the former radial blast, it crosses walls within that radius but only affects eligible objects in the active Act:
 
