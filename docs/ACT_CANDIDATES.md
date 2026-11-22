@@ -1,5 +1,9 @@
 # Authored-style Act candidates
 
+[Starfall Alley](starfall-alley/README.md) is the later Easy plunger-table candidate. Its review includes the complete run, individual shots and all five base themes.
+
+## Original three trials
+
 Three hand-authored trial Acts live in `data/acts/Candidates/`. They are outside `Authored`, so they do not enter Prototype's production pool. The five source Acts, engine physics, scoring, themes and bake workflows are unchanged. These are complete editable Act resources, not a new procedural generator.
 
 ## What the current Acts do

@@ -1,0 +1,254 @@
+{
+  "act": "res://data/acts/Candidates/Starfall Alley.tres",
+  "act_fingerprint": "f064745260cdbe6dac333bc4cca5fe06bef427ec172e02b9e6594acf2d6aa123",
+  "source_lf_sha256": "d027f1f54b408d25f93400776df50d8904e1f8d2cce81b8674e073b548b02cf6",
+  "pipeline_fingerprint": "54b042db3a092b7badc1b21918a5875dfc9ee3e4303c3822376af9b3095f632a",
+  "scene": "res://scenes/prototype_run.tscn",
+  "engine": "4.7.2-stable (official)",
+  "renderer": "forward_plus",
+  "driver": "vulkan",
+  "retro_mode": "production",
+  "physics_ticks_per_second": 120,
+  "seed": 3648962628,
+  "theme_overviews": {
+    "green_hill": {
+      "act_bake_sha256": "74cf74633984b73a6abd53d357a9d0851a4dbaed9a86c0a6612138a97589445c",
+      "theme_bake_sha256": "343792b11c5863de59b36d4be328fb758c4873a55cef01eaaafea43720f29959",
+      "disk_acts": 1,
+      "disk_themes": 1,
+      "fallback_builds": 0
+    },
+    "casino_night": {
+      "act_bake_sha256": "cc872e921c55c7985fd9e7e49ec0ce31082e890e68f9ae7a3260cf0fe38def2b",
+      "theme_bake_sha256": "046ba3c8d356041cf6b41011f263e0b62365774ed0e25765f1b4185b068d9593",
+      "disk_acts": 1,
+      "disk_themes": 1,
+      "fallback_builds": 0
+    },
+    "ice_cap": {
+      "act_bake_sha256": "9f36dd44b9754f6f94ccbdfcd54408a24155fd0a22b765bbf9b119330db32522",
+      "theme_bake_sha256": "de3f8b4488a991ef964c10bb8c15f0c746f6b0e9175ca762aca9dc7cce619e55",
+      "disk_acts": 1,
+      "disk_themes": 1,
+      "fallback_builds": 0
+    },
+    "rooftop_run": {
+      "act_bake_sha256": "c9d1fe663876ed6a202cdb9c9efbb3e938805abe4d04c921dcdb226d1abf8b00",
+      "theme_bake_sha256": "c9480d105634b401b8800051d107af56715d2d72c1b87920886fc0a19b0f9e75",
+      "disk_acts": 1,
+      "disk_themes": 1,
+      "fallback_builds": 0
+    },
+    "aquarium_park": {
+      "act_bake_sha256": "c1571d61e881b55d71703e6c299fe11cd2359833bfde74a45d271834df6f4ac5",
+      "theme_bake_sha256": "a50620120b766bb289b9afb6560eb4713960bcd584395a296755b6be96570fc6",
+      "disk_acts": 1,
+      "disk_themes": 1,
+      "fallback_builds": 0
+    }
+  },
+  "green_hill_cases": {
+    "run": {
+      "end_tick": 1237,
+      "points": 1240,
+      "rings": 18,
+      "right_inlane": false,
+      "strikes": [
+        {
+          "tick": 746,
+          "flipper": "lower_left",
+          "hinge_to_tip_fraction": 0.44
+        },
+        {
+          "tick": 1103,
+          "flipper": "lower_left",
+          "hinge_to_tip_fraction": 0.94
+        }
+      ],
+      "feature_scores": [
+        {
+          "tick": 20,
+          "source": "bumper",
+          "id": "act:0:crown_peak",
+          "points": 100
+        },
+        {
+          "tick": 435,
+          "source": "bumper",
+          "id": "act:0:pocket",
+          "points": 300
+        }
+      ],
+      "launch_charge_ticks": 112,
+      "free_play": {
+        "total_time_seconds": 10.317,
+        "time_to_target_seconds": 6.592,
+        "time_target_to_goal_seconds": 3.725,
+        "score_at_target": 1030,
+        "final_score": 1240,
+        "balls_lost": 0
+      }
+    },
+    "short_charge": {
+      "end_tick": 1725,
+      "points": 2855,
+      "rings": 27,
+      "right_inlane": false,
+      "strikes": [
+        {
+          "tick": 133,
+          "flipper": "right_shoulder",
+          "hinge_to_tip_fraction": 0.99
+        },
+        {
+          "tick": 1148,
+          "flipper": "lower_right",
+          "hinge_to_tip_fraction": 0.43
+        },
+        {
+          "tick": 1556,
+          "flipper": "lower_left",
+          "hinge_to_tip_fraction": 0.89
+        }
+      ],
+      "feature_scores": [
+        {
+          "tick": 41,
+          "source": "bumper",
+          "id": "act:0:crown_peak",
+          "points": 100
+        },
+        {
+          "tick": 294,
+          "source": "bumper",
+          "id": "act:0:crown_left",
+          "points": 300
+        },
+        {
+          "tick": 311,
+          "source": "bumper",
+          "id": "act:0:crown_foot",
+          "points": 400
+        },
+        {
+          "tick": 498,
+          "source": "ring_rack",
+          "id": "act:0:crown_rack",
+          "points": 500
+        },
+        {
+          "tick": 764,
+          "source": "bumper",
+          "id": "act:0:pocket",
+          "points": 400
+        }
+      ],
+      "launch_charge_ticks": 62,
+      "free_play": {
+        "total_time_seconds": 14.383,
+        "time_to_target_seconds": 4.075,
+        "time_target_to_goal_seconds": 10.308,
+        "score_at_target": 1010,
+        "final_score": 2855,
+        "balls_lost": 0
+      }
+    },
+    "pocket": {
+      "end_tick": 598,
+      "points": 190,
+      "rings": 6,
+      "right_inlane": false,
+      "strikes": [
+        {
+          "tick": 23,
+          "flipper": "lower_right",
+          "hinge_to_tip_fraction": 0.62
+        },
+        {
+          "tick": 562,
+          "flipper": "lower_left",
+          "hinge_to_tip_fraction": 0.63
+        }
+      ],
+      "feature_scores": [
+        {
+          "tick": 112,
+          "source": "bumper",
+          "id": "act:0:pocket",
+          "points": 100
+        }
+      ]
+    },
+    "buzz": {
+      "end_tick": 516,
+      "points": 500,
+      "rings": 14,
+      "right_inlane": true,
+      "strikes": [
+        {
+          "tick": 23,
+          "flipper": "lower_left",
+          "hinge_to_tip_fraction": 0.74
+        },
+        {
+          "tick": 480,
+          "flipper": "lower_left",
+          "hinge_to_tip_fraction": 1.0
+        }
+      ],
+      "feature_scores": [
+        {
+          "tick": 148,
+          "source": "enemy",
+          "id": "act:0:alley_buzz",
+          "points": 200
+        }
+      ]
+    },
+    "inlane": {
+      "end_tick": 464,
+      "points": 90,
+      "rings": 6,
+      "right_inlane": true,
+      "strikes": [
+        {
+          "tick": 23,
+          "flipper": "lower_left",
+          "hinge_to_tip_fraction": 0.96
+        },
+        {
+          "tick": 428,
+          "flipper": "lower_right",
+          "hinge_to_tip_fraction": 0.48
+        }
+      ],
+      "feature_scores": []
+    },
+    "crown": {
+      "end_tick": 647,
+      "points": 665,
+      "rings": 11,
+      "right_inlane": false,
+      "strikes": [
+        {
+          "tick": 24,
+          "flipper": "right_shoulder",
+          "hinge_to_tip_fraction": 0.93
+        },
+        {
+          "tick": 611,
+          "flipper": "lower_left",
+          "hinge_to_tip_fraction": 1.0
+        }
+      ],
+      "feature_scores": [
+        {
+          "tick": 355,
+          "source": "ring_rack",
+          "id": "act:0:crown_rack",
+          "points": 500
+        }
+      ]
+    }
+  }
+}
