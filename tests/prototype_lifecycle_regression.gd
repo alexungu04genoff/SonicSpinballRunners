@@ -24,7 +24,8 @@ func runtime_refs(game: Node) -> Dictionary:
   observe(refs, key, game.get(key))
  observe(refs, "game", game)
  observe(refs, "combo_celebration", game.combo_celebration)
- observe(refs, "sonic_pose", game.combo_celebration.sonic_pose)
+ observe(refs, "character_pose", game.combo_celebration.character_pose)
+ observe(refs, "flight_rig", game.combo_celebration.character_pose.flight)
  observe(refs, "retirement", game.library.retirement)
  observe(refs, "warm_view", game.library._view)
  for act: RefCounted in game.resident:
@@ -97,6 +98,7 @@ func run() -> void:
   var finished_runs: Array[Dictionary] = []
   for run_index in 2:
    while is_instance_valid(session.setup_menu) and session.setup_menu.checking: await process_frame
+   session.selected_character = "tails" if run_index == 1 else "sonic"
    await session.start_run()
    var game: Node = session.game
    var deadline := Time.get_ticks_msec() + 180000

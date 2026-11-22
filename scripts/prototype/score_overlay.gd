@@ -75,7 +75,7 @@ func _draw() -> void:
  var tint: Color = COMBO_COLORS[clampi(displayed_multiplier - 1, 0, 3)]
  if displayed_multiplier >= 2:
   var marker := at + Vector2(23, -18)
-  var pose: MeshInstance3D = game.combo_celebration.sonic_pose
+  var pose: MeshInstance3D = game.combo_celebration.character_pose
   if is_instance_valid(pose) and pose.is_visible_in_tree():
    var edge := pose.to_global(Vector3.RIGHT * pose.mesh.get_aabb().end.x)
    var projected: Vector2 = game.presentation.camera.unproject_position(edge)

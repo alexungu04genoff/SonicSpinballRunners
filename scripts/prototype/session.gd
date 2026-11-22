@@ -76,7 +76,7 @@ func _ready() -> void:
  var arguments := OS.get_cmdline_user_args()
  start_spin_lab = "--spin-lab" in arguments
  if start_spin_lab:
-  selected_character = "sonic"
+  selected_character = "tails" if "--character=tails" in arguments else "sonic"
   preload("res://scripts/diagnostics/shadow_review.gd").position_review_window(get_window())
  var act_argument := arguments.find("--act")
  if act_argument >= 0 and act_argument + 1 < arguments.size():
@@ -337,18 +337,18 @@ func _show_pause() -> void:
  pause_camera_picker.item_selected.connect(func(index: int):
   game.select_play_camera(pause_camera_picker.get_item_id(index)))
  stack.add_child(pause_camera_picker)
- if _can_inspect_sonic(): _action(stack, "Sonic spin preview   [F8]", _open_spin_lab)
+ if _can_inspect_character(): _action(stack, "%s spin preview   [F8]" % game.character_id.capitalize(), _open_spin_lab)
  _action(stack, "Restart run", start_run)
  _action(stack, "Return to menu", return_to_menu)
  _action(stack, "Quit", _quit)
 
-func _can_inspect_sonic() -> bool:
- if not is_instance_valid(game) or not game.started or game.character_id != "sonic": return false
+func _can_inspect_character() -> bool:
+ if not is_instance_valid(game) or not game.started: return false
  if game.finished or game.closing or game.drafting or game.loading_boundary or is_instance_valid(game.transfer): return false
- return is_instance_valid(game.combo_celebration.sonic_pose.runners_roll)
+ return is_instance_valid(game.combo_celebration.character_pose.runners_roll)
 
 func _open_spin_lab() -> void:
- if not _can_inspect_sonic() or is_instance_valid(spin_lab): return
+ if not _can_inspect_character() or is_instance_valid(spin_lab): return
  if not get_tree().paused: game.toggle_pause()
  if not get_tree().paused: return
  state = "spin_lab"
@@ -549,7 +549,7 @@ func _input(event: InputEvent) -> void:
    get_viewport().set_input_as_handled()
    _resume_spin_lab()
    return
-  if state in ["playing", "paused"] and event.keycode == KEY_F8 and _can_inspect_sonic():
+  if state in ["playing", "paused"] and event.keycode == KEY_F8 and _can_inspect_character():
    get_viewport().set_input_as_handled()
    _open_spin_lab()
    return

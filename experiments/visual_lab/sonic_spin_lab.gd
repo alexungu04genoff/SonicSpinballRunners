@@ -19,6 +19,7 @@ var pivot := Node3D.new()
 var shell := MeshInstance3D.new()
 var art := Node3D.new()
 var curl: MeshInstance3D
+var trailing_tails: MeshInstance3D
 var held := MeshInstance3D.new()
 var tricks: Array[Mesh] = []
 var rig: Node3D
@@ -30,10 +31,14 @@ var pause_button := Button.new()
 var shell_on_poses := CheckBox.new()
 var sliders := {}
 var active_clip := ""
+var roll_clip := ""
+var trick_names: Array
 var playing := true
 var yaw := 0.0
 var pitch := 0.0
 var roll_angle := 0.0
+var flight_heading := Vector2.RIGHT
+var hint: Label
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
@@ -54,11 +59,16 @@ func _ready() -> void:
  panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  panel.add_theme_constant_override("separation", 8)
  scroll.add_child(panel)
- pose = game.combo_celebration.sonic_pose
+ pose = game.combo_celebration.character_pose
+ roll_clip = Assets.CURLS[pose.character]
+ trick_names = Assets.trick_names(pose.character)
  _build_stage()
  _load_models()
  _build_controls()
- _select_clip(0)
+ if pose.flying and player and player.has_animation(Assets.FLIGHT):
+  for i in picker.item_count:
+   if picker.get_item_metadata(i) == Assets.FLIGHT: picker.select(i)
+ _select_clip(picker.selected)
 
 func _build_stage() -> void:
  var camera: Camera3D = game.presentation.camera
@@ -72,7 +82,7 @@ func _build_stage() -> void:
  pivot.process_mode = Node.PROCESS_MODE_ALWAYS
  pivot.global_position = game.character.spin_root.global_position
  pivot.scale = Vector3.ONE * pose.radius
- game.character.rolling_mesh.hide()
+ pose.inspect(true)
  game.hud.hide()
  pivot.add_child(shell)
  var sphere := SphereMesh.new()
@@ -91,14 +101,15 @@ func _load_models() -> void:
   curl = pose.runners_roll.duplicate()
   curl.transform = Transform3D.IDENTITY
   art.add_child(curl)
+  if pose.trailing_tails:
+   trailing_tails = pose.trailing_tails.duplicate()
+   pivot.add_child(trailing_tails)
   tricks = pose.tricks
   var bake: Dictionary = curl.mesh.get_meta("bake", {})
   source_radius = bake.get("runners_source_radius", 1.0)
   centers = bake.get("preview_centers", {})
- var document := GLTFDocument.new()
- var state := Assets.read_state(Assets.ANIMATED, document)
- if state != null:
-  rig = document.generate_scene(state)
+ rig = Assets.animated_scene(pose.character)
+ if rig != null:
   art.add_child(rig)
   player = rig.find_child("AnimationPlayer", true, false)
   if player:
@@ -114,12 +125,19 @@ func _label(parent: Control, caption: String, size_px := 16) -> Label:
  return label
 
 func _build_controls() -> void:
- _label(panel, "Sonic spin preview", 24)
+ _label(panel, "%s spin preview" % pose.character.capitalize(), 24)
  _label(panel, "Animation")
  panel.add_child(picker)
- for clip: String in CLIPS:
-  if clip == "sn_ball_loop" or (clip in Assets.TRICKS and not tricks.is_empty()) or (player and player.has_animation(clip)):
-   picker.add_item(CLIPS[clip])
+ var clips := {}
+ for sonic_clip: String in CLIPS:
+  var clip := sonic_clip.replace("sn_", "tl_") if pose.character == "tails" else sonic_clip
+  if sonic_clip == "sn_ball_loop": clip = roll_clip
+  clips[clip] = CLIPS[sonic_clip]
+  if clip == roll_clip and pose.character == "tails": clips[Assets.FLIGHT] = "Flight"
+ if pose.character == "tails": clips["tl_jump_cannonball_loop"] = "Cannonball"
+ for clip: String in clips:
+  if clip == roll_clip or (clip in trick_names and not tricks.is_empty()) or (player and player.has_animation(clip)):
+   picker.add_item(clips[clip])
    picker.set_item_metadata(picker.item_count - 1, clip)
  picker.item_selected.connect(_select_clip)
  _label(panel, "Table camera")
@@ -128,7 +146,7 @@ func _build_controls() -> void:
  cameras.select(cameras.get_item_index(game.presentation.camera_preset))
  cameras.item_selected.connect(_select_camera)
  _slider("zoom", "Inspection zoom", 0.5, 10.0, 0.05)
- _slider("model", "Sonic model size", 0.25, 2.0, 0.01)
+ _slider("model", "%s model size" % pose.character.capitalize(), 0.25, 2.0, 0.01)
  _slider("ball", "Ball shell size", 0.25, 2.0, 0.01)
  _slider("blur", "Spin blur", 0.0, 1.0, 0.01)
  _slider("speed", "Spin speed", 0.0, 8.0, 0.05)
@@ -149,9 +167,9 @@ func _build_controls() -> void:
  resume.text = "Resume play"
  panel.add_child(resume)
  resume.pressed.connect(func(): resume_requested.emit())
- var hint := _label(panel, "Drag table to orbit · Wheel to zoom\nC to cycle cameras · F8 to resume", 14)
+ hint = _label(panel, "", 14)
  hint.modulate = Color("#afd3df")
- if curl == null or picker.item_count < CLIPS.size():
+ if curl == null or picker.item_count < clips.size():
   var note := _label(panel, "Available clips depend on the local Runners model and pose bake.", 14)
   note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
@@ -181,11 +199,15 @@ func _slider(id: String, caption: String, minimum: float, maximum: float, step: 
 
 func _select_clip(index: int) -> void:
  active_clip = picker.get_item_metadata(index)
- var rolling := active_clip == "sn_ball_loop"
- var trick := Assets.TRICKS.find(active_clip)
+ if active_clip == Assets.FLIGHT:
+  flight_heading = pose.flight_heading if pose.flying else pose.initial_flight_heading()
+ hint.text = ("Steer with ← / → or the left stick\n" if active_clip == Assets.FLIGHT else "") + "Drag table to orbit · Wheel to zoom\nC to cycle cameras · F8 to resume"
+ var rolling := active_clip == roll_clip
+ var trick := trick_names.find(active_clip)
  held.visible = trick >= 0 and not tricks.is_empty()
  if held.visible: held.mesh = tricks[trick]
  if curl: curl.visible = rolling
+ if trailing_tails: trailing_tails.visible = rolling
  if rig:
   rig.visible = not held.visible and not (rolling and curl)
   if player:
@@ -196,12 +218,13 @@ func _select_clip(index: int) -> void:
     rig.scale = Vector3.ONE / source_radius
     player.play(active_clip)
     player.advance(0.0)
- roll_angle = game.character.sonic_roll_angle if rolling else 0.0
+ roll_angle = game.character.roll_angle if rolling else 0.0
  _update_preview()
 
 func _update_preview() -> void:
- var rolling := active_clip == "sn_ball_loop"
+ var rolling := active_clip == roll_clip
  art.scale = Vector3.ONE * sliders.model.value
+ if trailing_tails: trailing_tails.scale = art.scale
  var half_height := 0.0
  if held.visible: half_height = -held.mesh.get_aabb().position.y
  elif rig and rig.visible: half_height = -rig.position.y
@@ -211,6 +234,7 @@ func _update_preview() -> void:
  shell.transparency = 1.0 - sliders.opacity.value
  if curl: curl.set_instance_shader_parameter("roll_exposure", sliders.blur.value)
  sliders.blur.editable = rolling and curl != null
+ sliders.speed.editable = active_clip != Assets.FLIGHT
  _orient_model()
  var values := {}
  for id: String in Pose.DEFAULTS: values[id] = sliders[id].value
@@ -275,13 +299,23 @@ func _reset() -> void:
 func _process(delta: float) -> void:
  if active_clip.is_empty() or not playing: return
  if player and rig.visible: player.advance(delta)
+ if active_clip == Assets.FLIGHT:
+  var steer: float = game.controls.virtual_steering if game.controls.virtual_enabled else Input.get_axis("steer_left", "steer_right")
+  if not is_zero_approx(steer): flight_heading = Vector2(signf(steer), 0)
  roll_angle = fmod(roll_angle + delta * TAU * float(sliders.speed.value), TAU)
  _orient_model()
 
 func _orient_model() -> void:
  var frame := Basis(Vector3.UP, roll_angle)
- if active_clip == "sn_ball_loop":
-  frame = game.character.spin_root.basis.orthonormalized() * Basis(Vector3.RIGHT, roll_angle)
+ var rolling := active_clip == roll_clip
+ art.rotation.x = roll_angle if rolling else 0.0
+ shell.rotation.x = art.rotation.x
+ if rolling:
+  # The two exterior tails share the heading. Only the shell and body spin.
+  frame = game.character.spin_root.basis.orthonormalized()
+  if trailing_tails: Assets.sample_roll_tails(trailing_tails, roll_angle)
+ elif active_clip == Assets.FLIGHT:
+  frame = game.character.flat_roll_frame(flight_heading)
  pivot.basis = frame.scaled(Vector3.ONE * pose.radius)
 
 func finish() -> void:
@@ -289,5 +323,5 @@ func finish() -> void:
  if is_instance_valid(pivot): pivot.free()
  if is_instance_valid(game):
   game.presentation.camera.make_current()
-  game.character.rolling_mesh.show()
+  pose.inspect(false)
   game.hud.show()

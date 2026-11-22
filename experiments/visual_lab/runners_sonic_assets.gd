@@ -1,8 +1,25 @@
 extends RefCounted
 ## Local-only Runners assets shared by the Prototype and the spin preview.
 const LOCAL_SET := "res://experiments/visual_lab/local/runtime/sonic_runners_poses.glb"
-const ANIMATED := "res://experiments/visual_lab/local/runners-decomp/sonic/Sonic Runners - original animations.glb"
-const TRICKS := ["sn_jump_trick", "sn_jump_trick_02", "sn_jump_trick_03"]
+const CURLS := {"sonic": "sn_ball_loop", "tails": "tl_jump_ball_loop"}
+const FLIGHT := "tl_jump_bunk_loop"
+
+static func trick_names(id: String) -> Array:
+ var prefix := "tl" if id == "tails" else "sn"
+ return [prefix + "_jump_trick", prefix + "_jump_trick_02", prefix + "_jump_trick_03"]
+
+static func sample_roll_tails(tails: MeshInstance3D, angle: float) -> void:
+ # Frame zero is the base mesh. The last source frame returns to that shape.
+ var count := tails.get_blend_shape_count()
+ var frame := fposmod(angle, TAU) * (count + 1) / TAU
+ for i in count:
+  tails.set_blend_shape_value(i, maxf(0.0, 1.0 - absf(frame - (i + 1))))
+
+static func animated_scene(id: String) -> Node3D:
+ var path := "res://experiments/visual_lab/local/runners-decomp/%s/%s Runners - original animations.glb" % [id, id.capitalize()]
+ var document := GLTFDocument.new()
+ var state := read_state(path, document)
+ return document.generate_scene(state) if state != null else null
 
 static func read_state(path: String, document := GLTFDocument.new()) -> GLTFState:
  if not FileAccess.file_exists(path): return null
@@ -22,17 +39,19 @@ static func static_meshes(path: String) -> Dictionary:
   meshes[definitions[i].get("name", str(i))] = part
  return meshes
 
-static func load_set(path: String, painted: ShaderMaterial) -> Dictionary:
+static func load_set(path: String, painted: ShaderMaterial, id: String) -> Dictionary:
  var poses := static_meshes(path)
  var color_map := path.get_basename() + ".png"
- if not poses.has_all(["sn_ball_loop"] + TRICKS) or not FileAccess.file_exists(color_map): return {}
+ var tricks_for_character := trick_names(id)
+ if not poses.has_all([CURLS[id]] + tricks_for_character) or not FileAccess.file_exists(color_map): return {}
+ if id == "tails" and not poses.has("tl_roll_tails"): return {}
  var image := Image.new()
  if image.load(ProjectSettings.globalize_path(color_map)) != OK: return {}
  image.generate_mipmaps()
  var shell := ImageTexture.create_from_image(image)
  var roll := MeshInstance3D.new()
- roll.name = "RunnersSonicRoll"
- roll.mesh = poses.sn_ball_loop
+ roll.name = "Runners%sRoll" % id.capitalize()
+ roll.mesh = poses[CURLS[id]]
  for surface in roll.mesh.get_surface_count():
   var skin: BaseMaterial3D = roll.mesh.surface_get_material(surface)
   var blur: ShaderMaterial = painted.duplicate()
@@ -41,5 +60,11 @@ static func load_set(path: String, painted: ShaderMaterial) -> Dictionary:
   blur.set_shader_parameter("runners_shell", shell)
   roll.set_surface_override_material(surface, blur)
  var tricks: Array[Mesh] = []
- for clip: String in TRICKS: tricks.append(poses[clip])
- return {"roll": roll, "tricks": tricks}
+ for clip: String in tricks_for_character: tricks.append(poses[clip])
+ var result := {"roll": roll, "tricks": tricks}
+ if id == "tails":
+  var tails := MeshInstance3D.new()
+  tails.name = "TrailingTails"
+  tails.mesh = poses.tl_roll_tails
+  result.trailing_tails = tails
+ return result

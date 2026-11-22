@@ -40,13 +40,28 @@ func run() -> void:
  var lab = session.spin_lab
  var game = session.game
  check(paused and lab.orbit.get_viewport() == game.presentation.camera.get_viewport() and lab.pivot.get_world_3d() == game.character.get_world_3d(), "Inspector uses the actual paused table and play viewport")
- check(lab.picker.item_count == 15 and lab.cameras.item_count == 4, "Original clips and the four gameplay cameras are selectable")
+ var tails: bool = game.character_id == "tails"
+ check(lab.picker.item_count == (17 if tails else 15) and lab.cameras.item_count == 4, "Original clips and the four gameplay cameras are selectable")
  var point: Vector2 = game.ball.position
- check(is_equal_approx(lab.sliders.speed.value, 2.0) and is_equal_approx(lab.sliders.opacity.value, 0.30) and is_equal_approx(lab.sliders.blur.value, 1.0), "Inspection opens with the selected Sonic defaults")
+ check(is_equal_approx(lab.sliders.speed.value, 2.0) and is_equal_approx(lab.sliders.opacity.value, 0.30) and is_equal_approx(lab.sliders.blur.value, 1.0), "Inspection opens with the selected roll defaults")
  var score: int = game.score
  var angle: float = lab.roll_angle
  for frame in 6: await process_frame
- check(game.ball.position == point and game.score == score and lab.roll_angle != angle, "Sonic spins while the real Ball and score remain fixed")
+ check(game.ball.position == point and game.score == score and lab.roll_angle != angle, "The model spins while the real Ball and score remain fixed")
+ if tails:
+  var tail_frame: Transform3D = lab.trailing_tails.global_transform
+  var body_frame: Basis = lab.curl.global_basis
+  lab._process(0.10)
+  check(lab.trailing_tails.is_visible_in_tree() and lab.trailing_tails.global_transform.is_equal_approx(tail_frame) and not lab.curl.global_basis.is_equal_approx(body_frame), "Preview spins the curl while both exterior tails hold their heading")
+  check(lab.trailing_tails.get_surface_override_material(0) == null, "The exterior tails retain their original skin at full spin blur")
+  check(lab.trailing_tails.get_blend_shape_count() == 7, "The original eight-frame roll keeps all seven poses after the base frame")
+  if lab.trailing_tails.get_blend_shape_count() == 7:
+   lab.roll_angle = TAU * 1.5 / 8.0
+   lab._orient_model()
+   check(is_equal_approx(lab.trailing_tails.get_blend_shape_value(0), 0.5) and is_equal_approx(lab.trailing_tails.get_blend_shape_value(1), 0.5), "Preview interpolates the original tail motion between frames")
+   lab.roll_angle = TAU
+   lab._orient_model()
+   check(is_zero_approx(lab.trailing_tails.get_blend_shape_value(0)) and is_zero_approx(lab.trailing_tails.get_blend_shape_value(1)), "A full revolution wraps to the authored start pose")
  await capture("in-game-spin")
  var wheel := InputEventMouseButton.new()
  wheel.button_index = MOUSE_BUTTON_WHEEL_UP
@@ -69,6 +84,7 @@ func run() -> void:
  lab.sliders.speed.value = 0.0
  lab.sliders.zoom.value = 4.0
  check(is_equal_approx(lab.art.scale.x, 1.42) and is_equal_approx(lab.shell.scale.x, 0.8) and is_equal_approx(lab.shell.transparency, 0.45) and is_equal_approx(lab.curl.get_instance_shader_parameter("roll_exposure"), 0.4), "All material and size sliders act independently")
+ if tails: check(lab.trailing_tails.scale.is_equal_approx(lab.art.scale), "The exterior tails follow model size independently of the shell size")
  angle = lab.roll_angle
  lab._process(0.1)
  check(lab.roll_angle == angle, "Zero spin speed holds the model in place")
@@ -80,10 +96,10 @@ func run() -> void:
   lab.picker.select(i)
   lab.picker.item_selected.emit(i)
   var clip: String = lab.active_clip
-  if clip == "sn_ball_loop": check(lab.curl.visible, "Roll selects the shader-equipped mesh")
-  elif clip in lab.Assets.TRICKS: check(lab.held.visible and lab.held.mesh != null, "Baked trick keeps its original mesh")
+  if clip == lab.roll_clip: check(lab.curl.visible, "Roll selects the shader-equipped mesh")
+  elif clip in lab.trick_names: check(lab.held.visible and lab.held.mesh != null, "Baked trick keeps its original mesh")
   else: check(lab.rig.visible and lab.player.current_animation == clip, "Original Action plays: " + clip)
-  if clip == "sn_run_loop":
+  if clip in ["sn_run_loop", "tl_run_loop"]:
    var skins := lab.rig.find_children("*", "MeshInstance3D", true, false) as Array
    check(not skins.is_empty() and skins[0].is_visible_in_tree() and skins[0].skin != null, "A visible skinned mesh is bound to the original Runners skeleton")
    var skeleton: Skeleton3D = lab.rig.find_children("*", "Skeleton3D", true, false)[0]
@@ -98,7 +114,7 @@ func run() -> void:
  var inspect_model: WeakRef = weakref(lab.pivot)
  lab.resume_requested.emit()
  check(not paused and session.state == "playing" and game.presentation.camera.current and game.character.rolling_mesh.visible and game.hud.visible, "Resume restores the original table camera, HUD and rolling mesh")
- var pose = game.combo_celebration.sonic_pose
+ var pose = game.combo_celebration.character_pose
  check(is_equal_approx(pose.runners_roll.scale.x / pose.radius, 1.42) and is_equal_approx(game.character.rolling_mesh.mesh.radius / pose.radius, 0.8) and is_zero_approx(game.character.roll_speed_scale), "Chosen values apply to the real gameplay model and shell")
  check(inspect_camera.get_ref() == null and inspect_model.get_ref() == null, "Closing releases the inspection camera and models")
  game.toggle_pause()
@@ -106,7 +122,7 @@ func run() -> void:
  var entries := session.overlay_root.find_children("*", "Button", true, false)
  var menu_button: Button
  for button: Button in entries:
-  if button.text.begins_with("Sonic spin preview"): menu_button = button
+  if button.text.begins_with(game.character_id.capitalize() + " spin preview"): menu_button = button
  check(menu_button != null, "Preview is reachable from the ordinary pause menu")
  if menu_button:
   menu_button.pressed.emit()
@@ -125,6 +141,7 @@ func run() -> void:
   session.spin_lab._process(0.04)
   var preview_axle: Vector3 = session.spin_lab.pivot.global_basis.x.normalized()
   check(preview_axle.is_equal_approx(game.character.rolling_mesh.global_basis.x.normalized()), "The paused curl keeps the live roll axle on a diagonal heading")
+  if tails and not output.is_empty(): await capture_roll_cycle(session.spin_lab)
   shortcut.keycode = KEY_C
   var old_preset: int = game.presentation.camera_preset
   root.push_input(shortcut)
@@ -132,8 +149,93 @@ func run() -> void:
   shortcut.keycode = KEY_ESCAPE
   root.push_input(shortcut)
   check(session.state == "playing" and not paused, "Escape returns to play")
+ if tails: await review_flight(session, game)
  session.archive_attempted = true
  await session._close_run("review")
  session.free()
- print("RESULT | In-game Sonic spin lab | %d checks | %d failures" % [checks, failures])
+ print("RESULT | In-game %s spin lab | %d checks | %d failures" % ["Tails" if tails else "Sonic", checks, failures])
  quit(1 if failures else 0)
+
+func capture_roll_cycle(lab: Control) -> void:
+ lab._toggle_playback()
+ lab.pitch = 0.55
+ lab._aim_camera()
+ for i in 12:
+  lab.roll_angle = TAU * i / 12.0
+  lab._orient_model()
+  await capture("tails-roll-%02d" % i)
+ lab._toggle_playback()
+
+func review_flight(session: Node, game: Node) -> void:
+ var card = game.combo_celebration
+ var pose = card.character_pose
+ var specials: CharacterSpecials = game.specials
+ game.auto_launch_time = -1.0
+ game.respawn_time = -1.0
+ game.ball.serve_pending = false
+ game.ball._teleport_pending = false
+ game.controls.virtual_enabled = true
+ game.controls.input_blocked = false
+ game.controls.virtual_steering = -0.75
+ game.controls._physics_process(0.0)
+ game.ball.linear_velocity = Vector2(300, -90)
+ game.special_meter = specials.definition.meter_capacity
+ var activated := specials.activate()
+ check(activated and pose.flying and game.special_meter == specials.definition.meter_capacity - specials.definition.meter_cost, "Charged Fly starts the recovered animation and spends the usual meter")
+ if not activated or not pose.flying: return
+ check(pose.flight.is_visible_in_tree() and not pose.trailing_tails.visible and not game.character.rolling_mesh.visible and pose.flight_player.current_animation == pose.Assets.FLIGHT, "Only the animated flight rig occupies the live Ball")
+ check(pose.flight.global_basis.z.normalized().is_equal_approx(Vector3.LEFT), "Left steering faces left despite rightward momentum")
+ var skeleton: Skeleton3D = pose.flight.find_children("*", "Skeleton3D", true, false)[0]
+ var tails_before := {}
+ for i in skeleton.get_bone_count():
+  if skeleton.get_bone_name(i).to_lower().contains("tail"): tails_before[i] = skeleton.get_bone_global_pose(i)
+ pose._process(0.12)
+ var moving_tails := 0
+ for i: int in tails_before:
+  if not skeleton.get_bone_global_pose(i).is_equal_approx(tails_before[i]): moving_tails += 1
+ check(moving_tails >= 2, "The original Flight action animates the tails")
+ game.controls.virtual_steering = 0.65
+ game.controls._physics_process(0.0)
+ game.ball.linear_velocity = Vector2(-300, -60)
+ pose._process(0.016)
+ check(pose.flight.global_basis.z.normalized().is_equal_approx(Vector3.RIGHT), "Reversing steering immediately faces right against a leftward shot")
+ game.controls.virtual_steering = 0.0
+ game.controls._physics_process(0.0)
+ pose._process(0.016)
+ check(pose.flight.global_basis.z.normalized().is_equal_approx(Vector3.RIGHT), "Neutral steering keeps the last flight heading")
+ var time_left := specials.flight_remaining
+ var original_phase: float = pose.flight_player.current_animation_position
+ session._open_spin_lab()
+ var lab = session.spin_lab
+ check(paused and lab.active_clip == pose.Assets.FLIGHT and not pose.flight.visible, "F8 during Fly opens the matching clip")
+ lab.sliders.zoom.value = 3.0
+ lab.pitch = 0.65
+ for direction: int in [-1, 1]:
+  game.controls.virtual_steering = float(direction)
+  lab.yaw = 0.32 * direction
+  lab._aim_camera()
+  lab._process(0.12)
+  check(lab.pivot.global_basis.z.normalized().is_equal_approx(Vector3.RIGHT * direction), "Preview follows flight steering")
+  await capture("tails-flight-left" if direction < 0 else "tails-flight-right")
+ game.controls.virtual_steering = 0.0
+ lab._process(0.05)
+ check(lab.pivot.global_basis.z.normalized().is_equal_approx(Vector3.RIGHT), "The preview keeps its heading with the stick released")
+ session._resume_spin_lab()
+ check(not paused and pose.flight.visible and is_equal_approx(original_phase, pose.flight_player.current_animation_position) and is_equal_approx(time_left, specials.flight_remaining), "Resume preserves the real Flight phase and remaining time")
+ await capture("tails-flight-in-play")
+ card.reset_combo()
+ var expected: int = pose.trick_index
+ for milestone: int in [5, 8, 10, 15]:
+  card.consider("tails", milestone, 100)
+  card._process(0.3)
+  expected = (expected + 1) % 3
+  check(pose.visible and pose.mesh == pose.tricks[expected] and not pose.flight.visible, "Tails performs the next trick at hit %d" % milestone)
+  card._process(card.DURATION)
+  check(pose.flight.visible and not game.character.rolling_mesh.visible, "The live flight rig resumes after the trick")
+ specials._physics_process(specials.flight_remaining + 0.01)
+ check(not pose.flying and not pose.flight.visible and pose.runners_roll.is_visible_in_tree() and pose.trailing_tails.is_visible_in_tree(), "Flight expiry restores the translucent shell, curled body and trailing tails")
+ game.special_meter = specials.definition.meter_capacity
+ if specials.activate():
+  specials.reset(false, "Checkpoint transfer")
+  check(not pose.flying and pose.runners_roll.is_visible_in_tree(), "Checkpoint reset immediately restores the curl")
+ else: check(false, "A second charged Flight can start")

@@ -8,6 +8,8 @@ Alex clarified the next day that Sonic should uncurl *from the Ball*. We tried a
 
 The original painted ball now sits over curled Sonic as a translucent shell. F8 opens a small inspector on the live table. Alex can compare all 15 Runners actions, zoom, change cameras and adjust the model, shell and spin. Resume keeps the visual settings for that run. The physics Ball keeps its configured radius.
 
+Tails now has his own curl, three tricks and all 17 of his Runners actions in F8. His body spins inside the shell. His two tails stick out behind it and turn with the shot, even on Loop rollback. All eight tail joints are animated in the original roll. Their tips flick up and down behind the Ball as his body turns. They stay sharp at full blur. During Fly those tails spin overhead. He faces the direction Alex steers, even while the shot still carries him the other way. Let go and he holds that facing. The Flight entry in F8 accepts the same left/right input while the table is paused.
+
 ## Five stages, two flipper shots — 2026-11-21
 
 Alex picked one stage per game for the current roster. Green Hill, Casino Night, Ice Cap, Rooftop Run and Aquarium Park share the same authored Acts. In the [Workshop](LOOP_WORKSHOP.md), let the yellow spring carry the serve across the hill into the upright Loop. The left flipper feeds a climbing ramp and the right flipper shoots the angled Loop. Small and tall Loops have separate point values. The earlier eight-theme reviews below describe those builds. The pre-pivot Sky Sanctuary source is recorded in the Workshop notes.

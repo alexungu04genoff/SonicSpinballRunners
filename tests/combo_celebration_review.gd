@@ -102,15 +102,15 @@ func clip() -> void:
    travel += previous.distance_to(game.ball.position)
    if not game.character.rolling_mesh.visible:
     posed_frames += 1
-    var offset: Vector3 = card.sonic_pose.global_position - game.character.spin_root.global_position
-    follows_ball = follows_ball and card.sonic_pose.is_visible_in_tree() and Vector2(offset.x, offset.z).length() < 0.001
+    var offset: Vector3 = card.character_pose.global_position - game.character.spin_root.global_position
+    follows_ball = follows_ball and card.character_pose.is_visible_in_tree() and Vector2(offset.x, offset.z).length() < 0.001
     follows_ball = follows_ball and not game.ball.freeze and game.ball.collision_mask == collision_mask and game.ball.collision_layer == collision_layer
   previous = game.ball.position
   var image := root.get_texture().get_image()
   check(image.save_jpg(path.path_join("%03d.jpg" % frame), 0.95) == OK, "Save movie frame")
  check(live_frames >= 24 and travel > game.ball.radius * 2, "Ball travels during the cut-in")
  check(posed_frames >= 18 and follows_ball, "The pose replaces the rolling mesh on the moving, colliding Ball")
- check(not card.sonic_pose.visible and game.character.rolling_mesh.visible, "The original roll returns after the moving pose")
+ check(not card.character_pose.visible and game.character.rolling_mesh.visible, "The original roll returns after the moving pose")
  print("COMBO_CLIP | visible frames=", live_frames, " | posed frames=", posed_frames, " | Ball distance=", travel)
 
 func check_roll_heading() -> void:
@@ -120,17 +120,29 @@ func check_roll_heading() -> void:
  var dt := 1.0 / 60.0
  for travel: Vector2 in [Vector2.UP, Vector2.RIGHT, Vector2(1, 1), Vector2(-1, -1), Vector2.DOWN]:
   ball.linear_velocity = travel.normalized() * ball.radius * 28.0
-  var phase: float = actor.sonic_roll_angle
+  var phase: float = actor.roll_angle
   actor._process(dt)
   var facing := Vector3(travel.x, 0, travel.y).normalized()
   var heading: Basis = actor.spin_root.global_basis.orthonormalized()
   var axle: Vector3 = actor.rolling_mesh.global_basis.x.normalized()
-  check(heading.y.is_equal_approx(Vector3.UP) and heading.z.is_equal_approx(facing) and axle.is_equal_approx(Vector3.UP.cross(facing)), "Sonic turns upright through " + str(travel))
-  check(is_equal_approx(angle_difference(phase, actor.sonic_roll_angle), 28.0 * 2.0 * dt), "The shell and curl advance at twice the base spin rate")
+  check(heading.y.is_equal_approx(Vector3.UP) and heading.z.is_equal_approx(facing) and axle.is_equal_approx(Vector3.UP.cross(facing)), "The character turns upright through " + str(travel))
+  check(is_equal_approx(angle_difference(phase, actor.roll_angle), 28.0 * 2.0 * dt), "The shell and curl advance at twice the base spin rate")
+  var tails: MeshInstance3D = game.combo_celebration.character_pose.trailing_tails
+  if tails:
+   var offset := tails.global_basis * tails.mesh.get_aabb().get_center()
+   check(offset.dot(facing) < 0.0, "The exterior tails point behind the current travel direction")
+   var before := tails.global_transform
+   actor._process(dt)
+   check(tails.global_transform.is_equal_approx(before), "Rolling around the axle leaves the two tails in place")
+   var pose = game.combo_celebration.character_pose
+   pose._process(dt)
+   var frame: float = actor.roll_angle * 8.0 / TAU
+   var target := clampi(roundi(frame), 1, 7)
+   check(tails.get_blend_shape_count() == 7 and is_equal_approx(tails.get_blend_shape_value(target - 1), maxf(0.0, 1.0 - absf(frame - target))), "Live tails play their original shape at the current roll phase")
  var last_heading: Basis = actor.spin_root.basis
  ball.linear_velocity = Vector2.ZERO
  actor._process(dt)
- check(last_heading.is_equal_approx(actor.spin_root.basis), "Sonic holds his heading at an apex")
+ check(last_heading.is_equal_approx(actor.spin_root.basis), "The character holds the last heading at an apex")
  ball.has_track_frame = true
  var loop_path = preload("res://scripts/authored_act/loop_path.gd")
  ball.track_frame = loop_path.local_frame(loop_path.LEAD + loop_path.ARC * 0.5, true)
@@ -139,7 +151,9 @@ func check_roll_heading() -> void:
   actor._process(dt)
   var frame: Basis = actor.spin_root.basis.orthonormalized()
   var axle: Vector3 = actor.rolling_mesh.global_basis.x.normalized()
-  check(frame.y.is_equal_approx(ball.track_frame.y) and frame.z.is_equal_approx(-ball.track_frame.z * signf(speed)) and is_zero_approx(axle.dot(frame.y)), "Sonic follows the Loop surface and signed traversal")
+  check(frame.y.is_equal_approx(ball.track_frame.y) and frame.z.is_equal_approx(-ball.track_frame.z * signf(speed)) and is_zero_approx(axle.dot(frame.y)), "The curl follows the Loop surface and signed traversal")
+  var tails: MeshInstance3D = game.combo_celebration.character_pose.trailing_tails
+  if tails: check(tails.global_basis.orthonormalized().is_equal_approx(frame), "Tails follow signed Loop travel independently of the body spin")
  ball.has_track_frame = false
  ball.track_speed = 0.0
  ball.track_frame = Basis.IDENTITY
@@ -189,8 +203,8 @@ func run() -> void:
  card = game.combo_celebration
  check(game.library.fallback_builds == 0, "Review runs the disk-backed Prototype")
  if "--require-sonic-model" in OS.get_cmdline_user_args():
-  check(card.sonic_pose.mesh is ArrayMesh, "Capture uses the baked Runners model")
- var pose = card.sonic_pose
+  check(card.character_pose.mesh is ArrayMesh, "Capture uses the baked Runners model")
+ var pose = card.character_pose
  if "--require-runners-set" in OS.get_cmdline_user_args():
   check(is_instance_valid(pose.runners_roll) and pose.tricks.size() == 3, "Original curled Sonic and all three tricks loaded")
  if "--interactive" in OS.get_cmdline_user_args():
@@ -221,9 +235,14 @@ func run() -> void:
  fallback.free()
  for id: String in ["sonic", "tails", "knuckles", "shadow"]:
   game.specials.select_character(id)
+  if id == "tails": check_roll_heading()
   if is_instance_valid(pose.runners_roll):
    var shell: MeshInstance3D = game.character.rolling_mesh
-   check(shell.mesh is SphereMesh and pose.runners_roll.visible == (id == "sonic") and (shell.transparency > 0.0) == (id == "sonic"), "Sonic gets a translucent original ball over the curl and other characters keep their opaque ball")
+   check(shell.mesh is SphereMesh and pose.runners_roll.visible and shell.transparency > 0.0, "The selected Runners character wears a translucent shell")
+  else:
+   check(is_zero_approx(game.character.rolling_mesh.transparency), "The procedural shell stays opaque without a Runners model")
+  for cached: Dictionary in pose.sets.values():
+   if cached.has("roll"): check(cached.roll.visible == (cached.roll == pose.runners_roll), "Only the selected character's curl can appear")
   check(not card.visible and card.milestone == 0, "Character selection clears the previous pose")
   for i in 4: hit()
   check(scoring.builder_hits == 4 and scoring.multiplier == 4 and not card.visible, "Four builders use ordinary HUD feedback")
@@ -231,7 +250,9 @@ func run() -> void:
   hit()
   check(scoring.multiplier == 4 and card.visible and card.character == id and card.milestone == 5 and card.points == game.score - before, "Fifth builder displays the selected pose and exact award")
   card._process(0.3)
-  check(card.sonic_pose.visible == (id == "sonic") and game.character.rolling_mesh.visible == (id != "sonic"), "Only Sonic unfolds from the Ball")
+  var unfolds := id == "sonic" or (id == "tails" and pose.runners_roll != null)
+  check(card.character_pose.visible == unfolds and game.character.rolling_mesh.visible != unfolds, "Sonic and locally installed Tails unfold from the Ball")
+  if pose.trailing_tails: check(not pose.trailing_tails.visible, "Tricks use only their own authored tails")
   if not output.is_empty(): await still(id)
   if id == "sonic" and not output.is_empty():
    game.set_celebration_retro(true)
@@ -305,11 +326,11 @@ func run() -> void:
  five()
  card._process(0.3)
  game.toggle_pause()
- check(not card.sonic_pose.visible and game.character.rolling_mesh.visible, "Pause restores Sonic's roll immediately")
+ check(not card.character_pose.visible and game.character.rolling_mesh.visible, "Pause restores Sonic's roll immediately")
  game.toggle_pause()
  five()
  card._process(card.DURATION)
- check(not card.sonic_pose.visible and game.character.rolling_mesh.visible, "Natural expiry restores Sonic's roll")
+ check(not card.character_pose.visible and game.character.rolling_mesh.visible, "Natural expiry restores Sonic's roll")
  scoring.reset("Review chain")
  hit()
  for i in scoring.config.rings_per_link: scoring.award_ring("link-ring-%d" % i)
@@ -334,9 +355,9 @@ func run() -> void:
  card._process(0.3)
  game._on_retry_requested()
  check(is_instance_valid(game.transfer) and not card.visible and scoring.builder_hits == 0, "Retry clears the cut-in and hit count")
- check(not card.sonic_pose.visible and game.transfer.proxy.get_child(0).visible, "The checkpoint transfer borrows the restored rolling mesh")
+ check(not card.character_pose.visible and game.transfer.proxy.get_child(0).visible, "The checkpoint transfer borrows the restored rolling mesh")
  game.transfer._process(game.transfer.DURATION * 0.15)
- check(game.transfer.proxy.basis.y.normalized().is_equal_approx(Vector3.UP) and is_zero_approx(game.transfer.sonic_roll.global_basis.x.normalized().y), "Sonic's checkpoint return rolls on a level axle")
+ check(game.transfer.proxy.basis.y.normalized().is_equal_approx(Vector3.UP) and is_zero_approx(game.transfer.upright_roll.global_basis.x.normalized().y), "The checkpoint return rolls on a level axle")
  game.transfer._process(game.transfer.DURATION)
  settle_ball()
  five()
@@ -357,7 +378,7 @@ func run() -> void:
  game._finish_run(false)
  check(session.state == "results" and not card.visible, "Results dismisses the active cut-in")
  var old_card: WeakRef = weakref(card)
- var old_pose: WeakRef = weakref(card.sonic_pose)
+ var old_pose: WeakRef = weakref(card.character_pose)
  await close()
  check(old_card.get_ref() == null and old_pose.get_ref() == null, "Session teardown releases the card and on-table pose")
  print("RESULT | Combo celebration | %d checks | %d failures" % [checks, failures])

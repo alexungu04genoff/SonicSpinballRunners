@@ -1,6 +1,6 @@
 extends Control
 ## One reusable cut-in. The hit ordinal and points both come from Scorecraft.
-const SonicPose = preload("res://scripts/prototype/sonic_combo_pose.gd")
+const CharacterPose = preload("res://scripts/prototype/sonic_combo_pose.gd")
 const POSES := {
  "sonic": preload("res://assets/ui/combo_poses/sonic.svg"),
  "tails": preload("res://assets/ui/combo_poses/tails.svg"),
@@ -22,13 +22,13 @@ var milestone := 0
 var points := 0
 var age := 0.0
 var _title_font := SystemFont.new()
-var sonic_pose: SonicPose
+var character_pose: CharacterPose
 
-func install_sonic_pose(presenter: Node3D) -> void:
- sonic_pose = SonicPose.new()
- sonic_pose.name = "SonicComboPose"
- sonic_pose.prepare(presenter, POSES.sonic)
- presenter.add_child(sonic_pose)
+func install_character_pose(presenter: Node3D) -> void:
+ character_pose = CharacterPose.new()
+ character_pose.name = "CharacterComboPose"
+ character_pose.prepare(presenter, POSES.sonic)
+ presenter.add_child(character_pose)
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -45,7 +45,7 @@ func consider(id: String, hits: int, award: int) -> void:
  character = id
  milestone = hits
  points = award
- if id == "sonic" and is_instance_valid(sonic_pose): sonic_pose.next_trick()
+ if _on_ball(id): character_pose.next_trick()
  if not visible:
   age = 0.0
   show()
@@ -57,8 +57,11 @@ func reset_combo() -> void:
  milestone = 0
  dismiss()
 
+func _on_ball(id: String) -> bool:
+ return is_instance_valid(character_pose) and character_pose.character == id and (id == "sonic" or (id == "tails" and character_pose.runners_roll != null))
+
 func dismiss() -> void:
- if is_instance_valid(sonic_pose): sonic_pose.restore_ball()
+ if is_instance_valid(character_pose): character_pose.restore_ball()
  hide()
  set_process(false)
 
@@ -77,21 +80,21 @@ func _place() -> void:
  var logical := get_window().get_visible_rect().size
  scale = get_viewport_rect().size / logical
  var reveal := smoothstep(0.0, ENTER, age) * (1.0 - smoothstep(ENTER + HOLD, DURATION, age))
- if character == "sonic" and is_instance_valid(sonic_pose):
-  sonic_pose.show_blend(reveal)
+ if _on_ball(character):
+  character_pose.show_blend(reveal)
  position = (logical - CARD - MARGIN + Vector2(36.0 * (1.0 - reveal), 0)) * scale
  modulate.a = reveal
 
 func _draw() -> void:
  if character.is_empty(): return
  var accent: Color = INK[character]
- if character == "sonic" and is_instance_valid(sonic_pose):
+ if _on_ball(character):
   # The pose is on the table. Leave a compact score receipt in the HUD.
   draw_colored_polygon(PackedVector2Array([Vector2(156, 49), Vector2(316, 49),
    Vector2(316, 100), Vector2(302, 116), Vector2(142, 116)]), Color("#101d34"))
   draw_rect(Rect2(156, 49, 160, 3), accent)
   _draw_fitted(_title_font, Vector2(162, 80), "HIT COMBO ×%d" % milestone, 19, Color.WHITE)
-  var receipt := "SONIC"
+  var receipt := character.to_upper()
   if points > 0: receipt += "   +%d PTS" % points
   _draw_fitted(ThemeDB.fallback_font, Vector2(157, 104), receipt, 16, accent)
   return
