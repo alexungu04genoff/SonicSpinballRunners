@@ -4,6 +4,8 @@
 
 Knuckles now uses the same curl, blur, trick cycle, spring and Boost rules as Sonic and Tails, with his own 16 Runners clips. The Power special stops the shot over one spot, lifts the curled character for a second, then drives him fists-first into the table for a second. His source animation is the spinning two-fist forward attack. We turn it straight down for the SA2-style landing. One 300 px shockwave fires on impact. Speed, Flight and Power own their special behavior separately from the shared presentation.
 
+Shadow now completes the same presentation pipeline. His 15 Runners clips supply the curl, three held tricks, ring dash, spring jump and Boost. The shared roll, blur, combo, spring, panel and Loop rules use those clips. Speed still owns Target Boost, shared with Sonic. F8 exposes the complete set instead of the earlier Boost-only preview.
+
 ## Count the hits past ×4 — 2026-11-21
 
 A fifth fresh builder can still refresh a ×4 combo. Prototype now gives that fifth hit a character cut-in. A completed Ring Link counts too. Scorecraft tells the card the hit number and exactly what that event paid. The little ×4 beside the Ball keeps its original meaning. All four poses are temporary cut-paper stand-ins. The small points line reads best on the crisp HUD layer. [See the moving Ball and both treatments](combo-celebration/README.md).
@@ -16,7 +18,7 @@ Tails now has his own curl, three tricks and all 17 of his Runners actions in F8
 
 For both characters, an upward spring plays the Runners ring dash along the shot until the apex. A dash panel starts a second of Boost. A Loop keeps Boost running as long as it owns the Ball, including upside down and on rollback. The curl comes back at release. F8 can inspect any of those live poses.
 
-The Speed special is now Target Boost. Sonic runs and Shadow skates toward the locked target using their own Runners clips. Both stay upright and turn with the target, even while their incoming momentum is still carrying them sideways. All Boost animations use the pace Alex picked in Sonic’s preview, about 0.30 seconds per stride at 1.5×. The F8 slider sets the pace for the whole run, including Shadow on panels and Loops. Contact keeps the existing combo cash-out. Shadow’s boost uses the scale measured from his own curl.
+The Speed special is now Target Boost. Sonic runs and Shadow skates toward the locked target using their own Runners clips. Both stay upright and turn with the target, even while their incoming momentum is still carrying them sideways. All Boost animations use the pace Alex picked in Sonic’s preview, about 0.30 seconds per stride at 1.5×. The F8 slider sets the pace for the whole run. Contact keeps the existing combo cash-out.
 
 ## Five stages, two flipper shots — 2026-11-21
 

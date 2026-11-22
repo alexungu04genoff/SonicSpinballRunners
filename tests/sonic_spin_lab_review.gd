@@ -47,7 +47,7 @@ func run() -> void:
  check(paused and lab.orbit.get_viewport() == game.presentation.camera.get_viewport() and lab.pivot.get_world_3d() == game.character.get_world_3d(), "Inspector uses the actual paused table and play viewport")
  var tails: bool = game.character_id == "tails"
  var character: String = game.character_id
- check(lab.picker.item_count == {"sonic": 15, "tails": 17, "knuckles": 16}[character] and lab.cameras.item_count == 4, "Original clips and the four gameplay cameras are selectable")
+ check(lab.picker.item_count == {"sonic": 15, "tails": 17, "knuckles": 16, "shadow": 15}[character] and lab.cameras.item_count == 4, "Original clips and the four gameplay cameras are selectable")
  var point: Vector2 = game.ball.position
  check(is_equal_approx(lab.sliders.speed.value, 2.0) and is_equal_approx(lab.sliders.opacity.value, 0.30) and is_equal_approx(lab.sliders.blur.value, 1.0), "Inspection opens with the selected roll defaults")
  var score: int = game.score

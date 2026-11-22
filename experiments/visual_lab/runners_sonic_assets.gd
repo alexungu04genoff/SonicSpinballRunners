@@ -1,17 +1,16 @@
 extends RefCounted
 ## Local-only Runners assets shared by the Prototype and the spin preview.
 const LOCAL_SET := "res://experiments/visual_lab/local/runtime/sonic_runners_poses.glb"
-const CURLS := {"sonic": "sn_ball_loop", "tails": "tl_jump_ball_loop", "knuckles": "kn_jump_ball_loop"}
+const CURLS := {"sonic": "sn_ball_loop", "tails": "tl_jump_ball_loop", "knuckles": "kn_jump_ball_loop", "shadow": "sh_jump_ball_loop"}
 const PREFIX := {"sonic": "sn", "tails": "tl", "knuckles": "kn", "shadow": "sh"}
 const POWER_DIVE := {"knuckles": "kn_jump_bunk_loop"}
 const FLIGHT := "tl_jump_bunk_loop"
 const FLIGHT_CLIPS := {"tails": FLIGHT}
-const DASH_RING := {"sonic": "sn_dashring_loop", "tails": "tl_dashring_loop", "knuckles": "kn_dashring_loop"}
+const DASH_RING := {"sonic": "sn_dashring_loop", "tails": "tl_dashring_loop", "knuckles": "kn_dashring_loop", "shadow": "sh_dashring_loop"}
 const BOOST := {"sonic": "sn_boost_loop", "tails": "tl_boost_loop", "shadow": "sh_boost_loop", "knuckles": "kn_boost_loop"}
 const BOOST_SPEED := 1.5
 # Sonic's reference stride is 80 frames at 60 Hz, played at 3x on boost entry.
 const BOOST_CYCLES_PER_SECOND := 2.25
-const SHADOW_FIT := "res://experiments/visual_lab/local/runtime/shadow_boost_fit.json"
 const TAIL_WEAVE_DURATION := 8.0 / 60.0
 
 static func set_playback_speed(player: AnimationPlayer, id: String, boost_scale: float) -> void:

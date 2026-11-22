@@ -131,7 +131,7 @@ func _label(parent: Control, caption: String, size_px := 16) -> Label:
 
 func _build_controls() -> void:
  if not embedded:
-  _label(panel, "Shadow boost preview" if pose.character == "shadow" else "%s spin preview" % pose.character.capitalize(), 24)
+  _label(panel, "%s spin preview" % pose.character.capitalize(), 24)
  _label(panel, "Animation")
  panel.add_child(picker)
  var clips := {}
@@ -142,7 +142,6 @@ func _build_controls() -> void:
   if clip == roll_clip and Assets.FLIGHT_CLIPS.has(pose.character): clips[Assets.FLIGHT_CLIPS[pose.character]] = "Flight"
  if pose.character == "tails": clips["tl_jump_cannonball_loop"] = "Cannonball"
  if Assets.POWER_DIVE.has(pose.character): clips[Assets.POWER_DIVE[pose.character]] = "Table Smash · power dive"
- if pose.character == "shadow": clips = {Assets.BOOST.shadow: "Boost"}
  if embedded and not Assets.CURLS.has(pose.character):
   clips = {roll_clip: "Spin ball"}
   if player and Assets.BOOST.has(pose.character): clips[Assets.BOOST[pose.character]] = "Boost"

@@ -1,6 +1,6 @@
 """Bake original Runners poses and a directional color map for the roll shader.
 
-Pass "-- tails" or "-- knuckles" for their poses, or "-- shadow" for boost calibration.
+Pass a supported character ID after "--" to bake that character's poses.
 """
 import json
 from math import cos, floor, pi, radians, sin, tau
@@ -19,7 +19,7 @@ PREFIX, CURL, ANGLES = {
     "sonic": ("sn", "sn_ball_loop", (-40, -60, -43)),
     "tails": ("tl", "tl_jump_ball_loop", (-35, -40, -38)),
     "knuckles": ("kn", "kn_jump_ball_loop", (-45, -65, -40)),
-    "shadow": ("sh", "sh_jump_ball_loop", ()),
+    "shadow": ("sh", "sh_jump_ball_loop", (-40, -40, -20)),
 }[CHARACTER]
 SOURCE = ROOT / "runners-decomp" / CHARACTER / f"{CHARACTER.title()} Runners - original animations.glb"
 OUTPUT = ROOT / "runtime" / f"{CHARACTER}_runners_poses.glb"
@@ -127,15 +127,6 @@ def bake():
     def vertices(action):
         evaluated = first_frame(action)
         return np.array([evaluated.matrix_world @ v.co for v in evaluated.data.vertices])
-
-    if CHARACTER == "shadow":
-        curl = vertices(bpy.data.actions[CURL])
-        radius = np.linalg.norm(curl - (curl.min(axis=0) + curl.max(axis=0)) / 2, axis=1).max()
-        boost = vertices(bpy.data.actions["sh_boost_loop"])
-        x, y, z = (boost.min(axis=0) + boost.max(axis=0)) / 2
-        fit = {"runners_source_radius": float(radius), "preview_centers": {"sh_boost_loop": [float(x), float(z), float(-y)]}}
-        (OUTPUT.parent / "shadow_boost_fit.json").write_text(json.dumps(fit), encoding="utf-8")
-        return
 
     centers = {}
     for action in bpy.data.actions:

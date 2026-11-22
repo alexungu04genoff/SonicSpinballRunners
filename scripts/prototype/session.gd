@@ -342,7 +342,7 @@ func _show_pause() -> void:
  pause_camera_picker.item_selected.connect(func(index: int):
   game.select_play_camera(pause_camera_picker.get_item_id(index)))
  stack.add_child(pause_camera_picker)
- if _can_inspect_character(): _action(stack, "Shadow boost preview   [F8]" if game.character_id == "shadow" else "%s spin preview   [F8]" % game.character_id.capitalize(), _open_spin_lab)
+ if _can_inspect_character(): _action(stack, "%s spin preview   [F8]" % game.character_id.capitalize(), _open_spin_lab)
  _action(stack, "Restart run", start_run)
  _action(stack, "Return to menu", return_to_menu)
  _action(stack, "Quit", _quit)
@@ -351,7 +351,7 @@ func _can_inspect_character() -> bool:
  if not is_instance_valid(game) or not game.started: return false
  if game.finished or game.closing or game.drafting or game.loading_boundary or is_instance_valid(game.transfer): return false
  var pose = game.combo_celebration.character_pose
- return is_instance_valid(pose.runners_roll) or (pose.character == "shadow" and is_instance_valid(pose.motion_rig))
+ return is_instance_valid(pose.runners_roll)
 
 func _open_spin_lab() -> void:
  if not _can_inspect_character() or is_instance_valid(spin_lab): return

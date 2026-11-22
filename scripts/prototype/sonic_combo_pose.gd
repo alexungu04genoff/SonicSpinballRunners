@@ -99,9 +99,6 @@ func _load_character(id: String, sonic_path: String) -> Dictionary:
   poses.trick_index = -1
   poses.motion_fit = poses.roll.mesh.get_meta("bake", {})
   if id == "tails": presenter.spin_root.add_child(poses.trailing_tails)
- elif id == "shadow" and FileAccess.file_exists(Assets.SHADOW_FIT):
-  var fit = JSON.parse_string(FileAccess.get_file_as_string(Assets.SHADOW_FIT))
-  if fit is Dictionary: poses.motion_fit = fit
  if not poses.has("motion_fit"): return poses
  poses.settings = DEFAULTS.duplicate()
  var rig := Assets.animated_scene(id)
