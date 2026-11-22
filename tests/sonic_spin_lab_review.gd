@@ -362,6 +362,11 @@ func review_traversal(session: Node, game: Node) -> void:
   if ball.in_loop: break
  check(ball.in_loop and pose.motion == &"loop", "Crossing the Clover Loop mouth switches to Boost")
  check(pose.motion_player.current_animation_position >= 0.074, "Panel-to-Loop handoff carries the running stride into the Loop")
+ if ball.in_loop:
+  session._open_spin_lab()
+  var loop_player: AnimationPlayer = session.spin_lab.player
+  check(is_equal_approx(loop_player.get_playing_speed() / loop_player.current_animation_length, 3.375), "F8 previews the faster Loop stride during a ride")
+  session._resume_spin_lab()
  var boosted := ball.in_loop
  var inverted := false
  for i in 360:

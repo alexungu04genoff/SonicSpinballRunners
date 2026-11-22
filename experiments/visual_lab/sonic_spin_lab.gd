@@ -256,7 +256,7 @@ func _update_preview() -> void:
  var boosting: bool = active_clip == Assets.BOOST.get(pose.character)
  sliders.boost.get_parent().visible = boosting
  sliders.speed.get_parent().visible = not boosting
- if player: Assets.set_playback_speed(player, pose.character, sliders.boost.value)
+ if player: Assets.set_playback_speed(player, pose.character, sliders.boost.value, pose.motion == &"loop")
  var values := {}
  for id: String in Pose.DEFAULTS: values[id] = sliders[id].value
  pose.apply_settings(values, sliders.boost.value)

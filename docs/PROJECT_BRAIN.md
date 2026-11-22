@@ -2,7 +2,7 @@
 
 ## Seven playable characters — 2026-11-22
 
-Amy shares Speed with Sonic and Shadow. Rouge steers through Flight like Tails. Blaze uses the same two-second Table Smash as Knuckles. Each has her own Runners curl, three tricks, spring and Boost clips. At the default 1.2× setting, everyone completes 2.7 Boost strides per second at any travel speed. Tails now takes about 1.14 seconds to weave his two tails once while rolling. His flight animation still plays at its original speed.
+Amy shares Speed with Sonic and Shadow. Rouge steers through Flight like Tails. Blaze uses the same two-second Table Smash as Knuckles. Each has her own Runners curl, three tricks, spring and Boost clips. At the default 1.2× setting, everyone completes 2.7 strides per second on a panel or Target Boost and 3.375 on a Loop, including rollback. Tails now takes about 1.14 seconds to weave his two tails once while rolling. His flight animation still plays at its original speed.
 
 ## Knuckles and the Power shockwave — 2026-11-22
 
@@ -22,7 +22,7 @@ Tails now has his own curl, three tricks and all 17 of his Runners actions in F8
 
 For both characters, an upward spring plays the Runners ring dash along the shot until the apex. A dash panel starts a second of Boost. A Loop keeps Boost running as long as it owns the Ball, including upside down and on rollback. The curl comes back at release. F8 can inspect any of those live poses.
 
-The Speed special is now Target Boost. Sonic runs and Shadow skates toward the locked target using their own Runners clips. Both stay upright and turn with the target, even while their incoming momentum is still carrying them sideways. All Boost animations take about 0.37 seconds per stride at the default 1.2× setting. The F8 slider sets the pace for the whole run. Contact keeps the existing combo cash-out.
+The Speed special is now Target Boost. Sonic runs and Shadow skates toward the locked target using their own Runners clips. Both stay upright and turn with the target, even while their incoming momentum is still carrying them sideways. Target Boost and panel runs take about 0.37 seconds per stride at the default 1.2× setting. Loop strides take about 0.30 seconds. The F8 slider sets the pace for the whole run. Contact keeps the existing combo cash-out.
 
 ## Five stages, two flipper shots — 2026-11-21
 

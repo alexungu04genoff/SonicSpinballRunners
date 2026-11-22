@@ -176,7 +176,7 @@ func _play_motion(kind: StringName, clip: String) -> void:
  if motion_player.current_animation != clip:
   motion_player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
   Assets.start_clip(motion_rig, motion_player, clip)
- Assets.set_playback_speed(motion_player, character, boost_speed)
+ Assets.set_playback_speed(motion_player, character, boost_speed, motion == &"loop")
  _place_motion()
  set_process(true)
  set_physics_process(kind in [&"spring", &"dash_panel"])
@@ -341,7 +341,7 @@ func apply_settings(values: Dictionary, boost_scale: float) -> void:
  settings.merge(values, true)
  boost_speed = boost_scale
  if motion_player and motion != &"":
-  Assets.set_playback_speed(motion_player, character, boost_speed)
+  Assets.set_playback_speed(motion_player, character, boost_speed, motion == &"loop")
  _apply_roll_settings()
 
 func start_trick() -> void:

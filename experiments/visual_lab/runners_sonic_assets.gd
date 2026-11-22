@@ -9,14 +9,16 @@ const FLIGHT_CLIPS := {"tails": FLIGHT, "rouge": "ru_jump_bunk_loop"}
 const DASH_RING := {"sonic": "sn_dashring_loop", "tails": "tl_dashring_loop", "knuckles": "kn_dashring_loop", "shadow": "sh_dashring_loop", "rouge": "ru_dashring_loop", "amy": "am_dashring_loop", "blaze": "bl_dashring_loop"}
 const BOOST := {"sonic": "sn_boost_loop", "tails": "tl_boost_loop", "shadow": "sh_boost_loop", "knuckles": "kn_boost_loop", "rouge": "ru_boost_loop", "amy": "am_boost_loop", "blaze": "bl_boost_loop"}
 const BOOST_SPEED := 1.2
+const LOOP_STRIDE_SCALE := 1.25
 # Sonic's reference stride is 80 frames at 60 Hz, played at 3x on boost entry.
 const BOOST_CYCLES_PER_SECOND := 2.25
 # The eight original curl shapes make one relaxed sweep behind the ball.
 const TAIL_WEAVE_DURATION := 0.8 / 0.7
 
-static func set_playback_speed(player: AnimationPlayer, id: String, boost_scale: float) -> void:
+static func set_playback_speed(player: AnimationPlayer, id: String, boost_scale: float, on_loop: bool) -> void:
  if player.current_animation == BOOST.get(id):
-  player.speed_scale = player.current_animation_length * BOOST_CYCLES_PER_SECOND * boost_scale
+  var cadence := BOOST_CYCLES_PER_SECOND * boost_scale
+  player.speed_scale = player.current_animation_length * cadence * (LOOP_STRIDE_SCALE if on_loop else 1.0)
  else: player.speed_scale = 1.0
 
 static func trick_names(id: String) -> Array:

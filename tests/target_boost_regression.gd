@@ -63,18 +63,18 @@ func review_panel_and_loop(id: String, panel: Vector2) -> void:
   if pose.motion == &"dash_panel": break
  var player: AnimationPlayer = pose.motion_player
  check(pose.motion == &"dash_panel" and player.current_animation == pose.Assets.BOOST[id], id + " hits a dash panel and plays its own Boost")
- if pose.motion == &"dash_panel": check_stride_at_travel_speeds(pose)
+ if pose.motion == &"dash_panel": check_stride_at_travel_speeds(pose, EXPECTED_BOOST_CYCLES)
  for i in 100:
   if game.ball.in_loop: break
   await frames(1)
  check(game.ball.in_loop and pose.motion == &"loop" and player.current_animation == pose.Assets.BOOST[id], id + " carries its Boost into the Loop")
- if pose.motion == &"loop": check_stride_at_travel_speeds(pose)
+ if pose.motion == &"loop": check_stride_at_travel_speeds(pose, 3.375)
  for i in 360:
   if not game.ball.in_loop: break
   await frames(1)
  check(not game.ball.in_loop and pose.motion == &"" and game.character.rolling_mesh.visible, id + " returns to the ball on release")
 
-func check_stride_at_travel_speeds(pose: Node) -> void:
+func check_stride_at_travel_speeds(pose: Node, cadence: float) -> void:
  var player: AnimationPlayer = pose.motion_player
  var ball: PlaygroundBall = game.ball
  var velocity := ball.linear_velocity
@@ -86,8 +86,8 @@ func check_stride_at_travel_speeds(pose: Node) -> void:
   ball.track_speed = speed
   var phase := player.current_animation_position / length
   pose._process(0.125)
-  var expected := fposmod(phase + 0.125 * EXPECTED_BOOST_CYCLES, 1.0)
-  check(is_equal_approx(player.current_animation_position / length, expected), "%s %s advances at 2.7 strides/s at %d px/s" % [pose.character, pose.motion, speed])
+  var expected := fposmod(phase + 0.125 * cadence, 1.0)
+  check(is_equal_approx(player.current_animation_position / length, expected), "%s %s advances at %s strides/s at %d px/s" % [pose.character, pose.motion, cadence, speed])
  ball.linear_velocity = velocity
  ball.track_speed = track_speed
  player.seek(position, true)
@@ -111,7 +111,7 @@ func review_character(id: String, session: Node) -> void:
  if "--require-runners-set" in OS.get_cmdline_user_args(): check(rig != null, id + " has its original Runners rig")
  if rig:
   check(pose.motion == &"target_boost" and pose.motion_player.current_animation == pose.Assets.BOOST[id] and rig.is_visible_in_tree() and not game.character.rolling_mesh.visible, id + " uncurls into its own Boost clip")
-  check_stride_at_travel_speeds(pose)
+  check_stride_at_travel_speeds(pose, EXPECTED_BOOST_CYCLES)
   var original: Vector2 = specials.homing_direction
   target.position += Vector2(-55, 140)
   await frames(4)
