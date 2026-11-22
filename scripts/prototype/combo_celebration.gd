@@ -28,10 +28,14 @@ var _title_font := SystemFont.new()
 var character_pose: CharacterPose
 
 func install_character_pose(presenter: Node3D) -> void:
- character_pose = CharacterPose.new()
- character_pose.name = "CharacterComboPose"
- character_pose.prepare(presenter, POSES.sonic)
- presenter.add_child(character_pose)
+ character_pose = attach_character_pose(presenter)
+
+static func attach_character_pose(presenter: Node3D) -> CharacterPose:
+ var pose := CharacterPose.new()
+ pose.name = "CharacterComboPose"
+ pose.prepare(presenter, POSES.sonic)
+ presenter.add_child(pose)
+ return pose
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_PAUSABLE

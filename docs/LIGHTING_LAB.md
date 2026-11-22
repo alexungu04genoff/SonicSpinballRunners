@@ -16,6 +16,10 @@ Preview data is stored separately under `user://atmosphere_playtests`, validated
 
 ## Inspect and play
 
+Choose **Character & animation** or press **F8** to inspect a character on the table. Select a character and clip, then switch to **Light** or another atmosphere tab to adjust the scene around them. **Pause motion** holds a frame for comparison. Switching theme or reloading the Act restores the inspection. **Back to table** or **F8** returns to the normal camera. **Play Prototype** starts the Act with the selected character and current atmosphere.
+
+The table and inspector use the same character art as Prototype. The animation list follows the installed art for each character, including Tails's Flight and Shadow's Boost with the local Runners assets. The painted spin ball remains available when optional art is missing.
+
 - **Mouse wheel:** zoom around the cursor. **Middle-drag:** pan. Either enters inspection mode from Follow.
 - Wheel events over the lighting panel stay in the panel, including at either scroll limit and when it overlaps fullscreen Play View.
 - **O / Overview / Follow:** switch between inspecting the Act and following the ball. **Frame Act** restores the full overview.

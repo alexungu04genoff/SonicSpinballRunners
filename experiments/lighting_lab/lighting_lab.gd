@@ -2,6 +2,16 @@ extends "res://experiments/visual_lab/visual_lab.gd"
 ## Presentation-only atmosphere review using the existing authored Act player.
 var lighting_controls: CanvasLayer
 const PlaytestSnapshot = preload("res://scripts/atmosphere/playtest_snapshot.gd")
+const SpinPreview = preload("res://experiments/visual_lab/sonic_spin_lab.gd")
+const Celebration = preload("res://scripts/prototype/combo_celebration.gd")
+const Profile = preload("res://scripts/prototype/build_profile.gd")
+const PLAY_CAMERAS = preload("res://scripts/endless/endless_game.gd").PLAY_CAMERAS
+var character_pose: SpinPreview.Pose
+var character_tab: VBoxContainer
+var character_picker: OptionButton
+var preview: SpinPreview
+var preview_states := {}
+var previous_tab := 0
 
 func _ready() -> void:
  # Exported authoring tools edit external Acts so scenery sidecars remain writable.
@@ -20,6 +30,7 @@ func _ready() -> void:
  lighting_controls = preload("res://experiments/lighting_lab/live_controls.gd").new()
  add_child(lighting_controls)
  lighting_controls.install(self)
+ _install_character_tab()
  # Keep the embedded ball as an inspection aid; the main Play action uses Prototype.
  play_buttons.get_child(0).hide()
  var prototype_button := _button("Play Prototype", play_prototype)
@@ -44,7 +55,7 @@ func prototype_playtest_request() -> Dictionary:
   arguments.append_array(["--path", ProjectSettings.globalize_path("res://"), "res://scenes/prototype_run.tscn", "--"])
  else:
   arguments.append_array(["--", "--portable-play"])
- arguments.append_array(["--act", ProjectSettings.globalize_path(authored_act_path), "--theme=" + theme_id, "--atmosphere-preview=" + saved.path])
+ arguments.append_array(["--act", ProjectSettings.globalize_path(authored_act_path), "--theme=" + theme_id, "--character=" + character_id, "--atmosphere-preview=" + saved.path])
  return {"error": "", "arguments": arguments, "path": saved.path}
 
 func play_prototype() -> void:
@@ -67,10 +78,90 @@ func _hide_material_controls() -> void:
    other.set_process(false)
 
 func _rebuild_presentation() -> void:
+ var inspecting := is_instance_valid(preview)
+ if inspecting: _remove_preview()
  if is_instance_valid(lighting_controls): lighting_controls.restore_original()
  super._rebuild_presentation()
+ character_pose = Celebration.attach_character_pose(character)
  _hide_material_controls()
  if is_instance_valid(lighting_controls): lighting_controls.bind_theme()
+ if inspecting: _show_preview()
+
+func _build_presentation() -> void:
+ super._build_presentation()
+ character_pose = Celebration.attach_character_pose(character)
+
+func _install_character_tab() -> void:
+ character_tab = VBoxContainer.new()
+ character_tab.name = "Character"
+ lighting_controls.tabs.add_child(character_tab)
+ var label := Label.new()
+ label.text = "Character"
+ character_tab.add_child(label)
+ character_picker = OptionButton.new()
+ character_tab.add_child(character_picker)
+ for id: String in Profile.character_ids():
+  character_picker.add_item(CharacterSpecials.CHARACTERS[id].display_name)
+  character_picker.set_item_metadata(character_picker.item_count - 1, id)
+  if id == character_id: character_picker.select(character_picker.item_count - 1)
+ character_picker.item_selected.connect(func(index: int): specials.select_character(character_picker.get_item_metadata(index)))
+ debug_panel.act_controls.character_selector.item_selected.connect(func(index: int):
+  var id: String = CharacterSpecials.CHARACTER_IDS[index]
+  if id != character_id: specials.select_character(id)
+ )
+ specials.character_changed.connect(_sync_character_selection, CONNECT_DEFERRED)
+ lighting_controls.tabs.tab_changed.connect(_tab_changed)
+ view_button.text = "F8  Character & animation"
+
+func _sync_character_selection(id: String) -> void:
+ if id != character_id: return
+ debug_panel.act_controls.character_selector.select(CharacterSpecials.CHARACTER_IDS.find(id))
+ for index in character_picker.item_count:
+  if character_picker.get_item_metadata(index) == id: character_picker.select(index)
+ if is_instance_valid(preview) and preview.active_character != id:
+  _remove_preview()
+  _show_preview()
+
+func _tab_changed(index: int) -> void:
+ if lighting_controls.tabs.get_tab_control(index) == character_tab: _show_preview()
+ else: previous_tab = index
+
+func _show_preview() -> void:
+ if is_instance_valid(preview): return
+ preview = SpinPreview.new()
+ preview.game = self
+ preview.pose = character_pose
+ preview.embedded = true
+ preview.size_flags_vertical = Control.SIZE_EXPAND_FILL
+ preview.resume_requested.connect(_return_to_table)
+ character_tab.add_child(preview)
+ preview.restore_view(preview_states.get(character_id, {}))
+ view_button.text = "F8  Back to table"
+
+func _remove_preview() -> void:
+ preview_states[preview.active_character] = preview.view_state()
+ preview.finish()
+ character_tab.remove_child(preview)
+ preview.queue_free()
+ preview = null
+
+func _return_to_table() -> void:
+ if is_instance_valid(preview): _remove_preview()
+ lighting_controls.tabs.current_tab = previous_tab
+ view_button.text = "F8  Character & animation"
+
+func _set_close_view(_enabled: bool) -> void:
+ if not is_instance_valid(lighting_controls) or is_source_picker_open(): return
+ if is_instance_valid(preview):
+  _return_to_table()
+  return
+ if not lighting_controls.panel.visible: lighting_controls.toggle_panel()
+ lighting_controls.tabs.current_tab = lighting_controls.tabs.get_tab_idx_from_control(character_tab)
+ _show_preview()
+
+func select_play_camera(preset: int) -> void:
+ presentation.set_camera_preset(preset)
+ debug_panel.camera_presets.select(preset)
 
 func _input(event: InputEvent) -> void:
  # Text entry owns keys before the inherited camera, pose and material shortcuts.
@@ -84,7 +175,11 @@ func _input(event: InputEvent) -> void:
    get_viewport().set_input_as_handled()
    return
   # Shared local material panels also use these shortcuts. Keep them closed here.
-  if key in [KEY_F7, KEY_F8]:
+  if key == KEY_F8:
+   _set_close_view(true)
+   get_viewport().set_input_as_handled()
+   return
+  if key == KEY_F7:
    get_viewport().set_input_as_handled()
    return
   # Hidden Rooftop material experiments also use 1/2 to replace materials.

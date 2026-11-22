@@ -12,6 +12,7 @@ const CLIPS := {
 }
 var game: Node
 var pose: Pose
+var embedded := false
 var panel := VBoxContainer.new()
 var cameras := OptionButton.new()
 var orbit := Camera3D.new()
@@ -31,6 +32,7 @@ var pause_button := Button.new()
 var shell_on_poses := CheckBox.new()
 var sliders := {}
 var active_clip := ""
+var active_character := ""
 var roll_clip := ""
 var trick_names: Array
 var playing := true
@@ -43,11 +45,12 @@ var hint: Label
 
 func _ready() -> void:
  process_mode = Node.PROCESS_MODE_ALWAYS
- anchor_bottom = 1.0
- offset_left = 14
- offset_top = 14
- offset_right = 318
- offset_bottom = -14
+ if not embedded:
+  anchor_bottom = 1.0
+  offset_left = 14
+  offset_top = 14
+  offset_right = 318
+  offset_bottom = -14
  var style := StyleBoxFlat.new()
  style.bg_color = Color("#101e31ed")
  style.border_color = Color("#4389ab")
@@ -60,8 +63,9 @@ func _ready() -> void:
  panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  panel.add_theme_constant_override("separation", 8)
  scroll.add_child(panel)
- pose = game.combo_celebration.character_pose
- roll_clip = Assets.CURLS.get(pose.character, "")
+ if not embedded: pose = game.combo_celebration.character_pose
+ active_character = pose.character
+ roll_clip = Assets.CURLS.get(pose.character, "painted_roll" if embedded else "")
  trick_names = Assets.trick_names(pose.character)
  _build_stage()
  _load_models()
@@ -85,7 +89,7 @@ func _build_stage() -> void:
  pivot.global_position = game.character.spin_root.global_position
  pivot.scale = Vector3.ONE * pose.radius
  pose.inspect(true)
- game.hud.hide()
+ if not embedded: game.hud.hide()
  pivot.add_child(shell)
  var sphere := SphereMesh.new()
  sphere.radius = 1.0
@@ -109,7 +113,7 @@ func _load_models() -> void:
   tricks = pose.tricks
  source_radius = pose.motion_fit.get("runners_source_radius", 1.0)
  centers = pose.motion_fit.get("preview_centers", {})
- rig = Assets.animated_scene(pose.character)
+ if pose.motion_rig or not embedded: rig = Assets.animated_scene(pose.character)
  if rig != null:
   art.add_child(rig)
   player = rig.find_child("AnimationPlayer", true, false)
@@ -126,7 +130,8 @@ func _label(parent: Control, caption: String, size_px := 16) -> Label:
  return label
 
 func _build_controls() -> void:
- _label(panel, "Shadow boost preview" if pose.character == "shadow" else "%s spin preview" % pose.character.capitalize(), 24)
+ if not embedded:
+  _label(panel, "Shadow boost preview" if pose.character == "shadow" else "%s spin preview" % pose.character.capitalize(), 24)
  _label(panel, "Animation")
  panel.add_child(picker)
  var clips := {}
@@ -137,6 +142,9 @@ func _build_controls() -> void:
   if clip == roll_clip and pose.character == "tails": clips[Assets.FLIGHT] = "Flight"
  if pose.character == "tails": clips["tl_jump_cannonball_loop"] = "Cannonball"
  if pose.character == "shadow": clips = {Assets.BOOST.shadow: "Boost"}
+ if embedded and not Assets.CURLS.has(pose.character):
+  clips = {roll_clip: "Spin ball"}
+  if player and Assets.BOOST.has(pose.character): clips[Assets.BOOST[pose.character]] = "Boost"
  for clip: String in clips:
   if clip == roll_clip or (clip in trick_names and not tricks.is_empty()) or (player and player.has_animation(clip)):
    picker.add_item(clips[clip])
@@ -167,12 +175,12 @@ func _build_controls() -> void:
  buttons.add_child(reset)
  reset.pressed.connect(_reset)
  var resume := Button.new()
- resume.text = "Resume play"
+ resume.text = "Back to table" if embedded else "Resume play"
  panel.add_child(resume)
  resume.pressed.connect(func(): resume_requested.emit())
  hint = _label(panel, "", 14)
  hint.modulate = Color("#afd3df")
- if (not roll_clip.is_empty() and curl == null) or picker.item_count < clips.size():
+ if (Assets.CURLS.has(pose.character) and curl == null) or picker.item_count < clips.size():
   var note := _label(panel, "Available clips depend on the local Runners model and pose bake.", 14)
   note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
@@ -185,6 +193,7 @@ func _slider(id: String, caption: String, minimum: float, maximum: float, step: 
  var readout := _label(row, "")
  readout.modulate = Color("#80d8ff")
  var slider := HSlider.new()
+ if embedded: slider.scrollable = false
  slider.min_value = minimum
  slider.max_value = maximum
  slider.step = step
@@ -207,7 +216,7 @@ func _select_clip(index: int) -> void:
  active_clip = picker.get_item_metadata(index)
  if active_clip == Assets.FLIGHT:
   flight_heading = pose.flight_heading if pose.flying else pose.initial_flight_heading()
- hint.text = ("Steer with ← / → or the left stick\n" if active_clip == Assets.FLIGHT else "") + "Drag table to orbit · Wheel to zoom\nC to cycle cameras · F8 to resume"
+ hint.text = ("Steer with ← / → or the left stick\n" if active_clip == Assets.FLIGHT else "") + "Drag table to orbit · Wheel to zoom\n" + ("F8 to return to table" if embedded else "C to cycle cameras · F8 to resume")
  var rolling := active_clip == roll_clip
  var trick := trick_names.find(active_clip)
  held.visible = trick >= 0 and not tricks.is_empty()
@@ -215,7 +224,7 @@ func _select_clip(index: int) -> void:
  if curl: curl.visible = rolling
  if trailing_tails: trailing_tails.visible = rolling
  if rig:
-  rig.visible = not held.visible and not (rolling and curl)
+  rig.visible = not held.visible and not rolling
   if player:
    player.stop()
    if rig.visible and player.has_animation(active_clip):
@@ -234,12 +243,14 @@ func _update_preview() -> void:
  art.scale = Vector3.ONE * sliders.model.value
  if trailing_tails: trailing_tails.scale = art.scale
  shell.scale = Vector3.ONE * sliders.ball.value
- shell.visible = (rolling or shell_on_poses.button_pressed) and sliders.opacity.value > 0.0
- shell.transparency = 1.0 - sliders.opacity.value
+ var painted_ball := rolling and curl == null
+ shell.visible = painted_ball or ((rolling or shell_on_poses.button_pressed) and sliders.opacity.value > 0.0)
+ shell.transparency = 0.0 if painted_ball else 1.0 - sliders.opacity.value
+ sliders.opacity.editable = not painted_ball
  if curl: curl.set_instance_shader_parameter("roll_exposure", sliders.blur.value)
  sliders.blur.editable = rolling and curl != null
  sliders.speed.editable = rolling
- var boosting: bool = active_clip == Assets.BOOST[pose.character]
+ var boosting: bool = active_clip == Assets.BOOST.get(pose.character)
  sliders.boost.get_parent().visible = boosting
  sliders.speed.get_parent().visible = not boosting
  if player: Assets.set_playback_speed(player, pose.character, sliders.boost.value)
@@ -258,6 +269,11 @@ func _aim_camera() -> void:
  orbit.projection = camera.projection
  orbit.fov = camera.fov
  orbit.size = camera.size / zoom
+ if embedded:
+  # Frame the character independently of the size of the inspected Act.
+  orbit.size = 24.0 * pose.radius / zoom
+  if camera.projection == Camera3D.PROJECTION_PERSPECTIVE:
+   distance = 12.0 * pose.radius / tan(deg_to_rad(camera.fov * 0.5))
  orbit.near = minf(camera.near, pose.radius * 0.1)
  orbit.far = camera.far
  orbit.global_transform = Transform3D(frame, focus + frame.z * (distance / zoom if camera.projection == Camera3D.PROJECTION_PERSPECTIVE else distance))
@@ -271,6 +287,9 @@ func _select_camera(index: int) -> void:
 
 func _input(event: InputEvent) -> void:
  if active_clip.is_empty(): return
+ if embedded:
+  if not event is InputEventMouse or game.is_source_picker_open(): return
+  if not game.view_container.get_global_rect().has_point(event.position) or game.lighting_controls.blocks_camera_at(event.position): return
  if event is InputEventMouse and get_global_rect().has_point(event.position): return
  if event is InputEventMouseMotion and event.button_mask & MOUSE_BUTTON_MASK_LEFT:
   yaw -= event.relative.x * 0.009
@@ -289,7 +308,33 @@ func _toggle_playback() -> void:
  playing = not playing
  pause_button.text = "Pause motion" if playing else "Play motion"
 
+func view_state() -> Dictionary:
+ var values := {}
+ for id: String in sliders: values[id] = sliders[id].value
+ return {"clip": active_clip, "playing": playing, "sliders": values, "pitch": pitch, "yaw": yaw,
+  "angle": roll_angle, "tails": tail_time, "heading": flight_heading, "shell": shell_on_poses.button_pressed,
+  "time": player.current_animation_position if player and player.is_playing() else 0.0}
+
+func restore_view(saved: Dictionary) -> void:
+ if saved.is_empty(): return
+ for id: String in saved.sliders: sliders[id].value = saved.sliders[id]
+ yaw = saved.yaw
+ pitch = saved.pitch
+ shell_on_poses.set_pressed_no_signal(saved.shell)
+ for index in picker.item_count:
+  if picker.get_item_metadata(index) == saved.clip:
+   picker.select(index)
+   _select_clip(index)
+   break
+ if player and player.is_playing(): player.seek(saved.time, true)
+ if playing != saved.playing: _toggle_playback()
+ roll_angle = saved.angle
+ tail_time = saved.tails
+ flight_heading = saved.heading
+ _update_preview()
+
 func _unhandled_key_input(event: InputEvent) -> void:
+ if embedded: return
  if event is InputEventKey and event.keycode == KEY_SPACE and event.pressed and not event.echo:
   _toggle_playback()
   get_viewport().set_input_as_handled()
@@ -306,16 +351,21 @@ func _reset() -> void:
  if not playing: _toggle_playback()
 
 func _process(delta: float) -> void:
- if active_clip.is_empty() or not playing: return
- if player and rig.visible: player.advance(delta)
- if active_clip == Assets.FLIGHT:
-  var steer: float = game.controls.virtual_steering if game.controls.virtual_enabled else Input.get_axis("steer_left", "steer_right")
-  if not is_zero_approx(steer): flight_heading = Vector2(signf(steer), 0)
- elif active_clip == roll_clip:
-  roll_angle = fmod(roll_angle + delta * TAU * float(sliders.speed.value), TAU)
-  tail_time = fposmod(tail_time + delta, Assets.TAIL_WEAVE_DURATION)
- else: return
- _orient_model()
+ if active_clip.is_empty(): return
+ var rolling := active_clip == roll_clip
+ var flying := active_clip == Assets.FLIGHT
+ if playing:
+  if player and rig.visible: player.advance(delta)
+  if flying:
+   var steer: float = game.controls.virtual_steering if game.controls.virtual_enabled else Input.get_axis("steer_left", "steer_right")
+   if not is_zero_approx(steer): flight_heading = Vector2(signf(steer), 0)
+  elif rolling:
+   roll_angle = fmod(roll_angle + delta * TAU * float(sliders.speed.value), TAU)
+   tail_time = fposmod(tail_time + delta, Assets.TAIL_WEAVE_DURATION)
+ if embedded:
+  pivot.global_position = game.character.spin_root.global_position
+  _aim_camera()
+ elif playing and (rolling or flying): _orient_model()
 
 func _orient_model() -> void:
  var rolling := active_clip == roll_clip
@@ -329,7 +379,7 @@ func _orient_model() -> void:
  elif active_clip == Assets.DASH_RING.get(pose.character):
   var direction: Vector2 = pose.motion_direction if pose.motion == &"spring" else Vector2.UP
   frame = Pose.spring_basis(orbit, pivot.global_position, direction)
- elif active_clip == Assets.BOOST[pose.character]:
+ elif active_clip == Assets.BOOST.get(pose.character):
   frame = pose.motion_rig.global_basis.orthonormalized() if pose.motion in [&"loop", &"target_boost", &"dash_panel"] else game.character.flat_roll_frame(game.character.roll_heading)
  else:
   var side := 0.0
@@ -342,7 +392,7 @@ func _orient_model() -> void:
   lift = Pose.trick_lift(art.global_basis, held.mesh.get_aabb(), pose.radius)
  elif rig and rig.visible:
   var half_height := -rig.position.y * art.global_basis.get_scale().y
-  if active_clip == Assets.BOOST[pose.character]:
+  if active_clip == Assets.BOOST.get(pose.character):
    var offset := half_height - pose.radius
    art.global_position = pivot.global_position + frame.y * (maxf(0.0, offset) if pose.motion == &"loop" else offset)
    return
@@ -356,4 +406,4 @@ func finish() -> void:
  if is_instance_valid(game):
   game.presentation.camera.make_current()
   pose.inspect(false)
-  game.hud.show()
+  if not embedded: game.hud.show()

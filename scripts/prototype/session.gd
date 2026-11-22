@@ -88,6 +88,9 @@ func _ready() -> void:
   configure_act_test(arguments[act_argument + 1], preview_path)
   for argument: String in arguments:
    if argument.begins_with("--theme="): run_configuration.selected_theme_ids = [argument.trim_prefix("--theme=")]
+   if not start_spin_lab and argument.begins_with("--character="):
+    var requested := argument.trim_prefix("--character=")
+    if requested in Run.RunPlan.Configuration.Profile.character_ids(): selected_character = requested
   start_run.call_deferred()
   return
  _show_menu()
