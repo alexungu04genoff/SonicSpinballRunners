@@ -6,10 +6,14 @@ const POSES := {
  "tails": preload("res://assets/ui/combo_poses/tails.svg"),
  "knuckles": preload("res://assets/ui/combo_poses/knuckles.svg"),
  "shadow": preload("res://assets/ui/combo_poses/shadow.svg"),
+ "rouge": preload("res://assets/ui/combo_poses/rouge.svg"),
+ "amy": preload("res://assets/ui/combo_poses/amy.svg"),
+ "blaze": preload("res://assets/ui/combo_poses/blaze.svg"),
 }
 const INK := {
  "sonic": Color("#69dcff"), "tails": Color("#ffcd62"),
  "knuckles": Color("#ff9778"), "shadow": Color("#ff8498"),
+ "rouge": Color("#ff9bd2"), "amy": Color("#ff729e"), "blaze": Color("#c99aff"),
 }
 const CARD := Vector2(316, 116)
 const MARGIN := Vector2(18, 18)

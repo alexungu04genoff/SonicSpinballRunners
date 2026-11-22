@@ -31,7 +31,7 @@ func run() -> void:
  camera.fov = 30.0
  var velocity: Vector2 = game.ball.linear_velocity
  var position: Vector2 = game.ball.position
- for id in ["sonic", "tails", "knuckles", "shadow"]:
+ for id in CharacterSpecials.CHARACTER_IDS:
   actor.character_id = id
   actor._apply_character_color()
   for step in 32:

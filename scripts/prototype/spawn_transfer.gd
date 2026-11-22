@@ -21,7 +21,7 @@ func begin(owner_game: Node, target: Vector2, drained: bool) -> void:
  process_mode = Node.PROCESS_MODE_PAUSABLE
  proxy = game.character.spin_root.duplicate()
  game.presentation.add_child(proxy)
- if game.character.character_id in ["sonic", "tails"]:
+ if preload("res://experiments/visual_lab/runners_sonic_assets.gd").CURLS.has(game.character.character_id):
   var heading: Vector2 = game.character.roll_heading
   if not drain and not start.is_equal_approx(destination): heading = start.direction_to(destination)
   proxy.basis = game.character.flat_roll_frame(heading)

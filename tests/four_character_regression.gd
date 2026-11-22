@@ -83,6 +83,9 @@ func run() -> void:
  await frames(5)
  check(game.specials.smash_remaining == 0.0 and areas.size() == 1, "Switching character cancels the pending impact")
  check(CharacterSpecials.CHARACTERS.sonic.type_action == CharacterSpecials.CHARACTERS.shadow.type_action, "Sonic and Shadow share the exact Speed tuning resource")
+ check(CharacterSpecials.CHARACTERS.sonic.type_action == CharacterSpecials.CHARACTERS.amy.type_action, "Amy shares the exact Speed tuning resource")
+ check(CharacterSpecials.CHARACTERS.tails.type_action == CharacterSpecials.CHARACTERS.rouge.type_action, "Rouge shares the exact Flight tuning resource")
+ check(CharacterSpecials.CHARACTERS.knuckles.type_action == CharacterSpecials.CHARACTERS.blaze.type_action, "Blaze shares the exact Power tuning resource")
  check(CharacterSpecials.CHARACTERS.sonic.profile != CharacterSpecials.CHARACTERS.shadow.profile, "Shared Speed retains distinct character physics profiles")
  for id: String in CharacterSpecials.CHARACTER_IDS:
   game.specials.select_character(id)
@@ -95,5 +98,5 @@ func run() -> void:
  check(speed.dash_duration(398, 0) > speed.dash_duration(48, 0), "Distance increases approach time, not speed")
  game.free()
  await frames(3)
- print("RESULT | Four shared type characters | %d checks | %d failures" % [checks, failures])
+ print("RESULT | Shared character types | %d checks | %d failures" % [checks, failures])
  quit(0 if failures == 0 else 1)

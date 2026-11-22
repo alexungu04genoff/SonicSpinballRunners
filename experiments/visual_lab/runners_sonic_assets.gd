@@ -1,17 +1,18 @@
 extends RefCounted
 ## Local-only Runners assets shared by the Prototype and the spin preview.
 const LOCAL_SET := "res://experiments/visual_lab/local/runtime/sonic_runners_poses.glb"
-const CURLS := {"sonic": "sn_ball_loop", "tails": "tl_jump_ball_loop", "knuckles": "kn_jump_ball_loop", "shadow": "sh_jump_ball_loop"}
-const PREFIX := {"sonic": "sn", "tails": "tl", "knuckles": "kn", "shadow": "sh"}
-const POWER_DIVE := {"knuckles": "kn_jump_bunk_loop"}
+const CURLS := {"sonic": "sn_ball_loop", "tails": "tl_jump_ball_loop", "knuckles": "kn_jump_ball_loop", "shadow": "sh_jump_ball_loop", "rouge": "ru_jump_ball_loop", "amy": "am_jump_ball_loop", "blaze": "bl_jump_ball_loop"}
+const PREFIX := {"sonic": "sn", "tails": "tl", "knuckles": "kn", "shadow": "sh", "rouge": "ru", "amy": "am", "blaze": "bl"}
+const POWER_DIVE := {"knuckles": "kn_jump_bunk_loop", "blaze": "bl_jump_bunk_loop"}
 const FLIGHT := "tl_jump_bunk_loop"
-const FLIGHT_CLIPS := {"tails": FLIGHT}
-const DASH_RING := {"sonic": "sn_dashring_loop", "tails": "tl_dashring_loop", "knuckles": "kn_dashring_loop", "shadow": "sh_dashring_loop"}
-const BOOST := {"sonic": "sn_boost_loop", "tails": "tl_boost_loop", "shadow": "sh_boost_loop", "knuckles": "kn_boost_loop"}
+const FLIGHT_CLIPS := {"tails": FLIGHT, "rouge": "ru_jump_bunk_loop"}
+const DASH_RING := {"sonic": "sn_dashring_loop", "tails": "tl_dashring_loop", "knuckles": "kn_dashring_loop", "shadow": "sh_dashring_loop", "rouge": "ru_dashring_loop", "amy": "am_dashring_loop", "blaze": "bl_dashring_loop"}
+const BOOST := {"sonic": "sn_boost_loop", "tails": "tl_boost_loop", "shadow": "sh_boost_loop", "knuckles": "kn_boost_loop", "rouge": "ru_boost_loop", "amy": "am_boost_loop", "blaze": "bl_boost_loop"}
 const BOOST_SPEED := 1.5
 # Sonic's reference stride is 80 frames at 60 Hz, played at 3x on boost entry.
 const BOOST_CYCLES_PER_SECOND := 2.25
-const TAIL_WEAVE_DURATION := 8.0 / 60.0
+# The eight original curl shapes make one relaxed sweep behind the ball.
+const TAIL_WEAVE_DURATION := 0.8
 
 static func set_playback_speed(player: AnimationPlayer, id: String, boost_scale: float) -> void:
  if player.current_animation == BOOST.get(id):
@@ -21,6 +22,36 @@ static func set_playback_speed(player: AnimationPlayer, id: String, boost_scale:
 static func trick_names(id: String) -> Array:
  var prefix: String = PREFIX.get(id, "")
  return [prefix + "_jump_trick", prefix + "_jump_trick_02", prefix + "_jump_trick_03"]
+
+static func pose_center(fit: Dictionary, player: AnimationPlayer, yaw := 0.0) -> Vector3:
+ var clip := player.current_animation
+ var tracks: Dictionary = fit.get("pose_center_tracks", {})
+ var samples: Array = tracks.get(clip, [])
+ if samples.size() < 3:
+  var first: Array = fit.get("preview_centers", {}).get(clip, [0, 0.48, 0])
+  return Vector3(first[0], first[1], first[2])
+ var time := player.current_animation_position
+ if is_zero_approx(yaw) or not tracks.has(clip + "@15"): return sample_center(samples, time)
+ var step := fposmod(rad_to_deg(yaw), 90.0) / 15.0
+ var lo := floori(step) % 6
+ var hi := (lo + 1) % 6
+ var lower: Array = samples if lo == 0 else tracks[clip + "@%d" % (lo * 15)]
+ var upper: Array = samples if hi == 0 else tracks[clip + "@%d" % (hi * 15)]
+ return sample_center(lower, time).lerp(sample_center(upper, time), step - floorf(step))
+
+static func sample_center(samples: Array, time: float) -> Vector3:
+ var last := floori(samples.size() / 3.0) - 1
+ var frame := clampf(time * 60.0, 0.0, last)
+ var a := floori(frame) * 3
+ var b := mini(a + 3, last * 3)
+ return Vector3(samples[a], samples[a+1], samples[a+2]).lerp(Vector3(samples[b], samples[b+1], samples[b+2]), frame - floorf(frame))
+
+static func start_clip(rig: Node3D, player: AnimationPlayer, clip: String) -> void:
+ # Sparse clips omit joints that should use their bind pose on entry.
+ for skeleton: Skeleton3D in rig.find_children("*", "Skeleton3D", true, false):
+  skeleton.reset_bone_poses()
+ player.play(clip)
+ player.advance(0.0)
 
 static func sample_roll_tails(tails: MeshInstance3D, seconds: float) -> void:
  # Frame zero is the base mesh. The last source frame returns to that shape.
@@ -33,7 +64,7 @@ static func animated_scene(id: String) -> Node3D:
  var path := "res://experiments/visual_lab/local/runners-decomp/%s/%s Runners - original animations.glb" % [id, id.capitalize()]
  var document := GLTFDocument.new()
  var state := read_state(path, document)
- return document.generate_scene(state) if state != null else null
+ return document.generate_scene(state, 60.0, false, false) if state != null else null
 
 static func read_state(path: String, document := GLTFDocument.new()) -> GLTFState:
  if not FileAccess.file_exists(path): return null
@@ -72,6 +103,8 @@ static func load_set(path: String, painted: ShaderMaterial, id: String) -> Dicti
   blur.set_shader_parameter("runners_model", true)
   blur.set_shader_parameter("runners_skin", skin.albedo_texture)
   blur.set_shader_parameter("runners_shell", shell)
+  # Keep Amy's small white boot cuffs and red dress legible through the pink smear.
+  if id == "amy": blur.set_shader_parameter("smear_mix", 0.40)
   roll.set_surface_override_material(surface, blur)
  var tricks: Array[Mesh] = []
  for clip: String in tricks_for_character: tricks.append(poses[clip])

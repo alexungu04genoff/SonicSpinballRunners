@@ -5,7 +5,7 @@ const Assets = preload("res://experiments/visual_lab/runners_sonic_assets.gd")
 const Pose = preload("res://scripts/prototype/sonic_combo_pose.gd")
 const CLIPS := {
  "sn_ball_loop": "Spin ball", "sn_jump_trick": "Jump trick 1", "sn_jump_trick_02": "Jump trick 2",
- "sn_jump_trick_03": "Jump trick 3", "sn_run_loop": "Run", "sn_boost_loop": "Boost",
+ "sn_jump_trick_03": "Jump trick 3", "sn_boost_loop": "Boost run",
  "sn_stumble_run_loop": "Stumble", "sn_jump_fall_loop": "Fall", "sn_landing": "Landing",
  "sn_springjump_loop": "Spring jump", "sn_dashring_loop": "Dash ring", "sn_damage_miss_loop": "Defeat",
  "sn_ph_astero_start": "Asteroid start", "sn_ph_laser_start": "Laser start", "sn_ph_spin_start": "Drill start",
@@ -25,7 +25,6 @@ var held := MeshInstance3D.new()
 var tricks: Array[Mesh] = []
 var rig: Node3D
 var player: AnimationPlayer
-var centers := {}
 var source_radius := 1.0
 var picker := OptionButton.new()
 var pause_button := Button.new()
@@ -112,7 +111,6 @@ func _load_models() -> void:
    pivot.add_child(trailing_tails)
   tricks = pose.tricks
  source_radius = pose.motion_fit.get("runners_source_radius", 1.0)
- centers = pose.motion_fit.get("preview_centers", {})
  if pose.motion_rig or not embedded: rig = Assets.animated_scene(pose.character)
  if rig != null:
   art.add_child(rig)
@@ -144,7 +142,7 @@ func _build_controls() -> void:
  if Assets.POWER_DIVE.has(pose.character): clips[Assets.POWER_DIVE[pose.character]] = "Table Smash · power dive"
  if embedded and not Assets.CURLS.has(pose.character):
   clips = {roll_clip: "Spin ball"}
-  if player and Assets.BOOST.has(pose.character): clips[Assets.BOOST[pose.character]] = "Boost"
+  if player and Assets.BOOST.has(pose.character): clips[Assets.BOOST[pose.character]] = "Boost run"
  for clip: String in clips:
   if clip == roll_clip or (clip in trick_names and not tricks.is_empty()) or (player and player.has_animation(clip)):
    picker.add_item(clips[clip])
@@ -180,7 +178,7 @@ func _build_controls() -> void:
  resume.pressed.connect(func(): resume_requested.emit())
  hint = _label(panel, "", 14)
  hint.modulate = Color("#afd3df")
- if (Assets.CURLS.has(pose.character) and curl == null) or picker.item_count < clips.size():
+ if curl == null or player == null or tricks.is_empty():
   var note := _label(panel, "Available clips depend on the local Runners model and pose bake.", 14)
   note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 
@@ -214,9 +212,10 @@ func _slider(id: String, caption: String, minimum: float, maximum: float, step: 
 
 func _select_clip(index: int) -> void:
  active_clip = picker.get_item_metadata(index)
- if active_clip == Assets.FLIGHT:
+ var flight_clip: String = Assets.FLIGHT_CLIPS.get(pose.character, "")
+ if active_clip == flight_clip:
   flight_heading = pose.flight_heading if pose.flying else pose.initial_flight_heading()
- hint.text = ("Steer with ← / → or the left stick\n" if active_clip == Assets.FLIGHT else "") + "Drag table to orbit · Wheel to zoom\n" + ("F8 to return to table" if embedded else "C to cycle cameras · F8 to resume")
+ hint.text = ("Steer with ← / → or the left stick\n" if active_clip == flight_clip else "") + "Drag table to orbit · Wheel to zoom\n" + ("F8 to return to table" if embedded else "C to cycle cameras · F8 to resume")
  var rolling := active_clip == roll_clip
  var trick := trick_names.find(active_clip)
  held.visible = trick >= 0 and not tricks.is_empty()
@@ -228,11 +227,8 @@ func _select_clip(index: int) -> void:
   if player:
    player.stop()
    if rig.visible and player.has_animation(active_clip):
-    var center: Array = centers.get(active_clip, [0, 0.48, 0])
-    rig.position = -Vector3(center[0], center[1], center[2]) / source_radius
     rig.scale = Vector3.ONE / source_radius
-    player.play(active_clip)
-    player.advance(0.0)
+    Assets.start_clip(rig, player, active_clip)
     if pose.motion != &"" and active_clip == pose.motion_player.current_animation:
      player.seek(pose.motion_player.current_animation_position, true)
  roll_angle = game.character.roll_angle if rolling else 0.0
@@ -353,7 +349,7 @@ func _reset() -> void:
 func _process(delta: float) -> void:
  if active_clip.is_empty(): return
  var rolling := active_clip == roll_clip
- var flying := active_clip == Assets.FLIGHT
+ var flying: bool = active_clip == Assets.FLIGHT_CLIPS.get(pose.character, "")
  if playing:
   if player and rig.visible: player.advance(delta)
   if flying:
@@ -365,7 +361,7 @@ func _process(delta: float) -> void:
  if embedded:
   pivot.global_position = game.character.spin_root.global_position
   _aim_camera()
- elif playing and (rolling or flying): _orient_model()
+ elif playing: _orient_model()
 
 func _orient_model() -> void:
  var rolling := active_clip == roll_clip
@@ -385,7 +381,7 @@ func _orient_model() -> void:
   frame = pose.motion_rig.global_basis.orthonormalized() if pose.motion in [&"loop", &"target_boost", &"dash_panel"] else game.character.flat_roll_frame(game.character.roll_heading)
  else:
   var side := 0.0
-  if active_clip == Assets.FLIGHT: side = flight_heading.x
+  if active_clip == Assets.FLIGHT_CLIPS.get(pose.character, ""): side = flight_heading.x
   frame = Pose.player_facing_basis(orbit, side)
  pivot.global_basis = frame.scaled(Vector3.ONE * pose.radius)
  # Lift in table space even when the camera is looking straight down.
@@ -393,6 +389,8 @@ func _orient_model() -> void:
  if held.visible:
   lift = Pose.trick_lift(art.global_basis, held.mesh.get_aabb(), pose.radius)
  elif rig and rig.visible:
+  var fit_yaw := flight_heading.x * Pose.FLIGHT_TURN if active_clip == Assets.FLIGHT_CLIPS.get(pose.character) else atan2(frame.z.x, frame.z.z)
+  rig.position = -Assets.pose_center(pose.motion_fit, player, fit_yaw) / source_radius
   var half_height := -rig.position.y * art.global_basis.get_scale().y
   if active_clip == Assets.POWER_DIVE.get(pose.character):
    lift = pose.smash_lift(sliders.model.value)
@@ -402,7 +400,7 @@ func _orient_model() -> void:
    var offset := half_height - pose.radius
    art.global_position = pivot.global_position + frame.y * (maxf(0.0, offset) if pose.motion == &"loop" else offset)
    return
-  var airborne := active_clip in [Assets.FLIGHT, Assets.DASH_RING.get(pose.character)]
+  var airborne := active_clip in [Assets.FLIGHT_CLIPS.get(pose.character, ""), Assets.DASH_RING.get(pose.character)]
   lift = Pose.flight_lift(half_height, pose.radius) if airborne else maxf(0.0, half_height - pose.radius * 0.82)
  art.global_position = pivot.global_position + Vector3.UP * lift
 

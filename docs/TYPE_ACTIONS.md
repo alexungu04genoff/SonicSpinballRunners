@@ -1,12 +1,12 @@
 # Shared character type actions V1
 
-Confirmed direction, 2026-11-04: a character is a shared Type Action plus its existing physics profile. Sonic and Shadow use **Speed · Target Boost**, Tails uses **Fly · Flight**, and Knuckles uses **Power · Table Smash**. No signatures, Team Tags, new characters, Buddy redesign or Scorecraft rebalance are included. Authored Acts are unchanged.
+Each character combines a physics profile with one shared Type Action. Sonic, Shadow and Amy use **Speed · Target Boost**. Tails and Rouge use **Fly · Flight**. Knuckles and Blaze use **Power · Table Smash**.
 
-`CharacterDefinition` retains identity, colors, profile and charge rules. Its `type_action` references one resource in `data/types/`; both Speed characters reference the same resource. `TypeAction` owns the type, action label, description and tuning. `CharacterSpecials` dispatches by type, never by character name. Future Fly characters can reference `fly.tres` without another ability implementation.
+`CharacterDefinition` retains identity, colors, profile and charge rules. Its `type_action` references one resource in `data/types/`. Characters of the same type reference the same action. `TypeAction` owns the type, action label, description and tuning. `CharacterSpecials` dispatches by type, never by character name. Future Fly characters can reference `fly.tres` without another ability implementation.
 
 ## Speed: Target Boost
 
-Sonic and Shadow uncurl into their own Sonic Runners boost animations during the guided approach. Their feet face the table and their heading turns around its normal to follow the live target. Target Boost uses the same stride rate as dash panels, Loops and the F8 preview. At the default 1.5× setting, each stride takes about 0.30 seconds for every character. Physical contact or cancellation restores the roll. With the painted character art, a tapered wake points away from the target. The F8 preview inherits the active clip and target heading.
+Speed characters uncurl into their own Sonic Runners boost animations during the guided approach. Their feet face the table and their heading turns around its normal to follow the live target. Target Boost uses the same stride rate as dash panels, Loops and the F8 preview. At the default 1.5× setting, each stride takes about 0.30 seconds for every character. Physical contact or cancellation restores the roll. With the painted character art, a tapered wake points away from the target. The F8 preview inherits the active clip and target heading.
 
 Acquisition preserves the existing full-ball clear-path checks and fresh combo-builder priority, choosing the nearest eligible target within each priority class. Valid targets are active-Act round/triangle bumpers and living enemies. Very close targets no longer have the old 55-pixel exclusion. A failed acquisition keeps the meter.
 
@@ -14,7 +14,7 @@ The authoritative ball integrates a bounded approach each physics tick. It follo
 
 Provisional shared tuning: 400 px acquisition range, 520 px/s maximum approach speed, 2,600 px/s² guidance acceleration, 180 px/s contact speed and 240 px/s exit cap. Distance increases the allotted approach time, capped at 1.6 seconds. Excessive incoming speed is braked to the cap at entry; subsequent guidance is acceleration-limited. On a hit, a small outward recoil replaces inward enemy pass-through while preserving bounded tangent/rebound motion. Misses return to ordinary physics with bounded velocity. These are initial feel values, not a guarantee against falling off an edge.
 
-Scoring is the former Homing cash-out for **both** Speed characters: pre-hit base × visible combo + 400, then end the chain. Base is 100 for a bumper and 200 for an enemy. Ordinary physical bumper recharge remains. Existing `homing_*` presentation hooks and the `homing` score/telemetry key remain as internal compatibility names; they now describe shared Speed, not a Sonic signature.
+Scoring is the former Homing cash-out for all Speed characters: pre-hit base × visible combo + 400, then end the chain. Base is 100 for a bumper and 200 for an enemy. Ordinary physical bumper recharge remains. Existing `homing_*` presentation hooks and the `homing` score/telemetry key remain as internal compatibility names; they now describe shared Speed, not a Sonic signature.
 
 ## Fly: Flight
 
@@ -22,7 +22,7 @@ The existing temporary modifier and bounded rescue lift are shared unchanged: 1.
 
 ## Power: Table Smash
 
-Press Special at full charge to hold the physical Ball at its current table coordinates. The curled model rises for one second. At the apex, Knuckles uncurls and plays his Runners Power attack for a one-second accelerating descent. His controller calls this clip `SecondJump` (`kn_jump_bunk_loop`). The original attack travels forward, so the presenter points the fists along the table’s downward normal. At two seconds the Ball resumes from rest and one expanding shockwave awards nearby targets. Pause holds the action clock. Reposition, retry, character change or transfer cancels a pending impact. The painted Ball follows the same jump and landing when local model assets are unavailable.
+Press Special at full charge to hold the physical Ball at its current table coordinates. The curled model rises for one second. At the apex, Knuckles or Blaze uncurls and plays the character's Runners Power attack for a one-second accelerating descent (`kn_jump_bunk_loop` or `bl_jump_bunk_loop`). The original attack travels forward, so the presenter points the fists along the table’s downward normal. At two seconds the Ball resumes from rest and one expanding shockwave awards nearby targets. Pause holds the action clock. Reposition, retry, character change or transfer cancels a pending impact. The painted Ball follows the same jump and landing when local model assets are unavailable.
 
 The radius is provisionally 300 px, with a hard 600 px tuning ceiling. Like the former radial blast, it crosses walls within that radius but only affects eligible objects in the active Act:
 

@@ -9,6 +9,7 @@ var progress: Label
 var message: Label
 var ready_label: Label
 var portrait: TextureRect
+var portrait_letter: Label
 var charge := 0.0
 
 func _ready() -> void:
@@ -24,6 +25,9 @@ func _ready() -> void:
  _icon(RING, Vector2(24, 24), Vector2(28, 28))
  rings = _label(Vector2(62, 18), 30)
  portrait = _icon(SONIC, Vector2(160, 26), Vector2(24, 24))
+ portrait_letter = _label(Vector2(161, 23), 21)
+ portrait_letter.size = Vector2(24, 28)
+ portrait_letter.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
  lives = _label(Vector2(194, 23), 24)
  progress = _label(Vector2(24, 59), 14)
  progress.add_theme_color_override("font_color", Color("dbf7ff"))
@@ -86,8 +90,11 @@ func _icon(texture: Texture2D, at: Vector2, dimensions: Vector2) -> TextureRect:
  return icon
 
 func update_values(character: String, balls: String, amount: float) -> void:
- portrait.texture = TAILS if character == "tails" else SONIC
+ portrait.texture = TAILS if character == "tails" else (SONIC if character == "sonic" else null)
+ portrait_letter.text = "" if portrait.texture else CharacterSpecials.CHARACTERS[character].display_name.left(1)
+ portrait_letter.add_theme_color_override("font_color", CharacterSpecials.CHARACTERS[character].color)
  portrait.position.x = maxf(160, rings.position.x + rings.get_minimum_size().x + 24)
+ portrait_letter.position.x = portrait.position.x
  lives.position.x = portrait.position.x + 34
  lives.text = "× " + balls
  var value := clampf(amount / 100.0, 0.0, 1.0)

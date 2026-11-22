@@ -57,7 +57,7 @@ func review_key(event: InputEvent) -> void:
  if not event is InputEventKey or not event.pressed or event.echo: return
  if not is_instance_valid(game) or paused or game.finished or game.closing or is_instance_valid(game.transfer): return
  var key: int = event.keycode
- if key not in [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_8, KEY_0, KEY_9, KEY_F9]: return
+ if key not in [KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_0, KEY_9, KEY_F9]: return
  settle_ball()
  if key == KEY_F9:
   game.set_celebration_retro(card.get_parent() == game.hud)
@@ -66,8 +66,8 @@ func review_key(event: InputEvent) -> void:
   game._on_mechanic_score(&"switch", "review-target", game.act_score_target, game.active_scoring_id)
   var at: Vector2 = game.active.runtime.goal_ring.center
   game._observe_authored_motion(at, at)
- elif key >= KEY_1 and key <= KEY_4:
-  game.specials.select_character(["sonic", "tails", "knuckles", "shadow"][key - KEY_1])
+ elif key >= KEY_1 and key <= KEY_7 and not event.shift_pressed:
+  game.specials.select_character(CharacterSpecials.CHARACTER_IDS[key - KEY_1])
   five()
  else:
   var target := 10 if key == KEY_0 else key - KEY_0
@@ -140,9 +140,9 @@ func check_roll_heading() -> void:
    var pose = game.combo_celebration.character_pose
    var start_time: float = pose.tail_time
    pose._process(dt)
-   var frame: float = fposmod(start_time + dt, 8.0 / 60.0) * 60.0
+   var frame: float = fposmod(start_time + dt, 0.8) * 10.0
    var target := clampi(roundi(frame), 1, 7)
-   check(tails.get_blend_shape_count() == 7 and is_equal_approx(tails.get_blend_shape_value(target - 1), maxf(0.0, 1.0 - absf(frame - target))), "Live tails play their original shape on the native animation clock")
+   check(tails.get_blend_shape_count() == 7 and is_equal_approx(tails.get_blend_shape_value(target - 1), maxf(0.0, 1.0 - absf(frame - target))), "Live tails interpolate eight original shapes over a 0.8-second sweep")
  var last_heading: Basis = actor.spin_root.basis
  ball.linear_velocity = Vector2.ZERO
  actor._process(dt)
@@ -213,7 +213,7 @@ func run() -> void:
   check(is_instance_valid(pose.runners_roll) and pose.tricks.size() == 3, "Original curled Sonic and all three tricks loaded")
  if "--interactive" in OS.get_cmdline_user_args():
   settle_ball()
-  root.title = "Combo review   |   1–4 Character   5 / 8 / 0 Hits   Enter Pause   9 Goal   F9 Retro"
+  root.title = "Combo review   |   1–7 Character   Shift+5 / 8 / 0 Hits   Enter Pause   9 Goal   F9 Retro"
   root.window_input.connect(review_key)
   return
  preload("res://tests/render_profile_support.gd").disable_native_input(session)
@@ -237,7 +237,7 @@ func run() -> void:
  check(fallback.mesh is QuadMesh and fallback.visible and not game.character.rolling_mesh.visible, "The shared Sonic artwork takes the Ball's place when the local model is absent")
  fallback.restore_ball()
  fallback.free()
- for id: String in ["sonic", "tails", "knuckles", "shadow"]:
+ for id: String in CharacterSpecials.CHARACTER_IDS:
   game.specials.select_character(id)
   if id == "tails": check_roll_heading()
   if is_instance_valid(pose.runners_roll):

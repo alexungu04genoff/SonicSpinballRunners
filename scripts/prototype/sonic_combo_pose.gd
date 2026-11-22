@@ -142,8 +142,8 @@ func _process(delta: float) -> void:
   tail_time = fposmod(tail_time + elapsed, Assets.TAIL_WEAVE_DURATION)
   Assets.sample_roll_tails(trailing_tails, tail_time)
  if motion != &"":
-  _place_motion()
   motion_player.advance(elapsed)
+  _place_motion()
 
 func _play_motion(kind: StringName, clip: String) -> void:
  if motion_player == null or not motion_player.has_animation(clip):
@@ -156,12 +156,9 @@ func _play_motion(kind: StringName, clip: String) -> void:
   return
  motion = kind
  if kind in [&"loop", &"target_boost"]: restore_ball()
- motion_center = Vector3(center[0], center[1], center[2])
- motion_rig.get_child(0).position = -motion_center
  if motion_player.current_animation != clip:
   motion_player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
-  motion_player.play(clip)
-  motion_player.advance(0.0)
+  Assets.start_clip(motion_rig, motion_player, clip)
  Assets.set_playback_speed(motion_player, character, boost_speed)
  _place_motion()
  set_process(true)
@@ -251,6 +248,7 @@ static func spring_basis(camera: Camera3D, at: Vector3, direction: Vector2) -> B
  return facing * Basis(Vector3.BACK, -Vector2.UP.angle_to(screen)) if not screen.is_zero_approx() else facing
 
 func _place_motion() -> void:
+ motion_center = Assets.pose_center(motion_fit, motion_player)
  var camera: Camera3D = presenter.table.camera
  var anchor: Vector3 = presenter.spin_root.global_position
  var frame: Basis
@@ -276,6 +274,8 @@ func _place_motion() -> void:
    var steer: float = presenter.ball.controls.steering
    if not is_zero_approx(steer): flight_heading = Vector2(signf(steer), 0)
    frame = player_facing_basis(camera, flight_heading.x)
+ var yaw := flight_heading.x * FLIGHT_TURN if flying else atan2(frame.z.x, frame.z.z)
+ motion_rig.get_child(0).position = -Assets.pose_center(motion_fit, motion_player, yaw)
  motion_rig.global_transform = Transform3D(frame.scaled(Vector3.ONE * fit), anchor + lift)
 
 func _end_flight(_reason: String) -> void:

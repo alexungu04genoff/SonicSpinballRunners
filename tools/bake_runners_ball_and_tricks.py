@@ -12,6 +12,8 @@ import bpy
 import numpy as np
 from mathutils import Matrix, Vector
 from mathutils.bvhtree import BVHTree
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from runners_clip_bounds import clip_bounds
 
 ROOT = Path(__file__).resolve().parents[1] / "experiments/visual_lab/local"
 CHARACTER = sys.argv[sys.argv.index("--") + 1] if "--" in sys.argv else "sonic"
@@ -20,6 +22,9 @@ PREFIX, CURL, ANGLES = {
     "tails": ("tl", "tl_jump_ball_loop", (-35, -40, -38)),
     "knuckles": ("kn", "kn_jump_ball_loop", (-45, -65, -40)),
     "shadow": ("sh", "sh_jump_ball_loop", (-40, -40, -20)),
+    "rouge": ("ru", "ru_jump_ball_loop", (-40, -45, -25)),
+    "amy": ("am", "am_jump_ball_loop", (-40, -45, -25)),
+    "blaze": ("bl", "bl_jump_ball_loop", (-40, -45, -25)),
 }[CHARACTER]
 SOURCE = ROOT / "runners-decomp" / CHARACTER / f"{CHARACTER.title()} Runners - original animations.glb"
 OUTPUT = ROOT / "runtime" / f"{CHARACTER}_runners_poses.glb"
@@ -89,7 +94,11 @@ def bake_roll_map(mesh):
             ray = Vector((cos(polar), -sin(polar) * sin(angle), sin(polar) * cos(angle)))
             point, _, hit, _ = tree.ray_cast(ray * 2, -ray, 4)
             if hit is None:
-                raise ValueError("The centered curl has no surface along a roll-map direction.")
+                # Some characters leave small gaps between limbs in their curl.
+                # Use the nearest visible texel so the exposure map remains solid.
+                point, _, hit, _ = tree.find_nearest(ray)
+            if hit is None:
+                raise ValueError("The centered curl has no usable surface for the roll map.")
             tri = triangles[hit]
             a, b, c = (coords[i] for i in tri.vertices)
             ab, ac, ap = b - a, c - a, point - a
@@ -115,6 +124,11 @@ def bake():
     bpy.ops.import_scene.gltf(filepath=str(SOURCE))
     rig = next(o for o in bpy.context.scene.objects if o.type == "ARMATURE")
     skin = next(o for o in bpy.context.scene.objects if o.type == "MESH" and o.find_armature() == rig)
+    if "--save-blend" in sys.argv:
+        bpy.ops.object.select_all(action="DESELECT")
+        rig.select_set(True)
+        bpy.context.view_layer.objects.active = rig
+        bpy.ops.wm.save_as_mainfile(filepath=str(SOURCE.with_suffix(".blend")))
     data = rig.animation_data
     for track in data.nla_tracks:
         track.mute = True
@@ -124,15 +138,8 @@ def bake():
         bpy.context.scene.frame_set(round(action.frame_range[0]))
         return skin.evaluated_get(bpy.context.evaluated_depsgraph_get())
 
-    def vertices(action):
-        evaluated = first_frame(action)
-        return np.array([evaluated.matrix_world @ v.co for v in evaluated.data.vertices])
-
-    centers = {}
-    for action in bpy.data.actions:
-        points = vertices(action)
-        x, y, z = (points.min(axis=0) + points.max(axis=0)) / 2
-        centers[action.name] = [float(x), float(z), float(-y)]
+    center_tracks, fronts = clip_bounds(SOURCE)
+    centers = {clip: track[:3] for clip, track in center_tracks.items() if "@" not in clip}
     posed = []
     curled_radius = None
     for name, yaw in {CURL: 0, **TRICKS}.items():
@@ -170,9 +177,10 @@ def bake():
         posed.append(obj)
         if name == CURL:
             mesh["preview_centers"] = centers
-            if CHARACTER == "knuckles":
-                attack = vertices(bpy.data.actions["kn_jump_bunk_loop"])
-                mesh["slam_front"] = float(-attack[:, 1].min() - centers["kn_jump_bunk_loop"][2])
+            mesh["pose_center_tracks"] = center_tracks
+            if CHARACTER in ["knuckles", "blaze"]:
+                attack_name = f"{PREFIX}_jump_bunk_loop"
+                mesh["slam_front"] = fronts[attack_name]
             bake_roll_map(mesh)
     bpy.ops.object.select_all(action="DESELECT")
     for obj in posed:

@@ -25,7 +25,21 @@ func check_flight_facing(model: Node3D, camera: Camera3D, side: float, message: 
  var relative := camera.global_basis.orthonormalized().inverse() * model.global_basis.orthonormalized()
  check(relative.y.is_equal_approx(Vector3.UP) and relative.z.z > 0.75 and relative.z.x * side > 0.25, message)
 
+# Sample the live inspector clock for repeatable motion comparisons at 24 fps.
+func sample_motion(lab: Control) -> void:
+ var folder := output.path_join("motion")
+ DirAccess.make_dir_recursive_absolute(folder)
+ lab.set_process(false)
+ for frame in 96:
+  lab._process(1.0 / 24.0)
+  await RenderingServer.frame_post_draw
+  var shot := root.get_texture().get_image().get_region(Rect2i(396, 162, 488, 488))
+  shot.save_png(folder.path_join("%03d.png" % frame))
+ lab.set_process(true)
+
 func run() -> void:
+ if DisplayServer.get_name() != "headless":
+  print("SPIN_REVIEW_SCREEN | initial=", root.current_screen, " primary=", DisplayServer.get_primary_screen(), " origin=", DisplayServer.screen_get_position(root.current_screen))
  Review.position_review_window(root)
  for arg in OS.get_cmdline_user_args():
   if arg.begins_with("--capture-dir="): output = arg.trim_prefix("--capture-dir=")
@@ -47,7 +61,7 @@ func run() -> void:
  check(paused and lab.orbit.get_viewport() == game.presentation.camera.get_viewport() and lab.pivot.get_world_3d() == game.character.get_world_3d(), "Inspector uses the actual paused table and play viewport")
  var tails: bool = game.character_id == "tails"
  var character: String = game.character_id
- check(lab.picker.item_count == {"sonic": 15, "tails": 17, "knuckles": 16, "shadow": 15}[character] and lab.cameras.item_count == 4, "Original clips and the four gameplay cameras are selectable")
+ check(lab.picker.item_count == {"sonic": 14, "tails": 16, "knuckles": 15, "shadow": 14, "rouge": 15, "amy": 14, "blaze": 15}[character] and lab.cameras.item_count == 4, "Gameplay clips and the four gameplay cameras are selectable")
  var point: Vector2 = game.ball.position
  check(is_equal_approx(lab.sliders.speed.value, 2.0) and is_equal_approx(lab.sliders.opacity.value, 0.30) and is_equal_approx(lab.sliders.blur.value, 1.0), "Inspection opens with the selected roll defaults")
  var score: int = game.score
@@ -62,13 +76,51 @@ func run() -> void:
   check(lab.trailing_tails.get_surface_override_material(0) == null, "The exterior tails retain their original skin at full spin blur")
   check(lab.trailing_tails.get_blend_shape_count() == 7, "The original eight-frame roll keeps all seven poses after the base frame")
   if lab.trailing_tails.get_blend_shape_count() == 7:
-   lab.tail_time = 1.5 / 60.0
+   lab.tail_time = 0.15
    lab._orient_model()
    check(is_equal_approx(lab.trailing_tails.get_blend_shape_value(0), 0.5) and is_equal_approx(lab.trailing_tails.get_blend_shape_value(1), 0.5), "Preview interpolates the original tail motion between frames")
    lab.tail_time = lab.Assets.TAIL_WEAVE_DURATION
    lab._orient_model()
-   check(is_zero_approx(lab.trailing_tails.get_blend_shape_value(0)) and is_zero_approx(lab.trailing_tails.get_blend_shape_value(1)), "The native weave period wraps to the authored start pose")
+   check(is_zero_approx(lab.trailing_tails.get_blend_shape_value(0)) and is_zero_approx(lab.trailing_tails.get_blend_shape_value(1)), "The slower weave wraps to the authored start pose")
  await capture("in-game-spin")
+ if not output.is_empty():
+  lab.sliders.zoom.value = 4.0
+  var motion_samples := "--sample-motion" in OS.get_cmdline_user_args()
+  if motion_samples and tails:
+   lab.yaw = 0.9
+   lab.pitch = 0.35
+   lab._aim_camera()
+   await sample_motion(lab)
+   lab.yaw = 0.0
+   lab.pitch = 0.0
+   lab._aim_camera()
+  if character == "amy":
+   lab._toggle_playback()
+   for phase in 8:
+    lab.roll_angle = TAU * phase / 8.0
+    lab._orient_model()
+    await capture("curl-%02d" % phase)
+   lab._toggle_playback()
+  var gallery := [lab.trick_names[0], lab.Assets.BOOST[character]]
+  if lab.Assets.FLIGHT_CLIPS.has(character): gallery.append(lab.Assets.FLIGHT_CLIPS[character])
+  if lab.Assets.POWER_DIVE.has(character): gallery.append(lab.Assets.POWER_DIVE[character])
+  for i in lab.picker.item_count:
+   var clip: String = lab.picker.get_item_metadata(i)
+   if clip not in gallery: continue
+   lab.picker.select(i)
+   lab.picker.item_selected.emit(i)
+   lab._process(0.10)
+   await capture(clip)
+   if motion_samples and not tails and clip == lab.Assets.BOOST[character]:
+    lab.yaw = 1.0
+    lab.pitch = 0.45
+    lab._aim_camera()
+    await capture("boost-stride")
+    await sample_motion(lab)
+    lab.pitch = 0.0
+    lab.yaw = 0.0
+    lab._aim_camera()
+  lab._reset()
  var wheel := InputEventMouseButton.new()
  wheel.button_index = MOUSE_BUTTON_WHEEL_UP
  wheel.position = Vector2(800, 420)
@@ -96,7 +148,7 @@ func run() -> void:
  lab._process(0.1)
  check(lab.roll_angle == angle, "Zero spin speed holds the model in place")
  if tails:
-  check(is_equal_approx(lab.tail_time, fposmod(weave + 0.1, lab.Assets.TAIL_WEAVE_DURATION)), "The tails keep their original cadence with the curled body stopped")
+  check(is_equal_approx(lab.tail_time, fposmod(weave + 0.1, lab.Assets.TAIL_WEAVE_DURATION)), "The tails keep their slower cadence with the curled body stopped")
  for i in lab.cameras.item_count:
   lab.cameras.select(i)
   lab.cameras.item_selected.emit(i)
@@ -112,8 +164,8 @@ func run() -> void:
   if clip == lab.Assets.BOOST[game.character_id]:
    check(lab.rig.global_basis.y.normalized().is_equal_approx(Vector3.UP) and lab.sliders.boost.is_visible_in_tree() and is_equal_approx(lab.player.current_animation_length / lab.player.get_playing_speed(), 8.0 / 27.0), "Boost preview matches Sonic's approved stride period")
   elif clip == lab.Assets.POWER_DIVE.get(character):
-   check(lab.rig.global_basis.z.normalized().is_equal_approx(Vector3.DOWN), "Knuckles's original forward axis points into the table for the slam")
-  elif clip != lab.roll_clip and clip != lab.Assets.FLIGHT and clip != lab.Assets.DASH_RING[game.character_id]:
+   check(lab.rig.global_basis.z.normalized().is_equal_approx(Vector3.DOWN), character.capitalize() + "'s original forward axis points into the table for the slam")
+  elif clip != lab.roll_clip and clip != lab.Assets.FLIGHT_CLIPS.get(character, "") and clip != lab.Assets.DASH_RING[game.character_id]:
    lab._process(0.17)
    var model: Node3D = lab.held if clip in lab.trick_names else lab.rig
    check(model.global_basis.orthonormalized().is_equal_approx(lab.orbit.global_basis.orthonormalized()), clip + " faces the top-down camera as the animation plays")
@@ -127,7 +179,7 @@ func run() -> void:
     lab.pitch = 0.0
     lab._aim_camera()
     lab._toggle_playback()
-  if clip.ends_with("_run_loop") and not clip.contains("stumble"):
+  if clip == lab.Assets.BOOST[character]:
    var skins := lab.rig.find_children("*", "MeshInstance3D", true, false) as Array
    check(not skins.is_empty() and skins[0].is_visible_in_tree() and skins[0].skin != null, "A visible skinned mesh is bound to the original Runners skeleton")
    var skeleton: Skeleton3D = lab.rig.find_children("*", "Skeleton3D", true, false)[0]
@@ -136,7 +188,7 @@ func run() -> void:
    lab._process(0.19)
    var moved := false
    for bone in skeleton.get_bone_count(): moved = moved or not skeleton.get_bone_pose(bone).is_equal_approx(bones[bone])
-   check(moved, "Run animates bones while the gameplay tree is paused")
+   check(moved, "Boost run animates bones while the gameplay tree is paused")
    await capture("in-game-run")
  lab.sliders.speed.value = 0.0
  var inspect_camera: WeakRef = weakref(lab.orbit)
@@ -178,8 +230,8 @@ func run() -> void:
   shortcut.keycode = KEY_ESCAPE
   root.push_input(shortcut)
   check(session.state == "playing" and not paused, "Escape returns to play")
- if tails: await review_flight(session, game)
- if character == "knuckles": await review_smash(session, game)
+ if game.specials.action.kind == TypeAction.Kind.FLY: await review_flight(session, game)
+ if game.specials.action.kind == TypeAction.Kind.POWER: await review_smash(session, game)
  await review_traversal(session, game)
  session.archive_attempted = true
  await session._close_run("review")
@@ -223,7 +275,7 @@ func review_smash(session: Node, game: Node) -> void:
    saw_rise = pose.runners_roll.is_visible_in_tree() and not pose.motion_rig.visible
   if remaining > 0.0 and remaining < 0.95:
    saw_dive = true
-   dive_playing = dive_playing and pose.motion == &"smash" and pose.motion_player.current_animation == pose.Assets.POWER_DIVE.knuckles and pose.motion_rig.global_basis.z.normalized().is_equal_approx(Vector3.DOWN)
+   dive_playing = dive_playing and pose.motion == &"smash" and pose.motion_player.current_animation == pose.Assets.POWER_DIVE[game.character_id] and pose.motion_rig.global_basis.z.normalized().is_equal_approx(Vector3.DOWN)
   if not output.is_empty():
    await RenderingServer.frame_post_draw
    root.get_texture().get_image().save_jpg(output.path_join("smash-%03d.jpg" % frame), 0.95)
@@ -251,7 +303,7 @@ func review_traversal(session: Node, game: Node) -> void:
   for speed: float in [0.0, 1200.0]:
    pose.tail_time = 0.0
    ball.linear_velocity = Vector2.RIGHT * speed
-   pose._process(1.5 / 60.0)
+   pose._process(0.15)
    check(is_equal_approx(pose.trailing_tails.get_blend_shape_value(0), 0.5) and is_equal_approx(pose.trailing_tails.get_blend_shape_value(1), 0.5), "The live tail weave has the same cadence at %d px/s" % speed)
  var spring: Dictionary = manager.by_id.scoop_kicker
  var direction := Objects.forward(spring)
@@ -338,7 +390,7 @@ func capture_roll_cycle(lab: Control) -> void:
  lab._aim_camera()
  for i in 12:
   lab.roll_angle = TAU * i / 12.0
-  lab.tail_time = i / 24.0
+  lab.tail_time = lab.Assets.TAIL_WEAVE_DURATION * i / 12.0
   lab._orient_model()
   await capture("tails-roll-%02d" % i)
  lab._toggle_playback()
@@ -347,6 +399,8 @@ func review_flight(session: Node, game: Node) -> void:
  var card = game.combo_celebration
  var pose = card.character_pose
  var specials: CharacterSpecials = game.specials
+ var character: String = game.character_id
+ var flight_clip: String = pose.Assets.FLIGHT_CLIPS[character]
  game.auto_launch_time = -1.0
  game.respawn_time = -1.0
  game.ball.serve_pending = false
@@ -360,17 +414,17 @@ func review_flight(session: Node, game: Node) -> void:
  var activated := specials.activate()
  check(activated and pose.flying and game.special_meter == specials.definition.meter_capacity - specials.definition.meter_cost, "Charged Fly starts the recovered animation and spends the usual meter")
  if not activated or not pose.flying: return
- check(pose.motion_rig.is_visible_in_tree() and not pose.trailing_tails.visible and not game.character.rolling_mesh.visible and pose.motion_player.current_animation == pose.Assets.FLIGHT, "Only the animated flight rig occupies the live Ball")
+ check(pose.motion_rig.is_visible_in_tree() and (not pose.trailing_tails or not pose.trailing_tails.visible) and not game.character.rolling_mesh.visible and pose.motion_player.current_animation == flight_clip, "Only the animated flight rig occupies the live Ball")
  check_flight_facing(pose.motion_rig, game.presentation.camera, -1.0, "Left steering turns toward screen left while facing the player despite rightward momentum")
  var skeleton: Skeleton3D = pose.motion_rig.find_children("*", "Skeleton3D", true, false)[0]
- var tails_before := {}
+ var animated_before := {}
  for i in skeleton.get_bone_count():
-  if skeleton.get_bone_name(i).to_lower().contains("tail"): tails_before[i] = skeleton.get_bone_global_pose(i)
+  if character != "tails" or skeleton.get_bone_name(i).to_lower().contains("tail"): animated_before[i] = skeleton.get_bone_global_pose(i)
  pose._process(0.12)
- var moving_tails := 0
- for i: int in tails_before:
-  if not skeleton.get_bone_global_pose(i).is_equal_approx(tails_before[i]): moving_tails += 1
- check(moving_tails >= 2, "The original Flight action animates the tails")
+ var moving_bones := 0
+ for i: int in animated_before:
+  if not skeleton.get_bone_global_pose(i).is_equal_approx(animated_before[i]): moving_bones += 1
+ check(moving_bones >= 2, "The original Flight action animates " + ("the tails" if character == "tails" else character.capitalize()))
  game.controls.virtual_steering = 0.65
  game.controls._physics_process(0.0)
  game.ball.linear_velocity = Vector2(-300, -60)
@@ -384,7 +438,7 @@ func review_flight(session: Node, game: Node) -> void:
  var original_phase: float = pose.motion_player.current_animation_position
  session._open_spin_lab()
  var lab = session.spin_lab
- check(paused and lab.active_clip == pose.Assets.FLIGHT and not pose.motion_rig.visible, "F8 during Fly opens the matching clip")
+ check(paused and lab.active_clip == flight_clip and not pose.motion_rig.visible, "F8 during Fly opens the matching clip")
  lab.sliders.zoom.value = 3.0
  lab.pitch = 0.65
  for direction: int in [-1, 1]:
@@ -393,7 +447,7 @@ func review_flight(session: Node, game: Node) -> void:
   lab._aim_camera()
   lab._process(0.12)
   check_flight_facing(lab.rig, lab.orbit, direction, "Preview follows screen-relative steering after orbiting")
-  await capture("tails-flight-left" if direction < 0 else "tails-flight-right")
+  await capture(character + ("-flight-left" if direction < 0 else "-flight-right"))
  game.controls.virtual_steering = 0.0
  lab._process(0.05)
  check_flight_facing(lab.rig, lab.orbit, 1.0, "The preview keeps its heading with the stick released")
@@ -405,23 +459,23 @@ func review_flight(session: Node, game: Node) -> void:
    if trick >= 0:
     lab.picker.select(i)
     lab.picker.item_selected.emit(i)
-    await capture("tails-trick-%d" % (trick + 1))
+    await capture("%s-trick-%d" % [character, trick + 1])
  session._resume_spin_lab()
  check(not paused and pose.motion_rig.visible and is_equal_approx(original_phase, pose.motion_player.current_animation_position) and is_equal_approx(time_left, specials.flight_remaining), "Resume preserves the real Flight phase and remaining time")
- await capture("tails-flight-in-play")
+ await capture(character + "-flight-in-play")
  card.reset_combo()
  var expected: int = pose.trick_index
  for milestone: int in [5, 8, 10, 15]:
   game.select_play_camera(game.PLAY_CAMERAS[(expected + 1) % game.PLAY_CAMERAS.size()])
-  card.consider("tails", milestone, 100)
+  card.consider(character, milestone, 100)
   card._process(0.3)
   expected = (expected + 1) % 3
-  check(pose.visible and pose.mesh == pose.tricks[expected] and not pose.motion_rig.visible, "Tails performs the next trick at hit %d" % milestone)
-  check(pose.global_basis.orthonormalized().is_equal_approx(game.presentation.camera.global_basis.orthonormalized()), "Tails's live trick %d faces the play camera" % (expected + 1))
+  check(pose.visible and pose.mesh == pose.tricks[expected] and not pose.motion_rig.visible, character.capitalize() + " performs the next trick at hit %d" % milestone)
+  check(pose.global_basis.orthonormalized().is_equal_approx(game.presentation.camera.global_basis.orthonormalized()), character.capitalize() + "'s live trick %d faces the play camera" % (expected + 1))
   card._process(card.DURATION)
   check(pose.motion_rig.visible and not game.character.rolling_mesh.visible, "The live flight rig resumes after the trick")
  specials._physics_process(specials.flight_remaining + 0.01)
- check(not pose.flying and not pose.motion_rig.visible and pose.runners_roll.is_visible_in_tree() and pose.trailing_tails.is_visible_in_tree(), "Flight expiry restores the translucent shell, curled body and trailing tails")
+ check(not pose.flying and not pose.motion_rig.visible and pose.runners_roll.is_visible_in_tree() and (not pose.trailing_tails or pose.trailing_tails.is_visible_in_tree()), "Flight expiry restores the translucent shell and curled body")
  game.special_meter = specials.definition.meter_capacity
  if specials.activate():
   specials.reset(false, "Checkpoint transfer")

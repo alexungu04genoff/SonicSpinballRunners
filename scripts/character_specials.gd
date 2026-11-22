@@ -21,8 +21,16 @@ signal effects_cleared(reason: String)
 signal meter_changed(value: float)
 signal meter_spent(amount: float)
 signal meter_replenished(amount: float)
-const CHARACTERS := {"sonic": preload("res://data/characters/sonic.tres"), "tails": preload("res://data/characters/tails.tres"), "knuckles": preload("res://data/characters/knuckles.tres"), "shadow": preload("res://data/characters/shadow.tres")}
-const CHARACTER_IDS: Array[String] = ["sonic", "tails", "knuckles", "shadow"]
+const CHARACTERS := {
+ "sonic": preload("res://data/characters/sonic.tres"),
+ "tails": preload("res://data/characters/tails.tres"),
+ "knuckles": preload("res://data/characters/knuckles.tres"),
+ "shadow": preload("res://data/characters/shadow.tres"),
+ "rouge": preload("res://data/characters/rouge.tres"),
+ "amy": preload("res://data/characters/amy.tres"),
+ "blaze": preload("res://data/characters/blaze.tres"),
+}
+const CHARACTER_IDS: Array[String] = ["sonic", "tails", "knuckles", "shadow", "rouge", "amy", "blaze"]
 const FLIGHT_KEY := "type_flight"
 const SMASH_RISE := 1.0
 const SMASH_DIVE := 1.0

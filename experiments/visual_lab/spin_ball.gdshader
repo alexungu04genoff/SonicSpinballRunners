@@ -3,11 +3,12 @@ render_mode diffuse_burley;
 
 // Directional surface blur keeps the rolled silhouette solid at every frame.
 uniform vec4 fur_color : source_color = vec4(0.025, 0.20, 0.80, 1.0);
-uniform int character_style = 0; // Sonic, Tails, Knuckles, Shadow.
+uniform int character_style = 0; // CharacterSpecials.CHARACTER_IDS order.
 uniform float blur_amount : hint_range(0.0, 3.0) = 2.7;
 uniform bool runners_model = false;
 uniform sampler2D runners_skin : source_color, repeat_enable, filter_linear_mipmap;
 uniform sampler2D runners_shell : source_color, repeat_enable, filter_linear_mipmap;
+uniform float smear_mix : hint_range(0.0, 1.0) = 0.76;
 instance uniform float roll_exposure : hint_range(0.0, 1.0) = 0.0;
 varying vec3 sphere_position;
 
@@ -28,7 +29,7 @@ vec3 curled_colors(vec3 d) {
  float fold = form(d, vec3(0.0, 0.03, 1.0), vec3(0.63, 0.14, 0.35));
  color *= 1.0 - fold * 0.45;
  float muzzle = form(d, vec3(0.0, 0.28, 1.0), vec3(0.32, 0.15, 0.30));
- vec3 cream = character_style == 1 ? vec3(0.80, 0.69, 0.43) : vec3(0.60, 0.34, 0.16);
+ vec3 cream = (character_style == 1 || character_style == 4 || character_style == 6) ? vec3(0.80, 0.69, 0.43) : vec3(0.60, 0.34, 0.16);
  color = mix(color, cream, muzzle);
  for (int side = -1; side <= 1; side += 2) {
   float x = float(side);
@@ -38,7 +39,7 @@ vec3 curled_colors(vec3 d) {
   float glove = form(d, vec3(x * 0.33, -0.15, 1.0), vec3(0.19, 0.15, 0.24));
   color = mix(color, vec3(0.72, 0.69, 0.59), glove);
   float shoe = form(d, vec3(x * 0.47, -0.64, 0.85), vec3(0.40, 0.40, 0.48));
-  vec3 shoe_color = character_style == 2 ? vec3(0.73, 0.43, 0.045) : vec3(0.92, 0.018, 0.025);
+  vec3 shoe_color = character_style == 2 ? vec3(0.73, 0.43, 0.045) : (character_style == 4 ? vec3(0.72, 0.12, 0.42) : (character_style == 6 ? vec3(0.46, 0.16, 0.68) : vec3(0.92, 0.018, 0.025)));
   color = mix(color, shoe_color, shoe);
   // Narrow straps leave most of each shoe red; avoid a single white blob.
   float strap = shoe * (1.0 - smoothstep(0.02, 0.055, abs(d.y + 0.38)));
@@ -53,6 +54,18 @@ vec3 curled_colors(vec3 d) {
    color = mix(color, vec3(0.72, 0.012, 0.025), stripe);
    float cuff = glove * smoothstep(0.30, 0.45, abs(d.x));
    color = mix(color, vec3(0.80, 0.47, 0.035), cuff);
+  }
+  if (character_style == 4) {
+   float wing = form(d, vec3(x * 0.55, 0.25, -0.8), vec3(0.22, 0.55, 0.45));
+   color = mix(color, vec3(0.12, 0.10, 0.16), wing);
+  }
+  if (character_style == 5) {
+   float dress = form(d, vec3(x * 0.35, -0.18, -0.9), vec3(0.48, 0.36, 0.32));
+   color = mix(color, vec3(0.90, 0.08, 0.28), dress);
+  }
+  if (character_style == 6) {
+   float cuff = glove * smoothstep(0.24, 0.42, abs(d.x));
+   color = mix(color, vec3(0.94, 0.76, 0.22), cuff);
   }
  }
  return color;
@@ -89,7 +102,7 @@ vec3 textured_roll(vec3 direction, vec2 skin_uv) {
   smear += texture(runners_shell, shell_uv + fraction * step_uv).rgb * weight;
   weights += weight;
  }
- return mix(sharp, smear / weights, 0.76 * roll_exposure);
+ return mix(sharp, smear / weights, smear_mix * roll_exposure);
 }
 
 void fragment() {
