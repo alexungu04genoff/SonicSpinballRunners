@@ -14,6 +14,7 @@ from mathutils import Matrix, Vector
 from mathutils.bvhtree import BVHTree
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from runners_clip_bounds import clip_bounds
+from optimize_runners_models import bake_generated
 
 ROOT = Path(__file__).resolve().parents[1] / "experiments/visual_lab/local"
 CHARACTER = sys.argv[sys.argv.index("--") + 1] if "--" in sys.argv else "sonic"
@@ -191,6 +192,7 @@ def bake():
     bpy.ops.export_scene.gltf(filepath=str(OUTPUT), use_selection=True, export_format="GLB",
                               export_animations=False, export_skins=False, export_cameras=False,
                               export_lights=False, export_extras=True)
+    bake_generated(SOURCE, OUTPUT)
 
 
 if __name__ == "__main__":

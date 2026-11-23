@@ -12,6 +12,7 @@ from pathlib import Path
 
 import numpy as np
 import yaml
+from optimize_runners_models import bake_generated
 
 
 LOCAL = Path(__file__).resolve().parents[1] / "experiments/visual_lab/local/runners-decomp"
@@ -212,6 +213,7 @@ def export(character):
                            skins=[dict(joints=joints, inverseBindMatrices=binds)], animations=animations,
                            materials=materials, images=images, textures=[dict(source=i) for i in range(len(images))]))
     print(f"{title}: {len(joints)} skin joints and {len(clips)} animations -> {output}")
+    bake_generated(output)
 
 
 if __name__ == "__main__":

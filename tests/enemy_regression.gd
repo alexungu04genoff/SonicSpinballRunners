@@ -36,6 +36,30 @@ func shoot(at: Vector2, velocity: Vector2, id: String) -> void:
   await process_frame
   if not game.authored_runtime.mechanics.enemies.by_id[id].alive: return
 
+func check_patrol_facing(entry: Dictionary) -> void:
+ var model = preload("res://scripts/enemies/buzz_bomber_model.gd")
+ var sample := entry.duplicate()
+ sample.item = entry.item.duplicate()
+ sample.item.direction = 1.0
+ var skin: String = sample.item.skin
+ var camera: Basis = game.presentation.camera.global_basis.orthonormalized()
+ var right := Vector2(camera.x.x, camera.x.z).normalized()
+ var nose := Vector3.RIGHT if skin == "beeton" and not sample.has("player") else Vector3.BACK
+ for direction: float in [1.0, -1.0]:
+  var path := right * direction
+  sample.item.rotation_degrees = rad_to_deg(path.angle())
+  sample.item.pause_remaining = 0.5
+  sample.erase("last_turn_time")
+  model.update(sample, 0.0, game.presentation)
+  var forward: Vector3 = sample.body.global_basis.orthonormalized() * nose
+  check(forward.dot(camera.z) > 0.6 and sample.pose.basis.y.dot(camera.y) > 0.8, skin + " idles upright toward the camera regardless of patrol rotation")
+  sample.item.pause_remaining = 0.0
+  sample.item.previous_position = sample.item.position - path
+  model.update(sample, 1.0, game.presentation)
+  forward = sample.body.global_basis.orthonormalized() * nose
+  check(forward.dot(camera.x) * direction > 0.1, skin + " turns toward its on-screen patrol direction")
+ model.update(entry, float(entry.get("last_turn_time", 0.0)), game.presentation)
+
 func check_enemy_presentations() -> void:
  var tested := {}
  for visual: Node in game.presentation.find_children("AuthoredPinballVisuals*", "Node3D", true, false):
@@ -43,6 +67,7 @@ func check_enemy_presentations() -> void:
    var skin: String = entry.item.skin
    if tested.has(skin): continue
    tested[skin] = true
+   check_patrol_facing(entry)
    var path := "res://experiments/visual_lab/local/runners-decomp/%s/%s Runners - original animations.glb" % [skin, skin.capitalize()]
    if not FileAccess.file_exists(path):
     check(entry.body.find_children("*", "MeshInstance3D", true, false).size() > 0, skin + " has a portable procedural model")
@@ -233,13 +258,19 @@ func run() -> void:
  var turn_initial_angle := turn_body.rotation.y
  turn_item.direction = -1.0
  turn_item.previous_position = Vector2.RIGHT
+ # Sample the authored left heading, then exercise the timed turn from idle.
+ turn_entry.erase("last_turn_time")
+ turn_model.update(turn_entry, 0.0, turn_presenter)
+ var turn_target_angle := turn_body.rotation.y
+ check((turn_body.basis * Vector3.RIGHT).x < -0.8, "Procedural Buzz Bomber points its nose along the left patrol")
+ turn_body.rotation.y = turn_initial_angle
  turn_model.update(turn_entry, 0.1, turn_presenter)
  var turn_partial_angle := turn_body.rotation.y
- check(not is_equal_approx(turn_initial_angle, turn_partial_angle) and absf(angle_difference(turn_partial_angle, deg_to_rad(-173))) > 0.15, "Badnik reversal rotates through intermediate angles instead of snapping")
+ check(not is_equal_approx(turn_initial_angle, turn_partial_angle) and absf(angle_difference(turn_partial_angle, turn_target_angle)) > 0.15, "Badnik reversal rotates through intermediate angles instead of snapping")
  turn_model.update(turn_entry, 0.1, turn_presenter)
  check(is_equal_approx(turn_body.rotation.y, turn_partial_angle), "Paused presentation time freezes the turn")
  turn_model.update(turn_entry, 0.4, turn_presenter)
- check(absf(angle_difference(turn_body.rotation.y, deg_to_rad(-173))) < 0.015 and turn_item.direction == -1.0, "Turn reaches its target without changing patrol direction")
+ check(absf(angle_difference(turn_body.rotation.y, turn_target_angle)) < 0.015 and turn_item.direction == -1.0, "Turn reaches its target without changing patrol direction")
  turn_item.previous_position = turn_item.position
  turn_model.update(turn_entry, 1.2, turn_presenter)
  check(absf(angle_difference(turn_body.rotation.y, turn_initial_angle)) < 0.002, "The opposite patrol stop settles into the same camera-facing idle")

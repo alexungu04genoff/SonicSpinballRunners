@@ -72,6 +72,10 @@ static func animated_scene(id: String) -> Node3D:
  return document.generate_scene(state, 60.0, false, false) if state != null else null
 
 static func read_state(path: String, document := GLTFDocument.new()) -> GLTFState:
+ var low_poly := path.get_basename() + ".low.glb"
+ if FileAccess.file_exists(low_poly) and (not FileAccess.file_exists(path) or FileAccess.get_modified_time(low_poly) >= FileAccess.get_modified_time(path)):
+  var reduced := GLTFState.new()
+  if document.append_from_file(ProjectSettings.globalize_path(low_poly), reduced) == OK: return reduced
  if not FileAccess.file_exists(path): return null
  var state := GLTFState.new()
  if document.append_from_file(ProjectSettings.globalize_path(path), state) != OK: return null

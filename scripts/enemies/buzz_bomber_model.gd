@@ -151,27 +151,31 @@ static func update(entry: Dictionary, elapsed: float, table: TablePresentation) 
  var bee := skin == "beeton"
  var bob := sin(elapsed * 3.8) * 0.7 if bee else 0.0
  root.position = entry.base + Vector3(displacement.x, bob, displacement.y) * TablePresentation.SCALE
- var angle := -deg_to_rad(float(item.get("rotation_degrees", 0.0)))
- var normal := Vector3(0, sin(PI / 3), cos(PI / 3))
- if is_instance_valid(table.camera): normal = table.camera.global_basis.z
+ var angle := deg_to_rad(float(item.get("rotation_degrees", 0.0)))
+ var view := Basis(Vector3.RIGHT, -PI / 3.0)
+ if is_instance_valid(table.camera): view = table.camera.global_basis.orthonormalized()
+ var path := Vector3(cos(angle), 0.0, sin(angle)) * float(item.direction)
+ var travel := Vector2(path.dot(view.x), path.dot(view.y)).normalized()
  var moving: bool = item.alive and item.get("pause_remaining", 0.0) <= 0.0 and not Vector2(item.position).is_equal_approx(item.get("previous_position", item.position))
  var delta := maxf(0.0, elapsed - float(entry.get("last_turn_time", elapsed)))
- var facing := 0.0
- if bee:
-  # Local +Z points at the camera even in top-down. Local +X follows the projected patrol.
-  var view := Basis.looking_at(-normal, Vector3.FORWARD if absf(normal.y) > 0.99 else Vector3.UP)
-  var path := Vector3(cos(angle), 0.0, -sin(angle))
-  var projected := Vector2(path.dot(view.x), path.dot(view.y))
-  if projected.length_squared() > 0.0001: view = view * Basis(Vector3.BACK, projected.angle())
-  entry.pose.basis = view
-  facing = deg_to_rad((68.0 if item.direction > 0.0 else -83.0) if moving else -22.0)
-  if not entry.has("player"): facing -= PI / 2.0 # Procedural wasp nose points along +X.
- else:
-  # Tip the collisionless figure at its feet so eyes and legs read on a steep table.
-  var right := table.camera.global_basis.x if is_instance_valid(table.camera) else Vector3.RIGHT
-  var tilt := asin(clampf(normal.y, 0.0, 1.0)) * (0.68 if skin == "ganigani" else 0.44)
-  entry.pose.basis = Basis(right.normalized(), -tilt) * Basis(Vector3.UP, angle)
-  if skin == "eggpawn": facing = deg_to_rad(98.0 if item.direction > 0.0 else -98.0) if moving else 0.0
+ # Show a three-quarter profile on lateral patrols. Uphill and downhill still turn
+ # along the authored path. Keep each figure upright on reversed and diagonal paths.
+ var facing := atan2(travel.x, 0.4 - travel.y) if moving else 0.0
+ var pitch := 0.0
+ match skin:
+  "beeton":
+   pitch = -8.0
+   if not moving: facing = deg_to_rad(-32.0) if entry.has("player") else 0.0
+   if not entry.has("player"): facing -= PI / 2.0 # The procedural nose points along +X.
+  "ganigani":
+   pitch = -15.0
+   facing = deg_to_rad(12.0) * travel.x if moving else 0.0 # Crabs sidestep.
+  "eggpawn":
+   pitch = 12.0
+   if not moving and entry.has("player"):
+    # The two source idles already turn the chest in opposite directions.
+    facing = deg_to_rad(42.0 if item.direction > 0.0 else -35.0)
+ entry.pose.basis = view * Basis(Vector3.RIGHT, deg_to_rad(pitch))
  if entry.has("last_turn_time"):
   entry.body.rotation.y = lerp_angle(entry.body.rotation.y, facing, 1.0 - exp(-delta * 12.0))
  else: entry.body.rotation.y = facing
