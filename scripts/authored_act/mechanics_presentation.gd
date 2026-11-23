@@ -11,7 +11,7 @@ var gimmicks: Array[Dictionary] = []
 var enemies: Array[Dictionary] = []
 var elapsed := 0.0
 
-func build(presenter: TablePresentation, runtime: Dictionary) -> void:
+func build(presenter: TablePresentation, runtime: Dictionary, live := true) -> void:
  table = presenter
  name = "AuthoredPinballVisuals"
  process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -31,6 +31,11 @@ func build(presenter: TablePresentation, runtime: Dictionary) -> void:
     if item.type == "moving_bumper": table.bumper_visuals[descriptor.body.get_instance_id()] = entry.puck
     gimmicks.append(entry)
     Gimmicks.update(entry)
+
+ if live: bind_enemy_models()
+
+func bind_enemy_models() -> void:
+ for entry: Dictionary in enemies: BuzzModel.bind(entry, table)
 
 func _box(size: Vector3, color: Color, at: Vector3, parent: Node3D, palette_key := "", source_key := "") -> MeshInstance3D:
  var mesh := BoxMesh.new()

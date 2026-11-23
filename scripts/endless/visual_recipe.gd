@@ -128,6 +128,7 @@ func bind_animations(nodes: Array[Node], presenter: TablePresentation, mechanics
     node.set(key, values[key])
   if animation.script == MechanicsVisual:
    node.table = presenter
+   node.bind_enemy_models()
    for entry: Dictionary in node.gimmicks: MechanicsVisual.Gimmicks.bind_instance_materials(entry)
   node.process_mode = Node.PROCESS_MODE_PAUSABLE
   node.set_process(true)

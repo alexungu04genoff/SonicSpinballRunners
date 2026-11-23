@@ -137,7 +137,7 @@ func _moving_objects(runtime: Dictionary) -> void:
   if item.has("mechanic"):
    var mechanics_visual := preload("res://scripts/authored_act/mechanics_presentation.gd").new()
    add_child(mechanics_visual)
-   await mechanics_visual.build(self, single)
+   await mechanics_visual.build(self, single, false)
   else:
    _build_authored_objects(single)
   await stream_checkpoint()

@@ -1,5 +1,9 @@
 # Sonic Spinball Runners — Living Game Design
 
+## Green Hill Badnik patrols
+
+Place **Enemy** in the Act editor and author its patrol once. Each Act visit deals Buzz Bomber (Beeton), Ganigani and Egg Pawn in random order, drawing all three before repeating. Replaying an Act in the same session changes its first enemy. Ball retries and enemy respawns preserve the lineup. All three share the same 2D contact, score and patrol rules. [Asset setup and patrol behavior](ADVENTURE_BUDDIES_AND_BUZZ.md#runners-badniks)
+
 ## Sage Flight experiment
 
 Sage has her own selectable character, physics profile and animation set. She shares the Flight action with Cream, Rouge and Tails. Her cyber ball forms or dissolves over 0.45 seconds. On the starting ramp Sage plants both feet, faces down the launch lane and braces as charge builds. She curls on release. In Flight her arms and legs counter-swing while her hair and dress follow. Springs use Ring Dash, and dash panels and Loops use Boost Hover. Her combo milestones cycle through a held reach, guard and side kick with the shared victory turn. The procedural cyber ball also works when her local rig is unavailable. [Sage Lab and asset details](combo-celebration/README.md)

@@ -26,7 +26,7 @@ const CHECKLIST := {
   "Bumpers have intentional routing/scoring roles rather than filling empty space.",
   "Springs redirect toward useful areas.",
   "Slingshot orientation clearly communicates its rebound direction.",
-  "Buzz Bombers occupy meaningful attack positions.",
+  "Enemies occupy meaningful attack positions.",
   "Rings teach/reward routes rather than merely fill empty space."],
  "Featured mechanics": [
   "Roughly 2–3 featured mechanic families define the Act.",
@@ -139,7 +139,7 @@ func refresh(document: Resource, editing_enabled: bool) -> void:
  reset_checklist()
  facts = Review.summarize(document)
  var count: Dictionary = facts.counts
- foundation.text = "Flippers (all): %d L / %d R\nSlingshots: %d · Springs: %d\nRings: %d (%d pattern + %d rail)\nBuzz Bombers: %d\nBumpers: %d round / %d triangle / %d moving\nGoal: %s\nSpawn: %s" % [count.left_flipper, count.right_flipper, count.slingshot, count.spring, facts.rings, facts.pattern_rings, facts.rail_rings, count.buzz_bomber, count.round_bumper, count.triangle_bumper, count.moving_bumper, facts.goal, "Authored" if facts.spawn else "Unset"]
+ foundation.text = "Flippers (all): %d L / %d R\nSlingshots: %d · Springs: %d\nRings: %d (%d pattern + %d rail)\nEnemies: %d\nBumpers: %d round / %d triangle / %d moving\nGoal: %s\nSpawn: %s" % [count.left_flipper, count.right_flipper, count.slingshot, count.spring, facts.rings, facts.pattern_rings, facts.rail_rings, count.buzz_bomber, count.round_bumper, count.triangle_bumper, count.moving_bumper, facts.goal, "Authored" if facts.spawn else "Unset"]
  featured.text = "FEATURED · %d\n%s" % [facts.families.size(), " · ".join(facts.families) if not facts.families.is_empty() else "None authored"]
  hints.text = "No hints from the current checks. This does not establish design quality." if facts.hints.is_empty() else "• " + "\n\n• ".join(facts.hints)
  var scales := PackedStringArray(["Base Ball diameter: %.1f px" % facts.ball_diameter,

@@ -5,7 +5,9 @@ signal enemy_respawned(enemy_type: StringName, object_id: String)
 ## Opt-in CPU samples; deferred printing/file I/O belongs to the diagnostic runner.
 signal death_profiled(sample: Dictionary)
 const Contact = preload("res://scripts/authored_act/gimmick_geometry.gd")
-const DEFINITIONS := {"buzz_bomber": {"base_score": 200, "half_segment": 6.0, "radius": 6.0}}
+const DEFINITIONS := {
+ "buzz_bomber": {"base_score": 200, "half_segment": 6.0, "radius": 6.0},
+}
 const ENEMY_TOP_BOUNCE_SPEED := 420.0
 const ENEMY_TOP_SPEED_RETENTION := 0.85
 const ENEMY_MAX_BOUNCE_SPEED := 850.0
@@ -13,6 +15,8 @@ const ENEMY_BOTTOM_SPEED_RETENTION := 0.80
 const PATROL_PAUSE_SECONDS := 0.65
 const RESPAWN_SAFETY_DISTANCE := 128.0
 const RESPAWN_FADE_SECONDS := 0.35
+const SKINS := ["beeton", "ganigani", "eggpawn"]
+static var last_first_skin := {}
 var items: Array[Dictionary] = []
 var by_id: Dictionary = {}
 var owner_act := ""
@@ -25,10 +29,24 @@ static func is_enemy(type: String) -> bool:
  return DEFINITIONS.has(type)
 
 func add(item: Dictionary) -> void:
+ item.skin = "beeton"
  var definition: Dictionary = DEFINITIONS[item.type]
  item.merge({"enemy_type": item.type, "alive": true, "base_score": definition.base_score, "anchor": item.position, "previous_position": item.position, "direction": -1.0 if item.properties.starting_direction == "left" else 1.0, "pause_remaining": PATROL_PAUSE_SECONDS, "death_remaining": 0.0, "respawn_remaining": -1.0, "respawn_ready": false, "respawn_fade": 0.0, "target": null})
  items.append(item)
  by_id[item.object_id] = item
+
+## Deal each model once per bag. A fresh visit also changes the first placement.
+## A separate RNG keeps visual variety independent of gameplay and Buddy drafts.
+func roll_skins(act_path: String) -> void:
+ var rng := RandomNumberGenerator.new()
+ var bag: Array = []
+ for i in items.size():
+  if bag.is_empty(): bag = SKINS.duplicate()
+  var index := rng.randi_range(0, bag.size() - 1)
+  if i == 0 and bag[index] == last_first_skin.get(act_path):
+   index = (index + rng.randi_range(1, bag.size() - 1)) % bag.size()
+  items[i].skin = bag.pop_at(index)
+  if i == 0: last_first_skin[act_path] = items[i].skin
 
 func bind_body(id: String, body: Node2D) -> void:
  if not by_id.has(id): return
@@ -108,7 +126,7 @@ func _advance_respawn(item: Dictionary, delta: float) -> void:
  item.respawn_ready = false
  item.respawn_remaining = -1.0
  item.respawn_fade = 0.0
- enemy_respawned.emit(StringName(item.enemy_type), item.object_id)
+ enemy_respawned.emit(StringName(item.skin), item.object_id)
 
 func destroy(id: String, source: StringName = &"contact") -> bool:
  if not by_id.has(id) or (destruction_allowed.is_valid() and not destruction_allowed.call()): return false
@@ -121,7 +139,7 @@ func destroy(id: String, source: StringName = &"contact") -> bool:
  item.respawn_ready = false
  item.respawn_fade = 0.0
  var callbacks_started := Time.get_ticks_usec() if profile_deaths else 0
- enemy_destroyed.emit(StringName(item.enemy_type), id, int(item.base_score), source)
+ enemy_destroyed.emit(StringName(item.skin), id, int(item.base_score), source)
  if profile_deaths:
   var finished := Time.get_ticks_usec()
   death_profiled.emit({"enemy": item.enemy_type, "object_id": id, "source": String(source), "lifecycle_ms": (callbacks_started - started) / 1000.0, "callbacks_ms": (finished - callbacks_started) / 1000.0})

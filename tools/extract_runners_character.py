@@ -62,14 +62,13 @@ class Buffer:
                          struct.pack("<II", len(self.data), 0x004E4942) + self.data)
 
 
-def skeleton(scene_path):
+def skeleton(scene_path, actor_root=None):
     rows = list(documents(scene_path))
     names = {i: d["m_Name"] for kind, i, d in rows if kind == "1"}
     transforms = {i: d for kind, i, d in rows if kind == "4"}
     def name(row):
         return names[row["m_GameObject"]["fileID"]]
-    renderer = next(d for kind, _, d in rows if kind == "137" and name(d) == "Mesh_Body")
-    animator = next(d for kind, _, d in rows if kind == "95")
+    animator = next(d for kind, _, d in rows if kind == "95" and (actor_root is None or name(d) == actor_root))
     root = next(i for i, t in transforms.items() if t["m_GameObject"] == animator["m_GameObject"])
     nodes, paths, indices = [], {}, {}
     def visit(file_id, path):
@@ -86,6 +85,9 @@ def skeleton(scene_path):
             node.setdefault("children", []).append(visit(child_id, child_path))
         return index
     visit(root, "")
+    subtree = {transforms[i]["m_GameObject"]["fileID"] for i in indices}
+    renderer = next(d for kind, _, d in rows if kind == "137" and d["m_GameObject"]["fileID"] in subtree
+                    and (actor_root is not None or name(d) == "Mesh_Body"))
     joints = [indices[bone["fileID"]] for bone in renderer["m_Bones"]]
     return renderer, animator, nodes, paths, joints
 
@@ -180,7 +182,9 @@ def export(character):
     listing = subprocess.check_output(["git", "-C", str(SOURCE), "grep", "-I", "-e", "^guid: ", "--", "*.meta"], text=True)
     assets = {guid: SOURCE / name[:-5] for name, guid in (line.split(":guid: ", 1) for line in listing.splitlines())}
     title = character.capitalize()
-    renderer, animator, nodes, paths, joints = skeleton(SOURCE / f"CharacterModel{title}.unity")
+    enemy = character in ("beeton", "ganigani", "eggpawn")
+    scene = "CommonEnemyResource.unity" if enemy else f"CharacterModel{title}.unity"
+    renderer, animator, nodes, paths, joints = skeleton(SOURCE / scene, f"enm_{character}" if enemy else None)
     buf = Buffer()
     mesh_path = assets[renderer["m_Mesh"]["guid"]]
     mesh = next(documents(mesh_path))[2]
@@ -212,5 +216,5 @@ def export(character):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("character", choices=["amy", "big", "blaze", "cream", "rouge", "sonic", "knuckles", "shadow", "tails"])
+    parser.add_argument("character", choices=["amy", "big", "blaze", "cream", "rouge", "sonic", "knuckles", "shadow", "tails", "beeton", "ganigani", "eggpawn"])
     export(parser.parse_args().character)

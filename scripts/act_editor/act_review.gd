@@ -40,7 +40,7 @@ static func summarize(document: Resource) -> Dictionary:
  var goal_diameter: float = document.goal_diameter_cells * document.cell_size
  var hints := PackedStringArray()
  if counts.launch_tube > 1: hints.append("The Launch Tube dock nearest Spawn owns serving and retry. Other tubes never capture a moving ball.")
- if counts.buzz_bomber == 0: hints.append("No Buzz Bombers are authored; review the intended enemy role.")
+ if counts.buzz_bomber == 0: hints.append("No enemies are authored. Review the intended enemy role.")
  if rings == 0: hints.append("No Rings are authored; review how routes are taught or rewarded.")
  if counts.slingshot == 0: hints.append("No Slingshots are authored; review the intended rebound vocabulary.")
  if families.size() > 3: hints.append("%d featured mechanic families are present; review whether the Act has a clear mechanical identity." % families.size())

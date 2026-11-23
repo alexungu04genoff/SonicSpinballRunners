@@ -1,6 +1,6 @@
 extends RefCounted
-## Original primitive-mesh interpretation of the classic Buzz Bomber silhouette.
-## The portrait plane faces the camera; collision remains entirely in 2D.
+## Collisionless Badnik presentation for authored and streamed Acts.
+const Runners = preload("res://scripts/enemies/runners_badnik.gd")
 const VISUAL_SCALE := 0.39
 const HOVER_HEIGHT := 10.5
 static var death_effect := _death_effect_option()
@@ -16,13 +16,53 @@ static func _death_effect_option() -> String:
 static func build(table: TablePresentation, parent: Node3D, item: Dictionary) -> Dictionary:
  var root := Node3D.new()
  root.name = "BuzzBomber_" + str(item.object_id)
- root.position = table.map_point(item.position, HOVER_HEIGHT * table.SCALE)
+ root.position = table.map_point(item.position)
  root.scale = Vector3.ONE * float(item.properties.scale) * VISUAL_SCALE
  parent.add_child(root)
  var pose := Node3D.new()
  root.add_child(pose)
  var body := Node3D.new()
  pose.add_child(body)
+ var wings: Array[Node3D] = []
+ var flash := _sphere(table, pose, Vector3.ZERO, Vector3(38, 38, 30), table.material(Color("fff1a0"), 0.0))
+ flash.visible = false
+ var entry := {"item": item, "root": root, "pose": pose, "body": body, "wings": wings, "flash": flash, "base": root.position}
+ return entry
+
+static func bind(entry: Dictionary, table: TablePresentation) -> void:
+ # Older baked recipes can contain the original procedural wasp under this pivot.
+ for child: Node3D in entry.body.get_children(): child.hide()
+ entry.wings = []
+ entry.base.y = HOVER_HEIGHT * table.SCALE if entry.item.skin == "beeton" else 0.0
+ entry.erase("last_turn_time")
+ if not Runners.bind(entry):
+  match entry.item.skin:
+   "ganigani": _crab(table, entry.body)
+   "eggpawn": _pawn(table, entry.body)
+   "beeton": _buzz(table, entry.body, entry.wings)
+ update(entry, 0.0, table)
+
+static func _pawn(table: TablePresentation, body: Node3D) -> void:
+ var orange := table.material(Color("f7a028"), 0.25)
+ var dark := table.material(Color("32343e"))
+ var eye := table.material(Color("63e8ef"))
+ _sphere(table, body, Vector3(0, 20, 0), Vector3(30, 32, 23), orange)
+ for side: float in [-1.0, 1.0]:
+  _sphere(table, body, Vector3(side * 6, 25, 10), Vector3(7, 6, 3), eye)
+  _sphere(table, body, Vector3(side * 18, 15, 0), Vector3(9, 12, 9), orange)
+  _sphere(table, body, Vector3(side * 8, 4, 1), Vector3(12, 8, 16), dark)
+
+static func _crab(table: TablePresentation, body: Node3D) -> void:
+ var red := table.material(Color("cf322f"), 0.25)
+ var steel := table.material(Color("c7d9e0"), 0.4)
+ _sphere(table, body, Vector3(0, 12, 0), Vector3(34, 21, 26), red)
+ for side: float in [-1.0, 1.0]:
+  _cone(table, body, Vector3(side * 10, 12, 0), Vector3(side * 21, 21, 3), 3, 3, steel)
+  _sphere(table, body, Vector3(side * 22, 24, 4), Vector3(15, 18, 12), red)
+  for z: float in [-6.0, 6.0]:
+   _cone(table, body, Vector3(side * 10, 10, z), Vector3(side * 18, 1, z), 3, 1, steel)
+
+static func _buzz(table: TablePresentation, body: Node3D, wings: Array) -> void:
  var blue := table.material(Color("178ed2"), 0.25)
  var cyan := table.material(Color("36b9e8"), 0.2)
  var dark := table.material(Color("142330"), 0.25)
@@ -47,7 +87,6 @@ static func build(table: TablePresentation, parent: Node3D, item: Dictionary) ->
   _sphere(table, body, Vector3(1, -3, side * 15), Vector3(9, 9, 9), silver)
   _cone(table, body, Vector3(1, -3, side * 16), Vector3(-16, -3, side * 16), 5, 5, silver)
   _cone(table, body, Vector3(-16, -3, side * 16), Vector3(-18, -3, side * 16), 5.5, 5.5, dark)
- var wings: Array[Node3D] = []
  for side in [-1.0, 1.0]:
   var hinge := Node3D.new()
   hinge.position = Vector3(-9, 13, side * 6) * table.SCALE
@@ -55,11 +94,6 @@ static func build(table: TablePresentation, parent: Node3D, item: Dictionary) ->
   _wing(table, hinge, Vector3.ZERO, Vector3(-25, 27, side * 5), 4.5, wing_material)
   _wing(table, hinge, Vector3.ZERO, Vector3(-32, 14, side * 6), 4.0, wing_material)
   wings.append(hinge)
- var flash := _sphere(table, pose, Vector3.ZERO, Vector3(38, 38, 30), table.material(Color("fff1a0"), 0.0))
- flash.visible = false
- var entry := {"item": item, "root": root, "pose": pose, "body": body, "wings": wings, "flash": flash, "base": root.position}
- update(entry, 0.0, table)
- return entry
 
 static func _sphere(table: TablePresentation, parent: Node3D, at: Vector3, size_value: Vector3, material: Material) -> MeshInstance3D:
  var mesh := SphereMesh.new()
@@ -113,24 +147,41 @@ static func update(entry: Dictionary, elapsed: float, table: TablePresentation) 
  var appearing: bool = item.get("respawn_ready", false) and item.get("respawn_fade", 0.0) > 0.0
  root.visible = item.alive or item.death_remaining > 0.0 or appearing
  var displacement: Vector2 = item.position - item.anchor
- root.position = entry.base + Vector3(displacement.x, sin(elapsed * 3.8) * 0.9, displacement.y) * TablePresentation.SCALE
- # Rotate only the collisionless portrait plane. Its local up projects upward
- # in top-down, normal and dramatic cameras instead of showing a wasp's back.
+ var skin: String = item.get("skin", "beeton")
+ var bee := skin == "beeton"
+ var bob := sin(elapsed * 3.8) * 0.7 if bee else 0.0
+ root.position = entry.base + Vector3(displacement.x, bob, displacement.y) * TablePresentation.SCALE
+ var angle := -deg_to_rad(float(item.get("rotation_degrees", 0.0)))
  var normal := Vector3(0, sin(PI / 3), cos(PI / 3))
  if is_instance_valid(table.camera): normal = table.camera.global_basis.z
- entry.pose.rotation.x = -atan2(normal.y, normal.z)
- entry.pose.rotation.z = -deg_to_rad(float(item.get("rotation_degrees", 0.0)))
- var facing := PI + deg_to_rad(15) if item.direction < 0.0 else deg_to_rad(-15)
- if not entry.has("last_turn_time"):
-  entry.body.rotation.y = facing
+ var moving: bool = item.alive and item.get("pause_remaining", 0.0) <= 0.0 and not Vector2(item.position).is_equal_approx(item.get("previous_position", item.position))
+ var delta := maxf(0.0, elapsed - float(entry.get("last_turn_time", elapsed)))
+ var facing := 0.0
+ if bee:
+  # Local +Z points at the camera even in top-down. Local +X follows the projected patrol.
+  var view := Basis.looking_at(-normal, Vector3.FORWARD if absf(normal.y) > 0.99 else Vector3.UP)
+  var path := Vector3(cos(angle), 0.0, -sin(angle))
+  var projected := Vector2(path.dot(view.x), path.dot(view.y))
+  if projected.length_squared() > 0.0001: view = view * Basis(Vector3.BACK, projected.angle())
+  entry.pose.basis = view
+  facing = deg_to_rad((68.0 if item.direction > 0.0 else -83.0) if moving else -22.0)
+  if not entry.has("player"): facing -= PI / 2.0 # Procedural wasp nose points along +X.
  else:
-  var delta := maxf(0.0, elapsed - float(entry.last_turn_time))
-  entry.body.rotation.y = rotate_toward(entry.body.rotation.y, facing, delta * TAU / 0.6)
+  # Tip the collisionless figure at its feet so eyes and legs read on a steep table.
+  var right := table.camera.global_basis.x if is_instance_valid(table.camera) else Vector3.RIGHT
+  var tilt := asin(clampf(normal.y, 0.0, 1.0)) * (0.68 if skin == "ganigani" else 0.44)
+  entry.pose.basis = Basis(right.normalized(), -tilt) * Basis(Vector3.UP, angle)
+  if skin == "eggpawn": facing = deg_to_rad(98.0 if item.direction > 0.0 else -98.0) if moving else 0.0
+ if entry.has("last_turn_time"):
+  entry.body.rotation.y = lerp_angle(entry.body.rotation.y, facing, 1.0 - exp(-delta * 12.0))
+ else: entry.body.rotation.y = facing
  entry.last_turn_time = elapsed
  entry.body.visible = item.alive or appearing
  entry.body.scale = Vector3.ONE * (float(item.respawn_fade) / 0.35 if appearing else 1.0)
  update_death_flash(entry, death_effect)
- if item.alive:
+ if entry.has("player"):
+  if item.alive or appearing: Runners.advance(entry, moving, delta)
+ elif item.alive:
   for i in entry.wings.size():
    entry.wings[i].rotation.y = sin(elapsed * 45) * 0.16 * (-1 if i == 0 else 1)
    entry.wings[i].rotation.z = sin(elapsed * 45) * 0.06

@@ -28,7 +28,7 @@ static func definitions() -> Array[Dictionary]:
   {"id": "lane_barrier", "label": "Lane Barrier", "color": Color("66efd1")},
   {"id": "diverter", "label": "Diverter", "color": Color("f3b669")},
   {"id": "dash_panel", "label": "Dash Panel", "color": Color("56eaff")},
-  {"id": "buzz_bomber", "label": "Enemy · Buzz Bomber", "color": Color("ffd548")},
+  {"id": "buzz_bomber", "label": "Enemy", "color": Color("ffd548")},
   {"id": "launch_tube", "label": "Launch Tube (optional)", "color": Color("72efd1")},
   {"id": "sonic_loop", "label": "Loop-de-loop", "color": Color("ffba52")},
  ]

@@ -1584,9 +1584,9 @@ This stops one Bumper from becoming a small unethical ATM.
 
 # BUZZ BOMBER
 
-Buzz Bomber is the first generic enemy archetype.
+The first enemy was Buzz Bomber. Today the editor brush is **Enemy**. One authored route can host Runners Beeton, Ganigani or Egg Pawn on different visits. The Act rolls a fresh lineup and keeps it across Ball retries and enemy respawns. Beeton faces the player at rest before banking into patrol. See [Runners Badniks](ADVENTURE_BUDDIES_AND_BUZZ.md#runners-badniks) for the local setup.
 
-Visual direction:
+Original Buzz Bomber visual direction:
 
 - small classic blue segmented flying Badnik;
 - white eyes;

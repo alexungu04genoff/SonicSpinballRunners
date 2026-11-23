@@ -39,12 +39,13 @@ func run() -> void:
  document.save_document(PATH)
  var text := FileAccess.get_file_as_string(PATH)
  for version in [2, 15, 16, 17]:
-  var legacy := text.replace("format_version = 18", "format_version = %d" % version)
+  var legacy := text.replace("format_version = %d" % Document.FORMAT_VERSION, "format_version = %d" % version)
+  check(legacy != text, "Legacy fixture explicitly stores format %d" % version)
   var file := FileAccess.open(PATH, FileAccess.WRITE)
   file.store_string(legacy)
   file.close()
   loaded = Document.load_document(PATH).document
-  check(loaded != null and loaded.format_version == 18 and loaded.authored_difficulty == 3 and loaded.design_thesis == "", "Legacy v%d migrates to Standard without a thesis" % version)
+  check(loaded != null and loaded.format_version == Document.FORMAT_VERSION and loaded.authored_difficulty == 3 and loaded.design_thesis == "", "Legacy v%d migrates to Standard without a thesis" % version)
   check(FileAccess.get_file_as_string(PATH) == legacy, "Legacy v%d migration does not rewrite source" % version)
  document.authored_difficulty = true
  check(not document.validation_errors().is_empty(), "Malformed difficulty is rejected without silently coercing it")
@@ -52,6 +53,7 @@ func run() -> void:
  document.design_thesis = "x".repeat(241)
  check(not document.validation_errors().is_empty(), "Thesis length has a bounded data contract")
  document.design_thesis = ""
+ check(Objects.get_definition("buzz_bomber").label == "Enemy", "Legacy patrols and new placements share the Enemy brush")
  var baseline := ["left_flipper", "right_flipper", "slingshot", "spring", "buzz_bomber", "round_bumper", "triangle_bumper"]
  for type: String in baseline: document.gameplay_objects.append(Objects.make_placement(type))
  document.ring_trails = [{"start": Vector2(100, 100), "end": Vector2(200, 100), "spacing": 25.0}]

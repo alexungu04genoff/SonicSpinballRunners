@@ -254,6 +254,7 @@ func _prepare_authored(path: String) -> Dictionary:
   return result
  result.runtime = ActCompiler.compile(loaded.document, tuning, controls, ball)
  result.error = result.runtime.error
+ if result.error.is_empty(): result.runtime.mechanics.enemies.roll_skins(path)
  return result
 
 func _load_authored_act(path: String, settings: Dictionary) -> void:

@@ -36,6 +36,39 @@ func shoot(at: Vector2, velocity: Vector2, id: String) -> void:
   await process_frame
   if not game.authored_runtime.mechanics.enemies.by_id[id].alive: return
 
+func check_enemy_presentations() -> void:
+ var tested := {}
+ for visual: Node in game.presentation.find_children("AuthoredPinballVisuals*", "Node3D", true, false):
+  for entry: Dictionary in visual.enemies:
+   var skin: String = entry.item.skin
+   if tested.has(skin): continue
+   tested[skin] = true
+   var path := "res://experiments/visual_lab/local/runners-decomp/%s/%s Runners - original animations.glb" % [skin, skin.capitalize()]
+   if not FileAccess.file_exists(path):
+    check(entry.body.find_children("*", "MeshInstance3D", true, false).size() > 0, skin + " has a portable procedural model")
+    continue
+   check(entry.has("player"), skin + " binds its local animation rig")
+   if not entry.has("player"): continue
+   var sample := entry.duplicate()
+   sample.item = entry.item.duplicate()
+   var clips := {}
+   var skeleton: Skeleton3D = entry.body.find_children("*", "Skeleton3D", true, false)[0]
+   var model = preload("res://scripts/enemies/runners_badnik.gd")
+   for right: bool in [false, true]:
+    sample.item.direction = 1.0 if right else -1.0
+    for moving: bool in [false, true]:
+     model.advance(sample, moving, 0.24)
+     var transforms := []
+     for i in skeleton.get_bone_count(): transforms.append(skeleton.get_bone_pose(i))
+     model.advance(sample, moving, 0.11)
+     var animates := false
+     for i in skeleton.get_bone_count():
+      if not skeleton.get_bone_pose(i).is_equal_approx(transforms[i]): animates = true
+     check(animates, sample.player.current_animation + " visibly changes the rig pose")
+     clips[sample.player.current_animation] = true
+   check(clips.size() == 4, skin + " uses a distinct idle and movement clip for both directions")
+ check(tested.has_all(Enemies.SKINS), "All three Badnik presentations are bound through the gameplay scene")
+
 func run() -> void:
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://test-results"))
  root.size = Vector2i(1440, 1000)
@@ -117,6 +150,11 @@ func run() -> void:
  var enemies: RefCounted = runtime.enemies
  check(enemies.items.size() == 4 and game.enemy_targets().is_empty(), "Authored fixture compiles four sensors and cannot target them at serve")
  check(game.presentation.find_children("BuzzBomber_*", "Node3D", true, false).size() == 4, "Each enemy has its own collisionless presentation")
+ var skins := {}
+ for i in 3: skins[enemies.items[i].skin] = true
+ check(skins.has_all(Enemies.SKINS), "Three generic placements draw three different Badniks")
+ check_enemy_presentations()
+ var first_skin: String = enemies.items[0].skin
  var model: Node = game.presentation.find_children("BuzzBomber_*", "Node3D", true, false)[0]
  check(model.find_children("*", "CollisionObject3D", true, false).is_empty(), "Enemy meshes have no 3D collision authority")
  var build := Buddies.new()
@@ -141,7 +179,7 @@ func run() -> void:
  var patrol: Dictionary = enemies.by_id.patrol_target
  var anchor: Vector2 = patrol.position
  enemies.tick(maxf(0.0, float(patrol.pause_remaining) - 0.05))
- check(patrol.position == anchor, "Buzz Bomber begins with a brief hover")
+ check(patrol.position == anchor, "Enemy pauses at its spawn before patrolling")
  enemies.tick(0.25)
  check(patrol.position.x > anchor.x, "Patrol departs after the initial hover")
  enemies.tick(3)
@@ -177,6 +215,8 @@ func run() -> void:
  var fresh := ActData.load_document(FIXTURE)
  var compiled := preload("res://scripts/authored_act/act_runtime_compiler.gd").compile(fresh.document, game.tuning, game.controls, game.ball)
  check(compiled.mechanics.enemies.items.all(func(enemy): return enemy.alive), "A fresh Act instance restores all enemy targets")
+ compiled.mechanics.enemies.roll_skins(FIXTURE)
+ check(compiled.mechanics.enemies.items[0].skin != first_skin and enemies.items[0].skin == first_skin, "Replaying the Act changes its first Badnik while retries preserve the current lineup")
  compiled.root.free()
  var turn_portrait := Node3D.new()
  var turn_body := Node3D.new()
@@ -192,13 +232,17 @@ func run() -> void:
  turn_model.update(turn_entry, 0.0, turn_presenter)
  var turn_initial_angle := turn_body.rotation.y
  turn_item.direction = -1.0
+ turn_item.previous_position = Vector2.RIGHT
  turn_model.update(turn_entry, 0.1, turn_presenter)
  var turn_partial_angle := turn_body.rotation.y
- check(not is_equal_approx(turn_initial_angle, turn_partial_angle) and absf(angle_difference(turn_partial_angle, PI + deg_to_rad(15))) > 0.5, "Badnik reversal rotates through intermediate angles instead of snapping")
+ check(not is_equal_approx(turn_initial_angle, turn_partial_angle) and absf(angle_difference(turn_partial_angle, deg_to_rad(-173))) > 0.15, "Badnik reversal rotates through intermediate angles instead of snapping")
  turn_model.update(turn_entry, 0.1, turn_presenter)
  check(is_equal_approx(turn_body.rotation.y, turn_partial_angle), "Paused presentation time freezes the turn")
  turn_model.update(turn_entry, 0.4, turn_presenter)
- check(absf(angle_difference(turn_body.rotation.y, PI + deg_to_rad(15))) < 0.001 and turn_item.direction == -1.0, "Turn reaches its target without changing patrol direction")
+ check(absf(angle_difference(turn_body.rotation.y, deg_to_rad(-173))) < 0.015 and turn_item.direction == -1.0, "Turn reaches its target without changing patrol direction")
+ turn_item.previous_position = turn_item.position
+ turn_model.update(turn_entry, 1.2, turn_presenter)
+ check(absf(angle_difference(turn_body.rotation.y, turn_initial_angle)) < 0.002, "The opposite patrol stop settles into the same camera-facing idle")
  var death_flash := MeshInstance3D.new()
  var death_item := {"alive": false, "death_remaining": 0.14}
  var death_entry := {"item": death_item, "flash": death_flash}

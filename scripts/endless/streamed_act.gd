@@ -4,6 +4,7 @@ const Mechanics = preload("res://scripts/authored_act/pinball_mechanics.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 var plan: Dictionary
 var document: Resource
+var act_path: String
 var runtime: Dictionary
 var root := Node2D.new()
 var visual := Node3D.new()
@@ -40,6 +41,7 @@ func initialize(owner_game: Node, entry: Dictionary, library: Node) -> void:
  if library.profile_enabled: _profile_cpu = library._record_cpu
  plan = entry
  document = library.documents[plan.id]
+ act_path = library.paths[plan.id]
  source = library.runtimes[plan.id]
  shapes = library.shapes[plan.id]
  recipe = library.visuals[library.key(plan.theme, plan.id)]
@@ -182,6 +184,7 @@ func _terrain_step() -> void:
 
 func _object_step() -> void:
  if index >= source.objects.size():
+  runtime.mechanics.enemies.roll_skins(act_path)
   phase = 2
   index = 0
   return
