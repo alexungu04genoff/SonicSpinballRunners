@@ -63,7 +63,7 @@ func run() -> void:
  var character: String = game.character_id
  if character == "sage":
   check(lab.sage and lab.active_clip == "Cyber Ball" and not lab.shell.visible and lab.sage.ball_root.is_visible_in_tree(), "F8 opens Sage's own cyber ball")
-  check(lab.picker.item_count == (8 if lab.sage.animated else 1), "Sage offers exactly the available animations")
+  check(lab.picker.item_count == (9 if lab.sage.animated else 1), "Sage offers exactly the available animations")
   for i in lab.picker.item_count:
    lab.picker.select(i)
    lab._select_clip(i)
@@ -72,7 +72,9 @@ func run() -> void:
   lab.sliders.opacity.value = 0.63
   session._resume_spin_lab()
   check(not paused and game.character_pose.sage.visible and is_equal_approx(game.character_pose.sage.shell.get_shader_parameter("opacity"), 0.63), "F8 returns to Sage with her own material settings")
-  if game.character_pose.sage.animated: check_sage_flight(game)
+  if game.character_pose.sage.animated:
+   if not game.active.runtime.launch_tubes.is_empty(): check_sage_dock(game)
+   check_sage_flight(game)
   await finish_review(session, character)
   return
  check(lab.picker.item_count == {"sonic": 14, "tails": 16, "knuckles": 15, "shadow": 14, "rouge": 15, "amy": 14, "blaze": 15, "cream": 15, "big": 15}[character] and lab.cameras.item_count == 4, "Gameplay clips and the four gameplay cameras are selectable")
@@ -422,6 +424,32 @@ func capture_roll_cycle(lab: Control) -> void:
   lab._orient_model()
   await capture("tails-roll-%02d" % i)
  lab._toggle_playback()
+
+func check_sage_dock(game: Node) -> void:
+ var controller = game.character_pose
+ var sage = controller.sage
+ var tube = game.active.runtime.launch_tubes[0]
+ tube.dock(game.ball)
+ controller.presenter._update_pose_transform(0.0)
+ tube.advance(0.0, false)
+ controller._process(sage.MORPH_SECONDS + 0.01)
+ var sole: Vector3 = sage.rig.to_global(Vector3.UP * sage.sole_height)
+ var tangent: Vector2 = tube.global_transform.basis_xform(tube.Path.tangent(tube.path, 0.0)).normalized()
+ check(sage.action == sage.READY and is_zero_approx(sage.assembly) and is_equal_approx(sole.y, TablePresentation.ROUTE_DECK_HEIGHT), "Sage plants her feet at the tube deck height")
+ check(sage.rig.basis.z.dot(Vector3(tangent.x, 0, tangent.y)) > 0.999, "Sage faces along the starting lane")
+ var spine: int = sage.skeleton.find_bone("Spine1")
+ var relaxed: Quaternion = sage.skeleton.get_bone_pose_rotation(spine)
+ tube.advance(tube.properties.charge_seconds, true)
+ controller._process(0)
+ var braced: Quaternion = sage.skeleton.get_bone_pose_rotation(spine)
+ check(relaxed.angle_to(braced) > deg_to_rad(20.0), "Full charge produces a visible brace")
+ controller._process(0)
+ check(braced.is_equal_approx(sage.skeleton.get_bone_pose_rotation(spine)), "Holding charge with time paused keeps exactly the same brace")
+ var departure: Transform3D = sage.rig.transform
+ tube.advance(0, false)
+ controller._process(1.0 / 30.0)
+ check(sage.action == sage.BALL and sage.rig.transform.is_equal_approx(departure), "Release curls Sage from the planted pose without snapping her facing")
+ tube.detach()
 
 func check_sage_flight(game: Node) -> void:
  var controller = game.character_pose

@@ -17,6 +17,7 @@ const RAIL_SIDE_COLOR := Color("267f81")
 const RAIL_TOP_COLOR := Color("64d6bd")
 ## Cosmetic timing only; character profiles control pickup radius, never flight speed.
 const RING_PICKUP_DURATION: float = 0.20
+const ROUTE_DECK_HEIGHT := 0.012
 const OVERLAY_HEIGHT: float = 0.015
 const AuthoredActData := preload("res://scripts/act_editor/act_geometry.gd")
 enum CameraPreset { TOP_DOWN, REAL_PINBALL, DRAMATIC_PINBALL, WIDE_PINBALL }

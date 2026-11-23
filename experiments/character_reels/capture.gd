@@ -201,6 +201,9 @@ func prepare(key: String) -> void:
  if key in ["tube", "weak_tube"]:
   game.active.runtime.launch_tubes[0].dock(game.ball)
   game.presentation.reset_camera(game.ball.position)
+  if pose.sage and pose.sage.animated:
+   # Let the visible character finish materializing before the first docked frame.
+   for tick in ceili(pose.sage.MORPH_SECONDS * 30) + 2: await process_frame
  if key == "poses":
   game.ball.freeze = true
   if pose.sage: pose.sage.victory_index = -1
@@ -327,6 +330,9 @@ func capture_gameplay(key: String) -> bool:
   if not centered(game.presentation.camera, subject_center()):
    push_error("Subject left frame center in %s at frame %d" % [key, i])
    return false
+  if key == "combos" and pose.sage and pose.sage.action in pose.sage.VICTORIES and pose.sage.assembly < 0.05:
+   seen[pose.sage.action] = true
+   caption("Bounce combo / " + pose.sage.action.trim_prefix("Victory "))
   if game.ball.in_loop: seen["loop"] = true
   if game.ball.on_ramp: seen["track"] = true
   if pose.motion != &"": seen[str(pose.motion)] = true
@@ -352,7 +358,9 @@ func capture_gameplay(key: String) -> bool:
  var required: Array = {"tube":["exit"], "weak_tube":["returning","redocked"], "retry":["transfer","redocked"], "roll":["trail"], "flipper":["strike"], "spring":["spring","falling_ball"], "panel":["dash_panel"], "loop":["loop"], "rollback":["reversed"], "rail":["track"], "ramp":["track"], "special":["activated","recovery"]}.get(key, [])
  if key == "special_replay": required = ["activated", "recovery"]
  var valid := seen.has_all(required)
- if key == "combos": valid = seen.get("hits", 0) >= 10
+ if key == "combos":
+  valid = seen.get("hits", 0) >= 10
+  if pose.sage: valid = valid and seen.has_all(pose.sage.VICTORIES)
  if key.begins_with("special") and game.specials.action.kind == TypeAction.Kind.SPEED: valid = valid and seen.has("target_boost") and game.score - special_score >= 500
  if key.begins_with("special") and game.specials.action.kind == TypeAction.Kind.POWER: valid = valid and seen.get("area_targets", 0) > 0
  print("SHOT ", key, " ", seen, " valid=", valid)

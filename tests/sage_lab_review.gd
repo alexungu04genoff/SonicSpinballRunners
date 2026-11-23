@@ -63,6 +63,28 @@ func record_crt(lab: Lab) -> void:
  key(KEY_TAB)
  lab.set_process(true)
 
+func check_sage_poses(actor: Lab.Actor) -> void:
+ var skeleton := actor.skeleton
+ var hand := skeleton.find_bone("Hand_L")
+ var foot := skeleton.find_bone("Foot_L")
+ var poses: Array[PackedVector3Array] = []
+ for clip in ["Victory Reach", "Victory Guard", "Victory Kick"]:
+  actor.play(clip)
+  actor.sample(0.06)
+  var wrist := skeleton.get_bone_global_pose(hand).origin
+  var boot := skeleton.get_bone_global_pose(foot).origin
+  actor.sample(0.34)
+  check(wrist.distance_to(skeleton.get_bone_global_pose(hand).origin) < 0.001 and boot.distance_to(skeleton.get_bone_global_pose(foot).origin) < 0.001, clip + " holds its silhouette through the shared turn")
+  for prior in poses:
+   check(wrist.distance_to(prior[0]) + boot.distance_to(prior[1]) > 0.08, clip + " has a distinct wrist and boot silhouette")
+  poses.append(PackedVector3Array([wrist, boot]))
+ actor.play("Flight")
+ actor.sample(0.3)
+ var wrist := skeleton.get_bone_global_pose(hand).origin
+ var boot := skeleton.get_bone_global_pose(foot).origin
+ actor.sample(0.9)
+ check(wrist.distance_to(skeleton.get_bone_global_pose(hand).origin) > 0.03 and boot.distance_to(skeleton.get_bone_global_pose(foot).origin) > 0.03, "Flight articulates both the reaching arm and trailing leg")
+
 func run() -> void:
  var fallback := preload("res://experiments/visual_lab/sage/gameplay_actor.gd").new()
  root.add_child(fallback)
@@ -89,7 +111,8 @@ func run() -> void:
   return
  await process_frame
  check(not lab.game and lab.get_node("%Studio").is_visible_in_tree() and lab.get_node("%Sidebar").is_visible_in_tree(), "Open directly into the full-resolution studio")
- check(lab.clips.item_count == 8 and lab.actor.action == "Hover", "Open on Hover with eight choices")
+ check(lab.clips.item_count == 9 and lab.actor.action == "Hover", "Open on Hover with nine choices")
+ check_sage_poses(lab.actor)
  for i in lab.clips.item_count:
   click(lab.clips.global_position + lab.clips.get_item_rect(i).get_center())
   check(lab.actor.action == Lab.STATES[i], "Pointer could not select " + Lab.STATES[i])
@@ -177,6 +200,6 @@ func run() -> void:
  key(KEY_2)
  lab.timeline.value = lab.timeline.max_value * 0.35
  await capture("sage-lab-hover")
- print("SAGE_LAB_REVIEW | eight states, playhead, steering, camera and playback | failures=", failures)
+ print("SAGE_LAB_REVIEW | nine states, playhead, steering, camera and playback | failures=", failures)
  if failures: quit(1)
  else: lab._close()

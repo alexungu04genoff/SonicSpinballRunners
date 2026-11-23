@@ -6,7 +6,9 @@ const CORE := preload("res://experiments/visual_lab/sage/cyber_core.gdshader")
 const TRANSITION := preload("res://experiments/visual_lab/sage/data_transition.gdshader")
 const MORPH_SECONDS := 0.45
 const CORE_OPACITY := 0.90
-const CLIPS := ["Hover", "Flight", "Boost Hover", "Ring Dash", "Victory Reach", "Victory Guard", "Victory Kick"]
+const Motion = preload("res://experiments/visual_lab/sage/pose_motion.gd")
+const READY := Motion.READY
+const CLIPS := ["Hover", "Flight", "Boost Hover", "Ring Dash", "Victory Reach", "Victory Guard", "Victory Kick", READY]
 const STEERED := ["Flight", "Boost Hover", "Ring Dash"]
 const BALL := "Cyber Ball"
 const VictoryTurn = preload("res://scripts/prototype/victory_turn.gd")
@@ -22,6 +24,10 @@ var circuitry := ShaderMaterial.new()
 var ball_root: Node3D
 var action := "Hover"
 var elapsed := 0.0
+var sole_height := 0.0
+var brace_bones := PackedInt32Array()
+var brace_tracks := PackedInt32Array()
+var brace_turns: Array[Quaternion] = []
 var heading := 0.0
 var rig_clip := "Hover"
 var digital_skin: Array[ShaderMaterial] = []
@@ -55,6 +61,7 @@ func prepare(model_path := MODEL) -> bool:
   digital_skin.append(effect)
  player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
  for clip: String in CLIPS:
+  if clip == READY: continue
   if not player.has_animation(clip): return false
   if clip.begins_with("Victory"):
    # The local study includes a baked camera turn. Keep its neutral root facing
@@ -65,6 +72,20 @@ func prepare(model_path := MODEL) -> bool:
     if anim.track_get_path(track).get_concatenated_subnames() != &"Root": continue
     var neutral := anim.rotation_track_interpolate(track, anim.length * 0.5)
     for key in anim.track_get_key_count(track): anim.track_set_key_value(track, key, neutral)
+ Motion.prepare(player, skeleton)
+ # The lower body uses its bind pose throughout the grounded stance.
+ var mesh_to_rig := rig.global_transform.affine_inverse() * body.global_transform
+ sole_height = (mesh_to_rig * body.mesh.get_aabb()).position.y
+ var ready := player.get_animation(READY)
+ var brace := {"Spine1": Vector3(27, 0, 0), "UpperArm_L": Vector3(-38, 0, 23), "UpperArm_R": Vector3(-38, 0, -23)}
+ for track in ready.get_track_count():
+  if ready.track_get_type(track) != Animation.TYPE_ROTATION_3D: continue
+  var bone := ready.track_get_path(track).get_concatenated_subnames()
+  if not brace.has(bone): continue
+  var index := skeleton.find_bone(bone)
+  brace_bones.append(index)
+  brace_tracks.append(track)
+  brace_turns.append(Motion.local_rotation(skeleton.get_bone_global_rest(index).basis.orthonormalized(), brace[bone]))
  prepare_ball()
  play("Hover")
  return true
@@ -155,6 +176,9 @@ func sample(time: float, pose_time := -1.0) -> void:
    player.seek(frame, true)
 
 func pose_on_table(table_basis: Basis, time: float) -> void:
+ if rig_clip == READY:
+  place_ready(table_basis, 0.0)
+  return
  var lift := Vector3.ZERO
  if not rig_clip.begins_with("Victory"):
   lift = Vector3.UP * ball_radius * (0.65 + 0.10 * sin(time * TAU / 1.6))
@@ -163,3 +187,15 @@ func pose_on_table(table_basis: Basis, time: float) -> void:
  if rig_clip.begins_with("Victory"):
   facing = VictoryTurn.basis(table_basis, time / player.get_animation(rig_clip).length)
  rig.transform = Transform3D(facing, lift - facing.y * HEIGHT * 0.5)
+
+func place_ready(view: Basis, charge: float, center_height := -1.0) -> void:
+ var forward := Vector3(view.z.x, 0.0, view.z.z).normalized()
+ var stance := Basis.looking_at(forward if forward.length_squared() > 0.5 else Vector3.BACK, Vector3.UP, true)
+ var ground_depth := ball_radius if center_height < 0.0 else center_height
+ rig.transform = Transform3D(stance, Vector3.DOWN * (ground_depth + sole_height))
+ # Always blend from the sampled clip so holding or releasing charge cannot accumulate lean.
+ var animation := player.get_animation(READY)
+ for i in brace_bones.size():
+  var source := animation.rotation_track_interpolate(brace_tracks[i], player.current_animation_position)
+  var lean := Quaternion.IDENTITY.slerp(brace_turns[i], charge)
+  skeleton.set_bone_pose_rotation(brace_bones[i], (source * lean).normalized())

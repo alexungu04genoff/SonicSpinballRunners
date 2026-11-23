@@ -198,8 +198,8 @@ func _process(delta: float) -> void:
   _show_frame()
 
 func _show_frame() -> void:
- actor.pose_on_table(pose_basis, playhead)
  actor.sample(seconds, playhead)
+ actor.pose_on_table(pose_basis, playhead)
  timeline.set_value_no_signal(playhead)
  %Time.text = "%.2f / %.2f s" % [playhead, timeline.max_value]
 
@@ -292,7 +292,7 @@ func _input(event: InputEvent) -> void:
   get_viewport().gui_release_focus()
   _aim_camera()
  elif get_viewport().gui_get_focus_owner() is LineEdit: return
- elif event.keycode >= KEY_1 and event.keycode <= KEY_8: _select_clip(event.keycode - KEY_1)
+ elif event.keycode >= KEY_1 and event.keycode <= KEY_9: _select_clip(event.keycode - KEY_1)
  elif event.keycode == KEY_SPACE: _toggle_playback()
  elif event.keycode == KEY_R and actor.action == Actor.BALL: _replay_morph()
  elif event.keycode in [KEY_LEFT, KEY_RIGHT] and actor.action in Actor.STEERED and not timeline.has_focus():

@@ -235,7 +235,7 @@ text = "Reset view"
 theme_override_colors/font_color = Color(0.76, 0.74, 0.80, 1)
 theme_override_font_sizes/font_size = 15
 text = "Drag to orbit · Scroll to zoom
-1–8 select · Space pauses
+1–9 select · Space pauses
 Tab hides controls · F11 fullscreen"
 
 [node name="Loading" type="ColorRect" parent="Interface"]

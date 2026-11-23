@@ -1,5 +1,6 @@
 extends "res://experiments/visual_lab/sage/actor.gd"
 ## The shared traversal controller selects actions. This presenter supplies Sage's rig and effects.
+const LaunchTube = preload("res://scripts/authored_act/launch_tube.gd")
 const VICTORIES := ["Victory Reach", "Victory Guard", "Victory Kick"]
 var animated := false
 var victory_index := -1
@@ -26,7 +27,9 @@ func advance_on_ball(controller: Node, delta: float) -> void:
  var fit := float(controller.radius) / ball_radius
  global_transform = Transform3D(Basis.IDENTITY.scaled(Vector3.ONE * fit), anchor)
  var frame := camera.global_basis.orthonormalized()
- var clip := "Hover" if ball.serve_pending else BALL
+ var tube := ball.launch_tube as LaunchTube
+ var waiting: bool = ball.serve_pending and (not is_instance_valid(tube) or tube.phase in [tube.Phase.DOCKED, tube.Phase.CHARGING])
+ var clip := READY if waiting else BALL
  var lift := Vector3.UP * ball_radius * (0.65 + 0.1 * sin(elapsed * TAU / 1.6))
  var pose_at := -1.0
  if controller.motion == &"loop": victory_hold = 0.0
@@ -56,5 +59,12 @@ func advance_on_ball(controller: Node, delta: float) -> void:
     lift = frame.y * (HEIGHT * 0.5 - ball_radius * 0.6)
  if not animated: clip = BALL
  if action != clip: play(clip, true)
- if rig: rig.transform = Transform3D(frame, lift - frame.y * HEIGHT * 0.5)
+ # Keep the outgoing skeleton in its last orientation while it dissolves into the moving ball.
+ if rig and clip != BALL: rig.transform = Transform3D(frame, lift - frame.y * HEIGHT * 0.5)
  sample(elapsed + delta, pose_at)
+ if clip == READY:
+  if is_instance_valid(tube):
+   var aim: Vector2 = tube.global_transform.basis_xform(LaunchTube.Path.tangent(tube.path, 0.0))
+   frame = controller.Presenter.flat_roll_frame(aim)
+  var surface := TablePresentation.ROUTE_DECK_HEIGHT if is_instance_valid(tube) else 0.0
+  place_ready(frame, tube.charge if is_instance_valid(tube) else 0.0, (presenter.table.ball_height() - surface) / fit)

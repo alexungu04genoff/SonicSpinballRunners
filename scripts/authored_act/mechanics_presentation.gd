@@ -146,7 +146,7 @@ func _rail(item: Dictionary) -> void:
  var distance := 50.0
  while distance < float(path.length) - 35.0:
   if table.has_method("stream_checkpoint"): await table.stream_checkpoint()
-  var height := maxf(0.0, RailPath.height(path, distance, peak) * table.SCALE + 0.012 - thickness)
+  var height := maxf(0.0, RailPath.height(path, distance, peak) * table.SCALE + TablePresentation.ROUTE_DECK_HEIGHT - thickness)
   if height > 0.06:
    var tangent := RailPath.tangent(path, distance)
    var across := Vector2(-tangent.y, tangent.x)
@@ -230,7 +230,7 @@ func _rail_strip(parent: Node3D, path: Dictionary, width: float, peak: float, ed
    var distance: float = path.lengths[index]
    var tangent := RailPath.tangent(path, distance)
    var side := Vector3(-tangent.y, 0, tangent.x)
-   var center := table.map_point(path.points[index], RailPath.height(path, distance, peak) * table.SCALE + 0.012)
+   var center := table.map_point(path.points[index], RailPath.height(path, distance, peak) * table.SCALE + TablePresentation.ROUTE_DECK_HEIGHT)
    var edge_scale: float = path.inside_edge_scale[index]
    var left := edges.x * absf(edge_scale) if edges.x * edge_scale > 0.0 else edges.x
    var right := edges.y * absf(edge_scale) if edges.y * edge_scale > 0.0 else edges.y
@@ -248,7 +248,7 @@ func _rail_strip(parent: Node3D, path: Dictionary, width: float, peak: float, ed
     uvs.append(face_uv)
     continue
    if label == "Soffit":
-    var bottom := maxf(0.0, center.y - 0.012 - float(path.stringer_depth))
+    var bottom := maxf(0.0, center.y - TablePresentation.ROUTE_DECK_HEIGHT - float(path.stringer_depth))
     corners[-2].y = bottom
     corners[-1].y = bottom
    uvs.append(Vector2(width * edges.x, distance * table.SCALE))

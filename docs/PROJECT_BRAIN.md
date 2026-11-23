@@ -6,7 +6,7 @@ Nine experiment Acts isolate the plunger, rolls and flippers, spring, dash panel
 
 ## Sage Flight experiment
 
-Sage is the tenth character. She and Cream each have a roster entry, physics profile, animation set and run identity. They share the Flight action. Sage uses a smoky black cyber ball with red circuitry and a local 3,278-triangle rig. Her seven clips also work in the standalone Sage Lab and the playfield inspector. [Sage Lab](combo-celebration/README.md)
+Sage is the tenth character. She and Cream each have a roster entry, physics profile, animation set and run identity. They share the Flight action. Sage uses a smoky black cyber ball with red circuitry and a local 3,278-triangle rig. The seven study clips and a grounded launch stance derived from Hover also work in the standalone Sage Lab and the playfield inspector. [Sage Lab](combo-celebration/README.md)
 
 ## Nine playable characters
 

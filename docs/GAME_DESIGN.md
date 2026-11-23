@@ -2,7 +2,7 @@
 
 ## Sage Flight experiment
 
-Sage has her own selectable character, physics profile and animation set. She shares the Flight action with Cream, Rouge and Tails. Her cyber ball forms or dissolves over 0.45 seconds. Her local rig hovers at serve, steers during Flight, uses Ring Dash on springs and Boost Hover on dash panels and Loops. Her combo poses cycle through Victory Reach, Guard and Kick. The procedural cyber ball also works when her local rig is unavailable. [Sage Lab and asset details](combo-celebration/README.md)
+Sage has her own selectable character, physics profile and animation set. She shares the Flight action with Cream, Rouge and Tails. Her cyber ball forms or dissolves over 0.45 seconds. On the starting ramp Sage plants both feet, faces down the launch lane and braces as charge builds. She curls on release. In Flight her arms and legs counter-swing while her hair and dress follow. Springs use Ring Dash, and dash panels and Loops use Boost Hover. Her combo milestones cycle through a held reach, guard and side kick with the shared victory turn. The procedural cyber ball also works when her local rig is unavailable. [Sage Lab and asset details](combo-celebration/README.md)
 
 ## Prototype combo celebrations — 2026-11-22
 
