@@ -497,6 +497,7 @@ func start_session() -> void:
  if editor.canvas.selection_filter not in filter_ids: editor.canvas.selection_filter = "all"
  editor.canvas.launch_contact_fraction = clampf(editor.canvas.launch_contact_fraction, 0.1, 1.0)
  editor.canvas.trajectory_gravity_scale = clampf(editor.canvas.trajectory_gravity_scale, 0.01, 4.0)
+ editor.half_size_steps.set_pressed_no_signal(bool(_preferences.get_value("editor", "half_size_steps", true)))
  autosave_enabled.set_pressed_no_signal(bool(_preferences.get_value("editor", "autosave", true)))
  var last_path := str(_preferences.get_value("editor", "last_path", ""))
  if not last_path.is_empty() and FileAccess.file_exists(last_path): editor.load_from(last_path)
@@ -530,6 +531,7 @@ func persist_preferences() -> void:
  if not _started or not is_instance_valid(editor.canvas) or editor.document == null: return
  remember_view()
  for field: String in VIEW_FIELDS: _preferences.set_value("editor", field, editor.canvas.get(field))
+ _preferences.set_value("editor", "half_size_steps", editor.half_size_steps.button_pressed)
  _preferences.set_value("editor", "autosave", autosave_enabled.button_pressed)
  _preferences.set_value("editor", "last_path", editor.current_path)
  var fingerprint := _preferences.encode_to_text().sha256_text()

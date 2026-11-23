@@ -172,6 +172,12 @@ static func size_label(type: String) -> String:
   "teleporter": "radius", "magnetic_field": "radius", "buzz_bomber": "size",
   "round_bumper": "size", "triangle_bumper": "size", "switch_target": "size", "wall_switch": "size", "sonic_loop": "uniform scale"}.get(type, "width")
 
+static func size_property(type: String) -> String:
+ return {"left_flipper": "length_multiplier", "right_flipper": "length_multiplier",
+   "lane_barrier": "post_radius", "drop_target_bank": "spacing", "diverter": "length", "teleporter": "radius",
+   "magnetic_field": "radius", "buzz_bomber": "scale", "round_bumper": "scale",
+   "triangle_bumper": "scale", "switch_target": "scale", "wall_switch": "scale", "sonic_loop": "scale"}.get(type, "width")
+
 static func resized_properties(item: Dictionary, direction: float) -> Dictionary:
  # Use the dimensions already consumed by runtime collision and presentation.
  # Never add a cosmetic Node scale that leaves the physical footprint behind.
@@ -187,10 +193,7 @@ static func resized_properties(item: Dictionary, direction: float) -> Dictionary
   for i in points.size(): points[i] *= factor
   props.points = points
  else:
-  var key: String = {"left_flipper": "length_multiplier", "right_flipper": "length_multiplier",
-   "drop_target_bank": "spacing", "diverter": "length", "teleporter": "radius",
-   "magnetic_field": "radius", "buzz_bomber": "scale", "round_bumper": "scale",
-   "triangle_bumper": "scale", "switch_target": "scale", "wall_switch": "scale", "sonic_loop": "scale"}.get(type, "width")
+  var key := size_property(type)
   var limits: Array = property_limits(type)[key]
   var minimum := float(limits[0])
   if type == "drop_target_bank": minimum = maxf(minimum, float(props.target_size) + 2.0)

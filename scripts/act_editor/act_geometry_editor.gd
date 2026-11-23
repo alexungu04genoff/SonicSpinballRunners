@@ -98,6 +98,7 @@ var composite_whole_contour: CheckBox
 var _composite_area_limited := false
 var terrain_snap_field: OptionButton
 var terrain_scale_field: OptionButton
+var half_size_steps: CheckBox
 var shortcuts_dialog: AcceptDialog
 var snap_mode_field: OptionButton
 var pivot_field: OptionButton
@@ -275,7 +276,7 @@ func _build_ui() -> void:
 	palette_list.add_theme_constant_override("separation", 5)
 	scroll.add_child(palette_list)
 	var families: Array[String] = []
-	for definition: Dictionary in Shapes.definitions():
+	for definition: Dictionary in _palette_shapes():
 		if not families.has(definition.family):
 			families.append(definition.family)
 			family_filter.add_item(definition.family)
@@ -409,11 +410,7 @@ func _build_ui() -> void:
 	goal_size_field.step = 0.05
 	goal_size_field.prefix = "Goal diameter"
 	goal_size_field.suffix = "cells"
-	goal_size_field.value_changed.connect(func(value):
-		if _refreshing or composite_preview_active or EditorSelectionData.locked(document, "markers", "goal"): return
-		_record_edit()
-		document.goal_diameter_cells = value
-		_refresh())
+	goal_size_field.value_changed.connect(_set_goal_diameter)
 	marker_list.add_child(goal_size_field)
 	score_target_enabled = CheckBox.new()
 	score_target_enabled.text = "Enable Score Target"
@@ -531,8 +528,14 @@ func _build_ui() -> void:
 	inspector.add_child(quick_tools)
 	_button(quick_tools, "select_all", "Select All", select_all_content, "Ctrl+A • all content, including hidden layers and lifecycle markers")
 	_button(quick_tools, "boundary", "Boundary", toggle_boundary_tool, "B • drag grid handles or use arrows to add / remove rows and columns")
-	_button(quick_tools, "size_down", "Size −", func(): _scale_active(1.0 / 1.1), "[ • divide size by 1.1; Shift+[ halves")
-	_button(quick_tools, "size_up", "Size +", func(): _scale_active(1.1), "] • grow 10%; Shift+] doubles")
+	_button(quick_tools, "size_down", "Size −", _click_size.bind(-1), "Decrease size using the selected step")
+	_button(quick_tools, "size_up", "Size +", _click_size.bind(1), "Increase size using the selected step")
+	half_size_steps = CheckBox.new()
+	half_size_steps.text = "0.5× steps"
+	half_size_steps.button_pressed = true
+	half_size_steps.focus_mode = Control.FOCUS_NONE
+	half_size_steps.tooltip_text = "Size buttons step by 0.5× for objects and 0.5 cells for rings and goals. Uncheck for proportional 10% steps."
+	quick_tools.add_child(half_size_steps)
 	_button(quick_tools, "guides", "Guides: On", toggle_launch_guides, "P • show / hide launch-strength and direction previews")
 	_button(quick_tools, "shortcuts", "Shortcuts", show_shortcuts, "F1 • editor keyboard and mouse controls")
 	_build_productivity_tools(inspector)
@@ -1041,6 +1044,17 @@ func _refresh_decor_controls() -> void:
 		decor_scale_field.set_value_no_signal(float(slot.get("scale", 1.0)))
 		if canvas.selected_decor_index >= 0:
 			decor_info.text += "\n\n" + ("On raised terrain." if Decor.supported_in_document(slot.position, document) else "No raised terrain under anchor: move onto an island or wall to spawn.")
+
+func _palette_shapes() -> Array[Dictionary]:
+	var basics: Array[Dictionary] = []
+	var others: Array[Dictionary] = []
+	for shape: Dictionary in Shapes.definitions():
+		if shape.id.begins_with("triangle_") or shape.id.begins_with("rectangle_"):
+			basics.append(shape)
+		else:
+			others.append(shape)
+	basics.append_array(others)
+	return basics
 
 func _filter_palette() -> void:
 	var query := search_field.text.strip_edges().to_lower().replace("×", "x")
@@ -2931,6 +2945,63 @@ func verify_document() -> void:
 	verify_dialog.dialog_text = "\n".join(lines)
 	verify_dialog.popup_centered(Vector2i(720, 360))
 
+func _set_goal_diameter(value: float) -> void:
+	if _refreshing or composite_preview_active or EditorSelectionData.locked(document, "markers", "goal"): return
+	if is_equal_approx(document.goal_diameter_cells, value): return
+	_record_edit()
+	document.goal_diameter_cells = value
+	_refresh()
+
+func _click_size(direction: int) -> void:
+	var factor := pow(1.1, direction)
+	if half_size_steps.button_pressed and canvas.selected_connector.is_empty():
+		factor = _half_size_factor(direction)
+	if not is_equal_approx(factor, 1.0): _scale_active(factor)
+
+func _half_size_factor(direction: int) -> float:
+	var kind: String
+	var item: Dictionary
+	var cell := float(document.cell_size)
+	if not canvas.brush.is_empty():
+		kind = "terrain"
+		item = canvas.brush
+	elif not canvas.gameplay_brush.is_empty():
+		kind = "gameplay"
+		item = canvas.gameplay_brush if canvas._rail_draft.is_empty() else canvas._rail_draft
+	elif not canvas.decor_brush.is_empty():
+		kind = "decor"
+		item = canvas.decor_brush
+	elif canvas.marker_tool == "goal" or (canvas.selected_marker == "goal" and canvas.selection_count() == 1):
+		return _half_step_ratio(document.goal_diameter_cells, direction, 0.25, 8.0)
+	elif canvas.ring_tool:
+		if canvas.ring_kind == "ellipse":
+			return _half_step_ratio(canvas.ring_radii.x / cell, direction, 1.0 / cell, 10000.0 / cell)
+		return _half_step_ratio(canvas.ring_spacing_cells, direction, 0.1, 4.0)
+	else:
+		var member: Dictionary = canvas.active_selected_object(canvas.object_selection())
+		if member.is_empty():
+			return _half_step_ratio(document.goal_diameter_cells, direction, 0.25, 8.0) if "goal" in canvas.selected_markers else 1.0
+		kind = member.kind
+		item = document.get(EditorSelectionData.COLLECTIONS[kind])[member.index]
+	match kind:
+		"terrain": return _half_step_ratio(item.get("terrain_scale", 1.0), direction, Shapes.MIN_SCALE, Shapes.MAX_SCALE)
+		"decor": return _half_step_ratio(item.get("scale", 1.0), direction, Decor.MIN_SCALE, Decor.MAX_SCALE)
+		"ring":
+			if item.get("kind") == "ellipse":
+				return _half_step_ratio(absf(item.end.x - item.start.x) / (2.0 * cell), direction, 1.0 / cell)
+			return _half_step_ratio(item.spacing / cell, direction, 0.1)
+		"gameplay":
+			var defaults := Objects.defaults(item.type)
+			var key := Objects.size_property(item.type)
+			var unit := float(defaults[key])
+			var limits: Array = Objects.property_limits(item.type)[key]
+			return _half_step_ratio(float(Objects.properties(item)[key]) / unit, direction, float(limits[0]) / unit, float(limits[1]) / unit)
+	return 1.0
+
+func _half_step_ratio(current: float, direction: int, minimum: float, maximum := INF) -> float:
+	if current <= 0.0: return 1.0
+	return clampf(current + direction * 0.5, minf(minimum, current), maxf(maximum, current)) / current
+
 func _scale_preview(direction: float) -> void:
 	_scale_active(pow(1.1, direction))
 
@@ -2959,8 +3030,8 @@ func _scale_active(factor: float) -> void:
 	if not canvas.decor_brush.is_empty():
 		_set_decor_property("scale", clampf(float(canvas.decor_brush.get("scale", 1.0)) * factor, Decor.MIN_SCALE, Decor.MAX_SCALE))
 		return
-	if canvas.marker_tool == "goal" or canvas.selected_marker == "goal":
-		goal_size_field.value = clampf(document.goal_diameter_cells * factor, 0.25, 8.0)
+	if canvas.marker_tool == "goal" or (canvas.selected_marker == "goal" and canvas.selection_count() == 1):
+		_set_goal_diameter(clampf(document.goal_diameter_cells * factor, 0.25, 8.0))
 		return
 	if not canvas.selected_connector.is_empty():
 		var kind: String = canvas.selected_connector

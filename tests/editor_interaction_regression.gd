@@ -86,6 +86,7 @@ func run() -> void:
   mouse(destination, false)
   check(editor.document.gameplay_objects[0].position.distance_to(destination) < 0.001, type + ": late Alt frees drag and release preserves position")
   check(editor.document.validation_errors().is_empty(), type + ": edited record validates")
+ check_size_buttons_and_palette()
  await check_handles()
  await check_clipboard()
  check_guides()
@@ -94,6 +95,59 @@ func run() -> void:
  await process_frame
  print("RESULT | Editor interaction | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)
+
+func check_size_buttons_and_palette() -> void:
+ editor.new_document()
+ var basics := PackedStringArray()
+ for button: Button in editor.palette_list.get_children():
+  basics.append(button.get_meta("shape_id"))
+ check(basics.slice(0, 11) == PackedStringArray(["triangle_1x1", "triangle_1x2", "triangle_1x3", "triangle_2x2", "triangle_3x2", "triangle_3x3", "rectangle_1x1", "rectangle_2x2", "rectangle_3x3", "rectangle_1x2", "rectangle_1x3"]), "Filled triangles, squares and rectangles lead the terrain palette")
+ editor.half_size_steps.button_pressed = true
+ editor.choose_shape("rectangle_1x1")
+ editor.buttons.size_up.pressed.emit()
+ editor.buttons.size_up.pressed.emit()
+ check(is_equal_approx(editor.canvas.brush.terrain_scale, 1.5), "Two Size + clicks take a new 0.5× terrain brush to 1.5×")
+ editor.buttons.size_down.pressed.emit()
+ check(is_equal_approx(editor.canvas.brush.terrain_scale, 1.0), "Size − subtracts exactly 0.5×")
+ editor.set_terrain_scale(1.25)
+ editor.buttons.size_up.pressed.emit()
+ check(is_equal_approx(editor.canvas.brush.terrain_scale, 1.75), "A custom scale keeps its fractional offset")
+ editor.set_terrain_scale(Shapes.MIN_SCALE)
+ editor.buttons.size_down.pressed.emit()
+ check(is_equal_approx(editor.canvas.brush.terrain_scale, Shapes.MIN_SCALE), "Size − respects the terrain minimum")
+ editor.half_size_steps.button_pressed = false
+ editor.buttons.size_up.pressed.emit()
+ check(is_equal_approx(editor.canvas.brush.terrain_scale, Shapes.MIN_SCALE * 1.1), "Unchecking restores proportional button sizing")
+ editor.half_size_steps.button_pressed = true
+ editor.choose_gameplay("spring")
+ editor.buttons.size_up.pressed.emit()
+ editor.buttons.size_up.pressed.emit()
+ check(is_equal_approx(editor.canvas.gameplay_brush.properties.width, 80.0), "Hardware steps use half of its original physical size")
+ editor.choose_gameplay("round_bumper")
+ mouse(Vector2(250, 250), true, true)
+ editor._select_mode()
+ editor.canvas.select_gameplay(0)
+ var original: Dictionary = editor.document.gameplay_objects[0].duplicate(true)
+ editor.buttons.size_up.pressed.emit()
+ check(is_equal_approx(editor.document.gameplay_objects[0].properties.scale, 1.5) and editor.document.gameplay_objects[0].position == original.position, "A placed bumper grows half a step at its anchor")
+ editor.undo()
+ check(editor.document.gameplay_objects[0] == original, "One undo restores a size button edit")
+ editor.choose_shape("triangle_1x1")
+ var triangle: Dictionary = editor.canvas.brush.duplicate(true)
+ triangle.anchor = Vector2i(5,5)
+ editor.add_placement(triangle)
+ editor._select_mode()
+ editor.canvas.set_object_selection({"gameplay":[0], "terrain":[0]})
+ editor.canvas.active_target = {"kind":"terrain","index":0}
+ editor.buttons.size_up.pressed.emit()
+ check(is_equal_approx(editor.document.placements[0].terrain_scale, 1.0) and is_equal_approx(editor.document.gameplay_objects[0].properties.scale, 2.0), "A mixed selection scales proportionally from its active triangle")
+ editor.undo()
+ check(editor.document.gameplay_objects[0] == original and editor.document.placements[0] == triangle, "One undo restores the whole group")
+ editor.choose_marker("goal")
+ editor.document.goal_diameter_cells = 1.275
+ editor.buttons.size_up.pressed.emit()
+ check(is_equal_approx(editor.document.goal_diameter_cells, 1.775), "Goal button steps preserve an exact loaded diameter")
+ editor.new_document()
 
 func check_handles() -> void:
  editor.new_document()

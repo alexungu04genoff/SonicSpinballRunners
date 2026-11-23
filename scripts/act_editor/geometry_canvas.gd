@@ -2534,6 +2534,14 @@ func _draw_launch_range(item: Dictionary) -> void:
  draw_string(get_theme_default_font(), Vector2(16, size.y - 34), detail, HORIZONTAL_ALIGNMENT_LEFT, size.x - 32, 11, Color("b3cadb"))
  draw_string(get_theme_default_font(), Vector2(16, size.y - 17), "Example paths · free flight after contact · no later obstacles or steering", HORIZONTAL_ALIGNMENT_LEFT, size.x - 32, 11, Color("9cb3c6"))
 
+func active_selected_object(selection: Dictionary) -> Dictionary:
+ var kind: String = active_target.get("kind", "")
+ if kind in EditorSelectionData.COLLECTIONS and active_target.get("index", -1) in selection[kind]:
+  return active_target
+ for candidate: String in ["gameplay", "terrain", "decor", "ring"]:
+  if not selection[candidate].is_empty(): return {"kind": candidate, "index": selection[candidate].back()}
+ return {}
+
 func selection_anchor() -> Vector2:
  var selection := object_selection()
  var kind: String = active_target.get("kind", "")
@@ -2541,15 +2549,9 @@ func selection_anchor() -> Vector2:
   var marker: String = active_target.marker
   var value: Variant = marker_value(marker)
   return Vector2(0, float(value)) if marker == "activation" else Vector2(value)
- var index: int = active_target.get("index", -1)
- if not selection.get(kind, []).has(index):
-  kind = ""
-  index = -1
-  for candidate: String in ["gameplay", "terrain", "decor", "ring"]:
-   if not selection.get(candidate, []).is_empty():
-    kind = candidate
-    index = selection[candidate].back()
-    break
+ var member := active_selected_object(selection)
+ var index: int = member.get("index", -1)
+ kind = member.get("kind", "")
  if kind == "terrain" and index >= 0: return Shapes.placement_position(document.placements[index]) * _local_cell_size()
  if kind == "gameplay" and index >= 0: return document.gameplay_objects[index].position
  if kind == "decor" and index >= 0: return document.decor_slots[index].position
