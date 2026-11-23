@@ -74,8 +74,17 @@ func set_animation_time(seconds: float) -> void:
  elif t >= .72 and t < 1.20:
   hop = sin(PI * (t - .72) / .48)
  pose.position.y = hop * .105
+ pose.rotation.x = 0.0
  pose.rotation.z = sin(TAU * t / CYCLE) * .035
  head.rotation.y = sin(TAU * t / CYCLE) * .28
  var flutter := hop * (.65 + .3 * sin(t * TAU * 7.0))
  for i in wings.size():
   wings[i].rotation.z = (1 if i == 0 else -1) * (.12 + flutter)
+
+func set_flight_time(seconds: float) -> void:
+ pose.position.y = 0.0
+ pose.rotation = Vector3(0.15, 0.0, 0.0)
+ head.rotation.y = 0.0
+ var stroke := 0.95 + 0.7 * sin(seconds * TAU * 5.0)
+ wings[0].rotation.z = -stroke
+ wings[1].rotation.z = stroke

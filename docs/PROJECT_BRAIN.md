@@ -4,6 +4,8 @@ When consecutive Acts use the same theme, Prototype and Endless join the floor t
 
 ## Green Hill animation review
 
+The blue Flickies from Palm Island can also perch along the active table. A close pass sends one flying, and replaying the Act can reveal a different perch or a rare gold Runners Flicky. [Placement and odds](GAME_DESIGN.md#flicky-visitors)
+
 Nine experiment Acts isolate the plunger, rolls and flippers, spring, dash panel, rails, Loop, specials, tricks and source animations. The fullscreen recorder keeps the character centered in Dramatic Pinball. Trick Garden counts ten separate bumper contacts. Special Arena records the approach, impact or Flight expiry, and the return to ball form. [Capture commands and review notes](combo-celebration/README.md)
 
 ## Sage Flight experiment

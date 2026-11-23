@@ -14,7 +14,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_FRACTION = 0.35
-ORIGINAL_BADNIKS = {"beeton", "ganigani", "eggpawn"}
+ORIGINAL_FIELD_MODELS = {"beeton", "ganigani", "eggpawn", "flicky"}
 DTYPES = {5120: "i1", 5121: "u1", 5122: "<i2", 5123: "<u2", 5125: "<u4", 5126: "<f4"}
 WIDTHS = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4}
 
@@ -194,8 +194,8 @@ def bake(path, simplify, fraction):
 def low_poly_sources(paths):
     for path in paths:
         model_id = path.stem.lower().removesuffix(" runners - original animations")
-        if path.suffix.lower() == ".glb" and model_id in ORIGINAL_BADNIKS:
-            print(f"{path.name}: using original Badnik mesh")
+        if path.suffix.lower() == ".glb" and model_id in ORIGINAL_FIELD_MODELS:
+            print(f"{path.name}: using original field model")
         else:
             yield path
 

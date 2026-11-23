@@ -12,6 +12,7 @@ var indices := {}
 @export var rings: Array[int] = []
 @export var bumpers := {}
 @export var join_profiles: Array = []
+@export var floor_outline := PackedVector2Array()
 @export var batch_stats := {}
 @export var warm_manifest_version := 0
 @export var retirement_dependencies: Array[Resource] = []

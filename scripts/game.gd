@@ -4,6 +4,8 @@ var tuning: PhysicsTuning
 var controls: PlaygroundInput
 var world: Node2D
 var ball: PlaygroundBall
+const ActFlicky = preload("res://scripts/decor/act_flicky.gd")
+var act_flicky: ActFlicky
 var flippers: Array[PlaygroundFlipper] = []
 var ring_field: RingField
 var presentation: TablePresentation
@@ -463,7 +465,20 @@ func _add_scoring_hardware(runtime: Dictionary, document: Resource, offset: Vect
  visuals.add_child(feedback)
  feedback.configure(runtime.mechanics, ring_field, owner_id)
 
+func _show_act_flicky(document: Resource, runtime: Dictionary) -> void:
+ if not runtime.has("flicky_visit"):
+  var offset := Vector2(runtime.get("spawn", document.spawn_position)) - Vector2(document.spawn_position)
+  runtime.flicky_visit = ActFlicky.choose_perch(document, runtime, offset, RandomNumberGenerator.new())
+ if not is_instance_valid(act_flicky):
+  act_flicky = ActFlicky.new()
+  act_flicky.name = "ActFlicky"
+  act_flicky.process_mode = Node.PROCESS_MODE_PAUSABLE
+  act_flicky.set_meta("keep_on_playfield_rebuild", true)
+  presentation.add_child(act_flicky)
+ act_flicky.enter(presentation, runtime.flicky_visit, document.cell_size)
+
 func _activate_scoring_context(document: Resource, runtime: Dictionary, owner_id: String) -> void:
+ _show_act_flicky(document, runtime)
  active_scoring_id = owner_id
  scorecraft.act_context = owner_id
  scorecraft.reset("Act activated", true)

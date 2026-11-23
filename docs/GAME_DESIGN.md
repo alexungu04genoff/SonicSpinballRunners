@@ -4,6 +4,12 @@
 
 Place **Enemy** in the Act editor and author its patrol once. Each Act visit deals Buzz Bomber (Beeton), Ganigani and Egg Pawn in random order, drawing all three before repeating. Replaying an Act in the same session changes its first enemy. Ball retries and enemy respawns preserve the lineup. All three share the same 2D contact, score and patrol rules. [Asset setup and patrol behavior](ADVENTURE_BUDDIES_AND_BUZZ.md#runners-badniks)
 
+## Flicky visitors
+
+Each fresh Act has a 75% chance to host one Flicky. It needs an exposed raised bank beside the playable floor, clear of the launch area, hardware and authored decor. It hops on the bank until a moving Ball passes within roughly one cell, then flaps away for the rest of that Act instance. Retries keep the visit. Flickies appear across themes in Play Act, Prototype and Endless as collisionless scenery. They award no points.
+
+Most visitors are the blue Palm Island Flicky. One in five visits uses the gold Sonic Runners Flicky when its local model is installed. Portable builds use the blue bird for every visit. [Local art setup](ADVENTURE_BUDDIES_AND_BUZZ.md#flicky-visitors)
+
 ## Sage Flight experiment
 
 Sage has her own selectable character, physics profile and animation set. She shares the Flight action with Cream, Rouge and Tails. Her cyber ball forms or dissolves over 0.45 seconds. On the starting ramp Sage plants both feet, faces down the launch lane and braces as charge builds. She curls on release. In Flight her arms and legs counter-swing while her hair and dress follow. Springs use Ring Dash, and dash panels and Loops use Boost Hover. Her combo milestones cycle through a held reach, guard and side kick with the shared victory turn. The procedural cyber ball also works when her local rig is unavailable. [Sage Lab and asset details](combo-celebration/README.md)

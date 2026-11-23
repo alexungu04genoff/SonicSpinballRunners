@@ -70,6 +70,7 @@ func run() -> void:
  birds[0].set_animation_time(.24 + birds[0].CYCLE * 100)
  check(birds[0].pose.transform.is_equal_approx(sample), "Animation loops without long-run drift")
  bounds_check.free()
+ check_act_visit(p)
  if DisplayServer.get_name() != "headless" and failures == 0:
   await capture(p, birds)
  var weak: WeakRef = weakref(birds[0])
@@ -80,6 +81,92 @@ func run() -> void:
  p.free()
  print("RESULT | Island Flickies | %d checks | %d failures" % [checks, failures])
  quit(1 if failures else 0)
+
+func check_act_visit(p: TablePresentation) -> void:
+ var visitor = preload("res://scripts/decor/act_flicky.gd").new()
+ var document := ActGeometry.new()
+ document.grid_size = Vector2i(10, 10)
+ document.spawn_position = Vector2(10, 10)
+ var cell := float(document.cell_size)
+ var offset := Vector2(0, -12) * cell
+ var polygon := PackedVector2Array()
+ for corner in [Vector2(2, 2), Vector2(8, 2), Vector2(8, 8), Vector2(2, 8)]:
+  polygon.append(corner * cell + offset)
+ var runtime := {"terrain": [{"closed": true, "points": polygon}], "objects": []}
+ var rng := RandomNumberGenerator.new()
+ rng.seed = 18
+ var perches := {}
+ var variants := {}
+ var empty := 0
+ var chosen := {}
+ var placement_state := rng.state
+ for i in 32:
+  var before := rng.state
+  var state: Dictionary = visitor.choose_perch(document, runtime, offset, rng)
+  if state.is_empty():
+   empty += 1
+   continue
+  chosen = state
+  placement_state = before
+  variants[state.gold] = true
+  perches[state.perch] = true
+  check(Geometry2D.is_point_in_polygon(state.perch, polygon), "Visit lands inside the offset Act's raised bank")
+ check(perches.size() > 1 and empty > 0, "Fresh visits vary perch and can leave the Act empty")
+ check(variants.size() == 2, "Both blue and gold visits can be drawn")
+ check(visitor.choose_perch(document, {"terrain": [], "objects": []}, offset, rng).is_empty(), "Empty terrain has no invented perch")
+ if chosen.is_empty():
+  visitor.free()
+  return
+ # Reuse a successful set of rolls to distinguish blocked sites from the no-visit roll.
+ rng.state = placement_state
+ var blocked := runtime.duplicate()
+ blocked.floor_outline = PackedVector2Array([Vector2.ZERO, Vector2.RIGHT, Vector2.DOWN])
+ check(visitor.choose_perch(document, blocked, offset, rng).is_empty(), "Banks facing off the playable deck are skipped")
+ document.decor_slots.assign([{"position": Vector2(5, 5) * cell, "slot_type": "landmark", "scale": 8.0}])
+ rng.state = placement_state
+ check(visitor.choose_perch(document, runtime, offset, rng).is_empty(), "A landmark occupying the whole bank leaves no perch")
+ document.decor_slots.clear()
+ var bumper := ActGameplayObjects.make_placement("round_bumper")
+ bumper.position = Vector2(5, 5) * cell + offset
+ bumper.properties.scale = 30.0
+ blocked = runtime.duplicate()
+ blocked.objects = [bumper]
+ rng.state = placement_state
+ check(visitor.choose_perch(document, blocked, offset, rng).is_empty(), "Large hardware excludes its full footprint")
+ p.ball = PlaygroundBall.new()
+ p.add_child(visitor)
+ chosen.gold = false
+ visitor.enter(p, chosen, cell)
+ check(visitor.visible and visitor.find_children("*", "CollisionObject3D", true, false).is_empty(), "Visitor is visible and collisionless")
+ p.ball.position = chosen.perch + Vector2.RIGHT * cell * 0.8
+ p.ball.linear_velocity = Vector2.LEFT * cell
+ p.ball.serve_pending = true
+ visitor._process(0.1)
+ check(not chosen.departed, "Parked ball cannot startle a Flicky")
+ p.ball.serve_pending = false
+ p.ball.freeze = false
+ visitor._process(0.15)
+ check(chosen.departed and visitor.heading.x < 0 and visitor.position.y > p.RAIL_HEIGHT + p.RAIL_CAP_HEIGHT, "Approaching ball sends the Flicky up and away")
+ var wing: float = visitor.blue_bird.wings[0].rotation.z
+ visitor._process(0.07)
+ check(not is_equal_approx(wing, visitor.blue_bird.wings[0].rotation.z), "Blue visitor flaps during takeoff")
+ visitor._process(1.5)
+ visitor.enter(p, chosen, cell)
+ check(not visitor.visible and not visitor.is_processing(), "Completed visit stays empty on re-entry")
+ var fresh := chosen.duplicate()
+ fresh.departed = false
+ fresh.gold = true
+ visitor.checked_gold = true # Exercise a portable build without the optional local rig.
+ visitor.enter(p, fresh, cell)
+ check(visitor.visible and visitor.bird == visitor.blue_bird, "A gold roll uses the blue bird when local art is absent")
+ visitor.checked_gold = false
+ visitor.enter(p, fresh, cell)
+ check(visitor.visible and visitor.bird.visible, "A new Act can host a gold visit or its portable blue alternative")
+ visitor.enter(p, {}, cell)
+ check(not visitor.visible and not visitor.is_processing(), "Switching to an empty Act clears the previous visitor")
+ visitor.free()
+ p.ball.free()
+ p.ball = null
 
 func capture(p: Node3D, birds: Array[Node3D]) -> void:
  root.size = Vector2i(800, 740)

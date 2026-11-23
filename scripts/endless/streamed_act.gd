@@ -70,6 +70,7 @@ func initialize(owner_game: Node, entry: Dictionary, library: Node) -> void:
  mechanics.banks = document.switch_banks.duplicate(true)
  root.add_child(mechanics)
  runtime = {"root": root, "mechanics": mechanics, "terrain": [], "objects": [], "flippers": [], "launch_tubes": [], "spawn": spawn(), "cell_size": document.cell_size}
+ runtime.floor_outline = recipe.floor_outline
  mechanics.exit_obstacles = runtime.objects
  mechanics.cell_size = document.cell_size
  ring_data.assign(RingField.document_records(document, "act:%d" % plan.sequence, plan.offset))

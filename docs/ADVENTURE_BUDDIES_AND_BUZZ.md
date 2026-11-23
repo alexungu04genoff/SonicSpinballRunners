@@ -77,6 +77,10 @@ python tools/extract_runners_character.py eggpawn
 
 Godot binds one rig to each live enemy when opening an Act or attaching a baked Act. Portable builds without the local models use procedural versions of the three enemies.
 
+## Flicky visitors
+
+The blue Palm Island Flicky can visit any Act automatically. To enable occasional gold visitors, run `python tools/extract_runners_character.py flicky` against the same local Runners checkout. This exports the three rigid mesh parts of `ani_flicky` and its original `ani_cmn_idle_loop`. The generated model stays local.
+
 ## Authoring and fixture
 
 Choose **Gameplay → Enemy**. Click for the default ±60 px patrol, or **Ctrl+Shift-drag** to place and extend a horizontal route from the anchor. Ctrl+Shift-drag an existing enemy or its selected patrol line to resize either side, even while the Enemy placement brush is active. The patrol modifier may also be pressed after beginning a drag. Existing enemies take priority over stamping a new one; the anchor remains fixed. Selected endpoint handles also work without Shift. Alt enables precise unsnapped coordinates. The inspector exposes scale, speed and starting direction; **Stationary** collapses the route to zero. No numeric-distance guessing or spline authoring is required. Each gesture is one Undo/Redo action. Move/duplicate/Save/Load retain the same authored-data conventions, with a new ID on duplication.
