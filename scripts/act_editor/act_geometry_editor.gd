@@ -385,7 +385,7 @@ func _build_ui() -> void:
 	ring_hint.add_theme_font_size_override("font_size", 12)
 	rings_list.add_child(ring_hint)
 	var object_hint := Label.new()
-	object_hint.text = "Snap to grid intersections.\nHold Alt for exact placement.\n\nCyan: bumpers / sling\nYellow: flippers / ring trails\nCrosshair: anchor / pivot"
+	object_hint.text = "Hold Ctrl for cell centers.\nHold Alt for exact placement.\n\nCyan: bumpers / sling\nYellow: flippers / ring trails\nCrosshair: anchor / pivot"
 	object_hint.add_theme_color_override("font_color", Color("9cb3c6"))
 	object_hint.add_theme_font_size_override("font_size", 13)
 	gameplay_list.add_child(object_hint)
@@ -512,7 +512,7 @@ func _build_ui() -> void:
 	terrain_snap_field.add_item("Step: 1 cell")
 	terrain_snap_field.add_item("Step: ½ cell")
 	terrain_snap_field.add_item("Step: ¼ cell")
-	terrain_snap_field.tooltip_text = "Shared grid step for all objects. S cycles Free / Relative Grid / Absolute Grid."
+	terrain_snap_field.tooltip_text = "Shared grid step for all objects. Hold Ctrl while placing to center in a grid square. S cycles snap modes."
 	terrain_snap_field.item_selected.connect(func(index):
 		canvas.terrain_snap_step = [1.0, 0.5, 0.25][index]
 		canvas.queue_redraw()
@@ -1071,7 +1071,7 @@ func choose_shape(id: String) -> void:
 	canvas.grab_focus()
 	canvas.set_brush({"shape_id": id, "base_size": definition.size, "anchor": Vector2i.ZERO,
 		"quarter_turns": 0, "flip_h": false, "flip_v": false, "terrain_scale": Shapes.DEFAULT_SCALE})
-	_set_status("Click the grid to place %s. Keep clicking to repeat; Esc returns to selection." % definition.label)
+	_set_status("Click to place %s. Hold Ctrl to center it in a grid square. Esc selects." % definition.label)
 	_refresh()
 
 func _change_palette_tab(index: int) -> void:
@@ -3342,7 +3342,7 @@ func show_shortcuts() -> void:
 	if shortcuts_dialog == null:
 		shortcuts_dialog = AcceptDialog.new()
 		shortcuts_dialog.title = "Act Editor Shortcuts"
-		shortcuts_dialog.dialog_text = "Ctrl+A  Select matching unlocked objects and groups; reveal all layers\nS  Cycle Free / Relative Grid / Absolute Grid; Alt always frees movement\nShift  Temporarily snap in Free mode; groups keep relative spacing\nArrows  Nudge 1 px in Free mode, otherwise one grid step\n\n[ / ] or Shift+Wheel  Shrink / grow; Shift+[ / ]  Half / double\nR / Shift+R  Rotate; Alt+R / Alt+Shift+R  Rotate ±1°\nT  Toggle transform handles; corners scale, round handle rotates\nShift+handle  Steps of 10% / 15°; C  Set pivot at cursor\nTransform tab  Center / Active / Cursor pivot and Align / Distribute\n\nCtrl+C / Ctrl+X / Ctrl+V  Copy / Cut / Paste\nCtrl+Shift+V  Paste at cursor; Ctrl+Alt+V  Paste in place\nCtrl+D  Duplicate; Ctrl+Shift+D  Repeat duplication offset\nX / Y during drag  Toggle an axis lock; H / V  Mirror selection\nCtrl+M  Exact transforms and duplicate grids; Ctrl+K  Checkpoint\nWorkspace tab  Object list, selection filters, recovery copies\nCtrl+G / Ctrl+Shift+G  Group / Ungroup\nCtrl+L / Ctrl+Shift+L  Lock selection / Unlock all\nCtrl+E  Save selection to the local assembly Library\nU  Unsmooth: restore saved source pieces (new Merge / Smooth edits)\nCtrl+Z / Ctrl+Shift+Z  Undo / Redo\n\n1 Terrain · 2 Hardware · 3 Decor · 4 Rings · 5 Markers\nCtrl+1…5  Solo layer; repeat to restore; 0  Show all\nB  Grid boundary; drag handles or arrows ±1 cell (Shift: ±5)\nF  Frame selection; Shift+F  Fit grid; P  Launch previews\nCtrl+Shift+drag enemy or moving bumper  Edit patrol; endpoint handles also work\nEsc / Right-click  Cancel gesture or tool; Alt-click cycles overlaps\n\nEntry/Exit stay on borders; Activation stays horizontal.\nGroups snap one shared anchor. Markers are never copied.\nTransforms preserve valid physical dimensions and never delete clipped content."
+		shortcuts_dialog.dialog_text = "Ctrl while placing  Center in the grid square under the pointer\nCtrl+A  Select matching unlocked objects and groups; reveal all layers\nS  Cycle Free / Relative Grid / Absolute Grid; Alt always frees movement\nShift  Temporarily snap in Free mode; groups keep relative spacing\nArrows  Nudge 1 px in Free mode, otherwise one grid step\n\n[ / ] or Shift+Wheel  Shrink / grow; Shift+[ / ]  Half / double\nR / Shift+R  Rotate; Alt+R / Alt+Shift+R  Rotate ±1°\nT  Toggle transform handles; corners scale, round handle rotates\nShift+handle  Steps of 10% / 15°; C  Set pivot at cursor\nTransform tab  Center / Active / Cursor pivot and Align / Distribute\n\nCtrl+C / Ctrl+X / Ctrl+V  Copy / Cut / Paste\nCtrl+Shift+V  Paste at cursor; Ctrl+Alt+V  Paste in place\nCtrl+D  Duplicate; Ctrl+Shift+D  Repeat duplication offset\nX / Y during drag  Toggle an axis lock; H / V  Mirror selection\nCtrl+M  Exact transforms and duplicate grids; Ctrl+K  Checkpoint\nWorkspace tab  Object list, selection filters, recovery copies\nCtrl+G / Ctrl+Shift+G  Group / Ungroup\nCtrl+L / Ctrl+Shift+L  Lock selection / Unlock all\nCtrl+E  Save selection to the local assembly Library\nU  Unsmooth: restore saved source pieces (new Merge / Smooth edits)\nCtrl+Z / Ctrl+Shift+Z  Undo / Redo\n\n1 Terrain · 2 Hardware · 3 Decor · 4 Rings · 5 Markers\nCtrl+1…5  Solo layer; repeat to restore; 0  Show all\nB  Grid boundary; drag handles or arrows ±1 cell (Shift: ±5)\nF  Frame selection; Shift+F  Fit grid; P  Launch previews\nCtrl+Shift+drag enemy or moving bumper  Edit patrol; endpoint handles also work\nEsc / Right-click  Cancel gesture or tool; Alt-click cycles overlaps\n\nEntry/Exit stay on borders; Activation stays horizontal.\nGroups snap one shared anchor. Markers are never copied.\nTransforms preserve valid physical dimensions and never delete clipped content."
 		add_child(shortcuts_dialog)
 	shortcuts_dialog.popup_centered(Vector2i(800, 690))
 

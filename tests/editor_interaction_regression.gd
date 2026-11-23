@@ -3,19 +3,21 @@ const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 const Decor = preload("res://scripts/act_editor/decor_slots.gd")
 const Preview = preload("res://scripts/act_editor/launch_preview.gd")
 
-func mouse(at: Vector2, pressed: bool, alt := false, shift := false, button := MOUSE_BUTTON_LEFT) -> void:
+func mouse(at: Vector2, pressed: bool, alt := false, shift := false, button := MOUSE_BUTTON_LEFT, ctrl := false) -> void:
  var event := InputEventMouseButton.new()
  event.position = editor.canvas.local_pixels_to_screen(at)
  event.button_index = button
  event.pressed = pressed
  event.alt_pressed = alt
  event.shift_pressed = shift
+ event.ctrl_pressed = ctrl
  editor.canvas._gui_input(event)
 
-func motion(at: Vector2, alt := false) -> void:
+func motion(at: Vector2, alt := false, ctrl := false) -> void:
  var event := InputEventMouseMotion.new()
  event.position = editor.canvas.local_pixels_to_screen(at)
  event.alt_pressed = alt
+ event.ctrl_pressed = ctrl
  event.button_mask = MOUSE_BUTTON_MASK_LEFT
  editor.canvas._gui_input(event)
 
@@ -87,6 +89,7 @@ func run() -> void:
   check(editor.document.gameplay_objects[0].position.distance_to(destination) < 0.001, type + ": late Alt frees drag and release preserves position")
   check(editor.document.validation_errors().is_empty(), type + ": edited record validates")
  check_size_buttons_and_palette()
+ check_cell_center_placement()
  await check_handles()
  await check_clipboard()
  check_guides()
@@ -147,6 +150,65 @@ func check_size_buttons_and_palette() -> void:
  editor.document.goal_diameter_cells = 1.275
  editor.buttons.size_up.pressed.emit()
  check(is_equal_approx(editor.document.goal_diameter_cells, 1.775), "Goal button steps preserve an exact loaded diameter")
+ editor.new_document()
+
+func check_cell_center_placement() -> void:
+ editor.new_document()
+ var canvas = editor.canvas
+ var old_mode: int = canvas.snap_mode
+ var old_step: float = canvas.terrain_snap_step
+ var cell := float(editor.document.cell_size)
+ var cursor := Vector2(3.2, 4.8) * cell
+ var center := Vector2(3.5, 4.5) * cell
+ canvas.terrain_snap_step = 1.0
+ editor.choose_gameplay("round_bumper")
+ for mode in [canvas.Snap.Mode.FREE, canvas.Snap.Mode.RELATIVE, canvas.Snap.Mode.ABSOLUTE]:
+  canvas.snap_mode = mode
+  motion(cursor, false, true)
+  var preview: Vector2 = canvas.placement_position(cursor, false)
+  mouse(cursor, true, false, false, MOUSE_BUTTON_LEFT, true)
+  check(preview == center and editor.document.gameplay_objects.back().position == preview, "Ctrl-click matches the centered bumper preview in " + canvas.Snap.LABELS[mode])
+ mouse(cursor, true)
+ check(editor.document.gameplay_objects.back().position == Vector2(3, 5) * cell, "Releasing Ctrl restores grid intersection placement")
+ mouse(cursor, true, true, false, MOUSE_BUTTON_LEFT, true)
+ check(Vector2(editor.document.gameplay_objects.back().position).is_equal_approx(cursor), "Alt retains precise placement when Ctrl is held")
+ for step: float in [0.5, 0.25]:
+  canvas.terrain_snap_step = step
+  motion(cursor, false, true)
+  canvas._drop_data(canvas.local_pixels_to_screen(cursor), {"gameplay_stamp": canvas.gameplay_brush})
+  var expected := Vector2(3.25, 4.75) if step == 0.5 else Vector2(3.125, 4.875)
+  check(editor.document.gameplay_objects.back().position == expected * cell, "Ctrl palette drop uses the center of the %s-cell subdivision" % step)
+ canvas.terrain_snap_step = 1.0
+ editor.choose_shape("rectangle_1x2")
+ var stamp: Dictionary = canvas.brush.duplicate(true)
+ stamp.quarter_turns = 1
+ canvas.set_brush(stamp)
+ mouse(cursor, true, false, false, MOUSE_BUTTON_LEFT, true)
+ var terrain: Dictionary = editor.document.placements.back()
+ check(Shapes.placement_position(terrain) + Shapes.scaled_size(terrain) * 0.5 == center / cell, "Ctrl centers a rotated half-size terrain footprint")
+ stamp.terrain_scale = 2.0
+ canvas._drop_data(canvas.grid_to_screen(Vector2(0.05, 0.05)), {"terrain_stamp": stamp})
+ check(Shapes.placement_position(editor.document.placements.back()) == Vector2.ZERO and editor.document.validation_errors().is_empty(), "Ctrl terrain drop keeps a large footprint inside the first cell's Act border")
+ editor.choose_decor("small")
+ mouse(cursor, true, false, false, MOUSE_BUTTON_LEFT, true)
+ check(editor.document.decor_slots.back().position == center, "Ctrl centers a decor slot")
+ editor.choose_marker("goal")
+ mouse(cursor, true, false, false, MOUSE_BUTTON_LEFT, true)
+ check(editor.document.goal_center() == center, "Ctrl centers the goal ring")
+ editor.choose_rings()
+ var end := Vector2(7.9, 4.1) * cell
+ mouse(cursor, true, false, false, MOUSE_BUTTON_LEFT, true)
+ motion(end, false, true)
+ mouse(end, false, false, false, MOUSE_BUTTON_LEFT, true)
+ var trail: Dictionary = editor.document.ring_trails.back()
+ check(trail.start == center and trail.end == Vector2(7.5, 4.5) * cell, "Ctrl drag places both ring trail endpoints at cell centers")
+ editor.undo()
+ check(editor.document.ring_trails.is_empty(), "A centered ring trail undoes as one edit")
+ editor._select_mode()
+ mouse(Vector2(0.5, 0.5) * cell, true, false, false, MOUSE_BUTTON_LEFT, true)
+ check(canvas.selected_indices == [1], "Ctrl-click in Select / Move still toggles the terrain selection")
+ canvas.snap_mode = old_mode
+ canvas.terrain_snap_step = old_step
  editor.new_document()
 
 func check_handles() -> void:

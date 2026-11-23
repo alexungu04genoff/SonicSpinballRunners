@@ -42,6 +42,7 @@ var selection_filter := "all"
 var box_selection_mode := 0 # Touch, enclosed, directional.
 var drag_axis := ""
 var _shift_held := false
+var _ctrl_held := false
 var active_target: Dictionary = {}
 var pivot_mode := 0 # Center, active item, fixed cursor position.
 var cursor_pivot := Vector2.ZERO
@@ -468,9 +469,6 @@ func select_decor(index: int) -> void:
  selected_decor_index = index if index >= 0 and index < document.decor_slots.size() else -1
  queue_redraw()
 
-func decor_position(point: Vector2, alt: bool) -> Vector2:
- return legal_gameplay_position(point, alt)
-
 func _decor_radius(slot: Dictionary) -> float:
  return maxf(5.0, Decor.RADII[Decor.TYPES.find(slot.slot_type)] * _cell_pixels * float(slot.get("scale", 1.0)))
 
@@ -484,7 +482,7 @@ func _draw_decor() -> void:
   _draw_decor_slot(slot, selected_decor_indices.has(index), false)
  if not decor_brush.is_empty() and _hovering and _inside_grid(_cursor_position):
   var slot := decor_brush.duplicate(true)
-  slot.position = decor_position(screen_to_local_pixels(_cursor_position), _alt_held)
+  slot.position = placement_position(screen_to_local_pixels(_cursor_position), _alt_held)
   _draw_decor_slot(slot, false, true)
 
 func _draw_decor_slot(slot: Dictionary, selected: bool, ghost: bool) -> void:
@@ -595,6 +593,11 @@ func effective_snap_mode(free_move: bool = false) -> int:
 
 func legal_gameplay_position(position: Vector2, free_move: bool, origin: Variant = null) -> Vector2:
  return Snap.position(position, origin, effective_snap_mode(free_move), _local_cell_size() * terrain_snap_step)
+
+func placement_position(point: Vector2, free_move: bool, origin: Variant = null) -> Vector2:
+ if _ctrl_held and not free_move:
+  return Snap.cell_center(point, _local_cell_size() * terrain_snap_step)
+ return legal_gameplay_position(point, free_move, origin)
 
 func nudge_distance(free_move: bool) -> float:
  return 1.0 if effective_snap_mode(free_move) == Snap.Mode.FREE else _local_cell_size() * terrain_snap_step
@@ -768,7 +771,11 @@ func connector_handle_at(kind: String, local_position: Vector2) -> String:
 
 
 func legal_anchor_for(placement: Dictionary, grid_position: Vector2, free_move: bool = false, origin: Variant = null) -> Vector2:
- var limit := (Vector2(_grid_size()) - Shapes.scaled_size(placement)).max(Vector2.ZERO)
+ var footprint := Shapes.scaled_size(placement)
+ var limit := (Vector2(_grid_size()) - footprint).max(Vector2.ZERO)
+ # Stamps store the top-left corner of their transformed footprint.
+ if origin == null and _ctrl_held and not free_move:
+  return (Snap.cell_center(grid_position, terrain_snap_step) - footprint * 0.5).clamp(Vector2.ZERO, limit)
  var point := Snap.position(grid_position, origin, effective_snap_mode(free_move), terrain_snap_step)
  return point.clamp(Vector2.ZERO, limit)
 
@@ -906,7 +913,7 @@ func _draw_rings() -> void:
  if _ring_mode == "create":
   _draw_ring_trail(_ring_preview, true, true)
  elif ring_tool and _hovering and _inside_grid(_cursor_position):
-  var point := legal_gameplay_position(screen_to_local_pixels(_cursor_position), _alt_held)
+  var point := placement_position(screen_to_local_pixels(_cursor_position), _alt_held)
   var pattern := {"start": point, "end": point, "spacing": ring_spacing_cells * _local_cell_size()}
   if ring_kind == "ellipse": pattern.merge({"kind": "ellipse", "end": point + ring_radii * 2.0, "fill": ring_fill, "rotation_degrees": ring_rotation}, true)
   _draw_ring_trail(pattern, false, true)
@@ -938,7 +945,7 @@ func _begin_ring_drag(index: int, pointer: Vector2, mode: String) -> void:
  _ring_last_pointer = pointer
  _ring_moved = false
  if mode == "create":
-  var point := legal_gameplay_position(_ring_start_pointer, _alt_held)
+  var point := placement_position(_ring_start_pointer, _alt_held)
   _ring_original = {"start": point, "end": point, "spacing": ring_spacing_cells * _local_cell_size()}
   if ring_kind == "ellipse":
    _ring_original.merge({"kind": "ellipse", "end": point + ring_radii * 2.0, "fill": ring_fill, "rotation_degrees": ring_rotation}, true)
@@ -963,7 +970,7 @@ func _update_ring_drag(pointer: Vector2, free_move: bool, force: bool = false) -
   _ring_preview.start += offset
   _ring_preview.end += offset
  elif _ring_mode == "create":
-  _ring_preview.end = legal_gameplay_position(screen_to_local_pixels(pointer), free_move, _ring_original.start)
+  _ring_preview.end = placement_position(screen_to_local_pixels(pointer), free_move, _ring_original.start)
  else:
   _ring_preview[_ring_mode] = movement_position(_ring_original[_ring_mode] + delta, _ring_original[_ring_mode], free_move)
  _set_status("%d rings · Release for one edit · Alt frees endpoints · Esc cancels" % Rings.positions(_ring_preview).size())
@@ -1101,7 +1108,7 @@ func _draw_gameplay_objects() -> void:
   ObjectPreview.draw_object(self, _patrol_preview, local_pixels_to_screen(_patrol_preview.position), scale_factor, _local_cell_size(), true, true)
  var active_brush := _drop_gameplay_brush if not _drop_gameplay_brush.is_empty() else gameplay_brush
  if not _bank_dragging and not _patrol_dragging and _rail_draft.is_empty() and (_hovering or not _drop_gameplay_brush.is_empty()) and _inside_grid(_cursor_position) and _valid_gameplay_stamp(active_brush):
-  var point := legal_gameplay_position(screen_to_local_pixels(_cursor_position), _alt_held)
+  var point := placement_position(screen_to_local_pixels(_cursor_position), _alt_held)
   ObjectPreview.draw_object(self, active_brush, local_pixels_to_screen(point), scale_factor, _local_cell_size(), false, true)
   var shown := active_brush.duplicate(true)
   shown.position = point
@@ -1281,9 +1288,20 @@ func _input(event: InputEvent) -> void:
   _alt_held = event.pressed
  elif event is InputEventKey and event.keycode == KEY_SHIFT:
   _shift_held = event.pressed
+ elif event is InputEventKey and event.keycode == KEY_CTRL:
+  _ctrl_held = event.pressed
+  if _hovering and document != null and not preview_active:
+   if _bank_dragging:
+    if _ctrl_held:
+     _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, placement_position(screen_to_local_pixels(_cursor_position), _alt_held, _bank_start))
+   elif _ring_mode == "create":
+    if _ctrl_held and _ring_moved: _update_ring_drag(_cursor_position, _alt_held, true)
+   elif not marker_tool.is_empty() or not gameplay_brush.is_empty() or not brush.is_empty():
+    _update_placement_status()
  elif event is InputEventMouse:
   _alt_held = event.alt_pressed
   _shift_held = event.shift_pressed
+  _ctrl_held = event.ctrl_pressed
  else:
   return
  queue_redraw()
@@ -1292,6 +1310,8 @@ func _input(event: InputEvent) -> void:
 func _gui_input(event: InputEvent) -> void:
  if event is InputEventMouse or event is InputEventKey:
   _shift_held = event.shift_pressed
+ if event is InputEventMouse:
+  _ctrl_held = event.ctrl_pressed
  if _axis_input(event):
   accept_event()
   return
@@ -1346,7 +1366,7 @@ func _gui_input(event: InputEvent) -> void:
   elif _gameplay_drag_index >= 0:
    _set_gameplay_status(_gameplay_drag_position)
   elif not gameplay_brush.is_empty():
-   _set_gameplay_status(legal_gameplay_position(screen_to_local_pixels(_cursor_position), _alt_held))
+   _set_gameplay_status(placement_position(screen_to_local_pixels(_cursor_position), _alt_held))
   queue_redraw()
   accept_event()
  elif event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
@@ -1430,7 +1450,7 @@ func _gui_input(event: InputEvent) -> void:
    else:
     if _bank_dragging:
      if event.position.distance_squared_to(_handle_last_pointer) > POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS:
-      _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed, _bank_start))
+      _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, placement_position(screen_to_local_pixels(event.position), event.alt_pressed, _bank_start))
     elif _box_selecting:
      _box_end = event.position
     elif _group_dragging:
@@ -1460,7 +1480,7 @@ func _gui_input(event: InputEvent) -> void:
    _view_adjusted = true
   elif _bank_dragging:
    _handle_last_pointer = event.position
-   _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed, _bank_start))
+   _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, placement_position(screen_to_local_pixels(event.position), event.alt_pressed, _bank_start))
   elif _box_selecting:
    _box_end = event.position
   elif _group_dragging:
@@ -1477,21 +1497,26 @@ func _gui_input(event: InputEvent) -> void:
    _update_connector_drag(event.position)
   elif _drag_index >= 0:
    _update_drag(event.position, event.alt_pressed)
-  elif not marker_tool.is_empty():
-   _set_marker_status(marker_tool, _marker_position_value(marker_tool, screen_to_local_pixels(event.position), event.alt_pressed), _inside_grid(event.position))
-  elif not gameplay_brush.is_empty() and _inside_grid(event.position):
-   _set_gameplay_status(legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed))
   elif not connector_tool.is_empty():
    var border := "bottom" if connector_tool == "entry" else "top"
    if connector_border_at(event.position) == connector_tool:
     _set_status("%s: click or drag contiguous %s-border cells. Esc cancels." % [connector_tool.capitalize(), border])
    else:
     _set_status("%s belongs on the %s border. Click or drag there to define its span." % [connector_tool.capitalize(), border])
-  elif not brush.is_empty() and _inside_grid(event.position):
-   var anchor := legal_anchor_for(brush, screen_to_grid(event.position), event.alt_pressed)
-   _set_status("Place at %s cells. Alt: free position; right-click or Esc to select." % anchor)
+  else:
+   _update_placement_status()
   queue_redraw()
   accept_event()
+
+func _update_placement_status() -> void:
+ var inside := _inside_grid(_cursor_position)
+ if not marker_tool.is_empty():
+  _set_marker_status(marker_tool, _marker_position_value(marker_tool, screen_to_local_pixels(_cursor_position), _alt_held), inside)
+ elif inside and not gameplay_brush.is_empty():
+  _set_gameplay_status(placement_position(screen_to_local_pixels(_cursor_position), _alt_held))
+ elif inside and not brush.is_empty():
+  var anchor := legal_anchor_for(brush, screen_to_grid(_cursor_position), _alt_held)
+  _set_status("Place at %s cells. Ctrl centers in the cell. Alt places freely. Esc selects." % anchor)
 
 
 func _composite_preview_input(event: InputEvent) -> void:
@@ -1523,12 +1548,12 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
  if preview_active:
   return
  if not assembly_copy.is_empty():
-  if _inside_grid(pointer): assembly_place_requested.emit(legal_gameplay_position(screen_to_local_pixels(pointer), cycle_overlaps))
+  if _inside_grid(pointer): assembly_place_requested.emit(placement_position(screen_to_local_pixels(pointer), cycle_overlaps))
   return
  if not decor_brush.is_empty():
   if _inside_grid(pointer):
    var slot := decor_brush.duplicate(true)
-   slot.position = decor_position(screen_to_local_pixels(pointer), cycle_overlaps)
+   slot.position = placement_position(screen_to_local_pixels(pointer), cycle_overlaps)
    decor_requested.emit(-1, slot)
   return
  if ring_tool:
@@ -1552,12 +1577,12 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
   if _inside_grid(pointer):
    _bank_dragging = true
    _handle_last_pointer = pointer
-   _bank_start = legal_gameplay_position(screen_to_local_pixels(pointer), cycle_overlaps)
+   _bank_start = placement_position(screen_to_local_pixels(pointer), cycle_overlaps)
    _bank_preview = Objects.bank_from_span(gameplay_brush, _bank_start, _bank_start)
   return
  if gameplay_brush.get("type") in ["elevated_rail", "lane_barrier", "launch_tube"]:
   if _inside_grid(pointer):
-   var at := legal_gameplay_position(screen_to_local_pixels(pointer), cycle_overlaps)
+   var at := placement_position(screen_to_local_pixels(pointer), cycle_overlaps)
    if _rail_draft.is_empty():
     _rail_draft = gameplay_brush.duplicate(true)
     _rail_draft.position = at
@@ -1574,7 +1599,7 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
  if not gameplay_brush.is_empty():
   if _inside_grid(pointer) and _valid_gameplay_stamp(gameplay_brush):
    var placement := gameplay_brush.duplicate(true)
-   placement["position"] = legal_gameplay_position(screen_to_local_pixels(pointer), cycle_overlaps)
+   placement["position"] = placement_position(screen_to_local_pixels(pointer), cycle_overlaps)
    gameplay_placement_requested.emit(placement)
   return
  if not brush.is_empty():
@@ -1927,9 +1952,8 @@ func _update_drag(pointer: Vector2, free_move: bool = false, force := false) -> 
 
 
 func _marker_position_value(kind: String, position: Vector2, free_move: bool) -> Variant:
- if kind == "activation":
-  return legal_gameplay_position(position, free_move).y
- return legal_gameplay_position(position, free_move)
+ var point := placement_position(position, free_move)
+ return point.y if kind == "activation" else point
 
 
 func _request_marker(kind: String, value: Variant) -> void:
@@ -1943,7 +1967,7 @@ func _set_marker_status(kind: String, value: Variant, pointer_inside: bool = tru
  if not pointer_inside or not valid_marker_value(kind, value):
   _set_status("%s must stay inside the Act terrain bounds. The outer bottom/right edges and red gutter are outside; no edit applied." % kind.capitalize())
   return
- var mode: String = Snap.LABELS[effective_snap_mode(_alt_held)]
+ var mode: String = "Cell center" if _ctrl_held and not _alt_held and not marker_tool.is_empty() else Snap.LABELS[effective_snap_mode(_alt_held)]
  var coordinate := "Y %.2f px" % float(value) if kind == "activation" else "(%.2f, %.2f) px" % [value.x, value.y]
  _set_status("%s · %s %s · Alt frees position; Esc cancels. Activation moves vertically only." % [mode, kind.capitalize(), coordinate])
 
@@ -2025,7 +2049,7 @@ func _end_gameplay_drag() -> void:
 
 
 func _set_gameplay_status(point: Vector2) -> void:
- var mode: String = Snap.LABELS[effective_snap_mode(_alt_held)]
+ var mode: String = "Cell center" if _ctrl_held and not _alt_held and not gameplay_brush.is_empty() else Snap.LABELS[effective_snap_mode(_alt_held)]
  _set_status("%s · Anchor (%.2f, %.2f) px · Alt frees placement · Shift + wheel resizes" % [mode, point.x, point.y])
 
 
@@ -2208,7 +2232,7 @@ func _drop_data(at_position: Vector2, data: Variant) -> void:
  grab_focus()
  if data.get("gameplay_stamp") is Dictionary:
   var object: Dictionary = data["gameplay_stamp"].duplicate(true)
-  object["position"] = legal_gameplay_position(screen_to_local_pixels(at_position), _alt_held)
+  object["position"] = placement_position(screen_to_local_pixels(at_position), _alt_held)
   set_gameplay_brush(data["gameplay_stamp"])
   if object.type in ["elevated_rail", "lane_barrier", "launch_tube"]:
    _rail_draft = object
@@ -2232,6 +2256,7 @@ func _notification(what: int) -> void:
  elif what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
   _alt_held = false
   _shift_held = false
+  _ctrl_held = false
   cancel_gesture()
 
 
@@ -2450,7 +2475,7 @@ func _patrol_input(event: InputEvent) -> bool:
  _patrol_index = -1
  _patrol_preview = gameplay_brush.duplicate(true)
  _patrol_preview.object_id = Objects.new_id()
- _patrol_preview.position = legal_gameplay_position(screen_to_local_pixels(event.position), event.alt_pressed)
+ _patrol_preview.position = placement_position(screen_to_local_pixels(event.position), event.alt_pressed)
  _patrol_preview.properties = Objects.properties(_patrol_preview)
  _patrol_preview.properties.patrol_left = 0.0
  _patrol_preview.properties.patrol_right = 0.0
@@ -2690,7 +2715,7 @@ func _update_gizmo(pointer: Vector2, shift: bool) -> void:
 
 func _draw_assembly_ghost() -> void:
  if assembly_copy.is_empty() or not _hovering or not _inside_grid(_cursor_position): return
- var target := legal_gameplay_position(screen_to_local_pixels(_cursor_position), _alt_held)
+ var target := placement_position(screen_to_local_pixels(_cursor_position), _alt_held)
  var adjusted := Clipboard.placement_offset(document, assembly_copy, target - assembly_center)
  if not adjusted.error.is_empty(): return
  var offset: Vector2 = adjusted.offset
