@@ -2500,6 +2500,16 @@ func _begin_patrol_edit(index: int, side: String) -> void:
  _set_status("Resize patrol: drag left or right. Anchor stays fixed. Alt frees snapping; Esc cancels.")
  queue_redraw()
 
+static func tube_guide_segments(path: PackedVector2Array) -> PackedVector2Array:
+ # A weak launch retraces its path; an exiting launch shares a point with its arc.
+ # Draw independent nonzero segments so neither case produces a degenerate line join.
+ var segments := PackedVector2Array()
+ for i in range(1, path.size()):
+  if path[i] != path[i - 1]:
+   segments.append(path[i - 1])
+   segments.append(path[i])
+ return segments
+
 func _draw_launch_range(item: Dictionary) -> void:
  if not show_launch_previews or _gizmo_dragging: return
  var is_flipper: bool = item.type in ["left_flipper", "right_flipper"]
@@ -2532,9 +2542,17 @@ func _draw_launch_range(item: Dictionary) -> void:
   if approach.size() > 1:
    for j in approach.size(): approach[j] = local_pixels_to_screen(approach[j] + Vector2(item.position))
    draw_polyline(approach, Color(0.44, 0.9, 0.84, 0.3), 1.0, true)
-  draw_polyline(points, Color(0.02, 0.05, 0.09, 0.55), width + 2.0, true)
-  draw_polyline(points, color, width, true)
+  var outline := Color(0.02, 0.05, 0.09, 0.55)
+  if item.type == "launch_tube":
+   var segments := tube_guide_segments(points)
+   if not segments.is_empty():
+    draw_multiline(segments, outline, width + 2.0, true)
+    draw_multiline(segments, color, width, true)
+  else:
+   draw_polyline(points, outline, width + 2.0, true)
+   draw_polyline(points, color, width, true)
   for j in range(10, points.size(), 20):
+   if points[j] == points[j - 1]: continue
    var back := (points[j - 1] - points[j]).normalized() * 6.0
    draw_line(points[j], points[j] + back.rotated(0.5), color, 1.5, true)
    draw_line(points[j], points[j] + back.rotated(-0.5), color, 1.5, true)

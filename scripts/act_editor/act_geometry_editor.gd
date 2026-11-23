@@ -2721,7 +2721,7 @@ func _refresh_mechanics_properties() -> void:
 		detail_label.text = "Click posts (2–12); Enter commits; Esc / right-click cancels. Edit posts: drag, click appends, Shift-click inserts, right-click removes. Alt frees coordinates." if item.type == "lane_barrier" else "Click entry and path points; Enter finishes. Edit path: drag points, click appends, Shift-click inserts, right-click removes. Alt frees placement."
 	if item.type == "launch_tube":
 		_mechanic_choice("Presentation", "presentation", ["exposed", "tunnel"], properties.presentation)
-		detail_label.text = "Dock is the first path point. The tube nearest Spawn owns this Act's launch/retry. Edit path: drag points, Shift-click inserts, right-click removes. The lane cuts through terrain at table height. Hold Launch, release to fire; weak shots return. Keep the exit and its forward approach clear."
+		detail_label.text = "Click the dock, then one or more path points. Hold Ctrl for cell centers. Press Enter to finish. The tube nearest Spawn handles launch and retry. Drag points to edit, Shift-click to insert, or right-click to remove. The lane cuts through terrain at table height. Keep its exit clear. Hold Launch and release to fire. Weak shots return."
 
 func _mechanic_number(label_text: String, value: float, action: Callable) -> void:
 	var label := Label.new()

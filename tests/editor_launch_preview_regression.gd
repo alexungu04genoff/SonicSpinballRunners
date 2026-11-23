@@ -66,6 +66,15 @@ func run() -> void:
  var path := Preview.trajectory(shots[0])
  check(path[0].is_equal_approx(shots[0].origin) and is_equal_approx(path[-1].y, path[0].y), "Ballistic flight returns to launch height")
  var tube_shots := Preview.shots(Objects.make_placement("launch_tube"), 50.0)
+ var canvas_script := preload("res://scripts/act_editor/geometry_canvas.gd")
+ var reversal := PackedVector2Array([Vector2.ZERO, Vector2.UP, Vector2.UP, Vector2.ZERO])
+ check(canvas_script.tube_guide_segments(reversal) == PackedVector2Array([Vector2.ZERO, Vector2.UP, Vector2.UP, Vector2.ZERO]), "Tube turnarounds produce two separate strokes with no zero-length segment")
+ var exit_path := Preview.trajectory(tube_shots[2])
+ var exit_segments := canvas_script.tube_guide_segments(exit_path)
+ var valid_exit := not exit_segments.is_empty() and exit_segments.size() % 2 == 0
+ for i in range(0, exit_segments.size() - 1, 2):
+  valid_exit = valid_exit and exit_segments[i] != exit_segments[i + 1]
+ check(valid_exit and exit_segments[0] == exit_path[0] and exit_segments[-1] == exit_path[-1], "The tube exit and flight arc retain both endpoints and contain only nonzero strokes")
  check(tube_shots[0].has("path") and tube_shots[1].has("velocity") and tube_shots[2].has("velocity"), "Default tube guide shows weak rollback and two successful exits")
  check(tube_shots[2].velocity.length() < 410.0 and tube_shots[2].velocity.length() > tube_shots[1].velocity.length(), "The full-charge guide includes tube resistance")
  var scene: Control = load("res://scenes/act_geometry_editor.tscn").instantiate()

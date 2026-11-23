@@ -122,6 +122,35 @@ func authoring() -> void:
  editor.redo()
  check(points(editor.document.gameplay_objects[0])[1].is_equal_approx(finish), "Redo restores the path edit")
  check(editor.document.placements == terrain, "Path gestures never cut or modify terrain")
+ editor.new_document()
+ editor.canvas.snap_mode = editor.canvas.Snap.Mode.RELATIVE
+ editor.canvas.terrain_snap_step = 0.5
+ editor.canvas.show_launch_previews = true
+ editor.choose_gameplay("launch_tube")
+ for cell: Vector2 in [Vector2(4.6, 8.1), Vector2(4.7, 8.2), Vector2(4.6, 4.1)]:
+  var point: Vector2 = editor.canvas.get_global_transform() * editor.canvas.grid_to_screen(cell)
+  var hover := InputEventMouseMotion.new()
+  hover.position = point
+  hover.ctrl_pressed = true
+  root.push_input(hover, true)
+  for pressed: bool in [true, false]:
+   var click := InputEventMouseButton.new()
+   click.position = point
+   click.button_index = MOUSE_BUTTON_LEFT
+   click.ctrl_pressed = true
+   click.pressed = pressed
+   root.push_input(click, true)
+   await process_frame
+ var enter := InputEventKey.new()
+ enter.keycode = KEY_ENTER
+ enter.pressed = true
+ root.push_input(enter, true)
+ await process_frame
+ check(editor.document.gameplay_objects.size() == 1, "Ctrl placement commits one launch tube with guides enabled")
+ if editor.document.gameplay_objects.size() == 1:
+  var actual := points(editor.document.gameplay_objects[0])
+  var unit := float(editor.document.cell_size)
+  check(actual == PackedVector2Array([Vector2(4.75, 8.25) * unit, Vector2(4.75, 4.25) * unit]), "Repeated clicks in one half-cell keep a single centered dock and the centered exit")
  editor.free()
 
 func terrain_checks() -> void:

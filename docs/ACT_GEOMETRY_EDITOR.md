@@ -120,10 +120,10 @@ This standalone scene edits **one Act**, initially **12 columns × 12 rows**, wi
 Double-click **Act Geometry Editor.cmd**, or open `scenes/act_geometry_editor.tscn` in Godot and press **F6**. F5 opens Prototype; editor Play launches the current Act through Prototype.
 
 ```powershell
-& 'C:\Program Files\Godot\Godot.exe' --path 'E:\Sonic Spinball Runners' res://scenes/act_geometry_editor.tscn
+& 'C:\Program Files\Godot\Godot.exe' --path 'E:\Sonic Spinball Runners' --rendering-method forward_plus --rendering-driver d3d12 res://scenes/act_geometry_editor.tscn
 ```
 
-The Windows launcher uses Forward+/Vulkan. For another Godot installation, run `scripts/act_editor/launch.ps1 -GodotPath 'D:\Tools\Godot.exe'`.
+The Windows launcher opens the authoring canvas with Forward+ on Direct3D 12. **Play Act** opens the game with Forward+ on Vulkan. Pass `-RenderingDriver vulkan` to the editor launcher for a Vulkan session. To select another Godot installation, pass `-GodotPath 'D:\Tools\Godot.exe'`.
 
 ## Build an Act
 
