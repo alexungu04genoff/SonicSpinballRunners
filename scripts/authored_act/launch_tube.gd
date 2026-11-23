@@ -15,7 +15,6 @@ var charge := 0.0
 var distance := 0.0
 var speed := 0.0
 var require_release := true
-var visual_time := 0.0
 var exit_flash := 0.0
 var feedback := "Hold Launch, then release"
 var _saved_layer := 2
@@ -116,7 +115,6 @@ func _exit_tree() -> void:
  detach()
 
 func _process(delta: float) -> void:
- visual_time += delta
  exit_flash = maxf(0.0, exit_flash - delta)
 
 func integrate(state: PhysicsDirectBodyState2D, delta: float) -> void:

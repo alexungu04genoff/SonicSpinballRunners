@@ -1,52 +1,60 @@
 extends RefCounted
 ## Faceted, collisionless hardware. Fixed mesh feedback; no lights or particles.
 const Path = preload("res://scripts/authored_act/rail_path.gd")
+const Hardware = preload("res://scripts/atmosphere/hardware_palette.gd")
+## Visible timber or paving at the back of the dock, inside the physical pocket.
+const DECK_REAR_WIDTHS := 0.85
 
 static func build(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dictionary:
  var path: Dictionary = Path.build(item.properties.points)
  var width: float = float(item.properties.width) * p.SCALE
  var radius := width * 0.5
  var hub_height := width * 0.12
- var grip := _collar(p, root, path, 0.0, radius * 1.15, style.trim, "DockCompression", hub_height)
  var mount := Node3D.new()
  mount.name = "Plunger"
  root.add_child(mount)
- _place(mount, path, 0.0, width * 0.23)
- var rear := width * preload("res://scripts/authored_act/launch_tube.gd").PLUNGER_BAY_WIDTHS
- var length := rear - width * 0.15
- var tray := BoxMesh.new()
- tray.size = Vector3(width * 0.88, width * 0.06, rear)
- p.mesh_node(tray, style.body, Vector3(0, -width * 0.2, -rear * 0.5), mount).name = "PlungerTray"
+ _place(mount, path, 0.0, TablePresentation.ROUTE_DECK_HEIGHT)
+ var steel := Hardware.fixed(p, "spinner_crossbar")
+ var frame := Hardware.fixed(p, "spinner_frame")
+ var gunmetal := Hardware.fixed(p, "lane_chassis")
+ var rear := width * (DECK_REAR_WIDTHS - 0.065)
+ var length := rear - width * 0.16
  var seat := Node3D.new()
  seat.name = "SpringSeat"
  mount.add_child(seat)
- seat.position.z = -rear
- var base: MeshInstance3D = p.mesh_node(p.cylinder(width * 0.22, width * 0.07), style.body, Vector3.ZERO, seat)
- base.rotation.x = PI * 0.5
+ seat.position = Vector3(0, width * 0.125, -rear)
+ var foot: MeshInstance3D = p.mesh_node(p.cylinder(width * 0.16, width * 0.066), gunmetal, Vector3.DOWN * width * 0.093, seat)
+ foot.scale.z = 0.38
+ _axial_part(p, seat, width * 0.114, width * 0.078, 0.0, frame)
+ _axial_part(p, seat, width * 0.080, width * 0.032, -width * 0.039, gunmetal)
  var coil := Node3D.new()
  coil.name = "CompressionSpring"
  seat.add_child(coil)
- var rod: MeshInstance3D = p.mesh_node(p.cylinder(width * 0.045, length), style.body, Vector3.BACK * length * 0.5, coil)
- rod.rotation.x = PI * 0.5
- var steel := preload("res://scripts/atmosphere/hardware_palette.gd").fixed(p, "spinner_crossbar")
+ _axial_part(p, coil, width * 0.032, length, length * 0.5, gunmetal)
  p.mesh_node(_coil_mesh(width, length), steel, Vector3.ZERO, coil)
  var head := Node3D.new()
  head.name = "PlungerHead"
  seat.add_child(head)
  head.position.z = length
- var pad: MeshInstance3D = p.mesh_node(p.cylinder(width * 0.22, width * 0.085), style.trim, Vector3.ZERO, head)
- pad.rotation.x = PI * 0.5
+ _axial_part(p, head, width * 0.137, width * 0.045, -width * 0.023, frame)
+ _axial_part(p, head, width * 0.145, width * 0.075, width * 0.031, gunmetal)
  var lights: Array[Node3D] = []
- for index in 8:
-  var light := Node3D.new()
-  grip.add_child(light)
-  var angle: float = index * TAU / 8.0
-  light.position = Vector3(cos(angle), sin(angle), 0) * radius * 1.12
-  var mesh := BoxMesh.new()
-  mesh.size = Vector3(width * 0.12, width * 0.12, width * 0.1)
-  p.mesh_node(mesh, style.light, Vector3.ZERO, light).name = "ChargeIndicator"
-  lights.append(light)
- _collar(p, root, path, path.length, radius * 1.13, style.trim, "ExitCollar", hub_height)
+ var strip := BoxMesh.new()
+ strip.size = Vector3(width * 0.061, width * 0.025, width * 0.61)
+ var lens := BoxMesh.new()
+ lens.size = Vector3(width * 0.044, width * 0.014, width * 0.093)
+ for side: float in [-1.0, 1.0]:
+  p.mesh_node(strip, gunmetal, Vector3(side * width * 0.34, strip.size.y * 0.5, -width * 0.38), mount)
+ for row in 4:
+  for side: float in [-1.0, 1.0]:
+   var light := Node3D.new()
+   mount.add_child(light)
+   light.position = Vector3(side * width * 0.34, strip.size.y + lens.size.y * 0.5, -width * (0.16 + row * 0.145))
+   p.mesh_node(lens, style.light, Vector3.ZERO, light).name = "ChargeIndicator"
+   lights.append(light)
+ if item.properties.presentation == "tunnel":
+  _collar(p, root, path, 0.0, radius * 1.13, style.trim, "TunnelMouth", hub_height)
+  _collar(p, root, path, path.length, radius * 1.13, style.trim, "ExitCollar", hub_height)
  var distance := 65.0
  while item.properties.presentation == "tunnel" and distance < float(path.length) - 40.0:
   _collar(p, root, path, distance, radius * 1.05, style.trim, "TubeRib", hub_height)
@@ -55,9 +63,13 @@ static func build(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dicti
  var burst := _collar(p, root, path, path.length, radius * 1.12, style.light, "ExitBurst", hub_height)
  pulse.visible = false
  burst.visible = false
- return {"kind": "launch_tube", "item": item, "root": root, "grip": grip,
+ return {"kind": "launch_tube", "item": item, "root": root,
   "coil": coil, "head": head, "spring_length": length,
   "lights": lights, "pulse": pulse, "burst": burst, "path": path, "hub_height": hub_height}
+
+static func _axial_part(p, parent: Node3D, radius: float, depth: float, z: float, material: Material) -> void:
+ var part: MeshInstance3D = p.mesh_node(p.cylinder(radius, depth), material, Vector3.BACK * z, parent)
+ part.rotation.x = PI * 0.5
 
 static func _coil_mesh(width: float, length: float) -> ArrayMesh:
  var mesh := SurfaceTool.new()
@@ -68,14 +80,15 @@ static func _coil_mesh(width: float, length: float) -> ArrayMesh:
   var fraction := float(i) / STEPS
   var angle := fraction * 3.5 * TAU
   var radial := Vector3(cos(angle), sin(angle), 0)
-  var center := radial * width * 0.14 + Vector3.BACK * length * fraction
-  var tangent := Vector3(-radial.y, radial.x, length / (width * 0.14 * 3.5 * TAU)).normalized()
+  var radius := width * 0.093
+  var center := radial * radius + Vector3.BACK * length * fraction
+  var tangent := Vector3(-radial.y, radial.x, length / (radius * 3.5 * TAU)).normalized()
   var across := radial.cross(tangent)
   for j in SIDES:
    var around := TAU * j / SIDES
    var normal := radial * cos(around) + across * sin(around)
    mesh.set_normal(normal)
-   mesh.add_vertex(center + normal * width * 0.023)
+   mesh.add_vertex(center + normal * width * 0.017)
    if i < STEPS:
     var a := i * SIDES + j
     var b := i * SIDES + (j + 1) % SIDES
@@ -109,10 +122,9 @@ static func update(entry: Dictionary) -> void:
  var spring_length: float = entry.spring_length
  entry.head.position.z = spring_length - tube.plunger_pullback() * TablePresentation.SCALE
  entry.coil.scale.z = entry.head.position.z / spring_length
- entry.grip.scale.z = 1.0 - charge * 0.3 * feedback
- entry.grip.rotation.z = float(tube.visual_time) * charge * TAU * feedback
+ var lit_count := ceili(charge * 4.0) * 2
  for index in entry.lights.size():
-  entry.lights[index].visible = feedback > 0.0 and tube.contained and index < ceili(charge * 8.0)
+  entry.lights[index].visible = feedback > 0.0 and tube.contained and index < lit_count
   entry.lights[index].scale = Vector3.ONE * lerpf(0.3, 1.0, feedback)
  entry.pulse.visible = feedback > 0.0 and tube.contained and tube.phase in [tube.Phase.OUTBOUND, tube.Phase.RETURNING]
  entry.pulse.scale = Vector3.ONE * lerpf(0.95, 1.0, feedback)

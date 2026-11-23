@@ -89,11 +89,20 @@ func _tube_lane(entry: Dictionary) -> void:
  var path: Dictionary = entry.path
  var width_pixels := float(entry.item.properties.width)
  var width := width_pixels * table.SCALE
- await _set_strip_edges(path, width_pixels)
+ # Continue the same textured strip under the plunger. Extend the sampled
+ # entrance tangent so curved lanes and the animated ball keep their original path.
+ var deck_path := path.duplicate(true)
+ var rear := width_pixels * preload("res://scripts/authored_act/launch_tube_visual.gd").DECK_REAR_WIDTHS
+ deck_path.points.insert(0, path.points[0] - RailPath.tangent(path, 0.0) * rear)
+ for i in deck_path.lengths.size(): deck_path.lengths[i] += rear
+ deck_path.lengths.insert(0, 0.0)
+ deck_path.length += rear
+ await _set_strip_edges(deck_path, width_pixels)
  var style := table.ramp_materials()
  style.deck = Hardware.ramp_material(table, style.deck, "deck")
- await _ramp_lane(entry.root, path, width, 0.0, 0.012, style)
+ await _ramp_lane(entry.root, deck_path, width, 0.0, 0.012, style)
  if entry.item.properties.presentation == "tunnel":
+  await _set_strip_edges(path, width_pixels)
   var spring_line := float(entry.hub_height) - 0.012
   for facet in 6:
    var a := PI * facet / 6.0

@@ -26,7 +26,7 @@ Only the active Act's runtime supplies a retry dock. Streamed Acts instantiate t
 
 ## Presentation and tuning
 
-The deck and edge trim use the active stage’s ramp materials. Dock and exit collars, eight charge indicators, a traversal pulse and a brief exit ring use the mechanism palette. The plunger has a fixed seat, a steel coil and a moving head. Its pullback follows the real ball during charging, and the coil extends again as the shot leaves the dock. Sonic and Tails spin up while charging and roll along the path in either direction. It adds no dynamic lights or particles, and does not change theme artwork, atmosphere defaults or Theme Life choices. Disk recipes use the existing mechanic binding/retirement infrastructure.
+The stage’s textured ramp deck and edge trim continue from the exit to the back of the plunger. A low socket anchors the steel spring, and a rubber-tipped head follows the ball as the player pulls back and releases. Four pairs of inset lamps light toward the rear as charge builds. The exposed lane stays open above the ball. The tunnel has fixed collars at its mouth and exit. A traveling pulse and a brief exit ring mark the shot. Sonic and Tails spin up while charging and roll along the path in either direction. Disk recipes bind the same moving parts as Play Act.
 
 Starting values are deliberately configurable, not final feel decisions:
 
@@ -37,7 +37,7 @@ Starting values are deliberately configurable, not final feel decisions:
 | Resistance | 55 px/s² | Outbound deceleration |
 | Return speed | 300 px/s | Rollback speed limit |
 | Width | 40 px | Deck width. The cut includes the ramp’s edge trim. |
-| Feedback strength | 1.0 | 0–1; reduces motion/effect size, with 0 disabling charge indicators, pulse, burst and collar spin. Mechanical plunger travel follows charge at every setting |
+| Feedback strength | 1.0 | Scales the charge lamps, traversal pulse and exit ring. At 0 these effects are hidden. Mechanical plunger travel follows charge at every setting. |
 
 Older saved tubes with the original 80 / 700 px/s and 100 px/s² factory tune adopt the new defaults on load. Custom speed and resistance settings persist. Playtest the medium/full speed spread and feedback in motion. Automated checks establish mechanics and persistence; they do not establish game feel.
 

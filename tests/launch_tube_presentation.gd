@@ -61,11 +61,11 @@ func run() -> void:
    check(entry.root.find_children("*", "GPUParticles3D", true, false).is_empty() and entry.root.find_children("*", "CPUParticles3D", true, false).is_empty(), "Tube adds no particle systems")
    tube.phase = tube.Phase.CHARGING
    tube.charge = 1.0
-   tube.visual_time = 0.125
    Visual.update(entry)
    check(entry.head.position.z < entry.spring_length and entry.coil.scale.z < 0.6, "Full charge retracts the plunger head and compresses its spring against the fixed seat")
-   check(entry.lights.all(func(light: Node3D): return light.visible) and is_equal_approx(entry.grip.scale.z, 0.7), "Full charge enables eight indicators and compression")
-   check(absf(entry.grip.rotation.z) > 0.1 and not entry.pulse.visible and not entry.burst.visible, "Charge spins without a premature traversal or exit effect")
+   check(entry.lights.size() == 8 and entry.lights.all(func(light: Node3D): return light.visible), "Full charge lights all eight inlaid indicators")
+   check(entry.lights[0].position.x < 0.0 and entry.lights[1].position.x > 0.0 and is_equal_approx(entry.lights[0].position.z, entry.lights[1].position.z), "Charge lights flank the dock in matched pairs")
+   check(not entry.pulse.visible and not entry.burst.visible, "The dock stays clear of traversal and exit effects during charging")
    game.presentation.camera_settings.zoom = 0.6
    game.presentation.reset_camera(Vector2(270, 330))
    game._process(0.0)
@@ -77,7 +77,7 @@ func run() -> void:
    check(entry.pulse.visible and not entry.burst.visible, "Contained traversal has one bounded pulse")
    entry.item.properties.feedback_strength = 0.0
    Visual.update(entry)
-   check(not entry.pulse.visible and not entry.burst.visible and entry.lights.all(func(light: Node3D): return not light.visible) and is_equal_approx(entry.grip.scale.z, 1.0) and is_zero_approx(entry.grip.rotation.z) and tube.phase == tube.Phase.OUTBOUND and is_equal_approx(tube.distance, float(tube.path.length) * 0.5), "Zero feedback quiets the machine without changing traversal")
+   check(not entry.pulse.visible and not entry.burst.visible and entry.lights.all(func(light: Node3D): return not light.visible) and tube.phase == tube.Phase.OUTBOUND and is_equal_approx(tube.distance, float(tube.path.length) * 0.5), "Zero feedback quiets the machine without changing traversal")
    entry.item.properties.feedback_strength = 1.0
    tube.contained = false
    tube.exit_flash = 0.28
