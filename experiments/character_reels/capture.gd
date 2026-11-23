@@ -26,6 +26,7 @@ const SHOTS := {
 const DEST := "res://test-results/character-reels/"
 var session: Node
 var game: Node
+var eggmobile: Node3D
 var pose: Node
 var tag: Label
 var actor: String
@@ -48,7 +49,7 @@ func _initialize() -> void:
 
 func run() -> void:
  var args := OS.get_cmdline_user_args()
- if args.size() < 2 or not STAGES.has(args[1]) or args[0] not in CharacterSpecials.CHARACTER_IDS:
+ if args.size() < 2 or not STAGES.has(args[1]) or (args[0] != "eggman" and args[0] not in CharacterSpecials.CHARACTER_IDS):
   push_error("Pass a character ID and Act title after --")
   quit(2)
   return
@@ -68,7 +69,7 @@ func run() -> void:
  session.sound_enabled = false
  root.add_child(session)
  session.configure_act_test("res://data/acts/Experiments/" + stage + ".tres")
- await session._start_configured_run(session.run_configuration, actor, true, 18)
+ await session._start_configured_run(session.run_configuration, "knuckles" if actor == "eggman" else actor, true, 18)
  game = session.game
  while not game.started and game.last_source_error.is_empty(): await process_frame
  if not game.started:
@@ -89,6 +90,17 @@ func run() -> void:
   push_error("Local Runners animation assets required")
   quit(2)
   return
+ if actor == "eggman":
+  eggmobile = preload("res://experiments/character_reels/eggmobile_presenter.gd").new()
+  game.presentation.add_child(eggmobile)
+  var directory := OS.get_environment("EGGMOBILE_ART")
+  if directory.is_empty(): directory = "res://test-results/team-eggman-source-review"
+  if not eggmobile.setup(game, directory):
+   push_error("Eggman preview requires the local Eggmobile and bomb with their original rigs")
+   quit(2)
+   return
+  game.player_hud.hide()
+  game.combo_celebration.self_modulate.a = 0.0
  var layer := CanvasLayer.new()
  layer.layer = 125
  root.add_child(layer)
@@ -198,6 +210,7 @@ func prepare(key: String) -> void:
   special_score = game.score
 
 func subject_center() -> Vector3:
+ if eggmobile: return eggmobile.global_position
  if is_instance_valid(game.transfer) and is_instance_valid(game.transfer.proxy): return game.transfer.proxy.global_position
  if pose.sage:
   if pose.sage.rig.visible and pose.sage.assembly < 0.5:
@@ -278,6 +291,7 @@ func capture_gameplay(key: String) -> bool:
   Engine.time_scale = 0.55
   title += " / slow-motion reverse angle"
   if game.specials.action.kind != TypeAction.Kind.SPEED: count = ceili(count / Engine.time_scale)
+ if eggmobile: title = {"roll":"Fast hover / speed trail","special":"Egg Bomb Drop","panel":"Dash panel / fast hover"}.get(key,title)
  caption(title)
  var recovered_at := -1
  var path := folder + key + "/"
@@ -325,7 +339,7 @@ func capture_gameplay(key: String) -> bool:
   if is_instance_valid(game.transfer): seen["transfer"] = true
   if key == "spring" and seen.has("spring") and game.ball.linear_velocity.y > 2 and pose.motion == &"" and rolling():
    seen["falling_ball"] = true
-   caption("Falling / back in ball form")
+   caption("Falling / hover recovery" if eggmobile else "Falling / back in ball form")
   if key.begins_with("special") and seen.has("activated") and rolling() and pose.motion == &"" and game.specials.homing_remaining <= 0 and game.specials.flight_remaining <= 0 and game.specials.smash_remaining <= 0:
    if recovered_at < 0: recovered_at = i
    seen["recovery"] = true
