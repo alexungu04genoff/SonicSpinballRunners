@@ -63,6 +63,7 @@ func run() -> void:
    tube.charge = 1.0
    tube.visual_time = 0.125
    Visual.update(entry)
+   check(entry.head.position.z < entry.spring_length and entry.coil.scale.z < 0.6, "Full charge retracts the plunger head and compresses its spring against the fixed seat")
    check(entry.lights.all(func(light: Node3D): return light.visible) and is_equal_approx(entry.grip.scale.z, 0.7), "Full charge enables eight indicators and compression")
    check(absf(entry.grip.rotation.z) > 0.1 and not entry.pulse.visible and not entry.burst.visible, "Charge spins without a premature traversal or exit effect")
    game.presentation.camera_settings.zoom = 0.6
@@ -72,6 +73,7 @@ func run() -> void:
    tube.phase = tube.Phase.OUTBOUND
    tube.distance = float(tube.path.length) * 0.5
    Visual.update(entry)
+   check(is_equal_approx(entry.head.position.z, entry.spring_length) and is_equal_approx(entry.coil.scale.z, 1.0), "Firing extends the plunger and restores the full coil length")
    check(entry.pulse.visible and not entry.burst.visible, "Contained traversal has one bounded pulse")
    entry.item.properties.feedback_strength = 0.0
    Visual.update(entry)

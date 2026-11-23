@@ -8,6 +8,9 @@ static func footprints(objects: Array) -> Array[Dictionary]:
   if item.type != "launch_tube": continue
   var props := Objects.properties(item)
   var path: PackedVector2Array = Objects.RailPath.build(props.points).points
+  if path.size() < 2: continue
+  var direction := (path[1] - path[0]).normalized()
+  path.insert(0, path[0] - direction * float(props.width) * preload("res://scripts/authored_act/launch_tube.gd").PLUNGER_BAY_WIDTHS)
   var transform := Transform2D(deg_to_rad(float(item.rotation_degrees)), item.position)
   _add_footprint(cuts, transform * path, float(props.width) * 0.54)
  return cuts

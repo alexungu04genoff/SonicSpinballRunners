@@ -2,9 +2,12 @@ extends Node2D
 ## Act-owned constrained motion for the real ball. Presentation never drives this state.
 signal exited(position: Vector2, velocity: Vector2)
 const Path = preload("res://scripts/authored_act/rail_path.gd")
+## Rear housing length as a fraction of the authored lane width.
+const PLUNGER_BAY_WIDTHS := 1.05
 enum Phase { DOCKED, CHARGING, OUTBOUND, RETURNING, IDLE }
 var properties: Dictionary
 var path: Dictionary
+var dock_axis := Vector2.UP
 var ball: PlaygroundBall
 var phase := Phase.IDLE
 var contained := false
@@ -21,6 +24,7 @@ var _saved_mask := 1
 func configure(values: Dictionary) -> void:
  properties = values.duplicate(true)
  path = Path.build(properties.points)
+ dock_axis = Path.tangent(path, 0.0)
 
 ## Visual rolling speed while the constrained body has zero physics velocity.
 func roll_velocity() -> Vector2:
@@ -29,6 +33,38 @@ func roll_velocity() -> Vector2:
 
 func dock_position() -> Vector2:
  return to_global(Path.sample(path, 0.0))
+
+func can_catch(player: PlaygroundBall, previous: Vector2) -> bool:
+ if contained or player.freeze or player.serve_pending or player._teleport_pending or player.on_ramp or player.in_loop:
+  return false
+ var action := player.type_action_controller
+ if is_instance_valid(action) and (action.homing_remaining > 0.0 or action.smash_remaining > 0.0 or action.flight_remaining > 0.0):
+  return false
+ var dock: Vector2 = path.points[0]
+ var point := to_local(player.global_position) - dock
+ var half_width := float(properties.width) * 0.5
+ var reach := minf(player.radius, half_width)
+ var depth := point.dot(dock_axis)
+ if depth > reach: return false
+ var start := to_local(previous) - dock
+ var from_depth := start.dot(dock_axis)
+ if from_depth > reach:
+  # Test the actual crossing of the plunger face, including fast returns.
+  var crossing := start.lerp(point, (from_depth - reach) / (from_depth - depth))
+  return absf(crossing.dot(dock_axis.orthogonal())) <= half_width
+ # A ball already resting inside the rounded end of the bore can also be served.
+ var behind := clampf(depth, -float(properties.width) * PLUNGER_BAY_WIDTHS, 0.0)
+ return point.distance_squared_to(dock_axis * behind) <= half_width * half_width and player.linear_velocity.length_squared() <= reach * reach
+
+## Pullback in physics pixels along the dock's axis. The ball and plunger share this stroke.
+func plunger_pullback() -> float:
+ if not contained or phase not in [Phase.CHARGING, Phase.OUTBOUND]: return 0.0
+ var width := float(properties.width)
+ var pull := charge * width * 0.48
+ if phase == Phase.OUTBOUND:
+  var release_distance := minf(float(path.length), width * 0.55)
+  pull *= 1.0 - clampf(distance / release_distance, 0.0, 1.0)
+ return pull
 
 func dock(player: PlaygroundBall) -> void:
  if is_instance_valid(player.launch_tube): player.launch_tube.detach()
@@ -85,7 +121,7 @@ func _process(delta: float) -> void:
 
 func integrate(state: PhysicsDirectBodyState2D, delta: float) -> void:
  advance(delta, ball.controls.launch_held(), ball.controls.input_blocked)
- var point := to_global(Path.sample(path, distance))
+ var point := to_global(Path.sample(path, distance) - dock_axis * plunger_pullback())
  state.transform = Transform2D(0.0, point)
  state.angular_velocity = 0.0
  state.linear_velocity = Vector2.ZERO

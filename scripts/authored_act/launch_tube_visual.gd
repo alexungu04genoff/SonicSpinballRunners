@@ -8,6 +8,34 @@ static func build(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dicti
  var radius := width * 0.5
  var hub_height := width * 0.12
  var grip := _collar(p, root, path, 0.0, radius * 1.15, style.trim, "DockCompression", hub_height)
+ var mount := Node3D.new()
+ mount.name = "Plunger"
+ root.add_child(mount)
+ _place(mount, path, 0.0, width * 0.23)
+ var rear := width * preload("res://scripts/authored_act/launch_tube.gd").PLUNGER_BAY_WIDTHS
+ var length := rear - width * 0.15
+ var tray := BoxMesh.new()
+ tray.size = Vector3(width * 0.88, width * 0.06, rear)
+ p.mesh_node(tray, style.body, Vector3(0, -width * 0.2, -rear * 0.5), mount).name = "PlungerTray"
+ var seat := Node3D.new()
+ seat.name = "SpringSeat"
+ mount.add_child(seat)
+ seat.position.z = -rear
+ var base: MeshInstance3D = p.mesh_node(p.cylinder(width * 0.22, width * 0.07), style.body, Vector3.ZERO, seat)
+ base.rotation.x = PI * 0.5
+ var coil := Node3D.new()
+ coil.name = "CompressionSpring"
+ seat.add_child(coil)
+ var rod: MeshInstance3D = p.mesh_node(p.cylinder(width * 0.045, length), style.body, Vector3.BACK * length * 0.5, coil)
+ rod.rotation.x = PI * 0.5
+ var steel := preload("res://scripts/atmosphere/hardware_palette.gd").fixed(p, "spinner_crossbar")
+ p.mesh_node(_coil_mesh(width, length), steel, Vector3.ZERO, coil)
+ var head := Node3D.new()
+ head.name = "PlungerHead"
+ seat.add_child(head)
+ head.position.z = length
+ var pad: MeshInstance3D = p.mesh_node(p.cylinder(width * 0.22, width * 0.085), style.trim, Vector3.ZERO, head)
+ pad.rotation.x = PI * 0.5
  var lights: Array[Node3D] = []
  for index in 8:
   var light := Node3D.new()
@@ -28,7 +56,31 @@ static func build(p, root: Node3D, item: Dictionary, style: Dictionary) -> Dicti
  pulse.visible = false
  burst.visible = false
  return {"kind": "launch_tube", "item": item, "root": root, "grip": grip,
+  "coil": coil, "head": head, "spring_length": length,
   "lights": lights, "pulse": pulse, "burst": burst, "path": path, "hub_height": hub_height}
+
+static func _coil_mesh(width: float, length: float) -> ArrayMesh:
+ var mesh := SurfaceTool.new()
+ mesh.begin(Mesh.PRIMITIVE_TRIANGLES)
+ const SIDES := 6
+ const STEPS := 42
+ for i in STEPS + 1:
+  var fraction := float(i) / STEPS
+  var angle := fraction * 3.5 * TAU
+  var radial := Vector3(cos(angle), sin(angle), 0)
+  var center := radial * width * 0.14 + Vector3.BACK * length * fraction
+  var tangent := Vector3(-radial.y, radial.x, length / (width * 0.14 * 3.5 * TAU)).normalized()
+  var across := radial.cross(tangent)
+  for j in SIDES:
+   var around := TAU * j / SIDES
+   var normal := radial * cos(around) + across * sin(around)
+   mesh.set_normal(normal)
+   mesh.add_vertex(center + normal * width * 0.023)
+   if i < STEPS:
+    var a := i * SIDES + j
+    var b := i * SIDES + (j + 1) % SIDES
+    for index: int in [a, b, a + SIDES, b, b + SIDES, a + SIDES]: mesh.add_index(index)
+ return mesh.commit()
 
 static func _collar(p, parent: Node3D, path: Dictionary, distance: float, radius: float, material: Material, label: String, hub_height: float) -> Node3D:
  var root := Node3D.new()
@@ -54,6 +106,9 @@ static func update(entry: Dictionary) -> void:
  if not is_instance_valid(tube): return
  var charge: float = tube.charge
  var feedback: float = entry.item.properties.feedback_strength
+ var spring_length: float = entry.spring_length
+ entry.head.position.z = spring_length - tube.plunger_pullback() * TablePresentation.SCALE
+ entry.coil.scale.z = entry.head.position.z / spring_length
  entry.grip.scale.z = 1.0 - charge * 0.3 * feedback
  entry.grip.rotation.z = float(tube.visual_time) * charge * TAU * feedback
  for index in entry.lights.size():

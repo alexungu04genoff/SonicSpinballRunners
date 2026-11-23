@@ -125,6 +125,15 @@ func prototype_check() -> void:
  game.controls.virtual_enabled = true
  await launch(game, true)
  check(game.ring_field.scoring_enabled and game._accept_scoring(game.active_scoring_id), "Successful exit restores scoring")
+ var balls_before_return: int = game.balls_remaining
+ var score_before_return: int = game.score
+ var forward: Vector2 = tube.global_transform.basis_xform(tube.dock_axis).normalized()
+ game.ball.teleport_to(tube.dock_position() + forward * (game.ball.radius + 10.0), -forward * 90.0)
+ var caught := await until(func(): return tube.contained and tube.phase == tube.Phase.DOCKED)
+ check(caught, "A loose ball returning down the Workshop lane is caught by the plunger")
+ if caught:
+  check(game.balls_remaining == balls_before_return and game.score == score_before_return, "Catching the return preserves Balls and score")
+  await launch(game)
  game.ball.freeze = true
  game.set_physics_process(false)
  var manager: Node = game.active.runtime.mechanics

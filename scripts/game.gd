@@ -392,8 +392,8 @@ func _active_launch_tube() -> Node:
 func _detach_launch_tube() -> void:
  if is_instance_valid(ball.launch_tube): ball.launch_tube.detach()
 
-func _dock_launch_tube() -> bool:
- var tube := _active_launch_tube()
+func _dock_launch_tube(tube: Node = null) -> bool:
+ if tube == null: tube = _active_launch_tube()
  if tube == null: return false
  if not tube.exited.is_connected(_tube_exited): tube.exited.connect(_tube_exited)
  tube.dock(ball)
@@ -619,6 +619,10 @@ func _physics_process(delta: float) -> void:
    reset_ball(true)
  elif not ball.serve_pending and not ball._teleport_pending and _at_playfield_drain():
   _on_ball_drained()
+ elif _goal_motion_ready and not ball.serve_pending and not authored_runtime.get("launch_tubes", []).is_empty():
+  var tube := _active_launch_tube()
+  if tube != null and tube.can_catch(ball, previous_goal_position):
+   _dock_launch_tube(tube)
  if auto_launch_time >= 0:
   auto_launch_time -= delta
   if auto_launch_time <= 0:

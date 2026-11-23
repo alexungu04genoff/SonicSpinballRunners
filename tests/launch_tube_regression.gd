@@ -279,6 +279,7 @@ func physics_checks() -> void:
  controls.virtual_launch = true
  await frames(12)
  check(tube.phase == Tube.Phase.CHARGING and tube.charge > 0.0 and ball.get_instance_id() == identity, "Fresh player hold charges the same real ball")
+ check(tube.plunger_pullback() > 0.0 and ball.position.y > tube.dock_position().y, "The real ball moves back with the plunger while charging")
  var adapter := preload("res://scripts/game.gd").new()
  adapter.authored_document = Act.new()
  adapter.authored_document.spawn_position = Vector2(100, 500)
@@ -289,6 +290,18 @@ func physics_checks() -> void:
  adapter.free()
  tube.detach()
  check(ball.collision_layer == 2 and ball.collision_mask == 1 and ball.launch_tube == null, "Source replacement/teardown restores body properties")
+ ball.serve_pending = false
+ tube.rotation = PI / 2.0
+ ball.position = tube.to_global(Vector2(0, 14))
+ ball.linear_velocity = Vector2.ZERO
+ check(tube.can_catch(ball, ball.position), "A ball resting in a rotated plunger pocket can re-dock")
+ ball.linear_velocity = Vector2.LEFT * 500.0
+ check(tube.can_catch(ball, tube.to_global(Vector2(0, -30))), "A fast return crosses the plunger face between physics ticks")
+ ball.position = tube.to_global(Vector2(40, 14))
+ check(not tube.can_catch(ball, tube.to_global(Vector2(40, -30))), "Passing the dock in the next lane cannot re-dock")
+ ball.position = tube.to_global(Vector2(0, -30))
+ check(not tube.can_catch(ball, tube.dock_position()), "A departing shot stays in play")
+ tube.rotation = 0.0
  # Measure the charge examples on the authored Workshop route with the real body.
  var workshop: Resource = Act.load_document(WORKSHOP).document
  tube.configure(Objects.properties(workshop.gameplay_objects[0]))

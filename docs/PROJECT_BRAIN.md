@@ -88,6 +88,8 @@ Free shots can cross the center of the arch. Both ground-level banks return the 
 
 The launcher now cuts its ramp-textured lane through the walls at table height. Move a tube and the next play or bake derives the new opening from the original terrain. Sonic and Tails wind up at the dock and roll along the lane, including on a weak return. The default full charge starts at 410 px/s with 55 px/s² resistance. The Workshop still demonstrates weak, medium and full shots. [Launch Tube](LAUNCH_TUBE.md)
 
+In the straight shooter on Untitled Act, a clean launch can come straight back down. The active dock now catches that return for another shot. The coil compresses behind the ball and springs forward on release.
+
 ## Optional Launch Tube after closure — 2026-11-18
 
 Alex asked for a player-controlled launch machine without changing old Acts. The optional Launch Tube owns a path from dock to exit and constrains the real physics ball; theme art never drives it. Weak charge rolls back, successful charge releases with materially different speed, and blocked exits return safely. Prototype keeps its existing soft retry and objectives, but a valid active-Act tube returns the ball to dock and waits for a fresh hold/release. Held-through-death input cannot relaunch. Neighboring streamed Acts never own retry; ordinary Acts keep their existing auto-launch.

@@ -180,6 +180,11 @@ static func _draw_mechanic(target: CanvasItem, placement: Dictionary, anchor: Ve
  var angle := deg_to_rad(float(placement.rotation_degrees))
  if placement.type == "launch_tube":
   if points.size() >= 2:
+   var width := float(props.width) * scale_factor
+   var forward := points[0].direction_to(points[1])
+   var seat := points[0] - forward * width * preload("res://scripts/authored_act/launch_tube.gd").PLUNGER_BAY_WIDTHS
+   target.draw_line(seat, points[0], Color(color, 0.35), maxf(1.0, width * 0.88))
+   target.draw_line(seat - forward.orthogonal() * width * 0.22, seat + forward.orthogonal() * width * 0.22, color, 2.0)
    target.draw_polyline(points, Color(color, 0.2), maxf(3.0, float(props.width) * scale_factor), true)
    target.draw_polyline(points, color, 2.0, true)
    _arrow(target, points[-1] - (points[-1] - points[-2]).normalized() * 18, points[-1], color)
