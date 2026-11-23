@@ -14,8 +14,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_FRACTION = 0.35
-BADNIK_FRACTION = 0.75
-BADNIK_MESHES = {"beeton", "ganigani", "eggpawn"}
+ORIGINAL_BADNIKS = {"beeton", "ganigani", "eggpawn"}
 DTYPES = {5120: "i1", 5121: "u1", 5122: "<i2", 5123: "<u2", 5125: "<u4", 5126: "<f4"}
 WIDTHS = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4}
 
@@ -146,8 +145,6 @@ def bake(path, simplify, fraction):
 
     before = after = 0
     for mesh in doc["meshes"]:
-        # These rigs start below 900 faces. Their eyes, grippers and wings share a material.
-        keep = max(fraction, BADNIK_FRACTION) if mesh.get("name", "").lower() in BADNIK_MESHES else fraction
         for primitive in mesh["primitives"]:
             if primitive.get("mode", 4) != 4:
                 raise ValueError("Expected indexed triangles")
@@ -155,7 +152,7 @@ def bake(path, simplify, fraction):
             bindings = [primitive["attributes"], *primitive.get("targets", [])]
             arrays = [{key: accessor_array(doc, binary, idx) for key, idx in binding.items()}
                       for binding in bindings]
-            reduced = reduce_surface(simplify, indices, arrays[0], arrays[1:], keep)
+            reduced = reduce_surface(simplify, indices, arrays[0], arrays[1:], fraction)
             retained, compact = np.unique(reduced, return_inverse=True)
             before += len(indices) // 3
             after += len(reduced) // 3
@@ -194,8 +191,20 @@ def bake(path, simplify, fraction):
     return before, after
 
 
+def low_poly_sources(paths):
+    for path in paths:
+        model_id = path.stem.lower().removesuffix(" runners - original animations")
+        if path.suffix.lower() == ".glb" and model_id in ORIGINAL_BADNIKS:
+            print(f"{path.name}: using original Badnik mesh")
+        else:
+            yield path
+
+
 def bake_generated(*paths):
     """Bake newly generated assets when the optional mesh toolchain is installed."""
+    paths = list(low_poly_sources(paths))
+    if not paths:
+        return
     try:
         simplify = load_simplifier()
     except (OSError, AttributeError) as error:
@@ -226,6 +235,9 @@ if __name__ == "__main__":
     sources = args.sources or list(gameplay_sources())
     if not sources:
         parser.error("No local Runners models found")
+    sources = list(low_poly_sources(sources))
+    if not sources:
+        parser.exit()
     simplify = load_simplifier()
     for source in sources:
         if source.suffix.lower() != ".glb" or source.name.endswith(".low.glb"):

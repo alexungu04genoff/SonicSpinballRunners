@@ -20,11 +20,11 @@ Flight uses a fixed reference center for Tails, Rouge and Cream. Their tails, wi
 
 ## Low-poly gameplay models
 
-The character extractor and Blender pose baker generate a sibling `.low.glb` when meshoptimizer is available. To update an existing local installation, run `python tools/optimize_runners_models.py` from the repository root. The command finds the animated characters, Badniks, rolls, tricks and optional Eggman and Metal Sonic preview assets. The shared loader uses the reduced mesh whenever its bake is current and falls back to the source after an edit. Generated art stays local.
+The character extractor and Blender pose baker generate a sibling `.low.glb` when meshoptimizer is available. To update an existing local installation, run `python tools/optimize_runners_models.py` from the repository root. The command finds the playable characters, rolls, tricks and optional Eggman and Metal Sonic preview assets. The shared loader uses the reduced mesh whenever its bake is current and falls back to the source after an edit. Buzz Bomber, Ganigani and Egg Pawn always load their original Runners meshes, including on installations with an older reduced copy. Generated art stays local.
 
 The baker requires NumPy and the meshoptimizer shared library. On Windows it discovers the DLL bundled with Blender 5.2. Blender's bundled Python also includes NumPy. On other installations, set `MESHOPTIMIZER_LIBRARY` to the library path. Pass individual GLB paths to rebake selected models.
 
-The default target is 35% of the triangles per material. The three Badniks start below 900 triangles and target 75% to preserve their eyes, wings and grippers. Surfaces with 80 triangles or fewer keep their detail. The baker tightens the error tolerance if a surface loses over 8% of its span on any axis or over 10% of its area, including in Tails's seven tail shapes. It weighs normals, UVs and skin influences and keeps the source animation curves.
+The default target is 35% of the triangles per material. Surfaces with 80 triangles or fewer keep their detail. The baker tightens the error tolerance if a surface loses over 8% of its span on any axis or over 10% of its area, including in Tails's seven tail shapes. It weighs normals, UVs and skin influences and keeps the source animation curves.
 
 ## Sonic at the Ball
 

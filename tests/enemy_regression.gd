@@ -74,6 +74,13 @@ func check_enemy_presentations() -> void:
     continue
    check(entry.has("player"), skin + " binds its local animation rig")
    if not entry.has("player"): continue
+   var rig: Node3D = entry.body.get_node("Runners" + skin.capitalize())
+   var triangles := 0
+   for part: MeshInstance3D in rig.find_children("*", "MeshInstance3D", true, false):
+    var mesh := part.mesh as ArrayMesh
+    for surface in mesh.get_surface_count():
+     triangles += mesh.surface_get_array_index_len(surface) / 3
+   check(triangles == {"beeton": 850, "ganigani": 896, "eggpawn": 896}[skin], skin + " binds its original Runners geometry")
    var sample := entry.duplicate()
    sample.item = entry.item.duplicate()
    var clips := {}
