@@ -1,5 +1,7 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+When consecutive Acts use the same theme, Prototype and Endless join the floor trim and raised banks where the surfaces meet. The bake records which spans reach each end. Streaming compares those spans after aligning the Acts, so an offset ledge keeps its exposed edge. Standalone Acts and changes of theme keep their full borders.
+
 ## Green Hill animation review
 
 Nine experiment Acts isolate the plunger, rolls and flippers, spring, dash panel, rails, Loop, specials, tricks and source animations. The fullscreen recorder keeps the character centered in Dramatic Pinball. Trick Garden counts ten separate bumper contacts. Special Arena records the approach, impact or Flight expiry, and the return to ball form. [Capture commands and review notes](combo-celebration/README.md)

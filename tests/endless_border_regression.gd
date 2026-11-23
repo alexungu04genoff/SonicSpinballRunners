@@ -3,6 +3,9 @@ const Border = preload("res://scripts/endless/baked_border.gd")
 const Legacy = preload("res://scripts/themes/terrain_border.gd")
 const Detail = preload("res://scripts/endless/visual_detail.gd")
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
+const JoinTrim = preload("res://scripts/endless/act_join_trim.gd")
+const StreamedAct = preload("res://scripts/endless/streamed_act.gd")
+const Recipe = preload("res://scripts/endless/visual_recipe.gd")
 var checks := 0
 var failures := 0
 var reduced := 0
@@ -64,7 +67,43 @@ func inspect(outline: PackedVector2Array, holes: Array[PackedVector2Array], widt
   print("BAKED_J_TRIANGLES | previous=", walls + old.get_faces().size() / 3, " | batched trim=", walls + baked.get_faces().size() / 3)
   presentation.free()
 
+func inspect_join() -> void:
+ var floor_outline := PackedVector2Array([Vector2.ZERO, Vector2(100, 0), Vector2(100, 100), Vector2(0, 100)])
+ var top := PackedVector2Array([Vector2.ZERO, Vector2(30, 0), Vector2(30, 100), Vector2(0, 100)])
+ var profile := JoinTrim.profiles(floor_outline, [top], 100.0, [])
+ check(profile[0].size() == 1 and profile[0][0].is_equal_approx(Vector2(0.3, 1.0)) and profile[3].size() == 1 and profile[3][0].is_equal_approx(Vector2(0, 0.3)), "Walkable floor and raised bank use separate seam spans")
+ var baked := Border.build(floor_outline, [], 3.0, 0.001, StandardMaterial3D.new())
+ var pieces := JoinTrim.partition(baked, floor_outline, 100.0, 3.0)
+ check(pieces.size() == 3 and is_equal_approx(area(baked), area(pieces[-1]) + area(pieces[0]) + area(pieces[1])), "An isolated Act retains its complete original border")
+ var act := StreamedAct.new()
+ var peer := StreamedAct.new()
+ act.plan = {"theme": "green_hill", "offset": Vector2.ZERO}
+ peer.plan = {"theme": "green_hill", "offset": Vector2(25.5, -100)}
+ act.recipe = Recipe.new()
+ peer.recipe = Recipe.new()
+ act.recipe.join_profiles = JoinTrim.profiles(floor_outline, [], 100.0, [])
+ peer.recipe.join_profiles = profile
+ var cap := MeshInstance3D.new()
+ cap.mesh = pieces[0]
+ act.visual.add_child(cap)
+ act._join_caps[0].append([cap, cap.mesh])
+ act.update_join(0, peer)
+ check(cap.visible and is_equal_approx(cap.mesh.get_aabb().end.x, 0.555), "An offset neighbor removes only the matching floor span and preserves the edge below its bank")
+ peer.plan.theme = "ice_cap"
+ act.update_join(0, peer)
+ check(cap.visible and cap.mesh == pieces[0], "A different theme retains its transition trim")
+ peer.plan = act.plan.duplicate()
+ peer.recipe.join_profiles = act.recipe.join_profiles
+ act.update_join(0, peer)
+ check(not cap.visible, "A matching full-width floor hides the entire end band")
+ act.update_join(0, null)
+ check(cap.visible and cap.mesh == pieces[0], "A retired neighbor restores the original baked cap")
+ for item in [act, peer]:
+  item.visual.free()
+  item.root.free()
+
 func _initialize() -> void:
+ inspect_join()
  for shape: Dictionary in Shapes.definitions():
   for scale_value: float in [25.0, 50.0, 100.0]:
    var points: PackedVector2Array = shape.points.duplicate()

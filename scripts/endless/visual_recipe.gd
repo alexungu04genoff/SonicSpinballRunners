@@ -11,6 +11,7 @@ var indices := {}
 @export var retracted: Array[int] = []
 @export var rings: Array[int] = []
 @export var bumpers := {}
+@export var join_profiles: Array = []
 @export var batch_stats := {}
 @export var warm_manifest_version := 0
 @export var retirement_dependencies: Array[Resource] = []

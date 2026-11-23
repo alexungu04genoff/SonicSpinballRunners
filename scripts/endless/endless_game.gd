@@ -256,6 +256,11 @@ func _process(delta: float) -> void:
    var operation_ms := float(Time.get_ticks_usec() - operation_started) / 1000.0
    if started and operation_ms > 6.0 and not _sampled_diagnostic_logging: print("ENDLESS_SLOW_JOB | step=", operation, " ms=", operation_ms)
    if building.ready:
+    if not resident.is_empty():
+     var previous: RefCounted = resident[-1]
+     if previous.plan.sequence + 1 == building.plan.sequence and previous.plan.theme == building.plan.theme:
+      previous.update_join(0, building)
+      building.update_join(1, previous)
     resident.append(building)
     hub.runtimes.append(building.runtime.mechanics)
     var owner_id := "act:%d" % building.plan.sequence
@@ -652,6 +657,8 @@ func _retire_behind() -> void:
    # outside the Zone backdrop so retiring that layer cannot enqueue it twice.
    act.background_visual.reparent(self, false)
    _queue_retirement(act.background_visual)
+  if i + 1 < resident.size() and resident[i + 1].plan.sequence == act.plan.sequence + 1 and resident[i + 1].plan.theme == act.plan.theme:
+   resident[i + 1].update_join(1, null)
   resident.remove_at(i)
   changed = true
  if changed: _sync_resident()

@@ -71,6 +71,7 @@ func _build(theme_id: String, id: int) -> void:
  await p.stream_checkpoint()
  p.stage = "capture"
  var recipe := Recipe.new()
+ recipe.join_profiles = p.join_profiles
  var excluded := [p.camera, p._world_environment, p._key_light, p.ball_visual, p.physics_overlay,
   p.construction_grid_overlay, p.scenery_root]
  for child: Node in p.get_children():

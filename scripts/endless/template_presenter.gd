@@ -10,6 +10,8 @@ var _worker: Thread
 var _land_jobs: Array[Dictionary] = []
 const VisualDetail = preload("res://scripts/endless/visual_detail.gd")
 const BakedBorder = preload("res://scripts/endless/baked_border.gd")
+const JoinTrim = preload("res://scripts/endless/act_join_trim.gd")
+var join_profiles := []
 
 func stream_checkpoint(force := false) -> void:
  var elapsed := Time.get_ticks_usec() - _slice_start
@@ -96,13 +98,14 @@ func prepare_act(runtime: Dictionary, bounds: Rect2, cell_size: float) -> void:
    # Thin open rails keep a center strip: cap width is at most a quarter of rail width.
    _add_border(ribbon, [], minf(theme_definition.top_border_width, cell_size * 0.01), RAIL_HEIGHT + RAIL_CAP_HEIGHT, theme_definition.top_border_material, rail, "TopSurfaceBorder")
  _add_border(authored_floor_outline, floor_obstacles, theme_definition.floor_border_width, 0.0, theme_definition.floor_border_material, floor_root, "FloorPathBorder")
+ join_profiles = JoinTrim.profiles(authored_floor_outline, floor_obstacles, floor_bounds.end.y, _terrain_clearance_cuts)
  _finish_terrain_skin()
  stage = "decor"
  for slot: Dictionary in runtime.get("decor_slots", []):
   await stream_checkpoint()
   _build_authored_decor({"decor_slots": [slot], "decor_seed": runtime.decor_seed, "terrain": runtime.terrain}, cell_size)
   await stream_checkpoint()
- await _finish_borders()
+ await _finish_borders(floor_bounds.end.y)
  preload("res://scripts/authored_act/terrain_clearance.gd").apply(terrain_root, runtime.mechanics.items, preload("res://scripts/act_dimensions.gd").BALL_RADIUS_CELLS * cell_size, SCALE)
  TerrainFacade.consolidate(floor_root, terrain_root, authored_floor_outline, wall_side)
  preload("res://scripts/rendering/terrain_faces.gd").prepare(self, scenery_root)
@@ -147,24 +150,32 @@ func _add_border(outline: PackedVector2Array, holes: Array[PackedVector2Array], 
  _border_jobs.append({"outline": outline, "holes": holes.duplicate(), "width": width,
   "height": height, "material": mat, "parent": parent, "label": label})
 
-func _finish_borders() -> void:
+func _finish_borders(act_height := -1.0) -> void:
  await _finish_land()
  for job: Dictionary in _border_jobs:
-  var mesh: ArrayMesh = await _geometry_job(BakedBorder.build.bind(job.outline, job.holes, job.width, job.height + 0.001, job.material))
-  if mesh == null: continue
-  _bind_materials(mesh, [job.material])
-  var visual := mesh_node(mesh, null, Vector3.ZERO, job.parent)
-  visual.name = job.label
-  visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-  # Match the optional authored Rooftop grass layers when the art branch has them.
-  if theme_definition.get("material_maps") != null and theme_definition.theme_id == "rooftop_run":
-   if job.material == theme_definition.floor_border_material and theme_definition.material_maps.has_method("grass_shells"):
+  var sections: Dictionary = await _geometry_job(_border_sections.bind(job, act_height))
+  for end: int in sections:
+   var mesh: ArrayMesh = sections[end]
+   _bind_materials(mesh, [job.material])
+   var visual := mesh_node(mesh, null, Vector3.ZERO, job.parent)
+   visual.name = job.label
+   visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+   var slot := end * 2 + int(job.label == "TopSurfaceBorder")
+   if end >= 0: visual.set_meta("act_join_slot", slot)
+   if theme_definition.theme_id == "rooftop_run" and job.material == theme_definition.floor_border_material:
     for shell_material: ShaderMaterial in theme_definition.material_maps.grass_shells():
      var shell := mesh_node(mesh, shell_material, Vector3.ZERO, job.parent)
      shell.name = job.label + "GrassLayer"
      shell.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+     if end >= 0: shell.set_meta("act_join_slot", slot)
   await stream_checkpoint()
  _border_jobs.clear()
+
+func _border_sections(job: Dictionary, act_height: float) -> Dictionary:
+ var mesh := BakedBorder.build(job.outline, job.holes, job.width, job.height + 0.001, job.material)
+ if mesh == null: return {}
+ if act_height < 0.0: return {-1: mesh}
+ return JoinTrim.partition(mesh, job.outline, act_height, job.width)
 
 func _exit_tree() -> void:
  if _worker != null: _worker.wait_to_finish()

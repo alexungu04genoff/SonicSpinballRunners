@@ -2,6 +2,7 @@ extends RefCounted
 ## Builds one resident Act a single physics shape or visual node at a time.
 const Mechanics = preload("res://scripts/authored_act/pinball_mechanics.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
+const JoinTrim = preload("res://scripts/endless/act_join_trim.gd")
 var plan: Dictionary
 var document: Resource
 var act_path: String
@@ -28,6 +29,7 @@ var _finish_phase := 0
 var _atomic_attachment := "--profile-atomic-attachment" in OS.get_cmdline_user_args()
 var _whole_material_attachment := "--profile-whole-material-attachment" in OS.get_cmdline_user_args()
 var _material_attachment := {}
+var _join_caps := [[], [], [], []]
 
 func _notification(what: int) -> void:
  if what != NOTIFICATION_PREDELETE: return
@@ -86,6 +88,9 @@ func step() -> void:
      var parent: int = recipe.records[index].parent
      (target if parent < 0 else nodes[parent]).add_child(node)
      nodes.append(node)
+    var attached := nodes[-1]
+    if attached.has_meta("act_join_slot"):
+     _join_caps[attached.get_meta("act_join_slot")].append([attached, attached.mesh])
     index += 1
    else:
     _finish_visual_step()
@@ -224,6 +229,32 @@ func _object_step() -> void:
 
 func bounds() -> Rect2:
  return Rect2(plan.offset, document.terrain_bounds().size)
+
+func update_join(end: int, neighbor: RefCounted) -> void:
+ if recipe.join_profiles.size() != 4: return
+ for level in 2:
+  var slot := end * 2 + level
+  var covered := PackedVector2Array()
+  if neighbor != null and plan.theme == neighbor.plan.theme and neighbor.recipe.join_profiles.size() == 4:
+   var offset: float = (neighbor.plan.offset.x - plan.offset.x) * TablePresentation.SCALE
+   for own: Vector2 in recipe.join_profiles[slot]:
+    for other: Vector2 in neighbor.recipe.join_profiles[(1 - end) * 2 + level]:
+     var shared := Vector2(maxf(own.x, other.x + offset), minf(own.y, other.y + offset))
+     if shared.y > shared.x + JoinTrim.EPS: covered.append(shared)
+  var replacements := {}
+  for cap: Array in _join_caps[slot]:
+   var node: MeshInstance3D = cap[0]
+   var original: Mesh = cap[1]
+   if not replacements.has(original):
+    var box := original.get_aabb()
+    var span := Vector2(box.position.x, box.end.x)
+    var visible_spans := JoinTrim.remaining(span, covered)
+    if visible_spans.is_empty(): replacements[original] = null
+    elif visible_spans.size() == 1 and visible_spans[0].is_equal_approx(span): replacements[original] = original
+    else: replacements[original] = JoinTrim.clip(original, visible_spans)
+   var replacement: Mesh = replacements[original]
+   node.visible = replacement != null
+   node.mesh = replacement if replacement != null else original
 
 func spawn() -> Vector2:
  return Vector2(document.spawn_position) + Vector2(plan.offset)
