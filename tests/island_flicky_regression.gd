@@ -3,6 +3,7 @@ extends SceneTree
 ## A graphical run also renders a repeatable 4.8-second preview at 20 fps.
 const Themes = preload("res://scripts/themes/theme_registry.gd")
 const Presentation = preload("res://scripts/themes/themed_presentation.gd")
+const Wildlife = preload("res://scripts/decor/island_flicky.gd")
 const Bounds = preload("res://tests/landmark_theme_regression.gd")
 var checks := 0
 var failures := 0
@@ -31,47 +32,35 @@ func run() -> void:
  if birds.size() != 3:
   quit(1)
   return
- var initial_time: float = birds[0].animation_time
- for frame in 3: await process_frame
- check(birds[0].animation_time > initial_time, "Animation advances in the live scene tree")
- paused = true
- var paused_time: float = birds[0].animation_time
- for frame in 3: await process_frame
- check(birds[0].animation_time == paused_time, "Animation freezes during scene-tree pause")
- paused = false
- for frame in 3: await process_frame
- check(birds[0].animation_time > paused_time, "Animation resumes after pause")
- for bird in birds: bird.set_process(false)
- var bounds_check := Bounds.new()
- var bounded := true
- var collisionless := true
- var grounded := true
- var heights: Dictionary = {}
- var wing_angles: Dictionary = {}
- for frame in 96:
-  for bird in birds:
-   bird.set_animation_time(frame / 20.0)
+ if "flicky" in Wildlife.available_species():
+  var bird := birds[0]
+  check(birds.all(func(node): return node.rig and node.player.has_animation(Wildlife.CLIP)), "Palm Island loads three genuine Flicky rigs")
+  var initial: float = bird.animation_time
+  for i in 3: await process_frame
+  check(bird.animation_time > initial, "Local idle advances")
+  paused = true
+  var held: float = bird.animation_time
+  for i in 3: await process_frame
+  check(bird.animation_time == held, "Scene pause freezes the original idle")
+  paused = false
+  for i in 3: await process_frame
+  check(bird.animation_time > held, "Animation resumes after pause")
+  var wing: Node3D = bird.rig.find_child("Wing", true, false)
+  bird.set_animation_time(0.15)
+  var pose_a := wing.transform
+  bird.set_animation_time(0.75)
+  check(not wing.transform.is_equal_approx(pose_a), "Source wing animates while perched")
+  bird.set_animation_time(0.15 + bird.player.current_animation_length)
+  check(wing.transform.is_equal_approx(pose_a), "The authored clip loops back to the same pose")
+  var inspector := Bounds.new()
+  for node in birds:
    var boxes: Array[AABB] = []
-   collisionless = bounds_check.collect_bounds(bird, boxes) and collisionless
-   for box in boxes:
-    grounded = grounded and box.position.y >= .335
-    for corner in 8:
-     var point := box.get_endpoint(corner)
-     bounded = bounded and Vector2(point.x, point.z).length() < .80
-   heights[snappedf(bird.pose.position.y, .001)] = true
-   wing_angles[snappedf(bird.wings[0].rotation.z, .01)] = true
- check(collisionless, "Every animated descendant stays finite and collisionless")
- check(bounded, "All birds remain inside the island throughout the full cycle")
- check(grounded, "Feet never pass through the turf")
- check(heights.size() > 5 and wing_angles.size() > 5, "Hops and wing flutters have distinct animated poses")
- for bird in birds: bird.set_animation_time(.24)
- check(birds[0].pose.position.y > .10 and is_zero_approx(birds[1].pose.position.y), "Birds hop at staggered phases")
- var sample: Transform3D = birds[0].pose.transform
- birds[0].set_animation_time(.24 + birds[0].CYCLE * 100)
- check(birds[0].pose.transform.is_equal_approx(sample), "Animation loops without long-run drift")
- bounds_check.free()
+   check(inspector.collect_bounds(node, boxes) and not boxes.is_empty(), "Island wildlife is finite and collisionless")
+  inspector.free()
+ else:
+  check(birds.all(func(node): return node.rig == null and not node.is_processing()), "Missing art leaves quiet empty perches")
  check_act_visit(p)
- if DisplayServer.get_name() != "headless" and failures == 0:
+ if DisplayServer.get_name() != "headless" and birds[0].rig and failures == 0:
   await capture(p, birds)
  var weak: WeakRef = weakref(birds[0])
  island.queue_free()
@@ -102,18 +91,19 @@ func check_act_visit(p: TablePresentation) -> void:
  var placement_state := rng.state
  for i in 32:
   var before := rng.state
-  var state: Dictionary = visitor.choose_perch(document, runtime, offset, rng)
+  var state: Dictionary = visitor.choose_perch(document, runtime, offset, rng, Wildlife.SPECIES)
   if state.is_empty():
    empty += 1
    continue
   chosen = state
   placement_state = before
-  variants[state.gold] = true
+  variants[state.species] = true
   perches[state.perch] = true
   check(Geometry2D.is_point_in_polygon(state.perch, polygon), "Visit lands inside the offset Act's raised bank")
  check(perches.size() > 1 and empty > 0, "Fresh visits vary perch and can leave the Act empty")
- check(variants.size() == 2, "Both blue and gold visits can be drawn")
- check(visitor.choose_perch(document, {"terrain": [], "objects": []}, offset, rng).is_empty(), "Empty terrain has no invented perch")
+ check(variants.size() > 1 and variants.keys().all(func(id): return id in Wildlife.SPECIES), "Random visits draw from the Runners roster")
+ check(visitor.choose_perch(document, {"terrain": [], "objects": []}, offset, rng, Wildlife.SPECIES).is_empty(), "Empty terrain has no invented perch")
+ check(visitor.choose_perch(document, runtime, offset, rng, []).is_empty(), "No installed Runners species leaves a fresh Act empty")
  if chosen.is_empty():
   visitor.free()
   return
@@ -121,10 +111,10 @@ func check_act_visit(p: TablePresentation) -> void:
  rng.state = placement_state
  var blocked := runtime.duplicate()
  blocked.floor_outline = PackedVector2Array([Vector2.ZERO, Vector2.RIGHT, Vector2.DOWN])
- check(visitor.choose_perch(document, blocked, offset, rng).is_empty(), "Banks facing off the playable deck are skipped")
+ check(visitor.choose_perch(document, blocked, offset, rng, Wildlife.SPECIES).is_empty(), "Banks facing off the playable deck are skipped")
  document.decor_slots.assign([{"position": Vector2(5, 5) * cell, "slot_type": "landmark", "scale": 8.0}])
  rng.state = placement_state
- check(visitor.choose_perch(document, runtime, offset, rng).is_empty(), "A landmark occupying the whole bank leaves no perch")
+ check(visitor.choose_perch(document, runtime, offset, rng, Wildlife.SPECIES).is_empty(), "A landmark occupying the whole bank leaves no perch")
  document.decor_slots.clear()
  var bumper := ActGameplayObjects.make_placement("round_bumper")
  bumper.position = Vector2(5, 5) * cell + offset
@@ -132,38 +122,38 @@ func check_act_visit(p: TablePresentation) -> void:
  blocked = runtime.duplicate()
  blocked.objects = [bumper]
  rng.state = placement_state
- check(visitor.choose_perch(document, blocked, offset, rng).is_empty(), "Large hardware excludes its full footprint")
+ check(visitor.choose_perch(document, blocked, offset, rng, Wildlife.SPECIES).is_empty(), "Large hardware excludes its full footprint")
  p.ball = PlaygroundBall.new()
  p.add_child(visitor)
- chosen.gold = false
+ # Counts from the seven original rigid models after excluding their inverted shells.
+ var body_triangles := {"flicky": 180, "picky": 198, "pecky": 132, "pocky": 172, "ricky": 184, "rocky": 116, "cookie": 182}
+ for id: String in Wildlife.available_species():
+  chosen.species = id
+  visitor.enter(p, chosen, cell)
+  check(visitor.visible and visitor.rig.name == id and visitor.player.has_animation(Wildlife.CLIP), "Original textured idle loaded for " + id)
+  var parts: Array[Node] = visitor.rig.find_children("*", "MeshInstance3D", true, false)
+  var triangles := 0
+  for part: MeshInstance3D in parts: triangles += part.mesh.get_faces().size() / 3
+  check(triangles == body_triangles[id], id + " has exactly its original body triangles after outline removal")
+  var material: Material = parts[0].get_active_material(0)
+  if id == "flicky":
+   check(material is ShaderMaterial and material.get_shader_parameter("body_texture") is Texture2D and material.get_shader_parameter("gold_texture") is Texture2D, "Flicky uses the body atlas and the original masked gold reflection")
+  else:
+   check(material is BaseMaterial3D and material.albedo_texture != null and material.shading_mode == BaseMaterial3D.SHADING_MODE_UNSHADED, id + " uses the original unlit body texture")
+  var anchor: Transform3D = visitor.transform
+  var rig_id: int = visitor.rig.get_instance_id()
+  p.ball.position = chosen.perch
+  for incoming in [Vector2.RIGHT * 550.0, Vector2.LEFT * 550.0, Vector2.ZERO]:
+   p.ball.linear_velocity = incoming
+   visitor._process(0.16)
+  check(visitor.visible and visitor.transform == anchor and visitor.rig.get_instance_id() == rig_id, "Ball proximity and reversals leave " + id + " perched")
+  visitor.enter(p, chosen, cell)
+  check(visitor.rig.get_instance_id() == rig_id, "Re-entry reuses the animal")
+ chosen.species = "missing"
  visitor.enter(p, chosen, cell)
- check(visitor.visible and visitor.find_children("*", "CollisionObject3D", true, false).is_empty(), "Visitor is visible and collisionless")
- p.ball.position = chosen.perch + Vector2.RIGHT * cell * 0.8
- p.ball.linear_velocity = Vector2.LEFT * cell
- p.ball.serve_pending = true
- visitor._process(0.1)
- check(not chosen.departed, "Parked ball cannot startle a Flicky")
- p.ball.serve_pending = false
- p.ball.freeze = false
- visitor._process(0.15)
- check(chosen.departed and visitor.heading.x < 0 and visitor.position.y > p.RAIL_HEIGHT + p.RAIL_CAP_HEIGHT, "Approaching ball sends the Flicky up and away")
- var wing: float = visitor.blue_bird.wings[0].rotation.z
- visitor._process(0.07)
- check(not is_equal_approx(wing, visitor.blue_bird.wings[0].rotation.z), "Blue visitor flaps during takeoff")
- visitor._process(1.5)
- visitor.enter(p, chosen, cell)
- check(not visitor.visible and not visitor.is_processing(), "Completed visit stays empty on re-entry")
- var fresh := chosen.duplicate()
- fresh.departed = false
- fresh.gold = true
- visitor.checked_gold = true # Exercise a portable build without the optional local rig.
- visitor.enter(p, fresh, cell)
- check(visitor.visible and visitor.bird == visitor.blue_bird, "A gold roll uses the blue bird when local art is absent")
- visitor.checked_gold = false
- visitor.enter(p, fresh, cell)
- check(visitor.visible and visitor.bird.visible, "A new Act can host a gold visit or its portable blue alternative")
+ check(not visitor.visible and visitor.rig == null, "Unavailable art leaves the visit empty")
  visitor.enter(p, {}, cell)
- check(not visitor.visible and not visitor.is_processing(), "Switching to an empty Act clears the previous visitor")
+ check(not visitor.visible and not visitor.is_processing(), "Empty Act retires the last visitor")
  visitor.free()
  p.ball.free()
  p.ball = null
@@ -194,7 +184,7 @@ func capture(p: Node3D, birds: Array[Node3D]) -> void:
  title.add_theme_font_size_override("font_size", 28)
  canvas.add_child(title)
  var caption := Label.new()
- caption.text = "Procedural meshes / Hops, wing flutters and head turns"
+ caption.text = "Sonic Runners / Original animal idle"
  caption.position = Vector2(28, 698)
  caption.add_theme_font_size_override("font_size", 19)
  canvas.add_child(caption)

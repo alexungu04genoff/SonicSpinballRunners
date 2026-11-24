@@ -77,9 +77,11 @@ python tools/extract_runners_character.py eggpawn
 
 Godot binds one rig to each live enemy when opening an Act or attaching a baked Act. Portable builds without the local models use procedural versions of the three enemies.
 
-## Flicky visitors
+## Runners animal art
 
-The blue Palm Island Flicky can visit any Act automatically. To enable occasional gold visitors, run `python tools/extract_runners_character.py flicky` against the same local Runners checkout. This exports the three rigid mesh parts of `ani_flicky` and its original `ani_cmn_idle_loop`. The generated model stays local.
+Run `python tools/extract_runners_character.py animals` with the local Runners checkout to export all seven wildlife rigs. Individual names such as `flicky` or `rocky` also work. Each export keeps the original rigid parts, UVs and `ani_cmn_idle_loop`. The importer removes the inverted outline shell around each part. The Flicky material binds `_DifTex` and the other six bind `_MainTex`. Both slots reference the same 256 by 256 diffuse atlas, `ani_all_body_dif.png`. Flicky also uses the original gold reflection map, `enm_cmn_gold_e1.png`, masked by the diffuse atlas's alpha channel. The six standard animals use the original unlit texture shader.
+
+Runtime loads the generated `Runners animal.glb` files locally. Baked Palm Island scenery stores the perches, so it can use freshly installed Flicky art without baking the model into the level. [Runners asset bundle](https://github.com/itsmattkc/RunnersAssetBundleDecomp)
 
 ## Authoring and fixture
 

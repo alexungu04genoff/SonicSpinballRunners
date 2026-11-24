@@ -23,6 +23,7 @@ func collect_bounds(node: Node3D, boxes: Array[AABB], parent := Transform3D.IDEN
   if node.mesh == null: return false
   boxes.append(transform * node.mesh.get_aabb())
  for child: Node in node.get_children():
+  if child is AnimationPlayer and child.get_child_count() == 0: continue
   if not child is Node3D or not collect_bounds(child, boxes, transform): return false
  return true
 

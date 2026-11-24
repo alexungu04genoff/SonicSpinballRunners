@@ -54,7 +54,7 @@ func capture(node: Node, parent := -1, recursive := true) -> void:
    "values": {"spinners": node.spinners, "fields": node.fields, "gimmicks": node.gimmicks, "enemies": node.enemies}})
  elif node.get_script() == Flicky:
   animations.append({"index": index, "script": Flicky,
-   "values": {"phase": node.phase, "pose": node.pose, "head": node.head, "wings": node.wings}})
+   "values": {"phase": node.phase, "pose": node.pose, "species": node.species}})
  else:
   assert(node.get_script() == null, "A new animated decor script needs an explicit streaming binding.")
  if recursive:
@@ -133,7 +133,8 @@ func bind_animations(nodes: Array[Node], presenter: TablePresentation, mechanics
    node.bind_enemy_models()
    for entry: Dictionary in node.gimmicks: MechanicsVisual.Gimmicks.bind_instance_materials(entry)
   node.process_mode = Node.PROCESS_MODE_PAUSABLE
-  node.set_process(true)
+  if animation.script == Flicky: node.bind_model()
+  else: node.set_process(true)
 
 func _decode(value: Variant, nodes: Array[Node], mechanics: Node) -> Variant:
  if value is Dictionary:

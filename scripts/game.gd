@@ -468,7 +468,7 @@ func _add_scoring_hardware(runtime: Dictionary, document: Resource, offset: Vect
 func _show_act_flicky(document: Resource, runtime: Dictionary) -> void:
  if not runtime.has("flicky_visit"):
   var offset := Vector2(runtime.get("spawn", document.spawn_position)) - Vector2(document.spawn_position)
-  runtime.flicky_visit = ActFlicky.choose_perch(document, runtime, offset, RandomNumberGenerator.new())
+  runtime.flicky_visit = ActFlicky.choose_perch(document, runtime, offset, RandomNumberGenerator.new(), ActFlicky.available_species())
  if not is_instance_valid(act_flicky):
   act_flicky = ActFlicky.new()
   act_flicky.name = "ActFlicky"

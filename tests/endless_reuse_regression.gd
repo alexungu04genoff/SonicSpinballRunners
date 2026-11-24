@@ -107,9 +107,7 @@ func run() -> void:
  bird.position = Vector3(1.5, 0.2, -0.4)
  bird.phase = 0.2
  bird.pose = Node3D.new()
- bird.head = Node3D.new()
  bird.add_child(bird.pose)
- bird.pose.add_child(bird.head)
  for side in [-1, 1]:
   var wing := MeshInstance3D.new()
   wing.mesh = mesh
@@ -117,7 +115,6 @@ func run() -> void:
   wing.position = Vector3(side * 0.2, 0.1, 0)
   wing.extra_cull_margin = 0.125
   bird.pose.add_child(wing)
-  bird.wings.append(wing)
  authoring.add_child(bird)
  var recipe := ObservedRecipe.new()
  recipe.capture(authoring)
@@ -191,10 +188,12 @@ func run() -> void:
  var bird_index: int = recipe.animations[0].index
  var restored: Node = live.nodes[bird_index]
  var values: Dictionary = recipe.animations[0].values
- check(restored.pose == live.nodes[values.pose["$node"]] and restored.head == live.nodes[values.head["$node"]], "Animation indices resolve to retained live nodes")
- check(restored.wings[0] == live.nodes[values.wings[0]["$node"]] and restored.wings[1] == live.nodes[values.wings[1]["$node"]], "Animation arrays preserve both retained wing bindings")
+ check(restored.pose == live.nodes[values.pose["$node"]], "Animation perch resolves to its retained live node")
+ var parts: Array = [bird.pose.get_child(0), bird.pose.get_child(1)]
+ var decoded: Array = recipe._decode(recipe._encode(parts), live.nodes, null)
+ check(decoded == [restored.pose.get_child(0), restored.pose.get_child(1)], "Node arrays preserve both retained child bindings")
  restored.set_animation_time(0.1)
- check(restored.pose.position.y > 0 and is_zero_approx(bird.pose.position.y), "Transferred animation changes only the live visual")
+ check(is_equal_approx(restored.animation_time, 0.1) and is_zero_approx(bird.animation_time), "Transferred animation changes only the live visual")
  live.step()
  check(live.ready and live.visual.visible and live.visual.process_mode == Node.PROCESS_MODE_PAUSABLE, "Activation exposes the completed visual")
  check(recipe.animations.all(func(animation: Dictionary): return live.nodes[animation.index].process_mode == Node.PROCESS_MODE_PAUSABLE), "Activation restores authored pausable animation behavior")

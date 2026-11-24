@@ -82,9 +82,7 @@ func run() -> void:
  root.add_child(bird_root)
  var bird := preload("res://scripts/decor/island_flicky.gd").new()
  bird.pose = Node3D.new()
- bird.head = Node3D.new()
  bird.add_child(bird.pose)
- bird.pose.add_child(bird.head)
  bird.process_mode = Node.PROCESS_MODE_PAUSABLE
  bird_root.add_child(bird)
  var birds := Motion.new()
@@ -97,9 +95,9 @@ func run() -> void:
  birds.update(0.1, true)
  check(bird.is_processing(), "Revealing background restores native callback")
  birds.seek(0.24)
- var bird_pose := bird.pose.transform
+ var fixed_time := bird.animation_time
  birds.update(4.0, true)
- check(not bird.is_processing() and bird.pose.transform == bird_pose, "Deterministic Flicky time ignores native callbacks")
+ check(not bird.is_processing() and bird.animation_time == fixed_time, "Deterministic Flicky time ignores native callbacks")
  birds.seek(-1.0)
  paused = true
  var bird_time: float = bird.animation_time

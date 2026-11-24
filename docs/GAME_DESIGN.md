@@ -4,11 +4,11 @@
 
 Place **Enemy** in the Act editor and author its patrol once. Each Act visit deals Buzz Bomber (Beeton), Ganigani and Egg Pawn in random order, drawing all three before repeating. Replaying an Act in the same session changes its first enemy. Ball retries and enemy respawns preserve the lineup. All three share the same 2D contact, score and patrol rules. [Asset setup and patrol behavior](ADVENTURE_BUDDIES_AND_BUZZ.md#runners-badniks)
 
-## Flicky visitors
+## Runners animal visitors
 
-Each fresh Act has a 75% chance to host one Flicky. It needs an exposed raised bank beside the playable floor, clear of the launch area, hardware and authored decor. It hops on the bank until a moving Ball passes within roughly one cell, then flaps away for the rest of that Act instance. Retries keep the visit. Flickies appear across themes in Play Act, Prototype and Endless as collisionless scenery. They award no points.
+Each fresh Act has a 75% chance to host one animal on a clear raised bank beside the playable floor. The Act draws from the installed Sonic Runners animals: Flicky, Picky, Pecky, Pocky, Ricky, Rocky and Cookie. A visit keeps its species and perch across Ball retries. The animal plays its original idle animation on its own clock through nearby rolls and wall impacts. Visits are collisionless and award no points.
 
-Most visitors are the blue Palm Island Flicky. One in five visits uses the gold Sonic Runners Flicky when its local model is installed. Portable builds use the blue bird for every visit. [Local art setup](ADVENTURE_BUDDIES_AND_BUZZ.md#flicky-visitors)
+Play Act, Prototype and Endless use the same placement rules. Empty banks stay empty when local animal art is unavailable. [Local art setup](ADVENTURE_BUDDIES_AND_BUZZ.md#runners-animal-art)
 
 ## Sage Flight experiment
 

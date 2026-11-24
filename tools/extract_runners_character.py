@@ -19,6 +19,7 @@ LOCAL = Path(__file__).resolve().parents[1] / "experiments/visual_lab/local/runn
 SOURCE = LOCAL / "RunnersAssetBundleDecomp"
 GUID = re.compile(r"guid: ([0-9a-f]{32})")
 REFLECTION = np.diag([-1, 1, 1, 1])
+ANIMALS = ("flicky", "picky", "pecky", "pocky", "ricky", "rocky", "cookie")
 
 
 def documents(path):
@@ -91,7 +92,7 @@ def hierarchy(scene_path, actor_root=None):
     return animator, nodes, paths, indices, objects, components
 
 
-def geometry(mesh, buf):
+def geometry(mesh, buf, animal=None):
     vertices = mesh["m_VertexData"]
     raw = bytes.fromhex(vertices["_typelessdata"])
     def channel(index):
@@ -102,11 +103,29 @@ def geometry(mesh, buf):
         return np.ndarray((int(vertices["m_VertexCount"]), int(ch["dimension"])), dtype="<f4",
                           buffer=raw, offset=int(stream["offset"]) + int(ch["offset"]),
                           strides=(int(stream["stride"]), 4)).copy()
-    positions, normals, uv = channel(0), channel(1), channel(3)
+    positions, uv = channel(0), channel(3)
     positions[:, 0] *= -1
-    normals[:, 0] *= -1
     uv[:, 1] = 1 - uv[:, 1]
     triangles = np.frombuffer(bytes.fromhex(mesh["m_IndexBuffer"]), dtype="<u2").reshape(-1, 3)
+    if animal:
+        # Each rigid part has an inside-out duplicate mapped to a flat swatch
+        # on ani_all_body_dif. The Flicky uses a different swatch for its gold rim.
+        lo, hi = ((0.90, 0.90), (0.99, 0.99)) if animal == "flicky" else ((0.61, 0.66), (0.666, 0.72))
+        shell = ((uv >= lo) & (uv <= hi)).all(axis=1)[triangles].all(axis=1)
+        if len(mesh["m_SubMeshes"]) != 1 or not shell.any() or shell.all():
+            raise ValueError(f"Unexpected outline geometry in {animal}/{mesh['m_Name']}")
+        # Unity uses clockwise front faces after axis conversion. Compact the
+        # retained vertices so bounds and texture coordinates describe only the body.
+        used, indices = np.unique(triangles[~shell][:, [0, 2, 1]].flatten(), return_inverse=True)
+        attributes = dict(POSITION=buf.accessor(positions[used], "VEC3", bounds=True),
+                          TEXCOORD_0=buf.accessor(uv[used], "VEC2"))
+        if int(vertices["m_Channels"][1]["dimension"]):
+            normals = channel(1)[used]
+            normals[:, 0] *= -1
+            attributes["NORMAL"] = buf.accessor(normals, "VEC3")
+        return [dict(attributes=attributes, indices=buf.accessor(indices, "SCALAR", "<u2"), material=0)]
+    normals = channel(1)
+    normals[:, 0] *= -1
     a, b, c = positions[triangles].transpose(1, 0, 2)
     if (np.cross(b - a, c - a) * normals[triangles].mean(axis=1)).sum() < 0:
         triangles = triangles[:, [0, 2, 1]]
@@ -187,25 +206,36 @@ def export(character):
     listing = subprocess.check_output(["git", "-C", str(SOURCE), "grep", "-I", "-e", "^guid: ", "--", "*.meta"], text=True)
     assets = {guid: SOURCE / name[:-5] for name, guid in (line.split(":guid: ", 1) for line in listing.splitlines())}
     title = character.capitalize()
-    actor_root = {"beeton": "enm_beeton", "ganigani": "enm_ganigani", "eggpawn": "enm_eggpawn",
-                  "flicky": "ani_flicky"}.get(character)
+    animal = character in ANIMALS
+    actor_root = "ani_" + character if animal else {"beeton": "enm_beeton", "ganigani": "enm_ganigani", "eggpawn": "enm_eggpawn"}.get(character)
     scene = "CommonEnemyResource.unity" if actor_root else f"CharacterModel{title}.unity"
     animator, nodes, paths, indices, objects, components = hierarchy(SOURCE / scene, actor_root)
     buf = Buffer()
     materials, images, image_paths, material_ids = [], [], [], {}
+    def image_index(path):
+        if path not in image_paths:
+            image_paths.append(path)
+            images.append(dict(name=path.stem, mimeType="image/png", bufferView=buf.view(path.read_bytes())))
+        return image_paths.index(path)
+
     def material(guid):
         if guid in material_ids:
             return material_ids[guid]
         mat = assets[guid]
-        diffuse = mat.read_text(encoding="utf-8").split("name: _DifTex", 1)[1]
+        slot_name = "_MainTex" if animal and character != "flicky" else "_DifTex"
+        source = mat.read_text(encoding="utf-8")
+        diffuse = source.split("name: " + slot_name, 1)[1]
         texture = assets[GUID.search(diffuse).group(1)]
-        if texture not in image_paths:
-            image_paths.append(texture)
-            images.append(dict(name=texture.stem, mimeType="image/png", bufferView=buf.view(texture.read_bytes())))
+        if animal and texture.name != "ani_all_body_dif.png":
+            raise ValueError(f"Unexpected animal diffuse texture: {texture.name}")
         material_ids[guid] = len(materials)
-        # The Flicky has an inverted outline shell that must only draw its front faces.
-        materials.append(dict(name=mat.stem, doubleSided=character != "flicky", pbrMetallicRoughness=dict(
-            baseColorTexture=dict(index=image_paths.index(texture)), metallicFactor=0, roughnessFactor=0.93)))
+        materials.append(dict(name=mat.stem, doubleSided=not animal, pbrMetallicRoughness=dict(
+            baseColorTexture=dict(index=image_index(texture)), metallicFactor=0, roughnessFactor=0.93)))
+        if character == "flicky":
+            environment = assets[GUID.search(source.split("name: _EnvTex", 1)[1]).group(1)]
+            materials[-1]["extras"] = {"runnersEnvironmentImage": image_index(environment)}
+        if animal and slot_name == "_MainTex":
+            materials[-1]["extensions"] = {"KHR_materials_unlit": {}}
         return material_ids[guid]
 
     meshes, skins, roots = [], [], [0]
@@ -224,10 +254,10 @@ def export(character):
             nodes.append(dict(name=title + " mesh", skin=len(skins), mesh=len(meshes)))
             skins.append(dict(joints=joints, inverseBindMatrices=binds))
             mesh_name = title
-        elif character == "flicky" and (go, "33") in components:
+        elif animal and (go, "33") in components:
             renderer = components[(go, "23")]
             mesh = next(documents(assets[components[(go, "33")]["m_Mesh"]["guid"]]))[2]
-            primitives = geometry(mesh, buf)
+            primitives = geometry(mesh, buf, character)
             nodes[index]["mesh"] = len(meshes)
             mesh_name = nodes[index]["name"]
         else:
@@ -241,17 +271,25 @@ def export(character):
     clips = sorted({assets[g] for g in GUID.findall(controller) if g in assets and assets[g].suffix == ".anim"})
     animations = [animation(path, paths, buf) for path in clips]
     output = LOCAL / character / f"{title} Runners - original animations.glb"
+    if animal:
+        # A dedicated filename keeps older outlined exports out of live visits.
+        output = LOCAL / character / "Runners animal.glb"
     output.parent.mkdir(exist_ok=True)
     result = dict(asset=dict(version="2.0"), scene=0, scenes=[dict(nodes=roots)], nodes=nodes, meshes=meshes,
                   animations=animations, materials=materials, images=images, textures=[dict(source=i) for i in range(len(images))])
     if skins:
         result["skins"] = skins
+    if any("extensions" in mat for mat in materials):
+        result["extensionsUsed"] = ["KHR_materials_unlit"]
     buf.write(output, result)
     print(f"{title}: {len(meshes)} meshes and {len(clips)} animations -> {output}")
-    bake_generated(output)
+    if not animal:
+        bake_generated(output)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("character", choices=["amy", "big", "blaze", "cream", "rouge", "sonic", "knuckles", "shadow", "tails", "beeton", "ganigani", "eggpawn", "flicky"])
-    export(parser.parse_args().character)
+    parser.add_argument("character", choices=["amy", "big", "blaze", "cream", "rouge", "sonic", "knuckles", "shadow", "tails", "beeton", "ganigani", "eggpawn", "animals", *ANIMALS])
+    selected = parser.parse_args().character
+    for actor in ANIMALS if selected == "animals" else (selected,):
+        export(actor)

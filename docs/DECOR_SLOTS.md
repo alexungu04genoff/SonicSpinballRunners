@@ -109,7 +109,7 @@ Auto chooses between the first two rows, consistently across themes. Circular la
 
 Green Hill's new Small Variant 3 appends the grass tuft after Flower and Small Rock. Those two fixed indices remain unchanged. Small Auto uses the expanded three-prop pool, so some existing Auto small slots may change appearance; use a fixed index to keep a specific prop.
 
-The palm island includes three original procedural Flickies, with blue feathers, cream bellies, large eyes and yellow beaks inspired by this [Flicky reference](https://en.sonicscanf.org/gallery/flickies-and-animals/blue-flicky-render/). They use staggered 4.8-second cycles of two small hops, wing flutters and head turns. Their local animation respects scene-tree pause, stays inside the island and is freed with the prop. They have no collisions or gameplay effects and do not consume gameplay randomness. Select Green Hill **Landmark Variant 3** to place them; existing Auto choices are unchanged.
+Palm Island has three perches for the local Sonic Runners Flicky. Each samples a different phase of the original idle clip and pauses with the scene. The image below shows the earlier procedural bird study. [Current animal art](ADVENTURE_BUDDIES_AND_BUZZ.md#runners-animal-art)
 
 ![Animated palm island with three Flickies](theme-captures/palm-island-flickies.gif)
 
