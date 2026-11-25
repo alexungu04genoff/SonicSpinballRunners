@@ -12,9 +12,10 @@ ROOT = Path(__file__).resolve().parents[1]
 ART = Path("experiments/visual_lab/local")
 GUEST = Path("test-results/team-eggman-source-review")
 SCENES = {
-    "Play": "prototype_run",
-    "Play Endless": "endless_runner",
-    "Act Geometry Editor": "act_geometry_editor",
+    "Play": "scenes/prototype_run.tscn",
+    "Play Endless": "scenes/endless_runner.tscn",
+    "Act Geometry Editor": "scenes/act_geometry_editor.tscn",
+    "Atmosphere Lab": "experiments/lighting_lab/lighting_lab.tscn",
 }
 SOURCE = {".gd", ".gdshader", ".gdshaderinc", ".tscn", ".tres"}
 RESOURCES = SOURCE | {".cfg", ".res", ".uid", ".png", ".svg", ".json", ".import", ".txt", ".md"}
@@ -26,6 +27,7 @@ IMPORT_TARGET = re.compile(r'res://(\.godot/imported/[^"]+)')
 def game_files():
     files = {Path("project.godot"), Path(".godot/global_script_class_cache.cfg"),
              Path(".godot/uid_cache.bin"), Path(".godot/.gdignore"), ART / ".gdignore"}
+    files.update(Path(scene) for scene in SCENES.values())
     for folder in ("assets", "data", "scenes", "scripts", "third_party"):
         files.update(path for path in Path(folder).rglob("*") if path.suffix in RESOURCES
                      and path.is_file() and (path.suffix != ".import" or path.with_suffix("").is_file()))
@@ -104,10 +106,10 @@ if errorlevel 1 (
     exit /b 1
 )
 if /i "%~x1"==".exe" goto dragged
-"%engine%" --path "%~dp0Game" --fullscreen res://scenes/{scene}.tscn %*
+"%engine%" --path "%~dp0Game" --fullscreen res://{scene} %*
 goto finished
 :dragged
-"%engine%" --path "%~dp0Game" --fullscreen res://scenes/{scene}.tscn
+"%engine%" --path "%~dp0Game" --fullscreen res://{scene}
 :finished
 set "result=%errorlevel%"
 if not "%result%"=="0" pause
@@ -128,8 +130,11 @@ You can also point GODOT4_EXE at an existing Godot 4.7.2 executable.
 
 Play.bat opens the Prototype menu. Pick a character, then start a run.
 Play Endless.bat starts the streaming mode. Act Geometry Editor.bat opens
-the editor, where Play launches the current saved Act. All three use your
-existing Godot and start fullscreen. F11 toggles fullscreen during gameplay.
+the editor, where Play launches the current saved Act.
+Atmosphere Lab.bat opens the lighting and palette controls. Select Play
+Prototype to try the loaded Act with your current lighting, including unsaved
+edits. All four launchers use your existing Godot and start fullscreen.
+F11 toggles fullscreen during gameplay.
 
 Q / E         Left / right flipper       Arrow keys    Steer
 X             Launch                     Space         Character special
