@@ -58,6 +58,7 @@ func _ready() -> void:
  scorecraft_config.multiplier_cap = 4
  scorecraft_config.tiered_decay = true
  super._ready()
+ if not last_source_error.is_empty(): return
  # Prototype's existing X launch differs from shared Enter (pause in Session).
  # A separate held action preserves both ordinary input paths and their bindings.
  controls.launch_hold_action = &"prototype_launch_hold"
@@ -425,13 +426,14 @@ func _update_hud(delta: float) -> void:
  if goal_pending and _next_ready():
   goal_pending = false
   _observe_authored_motion(active.runtime.goal_ring.center, active.runtime.goal_ring.center)
- var state: Array = [rings_collected, practice_mode, balls_remaining, active_sequence, run_plan.size(), score, act_score, act_score_target, exit_unlocked, int(special_meter)]
+ var state: Array = [character_id, rings_collected, practice_mode, balls_remaining, active_sequence, run_plan.size(), score, act_score, act_score_target, exit_unlocked, int(special_meter)]
  if state != _hud_detail_state:
   _hud_detail_state = state
   heading.text = "%03d" % rings_collected
   player_hud.score.text = str(score)
-  detail.text = "ACT %d / %d    %s" % [active_sequence + 1, run_plan.size(), "GOAL READY" if exit_unlocked else "%d / %d" % [act_score, act_score_target]]
-  player_hud.update_values(character_id, "∞" if practice_mode else str(balls_remaining), special_meter)
+  detail.text = "ACT %d / %d    %s" % [active_sequence + 1, run_plan.size(), "GOAL READY" if exit_unlocked else "TARGET  %d / %d" % [act_score, act_score_target]]
+  var target_fraction := 1.0 if exit_unlocked else clampf(float(act_score) / maxi(1, act_score_target), 0.0, 1.0)
+  player_hud.update_values(character_id, "∞" if practice_mode else str(balls_remaining), special_meter, target_fraction)
  var hint_text := ""
  if is_instance_valid(ball.launch_tube) and ball.launch_tube.contained: hint_text = ball.launch_tube.feedback
  if is_instance_valid(transfer): hint_text = "Returning to spawn…" if transfer.drain else "Next Act…"
@@ -467,8 +469,8 @@ func _build_hud() -> void:
  fps_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
  fps_label.offset_left = -120
  fps_label.offset_right = -18
- fps_label.offset_top = 18
- fps_label.offset_bottom = 42
+ fps_label.offset_top = 78
+ fps_label.offset_bottom = 102
  fps_label.hide()
  player_hud = preload("res://scripts/prototype/arcade_hud.gd").new()
  hud.add_child(player_hud)

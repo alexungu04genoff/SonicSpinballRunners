@@ -22,8 +22,12 @@ func run() -> void:
  root.add_child(session)
  await settle(session)
  var setup: VBoxContainer = session.setup_menu
- check(not session.start_button.disabled and session.run_configuration.zone_count == 2 and session.run_configuration.selected_theme_ids == Session.Run.RunPlan.THEMES and session.run_configuration.selected_act_paths == session.available_act_paths, "Fresh menu defaults and valid bakes enable Start")
- check(setup.theme_checks.size() == 5 and setup.act_checks.size() == session.available_act_paths.size(), "Menu discovers the production catalogue")
+ var default_themes := ["green_hill", "casino_night", "ice_cap", "rooftop_run", "aquarium_park"]
+ check(not session.start_button.disabled and session.run_configuration.zone_count == 2 and session.run_configuration.selected_theme_ids == default_themes and session.run_configuration.selected_act_paths == session.available_act_paths, "Fresh menu defaults and valid bakes enable Start")
+ check(setup.theme_checks.keys() == Session.Run.RunPlan.Configuration.Profile.theme_ids() and setup.act_checks.keys() == session.available_act_paths, "Menu discovers the production catalogue")
+ setup.bake_errors.erase("green_hill:" + str(session.available_act_paths[0]))
+ setup._changed()
+ check(setup.checking and setup.reason.is_visible_in_tree() and "1 / " in setup.reason.text and session.start_button.disabled, "Rechecking a cold Act shows progress before Play can be used")
  if DisplayServer.get_name() != "headless":
   await process_frame
   await RenderingServer.frame_post_draw
@@ -33,6 +37,8 @@ func run() -> void:
  check(session.start_button.disabled and "theme" in setup.reason.text, "Select none themes disables Start with reason")
  await session.start_run()
  check(session.game == null and session.state == "menu", "Invalid menu cannot start through direct action")
+ await settle(session)
+ check(setup.reason.visible and "theme" in setup.reason.text and session.start_button.disabled, "An older check cannot enable a superseded selection")
  setup.theme_checks.green_hill.set_pressed_no_signal(true)
  for count in 3:
   var index := 0
@@ -46,6 +52,12 @@ func run() -> void:
  setup._changed()
  await settle(session)
  check(not session.start_button.disabled and "21 Acts" in setup.reason.text, "Seven-Zone configuration is ready")
+ setup.bake_errors["green_hill:" + str(session.available_act_paths[0])] = "Outdated Act data"
+ setup._changed()
+ check(setup.recheck_button.is_visible_in_tree() and session.start_button.disabled, "An outdated bake exposes the recovery action")
+ setup.recheck_button.pressed.emit()
+ await settle(session)
+ check(not setup.recheck_button.visible and not session.start_button.disabled, "Recheck reads the bakes again and enables the same selection")
  var expected: Dictionary = session.run_configuration.snapshot()
  session.free()
  session = Session.new()
@@ -58,7 +70,10 @@ func run() -> void:
   if button.text == "Reset run setup": reset = button
  reset.pressed.emit()
  await settle(session)
- check(session.run_configuration.zone_count == 2 and session.run_configuration.selected_theme_ids == Session.Run.RunPlan.THEMES and session.run_configuration.selected_act_paths == session.available_act_paths, "Reset restores defaults")
+ check(session.run_configuration.zone_count == 2 and session.run_configuration.selected_theme_ids == default_themes and session.run_configuration.selected_act_paths == session.available_act_paths, "Reset restores defaults")
+ check(not session.setup_menu.reason.visible, "Successful validation clears the status")
+ session.setup_menu.zones.value = 3
+ check(not session.setup_menu.checking and not session.start_button.disabled and "9 Acts" in session.setup_menu.run_length.text, "Changing length reuses the validated pool immediately")
  # Full all-theme validation uses existing bakes only, with no builder present.
  for checkbox: CheckBox in session.setup_menu.theme_checks.values(): checkbox.set_pressed_no_signal(true)
  session.setup_menu._changed()

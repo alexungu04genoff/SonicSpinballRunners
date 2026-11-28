@@ -217,8 +217,10 @@ func _show_menu() -> void:
  characters.custom_minimum_size.y = 52
  characters.add_theme_constant_override("icon_max_width", 40)
  for id: String in Run.RunPlan.Configuration.Profile.character_ids():
-  characters.add_icon_item(Art.face(id), id.capitalize())
+  var definition: CharacterDefinition = CharacterSpecials.CHARACTERS[id]
+  characters.add_icon_item(Art.face(id), definition.selection_label)
   characters.get_popup().set_item_icon_max_width(characters.item_count - 1, 32)
+  characters.get_popup().set_item_tooltip(characters.item_count - 1, definition.type_action.description)
   characters.set_item_metadata(characters.item_count - 1, id)
   if id == selected_character: characters.select(characters.item_count - 1)
  characters.item_selected.connect(func(index: int):
@@ -234,6 +236,7 @@ func _show_menu() -> void:
  practice.select(1 if practice_mode else 0)
  practice.item_selected.connect(func(index: int): practice_mode = index == 1; _save_settings())
  stack.add_child(practice)
+ _label(stack, "Reach the Act target, then shoot the gold Goal Ring.", 16)
  var sound := CheckButton.new()
  sound.text = "Scoring sounds"
  sound.button_pressed = sound_enabled
@@ -271,15 +274,20 @@ func _show_menu() -> void:
  graphics_parent.add_child(preload("res://scripts/rendering/graphics_profile_picker.gd").new())
  var footer := HBoxContainer.new()
  stack.add_child(footer)
- var controls_button := _action(footer, "Controls", func(): pass)
- controls_button.theme_type_variation = &"QuietButton"
- controls_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ _add_controls(footer, stack)
  var quit_button := _action(footer, "Quit", _quit)
  quit_button.theme_type_variation = &"QuietButton"
  quit_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
- var controls_label := _label(stack, "Q / E or LB / RB · Flippers\nArrows or stick · Steer\nX · Launch     Space / A · Special\nEnter / Esc / Menu · Pause     R / Back · Retry\nC / Shift+C · Next / previous camera\nF11 · Fullscreen", 16)
- controls_label.hide()
- controls_button.pressed.connect(func(): controls_label.visible = not controls_label.visible)
+
+func _add_controls(button_row: Container, panel: Container) -> void:
+ var help := Label.new()
+ help.text = "Q / E or LB / RB   ·   Flippers\nLeft / Right or left stick   ·   Steer\nX   ·   Launch (hold and release at a plunger)\nSpace or A   ·   Use charged Special\nR or Back   ·   Retry (spends a Ball in Challenge)\nEnter / Esc or Menu   ·   Pause\nC / Shift+C   ·   Next / previous camera\nF11   ·   Fullscreen"
+ var button := _action(button_row, "Controls", func(): help.visible = not help.visible)
+ button.theme_type_variation = &"QuietButton"
+ button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ help.add_theme_font_size_override("font_size", 16)
+ help.hide()
+ panel.add_child(help)
 
 func start_run() -> void:
  if state == "menu" and is_instance_valid(start_button) and start_button.disabled: return
@@ -340,6 +348,7 @@ func _close_run(reason := "returned_to_menu") -> void:
 func return_to_menu() -> void:
  if transitioning: return
  var abandoned := is_instance_valid(game) and not archive_attempted
+ if state == "error" and abandoned and not game.started: abandoned = false
  transitioning = true
  state = "loading"
  _panel("RETURNING TO MENU", "Finishing the current session…")
@@ -359,6 +368,7 @@ func _show_pause() -> void:
  pause_camera_picker.item_selected.connect(func(index: int):
   game.select_play_camera(pause_camera_picker.get_item_id(index)))
  stack.add_child(pause_camera_picker)
+ _add_controls(stack, stack)
  if _can_inspect_character(): _action(stack, "%s spin preview   [F8]" % game.character_id.capitalize(), _open_spin_lab)
  _action(stack, "Restart run", start_run)
  _action(stack, "Return to menu", return_to_menu)
@@ -582,10 +592,13 @@ static func _time_text(seconds: float) -> String:
 
 func _process(_delta: float) -> void:
  if transitioning or not is_instance_valid(game): return
- var failed: bool = not game.last_source_error.is_empty() or (is_instance_valid(game.library) and not game.library.error.is_empty())
- if failed and state != "error":
+ var error: String = game.last_source_error
+ if error.is_empty() and is_instance_valid(game.library): error = game.library.error
+ if not error.is_empty() and state != "error":
   state = "error"
-  var stack := _panel("RUN COULD NOT START", "Required game data is missing or out of date.\nReturn to the menu or use a complete prototype build.")
+  var stack := _panel("RUN INTERRUPTED" if game.started else "RUN COULD NOT START", "")
+  var explanation := _label(stack, error)
+  explanation.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
   _action(stack, "Return to menu", return_to_menu, true)
   _action(stack, "Quit", _quit)
   return
@@ -614,7 +627,8 @@ func _input(event: InputEvent) -> void:
    return
  if not event is InputEventKey or state not in ["playing", "paused"] or not is_instance_valid(game) or not game.started: return
  if event.keycode in [KEY_ENTER, KEY_KP_ENTER]:
-  if state == "paused" and is_instance_valid(pause_camera_picker) and pause_camera_picker.has_focus(): return
+  var focus := get_viewport().gui_get_focus_owner()
+  if state == "paused" and focus != null and overlay_root.is_ancestor_of(focus): return
   # Consume Enter before UI accept or the shared launch binding can also fire.
   get_viewport().set_input_as_handled()
   if event.pressed and not event.echo: game.toggle_pause()

@@ -10,6 +10,7 @@ func run() -> void:
  settings.save(settings_path)
  session = Session.new()
  session.settings_path = settings_path
+ session.archive_directory = "user://telemetry/runs/_validation/camera-picker"
  root.add_child(session)
  check(session._read_play_camera() == TablePresentation.CameraPreset.DRAMATIC_PINBALL, "Unknown saved view falls back to Dramatic")
  session._save_play_camera(TablePresentation.CameraPreset.REAL_PINBALL)
@@ -33,6 +34,20 @@ func run() -> void:
  await process_frame
  var picker: OptionButton = session.pause_camera_picker
  check(paused and picker.get_selected_id() == TablePresentation.CameraPreset.WIDE_PINBALL and picker.item_count == 4, "Pause shows the live shortcut selection and all four views")
+ var controls_button: Button
+ for button: Button in session.overlay_root.find_children("*", "Button", true, false):
+  if button.text == "Controls": controls_button = button
+ controls_button.grab_focus()
+ var accept := InputEventKey.new()
+ accept.keycode = KEY_ENTER
+ accept.pressed = true
+ root.push_input(accept, true)
+ accept.pressed = false
+ root.push_input(accept, true)
+ var help_visible := false
+ for label: Label in session.overlay_root.find_children("*", "Label", true, false):
+  if "Flippers" in label.text: help_visible = label.is_visible_in_tree()
+ check(paused and help_visible, "Enter opens the focused Controls button while play stays paused")
  var top_down := picker.get_item_index(TablePresentation.CameraPreset.TOP_DOWN)
  picker.select(top_down)
  picker.item_selected.emit(top_down)
@@ -47,6 +62,7 @@ func run() -> void:
  session.free()
  session = Session.new()
  session.settings_path = settings_path
+ session.archive_directory = "user://telemetry/runs/_validation/camera-picker"
  session.configure_act_test(ACT)
  root.add_child(session)
  await session.start_run()

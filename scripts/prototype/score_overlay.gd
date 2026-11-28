@@ -18,6 +18,7 @@ func track_label(label: Label3D) -> void:
  table_labels.append(weakref(label))
 
 func _ready() -> void:
+ hide()
  mouse_filter = Control.MOUSE_FILTER_IGNORE
  process_mode = Node.PROCESS_MODE_ALWAYS
  set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -61,13 +62,45 @@ func screen_point(at: Vector2, height: float) -> Vector2:
 func _text(text: String, at: Vector2, font_size: int, tint: Color) -> void:
  if not at.is_finite(): return
  var font := ThemeDB.fallback_font
- var extent := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE) * FONT_SCALE
+ var extent := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size) * FONT_SCALE
  at.x = clampf(at.x, 8.0, maxf(8.0, get_viewport_rect().size.x - extent.x - 8.0))
  at.y = clampf(at.y, extent.y, get_viewport_rect().size.y - 8.0)
  draw_set_transform(at, 0.0, Vector2.ONE * FONT_SCALE)
- draw_string_outline(font, Vector2.ZERO, text, HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, 5, Color(0.02, 0.04, 0.07, tint.a * 0.9))
- draw_string(font, Vector2.ZERO, text, HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE, tint)
+ draw_string_outline(font, Vector2.ZERO, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, 5, Color(0.02, 0.04, 0.07, tint.a * 0.9))
+ draw_string(font, Vector2.ZERO, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, tint)
  draw_set_transform(Vector2.ZERO)
+
+func _draw_goal(goal: Node3D) -> void:
+ var point := screen_point(goal.center, goal.position.y)
+ if get_viewport_rect().has_point(point):
+  var caption := "GOAL" if goal.unlocked else "GOAL · %d / %d" % [game.act_score, game.act_score_target]
+  _text(caption, point + Vector2(-35, -22), FONT_SIZE, Color("ffd447") if goal.unlocked else Color("a6abb3"))
+ elif goal.unlocked:
+  var direction := point - size * 0.5
+  if not point.is_finite():
+   # Projecting behind a perspective camera flips left and right.
+   var local: Vector3 = game.presentation.camera.get_camera_transform().affine_inverse() * goal.global_position
+   direction = Vector2(local.x, -local.y) * size / Vector2(game.view.size)
+  _draw_goal_pointer(Vector2.DOWN if direction.is_zero_approx() else direction.normalized())
+
+func _draw_goal_pointer(direction: Vector2) -> void:
+ var half_size := Vector2(45, 17)
+ var room := size * 0.5 - half_size - Vector2(14, 14)
+ var distance := minf(room.x / maxf(absf(direction.x), 0.001), room.y / maxf(absf(direction.y), 0.001))
+ var center := size * 0.5 + direction * distance
+ # Keep the pointer clear of the score plate, Special meter and pause button.
+ if center.x - half_size.x < game.player_hud.plate_width:
+  center.y = clampf(center.y, 150, size.y - 105)
+ elif center.x + half_size.x > size.x - 78:
+  center.y = maxf(center.y, 98)
+ var badge := Rect2(center - half_size, half_size * 2)
+ var gold := Color("ffdf47")
+ draw_rect(badge, Color("102e66ed"))
+ draw_rect(badge, gold, false, 2)
+ var arrow := center + Vector2(-26, 0)
+ var wing := direction.orthogonal() * 7.0
+ draw_colored_polygon(PackedVector2Array([arrow + direction * 10.0, arrow - direction * 6.0 + wing, arrow - direction * 3.0, arrow - direction * 6.0 - wing]), gold)
+ draw_string(get_theme_font(&"font", &"RaceTitle"), center + Vector2(-12, 6), "GOAL", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color.WHITE)
 
 func _draw() -> void:
  if not visible: return
@@ -82,9 +115,7 @@ func _draw() -> void:
    marker.x = maxf(marker.x, projected.x * get_viewport_rect().size.x / game.view.size.x + 8)
   _text("×%d" % displayed_multiplier, marker, FONT_SIZE, tint)
  if game.active != null:
-  var goal: Node3D = game.active.runtime.goal_ring
-  var goal_screen := screen_point(goal.center, goal.radius * TablePresentation.SCALE * 2.0)
-  if get_viewport_rect().has_point(goal_screen): _text("GOAL" if goal.unlocked else "GOAL · %d / %d" % [game.act_score, game.act_score_target], goal_screen + Vector2(-35, -12), FONT_SIZE, Color("ffd447") if goal.unlocked else Color("a6abb3"))
+  _draw_goal(game.active.runtime.goal_ring)
  for reference: WeakRef in table_labels:
   var label: Label3D = reference.get_ref()
   if label == null or label.text.is_empty() or game.presentation.camera.is_position_behind(label.global_position): continue

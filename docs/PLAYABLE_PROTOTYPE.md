@@ -4,6 +4,10 @@ Windows rendering defaults to **Forward+ / Vulkan** (2026-11-01), matching the A
 
 Current workflow: **Act Geometry Editor → Play Act → Bake Prototype → Play Prototype**. Production content is the eight committed Acts in `data/acts/Authored`, with five base-game themes. The [Loop Workshop](LOOP_WORKSHOP.md) is available through Editor Play. Earlier dated verification counts below describe their original snapshots; they are not the current pool size. Current scoring is [economy V1](ACT_SCORING.md), with [telemetry v4](PROTOTYPE_TELEMETRY.md), 35 px default rail-ring spacing, and the final configured Goal Ring ending the run.
 
+The character picker shows each runner’s type and Special. In play, the gold bar under the Act counter tracks the current Act’s score target. Fill it, then shoot the gold Goal Ring. When the unlocked ring is outside the camera view, a gold arrow points toward it. The Special gauge names the selected action and shows **Space / A** at full charge. Open **Controls** from run setup or pause to review the bindings.
+
+If run setup reports outdated Act data in the source checkout, run **Bake Prototype.cmd**, then select **Recheck Act data** in the open menu.
+
 Clover Scoop is an 8-by-8 Easy Act. Aim the right flipper at the yellow spring for a loop shot worth 1,000 points. The ring racks, Buzz Bomber and bumper offer a scoring route around it. [Watch the opening shot](clover-scoop.mp4)
 
 ## Editor Play uses Prototype
@@ -64,7 +68,7 @@ The prototype camera uses zoom 1.3 and a vertical target 55% down the screen. Th
 
 Run **Sonic Spinball Runners.exe** from the Windows build. No Godot installation or repository is required for that build. In the source checkout, run **Play Prototype.cmd** with Godot 4.7.2 installed; it prepares missing bakes on first launch. Run **Bake Prototype.cmd** after changing the Acts or presentation sources.
 
-Choose a character, Practice and sound, then configure **1–7 Zones**, the theme pool and the production Act pool. Each Zone contains **3 distinct Acts**, giving 3–21 Acts per run. Fresh settings and Reset run setup select **2 Zones, Green Hill + Chemical Plant, and all valid Acts in `res://data/acts/Authored`**. Start requires at least one theme, three Acts and valid existing baked data. Select all / Select none never silently restore defaults. The Act list shows authored titles and source filenames.
+Choose a character and game mode, then set the run length to **1–7 Zones**. Each Zone contains **3 distinct Acts**, giving 3–21 Acts per run. Fresh source settings and **Reset run setup** select **2 Zones, the five base-game themes and all production Acts**. Open **Customize** to change the theme pool, Act pool or scoring sounds. Play requires at least one theme, three Acts and valid baked data. The Act list uses source filenames and shows the full path on hover.
 
 Targets remain **1000 + 500 × zero-based global Act index**: the default six-Act run keeps **1,000 / 1,500 / 2,000 / 2,500 / 3,000 / 3,500**; Act 21 targets 11,000. Reaching a target colors the Goal Ring; touching it advances. Each new Act resets local score while preserving total score and Buddies. The final configured Goal Ring ends the run. Scoring, combos and physics are unchanged by run setup.
 
@@ -98,7 +102,7 @@ The menu saves character choice, Practice preference, sound preference, best com
 
 The source Acts stay unchanged: run-local targets and goal hardware are applied to the streamed instances. Their source fingerprints and bake validation remain authoritative. Existing standalone Act play, editor workflows and the published Endless roster retain their own rules. Maintained scoring demonstration fixtures live in `data/acts/scoring/`; the unreferenced older copies in `data/prototype/` were removed during repository cleanup.
 
-**Every valid production Act is baked in all eight registered themes**: currently 40 Act variants plus eight shared theme bakes. `Bake Prototype.cmd` discovers the production roster and theme registry, independently of saved run selections. Menu changes only validate existing data; they never bake or generate geometry. The launcher also prepares missing bakes or Acts saved after their last bake; run the explicit bake command after presentation changes. Normal play loads the baked collisions, visual recipes, optimized mesh batches and warm-up metadata. The existing loader rejects stale bakes instead of rebuilding geometry during gameplay. GPU uploads and driver shader compilation still happen at runtime; offline bakes do not eliminate every first-launch or streaming stall.
+`Bake Prototype.cmd` bakes each production Act for every theme available in the build, regardless of saved run selections. The menu validates the selected combinations. The source launcher prepares missing bakes and Acts saved after their last bake. Run the explicit bake command after presentation changes. Normal play loads the baked collisions, visual recipes, optimized mesh batches and warm-up metadata. The loader rejects stale bakes. GPU uploads and driver shader compilation still happen during play.
 
 ## Source verification and Windows export
 

@@ -10,6 +10,7 @@ var configuration: RefCounted
 var paths: Array
 var start_button: Button
 var reason: Label
+var recheck_button: Button
 var zones: SpinBox
 var theme_checks := {}
 var act_checks := {}
@@ -89,6 +90,7 @@ func configure(value: RefCounted, available: Array, start: Button) -> void:
  var scroll := ScrollContainer.new()
  scroll.custom_minimum_size.y = 170
  scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+ scroll.follow_focus = true
  add_child(scroll)
  var acts := VBoxContainer.new()
  acts.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -132,6 +134,14 @@ func configure(value: RefCounted, available: Array, start: Button) -> void:
  reason = _label("")
  reason.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  reason.custom_minimum_size.x = 480
+ recheck_button = Button.new()
+ recheck_button.text = "Recheck Act data"
+ recheck_button.pressed.connect(func():
+  bake_errors.clear()
+  theme_fingerprints.clear()
+  theme_validity.clear()
+  _changed())
+ add_child(recheck_button)
  _changed()
 
 func _label(text: String) -> Label:
@@ -164,8 +174,10 @@ func _changed() -> void:
  changed.emit()
  generation += 1
  start_button.disabled = true
+ recheck_button.hide()
  var error: String = configuration.validation_error()
- reason.text = error if not error.is_empty() else "Loading…"
+ reason.show()
+ reason.text = error if not error.is_empty() else "Checking selected Acts…"
  if not checking: _validate(generation)
 
 func _validate(ticket: int) -> void:
@@ -182,18 +194,21 @@ func _validate(ticket: int) -> void:
    documents.append(loaded.document)
   if error.is_empty(): error = Plan.pool_error(documents)
  if error.is_empty():
-  reason.text = "Loading…"
   var selected_paths: Array = configuration.selected_act_paths.duplicate()
   var selected_themes: Array = configuration.selected_theme_ids.duplicate()
+  var checked := 0
+  var total := selected_paths.size() * selected_themes.size()
   for theme: String in selected_themes:
    for path: String in selected_paths:
-    if inspect_bakes: await validation_frame
-    if is_queued_for_deletion(): return
-    if ticket != generation:
-     _validate(generation)
-     return
+    checked += 1
     var key := theme + ":" + path
     if not bake_errors.has(key):
+     reason.text = "Checking Act data · %d / %d" % [checked, total]
+     if inspect_bakes: await validation_frame
+     if is_queued_for_deletion(): return
+     if ticket != generation:
+      _validate(generation)
+      return
      bake_errors[key] = await _bake_error(path, theme)
      if is_queued_for_deletion(): return
      if ticket != generation:
@@ -201,6 +216,7 @@ func _validate(ticket: int) -> void:
       return
     if not bake_errors[key].is_empty():
      error = bake_errors[key]
+     recheck_button.visible = inspect_bakes
      break
    if not error.is_empty(): break
  checking = false
@@ -230,7 +246,7 @@ func _bake_error(path: String, theme: String) -> String:
  return ""
 
 func _read_bake(path: String) -> Resource:
- var result: Resource = ResourceLoader.load(path)
+ var result: Resource = ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE)
  # Let queued texture uploads complete before an inspection can release them.
  # Validation yields between combinations; no bake resources are retained by the menu.
  if DisplayServer.get_name() != "headless": await validation_draw

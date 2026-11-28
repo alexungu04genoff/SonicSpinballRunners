@@ -13,6 +13,8 @@ var score: Label
 var portrait: TextureRect
 var portrait_letter: Label
 var charge := 0.0
+var target_progress := 0.0
+var special_name: Label
 var plate_width := 250.0
 
 func _ready() -> void:
@@ -31,9 +33,8 @@ func _ready() -> void:
  progress.add_theme_color_override("font_color", Color("ddf4ff"))
  message = _label(Vector2(18, 111), 16)
  message.add_theme_color_override("font_color", Color("ffe564"))
- var special := _label(Vector2.ZERO, 16)
- special.text = "SPECIAL"
- _bottom_label(special, 22, -81)
+ special_name = _label(Vector2.ZERO, 16)
+ _bottom_label(special_name, 22, -81)
  ready_label = _label(Vector2.ZERO, 16)
  _bottom_label(ready_label, 148, -81)
  ready_label.add_theme_color_override("font_color", Color("ffe564"))
@@ -61,27 +62,37 @@ func _icon(texture: Texture2D, at: Vector2, dimensions: Vector2) -> TextureRect:
  add_child(image)
  return image
 
-func update_values(character: String, balls: String, amount: float) -> void:
+func update_values(character: String, balls: String, amount: float, target_fraction: float) -> void:
+ var definition: CharacterDefinition = CharacterSpecials.CHARACTERS[character]
  portrait.texture = Art.face(character)
- portrait_letter.text = "" if portrait.texture else CharacterSpecials.CHARACTERS[character].display_name.left(1)
- portrait_letter.add_theme_color_override("font_color", CharacterSpecials.CHARACTERS[character].color)
+ portrait_letter.text = "" if portrait.texture else definition.display_name.left(1)
+ portrait_letter.add_theme_color_override("font_color", definition.color)
  portrait.position.x = maxf(154, rings.position.x + rings.get_minimum_size().x + 12)
  portrait_letter.position.x = portrait.position.x + 9
  lives.position.x = portrait.position.x + 44
  lives.text = "× " + balls
- var width := maxf(250, maxf(lives.position.x + lives.get_minimum_size().x, progress.position.x + progress.get_minimum_size().x) + 18)
- var value := clampf(amount / 100.0, 0.0, 1.0)
- if not is_equal_approx(charge, value) or not is_equal_approx(width, plate_width):
+ var content_right := maxf(lives.position.x + lives.get_minimum_size().x, progress.position.x + progress.get_minimum_size().x)
+ content_right = maxf(content_right, score.position.x + score.get_minimum_size().x)
+ var width := maxf(250, content_right + 18)
+ var value := clampf(amount / definition.meter_capacity, 0.0, 1.0)
+ if not is_equal_approx(charge, value) or not is_equal_approx(width, plate_width) or not is_equal_approx(target_progress, target_fraction):
   charge = value
   plate_width = width
+  target_progress = target_fraction
   queue_redraw()
- ready_label.text = "READY" if charge >= 1.0 else ""
+ special_name.text = definition.type_action.action_name.to_upper()
+ ready_label.offset_left = special_name.offset_left + special_name.get_minimum_size().x + 12
+ ready_label.text = "READY · SPACE / A" if amount >= definition.meter_cost else ""
 
 func _draw() -> void:
  # Short angled plates leave the middle of the table free for play.
  draw_colored_polygon(PackedVector2Array([Vector2(15, 15), Vector2(plate_width, 15), Vector2(plate_width - 8, 78), Vector2(15, 78)]), Color("102e66ed"))
  draw_rect(Rect2(15, 12, plate_width - 15, 4), Color("ffdd39"))
  draw_rect(Rect2(15, 78, plate_width - 23, 26), INK)
+ var track := Rect2(15, 104, plate_width - 23, 4)
+ draw_rect(track, Color("385a82"))
+ if target_progress > 0.0:
+  draw_rect(Rect2(track.position, Vector2(track.size.x * target_progress, track.size.y)), Color("ffdf47"))
  var gauge := Rect2(14, size.y - 55, 205, 41)
  draw_texture_rect(GAUGE, gauge, false)
  if charge > 0.0:
