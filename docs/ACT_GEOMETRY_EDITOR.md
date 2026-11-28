@@ -217,7 +217,7 @@ The Act's top-left is local `(0, 0)`, with X right and Y down. Gameplay placemen
 
 ## Decor slots
 
-The **Decor** palette adds small, medium, large and landmark markers. Place them manually on raised terrain; the active runtime skin supplies the prop. Free placement is the default, with optional grid snapping and Alt override. Select to drag, edit type/hint, exact X/Y and any **Angle °**, or adjust scale within 0.85–1.15. **R / Shift+R**, **Ctrl+D**, **Delete**, undo/redo and overlap cycling work with decor. **Show decor slots** hides only the markers and their hit targets.
+The **Decor** palette offers Small, Medium, Big and Landmark slots. Place them on raised terrain. The canvas shows each prop’s footprint at gameplay scale in the selected preview theme. Free placement is the default, with optional grid snapping and Alt override. Select to drag, edit type/hint, exact X/Y and any **Angle °**, or adjust scale from 0.125 to 8. **R / Shift+R**, **Ctrl+D**, **Delete**, undo/redo and overlap cycling work with decor. **Show decor slots** hides only the markers and their hit targets.
 
 Slots store generic types, surface/edge/either hints and stable IDs, never Green Hill mesh names. The inspector reports unsupported anchors; those remain saveable but do not spawn over the playable floor. Green Hill currently supplies palms, flowers, rock clusters, shrubs, checker pedestals and a decorative loop. See [Decor Slots](DECOR_SLOTS.md) for three example Acts, captures, deterministic resolution and the future-skin contract.
 

@@ -1,5 +1,6 @@
 extends SceneTree
 ## Review sheet rendered from the production library and moonlight settings.
+const Slots = preload("res://scripts/act_editor/decor_slots.gd")
 const IceTheme = preload("res://scripts/themes/ice_cap_theme.gd")
 const OUTPUT := "res://test-results/ice-review/ice-library.png"
 
@@ -36,7 +37,7 @@ func run() -> void:
  canvas.add_child(background)
  var theme := IceTheme.new()
  var library: RefCounted = theme.create_decor(null)
- var sizes := ["small", "medium", "large", "landmark"]
+ var sizes := Slots.TYPES
  for row in 4:
   for column in 4:
    var type: String = sizes[column]
@@ -67,7 +68,7 @@ func run() -> void:
    stage._world_environment.environment.background_color = Color("547184")
    var plinth: MeshInstance3D = library.box(stage, "deep", Vector3(0, -0.08, 0), Vector3(3.2 if column == 3 else 2.25, 0.16, 1.6))
    plinth.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-   var prop: Node3D = library.build_variant(variant)
+   var prop: Node3D = library.slot_model(type, variant)
    stage.add_child(prop)
    prop.rotation_degrees.y = -16.0
    prop.scale = Vector3.ONE * (2.1 if column == 0 else (1.6 if column == 1 else 1.0))
@@ -80,10 +81,10 @@ func run() -> void:
    camera.look_at(Vector3(0, 1.0 if column == 3 else 0.85, 0))
    camera.current = true
    label(canvas, variant.capitalize(), at + Vector2(0, 219), 360, 21, true)
-   label(canvas, type.to_upper() + " / " + str(row + 1), at + Vector2(0, 247), 360, 14, true)
+   label(canvas, Slots.display_name(type).to_upper() + " / " + str(row + 1), at + Vector2(0, 247), 360, 14, true)
  label(canvas, "ICE CAP  /  TWILIGHT GLACIER", Vector2(50, 30), 1500, 38)
  label(canvas, "13 original procedural props  /  Production moonlight  /  Filter off", Vector2(52, 82), 1500, 22)
- label(canvas, "Small shown at 2.1x, medium at 1.6x; large and landmark at 1x. All props honor exact authored yaw.", Vector2(52, 1330), 1500, 20)
+ label(canvas, "Small shown at 2.1x, medium at 1.6x; Big and Landmark at 1x. All props honor exact authored yaw.", Vector2(52, 1330), 1500, 20)
  for i in 10: await process_frame
  await RenderingServer.frame_post_draw
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUTPUT.get_base_dir()))

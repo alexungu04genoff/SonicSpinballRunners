@@ -250,7 +250,7 @@ func _object_name(kind: String, index: int) -> String:
  match kind:
   "terrain": return "Terrain %d · %s" % [index + 1, Shapes.definition_for_placement(item).get("label", item.shape_id)]
   "gameplay": return "%s %d" % [Objects.get_definition(item.type).get("label", item.type), index + 1]
-  "decor": return "Decor %d · %s" % [index + 1, item.slot_type]
+  "decor": return "Decor %d · %s" % [index + 1, Act.DECOR.display_name(item.slot_type)]
   "ring": return "Rings %d · %s" % [index + 1, item.get("kind", "line")]
  return "%s %d" % [kind, index + 1]
 

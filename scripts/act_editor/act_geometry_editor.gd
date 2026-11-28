@@ -811,9 +811,9 @@ func _build_decor_palette(parent: Node) -> void:
 	_button(decor_list, "decor_randomize", "Randomize small / medium", randomize_decor, "Replace scattered decor using the chosen size mix where space permits. Varies scale and rotation; preserves manual props. One Undo step.")
 	decor_list.add_child(HSeparator.new())
 	for type: String in Decor.TYPES:
-		_button(decor_list, "decor_" + type, type.capitalize() + " slot", choose_decor.bind(type), "Place a generic visual slot on raised terrain. Free placement by default.")
+		_button(decor_list, "decor_" + type, Decor.display_name(type) + " slot", choose_decor.bind(type), "Place a generic visual slot on raised terrain. Free placement by default.")
 	decor_type_field = OptionButton.new()
-	for type: String in Decor.TYPES: decor_type_field.add_item(type.capitalize())
+	for type: String in Decor.TYPES: decor_type_field.add_item(Decor.display_name(type))
 	decor_type_field.item_selected.connect(func(index): _set_decor_property("slot_type", Decor.TYPES[index]))
 	decor_list.add_child(decor_type_field)
 	decor_hint_field = OptionButton.new()
@@ -2217,7 +2217,7 @@ func _refresh() -> void:
 		mode_label.text = "%d ITEMS SELECTED" % canvas.selection_count()
 		detail_label.text = "Drag freely · Shift snaps · Arrows: 1 px / Shift: grid · R rotates · [ / ] scales · Ctrl+D duplicates"
 	elif not decor.is_empty():
-		mode_label.text = ("PLACE" if not canvas.decor_brush.is_empty() else "SELECTED") + " · " + decor.slot_type.capitalize() + " decor"
+		mode_label.text = ("PLACE" if not canvas.decor_brush.is_empty() else "SELECTED") + " · " + Decor.display_name(decor.slot_type) + " decor"
 		var variant := "Variant %d" % (int(decor.get("variant_index", 0)) + 1) if decor.get("variant_mode", "auto") == "fixed" else "Auto variant"
 		detail_label.text = "%s px · %s° · %s · %s · Presentation only" % [decor.position, var_to_str(decor.rotation_degrees), decor.placement_hint, variant]
 	elif canvas.ring_tool or canvas.selected_ring_index >= 0:

@@ -32,6 +32,7 @@ func _init(_presentation: Node3D) -> void:
   if key == "purple": Atmosphere.color(mat, "purple_accent")
   if key == "gold_light": Atmosphere.color(mat, "window_gold")
   if key in ["gold", "ivory"]: Atmosphere.color(mat, "metal_tint", "tint")
+  preload("res://scripts/themes/dreamcast_textures.gd").detail(mat, "metal" if key in ["gold", "gold_light", "ivory"] else "enamel")
   materials[key] = mat
  materials["housing"] = preload("res://scripts/themes/casino_selected_materials.gd").housing()
  if materials.has("housing"): Atmosphere.color(materials.housing, "housing_tint", "tint")
@@ -130,13 +131,15 @@ func build_variant(variant: String, landmark_layout := true) -> Node3D:
   "card_fan": cards(root)
   "star_lantern": lantern(root)
   "reel_tower":
-   box(root, "navy", Vector3(0, 0.11, 0), Vector3(0.84, 0.22, 0.70))
-   for i in 2:
-    var machine := Node3D.new()
-    root.add_child(machine)
-    machine.position.y = 0.22 + i * 0.68
-    reels(machine)
-   star(root, Vector3(0, 1.80, 0), 0.44, "pink", true)
+   box(root, "navy", Vector3(0, 0.14, 0), Vector3(0.92, 0.28, 0.66))
+   var machine := Node3D.new()
+   root.add_child(machine)
+   machine.position.y = 0.28
+   machine.scale = Vector3(1.20, 1.30, 1.14)
+   reels(machine)
+   box(root, "purple", Vector3(0, 1.36, 0), Vector3(0.74, 0.48, 0.43))
+   box(root, "gold", Vector3(0, 1.61, 0), Vector3(0.85, 0.10, 0.52))
+   star(root, Vector3(0, 1.60, 0.25), 0.67, "pink", true)
   "casino_pylon": pylon(root)
   "jackpot_palace": palace(root, landmark_layout)
   "star_gateway": gateway(root)
@@ -217,7 +220,11 @@ func pylon(root: Node3D) -> void:
  for side: int in [-1, 1]:
   box(root, "gold", Vector3(side * 0.28, 0.76, 0), Vector3(0.10, 1.18, 0.50))
   box(root, "aqua", Vector3(side * 0.28, 0.76, 0.26), Vector3(0.035, 1.0, 0.025))
- for i in 3: star(root, Vector3(0, 0.38 + i * 0.32, 0.24), 0.25, "pink" if i == 1 else "amber")
+ for side: int in [-1, 1]:
+  var sign_face := Node3D.new()
+  root.add_child(sign_face)
+  sign_face.rotation.y = PI if side < 0 else 0.0
+  star(sign_face, Vector3(0, 0.88, 0.24), 0.43, "pink")
  box(root, "gold_light", Vector3(0, 1.42, 0), Vector3(0.73, 0.12, 0.62))
  piece(root, "cone", "red", Vector3(0, 1.60, 0), Vector3(0.31, 0.30, 0.27))
 

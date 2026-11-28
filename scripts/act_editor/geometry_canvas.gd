@@ -504,7 +504,7 @@ func _draw_decor_slot(slot: Dictionary, selected: bool, ghost: bool, seed: Strin
  draw_circle(center, 5, color)
  var direction := (Vector2.LEFT if slot.get("mirror_x", false) else Vector2.RIGHT).rotated(deg_to_rad(float(slot.rotation_degrees)))
  draw_line(center, center + direction * 10.0, color, 2.0, true)
- var label: String = "◆" if slot.slot_type == "landmark" else slot.slot_type.left(1).to_upper()
+ var label: String = "◆" if slot.slot_type == "landmark" else Decor.display_name(slot.slot_type).left(1)
  draw_string(ThemeDB.fallback_font, center + Vector2(-3, 3), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("101a25"))
 
 func _update_decor_drag(pointer: Vector2, alt: bool, force := false) -> void:

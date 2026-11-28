@@ -18,7 +18,8 @@ func variant_warning(slot: Dictionary) -> String:
  var choices := variants_for(slot)
  if choices.is_empty(): return "This theme has no variants for this slot; no prop will be shown."
  if slot.get("variant_mode", "auto") == "fixed" and int(slot.get("variant_index", -1)) not in range(choices.size()):
-  return "Variant %d is unavailable in this theme's %s / %s pool; using Auto. The saved index is unchanged." % [int(slot.get("variant_index", -1)) + 1, slot.slot_type, slot.placement_hint]
+  var category := preload("res://scripts/act_editor/decor_slots.gd").display_name(slot.slot_type)
+  return "Variant %d is unavailable in this theme's %s / %s pool; using Auto. The saved index is unchanged." % [int(slot.get("variant_index", -1)) + 1, category, slot.placement_hint]
  return ""
 
 func resolve(act_seed: String, slot: Dictionary) -> String:
@@ -44,13 +45,19 @@ func resolve(act_seed: String, slot: Dictionary) -> String:
 func instantiate_slot(act_seed: String, slot: Dictionary) -> Node3D:
  var variant := resolve(act_seed, slot)
  if variant.is_empty() or not factory.is_valid(): return null
- var visual: Node3D = factory.call(variant)
+ var visual := slot_model(slot.slot_type, variant)
  if visual != null:
   visual.set_meta("decor_variant", variant)
   visual.set_meta("decor_slot_id", slot.slot_id)
   visual.set_meta("decor_skin_id", skin_id)
   _bind_atmosphere(visual)
  return visual
+
+func slot_model(slot_type: String, variant: String) -> Node3D:
+ var model: Node3D = factory.call(variant)
+ if model != null and slot_type == "large":
+  return preload("res://scripts/decor/big_decor.gd").shape_model(model, skin_id, variant)
+ return model
 
 func _bind_atmosphere(root: Node3D) -> void:
  # Only this explicit collisionless prop subtree opts into Decor. Copies stay

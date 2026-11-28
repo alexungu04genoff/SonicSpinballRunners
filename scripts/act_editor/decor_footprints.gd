@@ -20,18 +20,19 @@ func polygon(seed: String, slot: Dictionary, origin: Vector2, cell: float) -> Pa
  if skin == null: set_theme(Themes.IDS[0])
  var variant: String = skin.resolve(seed, slot)
  if variant.is_empty(): return PackedVector2Array()
- if not _outlines.has(variant):
-  var prop: Node3D = skin.factory.call(variant)
+ var key: String = slot.slot_type + "/" + variant
+ if not _outlines.has(key):
+  var prop: Node3D = skin.slot_model(slot.slot_type, variant)
   var points := PackedVector2Array()
   _project_meshes(prop, Transform3D.IDENTITY, points)
   prop.free()
   var hull := Geometry2D.convex_hull(points)
   if hull.size() > 1: hull.resize(hull.size() - 1) # convex_hull repeats its first vertex.
-  _outlines[variant] = hull
+  _outlines[key] = hull
  var size := Vector2.ONE * cell * float(slot.get("scale", 1.0))
  if slot.get("mirror_x", false): size.x = -size.x
  var transform := Transform2D(deg_to_rad(float(slot.rotation_degrees)), size, 0.0, origin)
- return transform * PackedVector2Array(_outlines[variant])
+ return transform * PackedVector2Array(_outlines[key])
 
 func _project_meshes(node: Node3D, parent: Transform3D, points: PackedVector2Array) -> void:
  if not node.visible: return

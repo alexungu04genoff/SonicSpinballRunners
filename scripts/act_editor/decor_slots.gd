@@ -7,6 +7,10 @@ const MIN_SCALE := 0.125
 const MAX_SCALE := 8.0
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 
+## Keep the published "large" slot ID and variant order in authored Acts.
+static func display_name(slot_type: String) -> String:
+ return "Big" if slot_type == "large" else slot_type.capitalize()
+
 static func new_id() -> String:
  return Crypto.new().generate_random_bytes(16).hex_encode()
 

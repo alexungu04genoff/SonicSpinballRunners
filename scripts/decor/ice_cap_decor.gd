@@ -34,6 +34,7 @@ func _init(_presentation: Node3D) -> void:
   if key == "snow": Atmosphere.color(mat, "snow_tint", "tint")
   if key in ["ice", "deep", "inset"]: Atmosphere.color(mat, "ice_tint", "tint")
   if key == "rock": Atmosphere.color(mat, "ridge_tint", "tint")
+  preload("res://scripts/themes/dreamcast_textures.gd").detail(mat, "stone" if key == "rock" else ("wood" if key == "trunk" else "frost"))
   materials[key] = mat
   if key == "pine": preload("res://scripts/themes/theme_atmosphere.gd").foliage(mat)
  materials.frost_grass = materials.snow.duplicate()
@@ -164,10 +165,11 @@ func build_variant(variant: String) -> Node3D:
    pine(root, Vector3.ZERO, 1.22, 0.43)
    pine(root, Vector3(0.33, 0, 0.17), 0.42, 0.16)
    piece(root, "sphere", "snow", Vector3(-0.12, 0.04, 0), Vector3(0.34, 0.06, 0.28))
-  "icicle_grotto": arch(root, Vector3.ZERO, 1.10, 0.92, 0.42)
+  "icicle_grotto": arch(root, Vector3.ZERO, 1.18, 1.00, 0.47)
   "glacier_sail":
-   for i in 3: crystal(root, Vector3((i - 1) * 0.25, 0, 0), 1.30 - i * 0.27, 0.22, -0.13, false)
-   piece(root, "sphere", "snow", Vector3(0, 0.08, 0), Vector3(0.55, 0.10, 0.29))
+   crystal(root, Vector3(-0.17, 0.06, -0.10), 1.35, 0.31, 0.24, false)
+   crystal(root, Vector3(0.16, 0.05, 0.10), 0.86, 0.23, -0.34, false)
+   piece(root, "sphere", "snow", Vector3(0, 0.09, 0), Vector3(0.55, 0.12, 0.37))
   "glacier_crown":
    box(root, "deep", Vector3(0, 0.09, 0), Vector3(3.0, 0.18, 1.0))
    piece(root, "sphere", "snow", Vector3(0, 0.19, 0), Vector3(1.48, 0.12, 0.48))

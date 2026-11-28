@@ -36,6 +36,8 @@ func _init(_presentation: Node3D) -> void:
   if key in ["cyan", "fish"]: Atmosphere.color(mat, "aquatic_tint", "tint")
   if key in ["stone", "deep", "wood", "gold", "ivory"]: Atmosphere.color(mat, "architecture_tint", "tint")
   if key == "roof": Atmosphere.color(mat, "roof_tint", "tint")
+  var surface := "wood" if key == "wood" else ("stone" if key in ["stone", "ivory"] else ("foliage" if key == "plant" else "enamel"))
+  preload("res://scripts/themes/dreamcast_textures.gd").detail(mat, surface)
   materials[key] = mat
   if key == "plant": Atmosphere.foliage(mat)
  var roof_material := StandardMaterial3D.new()
@@ -71,9 +73,9 @@ func primitive(kind: String) -> Mesh:
    result = Density.sphere(1.0)
   "tiny_orb":
    result = Density.sphere(1.0, Density.Family.TINY)
-  "ring":
+  "ring", "gate_arch":
    var torus := TorusMesh.new()
-   torus.inner_radius = 0.93
+   torus.inner_radius = 0.72 if kind == "gate_arch" else 0.93
    torus.outer_radius = 1.0
    torus.rings = 16
    torus.ring_segments = 6
@@ -287,11 +289,11 @@ func build_variant(variant: String) -> Node3D:
   "waterside_pavilion": pavilion(root,Vector3.ZERO,0.87,0.75,0.72)
   "reef_aquarium": tank(root,Vector3.ZERO,0.42,1.02)
   "moon_gate":
-   box(root,"stone",Vector3(0,0.07,0),Vector3(0.94,0.14,0.48))
-   var ring := piece(root,"ring","wood",Vector3(0,0.61,0),Vector3(0.45,0.9,0.45))
+   box(root,"stone",Vector3(0,0.09,0),Vector3(1.01,0.18,0.53))
+   var ring := piece(root,"gate_arch","wood",Vector3(0,0.61,0),Vector3(0.49,0.87,0.49))
    ring.rotation.x = PI*0.5
-   roof(root,Vector3(0,1.04,0),1.05,0.46)
-   for side: int in [-1,1]: lantern(root,Vector3(side*0.37,0.83,0.1),0.07)
+   roof(root,Vector3(0,1.05,0),1.15,0.59)
+   for side: int in [-1,1]: lantern(root,Vector3(side*0.44,0.83,0.13),0.085)
   "lantern_palace":
    pavilion(root,Vector3.ZERO,2.66,0.82,0.87)
    pavilion(root,Vector3(0,1.05,0),1.75,0.67,0.76)

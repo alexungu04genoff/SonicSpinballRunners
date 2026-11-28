@@ -29,8 +29,9 @@ func _build_prop(variant: String) -> Node3D:
    _rock(root, Vector3.ZERO, Vector3(0.48, 0.46, 0.38))
    _rock(root, Vector3(0.20, 0, 0.12), Vector3(0.22, 0.23, 0.20))
   "tall_rock":
-   _rock(root, Vector3(-0.12, 0, 0.04), Vector3(0.48, 1.12, 0.45))
-   _rock(root, Vector3(0.23, 0, 0.10), Vector3(0.36, 0.68, 0.40))
+   _rock(root, Vector3(-0.13, 0, -0.05), Vector3(0.63, 1.14, 0.53))
+   _rock(root, Vector3(0.25, 0, 0.12), Vector3(0.48, 0.60, 0.45))
+   _rock(root, Vector3(-0.27, 0, 0.20), Vector3(0.43, 0.29, 0.40))
   "shrub":
    for i in 3:
     var mesh := SphereMesh.new()
@@ -48,9 +49,11 @@ func _build_prop(variant: String) -> Node3D:
    presentation._flower(Vector3(0.02, 0, 0.15), 0.45, root)
   "palm", "palm_left": presentation._palm(Vector3.ZERO, -1 if variant == "palm_left" else 1, 0.82, root)
   "checker_pedestal":
-   _checker_box(root, Vector3(0, 0.25, 0), Vector3(0.68, 0.5, 0.68))
-   _grass_box(root, Vector3(0, 0.53, 0), Vector3(0.73, 0.08, 0.73))
-   presentation._flower(Vector3(0, 0.57, 0), 0.63, root)
+   _checker_box(root, Vector3(0, 0.18, 0), Vector3(1.04, 0.36, 0.81))
+   _grass_box(root, Vector3(0, 0.38, 0), Vector3(1.07, 0.06, 0.84))
+   _checker_box(root, Vector3(-0.15, 0.61, -0.06), Vector3(0.64, 0.40, 0.57))
+   _grass_box(root, Vector3(-0.15, 0.84, -0.06), Vector3(0.69, 0.08, 0.62))
+   presentation._flower(Vector3(-0.16, 0.88, -0.05), 0.75, root)
   "turf_loop": _turf_loop(root)
   "rope_bridge": _rope_bridge(root)
   "palm_island":

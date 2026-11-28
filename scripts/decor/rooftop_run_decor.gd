@@ -30,6 +30,8 @@ func _init(_presentation: Node3D) -> void:
   if key in ["stone", "cream", "ochre"]: Atmosphere.color(mat, "architecture_tint", "tint")
   if key in ["leaf", "leaf_light"]: Atmosphere.color(mat, "vegetation_tint", "tint")
   if key in ["roof", "roof_light"]: Atmosphere.color(mat, "roof_tint", "tint")
+  var surface := "stone" if key in ["stone", "cream", "ochre"] else ("wood" if key in ["wood", "shutter"] else ("foliage" if key in ["leaf", "leaf_light"] else "enamel"))
+  preload("res://scripts/themes/dreamcast_textures.gd").detail(mat, surface)
   materials[key] = mat
 
 func primitive(kind: String) -> Mesh:
@@ -113,9 +115,10 @@ func build_variant(variant: String, landmark_layout := true) -> Node3D:
   "cafe_awning": awning(root)
   "roof_pavilion": pavilion(root)
   "garden_arch":
-   arch(root)
+   arch(root, 1.20, 1.02, 0.36)
    for side: int in [-1, 1]:
-    piece(root, "sphere", "leaf", Vector3(side * 0.51, 0.83, 0), Vector3(0.18, 0.22, 0.20))
+    piece(root, "sphere", "leaf", Vector3(side * 0.49, 0.68, 0.06), Vector3(0.13, 0.29, 0.17))
+   box(root, "cream", Vector3(0, 1.0, 0), Vector3(0.22, 0.22, 0.43))
   "cypress_terrace": cypress(root)
   "clock_tower":
    clock_tower(root)
@@ -213,9 +216,10 @@ func pavilion(root: Node3D) -> void:
 
 func cypress(root: Node3D) -> void:
  planter(root)
- bar(root, "wood", Vector3(0, 0.2, 0), Vector3(0, 0.65, 0), 0.08)
- piece(root, "sphere", "leaf", Vector3(0, 0.83, 0), Vector3(0.23, 0.55, 0.23))
- piece(root, "cone", "leaf_light", Vector3(0, 1.20, 0), Vector3(0.18, 0.55, 0.18))
+ bar(root, "wood", Vector3(-0.1, 0.2, 0), Vector3(-0.1, 0.68, 0), 0.10)
+ piece(root, "sphere", "leaf", Vector3(-0.1, 0.89, 0), Vector3(0.25, 0.48, 0.25))
+ piece(root, "cone", "leaf_light", Vector3(-0.1, 1.28, 0), Vector3(0.20, 0.59, 0.20))
+ piece(root, "sphere", "leaf", Vector3(0.23, 0.59, 0.02), Vector3(0.15, 0.25, 0.15))
 
 func clock_tower(root: Node3D) -> void:
  box(root, "stone", Vector3(0, 0.78, 0), Vector3(0.65, 1.56, 0.62))

@@ -1,5 +1,6 @@
 extends SceneTree
 ## Complete production prop catalogue, including variants exclusive to one hint.
+const Slots = preload("res://scripts/act_editor/decor_slots.gd")
 const Themes = preload("res://scripts/themes/theme_registry.gd")
 const Presentation = preload("res://scripts/themes/themed_presentation.gd")
 const OUTPUT := "res://test-results/all-decor.png"
@@ -37,7 +38,7 @@ func run() -> void:
   catalogue.set_theme_definition(theme)
   var variants: Array[Dictionary] = []
   var seen: Dictionary = {}
-  for size: String in ["small", "medium", "large", "landmark"]:
+  for size: String in Slots.TYPES:
    for hint: String in ["surface", "edge", "either"]:
     for variant: String in catalogue.decor_skin.variants_for({"slot_type": size, "placement_hint": hint}):
      if seen.has(variant): continue
@@ -68,7 +69,7 @@ func run() -> void:
    p.theme_definition.configure_environment(p)
    p._world_environment.environment.background_mode = Environment.BG_COLOR
    p._world_environment.environment.background_color = Color("294451")
-   var prop: Node3D = p.decor_skin.factory.call(item.variant)
+   var prop: Node3D = p.decor_skin.slot_model(item.size, item.variant)
    if prop == null:
     push_error("Missing catalogue prop: " + item.variant)
     quit(1)
@@ -84,10 +85,10 @@ func run() -> void:
    camera.look_at(Vector3(0, 0.95 if item.size in ["large", "landmark"] else 0.40, 0))
    camera.current = true
    label(canvas, str(item.variant).capitalize(), at + Vector2(0, 221), 23)
-   label(canvas, str(item.size).to_upper() + (" / EDGE" if item.variant == "palm_left" else ""), at + Vector2(0, 250), 16)
+   label(canvas, Slots.display_name(item.size).to_upper() + (" / EDGE" if item.variant == "palm_left" else ""), at + Vector2(0, 250), 16)
    total += 1
   catalogue.free()
- label(canvas, "%d original collisionless props. Small: 2x / Medium: 1.5x / Large and landmarks: 1x." % total, Vector2(35, root.size.y - 40), 21)
+ label(canvas, "%d original collisionless props. Small: 2x / Medium: 1.5x / Big and Landmark: 1x." % total, Vector2(35, root.size.y - 40), 21)
  for frame in 14: await process_frame
  await RenderingServer.frame_post_draw
  DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUTPUT.get_base_dir()))

@@ -1,5 +1,9 @@
 # Sonic Spinball Runners — Living Game Design
 
+## Big decor
+
+The Act editor offers Small, Medium, Big and Landmark slots. Big props have individually authored proportions in each theme. The editor draws their top-down footprints and Play Act uses the preview theme. Existing Acts keep the saved `large` slot type, positions, rotations and variant selections.
+
 ## Green Hill Badnik patrols
 
 Place **Enemy** in the Act editor and author its patrol once. Each Act visit deals Buzz Bomber (Beeton), Ganigani and Egg Pawn in random order, drawing all three before repeating. Replaying an Act in the same session changes its first enemy. Ball retries and enemy respawns preserve the lineup. All three share the same 2D contact, score and patrol rules. [Asset setup and patrol behavior](ADVENTURE_BUDDIES_AND_BUZZ.md#runners-badniks)

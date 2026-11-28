@@ -17,6 +17,7 @@ func run() -> void:
 	await process_frame
 	await choose_tab(3)
 	check(editor.decor_list.visible, "Decor palette opens")
+	check(editor.buttons.decor_large.text == "Big slot" and editor.decor_type_field.get_item_text(2) == "Big" and editor.buttons.decor_landmark.text == "Landmark slot", "Big and Landmark have separate placement tools and keep their published slot order")
 	for i in 4:
 		await click_control(editor.buttons["decor_" + Slots.TYPES[i]])
 		var brush_id: String = editor.canvas.decor_brush.slot_id

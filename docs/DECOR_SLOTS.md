@@ -12,7 +12,7 @@ Open **Act Geometry Editor.cmd → Load** to edit a file below. Open **Play Gree
 | [`decor_garden_steps.tres`](../data/acts/decor_garden_steps.tres) | Stepped small islands, a rounded rock island and an upper landmark | 17 |
 | [`decor_loop_court.tres`](../data/acts/decor_loop_court.tres) | Central raised loop court and two decorated side shelves | 17 |
 
-All examples include small, medium, large and landmark slots, Spawn, connectors, rings, bumpers and flippers. They are workflow/look demonstrations, not final balanced Acts. Every slot anchor is on raised terrain. Their geometry and slot compositions are explicit authored records; nothing scatters across the map on load.
+All examples include Small, Medium, Big and Landmark slots, Spawn, connectors, rings, bumpers and flippers. They are workflow/look demonstrations, not final balanced Acts. Every slot anchor is on raised terrain. Their geometry and slot compositions are explicit authored records; nothing scatters across the map on load.
 
 ![Terraced Islands in the main Green Hill application](decor-captures/terraces.png)
 ![Garden Steps in the main Green Hill application](decor-captures/garden-steps.png)
@@ -20,13 +20,13 @@ All examples include small, medium, large and landmark slots, Spawn, connectors,
 
 ## Editor workflow
 
-1. Choose **Decor**, then **Small / Medium / Large / Landmark slot**. Click inside the Act to place repeated slots. Colored markers grow with slot size; S/M/L/◆ labels and an orientation tick remain visible without loading a 3D skin.
+1. Choose **Decor**, then **Small / Medium / Big / Landmark slot**. Click inside the Act to place repeated slots. The outline shows the preview theme’s prop footprint at gameplay scale. The S, M, B and ◆ markers identify each category.
 2. Press **Esc** or **Select / Move**, then click and drag a marker. Decor uses free placement by default. **Snap decor to grid** is optional; **Alt** temporarily frees an enabled snap. **Alt-click** cycles overlapping items, including terrain.
-3. Edit **type**, **Placement: surface / edge / either**, exact **X/Y** local pixels, **Angle °**, or **Scale**. Any finite angle is accepted; **R / Shift+R** adds/subtracts 15°. Scale is limited to 0.85–1.15. Position and angle are never normalized on save.
+3. Edit **type**, **Placement: surface / edge / either**, exact **X/Y** local pixels, **Angle °**, or **Scale**. Any finite angle is accepted; **R / Shift+R** adds/subtracts 15°. Scale 1 uses the prop’s authored size. Manual scaling ranges from 0.125 to 8. Position and angle are never normalized on save.
 4. **Ctrl+D / Duplicate** copies the transform half a cell diagonally and gives the new slot its own ID. **Delete** removes it. Placement, movement, property changes, duplication and deletion share the existing undo/redo history. Arrow keys move one pixel in free mode, or one cell with snap; Alt+arrows always move one pixel.
 5. **Show decor slots** hides markers and their selection targets without deleting records. Snap and visibility are session view preferences, not Act data.
 
-The Decor inspector scrolls when the window is short. Exact angle editing uses the existing field below the canvas. **Auto** remains the default variant. Choose **Preview: Green Hill / Chemical Plant / Rooftop Run / Casino Night** to see the current type/hint pool's friendly names, then select a numbered variant. This preview selector changes labels and availability only; it is not saved in the Act and does not load 3D editor ghosts. Variant edits share undo/redo and persistence with other slot properties.
+The Decor inspector scrolls when the window is short. Exact angle editing uses the existing field below the canvas. **Auto** remains the default variant. Choose the preview theme to see the available variants and their footprints. Select a numbered variant to fix the choice. **Play Act** opens the Act with that theme. Variant edits share undo/redo and persistence with other slot properties.
 
 For Green Hill **small / surface**, **Variant 1 — Flower**, **Variant 2 — Small Rock**, **Variant 1 — Flower** stores indices **0, 1, 0**. Chemical Plant interprets the same records as **Beacon, Valve, Beacon**. If an index is unavailable after changing the preview theme, slot type or hint, the inspector retains it and displays a warning. Runtime uses deterministic Auto for that slot and lists the warning in the main game's level-source tooltip. Neither fallback changes the authored record.
 
@@ -34,7 +34,7 @@ For Green Hill **small / surface**, **Variant 1 — Flower**, **Variant 2 — Sm
 
 ### Random small and medium decor
 
-At the top of the **Decor** palette, set **Frequency** (0–500% in 1% steps, default 40%) and the **Small %** share (0–100%, default 75%), then click **Randomize small / medium**. The complementary **Medium %** updates automatically: 0% small means all medium; 100% small means all small. Each click replaces the previous scatter with new positions, Auto variants, rotations from 0–360° and scales from 0.85–1.15. The chosen mix is rounded to whole props; tight or occupied terrain can prevent filling either quota. Large props and landmarks remain manual.
+At the top of the **Decor** palette, set **Frequency** (0–500% in 1% steps, default 40%) and the **Small %** share (0–100%, default 75%), then click **Randomize small / medium**. The complementary **Medium %** updates automatically: 0% small means all medium; 100% small means all small. Each click replaces the previous scatter with new positions, Auto variants, rotations from 0–360° and scales from 0.85–1.15. The chosen mix is rounded to whole props; tight or occupied terrain can prevent filling either quota. Place Big props and Landmarks manually.
 
 Scatter checks raised terrain support around each footprint and leaves clearance from other props. It does not place decor on the playable floor or narrow unsupported wall ribbons. Above 100%, it samples more terrain gaps for denser dressing without reducing clearance. Frequency requests more props, up to 400 scattered props per Act; available space can limit the result. Frequency and mix are editor session preferences and apply only when clicked. The resulting slots persist normally, with no automatic scattering on load.
 
@@ -60,7 +60,7 @@ Act format **7**, terrain library **2**, introduced:
 
 Act records contain no mesh paths, Green Hill prop names or skin IDs. Slot IDs are generated only during authoring and stay fixed through movement, rotation and undo. A duplicate gets a fresh ID. IDs must be nonempty and unique within the Act.
 
-For small, medium and large Auto slots, `DecorSkin.resolve()` hashes the JSON array `[act_identity, slot_id, skin_id]` with SHA-256, converts its first eight hexadecimal digits to an integer, then takes modulo the selected pool length. Landmarks instead share two composition roles across themes, using the original Green Hill hash namespace and modulo two. This preserves existing Green Hill choices while matching the other themes to them. Fixed mode directly indexes the selected pool, independently of the seed and slot identity. Neither mode consumes gameplay RNG. Reloading, reordering slots, deleting other slots, or editing unrelated geometry cannot reshuffle an existing slot. Preserve published pool order: fixed indices refer to those positions. An unavailable index falls back to Auto with a warning; an empty pool warns and skips the visual.
+For Small, Medium and Big Auto slots, `DecorSkin.resolve()` hashes the JSON array `[act_identity, slot_id, skin_id]` with SHA-256, converts its first eight hexadecimal digits to an integer, then takes modulo the selected pool length. Landmarks instead share two composition roles across themes, using the original Green Hill hash namespace and modulo two. This preserves existing Green Hill choices while matching the other themes to them. Fixed mode directly indexes the selected pool, independently of the seed and slot identity. Neither mode consumes gameplay RNG. Reloading, reordering slots, deleting other slots, or editing unrelated geometry cannot reshuffle an existing slot. Preserve published pool order: fixed indices refer to those positions. An unavailable index falls back to Auto with a warning; an empty pool warns and skips the visual.
 
 The document fingerprint, deep-copy history, validation, and atomic save/reload comparison include variant mode, index and scatter ownership. Angles and scale use the existing exact numeric byte storage convention. Formats 2–11 load in memory without rewriting source files; current saves use format 12. Old decor remains manual. Formats below 7 cannot carry decor, below 10 cannot carry fixed-variant fields, and below 12 cannot carry scatter ownership. Existing terrain transforms and composite outlines remain exact.
 
@@ -84,7 +84,7 @@ To add a decor skin, provide its stable ID, pools for all four sizes and three h
 | --- | --- |
 | Small | Single sunflower, small faceted rock, seven-blade grass tuft |
 | Medium | Medium rock cluster, low shrub, sunflower patch |
-| Large | Left/right leaning palm family (`edge`), tall rock formation or checker pedestal (`surface`); `either` combines these families |
+| Big (saved as `large`) | Left/right leaning palm family (`edge`), tall rock formation or checker pedestal (`surface`); `either` combines these families |
 | Landmark | Variant 1: Turf Loop, with a rounded rectangular checker cliff, continuous inner grass track and separate entry/exit aprons. Variant 2: Rope Bridge, with sagging wooden planks, rope rails and grassy checker-cliff ends. Variant 3: Palm Island, a circular grassy base with a palm and sunflower. All are visual ornaments. |
 
 The composition borrows the broad checker silhouettes, palms and sunflower accents visible in [Sonic Generations' Green Hill screenshots](https://www.digitallydownloaded.net/2011/10/sonic-generations-demo-now-available.html) and [Sonic Mania's Green Hill screenshots](https://www.trueachievements.com/n25476/taegx-2016-sonic-mania-showcases-green-hill-and-studiopolis). These were visual references only. No external models, textures or screenshot assets were downloaded into the project. New props are local primitive geometry matching the project's existing low-poly presentation. Sizes and density remain provisional art tuning.

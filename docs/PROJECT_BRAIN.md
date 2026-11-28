@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Big decor in the Act editor — 2026-11-28
+
+The old Large button is now **Big**. Its palms, signs, trees and architecture have their own silhouettes at table scale. The separate Landmark button still places the zone's upright, span or circular landmark. The editor measures the same models Play Act places, including hand-set scale and yaw.
+
 ## Runners menus and HUD — 2026-11-28
 
 The local Sonic Runners atlases now supply the title art, character faces, buttons, Ring counter, Special gauge and pause icon. Prototype shows its three Adventure Buddy choices together and keeps the table visible when paused. Endless, the Act editor and the labs share the control theme. [Screenshots and art sources](runners-ui/README.md).
