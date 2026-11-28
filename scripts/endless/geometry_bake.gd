@@ -40,7 +40,9 @@ static func pipeline_hash(theme: String) -> String:
  var includes := RegEx.create_from_string('#include\\s+"([^\"]+)"')
  while not pending.is_empty():
   var path: String = pending.pop_back()
-  if visited.has(path) or path == "res://": continue
+  # Scanning this script also finds the asset-root prefix used below. Only
+  # actual asset references and their subdirectories belong in a bake.
+  if visited.has(path) or path in ["res://", "res://assets/"]: continue
   # Each Act has its own source fingerprint. Changing the published roster
   # must not invalidate unrelated Acts' presentation and validation receipts.
   if path == "res://scripts/endless/endless_plan.gd": continue
