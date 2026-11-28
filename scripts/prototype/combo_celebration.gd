@@ -126,8 +126,9 @@ func _draw() -> void:
   Vector2(1, 112)]), accent.darkened(0.62))
  draw_line(Vector2(102, 110), Vector2(138, 9), accent, 2, true)
  draw_rect(Rect2(141, 7, 174, 3), accent)
- if POSES.has(character):
-  draw_texture_rect(POSES[character], Rect2(3, -6, 127, 127), false)
+ var portrait := preload("res://scripts/prototype/menu_style.gd").face(character)
+ if portrait:
+  draw_texture_rect(portrait, Rect2(3, -6, 127, 127), false)
  elif character == "sage":
   draw_circle(Vector2(65, 57), 35, Color("#100f19"), true, -1, true)
   draw_arc(Vector2(65, 57), 31, -2.8, -0.25, 24, accent, 3, true)

@@ -40,7 +40,9 @@ func configure(value: RefCounted, available: Array, start: Button) -> void:
  var row := HBoxContainer.new()
  add_child(row)
  var title := Label.new()
- title.text = "Run length "
+ title.text = "RUN LENGTH"
+ title.add_theme_font_size_override("font_size", 14)
+ title.add_theme_color_override("font_color", Color("a8e4ff"))
  row.add_child(title)
  zones = SpinBox.new()
  zones.min_value = 1
@@ -67,6 +69,7 @@ func configure(value: RefCounted, available: Array, start: Button) -> void:
   themes.add_child(check)
   check.toggled.connect(func(_selected: bool): _changed())
   var choice := OptionButton.new()
+  choice.size_flags_horizontal = Control.SIZE_EXPAND_FILL
   choice.add_item("Random atmosphere")
   choice.set_item_metadata(0, "")
   for record: Dictionary in preload("res://scripts/atmosphere/variants.gd").new().choices(id):
@@ -117,6 +120,8 @@ func configure(value: RefCounted, available: Array, start: Button) -> void:
   advanced.add_child(child)
  var customize := Button.new()
  customize.text = "Customize"
+ customize.icon = preload("res://assets/ui/runners/settings.png")
+ customize.add_theme_constant_override("icon_max_width", 24)
  customize.custom_minimum_size.y = 36
  customize.pressed.connect(func():
   advanced.visible = not advanced.visible
@@ -147,6 +152,7 @@ func _selection_actions(checks: Dictionary) -> void:
   row.add_child(button)
 
 func _changed() -> void:
+ zones.suffix = "Zone" if configuration.zone_count == 1 else "Zones"
  run_length.text = " · %d Acts" % (configuration.zone_count * Plan.ACTS_PER_ZONE)
  for id: String in atmosphere_choices: atmosphere_choices[id].disabled = not theme_checks[id].button_pressed
  configuration.selected_theme_ids = []

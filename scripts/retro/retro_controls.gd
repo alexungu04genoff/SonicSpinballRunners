@@ -88,11 +88,7 @@ func install(adapter: Filter, debug_stack: Node, toolbar: Node) -> void:
  toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
  toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
  toast.add_theme_font_size_override("font_size", 17)
- var background := StyleBoxFlat.new()
- background.bg_color = Color(0.025, 0.10, 0.12, 0.92)
- background.content_margin_top = 8
- background.content_margin_bottom = 8
- toast.add_theme_stylebox_override("normal", background)
+ toast.add_theme_stylebox_override("normal", toast.get_theme_stylebox("panel", "PanelContainer"))
  add_child(toast)
  toast.hide()
  filter.preset_changed.connect(_changed)
@@ -108,11 +104,6 @@ func _build_panel() -> void:
  tuning_panel.offset_right = -20
  tuning_panel.offset_top = 80
  tuning_panel.offset_bottom = 680
- var style := StyleBoxFlat.new()
- style.bg_color = Color("102c35")
- for side: String in ["left", "right", "top", "bottom"]:
-  style.set("content_margin_" + side, 12.0)
- tuning_panel.add_theme_stylebox_override("panel", style)
  var stack := VBoxContainer.new()
  tuning_panel.add_child(stack)
  var header := HBoxContainer.new()

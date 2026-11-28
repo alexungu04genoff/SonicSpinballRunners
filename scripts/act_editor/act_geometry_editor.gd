@@ -161,22 +161,9 @@ func _notification(what: int) -> void:
 func _build_ui() -> void:
 	var ui_theme := Theme.new()
 	ui_theme.default_font_size = 12
-	ui_theme.set_color("font_color", "Label", Color("dcebf2"))
-	ui_theme.set_color("font_color", "Button", Color("e6f3fa"))
-	for state in ["normal", "hover", "pressed", "disabled"]:
-		var style := StyleBoxFlat.new()
-		style.bg_color = Color("22374a") if state == "normal" else Color("31556a")
-		if state == "disabled":
-			style.bg_color = Color("172633")
-		style.set_corner_radius_all(5)
-		style.content_margin_left = 8
-		style.content_margin_right = 8
-		style.content_margin_top = 4
-		style.content_margin_bottom = 4
-		ui_theme.set_stylebox(state, "Button", style)
 	theme = ui_theme
 	var background := ColorRect.new()
-	background.color = Color("0b1420")
+	background.color = Color("101f3e")
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(background)
@@ -191,10 +178,12 @@ func _build_ui() -> void:
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 4)
 	column.add_child(header)
+	header.add_child(preload("res://scripts/prototype/menu_style.gd").icon(preload("res://assets/ui/runners/flag.png"), Vector2(31, 27)))
 	var brand := Label.new()
-	brand.text = "ACT / EDITOR"
+	brand.theme_type_variation = &"RaceTitle"
+	brand.text = "ACT EDITOR"
 	brand.add_theme_font_size_override("font_size", 16)
-	brand.add_theme_color_override("font_color", Color("70e5d5"))
+	brand.add_theme_color_override("font_color", Color("ffdf54"))
 	brand.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	header.add_child(brand)
 	_button(header, "new", "New Act", func(): request_action("new"), "Ctrl+N")
@@ -208,7 +197,7 @@ func _build_ui() -> void:
 	file_label.add_theme_color_override("font_color", Color("9cb3c6"))
 	file_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(file_label)
-	header.move_child(file_label, 1)
+	header.move_child(file_label, 2)
 	var tools := HBoxContainer.new()
 	tools.add_theme_constant_override("separation", 6)
 	column.add_child(tools)
@@ -232,20 +221,12 @@ func _build_ui() -> void:
 	body.add_theme_constant_override("separation", 4)
 	column.add_child(body)
 	var palette := VBoxContainer.new()
-	palette.custom_minimum_size.x = 240
+	palette.custom_minimum_size.x = 310
 	palette.add_theme_constant_override("separation", 4)
 	body.add_child(palette)
 	palette_tabs = TabBar.new()
-	palette_tabs.clip_tabs = false
+	palette_tabs.clip_tabs = true
 	palette_tabs.add_theme_font_size_override("font_size", 11)
-	for state in ["tab_selected", "tab_unselected", "tab_hovered", "tab_disabled"]:
-		var tab_style := StyleBoxFlat.new()
-		tab_style.bg_color = Color("22374a") if state == "tab_selected" else Color("101c29")
-		tab_style.content_margin_left = 5
-		tab_style.content_margin_right = 5
-		tab_style.content_margin_top = 4
-		tab_style.content_margin_bottom = 4
-		palette_tabs.add_theme_stylebox_override(state, tab_style)
 	palette_tabs.add_tab("Terrain")
 	palette_tabs.add_tab("Gameplay")
 	palette_tabs.add_tab("Markers")
@@ -726,6 +707,8 @@ func _build_ui() -> void:
 
 func _button(parent: Node, id: String, label: String, action: Callable, hint: String) -> void:
 	var button := Button.new()
+	if id == "play": button.theme_type_variation = &"PrimaryButton"
+	elif id == "bake": button.theme_type_variation = &"AccentButton"
 	button.text = label
 	button.tooltip_text = hint
 	button.focus_mode = Control.FOCUS_NONE

@@ -13,11 +13,6 @@ func _ready() -> void:
  position = Vector2(625, 155)
  custom_minimum_size.x = 245
  mouse_filter = Control.MOUSE_FILTER_IGNORE
- var style := StyleBoxFlat.new()
- style.bg_color = Color("102b36")
- style.set_content_margin_all(10)
- style.set_corner_radius_all(8)
- add_theme_stylebox_override("panel", style)
  var stack := VBoxContainer.new()
  add_child(stack)
  heading = _label(stack, 16)

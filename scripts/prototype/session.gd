@@ -4,6 +4,7 @@ const Run = preload("res://scripts/prototype/zone_run.gd")
 const Telemetry = preload("res://scripts/prototype/run_telemetry.gd")
 const Archive = preload("res://scripts/prototype/telemetry_archive.gd")
 const Sounds = preload("res://scripts/prototype/score_sounds.gd")
+const Art = preload("res://scripts/prototype/menu_style.gd")
 const SETTINGS_PATH := "user://prototype_settings.cfg"
 const EXPORT_DEFAULTS_PATH := "res://data/prototype_export_defaults.cfg"
 const CHALLENGE_RECORDS := "two_zone_challenge_records"
@@ -150,42 +151,43 @@ func _panel(title: String, subtitle: String) -> VBoxContainer:
   overlay_root.hide()
   overlay_root.process_mode = Node.PROCESS_MODE_DISABLED
   overlay_root.queue_free()
- overlay_root = ColorRect.new()
- overlay_root.color = Color(0.025, 0.045, 0.075, 0.96)
+ overlay_root = Control.new()
  overlay_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  overlay.add_child(overlay_root)
- var menu_style := preload("res://scripts/prototype/menu_style.gd")
- overlay_root.theme = menu_style.make_theme()
- overlay_root.add_child(menu_style.new())
+ var backdrop := Art.new()
+ backdrop.screen = state
+ overlay_root.add_child(backdrop)
  var scroll := ScrollContainer.new()
  scroll.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+ scroll.follow_focus = true
+ if state == "menu":
+  scroll.anchor_left = 0.50
+  scroll.offset_right = -24
  overlay_root.add_child(scroll)
  var center := CenterContainer.new()
  center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  center.size_flags_vertical = Control.SIZE_EXPAND_FILL
  scroll.add_child(center)
  var card := PanelContainer.new()
- card.custom_minimum_size.x = 600
- var style := StyleBoxFlat.new()
- style.bg_color = Color(0.02, 0.08, 0.22, 0.83)
- style.set_content_margin_all(28)
- style.border_color = Color("42b8f2")
- style.border_width_left = 4
- style.set_corner_radius_all(4)
- card.add_theme_stylebox_override("panel", style)
+ card.theme_type_variation = &"MenuCard"
+ card.custom_minimum_size.x = 550 if state == "menu" else 600
  center.add_child(card)
  var stack := VBoxContainer.new()
- stack.add_theme_constant_override("separation", 14)
+ stack.add_theme_constant_override("separation", 10)
  card.add_child(stack)
- var title_label := _label(stack, title, 34, Color.WHITE)
- var title_font := SystemFont.new()
- title_font.font_names = PackedStringArray(["Arial"])
- title_font.font_weight = 900
- title_font.font_italic = true
- title_label.add_theme_font_override("font", title_font)
- title_label.add_theme_color_override("font_outline_color", Color("071f51"))
- title_label.add_theme_constant_override("outline_size", 4)
+ var header := HBoxContainer.new()
+ header.add_theme_constant_override("separation", 12)
+ stack.add_child(header)
+ var emblem: Texture2D = {"paused": Art.PAUSE, "results": Art.TROPHY, "draft": Art.GIFT}.get(state, Art.FLAG)
+ header.add_child(Art.icon(emblem, Vector2(49, 49)))
+ var title_label := _label(header, title, 32, Color.WHITE)
+ title_label.theme_type_variation = &"RaceTitle"
+ var rule := ColorRect.new()
+ rule.custom_minimum_size.y = 3
+ rule.color = Color("ffce36")
+ rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+ stack.add_child(rule)
  if not subtitle.is_empty(): _label(stack, subtitle, 18)
  return stack
 
@@ -209,10 +211,14 @@ func _action(parent: Node, text: String, callback: Callable, focus := false) -> 
 func _show_menu() -> void:
  state = "menu"
  var testing: bool = run_configuration.single_act_test
- var stack := _panel("SONIC\nSPINBALL RUNNERS", "Act test" if testing else "")
+ var stack := _panel("ACT TEST" if testing else "RUN SETUP", "")
+ _label(stack, "CHARACTER", 14, Color("a8e4ff"))
  var characters := OptionButton.new()
+ characters.custom_minimum_size.y = 52
+ characters.add_theme_constant_override("icon_max_width", 40)
  for id: String in Run.RunPlan.Configuration.Profile.character_ids():
-  characters.add_item(id.capitalize())
+  characters.add_icon_item(Art.face(id), id.capitalize())
+  characters.get_popup().set_item_icon_max_width(characters.item_count - 1, 32)
   characters.set_item_metadata(characters.item_count - 1, id)
   if id == selected_character: characters.select(characters.item_count - 1)
  characters.item_selected.connect(func(index: int):
@@ -221,6 +227,7 @@ func _show_menu() -> void:
  )
  stack.add_child(characters)
  characters.call_deferred("grab_focus")
+ _label(stack, "GAME MODE", 14, Color("a8e4ff"))
  var practice := OptionButton.new()
  practice.add_item("Challenge · 3 Balls per Act")
  practice.add_item("Practice · unlimited Balls")
@@ -248,6 +255,10 @@ func _show_menu() -> void:
   stack.add_child(themes)
  start_button = _action(stack, "Play", start_run)
  start_button.theme_type_variation = "PrimaryButton"
+ start_button.icon = Art.PLAY
+ start_button.add_theme_constant_override("icon_max_width", 28)
+ start_button.add_theme_font_size_override("font_size", 24)
+ start_button.custom_minimum_size.y = 54
  if not testing:
   setup_menu = preload("res://scripts/prototype/run_setup_menu.gd").new()
   stack.add_child(setup_menu)
@@ -258,11 +269,17 @@ func _show_menu() -> void:
  else: stack.add_child(sound)
  var graphics_parent: Node = stack if testing else setup_menu.advanced
  graphics_parent.add_child(preload("res://scripts/rendering/graphics_profile_picker.gd").new())
- var controls_button := _action(stack, "Controls", func(): pass)
+ var footer := HBoxContainer.new()
+ stack.add_child(footer)
+ var controls_button := _action(footer, "Controls", func(): pass)
+ controls_button.theme_type_variation = &"QuietButton"
+ controls_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ var quit_button := _action(footer, "Quit", _quit)
+ quit_button.theme_type_variation = &"QuietButton"
+ quit_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  var controls_label := _label(stack, "Q / E or LB / RB · Flippers\nArrows or stick · Steer\nX · Launch     Space / A · Special\nEnter / Esc / Menu · Pause     R / Back · Retry\nC / Shift+C · Next / previous camera\nF11 · Fullscreen", 16)
  controls_label.hide()
  controls_button.pressed.connect(func(): controls_label.visible = not controls_label.visible)
- _action(stack, "Quit", _quit)
 
 func start_run() -> void:
  if state == "menu" and is_instance_valid(start_button) and start_button.disabled: return
@@ -334,7 +351,7 @@ func return_to_menu() -> void:
 func _show_pause() -> void:
  state = "paused"
  var stack := _panel("PAUSED", "%s · %d points" % [game.act_title(game.active), game.score])
- _action(stack, "Resume", func(): game.toggle_pause(), true)
+ _action(stack, "Resume", func(): game.toggle_pause(), true).theme_type_variation = &"PrimaryButton"
  pause_camera_picker = OptionButton.new()
  for preset: int in Run.PLAY_CAMERAS:
   pause_camera_picker.add_item("Camera · " + TablePresentation.CAMERA_NAMES[preset], preset)
@@ -382,33 +399,51 @@ func _on_draft_started(act_result: Dictionary, offers: Array[Dictionary]) -> voi
  var next: Dictionary = game.pending_act.plan
  var next_theme: String = game.library.themes[next.theme].display_name
  var stack := _panel("CHOOSE A BUDDY", "Next: %s · Act %d" % [next_theme, next.act + 1])
+ var cards := HBoxContainer.new()
+ cards.add_theme_constant_override("separation", 12)
+ stack.add_child(cards)
  for i in offers.size():
   var offer: Dictionary = offers[i]
-  var button := _action(stack, "", _choose_buddy.bind(str(offer.id)), i == 0)
+  var button := _action(cards, "", _choose_buddy.bind(str(offer.id)), i == 0)
+  button.theme_type_variation = &"QuietButton"
   button.name = "Buddy_" + str(offer.id)
   button.tooltip_text = "%s · %s" % [offer.name, "Upgrade acquired Buddy" if offer.acquired else "Acquire Buddy"]
-  button.custom_minimum_size = Vector2(640, 116)
-  var row := HBoxContainer.new()
+  button.custom_minimum_size = Vector2(264, 320)
+  var row := VBoxContainer.new()
   row.mouse_filter = Control.MOUSE_FILTER_IGNORE
   row.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
   row.offset_left = 14
   row.offset_right = -14
-  row.add_theme_constant_override("separation", 18)
+  row.offset_top = 12
+  row.offset_bottom = -12
+  row.add_theme_constant_override("separation", 6)
   button.add_child(row)
+  var mat := PanelContainer.new()
+  mat.theme_type_variation = &"PortraitPanel"
+  mat.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  row.add_child(mat)
   var portrait := TextureRect.new()
-  portrait.custom_minimum_size = Vector2(92, 104)
+  portrait.custom_minimum_size = Vector2(120, 110)
   portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
   portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
   portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
   if ResourceLoader.exists(offer.art_path): portrait.texture = load(offer.art_path)
-  row.add_child(portrait)
+  mat.add_child(portrait)
   var copy := VBoxContainer.new()
   copy.alignment = BoxContainer.ALIGNMENT_CENTER
   copy.mouse_filter = Control.MOUSE_FILTER_IGNORE
   row.add_child(copy)
-  _label(copy, "%s · %s" % [offer.name, "One-shot" if offer.consumable else "Level %d" % offer.level], 21, Color("ffe07a")).mouse_filter = Control.MOUSE_FILTER_IGNORE
-  _label(copy, offer.description, 16).mouse_filter = Control.MOUSE_FILTER_IGNORE
-  _label(copy, "ACQUIRED · Upgrade" if offer.acquired else ("ACQUIRE · No slot needed" if offer.consumable else "ACQUIRE · 1 persistent slot"), 13, Color("8fe9b1")).mouse_filter = Control.MOUSE_FILTER_IGNORE
+  var name_label := _label(copy, offer.name, 21, Color("ffe07a"))
+  name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  var level := _label(copy, "ONE-SHOT" if offer.consumable else "LEVEL %d" % offer.level, 14, Color("a8e4ff"))
+  level.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  var description := _label(copy, str(offer.description).replace("\n", " "), 16)
+  description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+  description.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+  var slot := _label(row, "Upgrade Buddy" if offer.acquired else ("No slot needed" if offer.consumable else "Uses 1 Buddy slot"), 14, Color("8fe9b1"))
+  slot.size_flags_vertical = Control.SIZE_EXPAND_FILL
+  slot.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+  slot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
  if offers.is_empty(): _action(stack, "All available Buddies maxed · Continue", _choose_buddy.bind(""), true)
  _action(stack, "Return to menu", return_to_menu)
 
@@ -428,12 +463,27 @@ func _on_completed(summary: Dictionary) -> void:
    if best_seconds <= 0.0 or float(summary.seconds) < best_seconds: best_seconds = float(summary.seconds)
  _save_settings()
  state = "results"
- var stack := _panel("RUN COMPLETE" if summary.won else ("RUN ENDED · OUT OF BALLS" if last_export.termination_reason == "out_of_balls" else "RUN ABANDONED"), "%s · %d POINTS · %s · %d BALLS LOST\nRun seed: %d" % ["PRACTICE" if summary.practice else "CHALLENGE", summary.score, _time_text(summary.seconds), summary.drains, summary.seed])
+ var stack := _panel("RUN COMPLETE" if summary.won else ("OUT OF BALLS" if last_export.termination_reason == "out_of_balls" else "RUN ABANDONED"), "")
  stack.add_theme_constant_override("separation", 7)
+ var score_row := HBoxContainer.new()
+ score_row.add_theme_constant_override("separation", 12)
+ stack.add_child(score_row)
+ var face := Art.face(summary.character)
+ if face: score_row.add_child(Art.icon(face, Vector2(65, 65)))
+ var score_label := _label(score_row, "%d PTS" % summary.score, 43, Color("ffdf47"))
+ score_label.theme_type_variation = &"RaceTitle"
+ _label(stack, "%s   ·   %s   ·   %d BALLS LOST" % ["PRACTICE" if summary.practice else "CHALLENGE", _time_text(summary.seconds), summary.drains], 17)
+ var details := VBoxContainer.new()
+ details.add_theme_constant_override("separation", 7)
+ var details_button := _action(stack, "Run details & feedback", func(): details.visible = not details.visible)
+ details_button.theme_type_variation = &"QuietButton"
+ stack.add_child(details)
+ details.hide()
+ _label(details, "Run seed: %d" % summary.seed, 16)
  var scroll := ScrollContainer.new()
  scroll.custom_minimum_size = Vector2(600, minf(180.0, get_viewport_rect().size.y * 0.21))
  scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
- stack.add_child(scroll)
+ details.add_child(scroll)
  var act_rows := VBoxContainer.new()
  act_rows.add_theme_constant_override("separation", 12)
  act_rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -443,17 +493,17 @@ func _on_completed(summary: Dictionary) -> void:
   var target_time := "not reached" if data.time_to_target_seconds == null else _time_text(data.time_to_target_seconds)
   var goal_time := "not reached" if data.time_target_to_goal_seconds == null else "+" + _time_text(data.time_target_to_goal_seconds)
   _label(act_rows, "ZONE %d · ACT %d · %s%s\n%d / %d · target %s · goal %s · total %s · Buddies +%d" % [act.zone, act.zone_act, act.title, " · NOT CLEARED" if not act.cleared else "", act.score, act.target, target_time, goal_time, _time_text(data.total_time_seconds), data.final_buddy_score], 16)
- _label(stack, "Scoring: %d base / combo / special + %d from Buddies" % [summary.normal_score, Run.Buddies.total(summary.buddy_contributions)], 17)
+ _label(details, "Scoring: %d base / combo / special + %d from Buddies" % [summary.normal_score, Run.Buddies.total(summary.buddy_contributions)], 17)
  for id: String in summary.buddies:
   var level := " · One-shot" if not Run.Buddies.CATALOG[id].persistent else " Lv.%d" % summary.buddies[id]
   _label(act_rows, "%s%s: +%d points" % [Run.Buddies.CATALOG[id].name, level, int(summary.buddy_contributions.get(id, 0))], 17, Color("8fe9b1"))
  if summary.has("buddy_state"):
-  var state_label := _label(stack, summary.buddy_state.summary, 15)
+  var state_label := _label(details, summary.buddy_state.summary, 15)
   state_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
   state_label.custom_minimum_size.x = 610
-  _label(stack, "Buddy virtual Rings: %d · Emergency rescues: %d" % [summary.buddy_state.run.get("virtual_rings", 0), summary.buddy_state.run.get("rescues", 0)], 16)
+  _label(details, "Buddy virtual Rings: %d · Emergency rescues: %d" % [summary.buddy_state.run.get("virtual_rings", 0), summary.buddy_state.run.get("rescues", 0)], 16)
  if not run_configuration.single_act_test: _label(stack, "%s best (all setups): %d" % ["Practice" if summary.practice else "Challenge", practice_best_score if summary.practice else best_score], 18, Color("8fe9b1"))
- _label(stack, "Run feel (optional)", 16)
+ _label(details, "Run feel (optional)", 16)
  run_feel = TextEdit.new()
  run_feel.name = "RunFeel"
  run_feel.placeholder_text = "How did this run feel? What felt fun, frustrating, too easy or confusing?"
@@ -461,20 +511,23 @@ func _on_completed(summary: Dictionary) -> void:
  run_feel.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
  run_feel.text = str(last_export.get("run_feel", ""))
  run_feel.text_changed.connect(func(): _set_run_feel(run_feel.text))
- stack.add_child(run_feel)
- archive_status = _label(stack, "Telemetry saved: " + str(archive_result.path).get_file() if archive_result.get("error", "").is_empty() else str(archive_result.error), 14)
+ details.add_child(run_feel)
+ archive_status = _label(details, "Telemetry saved: " + str(archive_result.path).get_file() if archive_result.get("error", "").is_empty() else str(archive_result.error), 14)
+ if not archive_result.get("error", "").is_empty(): details.show()
  archive_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
  archive_status.custom_minimum_size.x = 560
- _action(stack, "Open telemetry folder", _open_telemetry_folder)
- _action(stack, "Copy run data", _copy_run_data)
- copy_status = _label(stack, "", 14, Color("8fe9b1"))
+ _action(details, "Open telemetry folder", _open_telemetry_folder)
+ _action(details, "Copy run data", _copy_run_data)
+ copy_status = _label(details, "", 14, Color("8fe9b1"))
  copy_status.hide()
  var run_actions := HBoxContainer.new()
  stack.add_child(run_actions)
  if summary.started:
   var replay := _action(run_actions, "Replay same course", _start_configured_run.bind(last_run_configuration, summary.character, summary.practice, summary.seed), true)
   replay.size_flags_horizontal = Control.SIZE_EXPAND_FILL
- _action(run_actions, "New run", start_run, not summary.started).size_flags_horizontal = Control.SIZE_EXPAND_FILL
+ var new_run := _action(run_actions, "New run", start_run, not summary.started)
+ new_run.theme_type_variation = &"PrimaryButton"
+ new_run.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  _action(stack, "Return to menu", return_to_menu)
  _action(stack, "Quit", _quit)
 

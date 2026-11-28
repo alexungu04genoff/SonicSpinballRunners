@@ -1,5 +1,40 @@
 extends Control
-## Static graphic shapes keep menus inexpensive and readable at any resolution.
+## Screen art sits behind the interactive containers and never captures input.
+const TITLE_SCENE = preload("res://assets/ui/runners/title_scene.png")
+const TITLE = preload("res://assets/ui/runners/title.png")
+const SKY = preload("res://assets/ui/runners/sky.png")
+const PATTERN = preload("res://assets/ui/runners/result_pattern.png")
+const CORNER = preload("res://assets/ui/runners/corner.png")
+const FLAG = preload("res://assets/ui/runners/flag.png")
+const GIFT = preload("res://assets/ui/runners/gift.png")
+const TROPHY = preload("res://assets/ui/runners/trophy.png")
+const SETTINGS = preload("res://assets/ui/runners/settings.png")
+const PLAY = preload("res://assets/ui/runners/play.png")
+const PAUSE = preload("res://assets/ui/runners/pause.png")
+const FACES = preload("res://assets/ui/runners/faces.png")
+const FACE_IDS := ["sonic", "tails", "knuckles", "amy", "shadow", "blaze", "rouge", "big", "cream"]
+static var faces := {}
+var screen := "loading"
+
+static func face(character: String) -> Texture2D:
+ var index := FACE_IDS.find(character)
+ if index < 0: return null
+ if not faces.has(character):
+  var image := AtlasTexture.new()
+  image.atlas = FACES
+  image.region = Rect2(index * 96, 0, 96, 96)
+  image.filter_clip = true
+  faces[character] = image
+ return faces[character]
+
+static func icon(texture: Texture2D, dimensions: Vector2) -> TextureRect:
+ var view := TextureRect.new()
+ view.texture = texture
+ view.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+ view.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+ view.custom_minimum_size = dimensions
+ view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+ return view
 
 func _ready() -> void:
  mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -7,49 +42,36 @@ func _ready() -> void:
  resized.connect(queue_redraw)
 
 func _draw() -> void:
- draw_rect(Rect2(Vector2.ZERO, size), Color("09245b"))
- draw_colored_polygon(PackedVector2Array([Vector2.ZERO, Vector2(size.x * 0.76, 0), Vector2(size.x * 0.38, size.y), Vector2(0, size.y)]), Color("113f88"))
- draw_colored_polygon(PackedVector2Array([Vector2(size.x * 0.55, 0), Vector2(size.x * 0.73, 0), Vector2(size.x * 0.35, size.y), Vector2(size.x * 0.17, size.y)]), Color("1551a3"))
- var center := Vector2(size.x * 0.84, size.y * 0.48)
- var radius := size.y * 0.39
- draw_arc(center, radius, 0, TAU, 96, Color(0.3, 0.7, 1.0, 0.12), 30, true)
- draw_arc(center, radius + 27, -1.8, 2.1, 64, Color(0.4, 0.8, 1.0, 0.2), 3, true)
- draw_arc(center, radius - 25, -2.1, 1.7, 64, Color(1.0, 0.8, 0.15, 0.3), 4, true)
- for row in 5:
-  for column in 9:
-   if (row + column) % 2 == 0:
-    draw_rect(Rect2(size.x - 240 + column * 28, size.y - 140 + row * 28, 28, 28), Color(0.2, 0.6, 1.0, 0.08))
-
-static func make_theme() -> Theme:
- var result := Theme.new()
- var font := SystemFont.new()
- font.font_names = PackedStringArray(["Arial"])
- font.font_weight = 700
- result.default_font = font
- result.default_font_size = 18
- for kind: String in ["Button", "OptionButton"]:
-  for state: String in ["normal", "hover", "pressed", "disabled", "focus"]:
-   var box := StyleBoxFlat.new()
-   box.bg_color = Color("174981") if state == "normal" else Color("227ac2")
-   if state == "disabled": box.bg_color = Color("17345e")
-   if state == "focus": box.bg_color = Color.TRANSPARENT
-   box.border_color = Color("ffdb49") if state == "focus" else Color("398ed0")
-   box.set_border_width_all(2 if state == "focus" else 1)
-   box.set_corner_radius_all(3)
-   box.content_margin_left = 18
-   box.content_margin_right = 18
-   box.content_margin_top = 10
-   box.content_margin_bottom = 10
-   result.set_stylebox(state, kind, box)
-  result.set_color("font_color", kind, Color.WHITE)
-  result.set_color("font_hover_color", kind, Color.WHITE)
- result.set_type_variation("PrimaryButton", "Button")
- for state: String in ["normal", "hover", "pressed"]:
-  var box := StyleBoxFlat.new()
-  box.bg_color = Color("ffda3d") if state == "normal" else Color("fff3a1")
-  box.set_content_margin_all(14)
-  box.set_corner_radius_all(3)
-  result.set_stylebox(state, "PrimaryButton", box)
-  result.set_color("font_" + ("color" if state == "normal" else state + "_color"), "PrimaryButton", Color("082758"))
- result.set_font_size("font_size", "PrimaryButton", 25)
- return result
+ if screen == "paused":
+  draw_rect(Rect2(Vector2.ZERO, size), Color(0.025, 0.06, 0.18, 0.66))
+  return
+ if screen == "menu":
+  # Keep all three runners to the left of setup, including on a 4:3 canvas.
+  draw_rect(Rect2(Vector2.ZERO, size), Color("123eae"))
+  var art_scale := minf(size.x * 0.51 / 454.0, size.y / TITLE_SCENE.get_height())
+  var extent := TITLE_SCENE.get_size() * art_scale
+  var top := (size.y - extent.y) * 0.68
+  draw_texture_rect(TITLE_SCENE, Rect2(Vector2(0, top), extent), false)
+  var rail := PackedVector2Array([Vector2(size.x * 0.74, 0), Vector2(size.x, 0), size, Vector2(size.x * 0.51, size.y)])
+  draw_colored_polygon(rail, Color("0a2d77"))
+  draw_line(rail[0], rail[3], Color("288fff"), 8, true)
+  var stamp := CORNER.get_size() * minf(1.5, size.y / 650.0)
+  draw_texture_rect(CORNER, Rect2(size - stamp, stamp), false)
+  var logo_width := minf(size.x * 0.40, 565.0)
+  var logo_size := TITLE.get_size() * (logo_width / TITLE.get_width())
+  draw_texture_rect(TITLE, Rect2(Vector2(size.x * 0.036, maxf(12.0, top - logo_size.y * 0.48)), logo_size), false)
+  return
+ draw_rect(Rect2(Vector2.ZERO, size), Color("1553a4"))
+ var sky_size := maxf(size.x * 0.5, size.y * 0.65)
+ var sky_rect := Rect2(Vector2.ZERO, Vector2.ONE * sky_size)
+ var sky_tint := Color(0.68, 0.87, 1, 0.6)
+ draw_texture_rect(SKY, sky_rect, false, sky_tint)
+ draw_set_transform(Vector2(sky_size * 2, 0), 0.0, Vector2(-1, 1))
+ draw_texture_rect(SKY, sky_rect, false, sky_tint)
+ draw_set_transform(Vector2.ZERO)
+ var stripe := PackedVector2Array([Vector2(0, size.y * 0.64), Vector2(size.x, size.y * 0.36), Vector2(size.x, size.y), Vector2(0, size.y)])
+ draw_colored_polygon(stripe, Color("1049a4"))
+ var pattern_height := size.x * PATTERN.get_height() / PATTERN.get_width()
+ draw_texture_rect(PATTERN, Rect2(0, size.y - pattern_height, size.x, pattern_height), false, Color(1, 1, 1, 0.7))
+ var decor_size := CORNER.get_size() * minf(1.35, size.y / 650)
+ draw_texture_rect(CORNER, Rect2(size - decor_size, decor_size), false)

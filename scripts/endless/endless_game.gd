@@ -781,17 +781,17 @@ func _build_hud() -> void:
  add_child(hud)
  var backing := PanelContainer.new()
  backing.position = Vector2(16, 12)
- var style := StyleBoxFlat.new()
- style.bg_color = Color(0.025, 0.055, 0.09, 0.88)
- style.set_content_margin_all(10)
- style.set_corner_radius_all(6)
- backing.add_theme_stylebox_override("panel", style)
  hud.add_child(backing)
  var panel := VBoxContainer.new()
  backing.add_child(panel)
+ var title_row := HBoxContainer.new()
+ panel.add_child(title_row)
+ var art := preload("res://scripts/prototype/menu_style.gd")
+ title_row.add_child(art.icon(art.FLAG, Vector2(36, 32)))
  heading = Label.new()
+ heading.theme_type_variation = &"RaceTitle"
  heading.add_theme_font_size_override("font_size", 25)
- panel.add_child(heading)
+ title_row.add_child(heading)
  detail = Label.new()
  panel.add_child(detail)
  var buttons := HBoxContainer.new()
@@ -816,7 +816,9 @@ func _build_hud() -> void:
  loading_panel.color = Color("101b2c")
  loading_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  hud.add_child(loading_panel)
+ loading_panel.add_child(art.new())
  loading_label = Label.new()
+ loading_label.theme_type_variation = &"RaceTitle"
  loading_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  loading_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
  loading_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

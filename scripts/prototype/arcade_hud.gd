@@ -1,122 +1,90 @@
 extends Control
-## Lightweight screen-space counters and a charge gauge; gameplay owns all values.
-const RING = preload("res://assets/ui/hud/ring.png")
-const SONIC = preload("res://assets/ui/hud/sonic.png")
-const TAILS = preload("res://assets/ui/hud/tails.png")
+## Display-only counters use the character and Ring sprites from the Runners HUD.
+const Art = preload("res://scripts/prototype/menu_style.gd")
+const RING = preload("res://assets/ui/runners/ring.png")
+const GAUGE = preload("res://assets/ui/runners/gauge.png")
+const INK := Color("0b2350")
 var rings: Label
 var lives: Label
 var progress: Label
 var message: Label
 var ready_label: Label
+var score: Label
 var portrait: TextureRect
 var portrait_letter: Label
 var charge := 0.0
+var plate_width := 250.0
 
 func _ready() -> void:
  mouse_filter = Control.MOUSE_FILTER_IGNORE
  set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
- _backing(Vector2(16, 16), Vector2(252, 66))
- var gauge_backing := _backing(Vector2.ZERO, Vector2(228, 60))
- gauge_backing.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
- gauge_backing.offset_left = 16
- gauge_backing.offset_right = 244
- gauge_backing.offset_top = -76
- gauge_backing.offset_bottom = -16
- _icon(RING, Vector2(24, 24), Vector2(28, 28))
- rings = _label(Vector2(62, 18), 30)
- portrait = _icon(SONIC, Vector2(160, 26), Vector2(24, 24))
- portrait_letter = _label(Vector2(161, 23), 21)
- portrait_letter.size = Vector2(24, 28)
- portrait_letter.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
- lives = _label(Vector2(194, 23), 24)
- progress = _label(Vector2(24, 59), 14)
- progress.add_theme_color_override("font_color", Color("dbf7ff"))
- var name_label := _label(Vector2.ZERO, 14)
- name_label.text = "SPECIAL"
- name_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
- name_label.position = Vector2(24, size.y - 67)
- name_label.grow_vertical = Control.GROW_DIRECTION_BEGIN
- name_label.offset_top = -67
- name_label.offset_bottom = -45
- ready_label = _label(Vector2.ZERO, 13)
- ready_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
- ready_label.offset_left = 175
- ready_label.offset_top = -67
- ready_label.offset_bottom = -45
- ready_label.add_theme_color_override("font_color", Color("fff29a"))
- message = _label(Vector2(24, 81), 14)
- message.add_theme_color_override("font_color", Color("fff29a"))
+ _icon(RING, Vector2(24, 21), Vector2(33, 33))
+ rings = _label(Vector2(64, 17), 27)
+ portrait = _icon(Art.face("sonic"), Vector2(154, 16), Vector2(41, 41))
+ portrait_letter = _label(Vector2(163, 21), 20)
+ lives = _label(Vector2(198, 20), 23)
+ var caption := _label(Vector2(26, 54), 14)
+ caption.text = "SCORE"
+ caption.add_theme_color_override("font_color", Color("ffdf47"))
+ score = _label(Vector2(91, 48), 22)
+ progress = _label(Vector2(25, 83), 14)
+ progress.add_theme_color_override("font_color", Color("ddf4ff"))
+ message = _label(Vector2(18, 111), 16)
+ message.add_theme_color_override("font_color", Color("ffe564"))
+ var special := _label(Vector2.ZERO, 16)
+ special.text = "SPECIAL"
+ _bottom_label(special, 22, -81)
+ ready_label = _label(Vector2.ZERO, 16)
+ _bottom_label(ready_label, 148, -81)
+ ready_label.add_theme_color_override("font_color", Color("ffe564"))
  resized.connect(queue_redraw)
 
-func _backing(at: Vector2, dimensions: Vector2) -> Panel:
- var panel := Panel.new()
- panel.position = at
- panel.size = dimensions
- panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
- panel.show_behind_parent = true
- var style := StyleBoxFlat.new()
- style.bg_color = Color(0.025, 0.055, 0.09, 0.35)
- style.set_corner_radius_all(8)
- panel.add_theme_stylebox_override("panel", style)
- add_child(panel)
- return panel
+func _bottom_label(label: Label, left: float, top: float) -> void:
+ label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+ label.offset_left = left
+ label.offset_top = top
+ label.offset_bottom = top + 24
 
 func _label(at: Vector2, font_size: int) -> Label:
  var label := Label.new()
  label.position = at
  label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+ label.theme_type_variation = &"RaceTitle"
  label.add_theme_font_size_override("font_size", font_size)
- label.add_theme_color_override("font_color", Color.WHITE)
- label.add_theme_color_override("font_outline_color", Color("071730"))
- label.add_theme_constant_override("outline_size", 6 if font_size > 25 else 4)
- var font := SystemFont.new()
- font.font_names = PackedStringArray(["Arial"])
- font.font_weight = 800
- font.font_italic = true
- label.add_theme_font_override("font", font)
+ label.add_theme_constant_override("outline_size", 4)
  add_child(label)
  return label
 
 func _icon(texture: Texture2D, at: Vector2, dimensions: Vector2) -> TextureRect:
- var icon := TextureRect.new()
- icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
- icon.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
- icon.texture = texture
- icon.position = at
- icon.size = dimensions
- icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
- icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
- add_child(icon)
- return icon
+ var image := Art.icon(texture, dimensions)
+ image.position = at
+ add_child(image)
+ return image
 
 func update_values(character: String, balls: String, amount: float) -> void:
- portrait.texture = TAILS if character == "tails" else (SONIC if character == "sonic" else null)
+ portrait.texture = Art.face(character)
  portrait_letter.text = "" if portrait.texture else CharacterSpecials.CHARACTERS[character].display_name.left(1)
  portrait_letter.add_theme_color_override("font_color", CharacterSpecials.CHARACTERS[character].color)
- portrait.position.x = maxf(160, rings.position.x + rings.get_minimum_size().x + 24)
- portrait_letter.position.x = portrait.position.x
- lives.position.x = portrait.position.x + 34
+ portrait.position.x = maxf(154, rings.position.x + rings.get_minimum_size().x + 12)
+ portrait_letter.position.x = portrait.position.x + 9
+ lives.position.x = portrait.position.x + 44
  lives.text = "× " + balls
+ var width := maxf(250, maxf(lives.position.x + lives.get_minimum_size().x, progress.position.x + progress.get_minimum_size().x) + 18)
  var value := clampf(amount / 100.0, 0.0, 1.0)
- if not is_equal_approx(charge, value):
+ if not is_equal_approx(charge, value) or not is_equal_approx(width, plate_width):
   charge = value
+  plate_width = width
   queue_redraw()
  ready_label.text = "READY" if charge >= 1.0 else ""
 
 func _draw() -> void:
- draw_set_transform(Vector2(24, size.y - 38), 0.0, Vector2(0.72, 0.65))
- var origin := Vector2.ZERO
- var outline := PackedVector2Array([origin + Vector2(-5, -5), origin + Vector2(285, -5), origin + Vector2(275, 24), origin + Vector2(-15, 24)])
- draw_colored_polygon(outline, Color("071730"))
- var frame := PackedVector2Array([origin, origin + Vector2(278, 0), origin + Vector2(271, 18), origin + Vector2(-7, 18)])
- draw_colored_polygon(frame, Color("e6f5ff"))
- var inside := PackedVector2Array([origin + Vector2(3, 3), origin + Vector2(273, 3), origin + Vector2(268, 15), origin + Vector2(-2, 15)])
- draw_colored_polygon(inside, Color("142a50"))
+ # Short angled plates leave the middle of the table free for play.
+ draw_colored_polygon(PackedVector2Array([Vector2(15, 15), Vector2(plate_width, 15), Vector2(plate_width - 8, 78), Vector2(15, 78)]), Color("102e66ed"))
+ draw_rect(Rect2(15, 12, plate_width - 15, 4), Color("ffdd39"))
+ draw_rect(Rect2(15, 78, plate_width - 23, 26), INK)
+ var gauge := Rect2(14, size.y - 55, 205, 41)
+ draw_texture_rect(GAUGE, gauge, false)
  if charge > 0.0:
-  var width := 266.0 * charge
-  var fill := PackedVector2Array([origin + Vector2(4, 4), origin + Vector2(4 + width, 4), origin + Vector2(width, 14), origin + Vector2(0, 14)])
-  draw_colored_polygon(fill, Color("ffe15e") if charge >= 1.0 else Color("20c5f5"))
-  draw_line(origin + Vector2(5, 5), origin + Vector2(3 + width, 5), Color("d8ffff"), 2.0, true)
- for index in range(1, 10):
-  var x := 27.0 * index
-  draw_line(origin + Vector2(x, 4), origin + Vector2(x - 4, 14), Color(0.03, 0.12, 0.26, 0.35), 1.0, true)
+  var start := gauge.position + Vector2(30, 27)
+  var end := start + Vector2(149 * charge, 0)
+  draw_line(start, end, Color("ffcb29") if charge >= 1.0 else Color("21dfff"), 5, true)

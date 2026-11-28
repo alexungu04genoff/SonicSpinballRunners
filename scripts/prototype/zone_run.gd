@@ -425,10 +425,11 @@ func _update_hud(delta: float) -> void:
  if goal_pending and _next_ready():
   goal_pending = false
   _observe_authored_motion(active.runtime.goal_ring.center, active.runtime.goal_ring.center)
- var state: Array = [rings_collected, practice_mode, balls_remaining, active_sequence, run_plan.size(), act_score, act_score_target, exit_unlocked, int(special_meter)]
+ var state: Array = [rings_collected, practice_mode, balls_remaining, active_sequence, run_plan.size(), score, act_score, act_score_target, exit_unlocked, int(special_meter)]
  if state != _hud_detail_state:
   _hud_detail_state = state
   heading.text = "%03d" % rings_collected
+  player_hud.score.text = str(score)
   detail.text = "ACT %d / %d    %s" % [active_sequence + 1, run_plan.size(), "GOAL READY" if exit_unlocked else "%d / %d" % [act_score, act_score_target]]
   player_hud.update_values(character_id, "∞" if practice_mode else str(balls_remaining), special_meter)
  var hint_text := ""
@@ -449,9 +450,11 @@ func _build_hud() -> void:
  combo_celebration = preload("res://scripts/prototype/combo_celebration.gd").new()
  hud.add_child(combo_celebration)
  combo_celebration.character_pose = character_pose
- set_celebration_retro("--combo-cut-in-retro" in OS.get_cmdline_user_args())
- scorecraft.builder_hit_resolved.connect(_on_builder_hit)
- scorecraft.combo_ended.connect(func(_reason: String, _chain: int, _tier: int): combo_celebration.reset_combo())
+ # A rejected Act pool still builds the loading/error screen before gameplay exists.
+ if is_instance_valid(scorecraft):
+  set_celebration_retro("--combo-cut-in-retro" in OS.get_cmdline_user_args())
+  scorecraft.builder_hit_resolved.connect(_on_builder_hit)
+  scorecraft.combo_ended.connect(func(_reason: String, _chain: int, _tier: int): combo_celebration.reset_combo())
  fps_label = Label.new()
  fps_label.name = "FPSCounter"
  fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -472,14 +475,21 @@ func _build_hud() -> void:
  heading = player_hud.rings
  detail = player_hud.progress
  hint = player_hud.message
- var pause_button := _button("Ⅱ", toggle_pause, hud)
+ var pause_button := TextureButton.new()
+ pause_button.texture_normal = preload("res://assets/ui/runners/pause.png")
+ pause_button.texture_hover = preload("res://assets/ui/runners/pause_hover.png")
+ pause_button.texture_pressed = preload("res://assets/ui/runners/pause_pressed.png")
+ pause_button.ignore_texture_size = true
+ pause_button.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
+ pause_button.focus_mode = Control.FOCUS_NONE
+ pause_button.pressed.connect(toggle_pause)
+ hud.add_child(pause_button)
  pause_button.tooltip_text = "Pause"
- pause_button.add_theme_font_size_override("font_size", 14)
  pause_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
- pause_button.offset_left = -62
+ pause_button.offset_left = -70
  pause_button.offset_right = -18
  pause_button.offset_top = 22
- pause_button.offset_bottom = 60
+ pause_button.offset_bottom = 74
  diagnostics = Label.new()
  diagnostics.hide()
  diagnostics.position = Vector2(30, 140)
@@ -488,7 +498,9 @@ func _build_hud() -> void:
  loading_panel.color = Color("101b2c")
  loading_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  hud.add_child(loading_panel)
+ loading_panel.add_child(preload("res://scripts/prototype/menu_style.gd").new())
  loading_label = Label.new()
+ loading_label.theme_type_variation = &"RaceTitle"
  loading_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  loading_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
  loading_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

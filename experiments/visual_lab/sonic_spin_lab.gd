@@ -54,12 +54,6 @@ func _ready() -> void:
   offset_top = 14
   offset_right = 318
   offset_bottom = -14
- var style := StyleBoxFlat.new()
- style.bg_color = Color("#101e31ed")
- style.border_color = Color("#4389ab")
- style.border_width_right = 2
- style.set_content_margin_all(14)
- add_theme_stylebox_override("panel", style)
  var scroll := ScrollContainer.new()
  scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
  add_child(scroll)

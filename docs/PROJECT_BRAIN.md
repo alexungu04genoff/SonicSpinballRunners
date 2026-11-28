@@ -1,5 +1,9 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+## Runners menus and HUD — 2026-11-28
+
+The local Sonic Runners atlases now supply the title art, character faces, buttons, Ring counter, Special gauge and pause icon. Prototype shows its three Adventure Buddy choices together and keeps the table visible when paused. Endless, the Act editor and the labs share the control theme. [Screenshots and art sources](runners-ui/README.md).
+
 The five base-game Default atmospheres now have their own light, haze, cast shadows and SSAO. Green Hill gets sun after a coastal shower, Casino gets rose marquees, Ice Cap gets an aurora, Rooftop gets a low apricot sun and Aquarium gets lanterns over jade water. Pick **Default** in Atmosphere Lab to see the same look used by Prototype and Endless. [Lighting directions](ATMOSPHERE_VARIANTS.md#five-base-game-defaults--2026-11-28)
 
 The Lab and Prototype now share fourteen lighting baselines and three signature looks per theme. Starting looks use the source art and are available in the manual picker. Weighted rotation reads the saved variants. [Preset catalog](ATMOSPHERE_VARIANTS.md#selectable-baselines)

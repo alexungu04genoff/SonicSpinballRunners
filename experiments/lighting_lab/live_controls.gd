@@ -106,16 +106,13 @@ func _build_ui() -> void:
  panel.offset_right = -10
  panel.offset_top = 30
  panel.offset_bottom = -215
- var style := StyleBoxFlat.new()
- style.bg_color = Color("142330")
- style.set_content_margin_all(12)
- style.set_corner_radius_all(8)
- panel.add_theme_stylebox_override("panel", style)
  var column := VBoxContainer.new()
  column.add_theme_constant_override("separation", 8)
  panel.add_child(column)
  var heading := HBoxContainer.new()
  column.add_child(heading)
+ var art := preload("res://scripts/prototype/menu_style.gd")
+ heading.add_child(art.icon(art.SETTINGS, Vector2(25, 25)))
  caption = Label.new()
  caption.size_flags_horizontal = Control.SIZE_EXPAND_FILL
  heading.add_child(caption)

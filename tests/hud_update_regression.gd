@@ -28,9 +28,10 @@ func run() -> void:
  var game := Fixture.new()
  root.add_child(game)
  game.set_process(false)
- game._build_hud()
  game.scorecraft = Scorecraft.new()
  game.specials = CharacterSpecials.new()
+ game.ball = PlaygroundBall.new()
+ game._build_hud()
  game.library = game.Library.new()
  game.add_child(game.library)
  game.library_ready = true
@@ -50,7 +51,10 @@ func run() -> void:
  game.score = 250
  game.special_meter = 99.9
  game._process(0.01)
- check(game.detail.text.contains("150 / 1000") and is_equal_approx(game.player_hud.charge, 0.999), "Score and gauge changes appear in the same update")
+ check(game.player_hud.score.text == "250" and game.detail.text.contains("150 / 1000") and is_equal_approx(game.player_hud.charge, 0.999), "Run score, Act score and gauge changes appear in the same update")
+ game.score = 260
+ game._process(0.01)
+ check(game.player_hud.score.text == "260", "A run score change alone refreshes the counter")
  game.special_meter = 100.0
  game.balls_remaining = 2
  game._process(0.01)
@@ -95,6 +99,7 @@ func run() -> void:
  check(game.breakdown_calls == 3 and game.diagnostics.text.contains("Seed 99"), "Reopening diagnostics refreshes immediately")
  game.specials.free()
  game.scorecraft.free()
+ game.ball.free()
  game.free()
  print("HUD_UPDATE_REGRESSION | ", checks, " checks | ", failures, " failures")
  quit(1 if failures else 0)

@@ -342,19 +342,6 @@ func _position_act_ui() -> void:
  panel.hint.visible = debug_open
  panel.character_panel.position = Vector2(625, 155) if debug_open else Vector2(1005, 140)
 
-func _panel_style(color: Color, radius: int = 12) -> StyleBoxFlat:
- var style := StyleBoxFlat.new()
- style.bg_color = color
- style.corner_radius_top_left = radius
- style.corner_radius_top_right = radius
- style.corner_radius_bottom_left = radius
- style.corner_radius_bottom_right = radius
- style.content_margin_left = 18.0
- style.content_margin_right = 18.0
- style.content_margin_top = 12.0
- style.content_margin_bottom = 12.0
- return style
-
 func _label(text: String, size: int, color: Color = Color.WHITE) -> Label:
  var label := Label.new()
  label.text = text
@@ -369,13 +356,6 @@ func _button(text: String, callback: Callable) -> Button:
  button.focus_mode = Control.FOCUS_NONE
  button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
  button.add_theme_font_size_override("font_size", 16)
- button.add_theme_stylebox_override("normal", _panel_style(Color("143b3f"), 8))
- button.add_theme_stylebox_override("hover", _panel_style(Color("236269"), 8))
- button.add_theme_stylebox_override("pressed", _panel_style(Color("397f79"), 8))
- for style_name: String in ["normal", "hover", "pressed"]:
-  var style: StyleBoxFlat = button.get_theme_stylebox(style_name)
-  style.content_margin_top = 6.0
-  style.content_margin_bottom = 6.0
  button.pressed.connect(callback)
  return button
 
@@ -390,7 +370,6 @@ func _build_lab_ui() -> void:
  lab_ui.add_child(root)
  var title_panel := PanelContainer.new()
  title_panel.position = Vector2(24, 24)
- title_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.025, 0.13, 0.16, 0.91)))
  title_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
  root.add_child(title_panel)
  var title_stack := VBoxContainer.new()
@@ -398,6 +377,7 @@ func _build_lab_ui() -> void:
  title_panel.add_child(title_stack)
  title_stack.add_child(_label("SONIC SPINBALL RUNNERS", 13, Color("a4e5e3")))
  theme_label = _label("GREEN HILL", 31, Color("ffe373"))
+ theme_label.theme_type_variation = &"RaceTitle"
  title_stack.add_child(theme_label)
  development_subtitle = _label("A U T H O R E D   A C T", 12, Color("ffffff"))
  title_stack.add_child(development_subtitle)
@@ -405,7 +385,6 @@ func _build_lab_ui() -> void:
  score_panel.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
  score_panel.position = Vector2(-324, 24)
  score_panel.size = Vector2(300, 98)
- score_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.025, 0.13, 0.16, 0.91)))
  score_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
  root.add_child(score_panel)
  var scores := VBoxContainer.new()
@@ -425,7 +404,6 @@ func _build_lab_ui() -> void:
  footer.offset_right = -24
  footer.offset_top = -196
  footer.offset_bottom = -14
- footer.add_theme_stylebox_override("panel", _panel_style(Color(0.025, 0.13, 0.16, 0.94)))
  root.add_child(footer)
  var stack := VBoxContainer.new()
  stack.add_theme_constant_override("separation", 8)
