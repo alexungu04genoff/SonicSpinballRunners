@@ -4,10 +4,10 @@ extends RefCounted
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 const Objects = preload("res://scripts/act_editor/gameplay_objects.gd")
 const Rings = preload("res://scripts/act_editor/ring_trails.gd")
-const Decor = preload("res://scripts/act_editor/decor_slots.gd")
+const DecorFootprints = preload("res://scripts/act_editor/decor_footprints.gd")
 const EditorSelectionData = preload("res://scripts/act_editor/editor_selection.gd")
 
-static func bounds(document: Resource, selection: Dictionary) -> Rect2:
+static func bounds(document: Resource, selection: Dictionary, footprints: DecorFootprints = null) -> Rect2:
  var points := PackedVector2Array()
  var cell := float(document.cell_size)
  for index: int in selection.get("terrain", []):
@@ -28,9 +28,10 @@ static func bounds(document: Resource, selection: Dictionary) -> Rect2:
    points.append(Vector2(item.position) + axis * float(props.patrol_right))
  for index: int in selection.get("decor", []):
   var slot: Dictionary = document.decor_slots[index]
-  var radius: Vector2 = Vector2.ONE * Decor.RADII[Decor.TYPES.find(slot.slot_type)] * cell * float(slot.get("scale", 1.0))
-  points.append(slot.position - radius)
-  points.append(slot.position + radius)
+  if footprints == null: footprints = DecorFootprints.new()
+  var outline := footprints.polygon(document.decor_identity(), slot, slot.position, cell)
+  if outline.is_empty(): points.append(slot.position)
+  else: points.append_array(outline)
  for index: int in selection.get("ring", []): points.append_array(Rings.positions(document.ring_trails[index]))
  for kind: String in selection.get("markers", []):
   if kind == "spawn" and document.spawn_position != null: points.append(document.spawn_position)
@@ -181,14 +182,14 @@ static func mirror(document: Resource, selection: Dictionary, pivot: Vector2, ho
   elif kind == "goal": document.goal_position = reflected * goal
   elif kind == "activation" and document.activation_y != null and not horizontal: document.activation_y = 2.0 * pivot.y - float(document.activation_y)
 
-static func arrange(document: Resource, selection: Dictionary, operation: String) -> String:
+static func arrange(document: Resource, selection: Dictionary, operation: String, footprints: DecorFootprints = null) -> String:
  if not selection.get("markers", []).is_empty(): return "Align objects and groups without lifecycle markers selected."
  var units := EditorSelectionData.units(document, selection)
  var distribute := operation.begins_with("distribute")
  if units.size() < (3 if distribute else 2): return "Select at least %d independent objects or groups." % (3 if distribute else 2)
  var axis := 1 if operation in ["top", "middle", "bottom", "distribute_y"] else 0
  var frames: Array[Rect2] = []
- for unit: Dictionary in units: frames.append(bounds(document, unit))
+ for unit: Dictionary in units: frames.append(bounds(document, unit, footprints))
  if distribute:
   var ordered: Array[int] = []
   for index in units.size(): ordered.append(index)
@@ -201,7 +202,7 @@ static func arrange(document: Resource, selection: Dictionary, operation: String
    offset[axis] = lerpf(first, last, float(slot) / (ordered.size() - 1)) - frames[index].get_center()[axis]
    translate(document, units[index], offset)
  else:
-  var all := bounds(document, selection)
+  var all := bounds(document, selection, footprints)
   var target: float = all.get_center()[axis]
   if operation in ["left", "top"]: target = all.position[axis]
   elif operation in ["right", "bottom"]: target = all.end[axis]

@@ -44,7 +44,18 @@ static func capture(document: Resource, selection: Dictionary) -> Dictionary:
  copied["count"] = count
  return copied
 
+## Reserve the identities that determine Auto footprints before positioning a copy.
+static func prepare_decor(copied: Dictionary) -> Dictionary:
+ if copied.decor.is_empty(): return copied
+ var prepared := copied.duplicate()
+ prepared.decor = copied.decor.duplicate(true)
+ for slot: Dictionary in prepared.decor: slot.slot_id = Decor.new_id()
+ return prepared
+
 static func append_to(document: Resource, copied: Dictionary, requested_offset: Vector2, clamp_to_bounds := true, validate_result := true) -> Dictionary:
+ return append_prepared(document, prepare_decor(copied), requested_offset, clamp_to_bounds, validate_result)
+
+static func append_prepared(document: Resource, copied: Dictionary, requested_offset: Vector2, clamp_to_bounds := true, validate_result := true) -> Dictionary:
  copied = for_cell_size(copied, float(document.cell_size))
  var adjusted := placement_offset(document, copied, requested_offset)
  if not adjusted.error.is_empty(): return adjusted
@@ -65,7 +76,6 @@ static func append_to(document: Resource, copied: Dictionary, requested_offset: 
      ids[original.object_id] = item.object_id
      item.position += offset
     "decor":
-     item.slot_id = Decor.new_id()
      item.position += offset
      item.erase("placement_source")
     "ring":

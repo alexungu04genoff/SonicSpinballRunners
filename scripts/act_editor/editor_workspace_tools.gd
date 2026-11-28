@@ -105,7 +105,7 @@ func _ready() -> void:
  # 100% remains exactly 100%, and integer target dimensions stay exact too.
  scale_value = _number(precision, "Size", 0.01, 1000000, 100, 0.01)
  scale_mode.item_selected.connect(func(index):
-  var bounds := Transform.bounds(editor.document, editor.canvas.object_selection())
+  var bounds := Transform.bounds(editor.document, editor.canvas.object_selection(), editor.canvas.decor_footprints)
   scale_value.value = 100 if index == 0 else maxf(0.001, bounds.size[index - 1]))
  _button(precision, "Apply exact transform", _apply_exact)
  var mirrors := HBoxContainer.new()
@@ -120,7 +120,7 @@ func _ready() -> void:
  step_x = _number(precision, "Column step", -100000, 100000, 100, 0.01)
  step_y = _number(precision, "Row step", -100000, 100000, 100, 0.01)
  _button(precision, "Use selection size + one cell", func():
-  var bounds := Transform.bounds(editor.document, editor.canvas.object_selection())
+  var bounds := Transform.bounds(editor.document, editor.canvas.object_selection(), editor.canvas.decor_footprints)
   step_x.value = bounds.size.x + float(editor.document.cell_size)
   step_y.value = bounds.size.y + float(editor.document.cell_size))
  _button(precision, "Create duplicate grid", func():
@@ -318,7 +318,7 @@ func _set_members(into: Dictionary, members: Dictionary, enabled: bool) -> void:
 
 func _frame_row() -> void:
  if _chosen.is_empty(): return
- var bounds := Transform.bounds(editor.document, _chosen.selection).grow(float(editor.document.cell_size))
+ var bounds := Transform.bounds(editor.document, _chosen.selection, editor.canvas.decor_footprints).grow(float(editor.document.cell_size))
  var canvas: Control = editor.canvas
  var available: Vector2 = (canvas.size - Vector2.ONE * canvas.GRID_MARGIN * 2.0).max(Vector2.ONE)
  canvas._cell_pixels = clampf(minf(available.x / bounds.size.x, available.y / bounds.size.y) * float(editor.document.cell_size), 4.0, canvas.MAX_CELL_PIXELS)
@@ -348,7 +348,7 @@ func _apply_exact() -> void:
  if angle.value != 0: Transform.apply(candidate, selection, pivot, 1.0, angle.value)
  var factor := scale_value.value / 100.0
  if scale_mode.selected != 0:
-  var bounds := Transform.bounds(candidate, selection)
+  var bounds := Transform.bounds(candidate, selection, editor.canvas.decor_footprints)
   var axis := scale_mode.selected - 1
   var size: float = bounds.size[axis]
   if size <= 0.000001:
@@ -364,7 +364,7 @@ func _apply_exact() -> void:
    if not is_finite(factor) or factor <= 0.0: break
    var trial: Resource = candidate.copy_document()
    if not is_equal_approx(factor, 1.0): Transform.apply(trial, selection, pivot, factor, 0.0)
-   var measured: float = Transform.bounds(trial, selection).size[axis]
+   var measured: float = Transform.bounds(trial, selection, editor.canvas.decor_footprints).size[axis]
    if absf(measured - scale_value.value) <= 0.001:
     candidate = trial
     reached = true

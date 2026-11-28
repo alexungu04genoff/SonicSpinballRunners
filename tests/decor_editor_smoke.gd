@@ -19,7 +19,10 @@ func run() -> void:
 	check(editor.decor_list.visible, "Decor palette opens")
 	for i in 4:
 		await click_control(editor.buttons["decor_" + Slots.TYPES[i]])
+		var brush_id: String = editor.canvas.decor_brush.slot_id
+		var preview_seed: String = editor.canvas.placement_decor_seed()
 		await click_at(local_position(Vector2(110.25 + i * 75, 215.5)))
+		check(editor.document.decor_slots.back().slot_id == brush_id and editor.document.decor_identity() == preview_seed and editor.canvas.decor_brush.slot_id != brush_id, "Stamp preserves the previewed Auto variant and reserves a fresh ID for the next prop")
 	check(editor.document.decor_slots.size() == 4, "Palette places all four generic slot types")
 	check(close_to(editor.document.decor_slots[0].position, Vector2(110.25, 215.5)), "Decor placement is free by default")
 	check(editor.canvas.decor_brush.slot_type == "landmark", "Placement tool remains active")
@@ -36,13 +39,15 @@ func run() -> void:
 	editor.redo()
 	check(editor.document.decor_slots[0].variant_index == 1, "Redo restores the fixed index")
 	var variant_fingerprint: String = editor.document.fingerprint()
-	editor.decor_theme_field.select(3)
-	editor.decor_theme_field.item_selected.emit(3)
+	var casino: int = editor.Themes.IDS.find("casino_night")
+	editor.decor_theme_field.select(casino)
+	editor.decor_theme_field.item_selected.emit(casino)
 	check(editor.document.fingerprint() == variant_fingerprint and editor.decor_variant_field.get_item_text(2).contains("Chip Stack"), "Casino preview preserves the fixed generic index and Act data")
-	editor.decor_theme_field.select(1)
-	editor.decor_theme_field.item_selected.emit(1)
-	check(editor.document.fingerprint() == variant_fingerprint and editor.decor_variant_field.get_item_text(2).contains("Valve"), "Preview theme changes labels without changing the Act")
-	# Medium/edge still has three Chemical Plant choices and two Green Hill choices.
+	var ice: int = editor.Themes.IDS.find("ice_cap")
+	editor.decor_theme_field.select(ice)
+	editor.decor_theme_field.item_selected.emit(ice)
+	check(editor.document.fingerprint() == variant_fingerprint and editor.decor_variant_field.get_item_text(2).contains("Snow Cairn"), "Preview theme changes labels without changing the Act")
+	# The third medium edge variant exists in Ice Cap and falls back in Green Hill.
 	editor.decor_type_field.select(1)
 	editor.decor_type_field.item_selected.emit(1)
 	editor.decor_hint_field.select(1)
@@ -120,6 +125,28 @@ func run() -> void:
 	check(editor.save_to(DECOR_SAVE), "Editor saves decor with shared document workflow")
 	var fingerprint: String = editor.document.fingerprint()
 	check(editor.load_from(DECOR_SAVE) and editor.document.fingerprint() == fingerprint, "Editor reload preserves all decor properties")
+	editor.new_document()
+	editor.choose_decor("landmark")
+	editor._select_decor_variant(2) # Green Hill rope bridge.
+	editor._set_decor_property("rotation_degrees", 90.0)
+	editor._set_decor_property("scale", 2.0)
+	var bridge: Dictionary = editor.canvas.decor_brush.duplicate(true)
+	bridge.position = Vector2(300, 300)
+	editor.set_decor_slot(-1, bridge)
+	editor.canvas.select_decor(0)
+	var end_hits: Array = editor.canvas.mixed_hit_indices_at(editor.canvas.local_pixels_to_screen(Vector2(300, 405)))
+	var side_hits: Array = editor.canvas.mixed_hit_indices_at(editor.canvas.local_pixels_to_screen(Vector2(405, 300)))
+	check(end_hits.has({"kind": "decor", "index": 0}) and not side_hits.has({"kind": "decor", "index": 0}), "Picking follows the rotated bridge to its far end and excludes the short side")
+	var dimensions: Rect2 = editor.SelectionTransform.bounds(editor.document, editor.canvas.object_selection(), editor.canvas.decor_footprints)
+	check(dimensions.size.y > 280 and dimensions.size.x < 115, "Transform handles measure the scaled landmark in Act pixels")
+	var assembly: Dictionary = editor.SelectionClipboard.capture(editor.document, editor.canvas.object_selection())
+	assembly.decor[0].variant_mode = "auto"
+	assembly.decor[0].erase("variant_index")
+	editor.canvas.assembly_copy = assembly
+	editor._prepare_assembly_decor()
+	var next_id: String = editor.canvas.assembly_copy.decor[0].slot_id
+	editor._place_assembly(Vector2(150, 150))
+	check(editor.document.decor_slots.back().slot_id == next_id and editor.canvas.assembly_copy.decor[0].slot_id != next_id, "Assembly stamps keep the previewed Auto footprint and reserve the next identity")
 	if DisplayServer.get_name() != "headless":
 		editor.load_from("res://data/acts/decor_terraces.tres")
 		await choose_tab(3)

@@ -130,6 +130,8 @@ var selected_ring_index := -1:
   selected_ring_index = value
   selected_ring_indices.assign([value] if value >= 0 else [])
 var decor_brush: Dictionary = {}
+var decor_footprints := preload("res://scripts/act_editor/decor_footprints.gd").new()
+var pending_decor_seed := Decor.new_id()
 var selected_decor_indices: Array[int] = []
 var selected_decor_index := -1:
  set(value):
@@ -231,6 +233,7 @@ func _ready() -> void:
 
 func set_document(value: Resource, reset_view: bool = true) -> void:
  _clear_decor_selection()
+ pending_decor_seed = Decor.new_id()
  ring_tool = false
  selected_ring_index = -1
  document = value
@@ -469,8 +472,12 @@ func select_decor(index: int) -> void:
  selected_decor_index = index if index >= 0 and index < document.decor_slots.size() else -1
  queue_redraw()
 
-func _decor_radius(slot: Dictionary) -> float:
- return maxf(5.0, Decor.RADII[Decor.TYPES.find(slot.slot_type)] * _cell_pixels * float(slot.get("scale", 1.0)))
+func placement_decor_seed() -> String:
+ var seed: String = document.decor_identity()
+ return pending_decor_seed if seed.is_empty() else seed
+
+func _decor_outline(slot: Dictionary, seed: String) -> PackedVector2Array:
+ return decor_footprints.polygon(seed, slot, local_pixels_to_screen(slot.position), _cell_pixels)
 
 func _draw_decor() -> void:
  if not show_decor: return
@@ -479,28 +486,35 @@ func _draw_decor() -> void:
   var slot: Dictionary = document.decor_slots[index].duplicate(true)
   if index == _decor_drag_index: slot.position = _decor_drag_position
   if selected_decor_indices.has(index): slot.position += _group_offset
-  _draw_decor_slot(slot, selected_decor_indices.has(index), false)
+  _draw_decor_slot(slot, selected_decor_indices.has(index), false, document.decor_identity())
  if not decor_brush.is_empty() and _hovering and _inside_grid(_cursor_position):
   var slot := decor_brush.duplicate(true)
   slot.position = placement_position(screen_to_local_pixels(_cursor_position), _alt_held)
-  _draw_decor_slot(slot, false, true)
+  _draw_decor_slot(slot, false, true, placement_decor_seed())
 
-func _draw_decor_slot(slot: Dictionary, selected: bool, ghost: bool) -> void:
+func _draw_decor_slot(slot: Dictionary, selected: bool, ghost: bool, seed: String) -> void:
  var center := local_pixels_to_screen(slot.position)
- var radius := _decor_radius(slot)
+ var outline := _decor_outline(slot, seed)
  var color: Color = Decor.COLORS[Decor.TYPES.find(slot.slot_type)]
- draw_circle(center, radius, Color(color, 0.20 if ghost else 0.65))
- draw_arc(center, radius, 0, TAU, 24, SELECTION_COLOR if selected else color, 2.0, true)
+ if outline.size() >= 3:
+  draw_colored_polygon(outline, Color(color, 0.17 if ghost else 0.35))
+  outline.append(outline[0])
+  draw_polyline(outline, SELECTION_COLOR if selected else color, 1.5, true)
+ # Keep the placement handle readable even when the prop is smaller than a pixel.
+ draw_circle(center, 5, color)
  var direction := (Vector2.LEFT if slot.get("mirror_x", false) else Vector2.RIGHT).rotated(deg_to_rad(float(slot.rotation_degrees)))
- draw_line(center, center + direction * (radius + 7), color, 2.0, true)
+ draw_line(center, center + direction * 10.0, color, 2.0, true)
  var label: String = "◆" if slot.slot_type == "landmark" else slot.slot_type.left(1).to_upper()
  draw_string(ThemeDB.fallback_font, center + Vector2(-3, 3), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("101a25"))
 
 func _update_decor_drag(pointer: Vector2, alt: bool, force := false) -> void:
+ # Selecting a prop can resize the inspector and move the canvas under a held pointer.
+ pointer = get_global_transform_with_canvas() * pointer
  if not force and pointer.distance_squared_to(_handle_last_pointer) <= POINTER_JITTER_PIXELS * POINTER_JITTER_PIXELS: return
  _handle_last_pointer = pointer
- var delta := screen_to_local_pixels(pointer) - _decor_drag_start
- if not _decor_drag_moved and delta.length() * _cell_pixels / _local_cell_size() < 3: return
+ var displacement := pointer - _decor_drag_start
+ if not _decor_drag_moved and displacement.length() < 3: return
+ var delta := get_global_transform_with_canvas().affine_inverse().basis_xform(displacement) * _local_cell_size() / _cell_pixels
  _decor_drag_moved = true
  _pending_cycle_target = {}
  _decor_drag_position = movement_position(_decor_drag_original + delta, _decor_drag_original, alt)
@@ -666,11 +680,15 @@ func gameplay_hit_indices_at(local_position: Vector2) -> Array[int]:
 func mixed_hit_indices_at(local_position: Vector2) -> Array[Dictionary]:
  var hits: Array[Dictionary] = []
  if show_decor:
+  var body_hits: Array[Dictionary] = []
   for index in range(document.decor_slots.size() - 1, -1, -1):
    if not selection_allowed("decor", index): continue
    var slot: Dictionary = document.decor_slots[index]
-   if local_position.distance_to(local_pixels_to_screen(slot.position)) <= _decor_radius(slot) + 3:
+   if local_position.distance_to(local_pixels_to_screen(slot.position)) <= 8:
     hits.append({"kind": "decor", "index": index})
+   elif Geometry2D.is_point_in_polygon(local_position, _decor_outline(slot, document.decor_identity())):
+    body_hits.append({"kind": "decor", "index": index})
+  hits.append_array(body_hits)
  for kind: String in marker_hits_at(local_position):
   hits.append({"kind": "marker", "marker": kind})
  for index in range(document.ring_trails.size() - 1, -1, -1):
@@ -1687,9 +1705,9 @@ func _begin_primary(pointer: Vector2, cycle_overlaps: bool, toggle_terrain: bool
  _pending_cycle_target = click_target
  if not target.is_empty():
   if target.kind == "decor":
-   _handle_last_pointer = pointer
+   _decor_drag_start = get_global_transform_with_canvas() * pointer
+   _handle_last_pointer = _decor_drag_start
    _decor_drag_index = target.index
-   _decor_drag_start = screen_to_local_pixels(pointer)
    _decor_drag_original = document.decor_slots[target.index].position
    _decor_drag_position = _decor_drag_original
    _decor_drag_moved = false
@@ -1823,11 +1841,12 @@ func _finish_box_selection() -> void:
    for index in document.decor_slots.size():
     if not selection_allowed("decor", index): continue
     var slot: Dictionary = document.decor_slots[index]
-    if _box_hits_circle(box, local_pixels_to_screen(slot.position), _decor_radius(slot)):
+    var outline := _decor_outline(slot, document.decor_identity())
+    if _box_hits_points(box, outline, true) or (outline.is_empty() and box.has_point(local_pixels_to_screen(slot.position))):
      if not selection.decor.has(index): selection.decor.append(index)
  if _box_encloses():
   for group: Dictionary in document.editor_groups:
-   var bounds := SelectionTransform.bounds(document, group.members)
+   var bounds := SelectionTransform.bounds(document, group.members, decor_footprints)
    var frame := Rect2(local_pixels_to_screen(bounds.position), bounds.size * _cell_pixels / _local_cell_size())
    if not box.encloses(frame):
     for kind: String in EditorSelectionData.KINDS:
@@ -2599,13 +2618,13 @@ func selection_anchor() -> Vector2:
  if kind == "gameplay" and index >= 0: return document.gameplay_objects[index].position
  if kind == "decor" and index >= 0: return document.decor_slots[index].position
  if kind == "ring" and index >= 0: return (document.ring_trails[index].start + document.ring_trails[index].end) * 0.5
- return SelectionTransform.bounds(document, selection).get_center()
+ return SelectionTransform.bounds(document, selection, decor_footprints).get_center()
 
 func transform_pivot() -> Vector2:
  if _gizmo_dragging: return _gizmo_pivot
  if pivot_mode == 2: return cursor_pivot
  if pivot_mode == 1: return selection_anchor()
- return SelectionTransform.bounds(document, object_selection()).get_center()
+ return SelectionTransform.bounds(document, object_selection(), decor_footprints).get_center()
 
 func set_cursor_pivot() -> void:
  pivot_mode = 2
@@ -2632,7 +2651,7 @@ func frame_selection() -> void:
  if selection_count() == 0:
   fit_view()
   return
- var bounds := SelectionTransform.bounds(document, object_selection()).grow(_local_cell_size())
+ var bounds := SelectionTransform.bounds(document, object_selection(), decor_footprints).grow(_local_cell_size())
  var available := (size - Vector2.ONE * GRID_MARGIN * 2.0).max(Vector2.ONE)
  _cell_pixels = clampf(minf(available.x / bounds.size.x, available.y / bounds.size.y) * _local_cell_size(), 4.0, MAX_CELL_PIXELS)
  _view_origin = size * 0.5 - bounds.get_center() * _cell_pixels / _local_cell_size()
@@ -2640,7 +2659,7 @@ func frame_selection() -> void:
  queue_redraw()
 
 func _selection_handle_points() -> PackedVector2Array:
- var bounds := SelectionTransform.bounds(document, object_selection())
+ var bounds := SelectionTransform.bounds(document, object_selection(), decor_footprints)
  var rect := Rect2(local_pixels_to_screen(bounds.position), bounds.size * _cell_pixels / _local_cell_size()).grow(9.0)
  return PackedVector2Array([rect.position, Vector2(rect.end.x, rect.position.y), rect.end,
   Vector2(rect.position.x, rect.end.y), Vector2(rect.get_center().x, rect.position.y - 27.0)])
@@ -2660,11 +2679,11 @@ func _draw_selection_handles() -> void:
  var pivot := local_pixels_to_screen(transform_pivot())
  draw_line(pivot - Vector2(7, 0), pivot + Vector2(7, 0), Color("ffcb73"), 1.5, true)
  draw_line(pivot - Vector2(0, 7), pivot + Vector2(0, 7), Color("ffcb73"), 1.5, true)
- var bounds := SelectionTransform.bounds(document, object_selection())
+ var bounds := SelectionTransform.bounds(document, object_selection(), decor_footprints)
  var label := "%.2f × %.2f px  |  %.2f × %.2f cells" % [bounds.size.x, bounds.size.y, bounds.size.x / _local_cell_size(), bounds.size.y / _local_cell_size()]
  var units := EditorSelectionData.units(document, object_selection())
  if units.size() == 2:
-  var delta := SelectionTransform.bounds(document, units[1]).get_center() - SelectionTransform.bounds(document, units[0]).get_center()
+  var delta := SelectionTransform.bounds(document, units[1], decor_footprints).get_center() - SelectionTransform.bounds(document, units[0], decor_footprints).get_center()
   label += "  |  centers %.2f px (ΔX %.2f, ΔY %.2f)" % [delta.length(), delta.x, delta.y]
  if _gizmo_dragging: label = "%.3f× · %.2f° · release to apply · Esc cancels" % [_gizmo_factor, _gizmo_degrees]
  if not gizmo_error.is_empty(): label = "Cannot apply: " + gizmo_error
@@ -2676,7 +2695,7 @@ func _draw_locked_items() -> void:
   if not get("show_" + ("rings" if kind == "ring" else kind)): continue
   for index: int in document.editor_locks.get(kind, []):
    if EditorSelectionData.hidden(document, kind, index): continue
-   var at := SelectionTransform.bounds(document, EditorSelectionData.single(kind, index)).get_center()
+   var at := SelectionTransform.bounds(document, EditorSelectionData.single(kind, index), decor_footprints).get_center()
    var point := local_pixels_to_screen(at)
    draw_rect(Rect2(point - Vector2(4, 0), Vector2(8, 7)), Color("d4a071"), false, 1.5)
    draw_arc(point + Vector2(0, 0), 3, PI, TAU, 8, Color("d4a071"), 1.5, true)
@@ -2751,7 +2770,7 @@ func _draw_assembly_ghost() -> void:
  for original: Dictionary in assembly_copy.decor:
   var slot := original.duplicate(true)
   slot.position += offset
-  _draw_decor_slot(slot, false, true)
+  _draw_decor_slot(slot, false, true, placement_decor_seed())
 
 func _draw_boundary_handles() -> void:
  var dimensions := _boundary_preview if _boundary_dragging else _grid_size()

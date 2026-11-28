@@ -1,5 +1,5 @@
 extends Control
-## Standalone authoring UI. It has no runtime table or gameplay dependencies.
+## Standalone authoring UI for Act geometry, gameplay objects and themed decor footprints.
 const ActData = preload("res://scripts/act_editor/act_geometry.gd")
 const Shapes = preload("res://scripts/act_editor/terrain_shapes.gd")
 const Canvas = preload("res://scripts/act_editor/geometry_canvas.gd")
@@ -124,7 +124,6 @@ var decor_type_field: OptionButton
 var decor_hint_field: OptionButton
 var decor_theme_field: OptionButton
 var decor_variant_field: OptionButton
-var _decor_preview_skin: RefCounted
 var decor_scale_field: SpinBox
 var decor_frequency_field: SpinBox
 var decor_small_percent_field: SpinBox
@@ -841,10 +840,9 @@ func _build_decor_palette(parent: Node) -> void:
 	decor_list.add_child(decor_hint_field)
 	decor_theme_field = OptionButton.new()
 	for name: String in Themes.NAMES: decor_theme_field.add_item("Preview: " + name)
-	decor_theme_field.tooltip_text = "Names and availability for this theme only. The preview theme is not saved in the Act."
-	_decor_preview_skin = Themes.create(Themes.IDS[0]).create_decor(null)
+	decor_theme_field.tooltip_text = "Preview this theme’s prop footprints and use it for Play Act."
 	decor_theme_field.item_selected.connect(func(index):
-		_decor_preview_skin = Themes.create(Themes.IDS[index]).create_decor(null)
+		canvas.decor_footprints.set_theme(Themes.IDS[index])
 		_refresh())
 	decor_list.add_child(decor_theme_field)
 	decor_variant_field = OptionButton.new()
@@ -911,7 +909,8 @@ func set_decor_slot(index: int, slot: Dictionary) -> void:
 	if index >= 0 and EditorSelectionData.locked(document, "decor", index): return
 	if composite_preview_active or index < -1 or index >= document.decor_slots.size(): return
 	var value := slot.duplicate(true)
-	if index == -1: value.slot_id = Decor.new_id()
+	var stamping: bool = index == -1 and value.slot_id == canvas.decor_brush.get("slot_id", "")
+	if index == -1 and not stamping: value.slot_id = Decor.new_id()
 	# A hand edit or duplicate claims a scattered slot as manual decoration.
 	value.erase("placement_source")
 	var error: String = Decor.validation_error(value)
@@ -920,8 +919,10 @@ func set_decor_slot(index: int, slot: Dictionary) -> void:
 		return
 	if index >= 0 and document.decor_slots[index] == value: return
 	_record_edit()
-	if document.decor_seed.is_empty(): document.decor_seed = Decor.new_id()
-	if index == -1: document.decor_slots.append(value)
+	if document.decor_seed.is_empty(): document.decor_seed = canvas.placement_decor_seed()
+	if index == -1:
+		document.decor_slots.append(value)
+		if stamping: canvas.decor_brush.slot_id = Decor.new_id()
 	else:
 		_track_duplicate_movement(canvas.object_selection(), Vector2(value.position) - Vector2(document.decor_slots[index].position))
 		document.decor_slots[index] = value
@@ -1024,9 +1025,14 @@ func _refresh_decor_controls() -> void:
 	if active:
 		if DecorScatter.is_scattered(slot):
 			decor_info.text = "Scattered prop: Randomize replaces it.\nEdit or duplicate it to keep it manually.\n\n" + decor_info.text
-		if slot.slot_type == "landmark":
-			decor_info.text = "Landmark 1: upright; 2: span / gateway.\nBoth are about 3 cells along the angle tick.\nVariant 3: circular, about 1.6 cells across.\nAuto keeps the long roles across themes.\n\n" + decor_info.text
-		var choices: Array = _decor_preview_skin.variants_for(slot)
+		var seed: String = document.decor_identity() if canvas.decor_brush.is_empty() else canvas.placement_decor_seed()
+		var outline: PackedVector2Array = canvas.decor_footprints.polygon(seed, slot, Vector2.ZERO, 1.0)
+		var skin: RefCounted = canvas.decor_footprints.skin
+		if not outline.is_empty():
+			var frame := Rect2(outline[0], Vector2.ZERO)
+			for point in outline: frame = frame.expand(point)
+			decor_info.text = "%s · %.2f × %.2f cells\nTop-down width × depth at this angle\n\n" % [skin.resolve(seed, slot).capitalize(), frame.size.x, frame.size.y] + decor_info.text
+		var choices: Array = skin.variants_for(slot)
 		for index in choices.size():
 			decor_variant_field.add_item("Variant %d — %s" % [index + 1, str(choices[index]).capitalize()])
 			decor_variant_field.set_item_metadata(index + 1, index)
@@ -1037,7 +1043,7 @@ func _refresh_decor_controls() -> void:
 				decor_variant_field.set_item_metadata(decor_variant_field.item_count - 1, selected)
 				decor_variant_field.select(decor_variant_field.item_count - 1)
 			else: decor_variant_field.select(selected + 1)
-		var warning: String = _decor_preview_skin.variant_warning(slot)
+		var warning: String = skin.variant_warning(slot)
 		if not warning.is_empty(): decor_info.text = warning + "\n\n" + decor_info.text
 		decor_type_field.select(Decor.TYPES.find(slot.slot_type))
 		decor_hint_field.select(Decor.HINTS.find(slot.placement_hint))
@@ -1672,18 +1678,19 @@ func copy_selected() -> void:
 func paste_selected(at_cursor := false, in_place := false) -> void:
 	if composite_preview_active or _transform_gesture_active() or _selection_clipboard.is_empty(): return
 	var candidate: Resource = document.copy_document()
-	var copied := SelectionClipboard.for_cell_size(_selection_clipboard, float(document.cell_size))
+	var copied := SelectionClipboard.prepare_decor(SelectionClipboard.for_cell_size(_selection_clipboard, float(document.cell_size)))
 	var offset: Vector2 = Vector2.ONE * float(document.cell_size) * canvas.terrain_snap_step * (_paste_count + 1)
 	if in_place: offset = Vector2.ZERO
 	if at_cursor and not in_place:
 		var recipe: Resource = ActData.new()
 		recipe.cell_size = document.cell_size
+		recipe.decor_seed = canvas.placement_decor_seed()
 		var all := EditorSelectionData.empty()
 		for kind: String in EditorSelectionData.COLLECTIONS:
 			recipe.set(EditorSelectionData.COLLECTIONS[kind], copied[kind])
 			all[kind] = range(copied[kind].size())
-		offset = canvas.legal_gameplay_position(canvas.screen_to_local_pixels(canvas._cursor_position), canvas._alt_held) - SelectionTransform.bounds(recipe, all).get_center()
-	var result := SelectionClipboard.append_to(candidate, copied, offset, not in_place)
+		offset = canvas.legal_gameplay_position(canvas.screen_to_local_pixels(canvas._cursor_position), canvas._alt_held) - SelectionTransform.bounds(recipe, all, canvas.decor_footprints).get_center()
+	var result := SelectionClipboard.append_prepared(candidate, copied, offset, not in_place)
 	if not result.error.is_empty():
 		_set_status("Paste unchanged: " + result.error)
 		return
@@ -3200,13 +3207,15 @@ func _preview_gizmo(factor: float, degrees: float, pivot: Vector2) -> void:
 	canvas.queue_redraw()
 
 func _commit_candidate(candidate: Resource) -> bool:
+	if candidate.decor_seed.is_empty() and candidate.decor_slots.size() > document.decor_slots.size():
+		candidate.decor_seed = canvas.placement_decor_seed()
 	var errors: PackedStringArray = candidate.validation_errors()
 	if not errors.is_empty():
 		_set_status("Edit unchanged: " + errors[0])
 		return false
 	if candidate.editing_fingerprint() == document.editing_fingerprint(): return false
 	_record_edit()
-	for field: String in ["placements", "gameplay_objects", "decor_slots", "ring_trails", "switch_banks", "editor_groups", "editor_locks", "editor_hidden", "spawn_position", "goal_position", "goal_diameter_cells", "activation_y"]:
+	for field: String in ["placements", "gameplay_objects", "decor_seed", "decor_slots", "ring_trails", "switch_banks", "editor_groups", "editor_locks", "editor_hidden", "spawn_position", "goal_position", "goal_diameter_cells", "activation_y"]:
 		document.set(field, candidate.get(field))
 	_refresh()
 	return true
@@ -3248,7 +3257,7 @@ func unlock_all() -> void:
 func arrange_selection(operation: String) -> void:
 	if composite_preview_active or _transform_gesture_active(): return
 	var candidate: Resource = document.copy_document()
-	var error := SelectionTransform.arrange(candidate, canvas.object_selection(), operation)
+	var error := SelectionTransform.arrange(candidate, canvas.object_selection(), operation, canvas.decor_footprints)
 	if not error.is_empty():
 		_set_status(error)
 		return
@@ -3313,30 +3322,38 @@ func choose_assembly() -> void:
 	if not result.error.is_empty():
 		_set_status(result.error)
 		return
-	var recipe: Resource = ActData.new()
-	for kind: String in EditorSelectionData.COLLECTIONS: recipe.set(EditorSelectionData.COLLECTIONS[kind], result.copied[kind])
-	recipe.cell_size = document.cell_size
-	var selection := EditorSelectionData.empty()
-	for kind: String in EditorSelectionData.COLLECTIONS: selection[kind] = range(result.copied[kind].size())
 	canvas.select_piece(-1)
 	show_all_layers()
 	canvas.assembly_copy = result.copied
 	canvas.assembly_copy["assembly_name"] = result.title
-	canvas.assembly_center = SelectionTransform.bounds(recipe, selection).get_center()
+	_prepare_assembly_decor()
 	canvas.grab_focus()
 	_set_status("Assembly: %s. Click to place; Escape exits. S changes snapping; Alt places freely." % result.title)
+
+func _prepare_assembly_decor() -> void:
+	canvas.assembly_copy = SelectionClipboard.prepare_decor(canvas.assembly_copy)
+	var recipe: Resource = ActData.new()
+	recipe.cell_size = document.cell_size
+	recipe.decor_seed = canvas.placement_decor_seed()
+	var selection := EditorSelectionData.empty()
+	for kind: String in EditorSelectionData.COLLECTIONS:
+		recipe.set(EditorSelectionData.COLLECTIONS[kind], canvas.assembly_copy[kind])
+		selection[kind] = range(canvas.assembly_copy[kind].size())
+	canvas.assembly_center = SelectionTransform.bounds(recipe, selection, canvas.decor_footprints).get_center()
 
 func _place_assembly(position: Vector2) -> void:
 	if composite_preview_active or canvas.assembly_copy.is_empty(): return
 	var candidate: Resource = document.copy_document()
-	var result := SelectionClipboard.append_to(candidate, canvas.assembly_copy, position - canvas.assembly_center)
+	var result := SelectionClipboard.append_prepared(candidate, canvas.assembly_copy, position - canvas.assembly_center)
 	if not result.error.is_empty():
 		_set_status(result.error)
 		return
 	EditorSelectionData.group(candidate, result.selection)
 	if EditorSelectionData.count(result.selection) >= 2:
 		candidate.editor_groups.back().name = canvas.assembly_copy.get("assembly_name", "Assembly")
-	if _commit_candidate(candidate): _set_status("Assembly placed. Escape returns to selection; Ctrl+Z removes this copy.")
+	if _commit_candidate(candidate):
+		_prepare_assembly_decor()
+		_set_status("Assembly placed. Escape returns to selection; Ctrl+Z removes this copy.")
 
 func show_shortcuts() -> void:
 	if shortcuts_dialog == null:
@@ -3385,6 +3402,6 @@ func _play_current() -> void:
 		arguments.append_array(["res://scenes/prototype_run.tscn", "--"])
 	else:
 		arguments.append_array(["--", "--portable-play"])
-	arguments.append_array(["--act", ProjectSettings.globalize_path(current_path)])
+	arguments.append_array(["--act", ProjectSettings.globalize_path(current_path), "--theme=" + Themes.IDS[decor_theme_field.selected]])
 	var process := OS.create_process(OS.get_executable_path(), arguments)
 	_set_status("Prototype Act test opened. Save edits here, then pause and Restart run to reload." if process >= 0 else "Could not open the Act player.")

@@ -100,7 +100,7 @@ func run() -> void:
  copied.decor_slots[0].rotation_degrees += 0.125
  check(copied.fingerprint() != before and act.fingerprint() == before, "Deep copies and fingerprints track decor changes independently")
  var invalid := slot.duplicate(true)
- for mutation: Dictionary in [{"slot_type": "palm_tree_01"}, {"placement_hint": "ceiling"}, {"variant_mode": "palm"}, {"position": Vector2(INF, 0)}, {"rotation_degrees": NAN}, {"scale": 1.16}, {"scale": true}, {"mesh": "palm"}, {"slot_id": ""}]:
+ for mutation: Dictionary in [{"slot_type": "palm_tree_01"}, {"placement_hint": "ceiling"}, {"variant_mode": "palm"}, {"position": Vector2(INF, 0)}, {"rotation_degrees": NAN}, {"scale": Slots.MIN_SCALE - 0.001}, {"scale": Slots.MAX_SCALE + 0.001}, {"scale": true}, {"mesh": "palm"}, {"slot_id": ""}]:
   invalid = slot.duplicate(true)
   invalid.merge(mutation, true)
   check(not Slots.validation_error(invalid).is_empty(), "Malformed decor rejected: " + str(mutation.keys()))

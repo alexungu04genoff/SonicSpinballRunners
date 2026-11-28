@@ -2,7 +2,6 @@ extends RefCounted
 ## Theme-independent authoring records. No meshes, collision, or gameplay behavior.
 const TYPES := ["small", "medium", "large", "landmark"]
 const HINTS := ["surface", "edge", "either"]
-const RADII := [0.10, 0.17, 0.25, 0.36]
 const COLORS := [Color("f4db80"), Color("9cdeb0"), Color("d6a8ff"), Color("ffab8c")]
 const MIN_SCALE := 0.125
 const MAX_SCALE := 8.0
