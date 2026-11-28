@@ -53,7 +53,7 @@ func run() -> void:
  for id: String in setup.theme_checks: setup.theme_checks[id].set_pressed_no_signal(id == theme)
  var sources := ["GateDash.tres", "DropTarget-SW-SP-DT.tres", "First Try Smooth Decor.tres"]
  for path: String in setup.act_checks: setup.act_checks[path].set_pressed_no_signal(path.get_file() in sources)
- var variant := "variant_1410883925" if theme == "casino_night" else "default"
+ var variant := "look_cherry_jackpot" if theme == "casino_night" else "default"
  var picker: OptionButton = setup.atmosphere_choices[theme]
  for index in picker.item_count:
   if picker.get_item_metadata(index) == variant:

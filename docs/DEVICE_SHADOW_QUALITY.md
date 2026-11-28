@@ -34,7 +34,7 @@ Atmospheres inherit **0.80 opacity, blur 10, SSAO 8×, depth bias 0.01, normal b
 
 **Contact shadow tones** selects native SSAO or 8, 5, 4, 3 or 2 clean levels. On Forward+ with MSAA, the banded option replaces native SSAO with current-frame depth sampled in eligible foreground terrain materials. Other surfaces lose the native SSAO contribution while this option is active. Switching MSAA off restores native SSAO. The cast and contact selectors save independently. [Native, four and five contact tones](terrain-face-shading/green-hill-contact-tones.png)
 
-**Try an atmosphere → Arcade daylight (Sega-inspired)** combines a low warm sun, cool ambient fill, four cast tones and broader, higher-contrast native contacts. It runs as a draft until explicitly saved. For the smooth reference choose **Device default** with **Clean 8 shadow gradient** off. [Native, three and two cast tones](terrain-face-shading/green-hill-cast-tones.png)
+**Try an atmosphere → Arcade daylight** combines a low warm sun, cool ambient fill, four cast tones and native SSAO. The same recipe appears in the Prototype atmosphere picker. [Cast tone study](terrain-face-shading/green-hill-cast-tones.png)
 
 [Three, four and five cast tones](terrain-face-shading/green-hill-four-five-tones.png) · [Playfield lighting comparison](terrain-face-shading/green-hill-arcade-daylight.jpg) · [Contact radius comparison](terrain-face-shading/green-hill-contact-radius.png)
 

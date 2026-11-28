@@ -41,7 +41,7 @@ func validation_error() -> String:
   if id not in Profile.theme_ids(): return "Theme unavailable in this build: " + id
  for theme: String in atmosphere_overrides:
   if theme not in Profile.theme_ids(): return "Override theme unavailable in this build."
-  var variants := preload("res://scripts/atmosphere/variants.gd").new().read(theme)
+  var variants := preload("res://scripts/atmosphere/variants.gd").new().choices(theme)
   if not variants.any(func(record: Dictionary): return record.id == atmosphere_overrides[theme]): return "Unknown atmosphere override."
  if single_act_test:
   if selected_act_paths.size() != 1 or selected_theme_ids.size() != 1 or zone_count != 1: return "An Act test needs one Act and one theme."
@@ -80,7 +80,7 @@ func read_preferences(settings: ConfigFile, available: Array) -> void:
  if saved_variants is Dictionary:
   for theme: Variant in saved_variants:
    if theme not in Profile.theme_ids(): continue
-   var records := preload("res://scripts/atmosphere/variants.gd").new().read(theme)
+   var records := preload("res://scripts/atmosphere/variants.gd").new().choices(theme)
    if records.any(func(record: Dictionary): return record.id == saved_variants[theme]):
     atmosphere_overrides[theme] = saved_variants[theme]
  var excluded: Array = settings.get_value("run_setup", "excluded_acts", [])

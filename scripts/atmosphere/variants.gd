@@ -2,6 +2,7 @@ extends RefCounted
 ## Project-owned Theme atmospheres. Data is deliberately outside bake dependencies.
 const DIRECTORY := "res://data/atmospheres"
 const Fields := preload("res://scripts/atmosphere/fields.gd")
+const Looks := preload("res://scripts/atmosphere/lighting_looks.gd")
 const THEMES := preload("res://scripts/themes/theme_roster.gd").IDS
 var directory: String = preload("res://scripts/portable_workspace.gd").atmosphere_directory()
 var error := ""
@@ -84,11 +85,26 @@ static func chance(records: Array[Dictionary], id: String) -> float:
   if record.id == id: weight = record.weight
  return weight / total if total > 0 else 0.0
 
+func choices(theme: String) -> Array[Dictionary]:
+ # The manual picker also offers stock recipes. Only saved records carry rotation weights.
+ var result: Array[Dictionary] = []
+ for record: Dictionary in read(theme):
+  result.append({"id": record.id, "name": record.name})
+ if not error.is_empty(): return result
+ for title: String in Looks.titles(theme):
+  result.append({"id": Looks.preset_id(title), "name": title})
+ return result
+
 func choose(theme: String, run_seed: int, zone: int, override_id := "") -> Dictionary:
  var records := read(theme)
  if not override_id.is_empty():
   for record: Dictionary in records:
    if record.id == override_id: return record.duplicate(true)
+  if error.is_empty():
+   for title: String in Looks.titles(theme):
+    if Looks.preset_id(title) == override_id:
+     return {"id": override_id, "name": title, "enabled": true, "weight": 0.0,
+      "values": Looks.create(title, {}, theme)}
   push_error("Unknown atmosphere override: " + theme + "/" + override_id)
   return baseline()
  var random := RandomNumberGenerator.new()

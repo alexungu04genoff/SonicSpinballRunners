@@ -2,6 +2,21 @@
 
 The production model is **Act geometry × Theme × Atmosphere Variant**. Geometry and material topology still bake only as Act × Theme, including that Act/theme's scenery sidecar. Atmosphere is applied to those reusable recipes at runtime. Production does not read `user://lighting_lab_presets.cfg`.
 
+## Selectable baselines
+
+Every theme offers **Default**, fourteen common starting looks and three signature looks. Sunset, Night and Stormfront share time-of-day cues across themes. Green Hill reflects its sky on the ocean, Ice Cap adjusts the lake and aurora, and Aquarium picks up the light on lagoon glass and lanterns.
+
+| Theme | Signature looks |
+| --- | --- |
+| Green Hill | Mango Tide, Firefly Cove, Rainwashed Palms |
+| Casino Night | Cherry Jackpot, Mint Condition, After the Encore |
+| Ice Cap | Sundog Halo, Magnetic Midnight, Diamond Dust |
+| Rooftop Run | Bell Tower Blush, Rain on Terracotta, Festival of Kites |
+| Aquarium Park | Lantern Parade, Koi Moon, Sea Glass Morning |
+| Egg Fleet (material preview) | Signal Flare, Searchlight Watch, Cloudbreak Convoy |
+
+Choose a baseline in **Atmosphere Lab → Try an atmosphere…** or **Prototype → Customize → Themes and atmospheres**. The recipes start from the source art, including the character and hardware colors. Saved edits to Default and user-local drafts cannot change a starting look. Random Zones use saved variant weights. All presets share the baked Act and theme geometry.
+
 ## Five base-game Defaults — 2026-11-28
 
 Select **Default** in Atmosphere Lab to see each look. Prototype and Endless read the same five records. The art directions below describe those records in roster order.

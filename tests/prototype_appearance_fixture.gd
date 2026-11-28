@@ -13,7 +13,7 @@ var game: Node
 var error := ""
 var receipt := {}
 
-func open(tree: SceneTree, path: String, theme: String, output: String, variant_id := "default", retro_mode := "") -> bool:
+func open(tree: SceneTree, path: String, theme: String, output: String, variant_id := "default", retro_mode := "", character_id := "sonic") -> bool:
  error = ""
  var source := Document.load_document(path)
  if source.document == null or theme not in Registry.IDS:
@@ -33,7 +33,7 @@ func open(tree: SceneTree, path: String, theme: String, output: String, variant_
  session.run_configuration.single_act_use_bakes = true
  session.run_configuration.atmosphere_overrides = {theme: variant_id}
  session.run_configuration.selected_theme_ids = [theme]
- session.selected_character = "sonic"
+ session.selected_character = character_id
  session.sound_enabled = false
  tree.root.add_child(session)
  await session.start_run()

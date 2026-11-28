@@ -103,8 +103,9 @@ func run() -> void:
    emission_matches = emission_matches and is_equal_approx(float(actual), float(entry.base) * 0.4)
   check(emission_matches and not panel.emission.parameters.is_empty(), "Emission controls reach live materials: " + theme)
   if theme == "aquarium_park":
-   check(is_equal_approx(game.presentation._world_environment.environment.tonemap_exposure, 1.0), "Chemical exposure does not leak into Aquarium's original")
-   check(not game.presentation._world_environment.environment.fog_enabled, "Prior theme fog does not leak into Aquarium")
+   check(is_equal_approx(panel.originals["env/tonemap_exposure"], 1.0), "Prior exposure does not leak into Aquarium's original")
+   check(not panel.originals["env/fog_enabled"], "Prior theme fog does not leak into Aquarium's original")
+   check(game.presentation._world_environment.environment.fog_enabled == panel.values["env/fog_enabled"], "Aquarium applies the selected atmosphere's fog")
   panel.reset_values()
   for property: String in preload("res://scripts/atmosphere/fields.gd").SHADOW_DEFAULTS:
    var expected: Variant = preload("res://scripts/atmosphere/fields.gd").SHADOW_DEFAULTS[property]

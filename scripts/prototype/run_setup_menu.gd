@@ -69,7 +69,7 @@ func configure(value: RefCounted, available: Array, start: Button) -> void:
   var choice := OptionButton.new()
   choice.add_item("Random atmosphere")
   choice.set_item_metadata(0, "")
-  for record: Dictionary in preload("res://scripts/atmosphere/variants.gd").new().read(id):
+  for record: Dictionary in preload("res://scripts/atmosphere/variants.gd").new().choices(id):
    choice.add_item(record.name)
    choice.set_item_metadata(choice.item_count - 1, record.id)
    if configuration.atmosphere_overrides.get(id, "") == record.id: choice.select(choice.item_count - 1)

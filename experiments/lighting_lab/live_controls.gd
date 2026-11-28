@@ -2,7 +2,7 @@ extends CanvasLayer
 ## User-local drafts and explicit production variants share one live inspector.
 const SceneryControls := preload("res://experiments/lighting_lab/scenery_controls.gd")
 const EmissionPreview := preload("res://experiments/lighting_lab/emission_preview.gd")
-const LightingLooks := preload("res://experiments/lighting_lab/lighting_looks.gd")
+const LightingLooks := preload("res://scripts/atmosphere/lighting_looks.gd")
 # Label, property, kind; numeric rows also carry minimum, maximum and step.
 const Fields := preload("res://scripts/atmosphere/fields.gd")
 const ColorRanges := preload("res://scripts/atmosphere/color_ranges.gd")
@@ -154,9 +154,6 @@ func _build_ui() -> void:
  variants.install(self, column)
  look_selector = OptionButton.new()
  look_selector.focus_mode = Control.FOCUS_NONE
- look_selector.add_item("Try an atmosphere…")
- look_selector.add_item("Authored atmosphere")
- for look: String in LightingLooks.LOOKS: look_selector.add_item(look)
  look_selector.item_selected.connect(_select_look)
  column.add_child(look_selector)
  compare = CheckButton.new()
@@ -475,6 +472,10 @@ func _field(parent: Node, spec: Array) -> void:
 
 func bind_theme() -> void:
  variants.syncing = true
+ look_selector.clear()
+ look_selector.add_item("Try an atmosphere…")
+ look_selector.add_item("Authored atmosphere")
+ for look: String in LightingLooks.titles(game.theme_id): look_selector.add_item(look)
  # Themes configure a subset of Environment fields. Start from a fresh resource
  # so, for example, Chemical's exposure or Rooftop's fog cannot become the next
  # theme's "original" merely because it was inspected first.
@@ -775,6 +776,7 @@ func reload_preset() -> void:
   return
  saved = fresh
  drafts.erase(preset_key)
+ if not variants.context.is_empty(): variants.context.selected = "draft"
  restore_original()
  bind_theme()
 
@@ -804,7 +806,10 @@ func _set_vsync(enabled: bool) -> void:
 func _select_look(index: int) -> void:
  if index == 0: return
  var title := look_selector.get_item_text(index)
- values = originals.duplicate(true) if index == 1 else LightingLooks.create(title, originals, game.theme_id)
+ values = originals.duplicate(true)
+ if index > 1:
+  var preset: Dictionary = variants.registry.choose(game.theme_id, 0, 0, LightingLooks.preset_id(title))
+  values.merge(preset.values, true)
  if variants.context.is_empty() or variants.context.selected == "draft": drafts[preset_key] = values.duplicate(true)
  compare.set_pressed_no_signal(false)
  _sync_widgets()

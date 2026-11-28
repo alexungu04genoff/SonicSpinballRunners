@@ -25,7 +25,7 @@ func run() -> void:
  check(Profile.default_themes() == THEMES, "Playtest defaults include every allowed theme")
  var paths := Plan.source_paths()
  var config := Plan.Configuration.new(paths)
- config.atmosphere_overrides = {"casino_night": "variant_1410883925", "green_hill": "variant_176918146"}
+ config.atmosphere_overrides = {"casino_night": "look_cherry_jackpot", "green_hill": "look_sunset"}
  config.selected_theme_ids = THEMES.duplicate()
  var settings := ConfigFile.new()
  config.write_preferences(settings, paths)
@@ -55,14 +55,16 @@ func run() -> void:
  for theme: String in Variants.THEMES:
   var records := registry.read(theme)
   check(registry.error.is_empty(), "Imported atmospheres validate: " + theme)
-  var defaults: Dictionary = records[0].values
-  for record: Dictionary in records:
-   if record.id == "default": continue
+  check(records[0].id == "default", "Every theme retains its editable Default")
+  for choice: Dictionary in registry.choices(theme):
+   if not choice.id.begins_with("look_"): continue
+   var preset := registry.choose(theme, 18, 0, choice.id)
+   check(preset.id == choice.id and preset.name == choice.name and Variants.Fields.valid_values(theme, preset.values), "Selectable preset resolves and validates: " + theme + "/" + choice.name)
+   check(preset.values["ssao/strength"] > 0 and preset.values["sun/shadow_enabled"] and preset.values["env/ambient_light_energy"] >= 0.8, "Preset lights and grounds the table: " + choice.name)
    for field: Array in Palette.HARDWARE_FIELDS:
     var key: String = "palette/" + field[1]
-    check(record.values.get(key) == defaults.get(key), "Variant retains Default hardware: " + theme + "/" + record.name + "/" + key)
-    check(record.values.get("stack/" + key) == false, "Variant hue ranges exclude hardware: " + key)
- check(registry.read("rooftop_run").any(func(record): return record.name == "Apotos"), "Import retains the local Apotos atmosphere")
+    check(not preset.values.has(key), "Preset preserves authored hardware colors: " + theme + "/" + choice.name + "/" + key)
+  check(registry.choices(theme).any(func(record): return record.id == "look_sunset"), theme + " offers Sunset in the run picker")
  for name: String in ["GateDash", "DropTarget-SW-SP-DT"]:
   var path: String = Plan.SOURCE_DIRECTORY.path_join(name + ".tres")
   var loaded := Plan.Document.load_document(path)

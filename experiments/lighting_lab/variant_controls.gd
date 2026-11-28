@@ -65,7 +65,8 @@ func bind_theme() -> void:
  theme_id = panel.game.theme_id
  if not contexts.has(theme_id):
   var records := registry.read(theme_id)
-  contexts[theme_id] = {"records": records, "revision": registry.revision(theme_id), "selected": "draft", "drafts": {}}
+  var initial := "draft" if panel.saved.has_section_key(panel.preset_key, "values") else "default"
+  contexts[theme_id] = {"records": records, "revision": registry.revision(theme_id), "selected": initial, "drafts": {}}
  context = contexts[theme_id]
  load_selected()
 
