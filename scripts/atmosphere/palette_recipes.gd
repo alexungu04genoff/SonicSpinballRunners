@@ -11,6 +11,18 @@ static func apply(theme: String, top: Color, horizon: Color, key: Color, night: 
    values["palette/ocean_sun"] = key
    values["palette/cloud_shadow"] = top.lerp(horizon, 0.43)
    values["palette/cloud_highlight"] = key.lerp(horizon, 0.25)
+   if night:
+    # Moonlit turf and surf carry the time of day even in the overhead camera.
+    for surface: String in ["terrain_ground", "terrain_upper"]:
+     values["override/" + surface] = true
+     values["hue/" + surface] = 0.075
+     values["saturation/" + surface] = 0.84
+    values["hue/foliage"] = 0.055
+    values["palette/ocean_deep"] = Color("173552").lerp(top, 0.35)
+    values["palette/ocean_wave"] = Color("32638a").lerp(horizon, 0.24)
+    values["palette/ocean_reflection"] = Color("a1c6eb").lerp(horizon, 0.4)
+    values["palette/local_sand"] = Color("c0b9ad").lerp(key, 0.12)
+    values["palette/shore_tint"] = Color("b5bfd2")
   "casino_night":
    # A lighter, less saturated deck separates dark quills and purple fur from the blue tiles.
    if night:
