@@ -36,8 +36,6 @@ func _init(_presentation: Node3D) -> void:
   if key in ["cyan", "fish"]: Atmosphere.color(mat, "aquatic_tint", "tint")
   if key in ["stone", "deep", "wood", "gold", "ivory"]: Atmosphere.color(mat, "architecture_tint", "tint")
   if key == "roof": Atmosphere.color(mat, "roof_tint", "tint")
-  var surface := "wood" if key == "wood" else ("stone" if key in ["stone", "ivory"] else ("foliage" if key == "plant" else "enamel"))
-  preload("res://scripts/themes/dreamcast_textures.gd").detail(mat, surface)
   materials[key] = mat
   if key == "plant": Atmosphere.foliage(mat)
  var roof_material := StandardMaterial3D.new()

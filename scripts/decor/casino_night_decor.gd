@@ -32,7 +32,6 @@ func _init(_presentation: Node3D) -> void:
   if key == "purple": Atmosphere.color(mat, "purple_accent")
   if key == "gold_light": Atmosphere.color(mat, "window_gold")
   if key in ["gold", "ivory"]: Atmosphere.color(mat, "metal_tint", "tint")
-  preload("res://scripts/themes/dreamcast_textures.gd").detail(mat, "metal" if key in ["gold", "gold_light", "ivory"] else "enamel")
   materials[key] = mat
  materials["housing"] = preload("res://scripts/themes/casino_selected_materials.gd").housing()
  if materials.has("housing"): Atmosphere.color(materials.housing, "housing_tint", "tint")

@@ -34,7 +34,6 @@ func _init(_presentation: Node3D) -> void:
   if key == "snow": Atmosphere.color(mat, "snow_tint", "tint")
   if key in ["ice", "deep", "inset"]: Atmosphere.color(mat, "ice_tint", "tint")
   if key == "rock": Atmosphere.color(mat, "ridge_tint", "tint")
-  preload("res://scripts/themes/dreamcast_textures.gd").detail(mat, "stone" if key == "rock" else ("wood" if key == "trunk" else "frost"))
   materials[key] = mat
   if key == "pine": preload("res://scripts/themes/theme_atmosphere.gd").foliage(mat)
  materials.frost_grass = materials.snow.duplicate()
