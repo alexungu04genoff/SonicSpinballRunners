@@ -1,5 +1,7 @@
 # SONIC SPINBALL RUNNERS — SHARED BRAIN SAVE
 
+The five base-game Default atmospheres now have their own light, haze, cast shadows and SSAO. Green Hill gets sun after a coastal shower, Casino gets rose marquees, Ice Cap gets an aurora, Rooftop gets a low apricot sun and Aquarium gets lanterns over jade water. Pick **Default** in Atmosphere Lab to see the same look used by Prototype and Endless. [Lighting directions](ATMOSPHERE_VARIANTS.md#five-base-game-defaults--2026-11-28)
+
 When consecutive Acts use the same theme, Prototype and Endless join the floor trim and raised banks where the surfaces meet. The bake records which spans reach each end. Streaming compares those spans after aligning the Acts, so an offset ledge keeps its exposed edge. Standalone Acts and changes of theme keep their full borders.
 
 ## Green Hill animation review

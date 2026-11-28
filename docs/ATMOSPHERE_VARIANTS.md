@@ -2,6 +2,20 @@
 
 The production model is **Act geometry × Theme × Atmosphere Variant**. Geometry and material topology still bake only as Act × Theme, including that Act/theme's scenery sidecar. Atmosphere is applied to those reusable recipes at runtime. Production does not read `user://lighting_lab_presets.cfg`.
 
+## Five base-game Defaults — 2026-11-28
+
+Select **Default** in Atmosphere Lab to see each look. Prototype and Endless read the same five records. The art directions below describe those records in roster order.
+
+| Zone | Light and palette | Shadow and fog treatment |
+| --- | --- | --- |
+| Green Hill | Sun breaks through a coastal shower. Warm cloud tops and seafoam on the waves pick up the sun, while blue sky fills the palms. | Short, crisp contacts ground the Rings on the turf. Eight cast tones and pale sea haze separate the checker cliffs from the offshore islands. |
+| Casino Night | Rose marquee lights cross a cobalt deck under a plum skyline. Cyan, mint and amber signs have tight halos. | Four cast tones give the cabinet a printed look. Cool fill lifts the blue lanes, and violet haze begins beyond the near playfield. |
+| Ice Cap | Mint and lilac aurora ribbons reflect in the lake. A low polar light catches the snow and crystal faces. | Broad, soft contacts shape the snow. Blue distance fog and a directional veil of spindrift sit beyond the Ball. |
+| Rooftop Run | Apricot evening sunlight crosses the clock district. Lavender shade breaks up the cream masonry, and the canal reflects the peach horizon. | A low sun casts long, five-tone shadows across the paving. Warm haze separates the distant roofs. |
+| Aquarium Park | Amber paper lanterns sit over a jade lagoon. Moonlit fill picks out the red gate frames, glass and paving. | Soft cast shadows and narrow contact shading separate the lantern bases and rails. Teal distance fog builds into a diagonal bank of sea mist. |
+
+Native SSAO darkens the feet of bumpers and the inside corners of banks. The gain ranges from 12× on Rooftop's paving to 14.5× on Ice Cap's snow. Contact radii span 0.37–0.52 world units, while the key lights cast longer shadows that show each object's height. Camera-depth fog begins 5–5.5 world units from the camera. Ice Cap and Aquarium Park also have directional fog whose clear zone follows the camera's table target. Device shadow treatments still control how the local machine renders the authored cast tones.
+
 ## Production Default atmosphere signatures — 2026-11-09
 
 The first identity pass covered Green Hill, Chemical Plant, Rooftop Run and Casino Night. Alex initially deferred the other four themes until their texture rework, then requested the remaining pass after those materials landed. Production Retro remains on. OFF captures are lighting diagnostics only.

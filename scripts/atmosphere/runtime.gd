@@ -42,8 +42,11 @@ func attach_step(root: Node, pending: Dictionary, scenery := false, budget_usec 
  return true
 
 static func apply_properties(source: Dictionary, target: Environment, light: DirectionalLight3D) -> void:
+ # Godot resets density when fog mode is assigned. Saved dictionaries can
+ # list density first, so select the mode before applying the other fields.
+ if source.has("env/fog_mode"): target.fog_mode = source["env/fog_mode"]
  for key: String in source:
-  if key == Fields.LEGACY_SHADOW_MODE: continue
+  if key in [Fields.LEGACY_SHADOW_MODE, "env/fog_mode"]: continue
   if key.begins_with("env/"): target.set(key.trim_prefix("env/"), source[key])
   elif key.begins_with("sun/"): light.set(key.trim_prefix("sun/"), source[key])
   elif key == "sun_pitch": light.rotation_degrees.x = source[key]

@@ -3,6 +3,7 @@ extends SceneTree
 const Registry := preload("res://scripts/atmosphere/variants.gd")
 const Runtime := preload("res://scripts/atmosphere/runtime.gd")
 const Options := preload("res://scripts/rendering_options.gd")
+const SSAO := preload("res://scripts/atmosphere/native_ssao.gd")
 const OUTPUT := "res://test-results/zone-defaults"
 var checks := 0
 var failures := 0
@@ -56,7 +57,7 @@ func run() -> void:
  var retro: Array = game.retro_filter.settings.default_effects.duplicate()
  var retro_modes: Array = [true] if "--retro=production" in OS.get_cmdline_user_args() else [false, true]
  var physics: int = game.world.get_instance_id()
- for theme: String in Registry.THEMES:
+ for theme: String in preload("res://scripts/prototype/build_profile.gd").default_themes():
   var records := registry.read(theme)
   check(registry.error.is_empty(), theme + " has valid production data")
   var record := records[0]
@@ -68,8 +69,15 @@ func run() -> void:
   game.presentation.reset_camera()
   var environment: Environment = game.presentation._world_environment.environment
   var light: DirectionalLight3D = game.presentation._key_light
-  check(is_equal_approx(light.shadow_opacity, 0.8) and is_equal_approx(light.shadow_blur, 10.0) and is_equal_approx(light.shadow_bias, 0.01) and is_equal_approx(light.shadow_normal_bias, 0.1) and is_equal_approx(light.directional_shadow_max_distance, 40.0), theme + " ships the approved shadow settings")
-  check(is_equal_approx(panel.values["ssao/strength"], 8.0) and environment.ssao_enabled and is_equal_approx(environment.ssao_intensity, 7.688), theme + " ships the approved 8× foreground contact shading")
+  check(light.shadow_enabled and light.shadow_opacity > 0.0 and light.shadow_opacity < 1.0, theme + " enables partial-opacity cast shadows")
+  check(is_equal_approx(light.shadow_bias, 0.01) and is_equal_approx(light.shadow_normal_bias, 0.1) and is_equal_approx(light.directional_shadow_max_distance, 40.0), theme + " retains calibrated caster bias and coverage")
+  var values: Dictionary = record.values
+  check(values.has_all(["sun/shadow_blur", "sun/shadow_opacity", "shadow/levels", SSAO.KEY, SSAO.RADIUS_KEY, SSAO.CONTRAST_KEY]), theme + " authors its cast and contact treatment")
+  var intensity := float(values.get(SSAO.KEY, 0.0)) * SSAO.INTENSITY_SCALE * SSAO.REFERENCE_STRENGTH
+  check(intensity > 0.0 and environment.ssao_enabled and is_equal_approx(environment.ssao_intensity, intensity), theme + " applies its foreground SSAO strength")
+  check(is_equal_approx(environment.ssao_radius, values.get(SSAO.RADIUS_KEY, 0.0)) and is_equal_approx(environment.ssao_power, values.get(SSAO.CONTRAST_KEY, 0.0)), theme + " applies its contact radius and contrast")
+  check(game.terrain_shadows.cast_levels == values.get("shadow/levels", -1), theme + " applies its cast shadow tones")
+  check(environment.fog_enabled and environment.fog_mode == Environment.FOG_MODE_DEPTH and environment.fog_density > 0.0 and environment.fog_depth_end > environment.fog_depth_begin and environment.fog_depth_begin > 0.0, theme + " reserves a clear foreground before the distance haze")
   for key: String in record.values:
    check(equal(panel.values.get(key), record.values[key]), theme + " Lab loads " + key)
    if key.begins_with("env/"): check(equal(environment.get(key.trim_prefix("env/")), record.values[key]), theme + " live environment " + key)
